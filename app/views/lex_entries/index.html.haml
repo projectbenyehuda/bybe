@@ -1,0 +1,27 @@
+%h1 Listing lex_entries
+
+%table
+  %thead
+    %tr
+      %th Title
+      %th Status
+      %th Lex person
+      %th Lex publication
+      %th
+      %th
+      %th
+
+  %tbody
+    - @lex_entries.each do |lex_entry|
+      %tr
+        %td= lex_entry.title
+        %td= lex_entry.status
+        %td= lex_entry.lex_person
+        %td= lex_entry.lex_publication
+        %td= link_to 'Show', lex_entry
+        %td= link_to 'Edit', edit_lex_entry_path(lex_entry)
+        %td= link_to 'Destroy', lex_entry, method: :delete, data: { confirm: 'Are you sure?' }
+
+%br
+
+= link_to 'New Lex entry', new_lex_entry_path
