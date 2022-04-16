@@ -1,0 +1,31 @@
+%h1 Listing lex_issues
+
+%table
+  %thead
+    %tr
+      %th Subtitle
+      %th Volume
+      %th Issue
+      %th Seq num
+      %th Toc
+      %th Lex publication
+      %th
+      %th
+      %th
+
+  %tbody
+    - @lex_issues.each do |lex_issue|
+      %tr
+        %td= lex_issue.subtitle
+        %td= lex_issue.volume
+        %td= lex_issue.issue
+        %td= lex_issue.seq_num
+        %td= lex_issue.toc
+        %td= lex_issue.lex_publication
+        %td= link_to 'Show', lex_issue
+        %td= link_to 'Edit', edit_lex_issue_path(lex_issue)
+        %td= link_to 'Destroy', lex_issue, method: :delete, data: { confirm: 'Are you sure?' }
+
+%br
+
+= link_to 'New Lex issue', new_lex_issue_path
