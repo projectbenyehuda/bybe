@@ -1,0 +1,2 @@
+class LexPerson < ApplicationRecord
+end
