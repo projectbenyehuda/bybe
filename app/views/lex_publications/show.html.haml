@@ -1,0 +1,15 @@
+%p#notice= notice
+
+%p
+  %b Description:
+  = @lex_publication.description
+%p
+  %b Toc:
+  = @lex_publication.toc
+%p
+  %b Az navbar:
+  = @lex_publication.az_navbar
+
+= link_to 'Edit', edit_lex_publication_path(@lex_publication)
+\|
+= link_to 'Back', lex_publications_path

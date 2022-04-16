@@ -1,0 +1,24 @@
+%p#notice= notice
+
+%p
+  %b Title:
+  = @lex_text.title
+%p
+  %b Authors:
+  = @lex_text.authors
+%p
+  %b Pages:
+  = @lex_text.pages
+%p
+  %b Lex publication:
+  = @lex_text.lex_publication
+%p
+  %b Lex issue:
+  = @lex_text.lex_issue
+%p
+  %b Manifestation:
+  = @lex_text.manifestation
+
+= link_to 'Edit', edit_lex_text_path(@lex_text)
+\|
+= link_to 'Back', lex_texts_path
