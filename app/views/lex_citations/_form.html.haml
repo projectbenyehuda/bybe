@@ -1,0 +1,31 @@
+= form_for @lex_citation do |f|
+  - if @lex_citation.errors.any?
+    #error_explanation
+      %h2= "#{pluralize(@lex_citation.errors.count, "error")} prohibited this lex_citation from being saved:"
+      %ul
+        - @lex_citation.errors.full_messages.each do |message|
+          %li= message
+
+  .field
+    = f.label :title
+    = f.text_field :title
+  .field
+    = f.label :from_publication
+    = f.text_field :from_publication
+  .field
+    = f.label :authors
+    = f.text_field :authors
+  .field
+    = f.label :pages
+    = f.text_field :pages
+  .field
+    = f.label :link
+    = f.text_field :link
+  .field
+    = f.label :item
+    = f.text_field :item
+  .field
+    = f.label :manifestation
+    = f.text_field :manifestation
+  .actions
+    = f.submit 'Save'

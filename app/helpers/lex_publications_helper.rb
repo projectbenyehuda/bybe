@@ -1,0 +1,2 @@
+module LexPublicationsHelper
+end

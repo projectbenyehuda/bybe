@@ -1,0 +1,27 @@
+%p#notice= notice
+
+%p
+  %b Title:
+  = @lex_citation.title
+%p
+  %b From publication:
+  = @lex_citation.from_publication
+%p
+  %b Authors:
+  = @lex_citation.authors
+%p
+  %b Pages:
+  = @lex_citation.pages
+%p
+  %b Link:
+  = @lex_citation.link
+%p
+  %b Item:
+  = @lex_citation.item
+%p
+  %b Manifestation:
+  = @lex_citation.manifestation
+
+= link_to 'Edit', edit_lex_citation_path(@lex_citation)
+\|
+= link_to 'Back', lex_citations_path
