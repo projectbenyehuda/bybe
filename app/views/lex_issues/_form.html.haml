@@ -1,0 +1,28 @@
+= form_for @lex_issue do |f|
+  - if @lex_issue.errors.any?
+    #error_explanation
+      %h2= "#{pluralize(@lex_issue.errors.count, "error")} prohibited this lex_issue from being saved:"
+      %ul
+        - @lex_issue.errors.full_messages.each do |message|
+          %li= message
+
+  .field
+    = f.label :subtitle
+    = f.text_field :subtitle
+  .field
+    = f.label :volume
+    = f.text_field :volume
+  .field
+    = f.label :issue
+    = f.text_field :issue
+  .field
+    = f.label :seq_num
+    = f.number_field :seq_num
+  .field
+    = f.label :toc
+    = f.text_area :toc
+  .field
+    = f.label :lex_publication
+    = f.text_field :lex_publication
+  .actions
+    = f.submit 'Save'

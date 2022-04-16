@@ -1,0 +1,18 @@
+%p#notice= notice
+
+%p
+  %b Url:
+  = @lex_link.url
+%p
+  %b Description:
+  = @lex_link.description
+%p
+  %b Status:
+  = @lex_link.status
+%p
+  %b Item:
+  = @lex_link.item
+
+= link_to 'Edit', edit_lex_link_path(@lex_link)
+\|
+= link_to 'Back', lex_links_path
