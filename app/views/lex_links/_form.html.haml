@@ -1,0 +1,22 @@
+= form_for @lex_link do |f|
+  - if @lex_link.errors.any?
+    #error_explanation
+      %h2= "#{pluralize(@lex_link.errors.count, "error")} prohibited this lex_link from being saved:"
+      %ul
+        - @lex_link.errors.full_messages.each do |message|
+          %li= message
+
+  .field
+    = f.label :url
+    = f.text_field :url
+  .field
+    = f.label :description
+    = f.text_field :description
+  .field
+    = f.label :status
+    = f.text_field :status
+  .field
+    = f.label :item
+    = f.text_field :item
+  .actions
+    = f.submit 'Save'

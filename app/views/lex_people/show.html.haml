@@ -1,0 +1,27 @@
+%p#notice= notice
+
+%p
+  %b Aliases:
+  = @lex_person.aliases
+%p
+  %b Copyrighted:
+  = @lex_person.copyrighted
+%p
+  %b Birthdate:
+  = @lex_person.birthdate
+%p
+  %b Deathdate:
+  = @lex_person.deathdate
+%p
+  %b Bio:
+  = @lex_person.bio
+%p
+  %b Works:
+  = @lex_person.works
+%p
+  %b About:
+  = @lex_person.about
+
+= link_to 'Edit', edit_lex_person_path(@lex_person)
+\|
+= link_to 'Back', lex_people_path

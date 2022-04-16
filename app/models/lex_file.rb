@@ -1,0 +1,2 @@
+class LexFile < ApplicationRecord
+end
