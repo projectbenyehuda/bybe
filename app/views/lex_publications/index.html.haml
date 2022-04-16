@@ -1,0 +1,25 @@
+%h1 Listing lex_publications
+
+%table
+  %thead
+    %tr
+      %th Description
+      %th Toc
+      %th Az navbar
+      %th
+      %th
+      %th
+
+  %tbody
+    - @lex_publications.each do |lex_publication|
+      %tr
+        %td= lex_publication.description
+        %td= lex_publication.toc
+        %td= lex_publication.az_navbar
+        %td= link_to 'Show', lex_publication
+        %td= link_to 'Edit', edit_lex_publication_path(lex_publication)
+        %td= link_to 'Destroy', lex_publication, method: :delete, data: { confirm: 'Are you sure?' }
+
+%br
+
+= link_to 'New Lex publication', new_lex_publication_path
