@@ -1,0 +1,24 @@
+%p#notice= notice
+
+%p
+  %b Subtitle:
+  = @lex_issue.subtitle
+%p
+  %b Volume:
+  = @lex_issue.volume
+%p
+  %b Issue:
+  = @lex_issue.issue
+%p
+  %b Seq num:
+  = @lex_issue.seq_num
+%p
+  %b Toc:
+  = @lex_issue.toc
+%p
+  %b Lex publication:
+  = @lex_issue.lex_publication
+
+= link_to 'Edit', edit_lex_issue_path(@lex_issue)
+\|
+= link_to 'Back', lex_issues_path
