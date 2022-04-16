@@ -1,0 +1,2 @@
+class LexPublication < ApplicationRecord
+end
