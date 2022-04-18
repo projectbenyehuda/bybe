@@ -82,7 +82,7 @@ def process_legaxy_lexicon_entry(fname)
     end
     title = validate_title(title, fname)
     if lf.nil?
-      lf = LexFile.create!(fname: filepart, status: :unclassified, title: title, entrytype: entrytype)
+      lf = LexFile.create!(fname: filepart, status: entrytype == 'unknown' ? :unclassified : :classified, title: title, entrytype: entrytype)
       @new += 1
     else
       lf.update!(entrytype: entrytype)
