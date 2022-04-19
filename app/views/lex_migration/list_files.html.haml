@@ -1,0 +1,18 @@
+.top-element
+  %div{style:'margin-top:10px'}
+    %h1= t(:lexicon_migration) + ": " + t(:lexicon_list_files)
+    %table
+      %tr
+        %th= t(:filename)
+        %th= t(:status)
+        %th= t(:entrytype)
+        %th= t(:actions)
+      - @lex_files.each do |lf|
+        %tr
+          %td= lf.fname.sub('.php','').sub('/','')
+          %td= t(lf.status)
+          %td= t(lf.entrytype)
+          %td
+            - if lf.entrytype_person?
+              = link_to t(:lexicon_analyze_person), action: :analyze_person, id: lf.id
+  = paginate @lex_files
