@@ -370,6 +370,14 @@ he:
   genres: סוגות
   genres_and_types: סוגות וסוגים
   # end genres
+  lexicon_migration: קליטת לקסיקון גלרון
+  lexicon_list_files: רשימת הקבצים
+  lexicon_analyze_person: הסבת ערך על אדם
+  filename: שם קובץ
+  text: טקסט
+  bib: ביבליוגרפיה
+  classified: זוהה סוג הערך
+  unclassified: לא זוהה סוג הערך
   anth_grows: המקראה צומחת!
   most_popular_works_this_month: היצירות הנקראות ביותר החודש
   most_popular_works: היצירות הנקראות ביותר
