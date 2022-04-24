@@ -1,5 +1,11 @@
 class LexPerson < ApplicationRecord
   def parse_books(buf)
+
+  end
+  def parse_bib(buf)
+    
+  end
+  def parse_links(buf)
     
   end
   def analyze(entry)
