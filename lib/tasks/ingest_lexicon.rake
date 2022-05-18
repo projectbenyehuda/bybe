@@ -16,7 +16,7 @@ task :ingest_lexicon, [:dirname] => :environment do |taskname, args|
   @texts = []
   files.each{|fname|
     begin
-      process_legaxy_lexicon_entry(fname)
+      process_legacy_lexicon_entry(fname)
       i += 1
       print "\n...#{i} " if i % 20 == 0
     rescue
@@ -44,7 +44,7 @@ def validate_title(title, fname)
   return validation
 end
 
-def process_legaxy_lexicon_entry(fname)
+def process_legacy_lexicon_entry(fname)
   filepart = fname[fname.rindex('/')..-1]
   lf = LexFile.where(fname: filepart).first
   should_process = false
@@ -82,7 +82,7 @@ def process_legaxy_lexicon_entry(fname)
     end
     title = validate_title(title, fname)
     if lf.nil?
-      lf = LexFile.create!(fname: filepart, status: entrytype == 'unknown' ? :unclassified : :classified, title: title, entrytype: entrytype)
+      lf = LexFile.create!(fname: filepart, full_path: fname, status: entrytype == 'unknown' ? :unclassified : :classified, title: title, entrytype: entrytype)
       @new += 1
     else
       lf.update!(entrytype: entrytype)
