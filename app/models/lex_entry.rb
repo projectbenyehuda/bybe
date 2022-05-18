@@ -1,4 +1,4 @@
 class LexEntry < ApplicationRecord
-  belongs_to :lex_person
-  belongs_to :lex_publication
+  belongs_to :lex_item, polymorphic: true
+  # this can be LexPerson or LexPublication (or...?)
 end
