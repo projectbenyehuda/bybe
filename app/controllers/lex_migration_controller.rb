@@ -7,11 +7,12 @@ class LexMigrationController < ApplicationController
   end
 
   def analyze_person
-    entry = LexEntry.find(params[:id])
-    if entry.nil?
+    file = LexFile.find(params[:id])
+    if file.nil?
       redirect_to action: :index
     else
-      @lex_person = LexPerson.analyze(entry)
+      @lex_person = LexPerson.analyze(file)
+      @title = file.title
     end
   end
 
