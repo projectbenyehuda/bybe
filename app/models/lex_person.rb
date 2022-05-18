@@ -1,21 +1,34 @@
 class LexPerson < ApplicationRecord
-  def parse_books(buf)
+  @@html_entities_coder = HTMLEntities.new
 
+  def self.parse_bio(buf)
+    ActionView::Base.full_sanitizer.sanitize(buf)
   end
-  def parse_bib(buf)
-    
+  def self.parse_books(buf)
+    buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}
   end
-  def parse_links(buf)
-    
+  def self.parse_bib(buf)
+    #buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}
+    buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? PandocRuby.convert(x[0], M: 'dir=rtl', from: :html, to: :markdown_mmd).force_encoding('UTF-8') : ''}
   end
-  def analyze(entry)
+  def self.parse_links(buf)
+    buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}.map{ |linkstring| 
+      if linkstring =~ /<a .*? href="(.*?)".*?>(.*?)<\/a>/
+        LexLink.new(url: $1, description: $2)
+      else
+        nil
+      end
+    }
+  end
+  def self.analyze(entry)
     #ret = entry.lex_item.present? ? entry.lex_item : LexPerson.new
-    buf = File.open(entry.fname).read
+    ret = {}
+    buf = File.open(entry.full_path).read
+    ret['about'] = parse_bio(buf[/<\/table>.*?<a name="Books/m])
     anchors = buf.scan(/<a name="(.*?)">/)
-    ret = ''
-    ret += parse_books(buf[/a name="Books".*?<a name/m])
-    ret += parse_bib(buf[/a name="Bib.".*?<a name/m])
-    ret += parse_links(buf[/a name="links".*?<a name/m])
+    ret['books'] = parse_books(buf[/a name="Books".*?<a name/m])
+    ret['bib'] = parse_bib(buf[/a name="Bib.".*?<a name/m])
+    ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
     return ret
   end
 
