@@ -4,12 +4,14 @@
     %table
       %tr
         %th= t(:filename)
+        %th= t(:title)
         %th= t(:status)
         %th= t(:entrytype)
         %th= t(:actions)
       - @lex_files.each do |lf|
         %tr
           %td= lf.fname.sub('.php','').sub('/','')
+          %td= lf.title
           %td= t(lf.status)
           %td= t(lf.entrytype)
           %td
