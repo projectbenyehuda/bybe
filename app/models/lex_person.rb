@@ -5,16 +5,16 @@ class LexPerson < ApplicationRecord
     ActionView::Base.full_sanitizer.sanitize(buf)
   end
   def self.parse_books(buf)
-    buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}
+    buf.scan(/<li>(.*?)<\/li>/m).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}
   end
   def self.parse_bib(buf)
     #buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}
-    buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? PandocRuby.convert(x[0], M: 'dir=rtl', from: :html, to: :markdown_mmd).force_encoding('UTF-8') : ''}
+    buf.scan(/<li>(.*?)<\/li>/m).map{|x| x.class == Array ? PandocRuby.convert(x[0], M: 'dir=rtl', from: :html, to: :markdown_mmd).force_encoding('UTF-8') : ''}
   end
   def self.parse_links(buf)
-    buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}.map{ |linkstring| 
-      if linkstring =~ /<a .*? href="(.*?)".*?>(.*?)<\/a>/
-        LexLink.new(url: $1, description: $2)
+    buf.scan(/<li>(.*?)<\/li>/m).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}.map{ |linkstring| 
+      if linkstring =~ /(.*?)<a .*? href="(.*?)".*?>(.*?)<\/a>(.*)/m
+        LexLink.new(url: $2, description: "#{$1} #{$3} #{$4}")
       else
         nil
       end
