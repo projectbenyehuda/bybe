@@ -16,5 +16,8 @@
           %td= t(lf.entrytype)
           %td
             - if lf.entrytype_person?
-              = link_to t(:lexicon_analyze_person), action: :analyze_person, id: lf.id
+              - if lf.status_ingested?
+                = link_to t(:lexicon_show_person), controller: :lex_entries, action: :show, id: lf.lex_entry.id
+              - else
+                = link_to t(:lexicon_analyze_person), action: :migrate_person, id: lf.id
   = paginate @lex_files
