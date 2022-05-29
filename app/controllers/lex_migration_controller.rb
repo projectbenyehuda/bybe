@@ -6,13 +6,18 @@ class LexMigrationController < ApplicationController
     @lex_files = LexFile.all.page(params[:page])
   end
 
-  def analyze_person
+  def migrate_person
     file = LexFile.find(params[:id])
     if file.nil?
       redirect_to action: :index
     else
-      @lex_person = LexPerson.analyze(file)
-      @title = file.title
+      @lex_entry = LexEntry.new(title: file.title, sort_title: file.title.strip_nikkud.tr('-־[]()*"\'', '').strip, status: :raw)
+      @lex_entry.save!
+      file.lex_entry = @lex_entry
+      file.status_ingested!
+      @lex_person = LexPerson.create_from_html(@lex_entry, file)
+      @lex_entry.lex_item = @lex_person
+      @lex_entry.save
     end
   end
 
