@@ -1,35 +1,43 @@
 class LexPerson < ApplicationRecord
   @@html_entities_coder = HTMLEntities.new
+  has_many :lex_links, as: :item, dependent: :destroy
 
   def self.parse_bio(buf)
     ActionView::Base.full_sanitizer.sanitize(buf)
   end
   def self.parse_books(buf)
-    buf.scan(/<li>(.*?)<\/li>/m).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}
+    buf.scan(/<li>(.*?)<\/li>/m).map{|x| x.class == Array ? PandocRuby.convert(x[0], M: 'dir=rtl', from: :html, to: :markdown_mmd).gsub("\n",' ').force_encoding('UTF-8') : ''}.join("\n")
   end
   def self.parse_bib(buf)
     #buf.scan(/<li>(.*?)<\/li>/).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}
-    buf.scan(/<li>(.*?)<\/li>/m).map{|x| x.class == Array ? PandocRuby.convert(x[0], M: 'dir=rtl', from: :html, to: :markdown_mmd).force_encoding('UTF-8') : ''}
+    buf.scan(/<li>(.*?)<\/li>/m).map{|x| x.class == Array ? PandocRuby.convert(x[0], M: 'dir=rtl', from: :html, to: :markdown_mmd).gsub("\n",' ').force_encoding('UTF-8') : ''}.join("\n")
   end
-  def self.parse_links(buf)
+  def self.parse_links(person, buf)
     buf.scan(/<li>(.*?)<\/li>/m).map{|x| x.class == Array ? @@html_entities_coder.decode(x[0].gsub(/<font.*?>/,'').gsub(/<\/font>/,'')) : ''}.map{ |linkstring| 
       if linkstring =~ /(.*?)<a .*? href="(.*?)".*?>(.*?)<\/a>(.*)/m
-        LexLink.new(url: $2, description: "#{$1} #{$3} #{$4}")
+        link = LexLink.new(url: $2, description: "#{$1} #{$3} #{$4}")
+        person.lex_links << link
+        link.save!
       else
         nil
       end
     }
   end
-  def self.analyze(entry)
-    #ret = entry.lex_item.present? ? entry.lex_item : LexPerson.new
-    ret = {}
-    buf = File.open(entry.full_path).read
-    ret['about'] = parse_bio(buf[/<\/table>.*?<a name="Books/m])
-    anchors = buf.scan(/<a name="(.*?)">/)
-    ret['books'] = parse_books(buf[/a name="Books".*?<a name/m])
-    ret['bib'] = parse_bib(buf[/a name="Bib.".*?<a name/m])
-    ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
-    return ret
+  def self.create_from_html(entry, lexfile)
+    if entry.lex_item.present? 
+      return entry.lex_item
+    else
+      buf = File.open(lexfile.full_path).read
+      anchors = buf.scan(/<a name="(.*?)">/)
+      # ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
+      @lex_person = LexPerson.new(bio: parse_bio(buf[/<\/table>.*?<a name="Books/m]), works: parse_books(buf[/a name="Books".*?<a name/m]), about: parse_bib(buf[/a name="Bib.".*?<a name/m]))
+      @lex_person.save!
+      parse_links(@lex_person, buf[/a name="links".*?<\/ul/m])
+      return @lex_person
+      #     t.string "aliases"
+      #t.string "birthdate"
+      #t.string "deathdate"
+    end
   end
 
 end

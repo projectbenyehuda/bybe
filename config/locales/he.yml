@@ -373,7 +373,12 @@ he:
   lexicon_migration: קליטת לקסיקון גלרון
   lexicon_list_files: רשימת הקבצים
   lexicon_analyze_person: הסבת ערך על אדם
+  lexicon_show_person: הצגת ערך
+  about_the_author_and_their_work: על היוצר/ת ויצירתה/ו
+  migration_results_edit_later: להלן תוצאות ההסבה האוטומטית. אפשר לתקן במסך העריכה.
+  entrytype: סוג הערך
   lexicon_bio: תקציר ביוגרפי
+  ingested: נקלט
   books: ספרים
   links: קישוריוֹת
   filename: שם קובץ
