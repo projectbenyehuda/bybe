@@ -41,6 +41,7 @@ localhost.crt
 localhost.key
 
 do_chown.sh
+elastic_un_readonly.sh
 go.sh
 UX/*
 bkk/*
