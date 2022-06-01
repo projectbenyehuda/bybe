@@ -1,5 +1,6 @@
 #header-author.container-fluid.peach2-lexicon
   = render partial: 'shared/breadcrumbs'
+  - is_person = @lex_entry.lex_item_type == :LexPerson && @lex_entry.lex_item.person.present?
   .top-space
   .lexicon-author-top-info.by-card-v02.left-side-card-v02
     .by-card-content-v02
@@ -8,8 +9,9 @@
         %div
           .author-name-years
             .headline-1-v02= @lex_entry.title
-            .date-range (...-...)
-          - if @lex_entry.lex_item.person.present?
+            - if is_person
+              .date-range (...-...)
+          - if is_person
             %div= link_to t(:author_in_pby), author_toc_path(@lex_entry.lex_item.person)
           .metadata
             .by-icon-v02= copyright_glyph(@lex_entry.lex_item.copyrighted)
