@@ -1,7 +1,9 @@
 class LexPerson < ApplicationRecord
   @@html_entities_coder = HTMLEntities.new
+  has_one :lex_entry
   has_many :lex_links, as: :item, dependent: :destroy
-
+  belongs_to :person
+  
   def self.parse_bio(buf)
     ActionView::Base.full_sanitizer.sanitize(buf)
   end
