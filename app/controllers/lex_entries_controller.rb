@@ -11,6 +11,9 @@ class LexEntriesController < ApplicationController
     @next_entry = LexEntry.where('sort_title > ?', @lex_entry.sort_title).limit(1).first
     @prev_entry = LexEntry.where('sort_title < ?', @lex_entry.sort_title).limit(1).first
     @header_partial = 'lex_entries/entry_top'
+    @bio
+    @about
+    @works
   end
 
   # GET /lex_entries/new
