@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   before_action :set_base_user
   before_action :mention_skipped
   before_action :prep_tabs
-  after_action :set_access_control_headers
+  #  after_action :set_access_control_headers # replaced with rack-cors in config/application.rb
   autocomplete :tag_name, :name, limit: 15, scopes: [:approved], extra_data: [:tag_id] # TODO: also search alternate titles!
 
   # returns BaseUser record associated with current user
@@ -56,7 +56,7 @@ class ApplicationController < ActionController::Base
     headers['Access-Control-Allow-Origin'] = '*' # TODO: restrict
     headers['Access-Control-Allow-Methods'] = '*'
     headers['Access-Control-Request-Method'] = '*'
-    headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
+    headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, content-type, Accept'
   end
 
   def mobile_search
