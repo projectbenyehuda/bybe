@@ -4,7 +4,7 @@
     %p{style:'color:green'}
       %b= t(:migration_results_edit_later)
     %h2= t(:lexicon_bio)
-    %p= @lex_person.bio
+    %p!= @lex_person.bio
     %h2= t(:books)
     %ul.lex
       - @lex_person.works.split("\n").each do |book|
