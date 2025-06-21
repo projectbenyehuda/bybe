@@ -13,18 +13,14 @@ class LexMigrationController < ApplicationController
       return
     end
     file = LexFile.find(params[:id])
-    if file.nil?
-      redirect_to action: :index
-    else
-      @lex_entry = LexEntry.new(title: file.title, sort_title: file.title.strip_nikkud.tr('-־[]()*"\'', '').strip,
-                                status: :raw)
-      @lex_entry.save!
-      file.lex_entry = @lex_entry
-      file.status_ingested!
-      @lex_person = create_lex_person_from_html(@lex_entry, file)
-      @lex_entry.lex_item = @lex_person
-      @lex_entry.save
-    end
+    @lex_entry = LexEntry.new(title: file.title, sort_title: file.title.strip_nikkud.tr('-־[]()*"\'', '').strip,
+                              status: :raw)
+    @lex_entry.save!
+    file.lex_entry = @lex_entry
+    file.status_ingested!
+    @lex_person = create_lex_person_from_html(@lex_entry, file)
+    @lex_entry.lex_item = @lex_person
+    @lex_entry.save
   end
 
   def analyze_text
