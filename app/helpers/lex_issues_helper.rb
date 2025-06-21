@@ -1,2 +1,0 @@
-module LexIssuesHelper
-end
