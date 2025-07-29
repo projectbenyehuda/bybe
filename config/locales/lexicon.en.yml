@@ -1,0 +1,20 @@
+en:
+  lexicon_migration: Absorbing Lexicon Galron
+  lexicon_list_files: List of files
+  lexicon_analyze_person: Analyze Person
+  lexicon_show_person: View
+  lex_prev_entry: Previous entry
+  lex_next_entry: Next entry
+  author_in_pby: The creator in the Ben־Yehuda project
+  about_the_author_and_their_work: about the creator and its creation
+  migration_results_edit_later: Here are the results of the automatic conversion. You can fix the editing screen.
+  entrytype: Type
+  lexicon_bio: Biographical synopsis
+  ingested: Ingested
+  books: Books
+  links: Links
+  filename: File name
+  text: Text
+  bib: Bibliography
+  classified: Classified
+  unclassified: Unclassified
