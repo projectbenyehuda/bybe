@@ -14,9 +14,8 @@
           - if is_person
             %div= link_to t(:author_in_pby), author_toc_path(@lex_entry.lex_item.person)
           .metadata
-            .by-icon-v02= copyright_glyph(@lex_entry.lex_item.copyrighted)
-            = textify_copyright_status(@lex_entry.lex_item.copyrighted)
-            %a.help.notyet{:href => "#"} [?]
+            - intellectual_property = @lex_entry.lex_item.copyrighted? ? 'copyrighted' : 'public_domain'
+            = render partial: 'shared/intellectual_property', locals: { intellectual_property: intellectual_property }
       .lexicon-author-nav
         .lexicon-author-nav-links.topNavEntry
           - unless @prev_entry.nil?
