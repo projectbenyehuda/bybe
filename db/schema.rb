@@ -611,6 +611,129 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
     t.integer "manifestation_id"
   end
 
+  create_table "lex_citations", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "title"
+    t.string "from_publication"
+    t.string "authors"
+    t.string "pages"
+    t.string "link"
+    t.string "item_type"
+    t.bigint "item_id"
+    t.integer "manifestation_id"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["authors"], name: "index_lex_citations_on_authors"
+    t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
+    t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
+    t.index ["title"], name: "index_lex_citations_on_title"
+  end
+
+  create_table "lex_entries", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "title"
+    t.integer "status"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.string "lex_item_type"
+    t.bigint "lex_item_id"
+    t.string "sort_title"
+    t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
+    t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
+    t.index ["status"], name: "index_lex_entries_on_status"
+    t.index ["title"], name: "index_lex_entries_on_title"
+  end
+
+  create_table "lex_files", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "fname"
+    t.integer "status"
+    t.string "title"
+    t.integer "entrytype"
+    t.text "comments"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.bigint "lex_entry_id"
+    t.string "full_path"
+    t.index ["entrytype"], name: "index_lex_files_on_entrytype"
+    t.index ["fname"], name: "index_lex_files_on_fname", unique: true
+    t.index ["lex_entry_id"], name: "index_lex_files_on_lex_entry_id", unique: true
+    t.index ["status"], name: "index_lex_files_on_status"
+  end
+
+  create_table "lex_issues", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "subtitle"
+    t.string "volume"
+    t.string "issue"
+    t.integer "seq_num"
+    t.text "toc"
+    t.bigint "lex_publication_id"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["lex_publication_id"], name: "index_lex_issues_on_lex_publication_id"
+    t.index ["seq_num"], name: "index_lex_issues_on_seq_num"
+    t.index ["subtitle"], name: "index_lex_issues_on_subtitle"
+  end
+
+  create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "url"
+    t.string "description"
+    t.integer "status"
+    t.string "item_type"
+    t.bigint "item_id"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["item_type", "item_id"], name: "index_lex_links_on_item_type_and_item_id"
+  end
+
+  create_table "lex_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "aliases"
+    t.boolean "copyrighted"
+    t.string "birthdate"
+    t.string "deathdate"
+    t.text "bio"
+    t.text "works"
+    t.text "about"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.integer "person_id"
+    t.index ["aliases"], name: "index_lex_people_on_aliases"
+    t.index ["birthdate"], name: "index_lex_people_on_birthdate"
+    t.index ["copyrighted"], name: "index_lex_people_on_copyrighted"
+    t.index ["deathdate"], name: "index_lex_people_on_deathdate"
+    t.index ["person_id"], name: "index_lex_people_on_person_id"
+  end
+
+  create_table "lex_people_items", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "lex_person_id"
+    t.string "item_type"
+    t.bigint "item_id"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["item_type", "item_id"], name: "index_lex_people_items_on_item_type_and_item_id"
+    t.index ["lex_person_id"], name: "index_lex_people_items_on_lex_person_id"
+  end
+
+  create_table "lex_publications", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.text "description"
+    t.text "toc"
+    t.boolean "az_navbar"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+  end
+
+  create_table "lex_texts", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "title"
+    t.string "authors"
+    t.string "pages"
+    t.bigint "lex_publication_id"
+    t.bigint "lex_issue_id"
+    t.integer "manifestation_id"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.index ["lex_issue_id"], name: "index_lex_texts_on_lex_issue_id"
+    t.index ["lex_publication_id"], name: "index_lex_texts_on_lex_publication_id"
+    t.index ["manifestation_id"], name: "index_lex_texts_on_manifestation_id"
+    t.index ["title"], name: "index_lex_texts_on_title"
+  end
+
   create_table "list_items", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "user_id"
     t.string "listkey"
@@ -727,12 +850,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
     t.integer "resolved_by"
     t.text "highlight", size: :medium
     t.integer "reported_by"
+    t.integer "manifestation_id"
     t.string "item_type", null: false
     t.integer "item_id", null: false
     t.index ["item_id", "item_type", "status"], name: "index_proofs_on_item_id_and_item_type_and_status"
     t.index ["item_type"], name: "index_proofs_on_item_type"
+    t.index ["manifestation_id"], name: "proofs_manifestation_id_fk"
     t.index ["resolved_by"], name: "proofs_resolved_by_fk"
     t.index ["status", "created_at"], name: "index_proofs_on_status_and_created_at"
+    t.index ["status", "manifestation_id"], name: "index_proofs_on_status_and_manifestation_id"
   end
 
   create_table "publications", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1003,8 +1129,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
   add_foreign_key "ingestibles", "users", column: "last_editor_id"
   add_foreign_key "ingestibles", "users", column: "locked_by_user_id"
   add_foreign_key "involved_authorities", "authorities"
+  add_foreign_key "lex_citations", "manifestations"
+  add_foreign_key "lex_files", "lex_entries"
+  add_foreign_key "lex_issues", "lex_publications"
+  add_foreign_key "lex_people", "people"
+  add_foreign_key "lex_people_items", "lex_people"
+  add_foreign_key "lex_texts", "lex_issues"
+  add_foreign_key "lex_texts", "lex_publications"
+  add_foreign_key "lex_texts", "manifestations"
   add_foreign_key "list_items", "users"
   add_foreign_key "manifestations", "expressions"
+  add_foreign_key "proofs", "manifestations", name: "proofs_manifestation_id_fk"
   add_foreign_key "proofs", "users", column: "resolved_by", name: "proofs_resolved_by_fk"
   add_foreign_key "publications", "authorities"
   add_foreign_key "publications", "bib_sources"
