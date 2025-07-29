@@ -14,5 +14,5 @@ class LexFile < ApplicationRecord
     other: 4
   }, _prefix: true
 
-  belongs_to :lex_entry
+  belongs_to :lex_entry, optional: true
 end
