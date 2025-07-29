@@ -87,6 +87,9 @@ en:
   dictionary: Dictionary
   collections: Collections
   email: Email
+  title: Title
+  status: Status
+  actions: Actions
   ziburit: What is the last name of the most famous poet? (Security question)
   not_implemented_yet: Not implemented. This function is still in development.
   report_error_tt: To report error select text on the page and then press here
