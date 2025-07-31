@@ -1,8 +1,10 @@
 FactoryBot.define do
   factory :lex_entry do
-    title { "MyString" }
-    status { "" }
-    lex_person { nil }
-    lex_publication { nil }
+    title { Faker::Name.name }
+    status { %w(migrated manual).sample }
+
+    trait :person do
+      lex_item { build(:lex_person) }
+    end
   end
 end

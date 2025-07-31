@@ -17,6 +17,8 @@ he:
       collection_item: פריט באוסף
       corporate_body: גוף/מוסד
       featured_content: תוכן מערכת
+      lex_entry: Lexicon Entry
+      lex_person: Lexicon Person
       person: אדם
     errors:
       messages:
