@@ -1,0 +1,27 @@
+%h1 Listing lex_people
+
+%table.table
+  %thead
+    %tr
+      %th Aliases
+      %th Copyrighted
+      %th Birthdate
+      %th Deathdate
+      %th
+      %th
+      %th
+
+  %tbody
+    - @lex_people.each do |lex_person|
+      %tr
+        %td= lex_person.aliases
+        %td= lex_person.copyrighted
+        %td= lex_person.birthdate
+        %td= lex_person.deathdate
+        %td= link_to 'Show', lexicon_person_path(lex_person)
+        %td= link_to 'Edit', edit_lexicon_person_path(lex_person)
+        %td= link_to 'Destroy', lexicon_person_path(lex_person), method: :delete, data: { confirm: 'Are you sure?' }
+
+%br
+
+= link_to 'New Lex person', new_lexicon_person_path
