@@ -22,6 +22,10 @@ Bybeconv::Application.routes.draw do
     end
   end
 
+  namespace :lexicon do
+    resources :people
+  end
+
   resources :ingestibles do
     resources :authorities, controller: :ingestible_authorities, only: %i(create destroy) do
       member do
@@ -93,7 +97,6 @@ Bybeconv::Application.routes.draw do
   get 'lex_migration/resolve_entry'
 
   resources :lex_files
-  resources :lex_people
   resources :lex_entries
   resources :lex_links
   resources :lex_citations
