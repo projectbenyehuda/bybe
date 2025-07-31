@@ -1,0 +1,16 @@
+= simple_form_for @lex_person,
+                  url: @lex_person.new_record? ? lexicon_people_path : lexicon_person_path(@lex_person) do |f|
+  = @lex_person.errors.full_messages
+  = f.simple_fields_for :entry do |ef|
+    = ef.input :title
+    = ef.input :status do
+      .form-control
+        %span.badge.badge-primary= @lex_person.entry.status
+  = f.input :aliases, as: :text
+  = f.input :copyrighted, as: :boolean
+  = f.input :birthdate
+  = f.input :deathdate
+  = f.input :bio, as: :text, input_html: { rows: 20 }
+  = f.input :works, as: :text, input_html: { rows: 20 }
+  = f.input :about, as: :text, input_html: { rows: 10 }
+  = f.button :submit, class: 'btn btn-primary col-sm-2'

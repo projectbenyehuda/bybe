@@ -18,3 +18,12 @@ he:
   bib: ביבליוגרפיה
   classified: זוהה סוג הערך
   unclassified: לא זוהה סוג הערך
+
+  lexicon:
+    people:
+      create:
+        success: Lexicon Person created
+      update:
+        success: Lexicon Person updated
+      destroy:
+        success: Lexicon Person destroyed
