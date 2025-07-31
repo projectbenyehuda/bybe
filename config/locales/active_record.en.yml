@@ -17,6 +17,8 @@ en:
       collection_item: Collection Item
       corporate_body: Corporate Body
       featured_content: Featured Content
+      lex_entry: Lexicon Entry
+      lex_person: Lexicon Person
       person: Person
     errors:
       messages:
