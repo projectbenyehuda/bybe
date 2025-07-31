@@ -18,3 +18,12 @@ en:
   bib: Bibliography
   classified: Classified
   unclassified: Unclassified
+
+  lexicon:
+    people:
+      create:
+        success: Lexicon Person created
+      update:
+        success: Lexicon Person updated
+      destroy:
+        success: Lexicon Person destroyed
