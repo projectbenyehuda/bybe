@@ -1,7 +1,7 @@
 .top-element
-  %div{style:'margin-top:15px; margin-right:15px'}
-    %h1= t(:lexicon_migration) + ": " + t(:lexicon_analyze_person) + ": " + @lex_entry.title
-    %p{style:'color:green'}
+  %div{ style: 'margin-top:15px; margin-right:15px;' }
+    %h1= t(:lexicon_migration) + ': ' + t('.title') + ': ' + @lex_entry.title
+    %p{style: 'color:green'}
       %b= t(:migration_results_edit_later)
     %h2= LexPerson.human_attribute_name(:birthdate)
     %p= @lex_person.birthdate
@@ -9,7 +9,7 @@
     %p= @lex_person.deathdate
     %h2= LexPerson.human_attribute_name(:bio)
     %p!= @lex_person.bio
-    %h2= t(:books)
+    %h2= LexPerson.human_attribute_name(:books)
     %ul.lex
       - @lex_person.works.split("\n").each do |book|
         %li!= MultiMarkdown.new(book).to_html.force_encoding('UTF-8')
@@ -19,12 +19,11 @@
         %li!= MultiMarkdown.new(bib).to_html.force_encoding('UTF-8')
     %h2= t(:links)
     %ul.lex
-      - @lex_person.lex_links.each do |link|
-        - next if link.nil?
+      - @lex_person.lex_links.compact.each do |link|
         %li= link_to link.description, link.url
     %hr
     %h2
-      = link_to t(:show), lex_entry_path(@lex_entry)
-      != "&emsp;"
-      = link_to t(:edit), edit_lex_entry_path(@lex_entry)
+      = link_to t(:show), lexicon_person_path(@lex_person)
+      != '&emsp;'
+      = link_to t(:edit), edit_lexicon_person_path(@lex_person)
     %hr
