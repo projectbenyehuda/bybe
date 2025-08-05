@@ -106,6 +106,13 @@ he:
           draft: טיוטה בעבודה
           ingested: נקלטה בקטלוג
           failed: ההעלאה נכשלה
+      lex_file:
+        fname: שם קובץ
+      lex_person:
+        birthdate: תאריך לידה
+        deathdate: תאריך פטירה
+        bio: תקציר ביוגרפי
+        books: ספרים
       project:
         one: מיזם
         other: מיזמים
@@ -127,7 +134,3 @@ he:
         target_type: סוג יעד
         target_id: מזהה יעד
         description: תיאור
-      lex_person:
-        birthdate: תאריך לידה
-        deathdate: תאריך פטירה
-        bio: תקציר ביוגרפי
