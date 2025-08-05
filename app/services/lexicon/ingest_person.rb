@@ -4,17 +4,17 @@ module Lexicon
   class IngestPerson < ApplicationService
     def call(file_id)
       file = LexFile.find(file_id)
-      lex_entry = LexEntry.create!(
+      lex_entry = LexEntry.new(
         title: file.title,
-        sort_title: file.title.strip_nikkud.tr('-־[]()*"\'', '').strip,
         status: :raw
       )
-      file.lex_entry = lex_entry
-      file.status_ingested!
 
       lex_person = create_lex_person_from_html(lex_entry, file)
       lex_entry.lex_item = lex_person
       lex_entry.save!
+
+      file.lex_entry = lex_entry
+      file.status_ingested!
 
       lex_entry
     end
