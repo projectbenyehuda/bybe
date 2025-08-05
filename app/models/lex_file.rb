@@ -15,4 +15,6 @@ class LexFile < ApplicationRecord
   }, _prefix: true
 
   belongs_to :lex_entry, optional: true
+
+  validates :entrytype, :status, presence: true
 end
