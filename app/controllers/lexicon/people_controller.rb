@@ -11,7 +11,9 @@ module Lexicon
     end
 
     # GET /lex_people/1 or /lex_people/1.json
-    def show; end
+    def show
+      @lex_entry = @lex_person.entry
+    end
 
     # GET /lex_people/new
     def new
