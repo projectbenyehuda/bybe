@@ -18,7 +18,7 @@ task :ingest_lexicon, [:dirname] => :environment do |taskname, args|
     process_legacy_lexicon_entry(fname)
     i += 1
     print "\n...#{i} " if i % 20 == 0
-  rescue StandardError
+  rescue ArgumentError
     puts "\n#{$!} bad encoding in #{fname}. Run\n\nrake badchar[#{thedir}/#{fname}]\n\n to find what doesn't convert well."
   end
   puts "\nPEOPLE: " + @people.sort.join('; ')
