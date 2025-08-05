@@ -1,353 +1,341 @@
-.top-element
-  #content.container-fluid
-    .lexicon-author-page-content.peach2-lexicon
+.lexicon-author-page-content.peach2-lexicon
+  .row
+    .col-12.col-lg-8
+      .logo-for-print
+        %img.logoBY-v02{:alt => "", :src => "/assets/logo-byp-mobile.svg"}
       .row
-        .col-12.col-lg-8
-          .logo-for-print
-            %img.logoBY-v02{:alt => "", :src => "assets/logo-byp-mobile.svg"}/
-          .row
-            .col.side-menu-area
-            .col
-              .by-card-v02.author-main-info-card-v02
-                .by-card-content-v02
-                  .lexicon-entry-header
-                    %a{:href => ""}
-                      .lexicon-header-he
-                        .headline-1-v02 לקסיקון הספרות העברית החדשה
-                        .index-part-of-pby
-                          %img{:alt => "", :src => "assets/ornament_1.svg"}/
-                          .headline-3-v02 חלק מפרויקט בן־יהודה
-                          %img{:alt => "", :src => "assets/ornament_1.svg"}/
-                    .lexicon-entry-under-construction-desktop
-                      .by-icon-v02 '
-                      ערך בהכנה
-                  .lexicon-author-details
-                    %div
-                      %img.lexicon-author-pic{:alt => "", :src => "assets/שלמה אבן שושן.jpeg"}/
-                    %div
-                      .author-name-years
-                        .headline-1-v02 שלמה אבן-שושן
-                        .date-range (1910-2004)
-                      .to-pby
-                        %a{:href => "#"} לדף היוצר בפרויקט בן־יהודה
-                      .metadata
-                        .by-icon-v02> m
-                        נחלת הכלל
-                        %a.help{:href => "#"} [?]
-                      .lexicon-entry-under-construction-mobile
-                        .by-icon-v02> '
-                        ערך בהכנה
-                  %p
-                    שלמה
-                    אבן-שושן (רוזנשטיין) נולד במינסק, בלארוס, בא' באדר א' תר"ע, 10 בפברואר 1910
-                    %font{:color => "#FF0000"} *
-                    לאביו, הסופר
-                    = succeed "." do
-                      %a{:href => "02534.php"} חיים דוד רוזנשטיין
-                    %br/
-                    שלמה אבן-שושן החל מפרסם מיצירותיו, שירה וסיפורת, בעיתון הנוער העובד "במעלה". שיריו הראשונים נדפסו בשנת 1931. בד בבד עם כתיבתו עסק גם בעריכה, והיה בין עורכי העיתונות הקיבוצית, "מבפנים" ו"צרור מכתבים", ובין העורכים הראשונים בהוצאת הקיבוץ המאוחד. בין היתר ערך את כתביהם של פניה ברגשטיין, המשורר יצחק קצנלסון, וכן ערך ספרי זיכרון לאישים ולקהילות ישראל שחרבו.
-                    שלמה אבן-שושן מוכר בעיקר כמתרגם מעולה ופורה מאד. הוא תרגם משנות החמישים ואילך מיצירותיהם של גדולי היוצרים היהודים שכתבו רוסית ויידיש, וכן מיצירותיהם של גדולי הספרות הרוסית. הוא גם יצר קשר אישי ראשוני עם כמה מהיוצרים היהודים בברית המועצות, בהם דב גפונוב, דוד מרקיש, כאשר קשרים כאלה עוד היו אסורים.
-                    שלח ידו גם בכתיבת ביוגרפיות, ספרי זיכרון, ספרי זיכרונות ושירה ממוארית משלו עצמו, כתב וערך ספרי "תנועה", ספרי קיבוץ וספרים של חברי קיבוצים.
-                    אחיו היה המילונאי
-                    = succeed "." do
-                      %a{:href => "03444.php"} אברהם אבן שושן
-                    %i אברהם אבן-שושן, מחנך ומילונאי
-                    (1999).
-                    שלמה אבן-שושן
-                    = succeed "." do
-                      %a{:href => "02148-files/02148-image003.jpg", :target => "_blank"}
-                        נפטר בקיבוצו שדה-נחום
-                        בכ"ח באלול תשס"ד, 14 בספטמבר 2004
-                    %br/
-                    %font{:color => "#FF0000"} *
-                    %font{:size => "2"}
-                      על פי קרסל נולד בי"ח בשבט
-                      תר"ע, 28 בינואר 1910.
-                    %br/
-                    %span{:lang => "he"}
-                      %font{:size => "2"}
-                        %br/
-                        נכתב על-ידי
-                        %b
-                          %a{:href => "00353.php"} אלישע פורת
-                        עבור
-                    %font{:size => "2"}
-                    %i
-                      %span{:lang => "he"}
-                        %font{:size => "2"}
-                          לקסיקון הקשרים לסופרים ישראלים
-                          %br/
-                    %font{:size => "2"}
-                      [מקורות
-                      = succeed ":" do
-                        %span{:lang => "he"} נוספים
-                      = succeed "," do
-                        %a{:href => "http://www.tidhar.tourolib.org/tidhar/view/6/2530"} תדהר
-                      = succeed "]" do
-                        %a{:href => "http://he.wikipedia.org/wiki/שלמה_אבן_שושן", :target => "_blank"}
-                          ויקיפדיה
-              #works.by-card-v02
-                .by-card-header-v02
-                  %span.headline-1-v02 יצירות
-                .by-card-content-v02{:style => "padding-top: 12px;"}
-                  .toc
-                    %h3 שירה מן העזבון
-                    %p על פי “ספר סוקולוב”, בעריכת שמעון רבידוביץ, הוצאת ההסתדרות הציונית העולמית ומוסד ביאליק, תש"ג
-                    %ul
-                      %li
-                        %a{:href => "#"} שיר לחנוכה
-                      %li
-                        %a{:href => "#"} איזה רעיונות ע"ד השארת הנפש
-                      %li
-                        %a{:href => "#"} תוכחת השכל
-                      %li
-                        %a{:href => "#"} משא ימי הפורים
-                      %li
-                        %a{:href => "#"} ליום הולדת
-                      %li
-                        %a{:href => "#"} הנשיקה
-                      %li
-                        %a{:href => "#"} האהבה
-                      %li
-                        %a{:href => "#"} רעיון
-                      %li
-                        %a{:href => "#"} עוד רעיון
-                      %li
-                        %a{:href => "#"} בת פלוני לפלוני
-                      %li
-                        %a{:href => "#"} כנורי הכון לקראתי
-                      %li
-                        %a{:href => "#"} אשמורת הבוקר
-              #translations.by-card-v02
-                .by-card-header-v02
-                  %span.headline-1-v02 תרגומים
-                .by-card-content-v02
-                  .toc
-                    %h3 במראות הקשת
-                    %p ע“פ הוצאת הספריה הציונית, ירושלים תש”ך
-                    %h4 סיפורים
-                    %ul
-                      %li
-                        %a{:href => "#"} חלוצי הגלות
-                      %li
-                        %a{:href => "#"} משה הגדול
-                      %li
-                        %a{:href => "#"} יוסל המשוגע
-                      %li
-                        %a{:href => "#"} עפר חוצות
-                      %li
-                        %a{:href => "#"} הטיילים
-                      %li
-                        %a{:href => "#"} הרוכל האיטלקי
-                      %li
-                        %a{:href => "#"} דו-פרצופים
-                      %li
-                        %a{:href => "#"} החלפן
-                      %li
-                        %a{:href => "#"} נפוליאון מן הגיטו
-                    %h4 זכרונות
-                    %ul
-                      %li
-                        %a{:href => "#"} "הצפירה" וה"מבקרים מטעם"
-                    %h4 פיליטונים
-                    %ul
-                      %li
-                        %a{:href => "#"} ביבל בבל
-                      %li
-                        %a{:href => "#"} התעמולה ברקק
-                      %li
-                        %a{:href => "#"} מטיפוסי בית המדרש
-                      %li
-                        %a{:href => "#"} המעפילים והכושלים
-                      %li
-                        %a{:href => "#"} הקוזקים של משיח
-                      %li
-                        %a{:href => "#"} אפתחי דרומי
-                    %h4 מראות ומסעות
-                    %ul
-                      %li
-                        %a{:href => "#"} מאלבומי הארץ-ישראלי
-                      %li
-                        %a{:href => "#"} אגדת בלגיה ומלכה המת
-                      %li
-                        %a{:href => "#"} מכתבים מאיטליה
-                      %li
-                        %a{:href => "#"} מספר המסעות
-              #about.by-card-v02
-                .by-card-header-v02
-                  %span.headline-1-v02 על היוצר/ת ויצירתו/ה
-                .by-card-content-v02{:style => "padding-top: 12px;"}
-                  .toc
-                    %h2 שם אסופת ספרים
-                    %h3 שם ספר
-                    %h4 חלוקה פנימית
-                    %h5 חלוקה פנימית נוספת
-                    %ul
-                      %li
-                        %a{:href => "#"} שם יצירה
-                      %li
-                        %a{:href => "#"} שם יצירה
-                      %li
-                        %a{:href => "#"} שם יצירה
-                      %li
-                        %a{:href => "#"} שם יצירה
-              #links.by-card-v02
-                .by-card-header-v02
-                  %span.headline-1-v02 קישורים
-                .by-card-content-v02{:style => "padding-top: 12px;"}
-                  %ul
-                    %li
-                      %a{:href => "#"} שם קישור
-                    %li
-                      %a{:href => "#"} שם קישור
-                    %li
-                      %a{:href => "#"} שם קישור
-                    %li
-                      %a{:href => "#"} שם קישור
-        .col-12.col-lg-4
-          .row
-            .col.side-menu-area-left
-            .col
-              .by-card-v02.left-side-card-v02
-                #author-whats-new-bg
-                  .by-side-card-header-v02
-                    %p.headline-1-v02{:style => "margin-bottom: 0"}
-                      %a{:href => "#"} עדכונים אחרונים של היוצר/ת בפרויקט בן־יהודה
-                  .by-card-content-v02.card-with-bottom-links.author-whats-new-content
-                    .new-card-v02
-                      .new-card-right-v02
-                        .new-card-type-v02 q
-                      .new-card-left-v02
-                        %a{:href => "#"}
-                          %p.headline-2-v02
-                            %span.new-headline-v02 יצירות שהועלו
-                        %p.text-height-new
-                          שירה:
-                          = succeed ";" do
-                            %a{:href => "#"} כתם אדום
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          = succeed ";" do
-                            %a{:href => "#"} פרידת אליהו
-                          = succeed ";" do
-                            %a{:href => "#"} מחר
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          = succeed ";" do
-                            %a{:href => "#"} כתם אדום
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          = succeed ";" do
-                            %a{:href => "#"} פרידת אליהו
-                          = succeed ";" do
-                            %a{:href => "#"} פרידת אליהו
-                          = succeed ";" do
-                            %a{:href => "#"} מחר
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          %a{:href => "#"} כתם אדום
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          %a{:href => "#"} פרידת ...
-                      .link-to-all-v02{:style => "font-weight: bold;"}
-                        %a{:href => "#"} הצג 20 יצירות אחרונות
-                    .new-card-v02.last-item
-                      .new-card-right-v02
-                        .new-card-type-v02 q
-                      .new-card-left-v02
-                        %a{:href => "#"}
-                          %p.headline-2-v02
-                            %span.new-headline-v02 יצירות שהועלו
-                        %p.text-height-new
-                          שירה:
-                          = succeed ";" do
-                            %a{:href => "#"} כתם אדום
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          = succeed ";" do
-                            %a{:href => "#"} פרידת אליהו
-                          = succeed ";" do
-                            %a{:href => "#"} מחר
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          = succeed ";" do
-                            %a{:href => "#"} כתם אדום
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          = succeed ";" do
-                            %a{:href => "#"} פרידת אליהו
-                          = succeed ";" do
-                            %a{:href => "#"} פרידת אליהו
-                          = succeed ";" do
-                            %a{:href => "#"} מחר
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          = succeed ";" do
-                            %a{:href => "#"} שומר מה מליל
-                          %a{:href => "#"} כתם אדום
-                          = succeed ";" do
-                            %a{:href => "#"} שירת ההולך
-                          %a{:href => "#"} פרידת ...
-                      .link-to-all-v02{:style => "font-weight: bold;"}
-                        %a{:href => "#"} הצג 20 יצירות אחרונות
-                    .link-to-all-v02
-                      %a{:href => "#"}
-                        %span{:style => "font-weight: bold"} לכל מה שחדש
-                        %span.left-arrow 1
-              .by-card-v02.left-side-card-v02
-                .by-card-header-left-v02
-                  %span.headline-1-v02
-                    %a{:href => "#"} יצירות על אודות היוצר/ת בפרויקט בן־יהודה
-                .by-card-content-v02
+        .col.side-menu-area
+        .col
+          .by-card-v02.author-main-info-card-v02
+            .by-card-content-v02
+              .lexicon-entry-header
+                %a{href: '/lexicon'}
+                  .lexicon-header-he
+                    .headline-1-v02 לקסיקון הספרות העברית החדשה
+                    .index-part-of-pby
+                      %img{:alt => "", :src => "/assets/ornament_1.svg"}
+                      .headline-3-v02 חלק מפרויקט בן־יהודה
+                      %img{:alt => "", :src => "/assets/ornament_1.svg"}
+                -#.lexicon-entry-under-construction-desktop
+                -#  .by-icon-v02 '
+                -#  ערך בהכנה
+              .lexicon-author-details
+                -# unless @lex_entry.images.empty?
                   %div
-                    %div
-                      %ul.ul-inside
-                        %li
-                          דוד תדהר (עורך),
-                          = succeed "," do
-                            %a{:href => "#"} "המשוררת רחל (בלובשטיין-סלע)"
-                        %li
-                          רבקה ליפשיץ ונורית צין (עורכות),
-                          %a{:href => "#"} רחל בלובשטיין
-                          \- קישורים: קורות חיים, שירים, שיעורים מתוקשבים, ביוגרפיה ומאמרים באינטרנט, באתר "מפמ"ר ספרות", המזכירות הפדגוגית, משרד החינוך
-                        %li
-                          האנציקלופדיה לנשים יהודיות
-                          %a{:href => "#"} רחל המשוררת
-                        %li
-                          אורי מילשטיין,
-                          %a{:href => "#"} רחל המשוררת: מעצבת האליטות
-                        %li
-                          אלישע פורת,
-                          %a{:href => "#"} שירי רחל בסלובקית
-                        %li
-                          חלי אברהם-איתן,
-                          %a{:href => "#"} רחל המשוררת: דמויות תנ"כיות בשירתה
-                  .internal-link-to-all
+                    %img.lexicon-author-pic{:alt => "", :src => url_for(@lex_entry.images[0])}
+                %div
+                  .author-name-years
+                    .headline-1-v02= @lex_entry.title
+                    .date-range (1910-2004)
+                  .to-pby
+                    %a{:href => "#"} לדף היוצר בפרויקט בן־יהודה
+                  .metadata
+                    .by-icon-v02> m
+                    נחלת הכלל
+                    %a.help{:href => "#"} [?]
+                  .lexicon-entry-under-construction-mobile
+                    .by-icon-v02> "'"
+                    ערך בהכנה
+              %p
+                שלמה
+                אבן-שושן (רוזנשטיין) נולד במינסק, בלארוס, בא' באדר א' תר"ע, 10 בפברואר 1910
+                %font{:color => "#FF0000"} *
+                לאביו, הסופר
+                = succeed "." do
+                  %a{:href => "02534.php"} חיים דוד רוזנשטיין
+                %br/
+                שלמה אבן-שושן החל מפרסם מיצירותיו, שירה וסיפורת, בעיתון הנוער העובד "במעלה". שיריו הראשונים נדפסו בשנת 1931. בד בבד עם כתיבתו עסק גם בעריכה, והיה בין עורכי העיתונות הקיבוצית, "מבפנים" ו"צרור מכתבים", ובין העורכים הראשונים בהוצאת הקיבוץ המאוחד. בין היתר ערך את כתביהם של פניה ברגשטיין, המשורר יצחק קצנלסון, וכן ערך ספרי זיכרון לאישים ולקהילות ישראל שחרבו.
+                שלמה אבן-שושן מוכר בעיקר כמתרגם מעולה ופורה מאד. הוא תרגם משנות החמישים ואילך מיצירותיהם של גדולי היוצרים היהודים שכתבו רוסית ויידיש, וכן מיצירותיהם של גדולי הספרות הרוסית. הוא גם יצר קשר אישי ראשוני עם כמה מהיוצרים היהודים בברית המועצות, בהם דב גפונוב, דוד מרקיש, כאשר קשרים כאלה עוד היו אסורים.
+                שלח ידו גם בכתיבת ביוגרפיות, ספרי זיכרון, ספרי זיכרונות ושירה ממוארית משלו עצמו, כתב וערך ספרי "תנועה", ספרי קיבוץ וספרים של חברי קיבוצים.
+                אחיו היה המילונאי
+                = succeed "." do
+                  %a{:href => "03444.php"} אברהם אבן שושן
+                %i אברהם אבן-שושן, מחנך ומילונאי
+                (1999).
+                שלמה אבן-שושן
+                = succeed "." do
+                  %a{:href => "02148-files/02148-image003.jpg", :target => "_blank"}
+                    נפטר בקיבוצו שדה-נחום
+                    בכ"ח באלול תשס"ד, 14 בספטמבר 2004
+                %br/
+                %font{:color => "#FF0000"} *
+                %font{:size => "2"}
+                  על פי קרסל נולד בי"ח בשבט
+                  תר"ע, 28 בינואר 1910.
+                %br/
+                %span{:lang => "he"}
+                  %font{:size => "2"}
+                    %br/
+                    נכתב על-ידי
+                    %b
+                      %a{:href => "00353.php"} אלישע פורת
+                    עבור
+                %font{:size => "2"}
+                %i
+                  %span{:lang => "he"}
+                    %font{:size => "2"}
+                      לקסיקון הקשרים לסופרים ישראלים
+                      %br/
+                %font{:size => "2"}
+                  [מקורות
+                  = succeed ":" do
+                    %span{:lang => "he"} נוספים
+                  = succeed "," do
+                    %a{:href => "http://www.tidhar.tourolib.org/tidhar/view/6/2530"} תדהר
+                  = succeed "]" do
+                    %a{:href => "http://he.wikipedia.org/wiki/שלמה_אבן_שושן", :target => "_blank"}
+                      ויקיפדיה
+          #works.by-card-v02
+            .by-card-header-v02#works
+              %span.headline-1-v02= t(:works)
+            .by-card-content-v02{:style => "padding-top: 12px;"}
+              .toc
+                -#%h3 שירה מן העזבון
+                -#%p על פי “ספר סוקולוב”, בעריכת שמעון רבידוביץ, הוצאת ההסתדרות הציונית העולמית ומוסד ביאליק, תש"ג
+                %ul
+                  - @lex_entry.lex_item.works.split("\n").each do |book|
+                    %li!= MultiMarkdown.new(book).to_html.force_encoding('UTF-8')
+          #translations.by-card-v02
+            .by-card-header-v02
+              %span.headline-1-v02 תרגומים
+            .by-card-content-v02
+              .toc
+                %h3 במראות הקשת
+                %p ע“פ הוצאת הספריה הציונית, ירושלים תש”ך
+                %h4 סיפורים
+                %ul
+                  %li
+                    %a{:href => "#"} חלוצי הגלות
+                  %li
+                    %a{:href => "#"} משה הגדול
+                  %li
+                    %a{:href => "#"} יוסל המשוגע
+                  %li
+                    %a{:href => "#"} עפר חוצות
+                  %li
+                    %a{:href => "#"} הטיילים
+                  %li
+                    %a{:href => "#"} הרוכל האיטלקי
+                  %li
+                    %a{:href => "#"} דו-פרצופים
+                  %li
+                    %a{:href => "#"} החלפן
+                  %li
+                    %a{:href => "#"} נפוליאון מן הגיטו
+                %h4 זכרונות
+                %ul
+                  %li
+                    %a{:href => "#"} "הצפירה" וה"מבקרים מטעם"
+                %h4 פיליטונים
+                %ul
+                  %li
+                    %a{:href => "#"} ביבל בבל
+                  %li
+                    %a{:href => "#"} התעמולה ברקק
+                  %li
+                    %a{:href => "#"} מטיפוסי בית המדרש
+                  %li
+                    %a{:href => "#"} המעפילים והכושלים
+                  %li
+                    %a{:href => "#"} הקוזקים של משיח
+                  %li
+                    %a{:href => "#"} אפתחי דרומי
+                %h4 מראות ומסעות
+                %ul
+                  %li
+                    %a{:href => "#"} מאלבומי הארץ-ישראלי
+                  %li
+                    %a{:href => "#"} אגדת בלגיה ומלכה המת
+                  %li
+                    %a{:href => "#"} מכתבים מאיטליה
+                  %li
+                    %a{:href => "#"} מספר המסעות
+          #about.by-card-v02
+            .by-card-header-v02
+              %span.headline-1-v02 על היוצר/ת ויצירתו/ה
+            .by-card-content-v02{:style => "padding-top: 12px;"}
+              .toc
+                %h2 שם אסופת ספרים
+                %h3 שם ספר
+                %h4 חלוקה פנימית
+                %h5 חלוקה פנימית נוספת
+                %ul
+                  %li
+                    %a{:href => "#"} שם יצירה
+                  %li
+                    %a{:href => "#"} שם יצירה
+                  %li
+                    %a{:href => "#"} שם יצירה
+                  %li
+                    %a{:href => "#"} שם יצירה
+          #links.by-card-v02
+            .by-card-header-v02
+              %span.headline-1-v02 קישורים
+            .by-card-content-v02{:style => "padding-top: 12px;"}
+              %ul
+                %li
+                  %a{:href => "#"} שם קישור
+                %li
+                  %a{:href => "#"} שם קישור
+                %li
+                  %a{:href => "#"} שם קישור
+                %li
+                  %a{:href => "#"} שם קישור
+    .col-12.col-lg-4
+      .row
+        .col.side-menu-area-left
+        .col
+          .by-card-v02.left-side-card-v02
+            #author-whats-new-bg
+              .by-side-card-header-v02
+                %p.headline-1-v02{:style => "margin-bottom: 0"}
+                  %a{:href => "#"} עדכונים אחרונים של היוצר/ת בפרויקט בן־יהודה
+              .by-card-content-v02.card-with-bottom-links.author-whats-new-content
+                .new-card-v02
+                  .new-card-right-v02
+                    .new-card-type-v02 q
+                  .new-card-left-v02
                     %a{:href => "#"}
-                      %span{:style => "font-weight: bold"} לרשימה המלאה
-                      %span.left-arrow 1
+                      %p.headline-2-v02
+                        %span.new-headline-v02 יצירות שהועלו
+                    %p.text-height-new
+                      שירה:
+                      = succeed ";" do
+                        %a{:href => "#"} כתם אדום
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      = succeed ";" do
+                        %a{:href => "#"} פרידת אליהו
+                      = succeed ";" do
+                        %a{:href => "#"} מחר
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      = succeed ";" do
+                        %a{:href => "#"} כתם אדום
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      = succeed ";" do
+                        %a{:href => "#"} פרידת אליהו
+                      = succeed ";" do
+                        %a{:href => "#"} פרידת אליהו
+                      = succeed ";" do
+                        %a{:href => "#"} מחר
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      %a{:href => "#"} כתם אדום
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      %a{:href => "#"} פרידת ...
+                  .link-to-all-v02{:style => "font-weight: bold;"}
+                    %a{:href => "#"} הצג 20 יצירות אחרונות
+                .new-card-v02.last-item
+                  .new-card-right-v02
+                    .new-card-type-v02 q
+                  .new-card-left-v02
+                    %a{:href => "#"}
+                      %p.headline-2-v02
+                        %span.new-headline-v02 יצירות שהועלו
+                    %p.text-height-new
+                      שירה:
+                      = succeed ";" do
+                        %a{:href => "#"} כתם אדום
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      = succeed ";" do
+                        %a{:href => "#"} פרידת אליהו
+                      = succeed ";" do
+                        %a{:href => "#"} מחר
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      = succeed ";" do
+                        %a{:href => "#"} כתם אדום
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      = succeed ";" do
+                        %a{:href => "#"} פרידת אליהו
+                      = succeed ";" do
+                        %a{:href => "#"} פרידת אליהו
+                      = succeed ";" do
+                        %a{:href => "#"} מחר
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      = succeed ";" do
+                        %a{:href => "#"} שומר מה מליל
+                      %a{:href => "#"} כתם אדום
+                      = succeed ";" do
+                        %a{:href => "#"} שירת ההולך
+                      %a{:href => "#"} פרידת ...
+                  .link-to-all-v02{:style => "font-weight: bold;"}
+                    %a{:href => "#"} הצג 20 יצירות אחרונות
+                .link-to-all-v02
+                  %a{:href => "#"}
+                    %span{:style => "font-weight: bold"} לכל מה שחדש
+                    %span.left-arrow 1
+          .by-card-v02.left-side-card-v02
+            .by-card-header-left-v02
+              %span.headline-1-v02
+                %a{:href => "#"} יצירות על אודות היוצר/ת בפרויקט בן־יהודה
+            .by-card-content-v02
+              %div
+                %div
+                  %ul.ul-inside
+                    %li
+                      דוד תדהר (עורך),
+                      = succeed "," do
+                        %a{:href => "#"} "המשוררת רחל (בלובשטיין-סלע)"
+                    %li
+                      רבקה ליפשיץ ונורית צין (עורכות),
+                      %a{:href => "#"} רחל בלובשטיין
+                      \- קישורים: קורות חיים, שירים, שיעורים מתוקשבים, ביוגרפיה ומאמרים באינטרנט, באתר "מפמ"ר ספרות", המזכירות הפדגוגית, משרד החינוך
+                    %li
+                      האנציקלופדיה לנשים יהודיות
+                      %a{:href => "#"} רחל המשוררת
+                    %li
+                      אורי מילשטיין,
+                      %a{:href => "#"} רחל המשוררת: מעצבת האליטות
+                    %li
+                      אלישע פורת,
+                      %a{:href => "#"} שירי רחל בסלובקית
+                    %li
+                      חלי אברהם-איתן,
+                      %a{:href => "#"} רחל המשוררת: דמויות תנ"כיות בשירתה
+              .internal-link-to-all
+                %a{:href => "#"}
+                  %span{:style => "font-weight: bold"} לרשימה המלאה
+                  %span.left-arrow 1
+.author-page-content
 
-%p#notice= notice
+  %p#notice= notice
 
-%p
+  %p
+    %b Title:
+    = @lex_entry.title
+  %p
+    %b Status:
+    = @lex_entry.status
+  %p
+    %b Lex item:
+    = @lex_entry.lex_item
+
+  %p
   %b Aliases:
   = @lex_person.aliases
 %p
