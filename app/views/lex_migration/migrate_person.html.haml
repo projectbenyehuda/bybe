@@ -3,7 +3,11 @@
     %h1= t(:lexicon_migration) + ": " + t(:lexicon_analyze_person) + ": " + @lex_entry.title
     %p{style:'color:green'}
       %b= t(:migration_results_edit_later)
-    %h2= t(:lexicon_bio)
+    %h2= LexPerson.human_attribute_name(:birthdate)
+    %p= @lex_person.birthdate
+    %h2= LexPerson.human_attribute_name(:deathdate)
+    %p= @lex_person.deathdate
+    %h2= LexPerson.human_attribute_name(:bio)
     %p!= @lex_person.bio
     %h2= t(:books)
     %ul.lex
