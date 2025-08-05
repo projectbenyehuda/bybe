@@ -67,3 +67,23 @@ en:
         birthdate: Birthdate
         deathdate: Deathdate
         gender: Gender
+      collection:
+        credits: Manual credits
+        ingestible:
+          defaults: fields for all works
+          title: Title to upload
+          scenario: Type of upload
+          status: Status
+          metadata: Metadata
+          comments: Comments
+          markdown: Markdown
+          volume_id: Title
+          statuses:
+            awaiting_authorities: Waiting to create personalities
+            draft: Draft at work
+            ingested: Recorded in the catalogue
+            failed: Upload failed
+      lex_person:
+        birthdate: Birthdate
+        deathdate: Deathdate
+        bio: Biographical synopsis
