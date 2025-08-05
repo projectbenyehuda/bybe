@@ -61,11 +61,19 @@ module Lexicon
       buf = File.read(lexfile.full_path)
       # anchors = buf.scan(/<a name="(.*?)">/)
       # ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
-      lex_person = LexPerson.create!(
+      lex_person = LexPerson.new(
         bio: parse_person_bio(buf[%r{</table>.*?<a name="Books}m]),
         works: parse_person_books(buf[/a name="Books".*?<a name/m]),
         about: parse_person_bib(buf[/a name="Bib.".*?<a name/m])
       )
+
+      # Match both patterns: (YYYY) and (YYYY-YYYY)
+      if match = buf.match(/<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*<\/font>/)
+        lex_person.birthdate = match[1]
+        lex_person.deathdate = match[2]
+      end
+
+      lex_person.save!
 
       parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
       lex_person
