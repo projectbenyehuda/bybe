@@ -25,7 +25,16 @@ Bybeconv::Application.routes.draw do
 
   namespace :lexicon do
     resources :people
+    resources :files, only: :index do
+      member do
+        post :migrate_person
+      end
+    end
   end
+
+  resources :lex_entries
+  resources :lex_links
+  resources :lex_citations
 
   resources :ingestibles do
     resources :authorities, controller: :ingestible_authorities, only: %i(create destroy) do
@@ -103,18 +112,6 @@ Bybeconv::Application.routes.draw do
   get 'crowd/populate_edition' => 'crowd#populate_edition', as: 'crowd_populate_edition'
   get 'crowd/populate_edition/:id' => 'crowd#populate_edition', as: 'crowd_populate_edition_id'
   post 'crowd/do_populate_edition' => 'crowd#do_populate_edition', as: 'crowd_do_populate_edition'
-
-  get 'lex_migration/index'
-  get 'lex_migration/list_files'
-  get 'lex_migration/migrate_person'
-  get 'lex_migration/analyze_text'
-  get 'lex_migration/analyze_bib'
-  get 'lex_migration/resolve_entry'
-
-  resources :lex_files
-  resources :lex_entries
-  resources :lex_links
-  resources :lex_citations
 
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
