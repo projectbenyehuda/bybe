@@ -110,3 +110,8 @@ he:
         comments: הערות
         default_external_link: קישור ברירת מחדל
         default_link_description: תיאור הקישור
+      lex_person:
+        birthdate: תאריך לידה
+        deathdate: תאריך פטירה
+        bio: תקציר ביוגרפי
+
