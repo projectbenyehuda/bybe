@@ -83,7 +83,10 @@ en:
             draft: Draft at work
             ingested: Recorded in the catalogue
             failed: Upload failed
+      lex_file:
+        fname: File name
       lex_person:
         birthdate: Birthdate
         deathdate: Deathdate
         bio: Biographical synopsis
+        books: Books

@@ -89,6 +89,13 @@ he:
           draft: טיוטה בעבודה
           ingested: נקלטה בקטלוג
           failed: ההעלאה נכשלה
+      lex_file:
+        fname: שם קובץ
+      lex_person:
+        birthdate: תאריך לידה
+        deathdate: תאריך פטירה
+        bio: תקציר ביוגרפי
+        books: ספרים
       project:
         one: מיזם
         other: מיזמים
@@ -102,8 +109,4 @@ he:
         comments: הערות
         default_external_link: קישור ברירת מחדל
         default_link_description: תיאור הקישור
-      lex_person:
-        birthdate: תאריך לידה
-        deathdate: תאריך פטירה
-        bio: תקציר ביוגרפי
 
