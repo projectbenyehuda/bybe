@@ -4,7 +4,7 @@
 class LexEntry < ApplicationRecord
   has_one :lex_file, dependent: :nullify
   belongs_to :lex_item, polymorphic: true # this can be LexPerson or LexPublication (or...?)
-  enum status: {
+  enum :status, {
     raw: 0,       # not done migrating
     migrated: 1,  # should no longer be served from static PHP
     manual: 2,
