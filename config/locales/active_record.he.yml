@@ -127,3 +127,7 @@ he:
         target_type: סוג יעד
         target_id: מזהה יעד
         description: תיאור
+      lex_person:
+        birthdate: תאריך לידה
+        deathdate: תאריך פטירה
+        bio: תקציר ביוגרפי
