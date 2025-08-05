@@ -1,7 +1,5 @@
 he:
   lexicon_migration: קליטת לקסיקון גלרון
-  lexicon_list_files: רשימת הקבצים
-  lexicon_analyze_person: הסבת ערך על אדם
   lexicon_show_person: הצגת ערך
   lex_prev_entry: לרשומה הקודמת
   lex_next_entry: לרשומה הבאה
@@ -10,15 +8,17 @@ he:
   migration_results_edit_later: להלן תוצאות ההסבה האוטומטית. אפשר לתקן במסך העריכה.
   entrytype: סוג הערך
   ingested: נקלט
-  books: ספרים
   links: קישוריוֹת
-  filename: שם קובץ
   text: טקסט
   bib: ביבליוגרפיה
   classified: זוהה סוג הערך
   unclassified: לא זוהה סוג הערך
-
   lexicon:
+    files:
+      index:
+        title: רשימת הקבצים
+      migrate_person:
+        title: הסבת ערך על אדם
     people:
       create:
         success: Lexicon Person created
