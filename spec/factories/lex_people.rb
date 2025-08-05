@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :lex_person do
     aliases { Faker::Name.name }
