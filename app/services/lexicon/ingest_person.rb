@@ -28,12 +28,7 @@ module Lexicon
     def parse_person_books(buf)
       buf.scan(%r{<li>(.*?)</li>}m).map do |x|
         if x.class == Array
-          PandocRuby.convert(
-            x[0],
-            M: 'dir=rtl',
-            from: :html,
-            to: :markdown_mmd
-          ).gsub("\n", ' ').force_encoding('UTF-8')
+          HtmlToMarkdown.call(x[0]).gsub("\n", ' ')
         else
           ''
         end
@@ -43,12 +38,7 @@ module Lexicon
     def parse_person_bib(buf)
       buf.scan(%r{<li>(.*?)</li>}m).map do |x|
         if x.class == Array
-          PandocRuby.convert(
-            x[0],
-            M: 'dir=rtl',
-            from: :html,
-            to: :markdown_mmd
-          ).gsub("\n", ' ').force_encoding('UTF-8')
+          HtmlToMarkdown.call(x[0]).gsub("\n", ' ')
         else
           ''
         end
