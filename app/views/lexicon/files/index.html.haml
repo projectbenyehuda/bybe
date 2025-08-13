@@ -11,16 +11,19 @@
       - @lex_files.each do |lf|
         %tr
           %td= lf.fname.sub('.php', '').sub('/', '')
-          %td
-            - if lf.status_ingested?
-              = link_to lf.title || t(:none), lexicon_person_path(lf.lex_entry.lex_item)
-            - else
-              = lf.title
+          %td= lf.title
           %td= t(lf.status)
           %td= t(lf.entrytype)
           %td
-            - if lf.entrytype_person? && lf.status_classified?
-              = link_to t('lexicon.files.migrate_person.title'),
-                        migrate_person_lexicon_file_path(lf),
-                        method: :post
+            - if lf.status_ingested?
+              = link_to t(:show), lexicon_entry_path(lf.lex_entry)
+            - elsif lf.status_classified?
+              - if lf.entrytype_person?
+                = link_to t('lexicon.files.migrate_person.title'),
+                          migrate_person_lexicon_file_path(lf),
+                          method: :post
+              - elsif lf.entrytype_text?
+                = link_to t('lexicon.files.migrate_publication.title'),
+                          migrate_publication_lexicon_file_path(lf),
+                          method: :post
   = paginate @lex_files
