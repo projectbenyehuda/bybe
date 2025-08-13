@@ -14,6 +14,7 @@ en:
   cancel: Cancel
   update: Update
   destroy: Destroy
+  show: Show
   delete: Delete
   created_successfully: Created Successfully
   updated_successfully: Updated Successfully

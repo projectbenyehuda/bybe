@@ -10,8 +10,15 @@ module Lexicon
 
     def migrate_person
       LexPerson.transaction do
-        @lex_entry = Lexicon::IngestPerson.call(params[:id])
-        @lex_person = @lex_entry.lex_item
+        lex_entry = Lexicon::IngestPerson.call(params[:id])
+        redirect_to lexicon_person_path(lex_entry.lex_item), notice: t('.success')
+      end
+    end
+
+    def migrate_publication
+      LexPublication.transaction do
+        lex_entry = Lexicon::IngestPublication.call(params[:id])
+        redirect_to lexicon_publication_path(lex_entry.lex_item), notice: t('.success')
       end
     end
   end

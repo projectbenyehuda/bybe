@@ -18,7 +18,7 @@ module Lexicon
     # GET /lex_people/new
     def new
       @lex_person = LexPerson.new
-      @lex_person.build_entry
+      @lex_person.build_entry(status: :manual)
     end
 
     # GET /lex_people/1/edit

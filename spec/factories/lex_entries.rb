@@ -8,5 +8,9 @@ FactoryBot.define do
     trait :person do
       lex_item { build(:lex_person) }
     end
+
+    trait :publication do
+      lex_item { build(:lex_publication) }
+    end
   end
 end

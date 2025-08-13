@@ -1,6 +1,5 @@
 = simple_form_for @lex_person,
                   url: @lex_person.new_record? ? lexicon_people_path : lexicon_person_path(@lex_person) do |f|
-  = @lex_person.errors.full_messages
   = f.simple_fields_for :entry do |ef|
     = ef.input :title
     = ef.input :status do
