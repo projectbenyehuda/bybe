@@ -18,7 +18,11 @@ he:
       index:
         title: רשימת הקבצים
       migrate_person:
+        success: Migrated successfully
         title: הסבת ערך על אדם
+      migrate_publication:
+        success: Migrated successfully
+        title: Analyze Publication
     people:
       create:
         success: Lexicon Person created
@@ -26,3 +30,10 @@ he:
         success: Lexicon Person updated
       destroy:
         success: Lexicon Person destroyed
+    publications:
+      create:
+        success: Lexicon Publication created
+      update:
+        success: Lexicon Publication updated
+      destroy:
+        success: Lexicon Publication destroyed

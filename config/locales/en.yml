@@ -25,6 +25,7 @@ en:
   can_only_cancel_pending_links: You can only cancel pending links
   update: Update
   destroy: Destroy
+  show: Show
   delete: Delete
   delete_selected: Delete Selected
   unpublish: Unpublish
