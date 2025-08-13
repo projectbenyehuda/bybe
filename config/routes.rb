@@ -24,15 +24,19 @@ Bybeconv::Application.routes.draw do
   end
 
   namespace :lexicon do
+    root to: 'entries#index'
+
     resources :people
+    resources :publications
+    resources :entries, only: %i(index show)
     resources :files, only: :index do
       member do
         post :migrate_person
+        post :migrate_publication
       end
     end
   end
 
-  resources :lex_entries
   resources :lex_links
   resources :lex_citations
 

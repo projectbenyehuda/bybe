@@ -15,6 +15,7 @@ en:
   cancel: Cancel
   update: Update
   destroy: Destroy
+  show: Show
   delete: Delete
   delete_selected: Delete Selected
   unpublish: Unpublish
