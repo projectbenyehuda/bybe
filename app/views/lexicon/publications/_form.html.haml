@@ -1,0 +1,11 @@
+- url = @lex_publication.new_record? ? lexicon_publications_path : lexicon_publication_path(@lex_publication)
+= simple_form_for @lex_publication, url: url do |f|
+  = f.simple_fields_for :entry do |ef|
+    = ef.input :title
+    = ef.input :status do
+      .form-control
+        %span.badge.badge-primary= @lex_publication.entry.status
+  = f.input :description, as: :text, input_html: { rows: 10 }
+  = f.input :toc, as: :text, input_html: { rows: 20 }
+  = f.input :az_navbar, as: :boolean
+  = f.button :submit, class: 'btn btn-primary col-sm-2'
