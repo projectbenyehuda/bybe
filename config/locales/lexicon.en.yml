@@ -13,13 +13,16 @@ en:
   bib: Bibliography
   classified: Classified
   unclassified: Unclassified
-  lexicon_list_files: test
   lexicon:
     files:
       index:
         title: List of files
       migrate_person:
+        success: Migrated successfully
         title: Analyze Person
+      migrate_publication:
+        success: Migrated successfully
+        title: Analyze Publication
     people:
       create:
         success: Lexicon Person created
@@ -27,3 +30,10 @@ en:
         success: Lexicon Person updated
       destroy:
         success: Lexicon Person destroyed
+    publications:
+      create:
+        success: Lexicon Publication created
+      update:
+        success: Lexicon Publication updated
+      destroy:
+        success: Lexicon Publication destroyed
