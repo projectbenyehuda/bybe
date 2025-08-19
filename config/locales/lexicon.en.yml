@@ -24,6 +24,8 @@ en:
         success: Migrated successfully
         title: Analyze Publication
     people:
+      show:
+        to_pby_person: To the creator's page on Ben-Yehuda Project
       create:
         success: Lexicon Person created
       update:

@@ -26,161 +26,40 @@
                 %div
                   .author-name-years
                     .headline-1-v02= @lex_entry.title
-                    .date-range (1910-2004)
-                  .to-pby
-                    %a{:href => "#"} לדף היוצר בפרויקט בן־יהודה
+                    .date-range!= @lex_person.life_years
+                  - if @lex_person.authority&.published?
+                    .to-pby
+                      = link_to t('.to_pby_person'), @lex_person.authority
                   .metadata
-                    .by-icon-v02> m
-                    נחלת הכלל
-                    %a.help{:href => "#"} [?]
-                  .lexicon-entry-under-construction-mobile
-                    .by-icon-v02> "'"
-                    ערך בהכנה
-              %p
-                שלמה
-                אבן-שושן (רוזנשטיין) נולד במינסק, בלארוס, בא' באדר א' תר"ע, 10 בפברואר 1910
-                %font{:color => "#FF0000"} *
-                לאביו, הסופר
-                = succeed "." do
-                  %a{:href => "02534.php"} חיים דוד רוזנשטיין
-                %br/
-                שלמה אבן-שושן החל מפרסם מיצירותיו, שירה וסיפורת, בעיתון הנוער העובד "במעלה". שיריו הראשונים נדפסו בשנת 1931. בד בבד עם כתיבתו עסק גם בעריכה, והיה בין עורכי העיתונות הקיבוצית, "מבפנים" ו"צרור מכתבים", ובין העורכים הראשונים בהוצאת הקיבוץ המאוחד. בין היתר ערך את כתביהם של פניה ברגשטיין, המשורר יצחק קצנלסון, וכן ערך ספרי זיכרון לאישים ולקהילות ישראל שחרבו.
-                שלמה אבן-שושן מוכר בעיקר כמתרגם מעולה ופורה מאד. הוא תרגם משנות החמישים ואילך מיצירותיהם של גדולי היוצרים היהודים שכתבו רוסית ויידיש, וכן מיצירותיהם של גדולי הספרות הרוסית. הוא גם יצר קשר אישי ראשוני עם כמה מהיוצרים היהודים בברית המועצות, בהם דב גפונוב, דוד מרקיש, כאשר קשרים כאלה עוד היו אסורים.
-                שלח ידו גם בכתיבת ביוגרפיות, ספרי זיכרון, ספרי זיכרונות ושירה ממוארית משלו עצמו, כתב וערך ספרי "תנועה", ספרי קיבוץ וספרים של חברי קיבוצים.
-                אחיו היה המילונאי
-                = succeed "." do
-                  %a{:href => "03444.php"} אברהם אבן שושן
-                %i אברהם אבן-שושן, מחנך ומילונאי
-                (1999).
-                שלמה אבן-שושן
-                = succeed "." do
-                  %a{:href => "02148-files/02148-image003.jpg", :target => "_blank"}
-                    נפטר בקיבוצו שדה-נחום
-                    בכ"ח באלול תשס"ד, 14 בספטמבר 2004
-                %br/
-                %font{:color => "#FF0000"} *
-                %font{:size => "2"}
-                  על פי קרסל נולד בי"ח בשבט
-                  תר"ע, 28 בינואר 1910.
-                %br/
-                %span{:lang => "he"}
-                  %font{:size => "2"}
-                    %br/
-                    נכתב על-ידי
-                    %b
-                      %a{:href => "00353.php"} אלישע פורת
-                    עבור
-                %font{:size => "2"}
-                %i
-                  %span{:lang => "he"}
-                    %font{:size => "2"}
-                      לקסיקון הקשרים לסופרים ישראלים
-                      %br/
-                %font{:size => "2"}
-                  [מקורות
-                  = succeed ":" do
-                    %span{:lang => "he"} נוספים
-                  = succeed "," do
-                    %a{:href => "http://www.tidhar.tourolib.org/tidhar/view/6/2530"} תדהר
-                  = succeed "]" do
-                    %a{:href => "http://he.wikipedia.org/wiki/שלמה_אבן_שושן", :target => "_blank"}
-                      ויקיפדיה
+                    = render partial: 'shared/intellectual_property',
+                             locals: { intellectual_property: @lex_person.intellectual_property }
+              %p!= MarkdownToHtml.call(@lex_person.bio)
           #works.by-card-v02
             .by-card-header-v02#works
-              %span.headline-1-v02= t(:works)
-            .by-card-content-v02{:style => "padding-top: 12px;"}
-              .toc
-                -#%h3 שירה מן העזבון
-                -#%p על פי “ספר סוקולוב”, בעריכת שמעון רבידוביץ, הוצאת ההסתדרות הציונית העולמית ומוסד ביאליק, תש"ג
-                %ul
-                  - @lex_entry.lex_item.works.split("\n").each do |book|
-                    %li!= MultiMarkdown.new(book).to_html.force_encoding('UTF-8')
-          #translations.by-card-v02
-            .by-card-header-v02
-              %span.headline-1-v02 תרגומים
+              %span.headline-1-v02= LexPerson.human_attribute_name(:works)
             .by-card-content-v02
-              .toc
-                %h3 במראות הקשת
-                %p ע“פ הוצאת הספריה הציונית, ירושלים תש”ך
-                %h4 סיפורים
-                %ul
-                  %li
-                    %a{:href => "#"} חלוצי הגלות
-                  %li
-                    %a{:href => "#"} משה הגדול
-                  %li
-                    %a{:href => "#"} יוסל המשוגע
-                  %li
-                    %a{:href => "#"} עפר חוצות
-                  %li
-                    %a{:href => "#"} הטיילים
-                  %li
-                    %a{:href => "#"} הרוכל האיטלקי
-                  %li
-                    %a{:href => "#"} דו-פרצופים
-                  %li
-                    %a{:href => "#"} החלפן
-                  %li
-                    %a{:href => "#"} נפוליאון מן הגיטו
-                %h4 זכרונות
-                %ul
-                  %li
-                    %a{:href => "#"} "הצפירה" וה"מבקרים מטעם"
-                %h4 פיליטונים
-                %ul
-                  %li
-                    %a{:href => "#"} ביבל בבל
-                  %li
-                    %a{:href => "#"} התעמולה ברקק
-                  %li
-                    %a{:href => "#"} מטיפוסי בית המדרש
-                  %li
-                    %a{:href => "#"} המעפילים והכושלים
-                  %li
-                    %a{:href => "#"} הקוזקים של משיח
-                  %li
-                    %a{:href => "#"} אפתחי דרומי
-                %h4 מראות ומסעות
-                %ul
-                  %li
-                    %a{:href => "#"} מאלבומי הארץ-ישראלי
-                  %li
-                    %a{:href => "#"} אגדת בלגיה ומלכה המת
-                  %li
-                    %a{:href => "#"} מכתבים מאיטליה
-                  %li
-                    %a{:href => "#"} מספר המסעות
+
+
+              -#%h3 שירה מן העזבון
+              -#%p על פי “ספר סוקולוב”, בעריכת שמעון רבידוביץ, הוצאת ההסתדרות הציונית העולמית ומוסד ביאליק, תש"ג
+              %ul
+                - @lex_person.works.split("\n").each do |book|
+                  %li!= MarkdownToHtml.call(book)
           #about.by-card-v02
             .by-card-header-v02
-              %span.headline-1-v02 על היוצר/ת ויצירתו/ה
-            .by-card-content-v02{:style => "padding-top: 12px;"}
-              .toc
-                %h2 שם אסופת ספרים
-                %h3 שם ספר
-                %h4 חלוקה פנימית
-                %h5 חלוקה פנימית נוספת
-                %ul
-                  %li
-                    %a{:href => "#"} שם יצירה
-                  %li
-                    %a{:href => "#"} שם יצירה
-                  %li
-                    %a{:href => "#"} שם יצירה
-                  %li
-                    %a{:href => "#"} שם יצירה
+              %span.headline-1-v02= LexPerson.human_attribute_name(:about)
+            .by-card-content-v02
+              %ul
+                - @lex_person.about.split("\n").each do |about|
+                  %li!= MarkdownToHtml.call(about)
+
+
           #links.by-card-v02
             .by-card-header-v02
-              %span.headline-1-v02 קישורים
-            .by-card-content-v02{:style => "padding-top: 12px;"}
-              %ul
-                %li
-                  %a{:href => "#"} שם קישור
-                %li
-                  %a{:href => "#"} שם קישור
-                %li
-                  %a{:href => "#"} שם קישור
-                %li
-                  %a{:href => "#"} שם קישור
+              %span.headline-1-v02= LexPerson.human_attribute_name(:links)
+            .by-card-content-v02
+              %h3 TBD
+
     .col-12.col-lg-4
       .row
         .col.side-menu-area-left
@@ -321,42 +200,6 @@
                 %a{:href => "#"}
                   %span{:style => "font-weight: bold"} לרשימה המלאה
                   %span.left-arrow 1
-.author-page-content
-
-  %p#notice= notice
-
-  %p
-    %b Title:
-    = @lex_entry.title
-  %p
-    %b Status:
-    = @lex_entry.status
-  %p
-    %b Lex item:
-    = @lex_entry.lex_item
-
-  %p
-  %b Aliases:
-  = @lex_person.aliases
-%p
-  %b Copyrighted:
-  = @lex_person.copyrighted
-%p
-  %b Birthdate:
-  = @lex_person.birthdate
-%p
-  %b Deathdate:
-  = @lex_person.deathdate
-%p
-  %b Bio:
-  = @lex_person.bio
-%p
-  %b Works:
-  = @lex_person.works
-%p
-  %b About:
-  = @lex_person.about
-
 = link_to 'Edit', edit_lexicon_person_path(@lex_person)
 \|
 = link_to 'Back', lexicon_people_path
