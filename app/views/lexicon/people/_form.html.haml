@@ -6,6 +6,14 @@
       .form-control
         %span.badge.badge-primary= @lex_person.entry.status
   = f.input :aliases, as: :text
+  = f.input :authority do
+    = autocomplete_field_tag :authority_autocomplete,
+                             @lex_person.authority&.name,
+                             autocomplete_authority_name_and_aliases_path,
+                             id_element: '#lex_person_authority_id',
+                             class: 'form-control'
+  = f.hidden_field :authority_id
+
   = f.input :copyrighted, as: :boolean
   = f.input :birthdate
   = f.input :deathdate
