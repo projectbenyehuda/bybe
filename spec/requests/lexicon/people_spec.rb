@@ -4,8 +4,11 @@ require 'rails_helper'
 
 describe '/lexicon/people' do
   let(:lex_person) { create(:lex_entry, :person, status: :migrated).lex_item }
+  let(:authority) { create(:authority) }
 
-  let(:valid_person_attributes) { attributes_for(:lex_person).except('created_at', 'updated_at', 'id') }
+  let(:valid_person_attributes) do
+    attributes_for(:lex_person).except('created_at', 'updated_at', 'id').merge(authority_id: authority.id)
+  end
 
   let(:valid_attributes) do
     valid_person_attributes.merge(entry_attributes: { title: 'Test (test)' })
@@ -63,6 +66,14 @@ describe '/lexicon/people' do
     subject { get "/lexicon/people/#{lex_person.id}" }
 
     it { is_expected.to eq(200) }
+
+    context 'when lex person has linked authority' do
+      before do
+        lex_person.update!(authority_id: authority.id)
+      end
+
+      it { is_expected.to eq(200) }
+    end
   end
 
   describe 'GET /edit' do
