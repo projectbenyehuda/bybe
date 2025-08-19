@@ -24,6 +24,8 @@ he:
         success: Migrated successfully
         title: Analyze Publication
     people:
+      show:
+        to_pby_person: לדף היוצר בפרויקט בן־יהודה
       create:
         success: Lexicon Person created
       update:
