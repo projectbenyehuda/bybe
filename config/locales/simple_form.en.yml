@@ -11,4 +11,6 @@ en:
     error_notification:
       default_message: "Please review the problems below:"
     hints:
+      lex_person:
+        authority: creator's page on Ben-Yehuda Project
     placeholders:

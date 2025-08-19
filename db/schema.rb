@@ -693,12 +693,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
     t.text "about"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.integer "person_id"
+    t.integer "authority_id"
     t.index ["aliases"], name: "index_lex_people_on_aliases"
+    t.index ["authority_id"], name: "index_lex_people_on_authority_id"
     t.index ["birthdate"], name: "index_lex_people_on_birthdate"
     t.index ["copyrighted"], name: "index_lex_people_on_copyrighted"
     t.index ["deathdate"], name: "index_lex_people_on_deathdate"
-    t.index ["person_id"], name: "index_lex_people_on_person_id"
   end
 
   create_table "lex_people_items", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1132,7 +1132,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
   add_foreign_key "lex_citations", "manifestations"
   add_foreign_key "lex_files", "lex_entries"
   add_foreign_key "lex_issues", "lex_publications"
-  add_foreign_key "lex_people", "people"
+  add_foreign_key "lex_people", "authorities"
   add_foreign_key "lex_people_items", "lex_people"
   add_foreign_key "lex_texts", "lex_issues"
   add_foreign_key "lex_texts", "lex_publications"
