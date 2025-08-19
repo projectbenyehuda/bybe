@@ -65,6 +65,7 @@ module Lexicon
       params.require(:lex_person)
             .permit(
               :aliases,
+              :authority_id,
               :copyrighted,
               :birthdate,
               :deathdate,
