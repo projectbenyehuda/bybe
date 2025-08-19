@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 describe HtmlToMarkdown do
-  subject(:call) { HtmlToMarkdown.call(html) }
+  subject(:call) { described_class.call(html) }
 
   context 'when html is nil' do
     let(:html) { nil }
