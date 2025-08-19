@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Model representing legacy lexicon file
 class LexFile < ApplicationRecord
   enum :status,
        {
