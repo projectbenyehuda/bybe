@@ -85,6 +85,12 @@ en:
             failed: Upload failed
       lex_file:
         fname: File name
+        entrytypes:
+          unknown: Unknown
+          person: Person
+          text: Text
+          bib: Bib
+          other: Other
       lex_person:
         birthdate: Birthdate
         deathdate: Deathdate
