@@ -1,0 +1,11 @@
+.by-card-v02.author-main-info-card-v02
+  .by-card-content-v02
+    .lexicon-entry-header
+      %a{ href: lexicon_root_path }
+        .lexicon-header-he
+          .headline-1-v02= t('.title')
+          .index-part-of-pby
+            -# = image_tag 'ornament_1.svg'
+            .headline-3-v02= t('.part_of_pby')
+            -# = image_tag 'ornament_1.svg'
+    = yield
