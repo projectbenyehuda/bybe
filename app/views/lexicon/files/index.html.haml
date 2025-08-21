@@ -13,7 +13,7 @@
           %td= lf.fname.sub('.php', '').sub('/', '')
           %td= lf.title
           %td= t(lf.status)
-          %td= t(lf.entrytype)
+          %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
           %td
             - if lf.status_ingested?
               = link_to t(:show), lexicon_entry_path(lf.lex_entry)
