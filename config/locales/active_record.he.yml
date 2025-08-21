@@ -91,6 +91,12 @@ he:
           failed: ההעלאה נכשלה
       lex_file:
         fname: שם קובץ
+        entrytypes:
+          unknown: לא ידוע
+          person: אדם
+          text: טקסט
+          bib: ביבליוגרפיה
+          other: אחר
       lex_person:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה
