@@ -23,6 +23,9 @@ he:
       migrate_publication:
         success: Migrated successfully
         title: Analyze Publication
+    header:
+      title: לקסיקון הספרות העברית החדשה
+      part_of_pby: חלק מפרויקט בן־יהודה
     people:
       show:
         to_pby_person: לדף היוצר בפרויקט בן־יהודה
