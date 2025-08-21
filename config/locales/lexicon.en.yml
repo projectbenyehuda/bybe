@@ -23,6 +23,9 @@ en:
       migrate_publication:
         success: Migrated successfully
         title: Analyze Publication
+    header:
+      title: Lexicon of New Hebrew Literature
+      part_of_pby: Part of the Ben-Yehuda Project
     people:
       show:
         to_pby_person: To the creator's page on Ben-Yehuda Project
