@@ -2,204 +2,50 @@
   .row
     .col-12.col-lg-8
       .logo-for-print
-        %img.logoBY-v02{:alt => "", :src => "/assets/logo-byp-mobile.svg"}
+        %img.logoBY-v02{ src: '/assets/logo-byp-mobile.svg' }
       .row
         .col.side-menu-area
         .col
-          .by-card-v02.author-main-info-card-v02
-            .by-card-content-v02
-              .lexicon-entry-header
-                %a{href: '/lexicon'}
-                  .lexicon-header-he
-                    .headline-1-v02 לקסיקון הספרות העברית החדשה
-                    .index-part-of-pby
-                      %img{:alt => "", :src => "/assets/ornament_1.svg"}
-                      .headline-3-v02 חלק מפרויקט בן־יהודה
-                      %img{:alt => "", :src => "/assets/ornament_1.svg"}
-                -#.lexicon-entry-under-construction-desktop
-                -#  .by-icon-v02 '
-                -#  ערך בהכנה
-              .lexicon-author-details
-                -# unless @lex_entry.images.empty?
-                  %div
-                    %img.lexicon-author-pic{:alt => "", :src => url_for(@lex_entry.images[0])}
+          = render layout: 'lexicon/header' do
+            .lexicon-author-details
+              -# unless @lex_entry.images.empty?
                 %div
-                  .author-name-years
-                    .headline-1-v02= @lex_entry.title
-                    .date-range!= @lex_person.life_years
-                  - if @lex_person.authority&.published?
-                    .to-pby
-                      = link_to t('.to_pby_person'), @lex_person.authority
-                  .metadata
-                    = render partial: 'shared/intellectual_property',
-                             locals: { intellectual_property: @lex_person.intellectual_property }
-              %p!= MarkdownToHtml.call(@lex_person.bio)
-          #works.by-card-v02
-            .by-card-header-v02#works
-              %span.headline-1-v02= LexPerson.human_attribute_name(:works)
-            .by-card-content-v02
-
-
-              -#%h3 שירה מן העזבון
-              -#%p על פי “ספר סוקולוב”, בעריכת שמעון רבידוביץ, הוצאת ההסתדרות הציונית העולמית ומוסד ביאליק, תש"ג
-              %ul
-                - @lex_person.works.split("\n").each do |book|
-                  %li!= MarkdownToHtml.call(book)
-          #about.by-card-v02
-            .by-card-header-v02
-              %span.headline-1-v02= LexPerson.human_attribute_name(:about)
-            .by-card-content-v02
-              %ul
-                - @lex_person.about.split("\n").each do |about|
-                  %li!= MarkdownToHtml.call(about)
-
-
-          #links.by-card-v02
-            .by-card-header-v02
-              %span.headline-1-v02= LexPerson.human_attribute_name(:links)
-            .by-card-content-v02
-              %h3 TBD
+                  %img.lexicon-author-pic{:alt => "", :src => url_for(@lex_entry.images[0])}
+              %div
+                .author-name-years
+                  .headline-1-v02= @lex_entry.title
+                  .date-range!= @lex_person.life_years
+                - if @lex_person.authority&.published?
+                  .to-pby
+                    = link_to t('lexicon.people.show.to_pby_person'), @lex_person.authority
+                .metadata
+                  = render partial: 'shared/intellectual_property',
+                           locals: { intellectual_property: @lex_person.intellectual_property }
+            %p!= MarkdownToHtml.call(@lex_person.bio)
+          = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
+            -# %h3 שירה מן העזבון
+              %p על פי “ספר סוקולוב”, בעריכת שמעון רבידוביץ, הוצאת ההסתדרות הציונית העולמית ומוסד ביאליק, תש"ג
+            %ul
+              - @lex_person.works.split("\n").each do |book|
+                %li!= MarkdownToHtml.call(book)
+          = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:about) } do
+            %ul
+              - @lex_person.about.split("\n").each do |about|
+                %li!= MarkdownToHtml.call(about)
+          = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:links) } do
+            %h3 TBD
 
     .col-12.col-lg-4
       .row
         .col.side-menu-area-left
         .col
-          .by-card-v02.left-side-card-v02
-            #author-whats-new-bg
-              .by-side-card-header-v02
-                %p.headline-1-v02{:style => "margin-bottom: 0"}
-                  %a{:href => "#"} עדכונים אחרונים של היוצר/ת בפרויקט בן־יהודה
-              .by-card-content-v02.card-with-bottom-links.author-whats-new-content
-                .new-card-v02
-                  .new-card-right-v02
-                    .new-card-type-v02 q
-                  .new-card-left-v02
-                    %a{:href => "#"}
-                      %p.headline-2-v02
-                        %span.new-headline-v02 יצירות שהועלו
-                    %p.text-height-new
-                      שירה:
-                      = succeed ";" do
-                        %a{:href => "#"} כתם אדום
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      = succeed ";" do
-                        %a{:href => "#"} פרידת אליהו
-                      = succeed ";" do
-                        %a{:href => "#"} מחר
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      = succeed ";" do
-                        %a{:href => "#"} כתם אדום
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      = succeed ";" do
-                        %a{:href => "#"} פרידת אליהו
-                      = succeed ";" do
-                        %a{:href => "#"} פרידת אליהו
-                      = succeed ";" do
-                        %a{:href => "#"} מחר
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      %a{:href => "#"} כתם אדום
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      %a{:href => "#"} פרידת ...
-                  .link-to-all-v02{:style => "font-weight: bold;"}
-                    %a{:href => "#"} הצג 20 יצירות אחרונות
-                .new-card-v02.last-item
-                  .new-card-right-v02
-                    .new-card-type-v02 q
-                  .new-card-left-v02
-                    %a{:href => "#"}
-                      %p.headline-2-v02
-                        %span.new-headline-v02 יצירות שהועלו
-                    %p.text-height-new
-                      שירה:
-                      = succeed ";" do
-                        %a{:href => "#"} כתם אדום
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      = succeed ";" do
-                        %a{:href => "#"} פרידת אליהו
-                      = succeed ";" do
-                        %a{:href => "#"} מחר
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      = succeed ";" do
-                        %a{:href => "#"} כתם אדום
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      = succeed ";" do
-                        %a{:href => "#"} פרידת אליהו
-                      = succeed ";" do
-                        %a{:href => "#"} פרידת אליהו
-                      = succeed ";" do
-                        %a{:href => "#"} מחר
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      = succeed ";" do
-                        %a{:href => "#"} שומר מה מליל
-                      %a{:href => "#"} כתם אדום
-                      = succeed ";" do
-                        %a{:href => "#"} שירת ההולך
-                      %a{:href => "#"} פרידת ...
-                  .link-to-all-v02{:style => "font-weight: bold;"}
-                    %a{:href => "#"} הצג 20 יצירות אחרונות
-                .link-to-all-v02
-                  %a{:href => "#"}
-                    %span{:style => "font-weight: bold"} לכל מה שחדש
-                    %span.left-arrow 1
-          .by-card-v02.left-side-card-v02
-            .by-card-header-left-v02
-              %span.headline-1-v02
-                %a{:href => "#"} יצירות על אודות היוצר/ת בפרויקט בן־יהודה
-            .by-card-content-v02
-              %div
-                %div
-                  %ul.ul-inside
-                    %li
-                      דוד תדהר (עורך),
-                      = succeed "," do
-                        %a{:href => "#"} "המשוררת רחל (בלובשטיין-סלע)"
-                    %li
-                      רבקה ליפשיץ ונורית צין (עורכות),
-                      %a{:href => "#"} רחל בלובשטיין
-                      \- קישורים: קורות חיים, שירים, שיעורים מתוקשבים, ביוגרפיה ומאמרים באינטרנט, באתר "מפמ"ר ספרות", המזכירות הפדגוגית, משרד החינוך
-                    %li
-                      האנציקלופדיה לנשים יהודיות
-                      %a{:href => "#"} רחל המשוררת
-                    %li
-                      אורי מילשטיין,
-                      %a{:href => "#"} רחל המשוררת: מעצבת האליטות
-                    %li
-                      אלישע פורת,
-                      %a{:href => "#"} שירי רחל בסלובקית
-                    %li
-                      חלי אברהם-איתן,
-                      %a{:href => "#"} רחל המשוררת: דמויות תנ"כיות בשירתה
-              .internal-link-to-all
-                %a{:href => "#"}
-                  %span{:style => "font-weight: bold"} לרשימה המלאה
-                  %span.left-arrow 1
+          - if @lex_person.authority&.published?
+            .by-card-v02.left-side-card-v02
+              #author-whats-new-bg
+                .by-card-content-v02.card-with-bottom-links.author-whats-new-content
+                  = render partial: 'shared/latest_works_by_author', locals: { author: @lex_person.authority }
+            .by-card-v02.left-side-card-v02
+              = render partial: 'authors/aboutnesses', locals: { author: @lex_person.authority }
 = link_to 'Edit', edit_lexicon_person_path(@lex_person)
 \|
 = link_to 'Back', lexicon_people_path

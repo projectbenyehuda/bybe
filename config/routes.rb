@@ -35,7 +35,7 @@ Bybeconv::Application.routes.draw do
     resources :taggings, only: %i(index show destroy)
   end
 
-  namespace :lexicon do
+  namespace :lexicon, path: :lex do # use path 'lex' to avoid conflict with old Lexicon hosted on benyehuda.org/lexicon
     root to: 'entries#index'
 
     resources :people
