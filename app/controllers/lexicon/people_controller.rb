@@ -62,18 +62,19 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_person_params
-      params.require(:lex_person)
-            .permit(
-              :aliases,
-              :authority_id,
-              :copyrighted,
-              :birthdate,
-              :deathdate,
-              :bio,
-              :works,
-              :about,
-              entry_attributes: [:title]
-            )
+      params.expect(
+        lex_person: [
+          :aliases,
+          :authority_id,
+          :copyrighted,
+          :birthdate,
+          :deathdate,
+          :bio,
+          :works,
+          :about,
+          { entry_attributes: [:title] }
+        ]
+      )
     end
   end
 end
