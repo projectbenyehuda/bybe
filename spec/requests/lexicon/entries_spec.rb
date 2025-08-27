@@ -4,7 +4,7 @@ require 'rails_helper'
 
 describe '/lexicon/entries' do
   describe '#index' do
-    subject { get '/lexicon/entries' }
+    subject { get '/lex/entries' }
 
     before do
       create_list(:lex_entry, 2, :person)
@@ -15,7 +15,7 @@ describe '/lexicon/entries' do
   end
 
   describe '#show' do
-    subject { get "/lexicon/entries/#{entry.id}" }
+    subject { get "/lex/entries/#{entry.id}" }
 
     context 'when entry is a Person' do
       let(:entry) { create(:lex_entry, :person) }
