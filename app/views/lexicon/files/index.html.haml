@@ -1,6 +1,14 @@
 .top-element
   %div{ style: 'margin-top:10px' }
     %h1= t(:lexicon_migration) + ': ' + t('.title')
+
+    = form_tag lexicon_files_path, method: :get, id: :filter do
+      = label_tag :entrytype, LexFile.human_attribute_name(:entrytype)
+      = select_tag :entrytype,
+                   options_for_select(LexFile.entrytypes.map { |k, _v| [LexFile.human_enum_name(:entrytype, k), k] },
+                                      @entrytype),
+                   include_blank: true
+
     %table.table
       %tr
         %th= LexFile.human_attribute_name(:fname)
@@ -15,15 +23,19 @@
           %td= t(lf.status)
           %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
           %td
-            - if lf.status_ingested?
-              = link_to t(:show), lexicon_entry_path(lf.lex_entry)
-            - elsif lf.status_classified?
-              - if lf.entrytype_person?
-                = link_to t('lexicon.files.migrate_person.title'),
-                          migrate_person_lexicon_file_path(lf),
-                          method: :post
-              - elsif lf.entrytype_text?
-                = link_to t('lexicon.files.migrate_publication.title'),
-                          migrate_publication_lexicon_file_path(lf),
-                          method: :post
+            - if lf.lex_entry.present?
+              = link_to t(:show), lexicon_item_path(lf.lex_entry.lex_item)
+            - elsif lf.entrytype_person?
+              = link_to t('lexicon.files.migrate_person.title'),
+                        migrate_person_lexicon_file_path(lf),
+                        method: :post
+            - elsif lf.entrytype_text?
+              = link_to t('lexicon.files.migrate_publication.title'),
+                        migrate_publication_lexicon_file_path(lf),
+                        method: :post
   = paginate @lex_files
+:javascript
+  $(function() {
+    const submitFilters = (e) => { $('#filter').submit(); };
+    $('#entrytype').change(submitFilters);
+  });
