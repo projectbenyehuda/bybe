@@ -14,6 +14,9 @@ en:
   classified: Classified
   unclassified: Unclassified
   lexicon:
+    entries:
+      index:
+        title: List of Lexicon Entries
     files:
       index:
         title: List of files

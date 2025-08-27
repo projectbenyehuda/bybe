@@ -6,7 +6,7 @@ class HtmlToMarkdown < ApplicationService
     return '' if html.blank?
 
     PandocRuby.convert(
-      html.squish,
+      html.strip.gsub(/\u00A0|&nbsp;/, ' ').gsub(%r{<br>|<br/>}, "\n"),
       M: 'dir=rtl',
       from: :html,
       to: :markdown_mmd
