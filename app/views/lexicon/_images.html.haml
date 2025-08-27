@@ -1,0 +1,9 @@
+- if entry.lex_file.present?
+  -# For debugging purpose. To be removed in future
+  = link_to 'Old Lexicon Page',
+            "https://benyehuda.org/lexicon/#{entry.lex_file.fname}",
+            target: '_blank',
+            rel: 'noopener'
+.row
+  - entry.images.each do |image|
+    = image_tag image, class: 'img-fluid'
