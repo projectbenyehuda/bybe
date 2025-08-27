@@ -58,11 +58,13 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_publication_params
-      params.require(:lex_publication).permit(
-        :description,
-        :toc,
-        :az_navbar,
-        entry_attributes: [:title]
+      params.expect(
+        lex_publication: [
+          :description,
+          :toc,
+          :az_navbar,
+          { entry_attributes: [:title] }
+        ]
       )
     end
   end

@@ -2,6 +2,7 @@ en:
   attributes:
     created_at: Created At
     updated_at: Updated At
+    description: Description
     name: Name
     sort_name: Sort Name
     status: Status
@@ -19,6 +20,7 @@ en:
       featured_content: Featured Content
       lex_entry: Lexicon Entry
       lex_person: Lexicon Person
+      lex_publication: Lexicon Publication
       person: Person
     errors:
       messages:
@@ -96,3 +98,6 @@ en:
         deathdate: Deathdate
         bio: Biographical synopsis
         books: Books
+      lex_publication:
+        toc: Table of Contents
+        az_navbar: Show AZ navbar?
