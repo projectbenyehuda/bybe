@@ -14,5 +14,15 @@ FactoryBot.define do
         status&.to_s == 'ingested' ? create(:lex_entry, :person, status: :migrated) : nil
       end
     end
+
+    trait :publication do
+      fname { "/#{format('%08d', Faker::Number.between(from: 1, to: 99_999_999))}.php" }
+      title { Faker::Book.title }
+
+      entrytype { 'text' }
+      lex_entry do
+        status&.to_s == 'ingested' ? create(:lex_entry, :publication, status: :migrated) : nil
+      end
+    end
   end
 end

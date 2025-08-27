@@ -39,6 +39,8 @@
       .row
         .col.side-menu-area-left
         .col
+          = render partial: 'lexicon/images', locals: { entry: @lex_person.entry }
+        .col
           - if @lex_person.authority&.published?
             .by-card-v02.left-side-card-v02
               #author-whats-new-bg
