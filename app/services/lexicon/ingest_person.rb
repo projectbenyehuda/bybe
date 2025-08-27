@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
 module Lexicon
+  # Service to ingest Lexicon Person from php file
   class IngestPerson < ApplicationService
     def call(file_id)
       file = LexFile.find(file_id)
-      lex_entry = LexEntry.new(
+      lex_entry = LexEntry.create(
         title: file.title,
         status: :raw
       )
 
-      lex_person = create_lex_person_from_html(lex_entry, file)
+      html_doc = File.open(file.full_path) { |f| Nokogiri::HTML(f) }
+      AttachImages.call(html_doc, lex_entry)
+
+      lex_person = create_lex_person_from_html(lex_entry, html_doc.to_html)
       lex_entry.lex_item = lex_person
       lex_entry.save!
 
@@ -22,12 +26,12 @@ module Lexicon
     private
 
     def parse_person_bio(buf)
-      ActionView::Base.full_sanitizer.sanitize(buf)
+      HtmlToMarkdown.call(ActionView::Base.full_sanitizer.sanitize(buf))
     end
 
     def parse_person_books(buf)
       buf.scan(%r{<li>(.*?)</li>}m).map do |x|
-        if x.class == Array
+        if x.instance_of?(Array)
           HtmlToMarkdown.call(x[0]).gsub("\n", ' ')
         else
           ''
@@ -37,7 +41,7 @@ module Lexicon
 
     def parse_person_bib(buf)
       buf.scan(%r{<li>(.*?)</li>}m).map do |x|
-        if x.class == Array
+        if x.instance_of?(Array)
           HtmlToMarkdown.call(x[0]).gsub("\n", ' ')
         else
           ''
@@ -45,10 +49,9 @@ module Lexicon
       end.join("\n")
     end
 
-    def create_lex_person_from_html(entry, lexfile)
+    def create_lex_person_from_html(entry, buf)
       return entry.lex_item if entry.lex_item.present?
 
-      buf = File.read(lexfile.full_path)
       # anchors = buf.scan(/<a name="(.*?)">/)
       # ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
       lex_person = LexPerson.new(
@@ -58,7 +61,7 @@ module Lexicon
       )
 
       # Match both patterns: (YYYY) and (YYYY-YYYY)
-      if match = buf.match(/<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*<\/font>/)
+      if (match = buf.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*</font>}))
         lex_person.birthdate = match[1]
         lex_person.deathdate = match[2]
       end
@@ -73,7 +76,7 @@ module Lexicon
       html_entities_coder = HTMLEntities.new
 
       buf.scan(%r{<li>(.*?)</li>}m).map do |x|
-        if x.class == Array
+        if x.instance_of?(Array)
           html_entities_coder.decode(x[0].gsub(/<font.*?>/, '').gsub('</font>', ''))
         else
           ''
@@ -84,7 +87,7 @@ module Lexicon
         person.lex_links.create!(
           url: ::Regexp.last_match(2),
           description: "#{html2txt(::Regexp.last_match(1))} #{html2txt(::Regexp.last_match(3))} " \
-            "#{html2txt(::Regexp.last_match(4))}"
+                       "#{html2txt(::Regexp.last_match(4))}"
         )
       end
     end

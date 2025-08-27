@@ -19,7 +19,7 @@ describe '/lexicon/people' do
   end
 
   describe 'GET /new' do
-    subject(:call) { get '/lexicon/people/new' }
+    subject(:call) { get '/lex/people/new' }
 
     it 'renders a successful response' do
       expect(call).to eq(200)
@@ -27,7 +27,7 @@ describe '/lexicon/people' do
   end
 
   describe 'POST /create' do
-    subject(:call) { post '/lexicon/people', params: { lex_person: attributes } }
+    subject(:call) { post '/lex/people', params: { lex_person: attributes } }
 
     context 'with valid parameters' do
       let(:attributes) { valid_attributes }
@@ -53,7 +53,7 @@ describe '/lexicon/people' do
   end
 
   describe 'GET /index' do
-    subject { get '/lexicon/people' }
+    subject { get '/lex/people' }
 
     before do
       create_list(:lex_person, 5)
@@ -63,7 +63,7 @@ describe '/lexicon/people' do
   end
 
   describe 'GET /show' do
-    subject { get "/lexicon/people/#{lex_person.id}" }
+    subject { get "/lex/people/#{lex_person.id}" }
 
     it { is_expected.to eq(200) }
 
@@ -77,13 +77,13 @@ describe '/lexicon/people' do
   end
 
   describe 'GET /edit' do
-    subject { get "/lexicon/people/#{lex_person.id}/edit" }
+    subject { get "/lex/people/#{lex_person.id}/edit" }
 
     it { is_expected.to eq(200) }
   end
 
   describe 'PATCH /update' do
-    subject(:call) { patch "/lexicon/people/#{lex_person.id}", params: { lex_person: valid_attributes } }
+    subject(:call) { patch "/lex/people/#{lex_person.id}", params: { lex_person: valid_attributes } }
 
     it 'updates the record' do
       expect(call).to redirect_to lexicon_person_path(lex_person)
@@ -94,7 +94,7 @@ describe '/lexicon/people' do
   end
 
   describe 'DELETE /destroy' do
-    subject(:call) { delete "/lexicon/people/#{lex_person.id}" }
+    subject(:call) { delete "/lex/people/#{lex_person.id}" }
 
     before do
       lex_person
