@@ -14,6 +14,9 @@ he:
   classified: זוהה סוג הערך
   unclassified: לא זוהה סוג הערך
   lexicon:
+    entries:
+      index:
+        title: List of Lexicon Entries
     files:
       index:
         title: רשימת הקבצים

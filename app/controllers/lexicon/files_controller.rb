@@ -5,7 +5,14 @@ module Lexicon
   class FilesController < ApplicationController
     # GET /lex_files or /lex_files.json
     def index
-      @lex_files = LexFile.all.page(params[:page])
+      @lex_files = LexFile.all
+      @entrytype = params[:entrytype]
+
+      if @entrytype.present?
+        @lex_files = @lex_files.where(entrytype: @entrytype)
+      end
+
+      @lex_files = @lex_files.order(:fname).page(params[:page])
     end
 
     def migrate_person
