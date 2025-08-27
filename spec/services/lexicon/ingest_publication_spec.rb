@@ -25,5 +25,6 @@ describe Lexicon::IngestPublication do
     publication = file.lex_entry.lex_item
     expect(publication).to be_an_instance_of(LexPublication)
     expect(publication).to have_attributes(az_navbar: true)
+    expect(publication.entry.images.count).to eq(1)
   end
 end

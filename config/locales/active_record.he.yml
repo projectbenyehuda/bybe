@@ -2,6 +2,7 @@ he:
   attributes:
     created_at: נוצר בתאריך
     updated_at: עודכן בתאריך
+    description: תיאור
     name: שם
     sort_name: שם לצורך מיון
     status: סטטוס
@@ -110,6 +111,9 @@ he:
         deathdate: תאריך פטירה
         bio: תקציר ביוגרפי
         books: ספרים
+      lex_publication:
+        toc: Table of Contents
+        az_navbar: Show AZ navbar?
       project:
         one: מיזם
         other: מיזמים
