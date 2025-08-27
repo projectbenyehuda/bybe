@@ -16,7 +16,7 @@ describe '/lexicon/publications' do
   end
 
   describe 'GET /new' do
-    subject(:call) { get '/lexicon/publications/new' }
+    subject(:call) { get '/lex/publications/new' }
 
     it 'renders a successful response' do
       expect(call).to eq(200)
@@ -24,7 +24,7 @@ describe '/lexicon/publications' do
   end
 
   describe 'POST /create' do
-    subject(:call) { post '/lexicon/publications', params: { lex_publication: attributes } }
+    subject(:call) { post '/lex/publications', params: { lex_publication: attributes } }
 
     context 'with valid parameters' do
       let(:attributes) { valid_attributes }
@@ -54,7 +54,7 @@ describe '/lexicon/publications' do
   end
 
   describe 'GET /index' do
-    subject { get '/lexicon/publications' }
+    subject { get '/lex/publications' }
 
     before do
       create_list(:lex_publication, 5)
@@ -64,20 +64,20 @@ describe '/lexicon/publications' do
   end
 
   describe 'GET /show' do
-    subject { get "/lexicon/publications/#{lex_publication.id}" }
+    subject { get "/lex/publications/#{lex_publication.id}" }
 
     it { is_expected.to eq(200) }
   end
 
   describe 'GET /edit' do
-    subject { get "/lexicon/publications/#{lex_publication.id}/edit" }
+    subject { get "/lex/publications/#{lex_publication.id}/edit" }
 
     it { is_expected.to eq(200) }
   end
 
   describe 'PATCH /update' do
     subject(:call) do
-      patch "/lexicon/publications/#{lex_publication.id}", params: { lex_publication: valid_attributes }
+      patch "/lex/publications/#{lex_publication.id}", params: { lex_publication: valid_attributes }
     end
 
     it 'updates the record' do
@@ -90,7 +90,7 @@ describe '/lexicon/publications' do
   end
 
   describe 'DELETE /destroy' do
-    subject(:call) { delete "/lexicon/publications/#{lex_publication.id}" }
+    subject(:call) { delete "/lex/publications/#{lex_publication.id}" }
 
     before do
       lex_publication
