@@ -16,16 +16,16 @@ he:
   lexicon:
     entries:
       index:
-        title: List of Lexicon Entries
+        title: רשימת ערכי הלקסיקון
     files:
       index:
         title: רשימת הקבצים
       migrate_person:
-        success: Migrated successfully
+        success: הוסב בהצלחה
         title: הסבת ערך על אדם
       migrate_publication:
-        success: Migrated successfully
-        title: Analyze Publication
+        success: הוסב בהצלחה
+        title: הסבת חיבור
     header:
       title: לקסיקון הספרות העברית החדשה
       part_of_pby: חלק מפרויקט בן־יהודה
@@ -33,15 +33,15 @@ he:
       show:
         to_pby_person: לדף היוצר בפרויקט בן־יהודה
       create:
-        success: Lexicon Person created
+        success: נוצרה ישות חדשה
       update:
-        success: Lexicon Person updated
+        success: עודכן!
       destroy:
-        success: Lexicon Person destroyed
+        success: נמחק!
     publications:
       create:
-        success: Lexicon Publication created
+        success: נוצרה ישות חדשה
       update:
-        success: Lexicon Publication updated
+        success: עודכן!
       destroy:
-        success: Lexicon Publication destroyed
+        success: נמחק!
