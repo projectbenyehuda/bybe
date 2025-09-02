@@ -18,8 +18,8 @@ he:
       collection_item: פריט באוסף
       corporate_body: גוף/מוסד
       featured_content: תוכן מערכת
-      lex_entry: Lexicon Entry
-      lex_person: Lexicon Person
+      lex_entry: ערך בלקסיקון
+      lex_person: אדם בלקסיקון
       person: אדם
     errors:
       messages:
@@ -112,8 +112,8 @@ he:
         bio: תקציר ביוגרפי
         books: ספרים
       lex_publication:
-        toc: Table of Contents
-        az_navbar: Show AZ navbar?
+        toc: תוכן עניינים
+        az_navbar: להציג סרגל א–ב?
       project:
         one: מיזם
         other: מיזמים
