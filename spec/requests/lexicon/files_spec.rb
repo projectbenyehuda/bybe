@@ -18,45 +18,45 @@ describe '/lexicon/files' do
     end
   end
 
-  describe 'POST /migrate_person' do
-    subject(:call) { post "/lex/files/#{file.id}/migrate_person" }
+  describe 'POST /migrate' do
+    subject(:call) { post "/lex/files/#{file.id}/migrate" }
 
-    let!(:file) do
-      create(
-        :lex_file,
-        :person,
-        entrytype: :person,
-        status: :classified,
-        title: 'Gabriella Avigur',
-        fname: '/00002.php',
-        full_path: Rails.root.join('spec/data/lexicon/00002.php')
-      )
+    context 'when person file is provided' do
+      let!(:file) do
+        create(
+          :lex_file,
+          :person,
+          entrytype: :person,
+          status: :classified,
+          title: 'Gabriella Avigur',
+          fname: '00002.php',
+          full_path: Rails.root.join('spec/data/lexicon/00002.php')
+        )
+      end
+
+      it 'creates new LexEntry and LexPerson' do
+        expect { call }.to change(LexPerson, :count).by(1).and change(LexEntry, :count).by(1)
+        expect(call).to redirect_to lexicon_entry_path(LexEntry.last)
+      end
     end
 
-    it 'creates new LexEntry and LexPerson' do
-      expect { call }.to change(LexPerson, :count).by(1).and change(LexEntry, :count).by(1)
-      expect(call).to redirect_to lexicon_person_path(LexEntry.last.lex_item)
-    end
-  end
+    context 'when publication file is provided' do
+      let!(:file) do
+        create(
+          :lex_file,
+          :publication,
+          entrytype: :text,
+          status: :classified,
+          title: 'Gabriella Avigur',
+          fname: '/02645001.php',
+          full_path: Rails.root.join('spec/data/lexicon/02645001.php')
+        )
+      end
 
-  describe 'POST /migrate_publication' do
-    subject(:call) { post "/lex/files/#{file.id}/migrate_publication" }
-
-    let!(:file) do
-      create(
-        :lex_file,
-        :publication,
-        entrytype: :text,
-        status: :classified,
-        title: 'Gabriella Avigur',
-        fname: '/02645001.php',
-        full_path: Rails.root.join('spec/data/lexicon/02645001.php')
-      )
-    end
-
-    it 'creates new LexEntry and LexPublication' do
-      expect { call }.to change(LexPublication, :count).by(1).and change(LexEntry, :count).by(1)
-      expect(call).to redirect_to lexicon_publication_path(LexEntry.last.lex_item)
+      it 'creates new LexEntry and LexPublication' do
+        expect { call }.to change(LexPublication, :count).by(1).and change(LexEntry, :count).by(1)
+        expect(call).to redirect_to lexicon_entry_path(LexEntry.last)
+      end
     end
   end
 end
