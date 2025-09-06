@@ -2,25 +2,28 @@
 
 module Lexicon
   # Service to ingest Lexicon Person from php file
-  class IngestPerson < ApplicationService
-    def call(file_id)
-      file = LexFile.find(file_id)
-      lex_entry = LexEntry.create(
-        title: file.title,
-        status: :raw
+  class IngestPerson < IngestBase
+    def create_lex_item(html_doc)
+      buf = html_doc.to_html
+
+      # anchors = buf.scan(/<a name="(.*?)">/)
+      # ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
+      lex_person = LexPerson.new(
+        bio: parse_person_bio(buf[%r{</table>.*?<a name="Books}m]),
+        works: parse_person_books(buf[/a name="Books".*?<a name/m]),
+        about: parse_person_bib(buf[/a name="Bib.".*?<a name/m])
       )
 
-      html_doc = File.open(file.full_path) { |f| Nokogiri::HTML(f) }
-      AttachImages.call(html_doc, lex_entry)
+      # Match both patterns: (YYYY) and (YYYY-YYYY)
+      if (match = buf.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*</font>}))
+        lex_person.birthdate = match[1]
+        lex_person.deathdate = match[2]
+      end
 
-      lex_person = create_lex_person_from_html(lex_entry, html_doc.to_html)
-      lex_entry.lex_item = lex_person
-      lex_entry.save!
+      lex_person.save!
 
-      file.lex_entry = lex_entry
-      file.status_ingested!
-
-      lex_entry
+      parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
+      lex_person
     end
 
     private
@@ -47,29 +50,6 @@ module Lexicon
           ''
         end
       end.join("\n")
-    end
-
-    def create_lex_person_from_html(entry, buf)
-      return entry.lex_item if entry.lex_item.present?
-
-      # anchors = buf.scan(/<a name="(.*?)">/)
-      # ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
-      lex_person = LexPerson.new(
-        bio: parse_person_bio(buf[%r{</table>.*?<a name="Books}m]),
-        works: parse_person_books(buf[/a name="Books".*?<a name/m]),
-        about: parse_person_bib(buf[/a name="Bib.".*?<a name/m])
-      )
-
-      # Match both patterns: (YYYY) and (YYYY-YYYY)
-      if (match = buf.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*</font>}))
-        lex_person.birthdate = match[1]
-        lex_person.deathdate = match[2]
-      end
-
-      lex_person.save!
-
-      parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
-      lex_person
     end
 
     def parse_person_links(person, buf)
