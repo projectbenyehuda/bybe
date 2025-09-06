@@ -636,6 +636,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
     t.string "lex_item_type"
     t.bigint "lex_item_id"
     t.string "sort_title"
+    t.string "legacy_filename"
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"
@@ -670,6 +671,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
     t.index ["lex_publication_id"], name: "index_lex_issues_on_lex_publication_id"
     t.index ["seq_num"], name: "index_lex_issues_on_seq_num"
     t.index ["subtitle"], name: "index_lex_issues_on_subtitle"
+  end
+
+  create_table "lex_legacy_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "old_path", null: false
+    t.string "new_path", null: false
+    t.bigint "lex_entry_id", null: false
+    t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1132,6 +1141,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
   add_foreign_key "lex_citations", "manifestations"
   add_foreign_key "lex_files", "lex_entries"
   add_foreign_key "lex_issues", "lex_publications"
+  add_foreign_key "lex_legacy_links", "lex_entries"
   add_foreign_key "lex_people", "authorities"
   add_foreign_key "lex_people_items", "lex_people"
   add_foreign_key "lex_texts", "lex_issues"

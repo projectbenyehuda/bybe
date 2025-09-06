@@ -28,11 +28,10 @@ Bybeconv::Application.routes.draw do
 
     resources :people
     resources :publications
-    resources :entries, only: %i(index)
+    resources :entries, only: %i(index show)
     resources :files, only: :index do
       member do
-        post :migrate_person
-        post :migrate_publication
+        post :migrate
       end
     end
   end
