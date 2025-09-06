@@ -17,15 +17,14 @@ en:
     entries:
       index:
         title: List of Lexicon Entries
+      show:
+        unsupported_entry_type: Unsupported entry type
     files:
       index:
         title: List of files
-      migrate_person:
+      migrate:
         success: Migrated successfully
-        title: Analyze Person
-      migrate_publication:
-        success: Migrated successfully
-        title: Analyze Publication
+        title: Analyze
     header:
       title: Lexicon of New Hebrew Literature
       part_of_pby: Part of the Ben-Yehuda Project

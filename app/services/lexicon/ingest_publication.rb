@@ -2,33 +2,8 @@
 
 module Lexicon
   # Class used to ingest publications from the old lexicon
-  class IngestPublication < ApplicationService
-    def call(file_id)
-      file = LexFile.find(file_id)
-
-      lex_entry = LexEntry.create(
-        title: file.title,
-        status: :raw
-      )
-
-      html_doc = File.open(file.full_path) { |f| Nokogiri::HTML(f) }
-      AttachImages.call(html_doc, lex_entry)
-
-      pub = create_lex_publication(lex_entry, html_doc)
-      lex_entry.lex_item = pub
-      lex_entry.save!
-
-      file.lex_entry = lex_entry
-      file.status_ingested!
-
-      lex_entry
-    end
-
-    private
-
-    def create_lex_publication(lex_entry, html_doc)
-      return lex_entry.lex_item if lex_entry.lex_item.present?
-
+  class IngestPublication < IngestBase
+    def create_lex_item(html_doc)
       description = html_doc.css('p.margin')
                             .map { |tag| HtmlToMarkdown.call(tag.inner_html) }
                             .join("\n\n")
@@ -39,6 +14,8 @@ module Lexicon
         az_navbar: true # defaulting to true for all records
       )
     end
+
+    private
 
     def parse_toc(html_doc)
       toc_node = html_doc.at_css('blockquote')

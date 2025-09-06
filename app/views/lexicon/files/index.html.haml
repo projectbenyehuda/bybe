@@ -25,14 +25,8 @@
           %td
             - if lf.lex_entry.present?
               = link_to t(:show), lexicon_item_path(lf.lex_entry.lex_item)
-            - elsif lf.entrytype_person?
-              = link_to t('lexicon.files.migrate_person.title'),
-                        migrate_person_lexicon_file_path(lf),
-                        method: :post
-            - elsif lf.entrytype_text?
-              = link_to t('lexicon.files.migrate_publication.title'),
-                        migrate_publication_lexicon_file_path(lf),
-                        method: :post
+            - else
+              = link_to t('lexicon.files.migrate.title'), migrate_lexicon_file_path(lf), method: :post
   = paginate @lex_files
 :javascript
   $(function() {

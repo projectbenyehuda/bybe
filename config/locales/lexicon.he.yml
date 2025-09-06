@@ -17,15 +17,14 @@ he:
     entries:
       index:
         title: רשימת ערכי הלקסיקון
+      show:
+        unsupported_entry_type: Unsupported entry type
     files:
       index:
         title: רשימת הקבצים
-      migrate_person:
+      migrate:
         success: הוסב בהצלחה
-        title: הסבת ערך על אדם
-      migrate_publication:
-        success: הוסב בהצלחה
-        title: הסבת חיבור
+        title: Analyze file
     header:
       title: לקסיקון הספרות העברית החדשה
       part_of_pby: חלק מפרויקט בן־יהודה

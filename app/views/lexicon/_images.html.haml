@@ -5,5 +5,7 @@
             target: '_blank',
             rel: 'noopener'
 .row
-  - entry.images.each do |image|
+  - entry.attachments.each do |image|
+    - next unless image.blob.filename.to_s.match(%r{\.(png|jpg|jpeg|gif)\z})
+
     = image_tag image, class: 'img-fluid'
