@@ -1,5 +1,37 @@
 # frozen_string_literal: true
 
+IGNORE_LIST = %w(
+  404Error.php
+  contactform.php
+  contactform1.php
+  contactform2.php
+  footera.php
+  footerb.php
+  footerbb.php
+  footerf.php
+  footerf-old.php
+  footerm.php
+  footergovrin.php
+  footerk.php
+  footerkishon.php
+  footerm-old.php
+  footermy.php
+  footermz.php
+  header.php
+  header1.php
+  header-beit-berl.php
+  header-heksherim1.php
+  header-heksherim.php
+  header-yellin.php
+  header2.php
+  header77.php
+  headera.php
+  headerb.php
+  headerbb.php
+  headerk.php
+  headery.php
+).freeze
+
 desc 'ingest Galron Lexicon static files for further processing'
 task :ingest_lexicon, [:dirname] => :environment do |_taskname, args|
   die 'run again with a lexicon dir name, e.g. rake ingest_lexicon[/home/galron/lexicon]' if args.dirname.nil?
@@ -17,6 +49,8 @@ task :ingest_lexicon, [:dirname] => :environment do |_taskname, args|
   @bibs = []
   @texts = []
   files.each do |fname|
+    next if IGNORE_LIST.include?(fname[(fname.rindex('/') + 1)..])
+
     process_legacy_lexicon_entry(fname)
     i += 1
     print "\n...#{i} " if i % 20 == 0
@@ -47,7 +81,7 @@ end
 
 def process_legacy_lexicon_entry(fname)
   should_process = false
-  filepart = fname[fname.rindex('/')..]
+  filepart = fname[(fname.rindex('/') + 1)..]
   lf = LexFile.where(fname: filepart).first
   if lf.nil?
     should_process = true
@@ -89,9 +123,11 @@ def process_legacy_lexicon_entry(fname)
   title = validate_title(title, fname)
   if lf.nil?
     LexFile.create!(
-      fname: filepart, full_path: fname,
+      fname: filepart,
+      full_path: fname,
       status: entrytype == 'unknown' ? :unclassified : :classified,
-      title: title, entrytype: entrytype
+      title: title,
+      entrytype: entrytype
     )
     @new += 1
   else
