@@ -15,7 +15,8 @@ class LexEntry < ApplicationRecord
     deprecated: 3
   }
 
-  has_many_attached :images
+  has_many_attached :attachments # attachments referenced by link or image on the entry page
+  has_many :legacy_links, class_name: 'LexLegacyLink', dependent: :destroy, inverse_of: :lex_entry
 
   validates :title, :sort_title, :status, presence: true
 
