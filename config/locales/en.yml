@@ -41,6 +41,7 @@ en:
   confirm_batch_delete: Are you sure you want to delete %<count>s manifestation(s)?
   confirm_batch_unpublish: Are you sure you want to unpublish %<count>s manifestation(s)?
   please_select_manifestation: Please select at least one manifestation
+  upload: Upload
   created_successfully: Created Successfully
   updated_successfully: Updated Successfully
   deleted_successfully: Deleted Successfully
