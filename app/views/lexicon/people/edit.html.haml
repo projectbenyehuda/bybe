@@ -1,6 +1,11 @@
 %h1 Editing lex_person
 
-= render 'form'
+= render partial: 'lexicon/shared/tabs'
+
+.tab-content
+  .tab-pane.fade.show.active#properties
+    = render 'form'
+  = render partial: 'lexicon/shared/attachments', locals: { entry: @lex_person.entry}
 
 = link_to 'Show', lexicon_person_path(@lex_person)
 \|
