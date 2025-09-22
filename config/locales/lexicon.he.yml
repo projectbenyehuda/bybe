@@ -19,6 +19,11 @@ he:
         title: רשימת ערכי הלקסיקון
       show:
         unsupported_entry_type: Unsupported entry type
+    attachments:
+      index:
+        filename: Filename
+        size: Size
+        preview: Preview
     files:
       index:
         title: רשימת הקבצים
@@ -44,3 +49,9 @@ he:
         success: עודכן!
       destroy:
         success: נמחק!
+    shared:
+      attachments:
+        attach_new_file: Attach new file
+      tabs:
+        properties: Properties
+        attachments: Attachments
