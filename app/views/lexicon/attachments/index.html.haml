@@ -1,0 +1,21 @@
+%table.table
+  %thead
+    %tr
+      %td= t('.filename')
+      %td= t('.size')
+      %td= t('.preview')
+      %td
+  -@lex_entry.attachments.preload(:blob).each do |a|
+    %tr
+      %td= a.blob.filename
+      %td= format_filesize(a.blob.byte_size)
+      %td
+        - if a.blob.content_type =~ /\Aimage/
+          = image_tag url_for(a)
+      %td
+        = link_to t(:destroy),
+                  lexicon_entry_attachment_path(@lex_entry.id, a.blob_id),
+                  method: :delete,
+                  remote: true,
+                  data: { confirm: t(:are_you_sure) },
+                  class: 'delete-lex-attachment'
