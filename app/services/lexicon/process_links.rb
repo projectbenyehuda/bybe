@@ -16,7 +16,7 @@ module Lexicon
 
         new_path = MigrateAttachment.call(href, lex_entry)
         if new_path.present?
-          tag['href'] = link.new_path
+          tag['href'] = new_path
         end
       end
     end
