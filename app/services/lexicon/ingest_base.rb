@@ -16,8 +16,8 @@ module Lexicon
       )
 
       html_doc = File.open(lex_file.full_path) { |f| Nokogiri::HTML(f) }
-      AttachImages.call(html_doc, lex_entry)
-      ProcessLinks.call(html_doc, lex_entry)
+      Lexicon::AttachImages.call(html_doc, lex_entry)
+      Lexicon::ProcessLinks.call(html_doc, lex_entry)
 
       lex_entry.lex_item = create_lex_item(html_doc)
       lex_entry.save!
