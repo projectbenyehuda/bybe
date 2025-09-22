@@ -23,7 +23,9 @@ Bybeconv::Application.routes.draw do
 
     resources :people
     resources :publications
-    resources :entries, only: %i(index show)
+    resources :entries, only: %i(index show) do
+      resources :attachments, only: %i(index create destroy)
+    end
     resources :files, only: :index do
       member do
         post :migrate

@@ -19,6 +19,12 @@ en:
         title: List of Lexicon Entries
       show:
         unsupported_entry_type: Unsupported entry type
+    attachments:
+      index:
+        filename: Filename
+        size: Size
+        preview: Preview
+        attach_new_file: Attach new file
     files:
       index:
         title: List of files
@@ -44,3 +50,9 @@ en:
         success: Lexicon Publication updated
       destroy:
         success: Lexicon Publication destroyed
+    shared:
+      attachments:
+        attach_new_file: Attach new file
+      tabs:
+        properties: Properties
+        attachments: Attachments
