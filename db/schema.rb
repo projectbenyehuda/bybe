@@ -857,15 +857,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.integer "resolved_by"
     t.text "highlight", size: :medium
     t.integer "reported_by"
-    t.integer "manifestation_id"
     t.string "item_type", null: false
     t.integer "item_id", null: false
     t.index ["item_id", "item_type", "status"], name: "index_proofs_on_item_id_and_item_type_and_status"
     t.index ["item_type"], name: "index_proofs_on_item_type"
-    t.index ["manifestation_id"], name: "proofs_manifestation_id_fk"
     t.index ["resolved_by"], name: "proofs_resolved_by_fk"
     t.index ["status", "created_at"], name: "index_proofs_on_status_and_created_at"
-    t.index ["status", "manifestation_id"], name: "index_proofs_on_status_and_manifestation_id"
   end
 
   create_table "publications", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1140,7 +1137,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
   add_foreign_key "lex_texts", "manifestations"
   add_foreign_key "list_items", "users"
   add_foreign_key "manifestations", "expressions"
-  add_foreign_key "proofs", "manifestations", name: "proofs_manifestation_id_fk"
   add_foreign_key "proofs", "users", column: "resolved_by", name: "proofs_resolved_by_fk"
   add_foreign_key "publications", "authorities"
   add_foreign_key "publications", "bib_sources"
