@@ -31,6 +31,10 @@ Bybeconv::Application.routes.draw do
         post :migrate
       end
     end
+
+    # handling for legacy links support
+    get '*old_path', to: 'legacy_links#open_legacy_link',
+                     format: false # otherwise :old_path param will not contain file extension
   end
 
   resources :lex_links
