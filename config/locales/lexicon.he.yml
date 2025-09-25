@@ -24,6 +24,7 @@ he:
         filename: Filename
         size: Size
         preview: Preview
+        copy_link: Copy link to clipboard
     files:
       index:
         title: רשימת הקבצים
