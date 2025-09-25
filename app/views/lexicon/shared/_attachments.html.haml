@@ -43,6 +43,15 @@
   });
 
   function reloadAttachmentsTable() {
-    $('#attachments_table').load('#{lexicon_entry_attachments_path(entry)}');
+    $('#attachments_table').load(
+      '#{lexicon_entry_attachments_path(entry)}',
+      function() {
+        $('.copy-attachment-link').click(function(e) {
+          e.preventDefault();
+          const text = $(this).siblings('.attachment-link').text();
+          navigator.clipboard.writeText(text);
+        });
+      }
+    );
   };
 
