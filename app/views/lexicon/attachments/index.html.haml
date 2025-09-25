@@ -2,12 +2,16 @@
   %thead
     %tr
       %td= t('.filename')
+      %td= t(:link)
       %td= t('.size')
       %td= t('.preview')
       %td
   -@lex_entry.attachments.preload(:blob).each do |a|
     %tr
       %td= a.blob.filename
+      %td
+        .attachment-link= url_for(a)
+        = link_to t('.copy_link'), '#', class: 'copy-attachment-link'
       %td= format_filesize(a.blob.byte_size)
       %td
         - if a.blob.content_type =~ /\Aimage/
