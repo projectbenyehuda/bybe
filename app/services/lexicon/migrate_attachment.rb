@@ -14,8 +14,8 @@ module Lexicon
       if link.nil?
         full_url = 'https://benyehuda.org/lexicon/' + src
         attachments = lex_entry.attachments.attach(io: URI.parse(full_url).open, filename: File.basename(src))
-        new_url = Rails.application.routes.url_helpers.url_for(attachments.last)
-        link = lex_entry.legacy_links.create(old_path: src, new_path: new_url)
+        new_path = Rails.application.routes.url_helpers.rails_blob_path(attachments.last, only_path: true)
+        link = lex_entry.legacy_links.create(old_path: src, new_path: new_path)
       end
 
       return link.new_path
