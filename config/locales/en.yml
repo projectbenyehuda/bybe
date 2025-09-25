@@ -17,6 +17,7 @@ en:
   show: Show
   delete: Delete
   upload: Upload
+  link: Link
   created_successfully: Created Successfully
   updated_successfully: Updated Successfully
   deleted_successfully: Deleted Successfully
