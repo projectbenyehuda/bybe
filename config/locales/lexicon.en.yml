@@ -24,7 +24,7 @@ en:
         filename: Filename
         size: Size
         preview: Preview
-        attach_new_file: Attach new file
+        copy_link: Copy link to clipboard
     files:
       index:
         title: List of files
