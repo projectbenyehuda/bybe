@@ -16,6 +16,6 @@
         %td= lex_entry.status
         %td= item.model_name.human
         %td
-          = link_to t(:show), lexicon_item_path(item)
+          = link_to t(:show), lexicon_entry_path(lex_entry)
 
 = paginate @lex_entries
