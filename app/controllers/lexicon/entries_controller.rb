@@ -5,6 +5,8 @@ module Lexicon
   class EntriesController < ApplicationController
     before_action :set_lex_entry, only: %i(show)
 
+    layout 'lexicon_backend'
+
     # GET /lex_entries or /lex_entries.json
     def index
       @lex_entries = LexEntry.all.page(params[:page])
