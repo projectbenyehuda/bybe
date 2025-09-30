@@ -3,17 +3,14 @@
 module Lexicon
   # Controller to work with Lexicon Publications
   class PublicationsController < ApplicationController
-    before_action :set_lex_publication, only: %i(show edit update destroy)
+    before_action :set_lex_publication, only: %i(edit update destroy)
 
-    layout 'lexicon_backend', except: :show
+    layout 'lexicon_backend'
 
     # GET /lex_publications or /lex_publications.json
     def index
       @lex_publications = LexPublication.all
     end
-
-    # GET /lex_publications/1 or /lex_publications/1.json
-    def show; end
 
     # GET /lex_publications/new
     def new
