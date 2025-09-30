@@ -1,0 +1,12 @@
+.row
+  .col-8
+    = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:description) } do
+      != MarkdownToHtml.call(lex_publication.description)
+    = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:toc) } do
+      != MarkdownToHtml.call(lex_publication.toc)
+    %hr
+    = link_to 'Edit', edit_lexicon_publication_path(lex_publication)
+    \|
+    = link_to 'Back', lexicon_publications_path
+  .col-4
+    = render partial: 'lexicon/images', locals: { entry: lex_publication.entry }
