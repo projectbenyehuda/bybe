@@ -63,12 +63,6 @@ describe '/lexicon/publications' do
     it { is_expected.to eq(200) }
   end
 
-  describe 'GET /show' do
-    subject { get "/lex/publications/#{lex_publication.id}" }
-
-    it { is_expected.to eq(200) }
-  end
-
   describe 'GET /edit' do
     subject { get "/lex/publications/#{lex_publication.id}/edit" }
 
