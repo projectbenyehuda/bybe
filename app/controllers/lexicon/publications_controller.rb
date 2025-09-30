@@ -5,6 +5,8 @@ module Lexicon
   class PublicationsController < ApplicationController
     before_action :set_lex_publication, only: %i(show edit update destroy)
 
+    layout 'lexicon_backend', except: :show
+
     # GET /lex_publications or /lex_publications.json
     def index
       @lex_publications = LexPublication.all
