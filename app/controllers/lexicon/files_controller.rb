@@ -5,7 +5,8 @@ module Lexicon
   class FilesController < ApplicationController
     before_action :set_lex_file, only: [:migrate]
 
-    # GET /lex_files or /lex_files.json
+    layout 'lexicon_backend'
+
     def index
       @lex_files = LexFile.all
       @entrytype = params[:entrytype]

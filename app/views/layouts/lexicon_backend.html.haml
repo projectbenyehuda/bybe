@@ -1,0 +1,45 @@
+!!!
+%html{ dir: :rtl, lang: :he }
+  %head
+    %meta{ content: 'text/html; charset=UTF-8', 'http-equiv' => 'Content-Type' }
+    %meta{ charset: 'utf-8' }
+    %meta{ content: 'width=device-width, initial-scale=1', name: 'viewport' }
+    %title= @page_title || t(:default_page_title)
+
+    %link{ crossorigin: :anonymous,
+           href: 'https://cdn.rtlcss.com/bootstrap/v4.2.1/css/bootstrap.min.css',
+           integrity: 'sha384-vus3nQHTD+5mpDiZ4rkEPlnkcyTP+49BhJ4wJeJunw06ZAp+wzzeBPUXr42fi8If',
+           rel: :stylesheet }
+    %link{ href: 'https://fonts.googleapis.com/css?family=Alef', rel: 'stylesheet' }
+
+    = stylesheet_link_tag 'lexicon_backend'
+    = javascript_include_tag 'lexicon_backend'
+    %script{ crossorigin: :anonymous,
+             integrity: 'sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q',
+             src: 'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js' }
+    %script{ crossorigin: :anonymous,
+             integrity: 'sha384-a9xOd0rz8w0J8zqj1qJic7GPFfyMfoiuDjC9rqXlVOcGO/dmRqzMn34gZYDTel8k',
+             src: 'https://cdn.rtlcss.com/bootstrap/v4.2.1/js/bootstrap.min.js' }
+    = csrf_meta_tags
+  %body
+    %header.container-fluid
+      - flash.each do |name, msg|
+        .alert.alert-dismissable{ class: %w(error alert).include?(name) ? 'alert-danger' : 'alert-success' }
+          %button.close{ type: :button, data: { dismiss: :alert } } &times;
+          = msg
+
+      %nav.navbar-expand-md.navbar-light.bg-light
+        %a.navbar-brand{ href: lexicon_root_path } Lexicon
+        %button.navbar-toggler{ type: :button,
+                                data: { toggle: :collapse, target: '#navbarNavAltMarkup' },
+                                aria: { controls: 'navbarNavAltMarkup', expanded: false, label: 'Toggle navigation' } }
+          %span.navbar-toggler-icon
+        .collapse.navbar-collapse#navbarNavAltMarkup
+          .navbar-nav
+            %a.nav-link{ class: (:active if controller_name == 'entries' && action_name == 'index'),
+                         href: lexicon_entries_path } Entries
+            %a.nav-link{ class: (:active if controller_name == 'files' && action_name == 'index'),
+                         href: lexicon_files_path } Files
+    %main.container-fluid
+      = yield
+    %footer.container-fluid
