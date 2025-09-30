@@ -18,15 +18,24 @@ describe '/lexicon/entries' do
     subject { get "/lex/entries/#{entry.id}" }
 
     context 'when entry is a Person' do
-      let(:entry) { create(:lex_entry, :person) }
+      let(:entry) { create(:lex_entry, :person, status: :migrated) }
+      let(:authority) { create(:authority) }
 
-      it { is_expected.to redirect_to(lexicon_person_path(entry.lex_item)) }
+      it { is_expected.to eq(200) }
+
+      context 'when entry has authority' do
+        before do
+          entry.lex_item.update!(authority_id: authority.id)
+        end
+
+        it { is_expected.to eq(200) }
+      end
     end
 
     context 'when entry is a Publication' do
       let(:entry) { create(:lex_entry, :publication) }
 
-      it { is_expected.to redirect_to(lexicon_publication_path(entry.lex_item)) }
+      it { is_expected.to eq(200) }
     end
   end
 end
