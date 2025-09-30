@@ -3,18 +3,13 @@
 module Lexicon
   # Controller to work with People records in Lexicon
   class PeopleController < ::ApplicationController
-    before_action :set_lex_person, only: %i(show edit update destroy)
+    before_action :set_lex_person, only: %i(edit update destroy)
 
-    layout 'lexicon_backend', except: :show
+    layout 'lexicon_backend'
 
     # GET /lex_people or /lex_people.json
     def index
       @lex_people = LexPerson.all
-    end
-
-    # GET /lex_people/1 or /lex_people/1.json
-    def show
-      @lex_entry = @lex_person.entry
     end
 
     # GET /lex_people/new
