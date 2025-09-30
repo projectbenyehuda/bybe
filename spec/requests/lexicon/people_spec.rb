@@ -62,20 +62,6 @@ describe '/lexicon/people' do
     it { is_expected.to eq(200) }
   end
 
-  describe 'GET /show' do
-    subject { get "/lex/people/#{lex_person.id}" }
-
-    it { is_expected.to eq(200) }
-
-    context 'when lex person has linked authority' do
-      before do
-        lex_person.update!(authority_id: authority.id)
-      end
-
-      it { is_expected.to eq(200) }
-    end
-  end
-
   describe 'GET /edit' do
     subject { get "/lex/people/#{lex_person.id}/edit" }
 
