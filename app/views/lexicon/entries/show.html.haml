@@ -1,0 +1,6 @@
+.peach2-lexicon
+  - lex_item = @lex_entry.lex_item
+  - if lex_item.is_a?(LexPerson)
+    = render partial: 'show_person', locals: { lex_person: lex_item }
+  - elsif lex_item.is_a?(LexPublication)
+    = render partial: 'show_publication', locals: { lex_publication: lex_item }
