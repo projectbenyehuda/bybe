@@ -5,6 +5,8 @@ module Lexicon
   class PeopleController < ::ApplicationController
     before_action :set_lex_person, only: %i(show edit update destroy)
 
+    layout 'lexicon_backend', except: :show
+
     # GET /lex_people or /lex_people.json
     def index
       @lex_people = LexPerson.all
