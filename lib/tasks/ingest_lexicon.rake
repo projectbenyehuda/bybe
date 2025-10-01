@@ -72,11 +72,13 @@ def die(msg)
 end
 
 def validate_title(title, fname)
-  validation = title.strip.gsub('&nbsp;', '').gsub('בהכנה', '')
-  unless validation.any_hebrew?
+  if title.blank?
+    @outbuf += "\nCan't find title in #{fname}!\n"
+    '???'
+  elsif !title.any_hebrew?
     @outbuf += "\nNo Hebrew in #{validation} from #{fname}!\n"
+    title
   end
-  return validation
 end
 
 def process_legacy_lexicon_entry(fname)
@@ -96,8 +98,6 @@ def process_legacy_lexicon_entry(fname)
   end
   return unless should_process
 
-  buf = File.read(fname).gsub("\r\n", "\n")
-  buf = buf[0..3000] if buf.length > 3000 # the entry name seems to always occur a little after 2000 chars
   entrytype = case fname
               when /999.+\.php/
                 'bib'
@@ -111,15 +111,7 @@ def process_legacy_lexicon_entry(fname)
                 'unknown'
               end
 
-  title = buf.gsub("\n", ' ').scan(%r{<p align="center"><font size="[4|5]".*?>(.*?)</}).join(' ')
-  if title.nil? || title.strip.empty?
-    buf =~ %r{<title>(.*?)</title>}m
-    title = Regexp.last_match(1) if Regexp.last_match(1)
-    if title.nil? || title.strip.empty?
-      title = '???'
-      @outbuf += "\nCan't find title in #{fname}!\n"
-    end
-  end
+  title = Lexicon::ExtractTitle.call(fname)
   title = validate_title(title, fname)
   if lf.nil?
     LexFile.create!(
