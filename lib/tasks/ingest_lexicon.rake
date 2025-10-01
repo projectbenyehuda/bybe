@@ -55,8 +55,7 @@ task :ingest_lexicon, [:dirname] => :environment do |_taskname, args|
     i += 1
     print "\n...#{i} " if i % 20 == 0
   rescue ArgumentError => e
-    puts "\n#{e} bad encoding in #{fname}. " \
-         "Run\n\nrake badchar[#{thedir}/#{fname}]\n\n to find what doesn't convert well."
+    puts "\n#{e} unexpected error in #{fname}. "
   end
   puts "\nPEOPLE: " + @people.sort.join('; ')
   puts "\nTEXTS: " + @texts.sort.join('; ')
@@ -76,7 +75,7 @@ def validate_title(title, fname)
     @outbuf += "\nCan't find title in #{fname}!\n"
     '???'
   elsif !title.any_hebrew?
-    @outbuf += "\nNo Hebrew in #{validation} from #{fname}!\n"
+    @outbuf += "\nNo Hebrew in #{title} from #{fname}!\n"
     title
   end
 end
