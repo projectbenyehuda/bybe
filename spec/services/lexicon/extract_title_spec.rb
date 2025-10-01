@@ -1,0 +1,19 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+describe Lexicon::ExtractTitle do
+  subject(:call) { described_class.call(file) }
+
+  context 'when person file is provided' do
+    let(:file) { Rails.root.join('spec/data/lexicon/00024.php') }
+
+    it { is_expected.to eq('שמואל בס') }
+  end
+
+  context 'when publication file is provided' do
+    let(:file) { Rails.root.join('spec/data/lexicon/02645001.php') }
+
+    it { is_expected.to eq('אליעזר ירושלמי') }
+  end
+end
