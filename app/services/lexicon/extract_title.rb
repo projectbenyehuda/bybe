@@ -4,15 +4,16 @@ module Lexicon
   # Service to extract title from Lexicon entry
   class ExtractTitle < ApplicationService
     def call(fname)
-      buf = File.read(fname).gsub("\r\n", "\n")
-      buf = buf[0..3000] if buf.length > 3000 # the entry name seems to always occur a little after 2000 chars
+      html_doc = File.open(fname) { |f| Nokogiri::HTML(f) }
 
-      title = buf.gsub("\n", ' ').scan(%r{<p align="center"><font size="[4|5]".*?>(.*?)</}).join(' ')
-      if title.blank?
-        buf =~ %r{<title>(.*?)</title>}m
-        title = Regexp.last_match(1) if Regexp.last_match(1)
+      title_table_node = html_doc.at_css('table#table5')
+      if title_table_node.present?
+        # first td element with center alignment is the title
+        title = title_table_node.at_css('td p[align="center"]')&.text
       end
-      title.strip.gsub('&nbsp;', '').gsub('בהכנה', '')
+      title = html_doc.css('title')&.text if title.blank?
+
+      title.strip.gsub('&nbsp;', ' ').squish if title.present?
     end
   end
 end
