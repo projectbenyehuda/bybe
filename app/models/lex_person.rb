@@ -3,10 +3,11 @@
 # Person from Lexicon
 class LexPerson < ApplicationRecord
   include LifePeriod
+  include Lexicon::WithCitations
 
   has_one :entry, as: :lex_item, class_name: 'LexEntry', dependent: :destroy
   has_many :lex_links, as: :item, dependent: :destroy
-  belongs_to :authority, optional: true
+  belongs_to :authority, optional: true # link to an Authority record representing this person in BYP
 
   accepts_nested_attributes_for :entry, update_only: true
 
