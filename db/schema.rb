@@ -620,6 +620,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.integer "manifestation_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.text "raw"
+    t.integer "status", null: false
+    t.text "notes"
     t.index ["authors"], name: "index_lex_citations_on_authors"
     t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"

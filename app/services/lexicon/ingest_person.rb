@@ -4,14 +4,15 @@ module Lexicon
   # Service to ingest Lexicon Person from php file
   class IngestPerson < IngestBase
     def create_lex_item(html_doc)
+      citations = ExtractCitations.call(html_doc)
+
       buf = html_doc.to_html
 
       # anchors = buf.scan(/<a name="(.*?)">/)
       # ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
       lex_person = LexPerson.new(
         bio: parse_person_bio(buf[%r{</table>.*?<a name="Books}m]),
-        works: parse_person_books(buf[/a name="Books".*?<a name/m]),
-        about: parse_person_bib(buf[/a name="Bib.".*?<a name/m])
+        works: parse_person_books(buf[/a name="Books".*?<a name/m])
       )
 
       # Match both patterns: (YYYY) and (YYYY-YYYY)
@@ -20,6 +21,7 @@ module Lexicon
         lex_person.deathdate = match[2]
       end
 
+      lex_person.citations = citations
       lex_person.save!
 
       parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
@@ -33,16 +35,6 @@ module Lexicon
     end
 
     def parse_person_books(buf)
-      buf.scan(%r{<li>(.*?)</li>}m).map do |x|
-        if x.instance_of?(Array)
-          HtmlToMarkdown.call(x[0]).gsub("\n", ' ')
-        else
-          ''
-        end
-      end.join("\n")
-    end
-
-    def parse_person_bib(buf)
       buf.scan(%r{<li>(.*?)</li>}m).map do |x|
         if x.instance_of?(Array)
           HtmlToMarkdown.call(x[0]).gsub("\n", ' ')
