@@ -19,6 +19,8 @@ en:
         title: List of Lexicon Entries
       show:
         unsupported_entry_type: Unsupported entry type
+      show_person:
+        pages: p.
     attachments:
       index:
         filename: Filename
@@ -56,3 +58,4 @@ en:
       tabs:
         properties: Properties
         attachments: Attachments
+        citations: Citations
