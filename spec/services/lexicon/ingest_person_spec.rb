@@ -29,6 +29,7 @@ describe Lexicon::IngestPerson do
       person = entry.lex_item
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1946', deathdate: nil)
+      expect(person.citations.count).to eq(53)
     end
   end
 
@@ -56,6 +57,7 @@ describe Lexicon::IngestPerson do
       person = entry.lex_item
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1899', deathdate: '1949')
+      expect(person.citations.count).to eq(4)
     end
   end
 end
