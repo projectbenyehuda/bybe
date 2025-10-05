@@ -19,6 +19,8 @@ he:
         title: רשימת ערכי הלקסיקון
       show:
         unsupported_entry_type: Unsupported entry type
+      show_person:
+        pages: p.
     attachments:
       index:
         filename: Filename
@@ -56,3 +58,4 @@ he:
       tabs:
         properties: Properties
         attachments: Attachments
+        citations: Citations
