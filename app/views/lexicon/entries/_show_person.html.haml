@@ -29,8 +29,13 @@
               %li!= MarkdownToHtml.call(book)
         = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:about) } do
           %ul
-            - lex_person.about.split("\n").each do |about|
-              %li!= MarkdownToHtml.call(about)
+            - lex_person.citations.each do |c|
+              %li
+                #{c.title}
+                #{c.authors}
+                #{c.from_publication}
+                =t('lexicon.entries.show_person.pages')
+                #{c.pages}
         = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:links) } do
           %h3 TBD
 
