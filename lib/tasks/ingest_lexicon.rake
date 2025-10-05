@@ -73,17 +73,18 @@ end
 def validate_title(title, fname)
   if title.blank?
     @outbuf += "\nCan't find title in #{fname}!\n"
-    '???'
+    title = '???'
   elsif !title.any_hebrew?
     @outbuf += "\nNo Hebrew in #{title} from #{fname}!\n"
-    title
   end
+
+  title
 end
 
 def process_legacy_lexicon_entry(fname)
   should_process = false
   filepart = fname[(fname.rindex('/') + 1)..]
-  lf = LexFile.where(fname: filepart).first
+  lf = LexFile.find_by(fname: filepart)
   if lf.nil?
     should_process = true
     @outbuf += "\nNEW FILE: #{fname}\n"
@@ -122,7 +123,7 @@ def process_legacy_lexicon_entry(fname)
     )
     @new += 1
   else
-    lf.update!(entrytype: entrytype)
+    lf.update!(entrytype: entrytype, title: title)
   end
   case entrytype
   when 'bib'
