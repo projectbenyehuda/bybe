@@ -4,8 +4,8 @@ module Lexicon
   # Service to parse citation from Lexicon
   class ParseCitation < ApplicationService
     # @param list_item li element from html document representing a citation
-    def call(list_item)
-      citation = LexCitation.new(status: :raw, raw: list_item.inner_html)
+    def call(list_item, from_publication)
+      citation = LexCitation.new(status: :raw, raw: list_item.inner_html, from_publication: from_publication)
 
       # first bold element is the author
       b = list_item.at_css('b')
