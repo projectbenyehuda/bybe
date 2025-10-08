@@ -6,7 +6,7 @@
       %td= t('.size')
       %td= t('.preview')
       %td
-  -@lex_entry.attachments.preload(:blob).each do |a|
+  - @lex_entry.attachments.preload(:blob).each do |a|
     %tr
       %td= a.blob.filename
       %td
