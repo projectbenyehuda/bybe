@@ -31,11 +31,7 @@
           %ul
             - lex_person.citations.each do |c|
               %li
-                #{c.title}
-                #{c.authors}
-                #{c.from_publication}
-                =t('lexicon.entries.show_person.pages')
-                #{c.pages}
+                = render_citation(c)
         = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:links) } do
           %h3 TBD
 
@@ -43,7 +39,7 @@
     .row
       .col.side-menu-area-left
       .col
-        = render partial: 'lexicon/images', locals: { entry: lex_person.entry }
+        = render partial: 'lexicon/shared/images', locals: { entry: lex_person.entry }
       .col
         - if lex_person.authority&.published?
           .by-card-v02.left-side-card-v02

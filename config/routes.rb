@@ -25,6 +25,7 @@ Bybeconv::Application.routes.draw do
     resources :publications, except: %i(show)
     resources :entries, only: %i(index show) do
       resources :attachments, only: %i(index create destroy)
+      resources :citations, shallow: true, except: %i(show)
     end
     resources :files, only: :index do
       member do
@@ -38,7 +39,6 @@ Bybeconv::Application.routes.draw do
   end
 
   resources :lex_links
-  resources :lex_citations
 
   resources :ingestibles do
     resources :authorities, controller: :ingestible_authorities, only: %i(create destroy) do
