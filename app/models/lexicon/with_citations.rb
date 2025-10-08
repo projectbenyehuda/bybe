@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Lexicon
+  # Lexicon model with associated set of citations
   module WithCitations
     extend ActiveSupport::Concern
 

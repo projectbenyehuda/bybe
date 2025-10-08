@@ -5,7 +5,7 @@
 .tab-content
   .tab-pane.fade.show.active#properties
     = render 'form'
-  = render partial: 'lexicon/shared/attachments', locals: { entry: @lex_publication.entry}
+  = render partial: 'lexicon/shared/attachments', locals: { entry: @lex_publication.entry }
 
 = link_to 'Show', lexicon_publication_path(@lex_publication)
 \|
