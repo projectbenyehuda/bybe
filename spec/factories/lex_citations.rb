@@ -2,12 +2,11 @@
 
 FactoryBot.define do
   factory :lex_citation do
-    title { 'MyString' }
-    from_publication { 'MyString' }
-    authors { 'MyString' }
-    pages { 'MyString' }
-    link { 'MyString' }
-    item { nil }
-    manifestation { nil }
+    title { item&.entry&.title || Faker::Book.title }
+    from_publication { Faker::Book.title }
+    authors { Faker::Name.name }
+    pages { Random.rand(1..100).to_s }
+    link { Faker::Internet.url }
+    status { 'manual' }
   end
 end
