@@ -1,0 +1,24 @@
+.tab-pane.fade#citations
+  %a.btn.btn-primary.add-citation= t('.add_citation')
+  #citations_table
+
+:javascript
+  $(function() {
+    $('#citations_tab').on('shown.bs.tab', function (event) {
+      var tab = event.target;
+      if ($(tab).data('loaded') != true) {
+        reloadCitationsTable();
+        $(tab).data('loaded', true);
+      }
+    });
+
+    $('a.add-citation').click(function() {
+      openModal('/lex/entries/#{entry.id}/citations/new', reloadCitationsTable);
+    });
+  });
+
+  function reloadCitationsTable() {
+    $('#citations_table').load(
+      '#{lexicon_entry_citations_path(entry)}'
+    );
+  };
