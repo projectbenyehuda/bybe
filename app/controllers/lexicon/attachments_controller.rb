@@ -3,7 +3,7 @@
 module Lexicon
   # Controller to handle work with LexEntry attachments
   # This controller is mounted on lexicon/entries/:id/attachments path
-  class AttachmentsController < ActionController::Base
+  class AttachmentsController < ApplicationController
     before_action :set_lex_entry
 
     helper_method :format_filesize
