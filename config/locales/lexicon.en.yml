@@ -55,6 +55,8 @@ en:
     shared:
       attachments:
         attach_new_file: Attach new file
+      citations:
+        add_citation: Add citation
       tabs:
         properties: Properties
         attachments: Attachments
