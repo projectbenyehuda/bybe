@@ -1,0 +1,15 @@
+%ul
+  - @lex_citations.each do |c|
+    %li
+      = raw render_citation(c)
+      = link_to t(:edit), nil, class: 'edit-citation', data: { id: c.id }
+      = link_to t(:delete),
+                lexicon_citation_path(c),
+                remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-citation'
+
+:javascript
+  $('.edit-citation').click(function(e) {
+    e.preventDefault();
+    const citationId = $(this).data('id');
+    openModal(`/lex/citations/${citationId}/edit`, reloadCitationsTable);
+  });
