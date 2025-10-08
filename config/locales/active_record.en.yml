@@ -18,6 +18,7 @@ en:
       collection_item: Collection Item
       corporate_body: Corporate Body
       featured_content: Featured Content
+      lex_citation: Citation of Lexicon Entry
       lex_entry: Lexicon Entry
       lex_person: Lexicon Person
       lex_publication: Lexicon Publication
@@ -85,6 +86,11 @@ en:
             draft: Draft at work
             ingested: Recorded in the catalogue
             failed: Upload failed
+      lex_citation:
+        from_publication: From Publication
+        authors: Authors
+        pages: Pages
+        raw: RAW citation markup from legacy website
       lex_file:
         fname: File name
         entrytypes:
