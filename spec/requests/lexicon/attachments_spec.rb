@@ -36,7 +36,7 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
   end
 
   describe 'POST /lexicon/entries/<ENTRY_ID>/attachments' do
-    subject(:call) { post "/lex/entries/#{lex_entry.id}/attachments", params: { attachment: file } }
+    subject(:call) { post "/lex/entries/#{lex_entry.id}/attachments", params: { attachment: file }, xhr: true }
 
     let(:file) do
       Rack::Test::UploadedFile.new(
@@ -54,7 +54,7 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
   end
 
   describe 'DELETE /lexicon/entries/<ENTRY_ID>/attachments/<ATTACHMENT_ID>' do
-    subject(:call) { delete "/lex/entries/#{lex_entry.id}/attachments/#{pdf.blob_id}" }
+    subject(:call) { delete "/lex/entries/#{lex_entry.id}/attachments/#{pdf.blob_id}", xhr: true }
 
     it 'removes attachment' do
       expect { call }.to change { lex_entry.attachments.count }.by(-1)
