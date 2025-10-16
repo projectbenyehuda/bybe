@@ -7,7 +7,8 @@
       %th Status
       %th Type
       %th
-
+      %th
+      %th
   %tbody
     - @lex_entries.each do |lex_entry|
       - item = lex_entry.lex_item
@@ -17,5 +18,16 @@
         %td= item.model_name.human
         %td
           = link_to t(:show), lexicon_entry_path(lex_entry)
+        %td
+          :ruby
+            link = if lex_entry.lex_item.is_a?(LexPerson)
+                     edit_lexicon_person_path(lex_entry.lex_item)
+                   elsif lex_entry.lex_item.is_a?(LexPublication)
+                     edit_lexicon_publication_path(lex_entry.lex_item)
+                   end
+          = link_to t(:edit), link
+        %td
+          = link_to t(:destroy), lexicon_entry_path(lex_entry)
+
 
 = paginate @lex_entries

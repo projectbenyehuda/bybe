@@ -79,7 +79,7 @@ describe '/lexicon/citations' do
   end
 
   describe 'DELETE /lex/citations/:id' do
-    subject(:call) { delete "/lex/citations/#{citation.id}" }
+    subject(:call) { delete "/lex/citations/#{citation.id}", xhr: true }
 
     it 'removes record' do
       expect { call }.to change { entry.lex_item.citations.count }.by(-1)
