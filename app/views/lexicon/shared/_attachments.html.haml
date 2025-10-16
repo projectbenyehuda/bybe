@@ -1,6 +1,6 @@
 .tab-pane.fade#attachments
   #attachments_table
-  = form_tag lexicon_entry_attachments_path(entry), multipart: true, id: :new_attachment_form do
+  = form_tag lexicon_entry_attachments_path(entry), multipart: true, id: :new_attachment_form, remote: true do
     .row
       .col-sm-2
         = label_tag :attachment, t('.attach_new_file')
@@ -17,28 +17,6 @@
         reloadAttachmentsTable();
         $(tab).data('loaded', true);
       }
-    });
-
-    $(document).on('ajax:success', '.delete-lex-attachment', reloadAttachmentsTable);
-
-    // TODO: By some reason Rails remote form submission does not works here, so I've used plain jQuery,
-    //    but it would be better to use rails-ujs
-    $('#new_attachment_form').on('submit', function(e) {
-      e.preventDefault();
-      var formData = new FormData(this);
-      $.ajax({
-        url: this.action,
-        type: 'POST',
-        data: formData,
-        dataType: 'script',
-        processData: false,
-        contentType: false,
-        success: function() {
-          reloadAttachmentsTable();
-          $('#submit_new_attachment').removeAttr('disabled');
-          $('#attachment').val('');
-        }
-      });
     });
   });
 
