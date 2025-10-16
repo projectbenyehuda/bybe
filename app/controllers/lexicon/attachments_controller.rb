@@ -15,12 +15,10 @@ module Lexicon
 
     def create
       @lex_entry.attachments.attach(params[:attachment])
-      head :ok
     end
 
     def destroy
       @lex_entry.attachments.find_by(blob_id: params[:id]).purge
-      head :ok
     end
 
     private
