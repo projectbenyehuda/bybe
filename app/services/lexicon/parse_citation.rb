@@ -13,15 +13,17 @@ module Lexicon
       # TODO: process possible links to author pages (in this case there should be an <a/> tag inside of <b/>)
       b.remove # removing bold tag to simplify further processing
 
-      # book name should be the text inside double quotes
-      book = list_item.text
-      book =~ /"(.*?)"/m
-      citation.from_publication = Regexp.last_match(1)
+      pages_pattern = /((?:עמ['׳]?\s*|p\.?\s*|pp\.?\s*)(\d+(?:[–\-־]\d+)?))/
 
-      # pages are either the single number or range of numbers
-      match = list_item.text.match(/עמ['׳]?\s*(\d+(?:[–\-־]\d+)?)/)
-      citation.pages = match[1] if match
+      rest_text = list_item.text
+      match = rest_text.match(pages_pattern)
+      if match
+        citation.pages = match[2] # The page numbers only
+        rest_text = rest_text.gsub(match[1], '').strip # Remove the exact matched string
+      end
 
+      # removing trailing punctuation left after removal of pages, authors, etc.
+      citation.title = rest_text.squish.gsub(/[.\s,]*\z/, '')
       citation
     end
   end
