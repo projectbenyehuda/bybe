@@ -23,14 +23,14 @@ module Lexicon
       # There should be set of pairs: first is a 'font' element, containing header describing item (work or person)
       # citation is about, second is an 'ul' list representing set of citation.
       while next_elem.present? && next_elem.name == 'font'
-        from_publication = next_elem.text&.squish
+        subject = next_elem.text&.squish
 
         list = next_elem.next_element
         unless list.name == 'ul' # unexpected format
           Rails.logger.warn("Unexpected citation format, ul tag is expected after #{next_elem}")
           break
         end
-        result += parse_citations(list, from_publication)
+        result += parse_citations(list, subject)
         next_elem = list.next_element
       end
 
@@ -59,12 +59,12 @@ module Lexicon
 
     # it always starts with the author (not the LexPerson, the author of the text *about* this LexPerson), then the name
     # of the article/text, then the publication it was published in, then date and page number.
-    def parse_citations(list, from_publication)
+    def parse_citations(list, subject)
       result = []
       list.element_children.each do |li|
         next unless li.name == 'li'
 
-        result << ParseCitation.call(li, from_publication)
+        result << ParseCitation.call(li, subject)
       end
 
       result

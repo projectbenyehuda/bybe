@@ -1,3 +1,16 @@
 %h1 Editing lex_citation
 
+- if @citation.status_raw? || @citation.status_approved?
+  .btn-group.btn-group-sm
+    = link_to t('.parse_again'),
+             parse_again_lexicon_citation_path(@citation),
+             class: 'btn btn-secondary',
+             remote: true,
+             method: :post
+    - if @citation.status_raw?
+      = link_to t('.approve'),
+                approve_lexicon_citation_path(@citation),
+                class: 'btn btn-primary',
+                remote: true,
+                method: :post
 = render 'form'
