@@ -631,8 +631,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.text "raw"
     t.integer "status", null: false
     t.text "notes"
+    t.string "subject"
+    t.bigint "lex_person_id"
     t.index ["authors"], name: "index_lex_citations_on_authors"
     t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
+    t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
     t.index ["title"], name: "index_lex_citations_on_title"
   end
@@ -1148,6 +1151,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
   add_foreign_key "ingestibles", "users", column: "last_editor_id"
   add_foreign_key "ingestibles", "users", column: "locked_by_user_id"
   add_foreign_key "involved_authorities", "authorities"
+  add_foreign_key "lex_citations", "lex_people"
   add_foreign_key "lex_citations", "manifestations"
   add_foreign_key "lex_files", "lex_entries"
   add_foreign_key "lex_issues", "lex_publications"
