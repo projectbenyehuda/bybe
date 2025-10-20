@@ -27,6 +27,10 @@ en:
         size: Size
         preview: Preview
         copy_link: Copy link to clipboard
+    citations:
+      edit:
+        approve: Approve Citation
+        parse_again: Reparse HTML
     files:
       index:
         title: List of files
