@@ -7,17 +7,17 @@
     $('#citations_tab').on('shown.bs.tab', function (event) {
       var tab = event.target;
       if ($(tab).data('loaded') != true) {
-        reloadCitationsTable();
+        reloadCitations();
         $(tab).data('loaded', true);
       }
     });
 
     $('a.add-citation').click(function() {
-      openModal('/lex/entries/#{entry.id}/citations/new', reloadCitationsTable);
+      openModal('/lex/entries/#{entry.id}/citations/new');
     });
   });
 
-  function reloadCitationsTable() {
+  function reloadCitations() {
     $('#citations_table').load(
       '#{lexicon_entry_citations_path(entry)}'
     );
