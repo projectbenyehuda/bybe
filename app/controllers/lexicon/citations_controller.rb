@@ -3,7 +3,7 @@
 module Lexicon
   # Controller to work with Lexicon Citations
   class CitationsController < ApplicationController
-    before_action :set_citation, only: %i(edit update destroy)
+    before_action :set_citation, only: %i(edit update destroy approve parse_again)
     before_action :set_entry, only: %i(new create index)
 
     layout false
@@ -19,9 +19,7 @@ module Lexicon
     def create
       @citation = @entry.lex_item.citations.build(lex_citation_params.merge(status: :manual))
 
-      if @citation.save
-        head :created
-      else
+      unless @citation.save
         render :new, status: :unprocessable_entity
       end
     end
@@ -29,15 +27,26 @@ module Lexicon
     def edit; end
 
     def update
-      if @citation.update(lex_citation_params)
-        head :ok
-      else
+      unless @citation.update(lex_citation_params)
         render :edit, status: :unprocessable_entity
       end
     end
 
     def destroy
       @citation.destroy!
+    end
+
+    def approve
+      @citation.status_approved!
+    end
+
+    def parse_again
+      c = Lexicon::ParseCitation.call(Nokogiri.HTML4("<li>#{@citation.raw}</li>"), nil)
+      @citation.authors = c.authors
+      @citation.title = c.title
+      @citation.from_publication = c.from_publication
+      @citation.pages = c.pages
+      @citation.item = c.item
     end
 
     private
@@ -54,7 +63,7 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_citation_params
-      params.expect(lex_citation: %i(title from_publication authors pages link manifestation_id))
+      params.expect(lex_citation: %i(title from_publication authors pages link manifestation_id subject))
     end
   end
 end

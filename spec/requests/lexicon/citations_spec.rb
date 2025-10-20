@@ -23,14 +23,14 @@ describe '/lexicon/citations' do
   end
 
   describe 'POST /lex/entries/:ID/citations' do
-    subject(:call) { post "/lex/entries/#{entry.id}/citations", params: { lex_citation: citation_params } }
+    subject(:call) { post "/lex/entries/#{entry.id}/citations", params: { lex_citation: citation_params }, xhr: true }
 
     context 'when valid params' do
       let(:citation_params) { attributes_for(:lex_citation) }
 
       it 'creates new record' do
         expect { call }.to change { entry.lex_item.citations.count }.by(1)
-        expect(call).to eq(201)
+        expect(call).to eq(200)
 
         citation = LexCitation.last
         expect(citation).to have_attributes(citation_params)
@@ -55,7 +55,7 @@ describe '/lexicon/citations' do
   end
 
   describe 'PATCH /lex/citations/:id' do
-    subject(:call) { patch "/lex/citations/#{citation.id}", params: { lex_citation: citation_params } }
+    subject(:call) { patch "/lex/citations/#{citation.id}", params: { lex_citation: citation_params }, xhr: true }
 
     context 'when valid params' do
       let(:citation_params) { attributes_for(:lex_citation) }
