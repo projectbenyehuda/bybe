@@ -25,7 +25,12 @@ Bybeconv::Application.routes.draw do
     resources :publications, except: %i(show)
     resources :entries, only: %i(index show) do
       resources :attachments, only: %i(index create destroy)
-      resources :citations, shallow: true, except: %i(show)
+      resources :citations, shallow: true, except: %i(show) do
+        member do
+          post :approve
+          post :parse_again
+        end
+      end
     end
     resources :files, only: :index do
       member do
