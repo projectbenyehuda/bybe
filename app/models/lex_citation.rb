@@ -12,7 +12,7 @@ class LexCitation < ApplicationRecord
   enum :status,
        {
          raw: 0, # markup copied from PHP file (need to be parsed and splitted into separate columns)
-         migrated: 1, # markup parsed and stored in separate columns
+         approved: 1, # markup parsed and stored in separate columns
          manual: 2 # created manually (no raw markup existis)
        }, prefix: true
 
