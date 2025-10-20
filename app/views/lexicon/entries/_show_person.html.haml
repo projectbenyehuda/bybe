@@ -28,10 +28,11 @@
             - lex_person.works.split("\n").each do |book|
               %li!= MarkdownToHtml.call(book)
         = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:about) } do
-          %ul
-            - lex_person.citations.each do |c|
-              %li
-                = render_citation(c)
+          - lex_person.citations.group_by(&:subject).each do |subject, list|
+            %h4= subject
+            %ul
+              - list.each do |c|
+                %li= render_citation(c)
         = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:links) } do
           %h3 TBD
 
