@@ -44,7 +44,7 @@ describe InvolvedAuthoritiesController do
 
       it 'fails to create record' do
         expect { call }.not_to change(InvolvedAuthority, :count)
-        expect(call).to have_http_status(:unprocessable_entity)
+        expect(call).to have_http_status(:unprocessable_content)
       end
     end
   end

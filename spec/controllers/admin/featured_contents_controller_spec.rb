@@ -55,7 +55,7 @@ describe Admin::FeaturedContentsController do
 
       it 're-renders the new form' do
         expect { call }.not_to change(FeaturedContent, :count)
-        expect(call).to have_http_status(:unprocessable_entity)
+        expect(call).to have_http_status(:unprocessable_content)
         expect(call).to render_template(:new)
       end
     end
@@ -104,7 +104,7 @@ describe Admin::FeaturedContentsController do
         let(:featured_content_params) { { title: '', body: '' } }
 
         it 're-renders the edit form' do
-          expect(call).to have_http_status(:unprocessable_entity)
+          expect(call).to have_http_status(:unprocessable_content)
           expect(call).to render_template(:edit)
         end
       end

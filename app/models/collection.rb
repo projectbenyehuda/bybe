@@ -12,6 +12,7 @@ class Collection < ApplicationRecord
 
   before_save :update_sort_title!
   before_save :norm_dates
+  before_save :prevent_uncollected_type_change
 
   validates :collection_type, presence: true
 
@@ -70,6 +71,11 @@ class Collection < ApplicationRecord
   # other limitations will be added in future)
   def system?
     SYSTEM_TYPES.include?(collection_type)
+  end
+
+  # Allow system operations (like RefreshUncollectedWorksCollection) to bypass type protection
+  def allow_system_type_change!
+    @allow_system_type_change = true
   end
 
   def collection_items_by_type(item_type)
@@ -520,5 +526,30 @@ class Collection < ApplicationRecord
   def norm_dates
     nd = normalize_date(pub_year)
     self.normalized_pub_year = nd.year unless nd.nil?
+  end
+
+  def prevent_uncollected_type_change
+    return true unless collection_type_changed?
+    return true if @allow_system_type_change # Allow bypass for system operations
+
+    # Prevent creating new collections with uncollected type (should only be done by RefreshUncollectedWorksCollection)
+    if new_record? && uncollected?
+      errors.add(:collection_type, :cannot_manually_create_uncollected)
+      throw :abort
+    end
+
+    # Prevent changing from uncollected to any other type
+    if collection_type_was == 'uncollected' && !uncollected?
+      errors.add(:collection_type, :cannot_change_from_uncollected)
+      throw :abort
+    end
+
+    # Prevent changing to uncollected from any other type
+    if collection_type_was != 'uncollected' && uncollected?
+      errors.add(:collection_type, :cannot_change_to_uncollected)
+      throw :abort
+    end
+
+    true
   end
 end

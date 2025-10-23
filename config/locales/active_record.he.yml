@@ -30,6 +30,10 @@ he:
               no_linked_authority: יש לקשר או רשומת אישים או רשומת ארגונים
               multiple_linked_authorities: אי אפשר לקשר גם רשומת אישים וגם רשומת ארגונים
           wrong_collection_type: חייב להיות מסוג '%{expected_type}'
+        collection:
+          cannot_manually_create_uncollected: אסור ליצור אוסף מסוג "לא מקובצות". אוספים אלו נוצרים ונמחקים אוטומטית לפי הצורך.
+          cannot_change_from_uncollected: אי אפשר לשנות אוסף מסוג "לא מקובצות" לסוג אחר.
+          cannot_change_to_uncollected: אי אפשר לשנות אוסף מסוג אחר לסוג "לא מקובצות".
         collection_item:
           attributes:
             collection:

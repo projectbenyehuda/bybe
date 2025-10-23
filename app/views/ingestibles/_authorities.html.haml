@@ -1,7 +1,6 @@
 - if @ingestible.try(:id)
   - @authority_by_name = Authority.all.map { |a| [a.name, a.id] }.to_h
 
-  %h3= t(:associated_persons)
   %ul#authorities
     - if authorities.present?
       = render partial: 'ingestible_authorities/authority', collection: JSON.parse(authorities), locals: {editable: true, toc: false}

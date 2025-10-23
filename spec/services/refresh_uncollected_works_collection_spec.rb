@@ -4,7 +4,7 @@ require 'rails_helper'
 
 describe RefreshUncollectedWorksCollection do
   let!(:authority) { create(:authority, uncollected_works_collection: uncollected_works) }
-  let!(:other_uncollected_works) { create(:collection, collection_type: :uncollected) }
+  let!(:other_uncollected_works) { create(:collection, :uncollected) }
   let!(:other_authority) { create(:authority, uncollected_works_collection: other_uncollected_works) }
 
   # Those items are not included to any collection so should get into uncollected works collection
@@ -56,7 +56,7 @@ describe RefreshUncollectedWorksCollection do
     end
 
     context 'when there is an uncollected works collection and it has items to be removed' do
-      let(:uncollected_works) { create(:collection, collection_type: :uncollected) }
+      let(:uncollected_works) { create(:collection, :uncollected) }
 
       # this item should be removed from collection
       let!(:already_collected_manifestation) do

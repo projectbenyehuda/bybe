@@ -8,6 +8,14 @@ FactoryBot.define do
     issn { 'MyString' }
     collection_type { %w(volume periodical periodical_issue series other).sample }
 
+    # Trait for creating system-managed uncollected collections
+    trait :uncollected do
+      collection_type { :uncollected }
+      after(:build) do |collection|
+        collection.allow_system_type_change!
+      end
+    end
+
     transient do
       authors { [] }
       translators { [] }

@@ -14,6 +14,7 @@ class RefreshUncollectedWorksCollection < ApplicationService
         collection_type: :uncollected,
         title: I18n.t(:uncollected_works_collection_title)
       )
+      collection.allow_system_type_change!
     end
 
     nextseqno = (collection.collection_items.maximum(:seqno) || 0) + 1

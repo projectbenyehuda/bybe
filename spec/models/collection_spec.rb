@@ -20,6 +20,42 @@ describe Collection do
     expect(collection).not_to be_valid
   end
 
+  describe 'uncollected type protection' do
+    it 'prevents manually creating a collection with uncollected type' do
+      collection = build(:collection, collection_type: :uncollected)
+      expect(collection.save).to eq false
+      expect(collection.errors[:collection_type]).to be_present
+    end
+
+    it 'prevents changing collection_type from uncollected to another type' do
+      collection = create(:collection, collection_type: :other)
+      # Manually set to uncollected to simulate a system-created collection
+      collection.update_column(:collection_type, Collection.collection_types[:uncollected])
+      collection.reload
+
+      collection.collection_type = :volume
+      expect(collection.save).to eq false
+      expect(collection.errors[:collection_type]).to be_present
+    end
+
+    it 'prevents changing collection_type to uncollected from another type' do
+      collection = create(:collection, collection_type: :volume)
+      collection.collection_type = :uncollected
+      expect(collection.save).to eq false
+      expect(collection.errors[:collection_type]).to be_present
+    end
+
+    it 'allows updating other attributes of an uncollected collection' do
+      collection = create(:collection, collection_type: :other)
+      # Manually set to uncollected to simulate a system-created collection
+      collection.update_column(:collection_type, Collection.collection_types[:uncollected])
+      collection.reload
+
+      collection.title = 'Updated Title'
+      expect(collection.save).to eq true
+    end
+  end
+
   it 'iterates over its collection_items in order' do
     c = create(:collection)
     i1 = create(:collection_item, collection: c, seqno: 1)

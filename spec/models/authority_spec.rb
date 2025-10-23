@@ -21,19 +21,19 @@ describe Authority do
     describe 'uncollected works collection type validation' do
       let(:authority) { build(:authority, uncollected_works_collection: uncollected_works_collection) }
 
-      context 'when root collection is not set' do
+      context 'when uncollected collection is not set' do
         let(:uncollected_works_collection) { nil }
 
         it { expect(authority).to be_valid }
       end
 
-      context 'when root collection is set and has uncollected type' do
-        let(:uncollected_works_collection) { create(:collection, collection_type: :uncollected) }
+      context 'when uncollected collection is set and has uncollected type' do
+        let(:uncollected_works_collection) { create(:collection, :uncollected) }
 
         it { expect(authority).to be_valid }
       end
 
-      context 'when root collection is set but has wrong type' do
+      context 'when uncollected collection is set but has wrong type' do
         let(:uncollected_works_collection) { create(:collection) }
 
         it 'fails validation' do

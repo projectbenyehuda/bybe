@@ -43,14 +43,16 @@ describe AuthorsController do
     end
 
     context 'when genre is not provided' do
-      subject { get :get_random_author, params: { } }
+      subject { get :get_random_author, params: {} }
+
       it { is_expected.to be_successful }
     end
 
     context 'when genre provided' do
+      subject { get :get_random_author, params: { genre: genre } }
+
       let(:genre) { Work.first.genre }
 
-      subject { get :get_random_author, params: { genre: genre } }
       it { is_expected.to be_successful }
     end
   end
@@ -59,6 +61,8 @@ describe AuthorsController do
     let!(:author) { create(:authority) }
 
     describe '#toc' do
+      subject(:request) { get :toc, params: { id: author.id } }
+
       let(:toc) { create(:toc) }
 
       before do
@@ -66,8 +70,6 @@ describe AuthorsController do
         author.toc = toc
         author.save!
       end
-
-      subject(:request) { get :toc, params: { id: author.id } }
 
       it 'renders successfully' do
         expect(request).to be_successful
@@ -93,17 +95,19 @@ describe AuthorsController do
     end
 
     describe '#whatsnew_popup' do
-      let!(:manifestation) { create(:manifestation, created_at: created_at, author: author) }
-
       subject { get :whatsnew_popup, params: { id: author.id } }
+
+      let!(:manifestation) { create(:manifestation, created_at: created_at, author: author) }
 
       context 'when there is a new work in last month' do
         let(:created_at) { 20.days.ago }
+
         it { is_expected.to be_successful }
       end
 
       context 'when there is no new works in last month' do
         let(:created_at) { 35.days.ago }
+
         it { is_expected.to be_successful }
       end
     end
@@ -115,6 +119,7 @@ describe AuthorsController do
         before do
           create_list(:manifestation, 25, author: author)
         end
+
         it { is_expected.to be_successful }
       end
 
@@ -264,7 +269,7 @@ describe AuthorsController do
         it 're-renders new form' do
           expect { call }.not_to change(Authority, :count)
           expect(call).to render_template(:new)
-          expect(call).to have_http_status(:unprocessable_entity)
+          expect(call).to have_http_status(:unprocessable_content)
         end
       end
     end
@@ -482,9 +487,13 @@ describe AuthorsController do
 
         let(:works_period) { 'modern' } # intentionally use value different from author period
         let!(:original_work) { create(:manifestation, orig_lang: 'he', author: author, period: works_period) }
-        let!(:original_foreign_work) { create(:manifestation, orig_lang: 'ru', language: 'he', author: author, period: works_period) }
+        let!(:original_foreign_work) do
+          create(:manifestation, orig_lang: 'ru', language: 'he', author: author, period: works_period)
+        end
         let!(:translated_work) { create(:manifestation, orig_lang: 'ru', translator: author, period: works_period) }
-        let!(:translated_to_foreign_work) { create(:manifestation, orig_lang: 'he', language: 'ru', translator: author, period: works_period) }
+        let!(:translated_to_foreign_work) do
+          create(:manifestation, orig_lang: 'he', language: 'ru', translator: author, period: works_period)
+        end
 
         context 'when period attribute was changed' do
           let(:new_period) { 'ancient' }
@@ -533,7 +542,7 @@ describe AuthorsController do
           let(:new_period) { period }
 
           it 'fails to save and re-renders edit form' do
-            expect(request).to have_http_status(:unprocessable_entity)
+            expect(request).to have_http_status(:unprocessable_content)
             expect(response).to render_template :edit
           end
         end
