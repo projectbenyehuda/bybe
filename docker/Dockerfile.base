@@ -1,0 +1,18 @@
+FROM ruby:3.3.9-bookworm
+
+RUN apt-get update -qq && apt-get install -y \
+    curl \
+    cmake \
+    wkhtmltopdf \
+    yaz \
+    libyaz-dev \
+    libmagickwand-dev \
+    libpcap-dev \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/*
+
+ADD https://github.com/jgm/pandoc/releases/download/3.8.2.1/pandoc-3.8.2.1-1-amd64.deb /tmp/pandoc.deb
+RUN dpkg -i /tmp/pandoc.deb
+RUN rm /tmp/pandoc.deb
+
+RUN apt-get clean

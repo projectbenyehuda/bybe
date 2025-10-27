@@ -1,0 +1,6 @@
+FROM damisul/bybe-base:latest
+
+WORKDIR /app
+
+ENTRYPOINT ["/app/test-app.sh"]
+CMD rspec
