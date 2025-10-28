@@ -22,3 +22,19 @@
                   method: :delete,
                   remote: true,
                   data: { confirm: t(:are_you_sure) }
+
+= form_tag lexicon_entry_attachments_path(@lex_entry), multipart: true, id: :new_attachment_form, remote: true do
+  .row
+    .col-sm-2
+      = label_tag :attachment, t('.attach_new_file')
+    .col-sm-2
+      = file_field_tag :attachment
+    .col-sm-1
+      = submit_tag t(:upload), class: 'btn btn-primary', id: :submit_new_attachment
+
+:javascript
+  $('.copy-attachment-link').click(function(e) {
+    e.preventDefault();
+    const text = $(this).siblings('.attachment-link').text();
+    navigator.clipboard.writeText(text);
+  });
