@@ -23,11 +23,14 @@ en:
         pages: p.
     attachments:
       index:
+        attach_new_file: Attach new file
         filename: Filename
         size: Size
         preview: Preview
         copy_link: Copy link to clipboard
     citations:
+      index:
+        add_citation: Add citation
       edit:
         approve: Approve Citation
         parse_again: Reparse HTML
@@ -57,10 +60,6 @@ en:
       destroy:
         success: Lexicon Publication destroyed
     shared:
-      attachments:
-        attach_new_file: Attach new file
-      citations:
-        add_citation: Add citation
       tabs:
         properties: Properties
         attachments: Attachments
