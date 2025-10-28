@@ -1,6 +1,40 @@
 //= require jquery3
 //= require rails-ujs
 
+$(function() {
+    $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+        const tabHeader = $(e.target);
+        const tabContentId = tabHeader.data('target');
+
+        if (tabContentId == null) {
+            console.warn('bs-target not found for tab header: #' + tabHeader.id);
+            return;
+        }
+
+        const tabContent = $(tabContentId);
+        if (tabContent.data('load-url') != null && !tabContent.data('load-complete')) {
+            reloadContent(tabContent);
+        }
+    });
+});
+
+function reloadContent(tabContent) {
+    const loadUrl = tabContent.data('load-url');
+    tabContent.load(
+        loadUrl,
+        function( response, status, xhr ) {
+            alert(status);
+            if ( status == 'error' ) {
+                tabContent.html('<h2 class="text-danger">Error: ' + xhr.status + " " + xhr.statusText + '</h2>');
+                tabContent.data('load-complete', null);
+            } else {
+                tabContent.data('load-complete', true);
+            }
+        }
+    );
+
+}
+
 function openModal(path, onSuccess = null) {
     $('#generalDlg').data('onSuccess', onSuccess);
 
