@@ -1,1 +1,1 @@
-reloadCitations();
+reloadContent($('#citations'));
