@@ -23,16 +23,23 @@ he:
         pages: p.
     attachments:
       index:
+        attach_new_file: Attach new file
         filename: Filename
         size: Size
         preview: Preview
         copy_link: Copy link to clipboard
+    citations:
+      index:
+        add_citation: Add citation
+      edit:
+        approve: Approve Citation
+        parse_again: Reparse HTML
     files:
       index:
         title: רשימת הקבצים
       migrate:
         success: הוסב בהצלחה
-        title: Analyze file
+        title: Analyze
     header:
       title: לקסיקון הספרות העברית החדשה
       part_of_pby: חלק מפרויקט בן־יהודה
@@ -53,8 +60,6 @@ he:
       destroy:
         success: נמחק!
     shared:
-      attachments:
-        attach_new_file: Attach new file
       tabs:
         properties: Properties
         attachments: Attachments
