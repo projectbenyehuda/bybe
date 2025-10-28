@@ -1,1 +1,1 @@
-reloadAttachmentsTable();
+reloadContent($('#attachments'));
