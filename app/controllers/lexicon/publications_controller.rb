@@ -3,14 +3,9 @@
 module Lexicon
   # Controller to work with Lexicon Publications
   class PublicationsController < ApplicationController
-    before_action :set_lex_publication, only: %i(edit update destroy)
+    before_action :set_lex_publication, only: %i(edit update)
 
-    layout 'lexicon_backend'
-
-    # GET /lex_publications or /lex_publications.json
-    def index
-      @lex_publications = LexPublication.all
-    end
+    layout false
 
     # GET /lex_publications/new
     def new
@@ -27,25 +22,15 @@ module Lexicon
       @lex_publication.entry.status = :manual
 
       if @lex_publication.save
-        redirect_to lexicon_publication_path(@lex_publication), notice: t('.success')
+        flash.notice = t('.success')
       else
-        render :new, status: :unprocessable_entity
+        render :new, status: :unprocessable_content
       end
     end
 
     # PATCH/PUT /lex_publications/1 or /lex_publications/1.json
     def update
-      if @lex_publication.update(lex_publication_params)
-        redirect_to lexicon_publication_path(@lex_publication), notice: t('.success')
-      else
-        render :edit, status: :unprocessable_entity
-      end
-    end
-
-    # DELETE /lex_publications/1 or /lex_publications/1.json
-    def destroy
-      @lex_publication.destroy
-      redirect_to lexicon_publications_url, alert: t('.success')
+      @lex_publication.update(lex_publication_params)
     end
 
     private

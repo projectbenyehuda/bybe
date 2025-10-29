@@ -1,13 +1,3 @@
-%h1 Editing lex_publication
+= render 'form'
 
-= render partial: 'lexicon/shared/tabs'
-
-.tab-content
-  .tab-pane.fade.show.active#properties
-    = render 'form'
-  .tab-pane.fade#attachments{ data: { load_url: lexicon_entry_attachments_path(@lex_publication.entry) } }
-  .tab-pane.fade#citations{ data: { load_url: lexicon_entry_citations_path(@lex_publication.entry) } }
-
-= link_to 'Show', lexicon_publication_path(@lex_publication)
-\|
-= link_to 'Back', lexicon_publications_path
+:javascript
