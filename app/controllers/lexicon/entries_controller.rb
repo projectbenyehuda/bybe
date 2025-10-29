@@ -3,9 +3,9 @@
 module Lexicon
   # Controller to render list of all Lexicon entries
   class EntriesController < ApplicationController
-    before_action :set_lex_entry, only: %i(show)
+    before_action :set_lex_entry, only: %i(show edit destroy)
 
-    layout 'lexicon_backend', except: %i(show index)
+    layout 'lexicon_backend', except: %i(show)
 
     # GET /lex_entries or /lex_entries.json
     def index
@@ -13,6 +13,23 @@ module Lexicon
     end
 
     def show; end
+
+    def edit
+      @edit_properties_path = if @lex_entry.lex_item.is_a?(LexPerson)
+                                edit_lexicon_person_path(@lex_entry.lex_item)
+                              elsif @lex_entry.lex_item.is_a?(LexPublication)
+                                edit_lexicon_publication_path(@lex_entry.lex_item)
+                              else
+                                raise "Unexpected lex_entry type: #{@lex_entry.lex_item.class}"
+                              end
+
+      @tab = params[:tab] || 'properties'
+    end
+
+    def destroy
+      @lex_entry.destroy
+      redirect_to lexicon_entries_url, alert: t('.success')
+    end
 
     private
 

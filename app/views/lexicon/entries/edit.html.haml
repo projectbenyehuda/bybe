@@ -1,0 +1,24 @@
+%h1= t('.title')
+
+%ul.nav.nav-tabs
+  %li.nav-item
+    %a.nav-link#properties_tab{ href: '#', data: { toggle: :tab, target: '#properties' } }= t('.properties')
+  %li.nav-item
+    %a.nav-link#attachments_tab{ href: '#', data: { toggle: :tab, target: '#attachments' } }= t('.attachments')
+  %li.nav-item
+    %a.nav-link#citations_tab{ href: '#', data: { toggle: :tab, target: '#citations' } }= t('.citations')
+
+
+.tab-content
+  .tab-pane.fade#properties{ data: { load_url: @edit_properties_path } }
+  .tab-pane.fade#attachments{ data: { load_url: lexicon_entry_attachments_path(@lex_entry) } }
+  .tab-pane.fade#citations{ data: { load_url: lexicon_entry_citations_path(@lex_entry) } }
+
+= link_to 'Show', lexicon_entry_path(@lex_entry)
+\|
+= link_to 'Back', lexicon_entries_path
+
+:javascript
+  $(function() {
+    $('##{@tab}_tab').tab('show');
+  });

@@ -1,5 +1,5 @@
 - url = @lex_publication.new_record? ? lexicon_publications_path : lexicon_publication_path(@lex_publication)
-= simple_form_for @lex_publication, url: url do |f|
+= simple_form_for @lex_publication, url: url, remote: true do |f|
   = f.simple_fields_for :entry do |ef|
     = ef.input :title
     = ef.input :status do
@@ -8,4 +8,4 @@
   = f.input :description, as: :text, input_html: { rows: 10 }
   = f.input :toc, as: :text, input_html: { rows: 20 }
   = f.input :az_navbar, as: :boolean
-  = f.button :submit, class: 'btn btn-primary col-sm-2'
+  = f.button :submit, class: 'btn btn-primary'

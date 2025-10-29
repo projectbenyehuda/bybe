@@ -16,7 +16,7 @@
                 .date-range!= lex_person.life_years
               - if lex_person.authority&.published?
                 .to-pby
-                  = link_to t('lexicon.people.show.to_pby_person'), lex_person.authority
+                  = link_to t('lexicon.entries.show.to_pby_person'), lex_person.authority
               .metadata
                 = render partial: 'shared/intellectual_property',
                          locals: { intellectual_property: lex_person.intellectual_property }
