@@ -15,9 +15,19 @@ he:
   unclassified: לא זוהה סוג הערך
   lexicon:
     entries:
+      destroy:
+        success: Lexicon Entry deleted
+      edit:
+        title: Edit Lexicon Entry
+        properties: Properties
+        attachments: Attachments
+        citations: Citations
       index:
+        add_person: Add Person
+        add_publication: Add Publication
         title: רשימת ערכי הלקסיקון
       show:
+        to_pby_person: לדף היוצר בפרויקט בן־יהודה
         unsupported_entry_type: Unsupported entry type
       show_person:
         pages: p.
@@ -44,23 +54,12 @@ he:
       title: לקסיקון הספרות העברית החדשה
       part_of_pby: חלק מפרויקט בן־יהודה
     people:
-      show:
-        to_pby_person: לדף היוצר בפרויקט בן־יהודה
       create:
         success: נוצרה ישות חדשה
       update:
         success: עודכן!
-      destroy:
-        success: נמחק!
     publications:
       create:
         success: נוצרה ישות חדשה
       update:
         success: עודכן!
-      destroy:
-        success: נמחק!
-    shared:
-      tabs:
-        properties: Properties
-        attachments: Attachments
-        citations: Citations
