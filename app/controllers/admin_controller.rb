@@ -7,7 +7,8 @@ class AdminController < ApplicationController
   before_action :require_editor
   before_action :obtain_tagging_lock,
                 only: %i(approve_tag approve_tag_and_next reject_tag escalate_tag reject_tag_and_next merge_tag
-                         merge_tagging approve_tagging reject_tagging escalate_tagging tag_moderation tag_review)
+                         merge_tagging approve_tagging reject_tagging escalate_tagging tag_moderation tag_review
+                         undo_reject_tag undo_approve_tagging undo_reject_tagging)
   before_action :require_admin, only: %i(manifestation_batch_tools destroy_manifestation unpublish_manifestation)
   # before_action :require_admin, only: [:missing_languages, :missing_genres, :incongruous_copyright, :missing_copyright, :similar_titles]
   autocomplete :person, :name, scopes: :with_name, full: true
@@ -1108,6 +1109,51 @@ class AdminController < ApplicationController
           format.html { redirect_to_next_tagging(t, I18n.t(:tagging_rejected)) }
           format.json { head :ok }
         end
+      else
+        head :not_found
+      end
+    else
+      head :forbidden
+    end
+  end
+
+  def undo_reject_tag
+    require_editor('moderate_tags')
+    if session[:tagging_lock]
+      t = Tag.find(params[:id])
+      if t.present?
+        t.unreject!
+        render json: { tag_id: t.id, tag_name: t.name }
+      else
+        head :not_found
+      end
+    else
+      head :forbidden
+    end
+  end
+
+  def undo_approve_tagging
+    require_editor('moderate_tags')
+    if session[:tagging_lock]
+      t = Tagging.find(params[:id])
+      if t.present?
+        t.update(status: :pending, approved_by: nil)
+        render json: { tagging_id: t.id }
+      else
+        head :not_found
+      end
+    else
+      head :forbidden
+    end
+  end
+
+  def undo_reject_tagging
+    require_editor('moderate_tags')
+    if session[:tagging_lock]
+      t = Tagging.find(params[:id])
+      if t.present?
+        t.update(status: :pending, approved_by: nil)
+        render json: { tagging_id: t.id }
       else
         head :not_found
       end
