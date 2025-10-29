@@ -20,7 +20,7 @@ module Lexicon
       @citation = @entry.lex_item.citations.build(lex_citation_params.merge(status: :manual))
 
       unless @citation.save
-        render :new, status: :unprocessable_entity
+        render :new, status: :unprocessable_content
       end
     end
 
@@ -28,7 +28,7 @@ module Lexicon
 
     def update
       unless @citation.update(lex_citation_params)
-        render :edit, status: :unprocessable_entity
+        render :edit, status: :unprocessable_content
       end
     end
 

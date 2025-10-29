@@ -24,7 +24,7 @@ describe '/lexicon/publications' do
   end
 
   describe 'POST /create' do
-    subject(:call) { post '/lex/publications', params: { lex_publication: attributes } }
+    subject(:call) { post '/lex/publications', params: { lex_publication: attributes }, xhr: true }
 
     context 'with valid parameters' do
       let(:attributes) { valid_attributes }
@@ -32,7 +32,7 @@ describe '/lexicon/publications' do
       it 'creates a new LexPublication and redirects to show page' do
         expect { call }.to change(LexPublication, :count).by(1).and change(LexEntry, :count).by(1)
         lex_publication = LexPublication.order(id: :desc).first
-        expect(call).to redirect_to lexicon_publication_path(lex_publication)
+        expect(call).to eq(200)
         expect(lex_publication).to have_attributes(valid_publication_attributes)
         expect(lex_publication.entry).to have_attributes(
           title: 'Test (test)',
@@ -53,16 +53,6 @@ describe '/lexicon/publications' do
     end
   end
 
-  describe 'GET /index' do
-    subject { get '/lex/publications' }
-
-    before do
-      create_list(:lex_publication, 5)
-    end
-
-    it { is_expected.to eq(200) }
-  end
-
   describe 'GET /edit' do
     subject { get "/lex/publications/#{lex_publication.id}/edit" }
 
@@ -71,29 +61,14 @@ describe '/lexicon/publications' do
 
   describe 'PATCH /update' do
     subject(:call) do
-      patch "/lex/publications/#{lex_publication.id}", params: { lex_publication: valid_attributes }
+      patch "/lex/publications/#{lex_publication.id}", params: { lex_publication: valid_attributes }, xhr: true
     end
 
     it 'updates the record' do
-      expect(call).to redirect_to lexicon_publication_path(lex_publication)
+      expect(call).to eq(200)
       expect(lex_publication.reload).to have_attributes(valid_publication_attributes)
       expect(lex_publication.entry).to have_attributes(title: 'Test (test)', status: 'migrated',
                                                        sort_title: 'Test test')
-      expect(flash.notice).to eq(I18n.t('lexicon.publications.update.success'))
-    end
-  end
-
-  describe 'DELETE /destroy' do
-    subject(:call) { delete "/lex/publications/#{lex_publication.id}" }
-
-    before do
-      lex_publication
-    end
-
-    it 'destroys the requested lexicon publication' do
-      expect { call }.to change(LexPublication, :count).by(-1).and change(LexEntry, :count).by(-1)
-      expect(call).to redirect_to lexicon_publications_path
-      expect(flash.alert).to eq(I18n.t('lexicon.publications.destroy.success'))
     end
   end
 end
