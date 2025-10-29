@@ -1,6 +1,16 @@
 class Notifications < ActionMailer::Base
   default from: "editor@benyehuda.org" # TODO: un-hardcode
 
+  # Send or queue notification based on recipient's email preferences
+  def self.send_or_queue(method_name, recipient_email, *args)
+    NotificationService.call(
+      mailer_class: self,
+      mailer_method: method_name,
+      recipient_email: recipient_email,
+      args: args
+    )
+  end
+
   # Subject can be set in your I18n file at config/locales/en.yml
   # with the following lookup:
   #
@@ -147,5 +157,15 @@ class Notifications < ActionMailer::Base
   def volunteer_form_submitted(pp)
     @form = pp
     mail to: 'editor@benyehuda.org', subject: t('notifications.volunteer_form_submitted.subject'), reply_to: pp[:email]
+  end
+
+  # Subject can be set in your I18n file at config/locales/en.yml
+  # with the following lookup:
+  #
+  #   he.notifications.notification_digest.subject
+  def notification_digest(recipient_email, notifications)
+    @greeting = t(:hello_anon)
+    @notifications = notifications
+    mail to: recipient_email
   end
 end

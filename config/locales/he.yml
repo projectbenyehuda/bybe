@@ -1343,6 +1343,8 @@ he:
       subject: אזהרה לפני חסימה מפרויקט בן־יהודה
     block:
       subject: חסימה מפרויקט בן־יהודה
+    notification_digest:
+      subject: סיכום הודעות מפרויקט בן־יהודה
   api_keys_mailer:
     key_created:
       subject: מפתח ה־API שלך
@@ -1693,3 +1695,22 @@ he:
   out_of: "מתוך "
   full_display: תצוגה מלאה
   immediate_child_only: הצג רמה אחת בלבד
+  
+  # Email throttling system
+  email_preferences: העדפות דוא"ל
+  email_frequency_label: תדירות קבלת הודעות דוא"ל
+  email_frequency_unlimited: ללא הגבלה (בזמן אמת)
+  email_frequency_unlimited_description: קבל/י הודעות מיד כשהן נשלחות
+  email_frequency_daily: לכל היותר פעם ביום
+  email_frequency_daily_description: קבל/י לכל היותר הודעת דוא"ל אחת ביום עם סיכום כל ההודעות
+  email_frequency_weekly: לכל היותר פעם בשבוע
+  email_frequency_weekly_description: קבל/י לכל היותר הודעת דוא"ל אחת בשבוע עם סיכום כל ההודעות
+  email_frequency_none: אל תשלחו לי הודעות דוא"ל
+  email_frequency_none_description: אל תקבל/י שום הודעות דוא"ל מהאתר
+  save_preferences: שמור העדפות
+  preferences_updated: ההעדפות עודכנו בהצלחה
+  invalid_preference: העדפה לא חוקית
+  manage_email_preferences: ניהול העדפות דוא"ל
+  email_footer_signup_invitation: אם תרצה/י לשלוט בתדירות קבלת הודעות הדוא"ל, תוכל/י להירשם לאתר ולהגדיר את ההעדפות שלך.
+  notification_digest_intro: להלן סיכום ההודעות שצברנו עבורך
+  notification_render_error: שגיאה בעיבוד הודעה
