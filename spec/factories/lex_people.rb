@@ -8,6 +8,5 @@ FactoryBot.define do
     deathdate { Faker::Date.birthday(min_age: 80, max_age: 0).to_fs }
     bio { Faker::Lorem.paragraph }
     works { Faker::Lorem.paragraph }
-    about { Faker::Lorem.sentence }
   end
 end
