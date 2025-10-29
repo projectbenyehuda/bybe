@@ -531,8 +531,6 @@ describe AdminController do
     describe '#undo_reject_tag' do
       subject(:call) { post :undo_reject_tag, params: { id: tag.id } }
 
-      include_context 'when editor logged in', :moderate_tags
-
       let(:tag) { create(:tag, status: :rejected) }
 
       before do
