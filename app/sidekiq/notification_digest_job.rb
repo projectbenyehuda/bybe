@@ -21,6 +21,7 @@ class NotificationDigestJob
 
     # Get all users with this email frequency preference
     users_with_frequency = BaseUser.joins(:user)
+                                   .joins("INNER JOIN base_user_preferences ON base_user_preferences.base_user_id = base_users.id")
                                    .where("base_user_preferences.name = 'email_frequency' AND base_user_preferences.value = ?", frequency)
 
     users_with_frequency.find_each do |base_user|
