@@ -1,5 +1,7 @@
 //= require jquery3
 //= require rails-ujs
+//= require jquery-ui/widgets/autocomplete
+//= require autocomplete-rails
 
 $(function() {
     $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
@@ -23,7 +25,6 @@ function reloadContent(tabContent) {
     tabContent.load(
         loadUrl,
         function( response, status, xhr ) {
-            alert(status);
             if ( status == 'error' ) {
                 tabContent.html('<h2 class="text-danger">Error: ' + xhr.status + " " + xhr.statusText + '</h2>');
                 tabContent.data('load-complete', null);

@@ -3,14 +3,9 @@
 module Lexicon
   # Controller to work with People records in Lexicon
   class PeopleController < ::ApplicationController
-    before_action :set_lex_person, only: %i(edit update destroy)
+    before_action :set_lex_person, only: %i(edit update)
 
-    layout 'lexicon_backend'
-
-    # GET /lex_people or /lex_people.json
-    def index
-      @lex_people = LexPerson.all
-    end
+    layout false
 
     # GET /lex_people/new
     def new
@@ -27,27 +22,15 @@ module Lexicon
       @lex_person.entry.status = :manual
 
       if @lex_person.save
-        redirect_to lexicon_person_path(@lex_person), notice: t('.success')
+        flash.notice = t('.success')
       else
-        render :new, status: :unprocessable_entity
+        render :new, status: :unprocessable_content
       end
     end
 
     # PATCH/PUT /lex_people/1 or /lex_people/1.json
     def update
-      if @lex_person.update(lex_person_params)
-        redirect_to lexicon_person_path(@lex_person), notice: t('.success')
-      else
-        render :edit, status: :unprocessable_entity
-      end
-    end
-
-    # DELETE /lex_people/1 or /lex_people/1.json
-    def destroy
-      LexPerson.transaction do
-        @lex_person.destroy
-      end
-      redirect_to lexicon_people_path, alert: t('.success')
+      @success = @lex_person.update(lex_person_params)
     end
 
     private
@@ -68,7 +51,6 @@ module Lexicon
           :deathdate,
           :bio,
           :works,
-          :about,
           { entry_attributes: [:title] }
         ]
       )
