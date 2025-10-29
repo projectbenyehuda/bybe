@@ -24,7 +24,8 @@ module NotificationsHelper
     user = User.find_by(email: recipient_email) if recipient_email.present?
 
     if user
-      preferences_link = link_to(t(:manage_email_preferences), edit_user_preferences_url(protocol: 'https'))
+      preferences_url = "https://benyehuda.org#{Rails.application.routes.url_helpers.edit_user_preferences_path}"
+      preferences_link = "<a href=\"#{preferences_url}\">#{t(:manage_email_preferences)}</a>"
       "#{base_footer}\n\n#{preferences_link}".html_safe
     else
       signup_text = t(:email_footer_signup_invitation)
