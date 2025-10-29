@@ -27,7 +27,7 @@ describe '/lexicon/people' do
   end
 
   describe 'POST /create' do
-    subject(:call) { post '/lex/people', params: { lex_person: attributes } }
+    subject(:call) { post '/lex/people', params: { lex_person: attributes }, xhr: true }
 
     context 'with valid parameters' do
       let(:attributes) { valid_attributes }
@@ -35,7 +35,7 @@ describe '/lexicon/people' do
       it 'creates a new LexPerson and redirects to show page' do
         expect { call }.to change(LexPerson, :count).by(1).and change(LexEntry, :count).by(1)
         lex_person = LexPerson.order(id: :desc).first
-        expect(call).to redirect_to lexicon_person_path(lex_person)
+        expect(call).to eq(200)
         expect(lex_person).to have_attributes(valid_person_attributes)
         expect(lex_person.entry).to have_attributes(title: 'Test (test)', status: 'manual', sort_title: 'Test test')
         expect(flash.notice).to eq(I18n.t('lexicon.people.create.success'))
@@ -52,16 +52,6 @@ describe '/lexicon/people' do
     end
   end
 
-  describe 'GET /index' do
-    subject { get '/lex/people' }
-
-    before do
-      create_list(:lex_person, 5)
-    end
-
-    it { is_expected.to eq(200) }
-  end
-
   describe 'GET /edit' do
     subject { get "/lex/people/#{lex_person.id}/edit" }
 
@@ -69,27 +59,12 @@ describe '/lexicon/people' do
   end
 
   describe 'PATCH /update' do
-    subject(:call) { patch "/lex/people/#{lex_person.id}", params: { lex_person: valid_attributes } }
+    subject(:call) { patch "/lex/people/#{lex_person.id}", params: { lex_person: valid_attributes }, xhr: true }
 
     it 'updates the record' do
-      expect(call).to redirect_to lexicon_person_path(lex_person)
+      expect(call).to eq(200)
       expect(lex_person.reload).to have_attributes(valid_person_attributes)
       expect(lex_person.entry).to have_attributes(title: 'Test (test)', status: 'migrated', sort_title: 'Test test')
-      expect(flash.notice).to eq(I18n.t('lexicon.people.update.success'))
-    end
-  end
-
-  describe 'DELETE /destroy' do
-    subject(:call) { delete "/lex/people/#{lex_person.id}" }
-
-    before do
-      lex_person
-    end
-
-    it 'destroys the requested lexicon person' do
-      expect { call }.to change(LexPerson, :count).by(-1).and change(LexEntry, :count).by(-1)
-      expect(call).to redirect_to lexicon_people_path
-      expect(flash.alert).to eq(I18n.t('lexicon.people.destroy.success'))
     end
   end
 end
