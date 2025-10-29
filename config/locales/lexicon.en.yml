@@ -15,9 +15,19 @@ en:
   unclassified: Unclassified
   lexicon:
     entries:
+      destroy:
+        success: Lexicon Entry deleted
+      edit:
+        title: Edit Lexicon Entry
+        properties: Properties
+        attachments: Attachments
+        citations: Citations
       index:
+        add_person: Add Person
+        add_publication: Add Publication
         title: List of Lexicon Entries
       show:
+        to_pby_person: To the creator's page on Ben-Yehuda Project
         unsupported_entry_type: Unsupported entry type
       show_person:
         pages: p.
@@ -44,23 +54,12 @@ en:
       title: Lexicon of New Hebrew Literature
       part_of_pby: Part of the Ben-Yehuda Project
     people:
-      show:
-        to_pby_person: To the creator's page on Ben-Yehuda Project
       create:
         success: Lexicon Person created
       update:
         success: Lexicon Person updated
-      destroy:
-        success: Lexicon Person destroyed
     publications:
       create:
         success: Lexicon Publication created
       update:
         success: Lexicon Publication updated
-      destroy:
-        success: Lexicon Publication destroyed
-    shared:
-      tabs:
-        properties: Properties
-        attachments: Attachments
-        citations: Citations
