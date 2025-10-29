@@ -47,6 +47,7 @@ class Notifications < ActionMailer::Base
     @orig_tag_name = orig_name
     @suggester = suggester.name
     @tag = destination_tag
+    @recipient_email = suggester.email
     mail to: suggester.email
   end
 
@@ -69,6 +70,7 @@ class Notifications < ActionMailer::Base
     @tagging_suggester = suggester.name
     @tagging = tagging
     @tag = tagging.tag
+    @recipient_email = suggester.email
     mail to: suggester.email
   end
 
@@ -166,6 +168,7 @@ class Notifications < ActionMailer::Base
   def notification_digest(recipient_email, notifications)
     @greeting = t(:hello_anon)
     @notifications = notifications
+    @recipient_email = recipient_email
     mail to: recipient_email
   end
 end
