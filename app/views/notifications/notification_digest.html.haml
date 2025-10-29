@@ -1,0 +1,12 @@
+%div{align: 'right', dir: 'rtl'}
+  %p= @greeting
+
+  %p= t(:notification_digest_intro)
+
+  - @notifications.each do |notification|
+    %hr
+    = render_notification(notification)
+
+  %hr
+
+  != email_footer_html(mail.to.first)
