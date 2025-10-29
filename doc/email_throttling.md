@@ -54,6 +54,8 @@ Notifications.tag_approved(tag).deliver
 Notifications.send_or_queue(:tag_approved, tag.creator.email, tag)
 ```
 
+**Note on error handling**: The system handles nil emails gracefully - if the recipient email is blank, the notification is silently skipped. All existing notification code already checks for user.blocked? before sending, and many also check for valid email format. The send_or_queue method adds an additional check at the beginning to return early if recipient_email is blank.
+
 The system will automatically:
 1. Check if the recipient is a registered user
 2. Check their email_frequency preference
@@ -77,6 +79,8 @@ docker compose run --rm test-app rspec spec/controllers/user_preferences_control
 docker compose run --rm test-app rspec spec/sidekiq/notification_digest_job_spec.rb
 ```
 
+Note: The NotificationDigestJob is placed in `app/sidekiq/` following the existing pattern in this codebase (see TagSimilarityJob).
+
 ## Migration
 
 To enable this feature in a deployed environment:
@@ -87,6 +91,10 @@ To enable this feature in a deployed environment:
    ```
 
 2. Restart the application and Sidekiq workers to pick up the new scheduler configuration
+   
+   The application uses rufus-scheduler (see `config/initializers/scheduler.rb`) to schedule recurring jobs. The digest jobs are configured to run:
+   - Daily: Every 24 hours starting at 9:00 AM
+   - Weekly: Every 7 days starting at 9:00 AM on Monday
 
 3. All existing users will default to 'unlimited' (current behavior), so there's no disruption
 
