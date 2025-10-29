@@ -12,49 +12,83 @@ describe CollectionsController do
   end
 
   describe '#show' do
-    subject { get :show, params: { id: collection.id } }
+    subject! { get :show, params: { id: collection.id } }
 
     it { is_expected.to be_successful }
 
-    context 'when collection contains manifestations' do
-      let(:collection) do
-        create(
-          :collection,
-          manifestations: create_list(:manifestation, 2)
-        )
+    context 'when collection is not periodical' do
+      let(:collection_type) { (Collection.collection_types.keys - ['periodical'] - Collection::SYSTEM_TYPES).sample }
+
+      context 'when collection contains manifestations' do
+        let(:collection) do
+          create(
+            :collection,
+            collection_type: collection_type,
+            manifestations: create_list(:manifestation, 2)
+          )
+        end
+
+        it 'marks manifestation divs as proofable' do
+          expect(response.body).to have_css('.by-card-v02.proofable', count: 2)
+          collection.collection_items.each do |ci|
+            expect(response.body).to have_css(
+              ".proofable[data-item-id='#{ci.item_id}'][data-item-type='Manifestation']"
+            )
+          end
+        end
       end
 
-      it 'marks manifestation divs as proofable' do
-        subject
-        expect(response.body).to have_css('.by-card-v02.proofable', count: 2)
-        collection.collection_items.each do |ci|
-          expect(response.body).to have_css(".proofable[data-item-id='#{ci.item_id}'][data-item-type='Manifestation']")
+      context 'when collection contains nested collections with manifestations' do
+        let(:nested_manifestation) { create(:manifestation, title: 'Nested Manifestation') }
+        let(:nested_collection) do
+          create(:collection, title: 'Nested Collection', manifestations: [nested_manifestation])
+        end
+        let(:collection) do
+          create(
+            :collection,
+            collection_type: collection_type,
+            included_collections: [nested_collection],
+            manifestations: [create(:manifestation)]
+          )
+        end
+
+        it 'marks all items as proofable and adds markers for nested manifestations' do
+          # Both the top-level manifestation and the nested collection should be proofable
+          expect(response.body).to have_css('.by-card-v02.proofable', count: 2)
+          # The nested collection should be proofable
+          collection_item = collection.collection_items.find { |ci| ci.item_type == 'Collection' }
+          expect(response.body).to have_css(
+            ".proofable[data-item-id='#{collection_item.item_id}'][data-item-type='Collection']"
+          )
+          # The nested manifestation should have a marker div inside the nested collection
+          expect(response.body).to have_css(
+            ".nested-manifestation-marker[data-item-id='#{nested_manifestation.id}'][data-item-type='Manifestation']"
+          )
         end
       end
     end
 
-    context 'when collection contains nested collections with manifestations' do
-      let(:nested_manifestation) { create(:manifestation, title: 'Nested Manifestation') }
-      let(:nested_collection) do
-        create(:collection, title: 'Nested Collection', manifestations: [nested_manifestation])
+    context 'when collection is periodical' do
+      let(:issues) { create_list(:collection, 3, collection_type: 'periodical_issue') }
+      let(:nested_collections) do
+        # item of 'other' type should be ignored
+        issues + [create(:collection, collection_type: 'other')]
       end
+
       let(:collection) do
         create(
           :collection,
-          included_collections: [nested_collection],
-          manifestations: [create(:manifestation)]
+          collection_type: 'periodical',
+          manifestations: create_list(:manifestation, 2),
+          included_collections: nested_collections
         )
       end
 
-      it 'marks all items as proofable and adds markers for nested manifestations' do
-        subject
-        # Both the top-level manifestation and the nested collection should be proofable
-        expect(response.body).to have_css('.by-card-v02.proofable', count: 2)
-        # The nested collection should be proofable
-        collection_item = collection.collection_items.find { |ci| ci.item_type == 'Collection' }
-        expect(response.body).to have_css(".proofable[data-item-id='#{collection_item.item_id}'][data-item-type='Collection']")
-        # The nested manifestation should have a marker div inside the nested collection
-        expect(response.body).to have_css(".nested-manifestation-marker[data-item-id='#{nested_manifestation.id}'][data-item-type='Manifestation']")
+      it 'marks periodical issues divs as proofable' do
+        expect(response.body).to have_css('.by-card-v02.proofable', count: 3)
+        collection.collection_items.select { |ci| issues.include?(ci.item) }.each do |ci|
+          expect(response.body).to have_css(".proofable[data-item-id='#{ci.item_id}'][data-item-type='Collection']")
+        end
       end
     end
   end
