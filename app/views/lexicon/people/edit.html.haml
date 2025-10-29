@@ -1,13 +1,1 @@
-%h1 Editing lex_person
-
-= render partial: 'lexicon/shared/tabs'
-
-.tab-content
-  .tab-pane.fade.show.active#properties
-    = render 'form'
-  .tab-pane.fade#attachments{ data: { load_url: lexicon_entry_attachments_path(@lex_person.entry) } }
-  .tab-pane.fade#citations{ data: { load_url: lexicon_entry_citations_path(@lex_person.entry) } }
-
-= link_to 'Show', lexicon_person_path(@lex_person)
-\|
-= link_to 'Back', lexicon_people_path
+= render 'form'
