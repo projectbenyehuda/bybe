@@ -298,20 +298,21 @@
       });
     });
     
+    
     // Handle reject with explanation buttons
     $('.reject-with-explanation').off('click').on('click', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       var button = $(this);
       var explanation = prompt('#{t(:explain_rejection)}');
-      if (explanation === null) {
+      if (explanation === null || explanation === '') {
         return false;
       }
       
       var form = button.parent();
       var hiddenInput = $('<input type="hidden" name="reason" />').val(explanation);
       form.append(hiddenInput);
-      form.find('input[type="submit"]').click();
-      hiddenInput.remove();
+      form.submit();
     });
   }
   

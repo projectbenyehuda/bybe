@@ -527,6 +527,95 @@ describe AdminController do
         it { is_expected.to be_successful }
       end
     end
+
+    describe '#undo_reject_tag' do
+      subject(:call) { post :undo_reject_tag, params: { id: tag.id } }
+
+      include_context 'when editor logged in', :moderate_tags
+
+      let(:tag) { create(:tag, status: :rejected) }
+
+      before do
+        File.delete(TAGGING_LOCK) if File.file?(TAGGING_LOCK)
+        File.write(TAGGING_LOCK, current_user.id.to_s)
+      end
+
+      after do
+        File.delete(TAGGING_LOCK) if File.file?(TAGGING_LOCK)
+      end
+
+      it 'unrejects the tag' do
+        expect { call }.to change { tag.reload.status }.from('rejected').to('pending')
+      end
+
+      it 'returns JSON with tag info' do
+        call
+        expect(response).to be_successful
+        expect(JSON.parse(response.body)).to include('tag_id' => tag.id, 'tag_name' => tag.name)
+      end
+    end
+
+    describe '#undo_approve_tagging' do
+      subject(:call) { post :undo_approve_tagging, params: { id: tagging.id } }
+
+      include_context 'when editor logged in', :moderate_tags
+
+      let(:tagging) { create(:tagging, status: :approved, approved_by: current_user.id) }
+
+      before do
+        File.delete(TAGGING_LOCK) if File.file?(TAGGING_LOCK)
+        File.write(TAGGING_LOCK, current_user.id.to_s)
+      end
+
+      after do
+        File.delete(TAGGING_LOCK) if File.file?(TAGGING_LOCK)
+      end
+
+      it 'sets tagging status to pending' do
+        expect { call }.to change { tagging.reload.status }.from('approved').to('pending')
+      end
+
+      it 'clears the approved_by field' do
+        expect { call }.to change { tagging.reload.approved_by }.to(nil)
+      end
+
+      it 'returns JSON with tagging info' do
+        call
+        expect(response).to be_successful
+        expect(JSON.parse(response.body)).to include('tagging_id' => tagging.id)
+      end
+    end
+
+    describe '#undo_reject_tagging' do
+      subject(:call) { post :undo_reject_tagging, params: { id: tagging.id } }
+
+      include_context 'when editor logged in', :moderate_tags
+
+      let(:tagging) { create(:tagging, status: :rejected, approved_by: current_user.id) }
+
+      before do
+        File.delete(TAGGING_LOCK) if File.file?(TAGGING_LOCK)
+        File.write(TAGGING_LOCK, current_user.id.to_s)
+      end
+
+      after do
+        File.delete(TAGGING_LOCK) if File.file?(TAGGING_LOCK)
+      end
+
+      it 'sets tagging status to pending' do
+        expect { call }.to change { tagging.reload.status }.from('rejected').to('pending')
+      end
+
+      it 'clears the approved_by field' do
+        expect { call }.to change { tagging.reload.approved_by }.to(nil)
+      end
+
+      it 'returns JSON with tagging info' do
+        call
+        expect(response).to be_successful
+        expect(JSON.parse(response.body)).to include('tagging_id' => tagging.id)
+      end
+    end
   end
 
   describe '#assign_proofs' do
