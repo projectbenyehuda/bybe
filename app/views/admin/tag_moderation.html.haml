@@ -305,8 +305,8 @@
       e.stopPropagation();
       var button = $(this);
       var explanation = prompt('#{t(:explain_rejection)}');
-      if (explanation === null || explanation === '') {
-        return false;
+      if (!explanation) {
+        return;
       }
       
       var form = button.parent();
