@@ -4,9 +4,23 @@ require 'rails_helper'
 
 RSpec.describe PendingNotification, type: :model do
   describe 'validations' do
-    it { is_expected.to validate_presence_of(:recipient_email) }
-    it { is_expected.to validate_presence_of(:notification_type) }
-    it { is_expected.to validate_presence_of(:notification_data) }
+    it 'validates presence of recipient_email' do
+      notification = PendingNotification.new(notification_type: 'test', notification_data: {})
+      expect(notification).not_to be_valid
+      expect(notification.errors[:recipient_email]).to include("can't be blank")
+    end
+
+    it 'validates presence of notification_type' do
+      notification = PendingNotification.new(recipient_email: 'test@example.com', notification_data: {})
+      expect(notification).not_to be_valid
+      expect(notification.errors[:notification_type]).to include("can't be blank")
+    end
+
+    it 'validates presence of notification_data' do
+      notification = PendingNotification.new(recipient_email: 'test@example.com', notification_type: 'test')
+      expect(notification).not_to be_valid
+      expect(notification.errors[:notification_data]).to include("can't be blank")
+    end
   end
 
   describe 'scopes' do

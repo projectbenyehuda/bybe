@@ -17,7 +17,10 @@ describe NotificationService do
       end
 
       it 'sends email immediately' do
-        expect(mailer_class).to receive(:tag_approved).with(tag).and_call_original
+        mail_double = double('mail', deliver_now: true)
+        expect(mailer_class).to receive(:tag_approved).with(tag).and_return(mail_double)
+        expect(mail_double).to receive(:deliver_now)
+        
         described_class.call(
           mailer_class: mailer_class,
           mailer_method: mailer_method,
@@ -96,7 +99,10 @@ describe NotificationService do
       let(:non_user_email) { 'nonuser@example.com' }
 
       it 'sends email immediately (default unlimited)' do
-        expect(mailer_class).to receive(:tag_approved).with(tag).and_call_original
+        mail_double = double('mail', deliver_now: true)
+        expect(mailer_class).to receive(:tag_approved).with(tag).and_return(mail_double)
+        expect(mail_double).to receive(:deliver_now)
+        
         described_class.call(
           mailer_class: mailer_class,
           mailer_method: mailer_method,

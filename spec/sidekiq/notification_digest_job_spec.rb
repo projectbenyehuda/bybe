@@ -26,9 +26,11 @@ RSpec.describe NotificationDigestJob, type: :job do
       end
 
       it 'sends digest email for users with pending notifications' do
+        mail_double = double('mail', deliver_now: true)
         expect(Notifications).to receive(:notification_digest)
           .with(user.email, kind_of(ActiveRecord::Relation))
-          .and_call_original
+          .and_return(mail_double)
+        expect(mail_double).to receive(:deliver_now)
 
         NotificationDigestJob.new.perform('daily')
       end
@@ -54,9 +56,11 @@ RSpec.describe NotificationDigestJob, type: :job do
       end
 
       it 'sends digest email for users with weekly preference' do
+        mail_double = double('mail', deliver_now: true)
         expect(Notifications).to receive(:notification_digest)
           .with(user.email, kind_of(ActiveRecord::Relation))
-          .and_call_original
+          .and_return(mail_double)
+        expect(mail_double).to receive(:deliver_now)
 
         NotificationDigestJob.new.perform('weekly')
       end
