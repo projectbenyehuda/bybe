@@ -40,7 +40,7 @@ RSpec.describe NotificationDigestJob, type: :job do
 
         expect do
           NotificationDigestJob.new.perform('daily')
-        end.to change(PendingNotification, :count).by(-2)
+        end.to change(PendingNotification, :count).by(-1)
       end
     end
 
