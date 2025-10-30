@@ -142,7 +142,7 @@ Section titles like "שירה" (poetry), "פרוזה" (prose), "מאמרים ו�
 1. Check for N+1 queries when adding database queries
 1. Write RSpec tests for new functionality
 1. Update related tests when modifying existing functionality
-1. Run rspec using our docker-compose setup `docker compose run --rm test-app rspec`
+1. Run rspec:  `bundle exec rspec`
 1. Use Pronto to lint only your changes: `bundle exec pronto run -c origin/<BRANCH TO MERGE INTO>`
 1. Use RuboCop auto-correct when appropriate: `bundle exec rubocop -a <path_to_file>`
 1. Create a draft PR to merge your changes into a master (or into some other branch if specified explicitely) branch.
