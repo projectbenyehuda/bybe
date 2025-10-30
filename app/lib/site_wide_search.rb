@@ -10,6 +10,7 @@ class SiteWideSearch
   attribute :min_orig_pub_year, type: Integer
   attribute :max_orig_pub_year, type: Integer
   attribute :tags, mode: :arrayed, type: String # , normalize: ->(value) { value.reject(&:blank?) }, default: ""
+  attribute :index_types, mode: :arrayed, type: String
 
   # This accessor is for the form. It will have a single text field
   # for comma-separated tag inputs.
@@ -21,8 +22,29 @@ class SiteWideSearch
     tags.join(', ')
   end
 
+  # Map of index type names to their corresponding index classes
+  INDEX_TYPE_MAP = {
+    'manifestations' => ManifestationsIndex,
+    'authorities' => AuthoritiesIndex,
+    'dict' => DictIndex,
+    'collections' => CollectionsIndex
+  }.freeze
+
+  # Returns all available index types
+  def self.available_index_types
+    INDEX_TYPE_MAP.keys
+  end
+
   def index
-    MultiIndexSearchRequest.new(AuthoritiesIndex, ManifestationsIndex, DictIndex, CollectionsIndex)
+    indices = if index_types.present?
+                # Only include indices that are selected
+                index_types.map { |type| INDEX_TYPE_MAP[type] }.compact
+              else
+                # Default to all indices if none specified
+                [AuthoritiesIndex, ManifestationsIndex, DictIndex, CollectionsIndex]
+              end
+
+    MultiIndexSearchRequest.new(*indices)
   end
 
   def search

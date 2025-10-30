@@ -164,6 +164,9 @@ he:
   some: חלקי
   full: מלא
   filter: סינון
+  filter_by_type: סינון לפי סוג
+  manifestations: יצירות
+  authorities: יוצרים
   ltr: משמאל לימין
   parse: הסבה
   remove_line_nums: הסר מספרי שורות
