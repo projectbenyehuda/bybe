@@ -17,41 +17,44 @@ describe SearchManifestations do
       let(:filter) { { 'genres' => genres } }
 
       context 'when single genre specified' do
-        let(:genres) { %w(poetry) }
+        let(:genres) { %w[poetry] }
+        let(:poetry_1) { create(:manifestation, genre: 'poetry') }
+        let(:poetry_2) { create(:manifestation, genre: 'poetry') }
+        let(:prose_1) { create(:manifestation, genre: 'prose') }
+        let(:drama_1) { create(:manifestation, genre: 'drama') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, genre: 'poetry')
-            create(:manifestation, genre: 'poetry')
-            create(:manifestation, genre: 'prose')
-            create(:manifestation, genre: 'drama')
+            poetry_1
+            poetry_2
+            prose_1
+            drama_1
           end
         end
 
         it 'returns all texts where genre is equal to provided value' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.genre).to eq 'poetry'
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(poetry_1.id, poetry_2.id)
         end
       end
 
       context 'when multiple genres specified' do
-        let(:genres) { %w(poetry article) }
+        let(:genres) { %w[poetry article] }
+        let(:poetry) { create(:manifestation, genre: 'poetry') }
+        let(:article) { create(:manifestation, genre: 'article') }
+        let(:prose) { create(:manifestation, genre: 'prose') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, genre: 'poetry')
-            create(:manifestation, genre: 'article')
-            create(:manifestation, genre: 'prose')
+            poetry
+            article
+            prose
           end
         end
 
         it 'returns all texts where genre is included in provided list' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(%w(poetry article)).to include rec.genre
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(poetry.id, article.id)
         end
       end
     end
@@ -60,62 +63,66 @@ describe SearchManifestations do
       let(:filter) { { 'periods' => periods } }
 
       context 'when single period specified' do
-        let(:periods) { %w(ancient) }
+        let(:periods) { %w[ancient] }
+        let(:ancient_1) { create(:manifestation, period: 'ancient') }
+        let(:ancient_2) { create(:manifestation, period: 'ancient') }
+        let(:modern) { create(:manifestation, period: 'modern') }
+        let(:medieval) { create(:manifestation, period: 'medieval') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, period: 'ancient')
-            create(:manifestation, period: 'ancient')
-            create(:manifestation, period: 'modern')
-            create(:manifestation, period: 'medieval')
+            ancient_1
+            ancient_2
+            modern
+            medieval
           end
         end
 
         it 'returns all texts where period is equal to provided value' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.period).to eq 'ancient'
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(ancient_1.id, ancient_2.id)
         end
       end
 
       context 'when multiple periods specified' do
-        let(:periods) { %w(ancient revival) }
+        let(:periods) { %w[ancient revival] }
+        let(:ancient) { create(:manifestation, period: 'ancient') }
+        let(:revival) { create(:manifestation, period: 'revival') }
+        let(:modern) { create(:manifestation, period: 'modern') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, period: 'ancient')
-            create(:manifestation, period: 'revival')
-            create(:manifestation, period: 'modern')
+            ancient
+            revival
+            modern
           end
         end
 
         it 'returns all texts where period is included in provided list' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(%w(ancient revival)).to include rec.period
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(ancient.id, revival.id)
         end
       end
     end
 
     describe 'by intellectual property types' do
-      let(:types) { %w(public_domain unknown) }
+      let(:types) { %w[public_domain unknown] }
       let(:filter)  { { 'intellectual_property_types' => types } }
+      let(:public_domain) { create(:manifestation, intellectual_property: 'public_domain') }
+      let(:unknown) { create(:manifestation, intellectual_property: 'unknown') }
+      let(:copyrighted) { create(:manifestation, intellectual_property: 'copyrighted') }
 
       before do
         Chewy.strategy(:atomic) do
-          create(:manifestation, intellectual_property: 'public_domain')
-          create(:manifestation, intellectual_property: 'unknown')
-          create(:manifestation, intellectual_property: 'copyrighted')
+          public_domain
+          unknown
+          copyrighted
         end
       end
 
       it 'returns all works with given intellectual property types' do
-        expect(result.count).to eq 2
-        result.each do |rec|
-          expect(types).to include(rec.intellectual_property)
-        end
+        result_ids = result.map(&:id)
+        expect(result_ids).to contain_exactly(public_domain.id, unknown.id)
       end
     end
 
@@ -124,46 +131,49 @@ describe SearchManifestations do
 
       context('when single value provided') do
         let(:author_genders) { [:male] }
+        let(:male_author) { create(:authority, gender: 'male') }
+        let(:female_author) { create(:authority, gender: 'female') }
+        let(:male_1) { create(:manifestation, author: male_author) }
+        let(:male_2) { create(:manifestation, author: male_author) }
+        let(:female) { create(:manifestation, author: female_author) }
 
         before do
           Chewy.strategy(:atomic) do
-            male_author = create(:authority, gender: 'male')
-            female_author = create(:authority, gender: 'female')
-            create(:manifestation, author: male_author)
-            create(:manifestation, author: male_author)
-            create(:manifestation, author: female_author)
+            male_1
+            male_2
+            female
           end
         end
 
         it 'returns all records where author has given gender' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.author_gender).to eq %w(male)
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(male_1.id, male_2.id)
         end
       end
 
       context('when multiple values provided') do
-        let(:author_genders) { %i(male female unknown) }
+        let(:author_genders) { %i[male female unknown] }
+        let(:male_author) { create(:authority, gender: 'male') }
+        let(:female_author) { create(:authority, gender: 'female') }
+        let(:unknown_author) { create(:authority, gender: 'unknown') }
+        let(:other_author) { create(:authority, gender: 'other') }
+        let(:male) { create(:manifestation, author: male_author) }
+        let(:female) { create(:manifestation, author: female_author) }
+        let(:unknown) { create(:manifestation, author: unknown_author) }
+        let(:other) { create(:manifestation, author: other_author) }
 
         before do
           Chewy.strategy(:atomic) do
-            male_author = create(:authority, gender: 'male')
-            female_author = create(:authority, gender: 'female')
-            unknown_author = create(:authority, gender: 'unknown')
-            other_author = create(:authority, gender: 'other')
-            create(:manifestation, author: male_author)
-            create(:manifestation, author: female_author)
-            create(:manifestation, author: unknown_author)
-            create(:manifestation, author: other_author)
+            male
+            female
+            unknown
+            other
           end
         end
 
         it 'returns all records where author has any of given genders' do
-          expect(subject.count).to eq 3
-          subject.each do |rec|
-            expect([%w(male), %w(female), %w(unknown)]).to include rec.author_gender
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(male.id, female.id, unknown.id)
         end
       end
     end
@@ -173,46 +183,49 @@ describe SearchManifestations do
 
       context('when single value provided') do
         let(:translator_genders) { [:female] }
+        let(:female_translator) { create(:authority, gender: 'female') }
+        let(:male_translator) { create(:authority, gender: 'male') }
+        let(:female_1) { create(:manifestation, translator: female_translator, orig_lang: 'en') }
+        let(:female_2) { create(:manifestation, translator: female_translator, orig_lang: 'en') }
+        let(:male) { create(:manifestation, translator: male_translator, orig_lang: 'en') }
 
         before do
           Chewy.strategy(:atomic) do
-            female_translator = create(:authority, gender: 'female')
-            male_translator = create(:authority, gender: 'male')
-            create(:manifestation, translator: female_translator, orig_lang: 'en')
-            create(:manifestation, translator: female_translator, orig_lang: 'en')
-            create(:manifestation, translator: male_translator, orig_lang: 'en')
+            female_1
+            female_2
+            male
           end
         end
 
         it 'returns all records where translator has given gender' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.translator_gender).to eq %w(female)
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(female_1.id, female_2.id)
         end
       end
 
       context('when multiple values provided') do
-        let(:translator_genders) { %i(male female other) }
+        let(:translator_genders) { %i[male female other] }
+        let(:male_translator) { create(:authority, gender: 'male') }
+        let(:female_translator) { create(:authority, gender: 'female') }
+        let(:other_translator) { create(:authority, gender: 'other') }
+        let(:unknown_translator) { create(:authority, gender: 'unknown') }
+        let(:male) { create(:manifestation, translator: male_translator, orig_lang: 'en') }
+        let(:female) { create(:manifestation, translator: female_translator, orig_lang: 'en') }
+        let(:other) { create(:manifestation, translator: other_translator, orig_lang: 'en') }
+        let(:unknown) { create(:manifestation, translator: unknown_translator, orig_lang: 'en') }
 
         before do
           Chewy.strategy(:atomic) do
-            male_translator = create(:authority, gender: 'male')
-            female_translator = create(:authority, gender: 'female')
-            other_translator = create(:authority, gender: 'other')
-            unknown_translator = create(:authority, gender: 'unknown')
-            create(:manifestation, translator: male_translator, orig_lang: 'en')
-            create(:manifestation, translator: female_translator, orig_lang: 'en')
-            create(:manifestation, translator: other_translator, orig_lang: 'en')
-            create(:manifestation, translator: unknown_translator, orig_lang: 'en')
+            male
+            female
+            other
+            unknown
           end
         end
 
         it 'returns all records where translator has any of given genders' do
-          expect(subject.count).to eq 3
-          subject.each do |rec|
-            expect([%w(male), %w(female), %w(other)]).to include rec.translator_gender
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(male.id, female.id, other.id)
         end
       end
     end
@@ -222,39 +235,41 @@ describe SearchManifestations do
 
       context 'when single word is provided' do
         let(:title) { 'lemon' }
+        let(:lemon_tree) { create(:manifestation, title: 'A lemon tree') }
+        let(:big_lemon) { create(:manifestation, title: 'The big lemon') }
+        let(:orange_juice) { create(:manifestation, title: 'Orange juice') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, title: 'A lemon tree')
-            create(:manifestation, title: 'The big lemon')
-            create(:manifestation, title: 'Orange juice')
+            lemon_tree
+            big_lemon
+            orange_juice
           end
         end
 
         it 'returns all texts including given word in title' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.title).to match(/lemon/)
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(lemon_tree.id, big_lemon.id)
         end
       end
 
       context 'when multiple words are provided' do
         let(:title) { 'orange lemon' }
+        let(:orange_lemon_tree) { create(:manifestation, title: 'The orange lemon tree') }
+        let(:orange_lemon_cake) { create(:manifestation, title: 'Orange lemon cake') }
+        let(:lemon_orange_cake) { create(:manifestation, title: 'Lemon orange cake') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, title: 'The orange lemon tree')
-            create(:manifestation, title: 'Orange lemon cake')
-            create(:manifestation, title: 'Lemon orange cake')
+            orange_lemon_tree
+            orange_lemon_cake
+            lemon_orange_cake
           end
         end
 
         it 'returns all texts having all this words in same order' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.title).to match(/orange lemon/i)
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(orange_lemon_tree.id, orange_lemon_cake.id)
         end
       end
 
@@ -280,66 +295,68 @@ describe SearchManifestations do
 
       context 'when author name is provided' do
         let(:author) { 'Alpha' }
+        let(:alpha_author) { create(:authority, name: 'Alpha Smith') }
+        let(:beta_author) { create(:authority, name: 'Beta Jones') }
+        let(:alpha_1) { create(:manifestation, author: alpha_author) }
+        let(:alpha_2) { create(:manifestation, author: alpha_author) }
+        let(:beta) { create(:manifestation, author: beta_author) }
 
         before do
           Chewy.strategy(:atomic) do
-            alpha_author = create(:authority, name: 'Alpha Smith')
-            beta_author = create(:authority, name: 'Beta Jones')
-            create(:manifestation, author: alpha_author)
-            create(:manifestation, author: alpha_author)
-            create(:manifestation, author: beta_author)
+            alpha_1
+            alpha_2
+            beta
           end
         end
 
         it 'returns all texts where author_string includes given name' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.author_string).to match(/Alpha/)
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(alpha_1.id, alpha_2.id)
         end
       end
 
       context 'when translator name is provided' do
         let(:author) { 'Sigma' }
+        let(:sigma_translator) { create(:authority, name: 'Sigma Brown') }
+        let(:tau_translator) { create(:authority, name: 'Tau Green') }
+        let(:sigma_1) { create(:manifestation, translator: sigma_translator, orig_lang: 'en') }
+        let(:sigma_2) { create(:manifestation, translator: sigma_translator, orig_lang: 'en') }
+        let(:tau) { create(:manifestation, translator: tau_translator, orig_lang: 'en') }
 
         before do
           Chewy.strategy(:atomic) do
-            sigma_translator = create(:authority, name: 'Sigma Brown')
-            tau_translator = create(:authority, name: 'Tau Green')
-            create(:manifestation, translator: sigma_translator, orig_lang: 'en')
-            create(:manifestation, translator: sigma_translator, orig_lang: 'en')
-            create(:manifestation, translator: tau_translator, orig_lang: 'en')
+            sigma_1
+            sigma_2
+            tau
           end
         end
 
         it 'returns all texts where author_string includes given name' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.author_string).to match(/Sigma/)
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(sigma_1.id, sigma_2.id)
         end
       end
 
       context 'when multiple names are provided' do
         let(:author) { 'Alpha Sigma' }
+        let(:alpha_author) { create(:authority, name: 'Alpha Smith') }
+        let(:sigma_translator) { create(:authority, name: 'Sigma Brown') }
+        let(:tau_translator) { create(:authority, name: 'Tau Green') }
+        let(:alpha_sigma) do
+          create(:manifestation, author: alpha_author, translator: sigma_translator, orig_lang: 'en')
+        end
+        let(:alpha_tau) { create(:manifestation, author: alpha_author, translator: tau_translator, orig_lang: 'en') }
 
         before do
           Chewy.strategy(:atomic) do
-            alpha_author = create(:authority, name: 'Alpha Smith')
-            sigma_translator = create(:authority, name: 'Sigma Brown')
-            tau_translator = create(:authority, name: 'Tau Green')
-            create(:manifestation, author: alpha_author, translator: sigma_translator, orig_lang: 'en')
-            create(:manifestation, author: alpha_author, translator: tau_translator, orig_lang: 'en')
+            alpha_sigma
+            alpha_tau
           end
         end
 
         it 'returns all texts where author_string includes all of given names' do
-          expect(subject.count).to eq 1
-          # it takes in account both authors and translators names
-          subject.each do |rec|
-            expect(rec.author_string).to match(/Alpha/)
-            expect(rec.author_string).to match(/Sigma/)
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(alpha_sigma.id)
         end
       end
     end
@@ -387,44 +404,46 @@ describe SearchManifestations do
       let(:filter) { { 'author_ids' => author_ids } }
 
       context 'when author id is provided' do
-        let!(:target_author) { create(:authority, name: 'Beta Smith') }
-        let!(:other_author) { create(:authority, name: 'Alpha Jones') }
+        let(:target_author) { create(:authority, name: 'Beta Smith') }
+        let(:other_author) { create(:authority, name: 'Alpha Jones') }
         let(:author_ids) { [target_author.id] }
+        let(:target_1) { create(:manifestation, author: target_author) }
+        let(:target_2) { create(:manifestation, author: target_author) }
+        let(:other) { create(:manifestation, author: other_author) }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, author: target_author)
-            create(:manifestation, author: target_author)
-            create(:manifestation, author: other_author)
+            target_1
+            target_2
+            other
           end
         end
 
         it 'returns all texts written by this author' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.author_ids).to include target_author.id
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(target_1.id, target_2.id)
         end
       end
 
       context 'when translator id is provided' do
-        let!(:target_translator) { create(:authority, name: 'Rho Brown') }
-        let!(:other_translator) { create(:authority, name: 'Sigma Green') }
+        let(:target_translator) { create(:authority, name: 'Rho Brown') }
+        let(:other_translator) { create(:authority, name: 'Sigma Green') }
         let(:author_ids) { [target_translator.id] }
+        let(:target_1) { create(:manifestation, translator: target_translator, orig_lang: 'en') }
+        let(:target_2) { create(:manifestation, translator: target_translator, orig_lang: 'en') }
+        let(:other) { create(:manifestation, translator: other_translator, orig_lang: 'en') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, translator: target_translator, orig_lang: 'en')
-            create(:manifestation, translator: target_translator, orig_lang: 'en')
-            create(:manifestation, translator: other_translator, orig_lang: 'en')
+            target_1
+            target_2
+            other
           end
         end
 
         it 'returns all texts translated by this translator' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.author_ids).to include target_translator.id
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(target_1.id, target_2.id)
         end
       end
     end
@@ -434,84 +453,90 @@ describe SearchManifestations do
 
       context 'when single language is provided' do
         let(:orig_langs) { ['ru'] }
+        let(:russian_1) { create(:manifestation, orig_lang: 'ru') }
+        let(:russian_2) { create(:manifestation, orig_lang: 'ru') }
+        let(:english) { create(:manifestation, orig_lang: 'en') }
+        let(:hebrew) { create(:manifestation, orig_lang: 'he') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru')
-            create(:manifestation, orig_lang: 'ru')
-            create(:manifestation, orig_lang: 'en')
-            create(:manifestation, orig_lang: 'he')
+            russian_1
+            russian_2
+            english
+            hebrew
           end
         end
 
         it 'returns all texts written in given language' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.orig_lang).to eq 'ru'
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(russian_1.id, russian_2.id)
         end
       end
 
       context 'when multiple languages are provided' do
-        let(:orig_langs) { %w(ru he) }
+        let(:orig_langs) { %w[ru he] }
+        let(:russian) { create(:manifestation, orig_lang: 'ru') }
+        let(:hebrew) { create(:manifestation, orig_lang: 'he') }
+        let(:english) { create(:manifestation, orig_lang: 'en') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru')
-            create(:manifestation, orig_lang: 'he')
-            create(:manifestation, orig_lang: 'en')
+            russian
+            hebrew
+            english
           end
         end
 
         it 'returns all texts written in given languages' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(%w(ru he)).to include(rec.orig_lang)
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(russian.id, hebrew.id)
         end
       end
 
       context 'when magic constant is provided' do
         let(:orig_langs) { ['xlat'] }
+        let(:russian) { create(:manifestation, orig_lang: 'ru') }
+        let(:english) { create(:manifestation, orig_lang: 'en') }
+        let(:german) { create(:manifestation, orig_lang: 'de') }
+        let(:hebrew) { create(:manifestation, orig_lang: 'he') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru')
-            create(:manifestation, orig_lang: 'en')
-            create(:manifestation, orig_lang: 'de')
-            create(:manifestation, orig_lang: 'he')
+            russian
+            english
+            german
+            hebrew
           end
         end
 
         it 'returns all translated texts' do
-          expect(subject.count).to eq 3
-          subject.each do |rec|
-            expect(rec.orig_lang).not_to eq 'he'
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(russian.id, english.id, german.id)
         end
       end
 
       context 'when magic constant with specific language is provided' do
-        let(:orig_langs) { %w(xlat ru) }
+        let(:orig_langs) { %w[xlat ru] }
+        let(:russian) { create(:manifestation, orig_lang: 'ru') }
+        let(:english) { create(:manifestation, orig_lang: 'en') }
+        let(:hebrew) { create(:manifestation, orig_lang: 'he') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru')
-            create(:manifestation, orig_lang: 'en')
-            create(:manifestation, orig_lang: 'he')
+            russian
+            english
+            hebrew
           end
         end
 
         it 'returns all translated texts' do
-          expect(subject.count).to eq 2
-          subject.each do |rec|
-            expect(rec.orig_lang).not_to eq 'he'
-          end
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(russian.id, english.id)
         end
       end
 
       context 'when both magic constant and hebrew are provided' do
-        let(:orig_langs) { %w(xlat he) }
+        let(:orig_langs) { %w[xlat he] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -746,15 +771,15 @@ describe SearchManifestations do
   describe 'sorting' do
     describe 'alphabetical' do
       let(:sorting) { 'alphabetical' }
-      let!(:manifestation_a) { nil }
-      let!(:manifestation_b) { nil }
-      let!(:manifestation_c) { nil }
+      let(:manifestation_a) { create(:manifestation, title: 'Apple') }
+      let(:manifestation_b) { create(:manifestation, title: 'Banana') }
+      let(:manifestation_c) { create(:manifestation, title: 'Cherry') }
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_a = create(:manifestation, title: 'Apple')
-          @manifestation_b = create(:manifestation, title: 'Banana')
-          @manifestation_c = create(:manifestation, title: 'Cherry')
+          manifestation_a
+          manifestation_b
+          manifestation_c
         end
       end
 
@@ -763,7 +788,7 @@ describe SearchManifestations do
 
         it 'sorts in ascending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_a.id, @manifestation_b.id, @manifestation_c.id]
+          expect(result_ids).to eq [manifestation_a.id, manifestation_b.id, manifestation_c.id]
         end
       end
 
@@ -772,7 +797,7 @@ describe SearchManifestations do
 
         it 'sorts in ascending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_a.id, @manifestation_b.id, @manifestation_c.id]
+          expect(result_ids).to eq [manifestation_a.id, manifestation_b.id, manifestation_c.id]
         end
       end
 
@@ -781,19 +806,22 @@ describe SearchManifestations do
 
         it 'sorts in descending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_c.id, @manifestation_b.id, @manifestation_a.id]
+          expect(result_ids).to eq [manifestation_c.id, manifestation_b.id, manifestation_a.id]
         end
       end
     end
 
     describe 'popularity' do
       let(:sorting) { 'popularity' }
+      let(:manifestation_low) { create(:manifestation, impressions_count: 10) }
+      let(:manifestation_mid) { create(:manifestation, impressions_count: 50) }
+      let(:manifestation_high) { create(:manifestation, impressions_count: 100) }
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_low = create(:manifestation, impressions_count: 10)
-          @manifestation_mid = create(:manifestation, impressions_count: 50)
-          @manifestation_high = create(:manifestation, impressions_count: 100)
+          manifestation_low
+          manifestation_mid
+          manifestation_high
         end
       end
 
@@ -802,7 +830,7 @@ describe SearchManifestations do
 
         it 'sorts in descending order by default' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_high.id, @manifestation_mid.id, @manifestation_low.id]
+          expect(result_ids).to eq [manifestation_high.id, manifestation_mid.id, manifestation_low.id]
         end
       end
 
@@ -811,7 +839,7 @@ describe SearchManifestations do
 
         it 'sorts in ascending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_low.id, @manifestation_mid.id, @manifestation_high.id]
+          expect(result_ids).to eq [manifestation_low.id, manifestation_mid.id, manifestation_high.id]
         end
       end
 
@@ -820,19 +848,22 @@ describe SearchManifestations do
 
         it 'sorts in descending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_high.id, @manifestation_mid.id, @manifestation_low.id]
+          expect(result_ids).to eq [manifestation_high.id, manifestation_mid.id, manifestation_low.id]
         end
       end
     end
 
     describe 'publication_date' do
       let(:sorting) { 'publication_date' }
+      let(:manifestation_early) { create(:manifestation, expression_date: '01.01.1980') }
+      let(:manifestation_mid) { create(:manifestation, expression_date: '01.01.1990') }
+      let(:manifestation_late) { create(:manifestation, expression_date: '01.01.2000') }
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_early = create(:manifestation, expression_date: '01.01.1980')
-          @manifestation_mid = create(:manifestation, expression_date: '01.01.1990')
-          @manifestation_late = create(:manifestation, expression_date: '01.01.2000')
+          manifestation_early
+          manifestation_mid
+          manifestation_late
         end
       end
 
@@ -841,7 +872,7 @@ describe SearchManifestations do
 
         it 'sorts in ascending order by default' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
+          expect(result_ids).to eq [manifestation_early.id, manifestation_mid.id, manifestation_late.id]
         end
       end
 
@@ -850,7 +881,7 @@ describe SearchManifestations do
 
         it 'sorts in ascending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
+          expect(result_ids).to eq [manifestation_early.id, manifestation_mid.id, manifestation_late.id]
         end
       end
 
@@ -859,19 +890,22 @@ describe SearchManifestations do
 
         it 'sorts in descending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_late.id, @manifestation_mid.id, @manifestation_early.id]
+          expect(result_ids).to eq [manifestation_late.id, manifestation_mid.id, manifestation_early.id]
         end
       end
     end
 
     describe 'creation_date' do
       let(:sorting) { 'creation_date' }
+      let(:manifestation_early) { create(:manifestation, work_date: '01.01.1950') }
+      let(:manifestation_mid) { create(:manifestation, work_date: '01.01.1970') }
+      let(:manifestation_late) { create(:manifestation, work_date: '01.01.1990') }
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_early = create(:manifestation, work_date: '01.01.1950')
-          @manifestation_mid = create(:manifestation, work_date: '01.01.1970')
-          @manifestation_late = create(:manifestation, work_date: '01.01.1990')
+          manifestation_early
+          manifestation_mid
+          manifestation_late
         end
       end
 
@@ -880,7 +914,7 @@ describe SearchManifestations do
 
         it 'sorts in ascending order by default' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
+          expect(result_ids).to eq [manifestation_early.id, manifestation_mid.id, manifestation_late.id]
         end
       end
 
@@ -889,7 +923,7 @@ describe SearchManifestations do
 
         it 'sorts in ascending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
+          expect(result_ids).to eq [manifestation_early.id, manifestation_mid.id, manifestation_late.id]
         end
       end
 
@@ -898,19 +932,22 @@ describe SearchManifestations do
 
         it 'sorts in descending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_late.id, @manifestation_mid.id, @manifestation_early.id]
+          expect(result_ids).to eq [manifestation_late.id, manifestation_mid.id, manifestation_early.id]
         end
       end
     end
 
     describe 'upload_date' do
       let(:sorting) { 'upload_date' }
+      let(:manifestation_early) { create(:manifestation, created_at: Time.parse('2010-01-01')) }
+      let(:manifestation_mid) { create(:manifestation, created_at: Time.parse('2015-01-01')) }
+      let(:manifestation_late) { create(:manifestation, created_at: Time.parse('2020-01-01')) }
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_early = create(:manifestation, created_at: Time.parse('2010-01-01'))
-          @manifestation_mid = create(:manifestation, created_at: Time.parse('2015-01-01'))
-          @manifestation_late = create(:manifestation, created_at: Time.parse('2020-01-01'))
+          manifestation_early
+          manifestation_mid
+          manifestation_late
         end
       end
 
@@ -919,7 +956,7 @@ describe SearchManifestations do
 
         it 'sorts in descending order by default' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_late.id, @manifestation_mid.id, @manifestation_early.id]
+          expect(result_ids).to eq [manifestation_late.id, manifestation_mid.id, manifestation_early.id]
         end
       end
 
@@ -928,7 +965,7 @@ describe SearchManifestations do
 
         it 'sorts in ascending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
+          expect(result_ids).to eq [manifestation_early.id, manifestation_mid.id, manifestation_late.id]
         end
       end
 
@@ -937,7 +974,7 @@ describe SearchManifestations do
 
         it 'sorts in descending order' do
           result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
-          expect(result_ids).to eq [@manifestation_late.id, @manifestation_mid.id, @manifestation_early.id]
+          expect(result_ids).to eq [manifestation_late.id, manifestation_mid.id, manifestation_early.id]
         end
       end
     end
