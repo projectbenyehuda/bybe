@@ -909,7 +909,7 @@ class ManifestationController < ApplicationController
       lines.insert(linenum, insert_text)
       tmphash[ch_count.to_s.rjust(4, '0') + sanitize_heading(lines[linenum + 1][2..-1].strip)] = linenum.to_s
     end
-    tmphash.keys.reverse.map { |k| @chapters << [k[4..].gsub('\[', '[').gsub('\]', ']'), tmphash[k]] }
+    tmphash.keys.reverse.map { |k| @chapters << [k[4..], tmphash[k]] }
     @selected_chapter = tmphash.keys.last
     @html = MultiMarkdown.new(lines.join('')).to_html.force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '').gsub('<table>', '<div style="overflow-x:auto;"><table>').gsub('</table>', '</table></div>') # remove MMD's automatic figcaptions and make tables scroll to avoid breaking narrow mobile devices
     # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
