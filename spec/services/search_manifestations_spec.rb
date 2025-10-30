@@ -19,10 +19,10 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, genre: 'poetry', title: 'Poem 1')
-            create(:manifestation, genre: 'poetry', title: 'Poem 2')
-            create(:manifestation, genre: 'prose', title: 'Prose 1')
-            create(:manifestation, genre: 'drama', title: 'Drama 1')
+            create(:manifestation, genre: 'poetry')
+            create(:manifestation, genre: 'poetry')
+            create(:manifestation, genre: 'prose')
+            create(:manifestation, genre: 'drama')
           end
         end
 
@@ -39,9 +39,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, genre: 'poetry', title: 'Poem 1')
-            create(:manifestation, genre: 'article', title: 'Article 1')
-            create(:manifestation, genre: 'prose', title: 'Prose 1')
+            create(:manifestation, genre: 'poetry')
+            create(:manifestation, genre: 'article')
+            create(:manifestation, genre: 'prose')
           end
         end
 
@@ -62,10 +62,10 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, period: 'ancient', title: 'Ancient 1')
-            create(:manifestation, period: 'ancient', title: 'Ancient 2')
-            create(:manifestation, period: 'modern', title: 'Modern 1')
-            create(:manifestation, period: 'medieval', title: 'Medieval 1')
+            create(:manifestation, period: 'ancient')
+            create(:manifestation, period: 'ancient')
+            create(:manifestation, period: 'modern')
+            create(:manifestation, period: 'medieval')
           end
         end
 
@@ -82,9 +82,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, period: 'ancient', title: 'Ancient 1')
-            create(:manifestation, period: 'revival', title: 'Revival 1')
-            create(:manifestation, period: 'modern', title: 'Modern 1')
+            create(:manifestation, period: 'ancient')
+            create(:manifestation, period: 'revival')
+            create(:manifestation, period: 'modern')
           end
         end
 
@@ -103,9 +103,9 @@ describe SearchManifestations do
 
       before do
         Chewy.strategy(:atomic) do
-          create(:manifestation, intellectual_property: 'public_domain', title: 'Public 1')
-          create(:manifestation, intellectual_property: 'unknown', title: 'Unknown 1')
-          create(:manifestation, intellectual_property: 'copyrighted', title: 'Copyrighted 1')
+          create(:manifestation, intellectual_property: 'public_domain')
+          create(:manifestation, intellectual_property: 'unknown')
+          create(:manifestation, intellectual_property: 'copyrighted')
         end
       end
 
@@ -127,9 +127,9 @@ describe SearchManifestations do
           Chewy.strategy(:atomic) do
             male_author = create(:authority, gender: 'male')
             female_author = create(:authority, gender: 'female')
-            create(:manifestation, author: male_author, title: 'Male Author 1')
-            create(:manifestation, author: male_author, title: 'Male Author 2')
-            create(:manifestation, author: female_author, title: 'Female Author 1')
+            create(:manifestation, author: male_author)
+            create(:manifestation, author: male_author)
+            create(:manifestation, author: female_author)
           end
         end
 
@@ -150,10 +150,10 @@ describe SearchManifestations do
             female_author = create(:authority, gender: 'female')
             unknown_author = create(:authority, gender: 'unknown')
             other_author = create(:authority, gender: 'other')
-            create(:manifestation, author: male_author, title: 'Male Author 1')
-            create(:manifestation, author: female_author, title: 'Female Author 1')
-            create(:manifestation, author: unknown_author, title: 'Unknown Author 1')
-            create(:manifestation, author: other_author, title: 'Other Author 1')
+            create(:manifestation, author: male_author)
+            create(:manifestation, author: female_author)
+            create(:manifestation, author: unknown_author)
+            create(:manifestation, author: other_author)
           end
         end
 
@@ -176,9 +176,9 @@ describe SearchManifestations do
           Chewy.strategy(:atomic) do
             female_translator = create(:authority, gender: 'female')
             male_translator = create(:authority, gender: 'male')
-            create(:manifestation, translator: female_translator, orig_lang: 'en', title: 'Female Trans 1')
-            create(:manifestation, translator: female_translator, orig_lang: 'en', title: 'Female Trans 2')
-            create(:manifestation, translator: male_translator, orig_lang: 'en', title: 'Male Trans 1')
+            create(:manifestation, translator: female_translator, orig_lang: 'en')
+            create(:manifestation, translator: female_translator, orig_lang: 'en')
+            create(:manifestation, translator: male_translator, orig_lang: 'en')
           end
         end
 
@@ -199,10 +199,10 @@ describe SearchManifestations do
             female_translator = create(:authority, gender: 'female')
             other_translator = create(:authority, gender: 'other')
             unknown_translator = create(:authority, gender: 'unknown')
-            create(:manifestation, translator: male_translator, orig_lang: 'en', title: 'Male Trans 1')
-            create(:manifestation, translator: female_translator, orig_lang: 'en', title: 'Female Trans 1')
-            create(:manifestation, translator: other_translator, orig_lang: 'en', title: 'Other Trans 1')
-            create(:manifestation, translator: unknown_translator, orig_lang: 'en', title: 'Unknown Trans 1')
+            create(:manifestation, translator: male_translator, orig_lang: 'en')
+            create(:manifestation, translator: female_translator, orig_lang: 'en')
+            create(:manifestation, translator: other_translator, orig_lang: 'en')
+            create(:manifestation, translator: unknown_translator, orig_lang: 'en')
           end
         end
 
@@ -283,9 +283,9 @@ describe SearchManifestations do
           Chewy.strategy(:atomic) do
             alpha_author = create(:authority, name: 'Alpha Smith')
             beta_author = create(:authority, name: 'Beta Jones')
-            create(:manifestation, author: alpha_author, title: 'Alpha Book 1')
-            create(:manifestation, author: alpha_author, title: 'Alpha Book 2')
-            create(:manifestation, author: beta_author, title: 'Beta Book 1')
+            create(:manifestation, author: alpha_author)
+            create(:manifestation, author: alpha_author)
+            create(:manifestation, author: beta_author)
           end
         end
 
@@ -304,9 +304,9 @@ describe SearchManifestations do
           Chewy.strategy(:atomic) do
             sigma_translator = create(:authority, name: 'Sigma Brown')
             tau_translator = create(:authority, name: 'Tau Green')
-            create(:manifestation, translator: sigma_translator, orig_lang: 'en', title: 'Sigma Trans 1')
-            create(:manifestation, translator: sigma_translator, orig_lang: 'en', title: 'Sigma Trans 2')
-            create(:manifestation, translator: tau_translator, orig_lang: 'en', title: 'Tau Trans 1')
+            create(:manifestation, translator: sigma_translator, orig_lang: 'en')
+            create(:manifestation, translator: sigma_translator, orig_lang: 'en')
+            create(:manifestation, translator: tau_translator, orig_lang: 'en')
           end
         end
 
@@ -326,10 +326,8 @@ describe SearchManifestations do
             alpha_author = create(:authority, name: 'Alpha Smith')
             sigma_translator = create(:authority, name: 'Sigma Brown')
             tau_translator = create(:authority, name: 'Tau Green')
-            create(:manifestation, author: alpha_author, translator: sigma_translator, orig_lang: 'en',
-                                   title: 'Alpha Sigma 1')
-            create(:manifestation, author: alpha_author, translator: tau_translator, orig_lang: 'en',
-                                   title: 'Alpha Tau 1')
+            create(:manifestation, author: alpha_author, translator: sigma_translator, orig_lang: 'en')
+            create(:manifestation, author: alpha_author, translator: tau_translator, orig_lang: 'en')
           end
         end
 
@@ -391,9 +389,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, author: target_author, title: 'Beta Book 1')
-            create(:manifestation, author: target_author, title: 'Beta Book 2')
-            create(:manifestation, author: other_author, title: 'Alpha Book 1')
+            create(:manifestation, author: target_author)
+            create(:manifestation, author: target_author)
+            create(:manifestation, author: other_author)
           end
         end
 
@@ -412,9 +410,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, translator: target_translator, orig_lang: 'en', title: 'Rho Trans 1')
-            create(:manifestation, translator: target_translator, orig_lang: 'en', title: 'Rho Trans 2')
-            create(:manifestation, translator: other_translator, orig_lang: 'en', title: 'Sigma Trans 1')
+            create(:manifestation, translator: target_translator, orig_lang: 'en')
+            create(:manifestation, translator: target_translator, orig_lang: 'en')
+            create(:manifestation, translator: other_translator, orig_lang: 'en')
           end
         end
 
@@ -435,10 +433,10 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru', title: 'Russian 1')
-            create(:manifestation, orig_lang: 'ru', title: 'Russian 2')
-            create(:manifestation, orig_lang: 'en', title: 'English 1')
-            create(:manifestation, orig_lang: 'he', title: 'Hebrew 1')
+            create(:manifestation, orig_lang: 'ru')
+            create(:manifestation, orig_lang: 'ru')
+            create(:manifestation, orig_lang: 'en')
+            create(:manifestation, orig_lang: 'he')
           end
         end
 
@@ -455,9 +453,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru', title: 'Russian 1')
-            create(:manifestation, orig_lang: 'he', title: 'Hebrew 1')
-            create(:manifestation, orig_lang: 'en', title: 'English 1')
+            create(:manifestation, orig_lang: 'ru')
+            create(:manifestation, orig_lang: 'he')
+            create(:manifestation, orig_lang: 'en')
           end
         end
 
@@ -474,10 +472,10 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru', title: 'Russian 1')
-            create(:manifestation, orig_lang: 'en', title: 'English 1')
-            create(:manifestation, orig_lang: 'de', title: 'German 1')
-            create(:manifestation, orig_lang: 'he', title: 'Hebrew 1')
+            create(:manifestation, orig_lang: 'ru')
+            create(:manifestation, orig_lang: 'en')
+            create(:manifestation, orig_lang: 'de')
+            create(:manifestation, orig_lang: 'he')
           end
         end
 
@@ -494,9 +492,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru', title: 'Russian 1')
-            create(:manifestation, orig_lang: 'en', title: 'English 1')
-            create(:manifestation, orig_lang: 'he', title: 'Hebrew 1')
+            create(:manifestation, orig_lang: 'ru')
+            create(:manifestation, orig_lang: 'en')
+            create(:manifestation, orig_lang: 'he')
           end
         end
 
@@ -513,9 +511,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru', title: 'Russian 1')
-            create(:manifestation, orig_lang: 'en', title: 'English 1')
-            create(:manifestation, orig_lang: 'he', title: 'Hebrew 1')
+            create(:manifestation, orig_lang: 'ru')
+            create(:manifestation, orig_lang: 'en')
+            create(:manifestation, orig_lang: 'he')
           end
         end
 
@@ -534,10 +532,10 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, created_at: Time.parse('2010-06-15'), title: 'Uploaded 2010-1')
-            create(:manifestation, created_at: Time.parse('2010-12-31'), title: 'Uploaded 2010-2')
-            create(:manifestation, created_at: Time.parse('2009-12-31'), title: 'Uploaded 2009')
-            create(:manifestation, created_at: Time.parse('2011-01-01'), title: 'Uploaded 2011')
+            create(:manifestation, created_at: Time.parse('2010-06-15'))
+            create(:manifestation, created_at: Time.parse('2010-12-31'))
+            create(:manifestation, created_at: Time.parse('2009-12-31'))
+            create(:manifestation, created_at: Time.parse('2011-01-01'))
           end
         end
 
@@ -551,10 +549,10 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, created_at: Time.parse('2010-01-01'), title: 'Uploaded 2010')
-            create(:manifestation, created_at: Time.parse('2011-06-15'), title: 'Uploaded 2011')
-            create(:manifestation, created_at: Time.parse('2009-12-31'), title: 'Uploaded 2009')
-            create(:manifestation, created_at: Time.parse('2012-01-01'), title: 'Uploaded 2012')
+            create(:manifestation, created_at: Time.parse('2010-01-01'))
+            create(:manifestation, created_at: Time.parse('2011-06-15'))
+            create(:manifestation, created_at: Time.parse('2009-12-31'))
+            create(:manifestation, created_at: Time.parse('2012-01-01'))
           end
         end
 
@@ -568,9 +566,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, created_at: Time.parse('2012-01-01'), title: 'Uploaded 2012')
-            create(:manifestation, created_at: Time.parse('2013-06-15'), title: 'Uploaded 2013')
-            create(:manifestation, created_at: Time.parse('2011-12-31'), title: 'Uploaded 2011')
+            create(:manifestation, created_at: Time.parse('2012-01-01'))
+            create(:manifestation, created_at: Time.parse('2013-06-15'))
+            create(:manifestation, created_at: Time.parse('2011-12-31'))
           end
         end
 
@@ -584,9 +582,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, created_at: Time.parse('2010-06-15'), title: 'Uploaded 2010')
-            create(:manifestation, created_at: Time.parse('2009-12-31'), title: 'Uploaded 2009')
-            create(:manifestation, created_at: Time.parse('2011-01-01'), title: 'Uploaded 2011')
+            create(:manifestation, created_at: Time.parse('2010-06-15'))
+            create(:manifestation, created_at: Time.parse('2009-12-31'))
+            create(:manifestation, created_at: Time.parse('2011-01-01'))
           end
         end
 
@@ -605,10 +603,10 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, expression_date: '15.06.1980', title: 'Published 1980-1')
-            create(:manifestation, expression_date: '31.12.1980', title: 'Published 1980-2')
-            create(:manifestation, expression_date: '31.12.1979', title: 'Published 1979')
-            create(:manifestation, expression_date: '01.01.1981', title: 'Published 1981')
+            create(:manifestation, expression_date: '15.06.1980')
+            create(:manifestation, expression_date: '31.12.1980')
+            create(:manifestation, expression_date: '31.12.1979')
+            create(:manifestation, expression_date: '01.01.1981')
           end
         end
 
@@ -622,11 +620,11 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, expression_date: '01.01.1990', title: 'Published 1990')
-            create(:manifestation, expression_date: '15.06.1991', title: 'Published 1991')
-            create(:manifestation, expression_date: '31.12.1992', title: 'Published 1992')
-            create(:manifestation, expression_date: '31.12.1989', title: 'Published 1989')
-            create(:manifestation, expression_date: '01.01.1993', title: 'Published 1993')
+            create(:manifestation, expression_date: '01.01.1990')
+            create(:manifestation, expression_date: '15.06.1991')
+            create(:manifestation, expression_date: '31.12.1992')
+            create(:manifestation, expression_date: '31.12.1989')
+            create(:manifestation, expression_date: '01.01.1993')
           end
         end
 
@@ -640,9 +638,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, expression_date: '01.01.1985', title: 'Published 1985')
-            create(:manifestation, expression_date: '15.06.1990', title: 'Published 1990')
-            create(:manifestation, expression_date: '31.12.1984', title: 'Published 1984')
+            create(:manifestation, expression_date: '01.01.1985')
+            create(:manifestation, expression_date: '15.06.1990')
+            create(:manifestation, expression_date: '31.12.1984')
           end
         end
 
@@ -656,9 +654,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, expression_date: '15.06.1984', title: 'Published 1984')
-            create(:manifestation, expression_date: '31.12.1983', title: 'Published 1983')
-            create(:manifestation, expression_date: '01.01.1985', title: 'Published 1985')
+            create(:manifestation, expression_date: '15.06.1984')
+            create(:manifestation, expression_date: '31.12.1983')
+            create(:manifestation, expression_date: '01.01.1985')
           end
         end
 
@@ -677,10 +675,10 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, work_date: '15.06.1950', title: 'Created 1950-1')
-            create(:manifestation, work_date: '31.12.1950', title: 'Created 1950-2')
-            create(:manifestation, work_date: '31.12.1949', title: 'Created 1949')
-            create(:manifestation, work_date: '01.01.1951', title: 'Created 1951')
+            create(:manifestation, work_date: '15.06.1950')
+            create(:manifestation, work_date: '31.12.1950')
+            create(:manifestation, work_date: '31.12.1949')
+            create(:manifestation, work_date: '01.01.1951')
           end
         end
 
@@ -694,11 +692,11 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, work_date: '01.01.1950', title: 'Created 1950')
-            create(:manifestation, work_date: '15.06.1951', title: 'Created 1951')
-            create(:manifestation, work_date: '31.12.1952', title: 'Created 1952')
-            create(:manifestation, work_date: '31.12.1949', title: 'Created 1949')
-            create(:manifestation, work_date: '01.01.1953', title: 'Created 1953')
+            create(:manifestation, work_date: '01.01.1950')
+            create(:manifestation, work_date: '15.06.1951')
+            create(:manifestation, work_date: '31.12.1952')
+            create(:manifestation, work_date: '31.12.1949')
+            create(:manifestation, work_date: '01.01.1953')
           end
         end
 
@@ -712,9 +710,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, work_date: '01.01.1985', title: 'Created 1985')
-            create(:manifestation, work_date: '15.06.1990', title: 'Created 1990')
-            create(:manifestation, work_date: '31.12.1984', title: 'Created 1984')
+            create(:manifestation, work_date: '01.01.1985')
+            create(:manifestation, work_date: '15.06.1990')
+            create(:manifestation, work_date: '31.12.1984')
           end
         end
 
@@ -728,9 +726,9 @@ describe SearchManifestations do
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, work_date: '15.06.1952', title: 'Created 1952')
-            create(:manifestation, work_date: '31.12.1951', title: 'Created 1951')
-            create(:manifestation, work_date: '01.01.1953', title: 'Created 1953')
+            create(:manifestation, work_date: '15.06.1952')
+            create(:manifestation, work_date: '31.12.1951')
+            create(:manifestation, work_date: '01.01.1953')
           end
         end
 
@@ -786,9 +784,9 @@ describe SearchManifestations do
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_low = create(:manifestation, impressions_count: 10, title: 'Low')
-          @manifestation_mid = create(:manifestation, impressions_count: 50, title: 'Mid')
-          @manifestation_high = create(:manifestation, impressions_count: 100, title: 'High')
+          @manifestation_low = create(:manifestation, impressions_count: 10)
+          @manifestation_mid = create(:manifestation, impressions_count: 50)
+          @manifestation_high = create(:manifestation, impressions_count: 100)
         end
       end
 
@@ -822,9 +820,9 @@ describe SearchManifestations do
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_early = create(:manifestation, expression_date: '01.01.1980', title: 'Early')
-          @manifestation_mid = create(:manifestation, expression_date: '01.01.1990', title: 'Mid')
-          @manifestation_late = create(:manifestation, expression_date: '01.01.2000', title: 'Late')
+          @manifestation_early = create(:manifestation, expression_date: '01.01.1980')
+          @manifestation_mid = create(:manifestation, expression_date: '01.01.1990')
+          @manifestation_late = create(:manifestation, expression_date: '01.01.2000')
         end
       end
 
@@ -858,9 +856,9 @@ describe SearchManifestations do
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_early = create(:manifestation, work_date: '01.01.1950', title: 'Early')
-          @manifestation_mid = create(:manifestation, work_date: '01.01.1970', title: 'Mid')
-          @manifestation_late = create(:manifestation, work_date: '01.01.1990', title: 'Late')
+          @manifestation_early = create(:manifestation, work_date: '01.01.1950')
+          @manifestation_mid = create(:manifestation, work_date: '01.01.1970')
+          @manifestation_late = create(:manifestation, work_date: '01.01.1990')
         end
       end
 
@@ -894,9 +892,9 @@ describe SearchManifestations do
 
       before do
         Chewy.strategy(:atomic) do
-          @manifestation_early = create(:manifestation, created_at: Time.parse('2010-01-01'), title: 'Early')
-          @manifestation_mid = create(:manifestation, created_at: Time.parse('2015-01-01'), title: 'Mid')
-          @manifestation_late = create(:manifestation, created_at: Time.parse('2020-01-01'), title: 'Late')
+          @manifestation_early = create(:manifestation, created_at: Time.parse('2010-01-01'))
+          @manifestation_mid = create(:manifestation, created_at: Time.parse('2015-01-01'))
+          @manifestation_late = create(:manifestation, created_at: Time.parse('2020-01-01'))
         end
       end
 
