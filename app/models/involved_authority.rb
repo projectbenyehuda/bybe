@@ -43,10 +43,10 @@ class InvolvedAuthority < ApplicationRecord
 
     expressions.each do |expression|
       # Get all involved authorities for this expression (from both work and expression levels)
-      manifestation = expression.manifestations.first
-      next unless manifestation
+      work_authority_ids = expression.work.involved_authorities.map(&:authority_id)
+      expression_authority_ids = expression.involved_authorities.map(&:authority_id)
+      authority_ids = (work_authority_ids + expression_authority_ids).uniq
 
-      authority_ids = manifestation.involved_authorities.map(&:authority_id).uniq
       computed_ip = ComputeIntellectualProperty.call(authority_ids)
 
       # Only update if the computed value differs from current value
