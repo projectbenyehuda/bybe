@@ -34,7 +34,7 @@ class NotificationDigestJob
   private
 
   def send_digest_for_user(email, cutoff_time)
-    notifications = PendingNotification.for_recipient(email).older_than(Time.current)
+    notifications = PendingNotification.for_recipient(email).older_than(cutoff_time)
 
     return if notifications.empty?
 
