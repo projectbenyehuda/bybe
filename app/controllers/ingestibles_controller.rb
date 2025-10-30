@@ -563,11 +563,14 @@ class IngestiblesController < ApplicationController
         end
         period = determine_period_by_involved_authorities(w.orig_lang == 'he' ? author_ids : translator_ids) # translator's period is the relevant one for translations
         pub_status = determine_publication_status_by_involved_authorities(author_ids + translator_ids + other_authorities.map(&:first))
+        # Compute intellectual property from all involved authorities
+        all_authority_ids = author_ids + translator_ids + other_authorities.map(&:first)
+        computed_ip = ComputeIntellectualProperty.call(all_authority_ids)
         e = w.expressions.build(
           title: toc_line[1],
           language: 'he',
           period: period, # what to do if corporate body?
-          intellectual_property: toc_line[5],
+          intellectual_property: computed_ip,
           source_edition: @ingestible.publisher,
           date: @ingestible.year_published
         )
