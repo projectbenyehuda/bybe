@@ -264,8 +264,8 @@ Bybeconv::Application.routes.draw do
   patch 'manifestation/update'
   post 'manifestation/add_images'
   get 'manifestation/get_random'
-  get 'manifestation/like'
-  get 'manifestation/unlike'
+  post 'manifestation/like'
+  post 'manifestation/unlike'
   get 'manifestation/surprise_work'
   get 'manifestation/autocomplete_works_by_author'
   get 'manifestation/autocomplete_authority_name' => 'manifestation#autocomplete_authority_name',
