@@ -19,6 +19,7 @@ class UserPreferencesController < ApplicationController
       redirect_to edit_user_preferences_path
     else
       flash[:error] = t(:invalid_preference)
+      @email_frequency = email_frequency
       render :edit
     end
   end
