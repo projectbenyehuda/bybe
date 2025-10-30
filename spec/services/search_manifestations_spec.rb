@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 describe SearchManifestations do
-  before(:each) do
-    clean_tables
+  after do
+    Chewy.massacre
   end
 
   describe 'filtering' do
@@ -15,7 +15,7 @@ describe SearchManifestations do
       let(:filter) { { 'genres' => genres } }
 
       context 'when single genre specified' do
-        let(:genres) { %w(poetry) }
+        let(:genres) { %w[poetry] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -35,7 +35,7 @@ describe SearchManifestations do
       end
 
       context 'when multiple genres specified' do
-        let(:genres) { %w(poetry article) }
+        let(:genres) { %w[poetry article] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -48,7 +48,7 @@ describe SearchManifestations do
         it 'returns all texts where genre is included in provided list' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(%w(poetry article)).to include rec.genre
+            expect(%w[poetry article]).to include rec.genre
           end
         end
       end
@@ -58,7 +58,7 @@ describe SearchManifestations do
       let(:filter) { { 'periods' => periods } }
 
       context 'when single period specified' do
-        let(:periods) { %w(ancient) }
+        let(:periods) { %w[ancient] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -78,7 +78,7 @@ describe SearchManifestations do
       end
 
       context 'when multiple periods specified' do
-        let(:periods) { %w(ancient revival) }
+        let(:periods) { %w[ancient revival] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -91,14 +91,14 @@ describe SearchManifestations do
         it 'returns all texts where period is included in provided list' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(%w(ancient revival)).to include rec.period
+            expect(%w[ancient revival]).to include rec.period
           end
         end
       end
     end
 
     describe 'by intellectual property types' do
-      let(:types) { %w(public_domain unknown) }
+      let(:types) { %w[public_domain unknown] }
       let(:filter)  { { 'intellectual_property_types' => types } }
 
       before do
@@ -136,13 +136,13 @@ describe SearchManifestations do
         it 'returns all records where author has given gender' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(rec.author_gender).to eq %w(male)
+            expect(rec.author_gender).to eq %w[male]
           end
         end
       end
 
       context('when multiple values provided') do
-        let(:author_genders) { [:male, :female, :unknown] }
+        let(:author_genders) { %i[male female unknown] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -160,7 +160,7 @@ describe SearchManifestations do
         it 'returns all records where author has any of given genders' do
           expect(subject.count).to eq 3
           subject.each do |rec|
-            expect([%w(male), %w(female), %w(unknown)]).to include rec.author_gender
+            expect([%w[male], %w[female], %w[unknown]]).to include rec.author_gender
           end
         end
       end
@@ -185,13 +185,13 @@ describe SearchManifestations do
         it 'returns all records where translator has given gender' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(rec.translator_gender).to eq %w(female)
+            expect(rec.translator_gender).to eq %w[female]
           end
         end
       end
 
       context('when multiple values provided') do
-        let(:translator_genders) { [:male, :female, :other] }
+        let(:translator_genders) { %i[male female other] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -209,7 +209,7 @@ describe SearchManifestations do
         it 'returns all records where translator has any of given genders' do
           expect(subject.count).to eq 3
           subject.each do |rec|
-            expect([%w(male), %w(female), %w(other)]).to include rec.translator_gender
+            expect([%w[male], %w[female], %w[other]]).to include rec.translator_gender
           end
         end
       end
@@ -232,7 +232,7 @@ describe SearchManifestations do
         it 'returns all texts including given word in title' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(rec.title).to match /lemon/
+            expect(rec.title).to match(/lemon/)
           end
         end
       end
@@ -251,7 +251,7 @@ describe SearchManifestations do
         it 'returns all texts having all this words in same order' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(rec.title).to match /orange lemon/i
+            expect(rec.title).to match(/orange lemon/i)
           end
         end
       end
@@ -292,7 +292,7 @@ describe SearchManifestations do
         it 'returns all texts where author_string includes given name' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(rec.author_string).to match /Alpha/
+            expect(rec.author_string).to match(/Alpha/)
           end
         end
       end
@@ -313,7 +313,7 @@ describe SearchManifestations do
         it 'returns all texts where author_string includes given name' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(rec.author_string).to match /Sigma/
+            expect(rec.author_string).to match(/Sigma/)
           end
         end
       end
@@ -326,8 +326,10 @@ describe SearchManifestations do
             alpha_author = create(:authority, name: 'Alpha Smith')
             sigma_translator = create(:authority, name: 'Sigma Brown')
             tau_translator = create(:authority, name: 'Tau Green')
-            create(:manifestation, author: alpha_author, translator: sigma_translator, orig_lang: 'en', title: 'Alpha Sigma 1')
-            create(:manifestation, author: alpha_author, translator: tau_translator, orig_lang: 'en', title: 'Alpha Tau 1')
+            create(:manifestation, author: alpha_author, translator: sigma_translator, orig_lang: 'en',
+                                   title: 'Alpha Sigma 1')
+            create(:manifestation, author: alpha_author, translator: tau_translator, orig_lang: 'en',
+                                   title: 'Alpha Tau 1')
           end
         end
 
@@ -335,8 +337,8 @@ describe SearchManifestations do
           expect(subject.count).to eq 1
           # it takes in account both authors and translators names
           subject.each do |rec|
-            expect(rec.author_string).to match /Alpha/
-            expect(rec.author_string).to match /Sigma/
+            expect(rec.author_string).to match(/Alpha/)
+            expect(rec.author_string).to match(/Sigma/)
           end
         end
       end
@@ -348,9 +350,13 @@ describe SearchManifestations do
       let(:filter) { { 'fulltext' => fulltext } }
       let(:result_ids) { subject.map(&:id) }
       let(:manifestation_1) { create(:manifestation, markdown: 'The quick brown fox jumps over the lazy dog') }
-      let(:manifestation_2) { create(:manifestation, markdown: 'Dogs are not our whole life, but they make our lives whole.') }
+      let(:manifestation_2) do
+        create(:manifestation, markdown: 'Dogs are not our whole life, but they make our lives whole.')
+      end
       # Adding word duplication to increase relevance by this word
-      let(:manifestation_3) { create(:manifestation, markdown: 'Dogs do speak, but only to those who know how to listen. Dogs! Dogs! Dogs!') }
+      let(:manifestation_3) do
+        create(:manifestation, markdown: 'Dogs do speak, but only to those who know how to listen. Dogs! Dogs! Dogs!')
+      end
 
       before do
         Chewy.strategy(:atomic) do
@@ -363,14 +369,14 @@ describe SearchManifestations do
       context 'when fulltext snippet is provided' do
         let(:fulltext) { 'lazy fox' }
         it 'returns records including those words' do
-          expect(result_ids).to eq [ manifestation_1.id ]
+          expect(result_ids).to eq [manifestation_1.id]
         end
       end
 
       context 'when multiple documents match query' do
         let(:fulltext) { 'but dogs' }
         it 'orders them by relevance' do
-          expect(result_ids).to eq [ manifestation_3.id, manifestation_2.id ]
+          expect(result_ids).to eq [manifestation_3.id, manifestation_2.id]
         end
       end
     end
@@ -381,7 +387,7 @@ describe SearchManifestations do
       context 'when author id is provided' do
         let!(:target_author) { create(:authority, name: 'Beta Smith') }
         let!(:other_author) { create(:authority, name: 'Alpha Jones') }
-        let(:author_ids) { [ target_author.id ] }
+        let(:author_ids) { [target_author.id] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -402,7 +408,7 @@ describe SearchManifestations do
       context 'when translator id is provided' do
         let!(:target_translator) { create(:authority, name: 'Rho Brown') }
         let!(:other_translator) { create(:authority, name: 'Sigma Green') }
-        let(:author_ids) { [ target_translator.id ] }
+        let(:author_ids) { [target_translator.id] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -445,7 +451,7 @@ describe SearchManifestations do
       end
 
       context 'when multiple languages are provided' do
-        let(:orig_langs) { %w(ru he) }
+        let(:orig_langs) { %w[ru he] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -458,7 +464,7 @@ describe SearchManifestations do
         it 'returns all texts written in given languages' do
           expect(subject.count).to eq 2
           subject.each do |rec|
-            expect(%w(ru he).include?(rec.orig_lang)).to be_truthy
+            expect(%w[ru he].include?(rec.orig_lang)).to be_truthy
           end
         end
       end
@@ -484,7 +490,7 @@ describe SearchManifestations do
       end
 
       context 'when magic constant with specific language is provided' do
-        let(:orig_langs) { %w(xlat ru) }
+        let(:orig_langs) { %w[xlat ru] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -503,7 +509,7 @@ describe SearchManifestations do
       end
 
       context 'when both magic constant and hebrew are provided' do
-        let(:orig_langs) { %w(xlat he) }
+        let(:orig_langs) { %w[xlat he] }
 
         before do
           Chewy.strategy(:atomic) do
@@ -751,7 +757,7 @@ describe SearchManifestations do
       end
 
       context 'when default sort direction is requested' do
-        let(:sort_dir) { 'default'}
+        let(:sort_dir) { 'default' }
         it 'sorts in ascending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_a.id, @manifestation_b.id, @manifestation_c.id]
@@ -759,7 +765,7 @@ describe SearchManifestations do
       end
 
       context 'when asc sort direction is requested' do
-        let(:sort_dir) { 'asc'}
+        let(:sort_dir) { 'asc' }
         it 'sorts in ascending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_a.id, @manifestation_b.id, @manifestation_c.id]
@@ -767,7 +773,7 @@ describe SearchManifestations do
       end
 
       context 'when desc sort direction is requested' do
-        let(:sort_dir) { 'desc'}
+        let(:sort_dir) { 'desc' }
         it 'sorts in descending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_c.id, @manifestation_b.id, @manifestation_a.id]
@@ -787,7 +793,7 @@ describe SearchManifestations do
       end
 
       context 'when default sort direction is requested' do
-        let(:sort_dir) { 'default'}
+        let(:sort_dir) { 'default' }
         it 'sorts in descending order by default' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_high.id, @manifestation_mid.id, @manifestation_low.id]
@@ -795,7 +801,7 @@ describe SearchManifestations do
       end
 
       context 'when asc sort direction is requested' do
-        let(:sort_dir) { 'asc'}
+        let(:sort_dir) { 'asc' }
         it 'sorts in ascending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_low.id, @manifestation_mid.id, @manifestation_high.id]
@@ -803,7 +809,7 @@ describe SearchManifestations do
       end
 
       context 'when desc sort direction is requested' do
-        let(:sort_dir) { 'desc'}
+        let(:sort_dir) { 'desc' }
         it 'sorts in descending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_high.id, @manifestation_mid.id, @manifestation_low.id]
@@ -823,7 +829,7 @@ describe SearchManifestations do
       end
 
       context 'when default sort direction is requested' do
-        let(:sort_dir) { 'default'}
+        let(:sort_dir) { 'default' }
         it 'sorts in ascending order by default' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
@@ -831,7 +837,7 @@ describe SearchManifestations do
       end
 
       context 'when asc sort direction is requested' do
-        let(:sort_dir) { 'asc'}
+        let(:sort_dir) { 'asc' }
         it 'sorts in ascending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
@@ -839,7 +845,7 @@ describe SearchManifestations do
       end
 
       context 'when desc sort direction is requested' do
-        let(:sort_dir) { 'desc'}
+        let(:sort_dir) { 'desc' }
         it 'sorts in descending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_late.id, @manifestation_mid.id, @manifestation_early.id]
@@ -859,7 +865,7 @@ describe SearchManifestations do
       end
 
       context 'when default sort direction is requested' do
-        let(:sort_dir) { 'default'}
+        let(:sort_dir) { 'default' }
         it 'sorts in ascending order by default' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
@@ -867,7 +873,7 @@ describe SearchManifestations do
       end
 
       context 'when asc sort direction is requested' do
-        let(:sort_dir) { 'asc'}
+        let(:sort_dir) { 'asc' }
         it 'sorts in ascending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
@@ -875,7 +881,7 @@ describe SearchManifestations do
       end
 
       context 'when desc sort direction is requested' do
-        let(:sort_dir) { 'desc'}
+        let(:sort_dir) { 'desc' }
         it 'sorts in descending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_late.id, @manifestation_mid.id, @manifestation_early.id]
@@ -895,7 +901,7 @@ describe SearchManifestations do
       end
 
       context 'when default sort direction is requested' do
-        let(:sort_dir) { 'default'}
+        let(:sort_dir) { 'default' }
         it 'sorts in descending order by default' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_late.id, @manifestation_mid.id, @manifestation_early.id]
@@ -903,7 +909,7 @@ describe SearchManifestations do
       end
 
       context 'when asc sort direction is requested' do
-        let(:sort_dir) { 'asc'}
+        let(:sort_dir) { 'asc' }
         it 'sorts in ascending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_early.id, @manifestation_mid.id, @manifestation_late.id]
@@ -911,7 +917,7 @@ describe SearchManifestations do
       end
 
       context 'when desc sort direction is requested' do
-        let(:sort_dir) { 'desc'}
+        let(:sort_dir) { 'desc' }
         it 'sorts in descending order' do
           result_ids = SearchManifestations.call(sorting, sort_dir, {}).map(&:id)
           expect(result_ids).to eq [@manifestation_late.id, @manifestation_mid.id, @manifestation_early.id]
@@ -928,12 +934,8 @@ describe SearchManifestations do
     to = Time.parse("#{range['to']}-12-31 23:59:59") if range['to'].present?
     subject.each do |rec|
       time = Time.parse(rec.send(index_attr))
-      if from.present?
-        expect(time).to be >= from
-      end
-      if to.present?
-        expect(time).to be <= to
-      end
+      expect(time).to be >= from if from.present?
+      expect(time).to be <= to if to.present?
     end
   end
 end
