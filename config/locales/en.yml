@@ -45,6 +45,12 @@ en:
   sort_by: Sort by
   uncollected_works_collection_title: Uncollected works
   add: Add
+  filter: Filter
+  filter_by_type: Filter by type
+  manifestations: Works
+  authorities: Authors
+  dictionary: Dictionary
+  collections: Collections
   email: Email
   ziburit: What is the last name of the most famous poet? (Security question)
   not_implemented_yet: Not implemented. This function is still in development.
