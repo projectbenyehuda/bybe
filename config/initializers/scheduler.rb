@@ -27,12 +27,12 @@ scheduler.every '7d' do
 end
 
 # Email digest notifications
-scheduler.every '24h', first_at: Time.now.beginning_of_day + 9.hours do
+scheduler.every '24h' do
   puts "sending daily notification digests"
   NotificationDigestJob.perform_async('daily')
 end
 
-scheduler.every '7d', first_at: (Time.now.beginning_of_week + 1.week + 9.hours) do
+scheduler.every '7d' do
   puts "sending weekly notification digests"
   NotificationDigestJob.perform_async('weekly')
 end
