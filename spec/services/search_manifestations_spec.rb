@@ -554,215 +554,268 @@ describe SearchManifestations do
 
     describe 'by upload date' do
       let(:filter) { { 'uploaded_between' => range } }
-      let(:index_attr) { :pby_publication_date }
 
       context "when 'from' and 'to' values are equal" do
         let(:range) { { 'from' => 2010, 'to' => 2010 } }
+        let(:uploaded_2010_mid) { create(:manifestation, created_at: Time.parse('2010-06-15')) }
+        let(:uploaded_2010_end) { create(:manifestation, created_at: Time.parse('2010-12-31')) }
+        let(:uploaded_2009) { create(:manifestation, created_at: Time.parse('2009-12-31')) }
+        let(:uploaded_2011) { create(:manifestation, created_at: Time.parse('2011-01-01')) }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, created_at: Time.parse('2010-06-15'))
-            create(:manifestation, created_at: Time.parse('2010-12-31'))
-            create(:manifestation, created_at: Time.parse('2009-12-31'))
-            create(:manifestation, created_at: Time.parse('2011-01-01'))
+            uploaded_2010_mid
+            uploaded_2010_end
+            uploaded_2009
+            uploaded_2011
           end
         end
 
         it 'returns all records uploaded in given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(uploaded_2010_mid.id, uploaded_2010_end.id)
         end
       end
 
       context "when 'from' and 'to' values are different" do
         let(:range) { { 'from' => 2010, 'to' => 2011 } }
+        let(:uploaded_2010) { create(:manifestation, created_at: Time.parse('2010-01-01')) }
+        let(:uploaded_2011) { create(:manifestation, created_at: Time.parse('2011-06-15')) }
+        let(:uploaded_2009) { create(:manifestation, created_at: Time.parse('2009-12-31')) }
+        let(:uploaded_2012) { create(:manifestation, created_at: Time.parse('2012-01-01')) }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, created_at: Time.parse('2010-01-01'))
-            create(:manifestation, created_at: Time.parse('2011-06-15'))
-            create(:manifestation, created_at: Time.parse('2009-12-31'))
-            create(:manifestation, created_at: Time.parse('2012-01-01'))
+            uploaded_2010
+            uploaded_2011
+            uploaded_2009
+            uploaded_2012
           end
         end
 
         it "returns all records uploaded from beginning of 'from' to end of 'to' year" do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(uploaded_2010.id, uploaded_2011.id)
         end
       end
 
       context "when only 'from' value provided" do
         let(:range) { { 'from' => 2012 } }
+        let(:uploaded_2012) { create(:manifestation, created_at: Time.parse('2012-01-01')) }
+        let(:uploaded_2013) { create(:manifestation, created_at: Time.parse('2013-06-15')) }
+        let(:uploaded_2011) { create(:manifestation, created_at: Time.parse('2011-12-31')) }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, created_at: Time.parse('2012-01-01'))
-            create(:manifestation, created_at: Time.parse('2013-06-15'))
-            create(:manifestation, created_at: Time.parse('2011-12-31'))
+            uploaded_2012
+            uploaded_2013
+            uploaded_2011
           end
         end
 
         it 'returns all records uploaded starting from given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(uploaded_2012.id, uploaded_2013.id)
         end
       end
 
       context "when only 'to' value provided" do
         let(:range) { { 'to' => 2010 } }
+        let(:uploaded_2010) { create(:manifestation, created_at: Time.parse('2010-06-15')) }
+        let(:uploaded_2009) { create(:manifestation, created_at: Time.parse('2009-12-31')) }
+        let(:uploaded_2011) { create(:manifestation, created_at: Time.parse('2011-01-01')) }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, created_at: Time.parse('2010-06-15'))
-            create(:manifestation, created_at: Time.parse('2009-12-31'))
-            create(:manifestation, created_at: Time.parse('2011-01-01'))
+            uploaded_2010
+            uploaded_2009
+            uploaded_2011
           end
         end
 
         it 'returns all records uploaded before given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(uploaded_2010.id, uploaded_2009.id)
         end
       end
     end
 
     describe 'by publication date' do
       let(:filter) { { 'published_between' => range } }
-      let(:index_attr) { :orig_publication_date }
 
       context "when 'from' and 'to' values are equal" do
         let(:range) { { 'from' => 1980, 'to' => 1980 } }
+        let(:published_1980_mid) { create(:manifestation, expression_date: '15.06.1980') }
+        let(:published_1980_end) { create(:manifestation, expression_date: '31.12.1980') }
+        let(:published_1979) { create(:manifestation, expression_date: '31.12.1979') }
+        let(:published_1981) { create(:manifestation, expression_date: '01.01.1981') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, expression_date: '15.06.1980')
-            create(:manifestation, expression_date: '31.12.1980')
-            create(:manifestation, expression_date: '31.12.1979')
-            create(:manifestation, expression_date: '01.01.1981')
+            published_1980_mid
+            published_1980_end
+            published_1979
+            published_1981
           end
         end
 
         it 'returns all records published in given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(published_1980_mid.id, published_1980_end.id)
         end
       end
 
       context "when 'from' and 'to' values are different" do
         let(:range) { { 'from' => 1990, 'to' => 1992 } }
+        let(:published_1990) { create(:manifestation, expression_date: '01.01.1990') }
+        let(:published_1991) { create(:manifestation, expression_date: '15.06.1991') }
+        let(:published_1992) { create(:manifestation, expression_date: '31.12.1992') }
+        let(:published_1989) { create(:manifestation, expression_date: '31.12.1989') }
+        let(:published_1993) { create(:manifestation, expression_date: '01.01.1993') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, expression_date: '01.01.1990')
-            create(:manifestation, expression_date: '15.06.1991')
-            create(:manifestation, expression_date: '31.12.1992')
-            create(:manifestation, expression_date: '31.12.1989')
-            create(:manifestation, expression_date: '01.01.1993')
+            published_1990
+            published_1991
+            published_1992
+            published_1989
+            published_1993
           end
         end
 
         it "returns all records published from beginning of 'from' to end of 'to' year" do
-          assert_date_range(3)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(published_1990.id, published_1991.id, published_1992.id)
         end
       end
 
       context "when only 'from' value provided" do
         let(:range) { { 'from' => 1985 } }
+        let(:published_1985) { create(:manifestation, expression_date: '01.01.1985') }
+        let(:published_1990) { create(:manifestation, expression_date: '15.06.1990') }
+        let(:published_1984) { create(:manifestation, expression_date: '31.12.1984') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, expression_date: '01.01.1985')
-            create(:manifestation, expression_date: '15.06.1990')
-            create(:manifestation, expression_date: '31.12.1984')
+            published_1985
+            published_1990
+            published_1984
           end
         end
 
         it 'returns all records published starting from given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(published_1985.id, published_1990.id)
         end
       end
 
       context "when only 'to' value provided" do
         let(:range) { { 'to' => 1984 } }
+        let(:published_1984) { create(:manifestation, expression_date: '15.06.1984') }
+        let(:published_1983) { create(:manifestation, expression_date: '31.12.1983') }
+        let(:published_1985) { create(:manifestation, expression_date: '01.01.1985') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, expression_date: '15.06.1984')
-            create(:manifestation, expression_date: '31.12.1983')
-            create(:manifestation, expression_date: '01.01.1985')
+            published_1984
+            published_1983
+            published_1985
           end
         end
 
         it 'returns all records published before or in given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(published_1984.id, published_1983.id)
         end
       end
     end
 
     describe 'by creation date' do
       let(:filter) { { 'created_between' => range } }
-      let(:index_attr) { :creation_date }
 
       context "when 'from' and 'to' values are equal" do
         let(:range) { { 'from' => 1950, 'to' => 1950 } }
+        let(:created_1950_mid) { create(:manifestation, work_date: '15.06.1950') }
+        let(:created_1950_end) { create(:manifestation, work_date: '31.12.1950') }
+        let(:created_1949) { create(:manifestation, work_date: '31.12.1949') }
+        let(:created_1951) { create(:manifestation, work_date: '01.01.1951') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, work_date: '15.06.1950')
-            create(:manifestation, work_date: '31.12.1950')
-            create(:manifestation, work_date: '31.12.1949')
-            create(:manifestation, work_date: '01.01.1951')
+            created_1950_mid
+            created_1950_end
+            created_1949
+            created_1951
           end
         end
 
         it 'returns all records created in given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(created_1950_mid.id, created_1950_end.id)
         end
       end
 
       context "when 'from' and 'to' values are different" do
         let(:range) { { 'from' => 1950, 'to' => 1952 } }
+        let(:created_1950) { create(:manifestation, work_date: '01.01.1950') }
+        let(:created_1951) { create(:manifestation, work_date: '15.06.1951') }
+        let(:created_1952) { create(:manifestation, work_date: '31.12.1952') }
+        let(:created_1949) { create(:manifestation, work_date: '31.12.1949') }
+        let(:created_1953) { create(:manifestation, work_date: '01.01.1953') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, work_date: '01.01.1950')
-            create(:manifestation, work_date: '15.06.1951')
-            create(:manifestation, work_date: '31.12.1952')
-            create(:manifestation, work_date: '31.12.1949')
-            create(:manifestation, work_date: '01.01.1953')
+            created_1950
+            created_1951
+            created_1952
+            created_1949
+            created_1953
           end
         end
 
         it "returns all records created from beginning of 'from' to end of 'to' year" do
-          assert_date_range(3)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(created_1950.id, created_1951.id, created_1952.id)
         end
       end
 
       context "when only 'from' value provided" do
         let(:range) { { 'from' => 1985 } }
+        let(:created_1985) { create(:manifestation, work_date: '01.01.1985') }
+        let(:created_1990) { create(:manifestation, work_date: '15.06.1990') }
+        let(:created_1984) { create(:manifestation, work_date: '31.12.1984') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, work_date: '01.01.1985')
-            create(:manifestation, work_date: '15.06.1990')
-            create(:manifestation, work_date: '31.12.1984')
+            created_1985
+            created_1990
+            created_1984
           end
         end
 
         it 'returns all records created starting from given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(created_1985.id, created_1990.id)
         end
       end
 
       context "when only 'to' value provided" do
         let(:range) { { 'to' => 1952 } }
+        let(:created_1952) { create(:manifestation, work_date: '15.06.1952') }
+        let(:created_1951) { create(:manifestation, work_date: '31.12.1951') }
+        let(:created_1953) { create(:manifestation, work_date: '01.01.1953') }
 
         before do
           Chewy.strategy(:atomic) do
-            create(:manifestation, work_date: '15.06.1952')
-            create(:manifestation, work_date: '31.12.1951')
-            create(:manifestation, work_date: '01.01.1953')
+            created_1952
+            created_1951
+            created_1953
           end
         end
 
         it 'returns all records created before or in given year' do
-          assert_date_range(2)
+          result_ids = subject.map(&:id)
+          expect(result_ids).to contain_exactly(created_1952.id, created_1951.id)
         end
       end
     end
@@ -977,19 +1030,6 @@ describe SearchManifestations do
           expect(result_ids).to eq [manifestation_late.id, manifestation_mid.id, manifestation_early.id]
         end
       end
-    end
-  end
-
-  private
-
-  def assert_date_range(expected_count)
-    expect(subject.count).to eq expected_count
-    from = Time.parse("#{range['from']}-01-01") if range['from'].present?
-    to = Time.parse("#{range['to']}-12-31 23:59:59") if range['to'].present?
-    subject.each do |rec|
-      time = Time.parse(rec.send(index_attr))
-      expect(time).to be >= from if from.present?
-      expect(time).to be <= to if to.present?
     end
   end
 end
