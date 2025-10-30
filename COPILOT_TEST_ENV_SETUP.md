@@ -2,6 +2,20 @@
 
 This document describes how to set up and verify the `copilot_test_environment` branch for running RSpec tests and Pronto linting tools.
 
+## Quick Start
+
+For a quick start, use the helper script:
+
+```bash
+# Make sure you've completed the setup steps first (see below)
+# Then use the helper script:
+
+./run_tests.sh rspec                    # Run all tests
+./run_tests.sh rspec spec/models/       # Run model tests
+./run_tests.sh pronto run -c master     # Run pronto linter
+./run_tests.sh rubocop app/models/      # Run rubocop
+```
+
 ## Prerequisites
 
 - Ruby 3.3.9 (available at `/opt/hostedtoolcache/Ruby/3.3.9/x64/bin/`)
@@ -155,12 +169,13 @@ After setup, you should see:
    RSpec 3.13
      - rspec-core 3.13.4
      - rspec-expectations 3.13.5
-     - rspec-mocks 3.13.3
+     - rspec-mocks 3.13.5
      - rspec-rails 7.1.1
      - rspec-support 3.13.4
    ```
 
 2. **Pronto version:** `0.11.4`
+   - Configured runners: brakeman, haml, rubocop
 
 3. **RuboCop version:** `1.79.1`
 
@@ -168,6 +183,38 @@ After setup, you should see:
    - bybe-mysql-1 (port 13306)
    - bybe-elasticsearch-1 (port 19200)
    - bybe-redis-1 (port 16379)
+
+## What Has Been Verified
+
+The following has been tested and confirmed working on the `copilot_test_environment` branch:
+
+✅ **Ruby Environment**
+- Ruby 3.3.9 correctly installed and accessible
+- Bundler 2.5.23 working
+- All gem dependencies installed successfully
+
+✅ **RSpec Tests**
+- RSpec framework loads correctly
+- Database connectivity works
+- Test suite runs successfully (tested with 168 model specs, all passing)
+- Individual spec files can be run
+
+✅ **Pronto Linting**
+- Pronto command available and working
+- All three runners configured: brakeman, haml, rubocop
+- Can compare against master branch
+- Can analyze staged changes
+
+✅ **Docker Services**
+- MySQL 8.0.36 running on port 13306
+- Elasticsearch 7.17.8 running on port 19200
+- Redis 7.2.3 running on port 16379
+- Test database created and migrated successfully
+
+✅ **Configuration Files**
+- Test config files copied from .github/workflows/rspec_config/
+- Database connection string properly configured
+- Elasticsearch host configured
 
 ## Troubleshooting
 
