@@ -10,97 +10,72 @@ describe SearchManifestations do
   describe 'filtering' do
     subject!(:result) { described_class.call(sort_by, sort_dir, filter) }
 
+    let(:result_ids) { result.map(&:id) }
     let(:sort_by) { 'alphabetical' }
     let(:sort_dir) { 'asc' }
 
     describe 'by genres' do
       let(:filter) { { 'genres' => genres } }
+      let(:poetry_1) { create(:manifestation, genre: 'poetry') }
+      let(:poetry_2) { create(:manifestation, genre: 'poetry') }
+      let(:article) { create(:manifestation, genre: 'article') }
+      let(:prose) { create(:manifestation, genre: 'prose') }
+
+      before do
+        Chewy.strategy(:atomic) do
+          poetry_1
+          poetry_2
+          article
+          prose
+        end
+      end
 
       context 'when single genre specified' do
         let(:genres) { %w[poetry] }
-        let(:poetry_1) { create(:manifestation, genre: 'poetry') }
-        let(:poetry_2) { create(:manifestation, genre: 'poetry') }
-        let(:prose_1) { create(:manifestation, genre: 'prose') }
-        let(:drama_1) { create(:manifestation, genre: 'drama') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            poetry_1
-            poetry_2
-            prose_1
-            drama_1
-          end
-        end
 
         it 'returns all texts where genre is equal to provided value' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(poetry_1.id, poetry_2.id)
         end
       end
 
       context 'when multiple genres specified' do
         let(:genres) { %w[poetry article] }
-        let(:poetry) { create(:manifestation, genre: 'poetry') }
-        let(:article) { create(:manifestation, genre: 'article') }
-        let(:prose) { create(:manifestation, genre: 'prose') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            poetry
-            article
-            prose
-          end
-        end
 
         it 'returns all texts where genre is included in provided list' do
-          result_ids = subject.map(&:id)
-          expect(result_ids).to contain_exactly(poetry.id, article.id)
+          expect(result_ids).to contain_exactly(poetry_1.id, poetry_2.id, article.id)
         end
       end
     end
 
     describe 'by periods' do
       let(:filter) { { 'periods' => periods } }
+      let(:ancient_1) { create(:manifestation, period: 'ancient') }
+      let(:ancient_2) { create(:manifestation, period: 'ancient') }
+      let(:revival) { create(:manifestation, period: 'revival') }
+      let(:modern) { create(:manifestation, period: 'modern') }
+
+      before do
+        Chewy.strategy(:atomic) do
+          ancient_1
+          ancient_2
+          revival
+          modern
+        end
+      end
 
       context 'when single period specified' do
         let(:periods) { %w[ancient] }
-        let(:ancient_1) { create(:manifestation, period: 'ancient') }
-        let(:ancient_2) { create(:manifestation, period: 'ancient') }
-        let(:modern) { create(:manifestation, period: 'modern') }
-        let(:medieval) { create(:manifestation, period: 'medieval') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            ancient_1
-            ancient_2
-            modern
-            medieval
-          end
-        end
 
         it 'returns all texts where period is equal to provided value' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(ancient_1.id, ancient_2.id)
         end
       end
 
       context 'when multiple periods specified' do
         let(:periods) { %w[ancient revival] }
-        let(:ancient) { create(:manifestation, period: 'ancient') }
-        let(:revival) { create(:manifestation, period: 'revival') }
-        let(:modern) { create(:manifestation, period: 'modern') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            ancient
-            revival
-            modern
-          end
-        end
 
         it 'returns all texts where period is included in provided list' do
-          result_ids = subject.map(&:id)
-          expect(result_ids).to contain_exactly(ancient.id, revival.id)
+          expect(result_ids).to contain_exactly(ancient_1.id, ancient_2.id, revival.id)
         end
       end
     end
@@ -121,111 +96,84 @@ describe SearchManifestations do
       end
 
       it 'returns all works with given intellectual property types' do
-        result_ids = result.map(&:id)
         expect(result_ids).to contain_exactly(public_domain.id, unknown.id)
       end
     end
 
     describe 'by author_genders' do
       let(:filter) { { 'author_genders' => author_genders } }
+      let(:male_author) { create(:authority, gender: 'male') }
+      let(:female_author) { create(:authority, gender: 'female') }
+      let(:unknown_author) { create(:authority, gender: 'unknown') }
+      let(:other_author) { create(:authority, gender: 'other') }
+      let(:male_1) { create(:manifestation, author: male_author) }
+      let(:male_2) { create(:manifestation, author: male_author) }
+      let(:female) { create(:manifestation, author: female_author) }
+      let(:unknown) { create(:manifestation, author: unknown_author) }
+      let(:other) { create(:manifestation, author: other_author) }
+
+      before do
+        Chewy.strategy(:atomic) do
+          male_1
+          male_2
+          female
+          unknown
+          other
+        end
+      end
 
       context('when single value provided') do
         let(:author_genders) { [:male] }
-        let(:male_author) { create(:authority, gender: 'male') }
-        let(:female_author) { create(:authority, gender: 'female') }
-        let(:male_1) { create(:manifestation, author: male_author) }
-        let(:male_2) { create(:manifestation, author: male_author) }
-        let(:female) { create(:manifestation, author: female_author) }
-
-        before do
-          Chewy.strategy(:atomic) do
-            male_1
-            male_2
-            female
-          end
-        end
 
         it 'returns all records where author has given gender' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(male_1.id, male_2.id)
         end
       end
 
       context('when multiple values provided') do
         let(:author_genders) { %i[male female unknown] }
-        let(:male_author) { create(:authority, gender: 'male') }
-        let(:female_author) { create(:authority, gender: 'female') }
-        let(:unknown_author) { create(:authority, gender: 'unknown') }
-        let(:other_author) { create(:authority, gender: 'other') }
-        let(:male) { create(:manifestation, author: male_author) }
-        let(:female) { create(:manifestation, author: female_author) }
-        let(:unknown) { create(:manifestation, author: unknown_author) }
-        let(:other) { create(:manifestation, author: other_author) }
-
-        before do
-          Chewy.strategy(:atomic) do
-            male
-            female
-            unknown
-            other
-          end
-        end
 
         it 'returns all records where author has any of given genders' do
-          result_ids = subject.map(&:id)
-          expect(result_ids).to contain_exactly(male.id, female.id, unknown.id)
+          expect(result_ids).to contain_exactly(male_1.id, male_2.id, female.id, unknown.id)
         end
       end
     end
 
     describe 'by translator_genders' do
       let(:filter) { { 'translator_genders' => translator_genders } }
+      let(:male_translator) { create(:authority, gender: 'male') }
+      let(:female_translator) { create(:authority, gender: 'female') }
+      let(:other_translator) { create(:authority, gender: 'other') }
+      let(:unknown_translator) { create(:authority, gender: 'unknown') }
+      let(:male) { create(:manifestation, translator: male_translator, orig_lang: 'en') }
+      let(:female_1) { create(:manifestation, translator: female_translator, orig_lang: 'en') }
+      let(:female_2) { create(:manifestation, translator: female_translator, orig_lang: 'en') }
+      let(:other) { create(:manifestation, translator: other_translator, orig_lang: 'en') }
+      let(:unknown) { create(:manifestation, translator: unknown_translator, orig_lang: 'en') }
+
+      before do
+        Chewy.strategy(:atomic) do
+          male
+          female_1
+          female_2
+          other
+          unknown
+        end
+      end
 
       context('when single value provided') do
         let(:translator_genders) { [:female] }
-        let(:female_translator) { create(:authority, gender: 'female') }
-        let(:male_translator) { create(:authority, gender: 'male') }
-        let(:female_1) { create(:manifestation, translator: female_translator, orig_lang: 'en') }
-        let(:female_2) { create(:manifestation, translator: female_translator, orig_lang: 'en') }
-        let(:male) { create(:manifestation, translator: male_translator, orig_lang: 'en') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            female_1
-            female_2
-            male
-          end
-        end
 
         it 'returns all records where translator has given gender' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(female_1.id, female_2.id)
         end
       end
 
       context('when multiple values provided') do
         let(:translator_genders) { %i[male female other] }
-        let(:male_translator) { create(:authority, gender: 'male') }
-        let(:female_translator) { create(:authority, gender: 'female') }
-        let(:other_translator) { create(:authority, gender: 'other') }
-        let(:unknown_translator) { create(:authority, gender: 'unknown') }
-        let(:male) { create(:manifestation, translator: male_translator, orig_lang: 'en') }
-        let(:female) { create(:manifestation, translator: female_translator, orig_lang: 'en') }
-        let(:other) { create(:manifestation, translator: other_translator, orig_lang: 'en') }
-        let(:unknown) { create(:manifestation, translator: unknown_translator, orig_lang: 'en') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            male
-            female
-            other
-            unknown
-          end
-        end
 
         it 'returns all records where translator has any of given genders' do
-          result_ids = subject.map(&:id)
-          expect(result_ids).to contain_exactly(male.id, female.id, other.id)
+          expect(result_ids).to contain_exactly(male.id, female_1.id, female_2.id, other.id)
         end
       end
     end
@@ -248,7 +196,6 @@ describe SearchManifestations do
         end
 
         it 'returns all texts including given word in title' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(lemon_tree.id, big_lemon.id)
         end
       end
@@ -268,7 +215,6 @@ describe SearchManifestations do
         end
 
         it 'returns all texts having all this words in same order' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(orange_lemon_tree.id, orange_lemon_cake.id)
         end
       end
@@ -285,7 +231,7 @@ describe SearchManifestations do
         end
 
         it 'finds nothing' do
-          expect(subject.count).to eq 0
+          expect(result.count).to eq 0
         end
       end
     end
@@ -310,7 +256,6 @@ describe SearchManifestations do
         end
 
         it 'returns all texts where author_string includes given name' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(alpha_1.id, alpha_2.id)
         end
       end
@@ -332,7 +277,6 @@ describe SearchManifestations do
         end
 
         it 'returns all texts where author_string includes given name' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(sigma_1.id, sigma_2.id)
         end
       end
@@ -355,7 +299,6 @@ describe SearchManifestations do
         end
 
         it 'returns all texts where author_string includes all of given names' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(alpha_sigma.id)
         end
       end
@@ -365,7 +308,6 @@ describe SearchManifestations do
       let(:sort_by) { 'relevance' }
       let(:sort_dir) { 'desc' }
       let(:filter) { { 'fulltext' => fulltext } }
-      let(:result_ids) { subject.map(&:id) }
       let(:manifestation_1) { create(:manifestation, markdown: 'The quick brown fox jumps over the lazy dog') }
       let(:manifestation_2) do
         create(:manifestation, markdown: 'Dogs are not our whole life, but they make our lives whole.')
@@ -420,7 +362,6 @@ describe SearchManifestations do
         end
 
         it 'returns all texts written by this author' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(target_1.id, target_2.id)
         end
       end
@@ -442,7 +383,6 @@ describe SearchManifestations do
         end
 
         it 'returns all texts translated by this translator' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(target_1.id, target_2.id)
         end
       end
@@ -450,104 +390,59 @@ describe SearchManifestations do
 
     describe 'by original_languages' do
       let(:filter) { { 'original_languages' => orig_langs } }
+      let(:russian_1) { create(:manifestation, orig_lang: 'ru') }
+      let(:russian_2) { create(:manifestation, orig_lang: 'ru') }
+      let(:english) { create(:manifestation, orig_lang: 'en') }
+      let(:german) { create(:manifestation, orig_lang: 'de') }
+      let(:hebrew) { create(:manifestation, orig_lang: 'he') }
+
+      before do
+        Chewy.strategy(:atomic) do
+          russian_1
+          russian_2
+          english
+          german
+          hebrew
+        end
+      end
 
       context 'when single language is provided' do
         let(:orig_langs) { ['ru'] }
-        let(:russian_1) { create(:manifestation, orig_lang: 'ru') }
-        let(:russian_2) { create(:manifestation, orig_lang: 'ru') }
-        let(:english) { create(:manifestation, orig_lang: 'en') }
-        let(:hebrew) { create(:manifestation, orig_lang: 'he') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            russian_1
-            russian_2
-            english
-            hebrew
-          end
-        end
 
         it 'returns all texts written in given language' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(russian_1.id, russian_2.id)
         end
       end
 
       context 'when multiple languages are provided' do
         let(:orig_langs) { %w[ru he] }
-        let(:russian) { create(:manifestation, orig_lang: 'ru') }
-        let(:hebrew) { create(:manifestation, orig_lang: 'he') }
-        let(:english) { create(:manifestation, orig_lang: 'en') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            russian
-            hebrew
-            english
-          end
-        end
 
         it 'returns all texts written in given languages' do
-          result_ids = subject.map(&:id)
-          expect(result_ids).to contain_exactly(russian.id, hebrew.id)
+          expect(result_ids).to contain_exactly(russian_1.id, russian_2.id, hebrew.id)
         end
       end
 
       context 'when magic constant is provided' do
         let(:orig_langs) { ['xlat'] }
-        let(:russian) { create(:manifestation, orig_lang: 'ru') }
-        let(:english) { create(:manifestation, orig_lang: 'en') }
-        let(:german) { create(:manifestation, orig_lang: 'de') }
-        let(:hebrew) { create(:manifestation, orig_lang: 'he') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            russian
-            english
-            german
-            hebrew
-          end
-        end
 
         it 'returns all translated texts' do
-          result_ids = subject.map(&:id)
-          expect(result_ids).to contain_exactly(russian.id, english.id, german.id)
+          expect(result_ids).to contain_exactly(russian_1.id, russian_2.id, english.id, german.id)
         end
       end
 
       context 'when magic constant with specific language is provided' do
         let(:orig_langs) { %w[xlat ru] }
-        let(:russian) { create(:manifestation, orig_lang: 'ru') }
-        let(:english) { create(:manifestation, orig_lang: 'en') }
-        let(:hebrew) { create(:manifestation, orig_lang: 'he') }
-
-        before do
-          Chewy.strategy(:atomic) do
-            russian
-            english
-            hebrew
-          end
-        end
 
         it 'returns all translated texts' do
-          result_ids = subject.map(&:id)
-          expect(result_ids).to contain_exactly(russian.id, english.id)
+          expect(result_ids).to contain_exactly(russian_1.id, russian_2.id, english.id, german.id)
         end
       end
 
       context 'when both magic constant and hebrew are provided' do
         let(:orig_langs) { %w[xlat he] }
 
-        before do
-          Chewy.strategy(:atomic) do
-            create(:manifestation, orig_lang: 'ru')
-            create(:manifestation, orig_lang: 'en')
-            create(:manifestation, orig_lang: 'he')
-          end
-        end
-
         it 'does no filterting and returns all texts' do
-          expect(subject.count).to eq 3
+          expect(result.count).to eq 5
         end
       end
     end
@@ -572,7 +467,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records uploaded in given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(uploaded_2010_mid.id, uploaded_2010_end.id)
         end
       end
@@ -594,7 +488,6 @@ describe SearchManifestations do
         end
 
         it "returns all records uploaded from beginning of 'from' to end of 'to' year" do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(uploaded_2010.id, uploaded_2011.id)
         end
       end
@@ -614,7 +507,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records uploaded starting from given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(uploaded_2012.id, uploaded_2013.id)
         end
       end
@@ -634,7 +526,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records uploaded before given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(uploaded_2010.id, uploaded_2009.id)
         end
       end
@@ -660,7 +551,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records published in given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(published_1980_mid.id, published_1980_end.id)
         end
       end
@@ -684,7 +574,6 @@ describe SearchManifestations do
         end
 
         it "returns all records published from beginning of 'from' to end of 'to' year" do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(published_1990.id, published_1991.id, published_1992.id)
         end
       end
@@ -704,7 +593,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records published starting from given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(published_1985.id, published_1990.id)
         end
       end
@@ -724,7 +612,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records published before or in given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(published_1984.id, published_1983.id)
         end
       end
@@ -750,7 +637,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records created in given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(created_1950_mid.id, created_1950_end.id)
         end
       end
@@ -774,7 +660,6 @@ describe SearchManifestations do
         end
 
         it "returns all records created from beginning of 'from' to end of 'to' year" do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(created_1950.id, created_1951.id, created_1952.id)
         end
       end
@@ -794,7 +679,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records created starting from given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(created_1985.id, created_1990.id)
         end
       end
@@ -814,7 +698,6 @@ describe SearchManifestations do
         end
 
         it 'returns all records created before or in given year' do
-          result_ids = subject.map(&:id)
           expect(result_ids).to contain_exactly(created_1952.id, created_1951.id)
         end
       end
