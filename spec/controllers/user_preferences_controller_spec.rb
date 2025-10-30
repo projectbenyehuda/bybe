@@ -32,9 +32,9 @@ RSpec.describe UserPreferencesController, type: :controller do
     context 'when user is not signed in' do
       let(:user) { nil }
 
-      it 'redirects to root' do
+      it 'redirects to login' do
         get :edit
-        expect(response).to redirect_to('/')
+        expect(response).to redirect_to(session_login_path)
       end
     end
   end
@@ -72,9 +72,9 @@ RSpec.describe UserPreferencesController, type: :controller do
     context 'when user is not signed in' do
       let(:user) { nil }
 
-      it 'redirects to root' do
+      it 'redirects to login' do
         patch :update, params: { email_frequency: 'weekly' }
-        expect(response).to redirect_to('/')
+        expect(response).to redirect_to(session_login_path)
       end
     end
   end
