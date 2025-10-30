@@ -9,6 +9,8 @@ To set up a development environment, ensure you have a modern docker compose set
 
 For GitHub Copilot Workspace environments, see [.github/COPILOT_WORKSPACE_SETUP.md](.github/COPILOT_WORKSPACE_SETUP.md).
 
+For setting up the test environment with RSpec and Pronto tools (especially for the `copilot_test_environment` branch), see [COPILOT_TEST_ENV_SETUP.md](COPILOT_TEST_ENV_SETUP.md).
+
 External (i.e. hosting system) dependencies
 -------------------------------------------
 
