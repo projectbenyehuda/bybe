@@ -43,4 +43,41 @@ describe InvolvedAuthority do
       end
     end
   end
+
+  describe 'responsibility_statement update callbacks' do
+    let!(:manifestation) { create(:manifestation, orig_lang: 'de') }
+    let(:work) { manifestation.expression.work }
+    let(:expression) { manifestation.expression }
+    let(:new_author) { create(:authority, name: 'New Author') }
+    let(:new_translator) { create(:authority, name: 'New Translator') }
+
+    describe 'when creating a new involved authority on work' do
+      it 'updates the manifestation responsibility_statement' do
+        expect do
+          work.involved_authorities.create!(role: :author, authority: new_author)
+          manifestation.reload
+        end.to change { manifestation.responsibility_statement }
+      end
+    end
+
+    describe 'when creating a new involved authority on expression' do
+      it 'updates the manifestation responsibility_statement' do
+        expect do
+          expression.involved_authorities.create!(role: :translator, authority: new_translator)
+          manifestation.reload
+        end.to change { manifestation.responsibility_statement }
+      end
+    end
+
+    describe 'when destroying an involved authority' do
+      let!(:involved_auth) { work.involved_authorities.first }
+
+      it 'updates the manifestation responsibility_statement' do
+        expect do
+          involved_auth.destroy!
+          manifestation.reload
+        end.to change { manifestation.responsibility_statement }
+      end
+    end
+  end
 end
