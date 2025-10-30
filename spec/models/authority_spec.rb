@@ -436,5 +436,23 @@ describe Authority do
                              })
       end
     end
+
+    describe 'responsibility_statement update on name change' do
+      let(:author) { create(:authority, name: 'Original Name') }
+      let!(:manifestation) { create(:manifestation, author: author) }
+
+      it 'updates manifestation responsibility_statement when authority name changes' do
+        expect do
+          author.update!(name: 'New Name')
+          manifestation.reload
+        end.to change { manifestation.responsibility_statement }
+      end
+
+      it 'includes the new name in responsibility_statement' do
+        author.update!(name: 'Updated Name')
+        manifestation.reload
+        expect(manifestation.responsibility_statement).to include('Updated Name')
+      end
+    end
   end
 end

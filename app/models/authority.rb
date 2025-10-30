@@ -85,6 +85,20 @@ class Authority < ApplicationRecord
     self.wikidata_uri = wikidata_uri.blank? ? nil : wikidata_uri.strip.downcase.gsub('q', 'Q')
   end
 
+  after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
+
+  def update_manifestation_responsibility_statements
+    # Find all manifestations related to this authority through involved_authorities
+    manifestations = Manifestation.joins(expression: { work: :involved_authorities })
+                                  .where(involved_authorities: { authority_id: id })
+                                  .or(
+                                    Manifestation.joins(expression: :involved_authorities)
+                                                .where(involved_authorities: { authority_id: id })
+                                  ).distinct
+
+    manifestations.each(&:recalc_responsibility_statement!)
+  end
+
   # return all collections of type volume that are associated with this authority
   def volumes
     Collection.joins(:involved_authorities).where(collection_type: 'volume', involved_authorities: { authority_id: id })
