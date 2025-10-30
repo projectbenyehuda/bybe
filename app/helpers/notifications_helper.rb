@@ -24,7 +24,7 @@ module NotificationsHelper
     user = User.find_by(email: recipient_email) if recipient_email.present?
 
     if user
-      preferences_url = "https://benyehuda.org#{Rails.application.routes.url_helpers.edit_user_preferences_path}"
+      preferences_url = Rails.application.routes.url_helpers.edit_user_preferences_url
       preferences_link = "<a href=\"#{preferences_url}\">#{t(:manage_email_preferences)}</a>"
       "#{base_footer}\n\n#{preferences_link}".html_safe
     else
