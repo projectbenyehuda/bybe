@@ -31,7 +31,7 @@ describe SearchManifestations do
       end
 
       context 'when single genre specified' do
-        let(:genres) { %w[poetry] }
+        let(:genres) { %w(poetry) }
 
         it 'returns all texts where genre is equal to provided value' do
           expect(result_ids).to contain_exactly(poetry_1.id, poetry_2.id)
@@ -39,7 +39,7 @@ describe SearchManifestations do
       end
 
       context 'when multiple genres specified' do
-        let(:genres) { %w[poetry article] }
+        let(:genres) { %w(poetry article) }
 
         it 'returns all texts where genre is included in provided list' do
           expect(result_ids).to contain_exactly(poetry_1.id, poetry_2.id, article.id)
@@ -64,7 +64,7 @@ describe SearchManifestations do
       end
 
       context 'when single period specified' do
-        let(:periods) { %w[ancient] }
+        let(:periods) { %w(ancient) }
 
         it 'returns all texts where period is equal to provided value' do
           expect(result_ids).to contain_exactly(ancient_1.id, ancient_2.id)
@@ -72,7 +72,7 @@ describe SearchManifestations do
       end
 
       context 'when multiple periods specified' do
-        let(:periods) { %w[ancient revival] }
+        let(:periods) { %w(ancient revival) }
 
         it 'returns all texts where period is included in provided list' do
           expect(result_ids).to contain_exactly(ancient_1.id, ancient_2.id, revival.id)
@@ -81,7 +81,7 @@ describe SearchManifestations do
     end
 
     describe 'by intellectual property types' do
-      let(:types) { %w[public_domain unknown] }
+      let(:types) { %w(public_domain unknown) }
       let(:filter)  { { 'intellectual_property_types' => types } }
       let(:public_domain) { create(:manifestation, intellectual_property: 'public_domain') }
       let(:unknown) { create(:manifestation, intellectual_property: 'unknown') }
@@ -131,7 +131,7 @@ describe SearchManifestations do
       end
 
       context('when multiple values provided') do
-        let(:author_genders) { %i[male female unknown] }
+        let(:author_genders) { %i(male female unknown) }
 
         it 'returns all records where author has any of given genders' do
           expect(result_ids).to contain_exactly(male_1.id, male_2.id, female.id, unknown.id)
@@ -170,7 +170,7 @@ describe SearchManifestations do
       end
 
       context('when multiple values provided') do
-        let(:translator_genders) { %i[male female other] }
+        let(:translator_genders) { %i(male female other) }
 
         it 'returns all records where translator has any of given genders' do
           expect(result_ids).to contain_exactly(male.id, female_1.id, female_2.id, other.id)
@@ -415,7 +415,7 @@ describe SearchManifestations do
       end
 
       context 'when multiple languages are provided' do
-        let(:orig_langs) { %w[ru he] }
+        let(:orig_langs) { %w(ru he) }
 
         it 'returns all texts written in given languages' do
           expect(result_ids).to contain_exactly(russian_1.id, russian_2.id, hebrew.id)
@@ -431,7 +431,7 @@ describe SearchManifestations do
       end
 
       context 'when magic constant with specific language is provided' do
-        let(:orig_langs) { %w[xlat ru] }
+        let(:orig_langs) { %w(xlat ru) }
 
         it 'returns all translated texts' do
           expect(result_ids).to contain_exactly(russian_1.id, russian_2.id, english.id, german.id)
@@ -439,7 +439,7 @@ describe SearchManifestations do
       end
 
       context 'when both magic constant and hebrew are provided' do
-        let(:orig_langs) { %w[xlat he] }
+        let(:orig_langs) { %w(xlat he) }
 
         it 'does no filterting and returns all texts' do
           expect(result.count).to eq 5
