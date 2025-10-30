@@ -65,6 +65,7 @@ Bybeconv::Application.routes.draw do
   resources :involved_authorities, only: %i(index create destroy)
 
   resources :user_blocks
+  resource :user_preferences, only: %i(edit update)
   get 'crowd/index'
   get 'crowd/populate_edition' => 'crowd#populate_edition', as: 'crowd_populate_edition'
   get 'crowd/populate_edition/:id' => 'crowd#populate_edition', as: 'crowd_populate_edition_id'
@@ -263,8 +264,8 @@ Bybeconv::Application.routes.draw do
   patch 'manifestation/update'
   post 'manifestation/add_images'
   get 'manifestation/get_random'
-  get 'manifestation/like'
-  get 'manifestation/unlike'
+  post 'manifestation/like'
+  post 'manifestation/unlike'
   get 'manifestation/surprise_work'
   get 'manifestation/autocomplete_works_by_author'
   get 'manifestation/autocomplete_authority_name' => 'manifestation#autocomplete_authority_name',

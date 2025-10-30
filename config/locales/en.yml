@@ -45,6 +45,12 @@ en:
   sort_by: Sort by
   uncollected_works_collection_title: Uncollected works
   add: Add
+  filter: Filter
+  filter_by_type: Filter by type
+  manifestations: Works
+  authorities: Authors
+  dictionary: Dictionary
+  collections: Collections
   email: Email
   ziburit: What is the last name of the most famous poet? (Security question)
   not_implemented_yet: Not implemented. This function is still in development.
@@ -258,3 +264,24 @@ en:
   out_of: out of
   full_display: Full View
   immediate_child_only: Show one level only
+  
+  # Email throttling system
+  email_preferences: Email Preferences
+  email_frequency_label: Email Notification Frequency
+  email_frequency_unlimited: Unlimited (real-time)
+  email_frequency_unlimited_description: Receive notifications immediately as they are sent
+  email_frequency_daily: At most once per day
+  email_frequency_daily_description: Receive at most one email per day with a summary of all notifications
+  email_frequency_weekly: At most once per week
+  email_frequency_weekly_description: Receive at most one email per week with a summary of all notifications
+  email_frequency_none: Do not send me any emails
+  email_frequency_none_description: Do not receive any emails from the site
+  save_preferences: Save Preferences
+  preferences_updated: Preferences updated successfully
+  invalid_preference: Invalid preference
+  manage_email_preferences: Manage Email Preferences
+  email_footer_signup_invitation: If you would like to control the frequency of email notifications, you can sign up for the site and set your preferences.
+  notification_digest_intro: Here is a summary of the notifications we have collected for you
+  notification_render_error: Error rendering notification
+  dictionary_entries: Dictionary Entries
+  works: Works

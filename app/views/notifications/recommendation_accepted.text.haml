@@ -2,4 +2,4 @@
 
 = t(:rec_accepted, :url => @url)
 
-!= raw t(:email_footer_html)
+!= email_footer_html(@rec.from)

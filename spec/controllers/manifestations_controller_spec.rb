@@ -494,6 +494,84 @@ describe ManifestationController do
       end
     end
 
+    describe '#like' do
+      let(:user) { create(:user) }
+      let(:manifestation) { create(:manifestation) }
+      subject { post :like, params: { id: manifestation.id } }
+
+      context 'when user is not logged in' do
+        it 'returns ok status' do
+          expect(subject).to be_successful
+        end
+
+        it 'does not add user to likers' do
+          expect { subject }.not_to change { manifestation.likers.count }
+        end
+      end
+
+      context 'when user is logged in' do
+        before do
+          session[:user_id] = user.id
+        end
+
+        it 'returns ok status' do
+          expect(subject).to be_successful
+        end
+
+        it 'adds user to likers' do
+          expect { subject }.to change { manifestation.likers.count }.by(1)
+        end
+
+        context 'when user already liked the manifestation' do
+          before do
+            manifestation.likers << user
+          end
+
+          it 'does not add user to likers again' do
+            expect { subject }.not_to change { manifestation.likers.count }
+          end
+        end
+      end
+    end
+
+    describe '#unlike' do
+      let(:user) { create(:user) }
+      let(:manifestation) { create(:manifestation) }
+      subject { post :unlike, params: { id: manifestation.id } }
+
+      context 'when user is not logged in' do
+        it 'returns ok status' do
+          expect(subject).to be_successful
+        end
+      end
+
+      context 'when user is logged in' do
+        before do
+          session[:user_id] = user.id
+        end
+
+        it 'returns ok status' do
+          expect(subject).to be_successful
+        end
+
+        context 'when user has liked the manifestation' do
+          before do
+            manifestation.likers << user
+          end
+
+          it 'removes user from likers' do
+            expect { subject }.to change { manifestation.likers.count }.by(-1)
+          end
+        end
+
+        context 'when user has not liked the manifestation' do
+          it 'does not change likers count' do
+            expect { subject }.not_to change { manifestation.likers.count }
+          end
+        end
+      end
+    end
+
     describe '#chomp_period' do
       subject(:request) { post :chomp_period, params: { id: manifestation.id } }
 

@@ -85,14 +85,16 @@ class ProofsController < ApplicationController
       unless params[:email] == 'no' || @proof.from.nil? || @proof.from !~ /\w+@\w+\.\w+/
         explanation = params[:fixed_explanation]
         unless @proof.item.is_a?(Manifestation)
-          Notifications.proof_fixed(@proof, @proof.about, nil, @explanation).deliver
+          Notifications.send_or_queue(:proof_fixed, @proof.from, @proof, @proof.about, nil, @explanation)
         else
-          Notifications.proof_fixed(
+          Notifications.send_or_queue(
+            :proof_fixed,
+            @proof.from,
             @proof,
             manifestation_path(@proof.item),
             @proof.item,
             explanation
-          ).deliver
+          )
         end
         fix_text = 'תוקן (ונשלח דואל)'
       else
@@ -107,14 +109,16 @@ class ProofsController < ApplicationController
         @explanation = params[:wontfix_explanation]
         unless params[:email] == 'no' || @proof.from.nil? || @proof.from !~ /\w+@\w+\.\w+/
           unless @proof.item.is_a?(Manifestation)
-            Notifications.proof_wontfix(@proof, @proof.about, nil, @explanation).deliver
+            Notifications.send_or_queue(:proof_wontfix, @proof.from, @proof, @proof.about, nil, @explanation)
           else
-            Notifications.proof_wontfix(
+            Notifications.send_or_queue(
+              :proof_wontfix,
+              @proof.from,
               @proof,
               manifestation_path(@proof.item),
               @proof.item,
               @explanation
-            ).deliver
+            )
           end
           fix_text = 'כבר תקין (ונשלח דואל)'
         else
