@@ -38,7 +38,7 @@ class SiteWideSearch
   def index
     indices = if index_types.present?
                 # Only include indices that are selected
-                index_types.map { |type| INDEX_TYPE_MAP[type] }.compact
+                JSON.parse(index_types).map { |type| INDEX_TYPE_MAP[type] }.compact
               else
                 # Default to all indices if none specified
                 [AuthoritiesIndex, ManifestationsIndex, DictIndex, CollectionsIndex]

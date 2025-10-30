@@ -13,13 +13,13 @@
         %label.mr-2= "#{t(:filter_by_type)}:"
         .form-check.form-check-inline
           = check_box_tag 'index_types[]', 'manifestations', @search.index_types.blank? || @search.index_types.include?('manifestations'), class: 'form-check-input', id: 'index_type_manifestations'
-          = label_tag 'index_type_manifestations', t(:manifestations), class: 'form-check-label'
+          = label_tag 'index_type_manifestations', t(:works), class: 'form-check-label'
         .form-check.form-check-inline
           = check_box_tag 'index_types[]', 'authorities', @search.index_types.blank? || @search.index_types.include?('authorities'), class: 'form-check-input', id: 'index_type_authorities'
           = label_tag 'index_type_authorities', t(:authorities), class: 'form-check-label'
         .form-check.form-check-inline
           = check_box_tag 'index_types[]', 'dict', @search.index_types.blank? || @search.index_types.include?('dict'), class: 'form-check-input', id: 'index_type_dict'
-          = label_tag 'index_type_dict', t(:dictionary), class: 'form-check-label'
+          = label_tag 'index_type_dict', t(:dictionary_entries), class: 'form-check-label'
         .form-check.form-check-inline
           = check_box_tag 'index_types[]', 'collections', @search.index_types.blank? || @search.index_types.include?('collections'), class: 'form-check-input', id: 'index_type_collections'
           = label_tag 'index_type_collections', t(:collections), class: 'form-check-label'
