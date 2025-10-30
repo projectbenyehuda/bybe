@@ -89,12 +89,13 @@ class Authority < ApplicationRecord
 
   def update_manifestation_responsibility_statements
     # Find all manifestations related to this authority through involved_authorities
-    manifestations = Manifestation.joins(expression: { work: :involved_authorities })
-                                  .where(involved_authorities: { authority_id: id })
-                                  .or(
-                                    Manifestation.joins(expression: :involved_authorities)
-                                                .where(involved_authorities: { authority_id: id })
-                                  ).distinct
+    # This includes both work-level (authors) and expression-level (translators) authorities
+    manifestations = Manifestation
+                     .joins("INNER JOIN expressions ON manifestations.expression_id = expressions.id")
+                     .joins("LEFT JOIN involved_authorities work_ias ON work_ias.item_id = expressions.work_id AND work_ias.item_type = 'Work'")
+                     .joins("LEFT JOIN involved_authorities expr_ias ON expr_ias.item_id = expressions.id AND expr_ias.item_type = 'Expression'")
+                     .where("work_ias.authority_id = ? OR expr_ias.authority_id = ?", id, id)
+                     .distinct
 
     manifestations.each(&:recalc_responsibility_statement!)
   end
