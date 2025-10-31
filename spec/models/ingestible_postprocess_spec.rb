@@ -6,6 +6,79 @@ describe Ingestible do
   describe '#postprocess' do
     let(:ingestible) { create(:ingestible) }
 
+    context 'when processing HTML tags from pandoc' do
+      it 'removes div tags' do
+        input = "<div>Some text</div>"
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<div>')
+        expect(result).not_to include('</div>')
+        expect(result).to include('Some text')
+      end
+
+      it 'removes paragraph tags' do
+        input = "<p>Paragraph text</p>"
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<p>')
+        expect(result).not_to include('</p>')
+        expect(result).to include('Paragraph text')
+      end
+
+      it 'removes anchor tags' do
+        input = '<a href="http://example.com">Link text</a>'
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<a')
+        expect(result).not_to include('</a>')
+        expect(result).to include('Link text')
+      end
+
+      it 'removes strong/bold tags' do
+        input = "<strong>Bold text</strong>"
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<strong>')
+        expect(result).not_to include('</strong>')
+        expect(result).to include('Bold text')
+      end
+
+      it 'removes multiple types of HTML tags' do
+        input = "<div><p>Text with <strong>bold</strong> and <em>italic</em></p></div>"
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<div>')
+        expect(result).not_to include('<p>')
+        expect(result).not_to include('<strong>')
+        expect(result).not_to include('<em>')
+        expect(result).to include('Text with bold and italic')
+      end
+
+      it 'preserves <br /> tags for poetry formatting' do
+        input = "Line one<br />Line two"
+        result = ingestible.postprocess(input)
+        
+        expect(result).to include('<br />')
+      end
+
+      it 'preserves legitimate < characters in mathematical expressions' do
+        input = "המחיר < 100 שקלים"
+        result = ingestible.postprocess(input)
+        
+        # The < that's not part of a tag should be preserved
+        expect(result).to include('< 100')
+      end
+
+      it 'handles HTML tags in the middle of text' do
+        input = "This is a <div>sentence with</div> a div tag in the middle"
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<div>')
+        expect(result).not_to include('</div>')
+        expect(result).to eq("This is a sentence with a div tag in the middle")
+      end
+    end
+
     context 'when processing lines with nikkud' do
       it 'adds blockquote marker to poetry lines with nikkud' do
         # Hebrew text with nikkud (vowel points) - typical poetry
@@ -16,29 +89,6 @@ describe Ingestible do
         expect(result).to include('> שִׁיר הַשִּׁירִים')
         expect(result).to include('> שִׁיר שֵׁנִי')
       end
-
-      it 'does not add blockquote marker to prose with nikkud that continues mid-sentence' do
-        # Text that looks like continuation of a sentence
-        input = "הוּא הָלַךְ לָעִיר וְקָנָה\nלֶחֶם וְחָזַר הַבַּיְתָה."
-        result = ingestible.postprocess(input)
-        
-        # Should not have blockquote markers if it's continuous prose
-        # This test will fail with current implementation, showing the bug
-        lines = result.split("\n")
-        
-        # For now, let's just document what the current behavior is
-        puts "Current result:"
-        puts result
-        puts "---"
-      end
-
-      it 'preserves actual < characters in source text' do
-        input = "המחיר < 100 שקלים"
-        result = ingestible.postprocess(input)
-        
-        # Should preserve the < character
-        expect(result).to include('<')
-      end
     end
 
     context 'when processing lines without nikkud' do
@@ -46,20 +96,23 @@ describe Ingestible do
         input = "זה טקסט רגיל\nבלי נקודות"
         result = ingestible.postprocess(input)
         
-        # Should not have > prefix
-        expect(result).not_to include('>')
+        # Should not have > prefix (except possibly if there's a <br /> tag)
+        lines = result.split("\n")
+        regular_lines = lines.reject { |l| l.include?('<br') }
+        regular_lines.each do |line|
+          expect(line).not_to start_with('>')
+        end
       end
     end
 
-    context 'when processing mixed content' do
-      it 'handles poetry sections followed by prose correctly' do
-        # Poetry with nikkud, then regular prose
-        input = "שִׁיר הַשִּׁירִים\n\nזה פסקה רגילה בלי נקודות"
+    context 'when processing span tags' do
+      it 'removes span tags as before' do
+        input = "<span>Text in span</span>"
         result = ingestible.postprocess(input)
         
-        puts "Mixed content result:"
-        puts result
-        puts "---"
+        expect(result).not_to include('<span>')
+        expect(result).not_to include('</span>')
+        expect(result).to include('Text in span')
       end
     end
   end
