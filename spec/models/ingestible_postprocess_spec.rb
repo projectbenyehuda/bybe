@@ -43,6 +43,25 @@ describe Ingestible do
         expect(result).to include('Bold text')
       end
 
+      it 'removes superscript and subscript tags' do
+        input = "H<sub>2</sub>O and x<sup>2</sup>"
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<sub>')
+        expect(result).not_to include('<sup>')
+        expect(result).to include('H2O and x2')
+      end
+
+      it 'removes strikethrough and size tags' do
+        input = "<s>deleted</s> text and <small>small</small> <big>big</big>"
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<s>')
+        expect(result).not_to include('<small>')
+        expect(result).not_to include('<big>')
+        expect(result).to include('deleted text and small big')
+      end
+
       it 'removes multiple types of HTML tags' do
         input = "<div><p>Text with <strong>bold</strong> and <em>italic</em></p></div>"
         result = ingestible.postprocess(input)
