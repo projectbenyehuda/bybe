@@ -217,4 +217,40 @@ RSpec.describe 'KWIC Concordance Downloads' do
       expect(content).to include('[Second Text, פסקה')
     end
   end
+
+  describe 'Edge cases' do
+    context 'when collection is empty' do
+      let(:empty_collection) { create(:collection, title: 'Empty Collection') }
+
+      before do
+        post collection_download_path(empty_collection), params: { format: 'kwic' }
+      end
+
+      it 'returns a successful response' do
+        expect(response).to have_http_status(:redirect)
+      end
+
+      it 'creates a downloadable with only header' do
+        downloadable = empty_collection.downloadables.find_by(doctype: 'kwic')
+        expect(downloadable).to be_present
+        content = downloadable.stored_file.download
+        expect(content).to include('קונקורדנציה בתבנית KWIC')
+        expect(content).not_to include('מילה:')
+      end
+    end
+
+    context 'when manifestation has only whitespace' do
+      let(:empty_manifestation) { create(:manifestation, markdown: "   \n\n   ") }
+
+      before do
+        get manifestation_download_path(empty_manifestation), params: { format: 'kwic' }
+      end
+
+      it 'generates concordance without errors' do
+        expect(response).to have_http_status(:redirect)
+        downloadable = empty_manifestation.downloadables.find_by(doctype: 'kwic')
+        expect(downloadable).to be_present
+      end
+    end
+  end
 end
