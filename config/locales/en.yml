@@ -4,6 +4,8 @@ en:
   title_starts_with_x: "Title starts with: '%{x}'"
   new_person: New Person
   new_corporate_body: New Corporate Body
+  orphan_work_question: Orphan work?
+  orphan_work_help: (Check if known to be an orphan work - this will override automatic calculation)
   "yes": "Yes"
   "no": "No"
   are_you_sure: Are you sure?

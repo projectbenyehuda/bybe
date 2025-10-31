@@ -432,6 +432,65 @@ describe IngestiblesController do
           expect(expression.intellectual_property).to eq('copyrighted')
         end
       end
+
+      context 'with orphan_work override at ingestible level' do
+        let(:author_pd) { create(:authority, intellectual_property: :public_domain) }
+        let(:toc_buffer) do
+          authorities = [
+            { seqno: 1, authority_id: author_pd.id, authority_name: author_pd.name, role: 'author' }
+          ].to_json
+          "yes || Test Work || #{authorities} || poetry || he || public_domain || false"
+        end
+        let(:ingestible) do
+          create(:ingestible, volume: collection, toc_buffer: toc_buffer, markdown: markdown, no_volume: false,
+                              orphan_work: true)
+        end
+
+        it 'overrides computed public_domain with orphan when orphan_work is true' do
+          post :ingest, params: { id: ingestible.id }
+          
+          expression = Expression.order(created_at: :desc).first
+          expect(expression.intellectual_property).to eq('orphan')
+        end
+      end
+
+      context 'with orphan_work override at work level in TOC' do
+        let(:author_pd) { create(:authority, intellectual_property: :public_domain) }
+        let(:toc_buffer) do
+          authorities = [
+            { seqno: 1, authority_id: author_pd.id, authority_name: author_pd.name, role: 'author' }
+          ].to_json
+          "yes || Test Work || #{authorities} || poetry || he || public_domain || true"
+        end
+
+        it 'overrides computed public_domain with orphan when toc_line orphan_work is true' do
+          post :ingest, params: { id: ingestible.id }
+          
+          expression = Expression.order(created_at: :desc).first
+          expect(expression.intellectual_property).to eq('orphan')
+        end
+      end
+
+      context 'with work-level orphan_work=false overriding ingestible-level orphan_work=true' do
+        let(:author_pd) { create(:authority, intellectual_property: :public_domain) }
+        let(:toc_buffer) do
+          authorities = [
+            { seqno: 1, authority_id: author_pd.id, authority_name: author_pd.name, role: 'author' }
+          ].to_json
+          "yes || Test Work || #{authorities} || poetry || he || public_domain || false"
+        end
+        let(:ingestible) do
+          create(:ingestible, volume: collection, toc_buffer: toc_buffer, markdown: markdown, no_volume: false,
+                              orphan_work: true)
+        end
+
+        it 'uses work-level setting when explicitly set to false' do
+          post :ingest, params: { id: ingestible.id }
+          
+          expression = Expression.order(created_at: :desc).first
+          expect(expression.intellectual_property).to eq('public_domain')
+        end
+      end
     end
   end
 end

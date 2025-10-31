@@ -203,7 +203,7 @@ class IngestiblesController < ApplicationController
   end
 
   def update_toc
-    toc_params = params.permit(%i(title new_title genre orig_lang intellectual_property authority_id authority_name
+    toc_params = params.permit(%i(title new_title genre orig_lang intellectual_property orphan_work authority_id authority_name
                                   role new_person_tbd rmauth seqno clear_defaults))
     cur_toc = @ingestible.decode_toc
     updated = false
@@ -215,6 +215,8 @@ class IngestiblesController < ApplicationController
       x[3] = toc_params[:genre] if toc_params[:genre].present?
       x[4] = toc_params[:orig_lang] if toc_params[:orig_lang].present?
       x[5] = toc_params[:intellectual_property] if toc_params[:intellectual_property].present?
+      # Store orphan_work as a boolean in toc_line[6]
+      x[6] = params[:orphan_work] == 'true' ? 'true' : 'false' if params.key?(:orphan_work)
 
       if params[:replaceauth].present?
         authorities = x[2].present? ? JSON.parse(x[2]) : []
@@ -272,9 +274,9 @@ class IngestiblesController < ApplicationController
       existing = cur_toc.find { |y| y[1].strip == x }
 
       ret << if existing.nil?
-               " #{include ? 'yes' : 'no'} || #{x} || || #{@ingestible.genre} || #{@ingestible.orig_lang} || #{@ingestible.intellectual_property}" # use ingestible defaults when set
+               " #{include ? 'yes' : 'no'} || #{x} || || #{@ingestible.genre} || #{@ingestible.orig_lang} || #{@ingestible.intellectual_property} || #{@ingestible.orphan_work ? 'true' : 'false'}" # use ingestible defaults when set
              else
-               " #{include ? 'yes' : 'no'} || #{x} || #{existing[2]} || #{existing[3]} || #{existing[4]} || #{existing[5]}" # preserve any existing metadata
+               " #{include ? 'yes' : 'no'} || #{x} || #{existing[2]} || #{existing[3]} || #{existing[4]} || #{existing[5]} || #{existing[6] || 'false'}" # preserve any existing metadata
              end
     end
     @ingestible.update_columns(toc_buffer: ret.join("\n"))
@@ -408,6 +410,7 @@ class IngestiblesController < ApplicationController
       :year_published,
       :orig_lang,
       :intellectual_property,
+      :orphan_work,
       :periodical_id,
       :docx,
       :metadata,
@@ -566,11 +569,14 @@ class IngestiblesController < ApplicationController
         # Compute intellectual property from all involved authorities
         all_authority_ids = author_ids + translator_ids + other_authorities.map(&:first)
         computed_ip = ComputeIntellectualProperty.call(all_authority_ids)
+        # Check for orphan_work override at work level (toc_line[6]) or ingestible level
+        orphan_work = (toc_line[6] == 'true') || (toc_line[6].blank? && @ingestible.orphan_work)
+        final_ip = orphan_work ? :orphan : computed_ip
         e = w.expressions.build(
           title: toc_line[1],
           language: 'he',
           period: period, # what to do if corporate body?
-          intellectual_property: computed_ip,
+          intellectual_property: final_ip,
           source_edition: @ingestible.publisher,
           date: @ingestible.year_published
         )
