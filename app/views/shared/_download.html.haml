@@ -56,6 +56,11 @@
                   %b= 'ODT'
                   = t(:odt_format)
               %p
+                %label
+                  = radio_button_tag 'format', 'kwic'
+                  %b= 'KWIC'
+                  = t(:kwic_format)
+              %p
               .bottom-button-area.left-buttons
                 .desktop-only.linkcolor.pointer{'data-dismiss'=>'modal'}
                   %span.right-side-icon -
