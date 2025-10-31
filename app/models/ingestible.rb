@@ -183,7 +183,7 @@ class Ingestible < ApplicationRecord
     buf.gsub!(/<span.*?>/m, '')
     buf.gsub!('</span>', '')
     # remove other HTML tags that pandoc might output, but preserve <br /> tags
-    buf.gsub!(/<(div|p|a|strong|em|i|b|u)[^>]*>/i, '') # remove opening tags
+    buf.gsub!(/<(div|p|a|strong|em|i|b|u)\b[^>]*>/i, '') # remove opening tags (word boundary prevents matching <br>)
     buf.gsub!(/<\/(div|p|a|strong|em|i|b|u)>/i, '') # remove closing tags
     lines = buf.split("\n")
     in_footnotes = false

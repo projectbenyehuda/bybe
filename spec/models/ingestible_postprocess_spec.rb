@@ -61,6 +61,25 @@ describe Ingestible do
         expect(result).to include('<br />')
       end
 
+      it 'preserves <br> tag variations' do
+        input = "Line<br>Line<br />Line<br/>End"
+        result = ingestible.postprocess(input)
+        
+        expect(result).to include('<br>')
+        expect(result).to include('<br />')
+        expect(result).to include('<br/>')
+      end
+
+      it 'removes <b> tags but not <br> tags' do
+        input = "Text <b>bold</b> and <br> break"
+        result = ingestible.postprocess(input)
+        
+        expect(result).not_to include('<b>')
+        expect(result).not_to include('</b>')
+        expect(result).to include('<br>')
+        expect(result).to include('Text bold and <br> break')
+      end
+
       it 'preserves legitimate < characters in mathematical expressions' do
         input = "המחיר < 100 שקלים"
         result = ingestible.postprocess(input)
