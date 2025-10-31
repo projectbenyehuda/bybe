@@ -1,12 +1,6 @@
 module ApplicationHelper
   include BybeUtils
 
-  def u8(s)
-    return s if s.nil?
-
-    s.force_encoding('UTF-8')
-  end
-
   def get_intro(markdown)
     lines = markdown[0..2000].lines[1..-2]
     if lines.empty?
@@ -43,22 +37,6 @@ module ApplicationHelper
       ret += "<option value='#{lineno}' #{'selected=\'selected\'' if selected == heading}>#{heading}</option>"
     end
     return ret.html_safe
-  end
-
-  def viaf_json_to_html(json)
-    ret = '<ul>'
-    json.each do |j|
-      ret += "<li>#{j[0]} (VIAF: #{j[1]})\n"
-    end
-    ret += '</ul>'
-  end
-
-  def absolute_url_from_urlpart(u)
-    return Rails.configuration.constants['base_dir'] + u
-  end
-
-  def textify_external_link_type(linktype)
-    return I18n.t(linktype)
   end
 
   def options_for_shelves
@@ -138,12 +116,6 @@ module ApplicationHelper
     else
       return t(:unknown)
     end
-  end
-
-  def textify_toc_status(st)
-    return I18n.t(:unknown) if st.nil? or st.empty?
-
-    return I18n.t(st)
   end
 
   def uncached_sitenotice
