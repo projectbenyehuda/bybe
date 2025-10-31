@@ -480,6 +480,18 @@ describe AdminController do
       end
 
       it { is_expected.to be_successful }
+
+      context 'when pending tags have no taggings' do
+        let!(:tag_with_no_taggings) { create(:tag, status: :pending, taggings_count: 0) }
+        let!(:tag_with_taggings) { create(:tag, status: :pending, taggings_count: 1) }
+        let!(:tagging_for_tag_with_taggings) { create(:tagging, tag: tag_with_taggings, status: :pending) }
+
+        it 'excludes tags with zero taggings from pending_tags' do
+          subject
+          expect(assigns(:pending_tags)).not_to include(tag_with_no_taggings)
+          expect(assigns(:pending_tags)).to include(tag_with_taggings)
+        end
+      end
     end
 
     describe '#tag_review' do
