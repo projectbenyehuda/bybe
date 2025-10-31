@@ -371,5 +371,67 @@ describe IngestiblesController do
         expect(collection.involved_authorities.count).to eq(initial_count)
       end
     end
+
+    context 'intellectual property computation during ingestion' do
+      let(:author_pd) { create(:authority, intellectual_property: :public_domain) }
+      let(:translator_copyrighted) { create(:authority, intellectual_property: :copyrighted) }
+      let(:collection) { create(:collection, collection_type: 'volume') }
+      let(:toc_buffer) do
+        "yes || Test Work || #{[{ seqno: 1, authority_id: author_pd.id, authority_name: author_pd.name, role: 'author' }].to_json} || poetry || en || public_domain"
+      end
+      let(:markdown) { "&&& Test Work\n\nTest content" }
+      let(:ingestible) do
+        create(:ingestible, volume: collection, toc_buffer: toc_buffer, markdown: markdown, no_volume: false)
+      end
+
+      before do
+        ingestible.update_parsing
+      end
+
+      context 'when all authorities are public domain' do
+        it 'sets expression intellectual property to public_domain' do
+          post :ingest, params: { id: ingestible.id }
+          
+          expression = Expression.order(created_at: :desc).first
+          expect(expression.intellectual_property).to eq('public_domain')
+        end
+      end
+
+      context 'when translator is copyrighted and author is public domain' do
+        let(:toc_buffer) do
+          authorities = [
+            { seqno: 1, authority_id: author_pd.id, authority_name: author_pd.name, role: 'author' },
+            { seqno: 2, authority_id: translator_copyrighted.id, authority_name: translator_copyrighted.name,
+              role: 'translator' }
+          ].to_json
+          "yes || Test Work || #{authorities} || poetry || en || public_domain"
+        end
+
+        it 'sets expression intellectual property to copyrighted' do
+          post :ingest, params: { id: ingestible.id }
+          
+          expression = Expression.order(created_at: :desc).first
+          expect(expression.intellectual_property).to eq('copyrighted')
+        end
+      end
+
+      context 'when author is copyrighted' do
+        let(:author_copyrighted) { create(:authority, intellectual_property: :copyrighted) }
+        let(:toc_buffer) do
+          authorities = [
+            { seqno: 1, authority_id: author_copyrighted.id, authority_name: author_copyrighted.name, role: 'author' }
+          ].to_json
+          "yes || Test Work || #{authorities} || poetry || he || copyrighted"
+        end
+
+        it 'sets expression intellectual property to copyrighted regardless of toc_line value' do
+          post :ingest, params: { id: ingestible.id }
+          
+          expression = Expression.order(created_at: :desc).first
+          # Even though toc_line[5] says 'copyrighted', it should be computed from authorities
+          expect(expression.intellectual_property).to eq('copyrighted')
+        end
+      end
+    end
   end
 end
