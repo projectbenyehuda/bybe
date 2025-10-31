@@ -36,7 +36,8 @@ class InvolvedAuthority < ApplicationRecord
     expressions = if item.is_a?(Expression)
                     [item]
                   elsif item.is_a?(Work)
-                    item.expressions
+                    # Preload associations to avoid N+1 queries
+                    item.expressions.includes(work: :involved_authorities, involved_authorities: :authority)
                   else
                     []
                   end

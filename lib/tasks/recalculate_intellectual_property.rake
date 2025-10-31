@@ -9,7 +9,8 @@ task recalculate_intellectual_property: :environment do
   updated = 0
   skipped = 0
   
-  Expression.find_each.with_index do |expression, index|
+  # Preload associations to avoid N+1 queries
+  Expression.includes(work: :involved_authorities, involved_authorities: :authority).find_each.with_index do |expression, index|
     # Get all involved authorities for this expression
     work_authority_ids = expression.work.involved_authorities.map(&:authority_id)
     expression_authority_ids = expression.involved_authorities.map(&:authority_id)
