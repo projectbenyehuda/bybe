@@ -8,6 +8,8 @@ class GenerateKwicConcordance < ApplicationService
   # @param labelled_texts [Array<Hash>] Array of text entries, each with :label and :buffer keys
   # @return [String] Formatted KWIC concordance as plain text
   def call(labelled_texts)
+    # Use kwic_concordance from BybeUtils which returns an array of hashes with:
+    # { token: String, instances: [{ label:, before_context:, after_context:, paragraph: }] }
     concordance_data = kwic_concordance(labelled_texts)
 
     # Format the concordance as plain text

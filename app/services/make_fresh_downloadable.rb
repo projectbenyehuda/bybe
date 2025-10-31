@@ -86,14 +86,15 @@ class MakeFreshDownloadable < ApplicationService
         begin
           temp_file = Tempfile.new('tmp_kwic_' + download_entity.id.to_s, 'tmp/')
           temp_file.puts(formatted_text)
-          temp_file.chmod(0o644)
           temp_file.rewind
+          temp_file.chmod(0o644) # Set file permissions after writing and rewinding
           dl.stored_file.attach(io: temp_file, filename: filename)
         ensure
           temp_file.close
         end
       else
-        raise StandardError, I18n.t(:unrecognized_format)
+        # Raise a specific error for unrecognized formats (I18n message for user display)
+        raise ArgumentError, "Unrecognized format: #{format}. Valid formats: #{Downloadable.doctypes.keys.join(', ')}"
       end
 
       # Verify the attachment was successful
