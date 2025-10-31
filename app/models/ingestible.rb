@@ -175,11 +175,6 @@ class Ingestible < ApplicationRecord
     end
   end
 
-  # HTML tags to remove from pandoc output
-  # Note: <br /> tags are intentionally preserved for poetry formatting
-  # Note: <span> tags are handled separately with special logic for multi-line spans
-  PANDOC_HTML_TAGS_TO_REMOVE = %w[div p a strong em i b u sup sub s small big].freeze
-
   # copied from HtmlFileController's new_postprocess
   def postprocess(buf)
     # join lines in <span> elements that, er, span more than one line
@@ -187,10 +182,6 @@ class Ingestible < ApplicationRecord
     # remove all <span> tags because pandoc generates them excessively
     buf.gsub!(/<span.*?>/m, '')
     buf.gsub!('</span>', '')
-    # remove other HTML tags that pandoc might output, but preserve <br /> tags
-    tags_pattern = PANDOC_HTML_TAGS_TO_REMOVE.join('|')
-    buf.gsub!(/<(#{tags_pattern})\b[^>]*>/i, '') # remove opening tags (word boundary prevents <b> from matching <br>)
-    buf.gsub!(/<\/(#{tags_pattern})>/i, '') # remove closing tags
     lines = buf.split("\n")
     in_footnotes = false
     prev_nikkud = false
