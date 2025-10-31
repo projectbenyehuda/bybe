@@ -95,11 +95,11 @@
       } else if (field.startsWith('tag_')) {
         // Handle tag filters - remove the specific tag ID from the comma-separated list
         const tagId = field.replace('tag_', '').trim(); // Extract tag ID from "tag_123"
-        const currentValue = $('#tag_ids').val() || '';
+        const currentValue = $('#works_filters #tag_ids').val() || '';
         const tagIds = currentValue.split(',').filter(function(id) {
           return id.trim() !== tagId && id.trim() !== '';
         }).join(',');
-        $('#tag_ids').val(tagIds);
+        $('#works_filters #tag_ids').val(tagIds);
       } else {
         $('#works_filters #' + field).prop("checked", false);
       }
