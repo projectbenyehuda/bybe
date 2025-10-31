@@ -201,7 +201,10 @@ class Ingestible < ApplicationRecord
         in_footnotes = true if lines[i] =~ /^\[\^\d+\]:/
         if nikkud
           # make full-nikkud lines PRE
-          lines[i] = "> #{lines[i]}" unless (lines[i] =~ /\[\^\d+/) || title_line(lines[i]) # produce a blockquote (PRE ignores bold/markup)
+          # Only add > if line doesn't already start with > (prevent > appearing mid-line after joining)
+          unless (lines[i] =~ /\[\^\d+/) || title_line(lines[i]) || (lines[i] =~ /^\s*>/)
+            lines[i] = "> #{lines[i]}"
+          end
           prev_nikkud = true
         else
           prev_nikkud = false
