@@ -175,7 +175,9 @@ class Ingestible < ApplicationRecord
     end
   end
 
-  # HTML tags to remove from pandoc output (preserving <br /> tags for poetry)
+  # HTML tags to remove from pandoc output
+  # Note: <br /> tags are intentionally preserved for poetry formatting
+  # Note: <span> tags are handled separately with special logic for multi-line spans
   PANDOC_HTML_TAGS_TO_REMOVE = %w[div p a strong em i b u sup sub s small big].freeze
 
   # copied from HtmlFileController's new_postprocess
