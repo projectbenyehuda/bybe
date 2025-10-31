@@ -221,11 +221,15 @@
           // unlike
           $.ajax({
             url: "#{url_for(action: :unlike, id: @m.id) }",
+            method: 'POST',
+            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') }
           });
           $('.like').removeClass('icon-byheart-full').addClass('icon-byheart-empty');
         } else { // like
           $.ajax({
             url: "#{url_for(action: :like, id: @m.id) }",
+            method: 'POST',
+            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') }
           });
           $('.like').removeClass('icon-byheart-empty').addClass('icon-byheart-full');
         }

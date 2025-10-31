@@ -5,6 +5,19 @@ This document describes our development docker configuration.
 We assume that application itself will be run in host system natively, docker is used to only host services used by app:
 database, elasticsearch, cache, etc.
 
+In some sitations (e.g. when working with CodePilot) we may need an ability to run tests on application. To simplify
+this `docker-compose.yml` declares special service `test-app`
+
+So to run all specs in application you may use command:
+```shell
+docker compose run --rm test-app
+```
+
+Or to run specific spec:
+```shell
+docker compose run --rm test-app rspec <PATH_TO_SPEC>
+```
+
 ## Preparing development environment with docker
 
 ### 1. Installing docker

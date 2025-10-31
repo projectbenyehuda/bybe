@@ -1,0 +1,16 @@
+%div{dir: 'rtl'}
+  %h1= t(:email_preferences)
+
+  = form_with url: user_preferences_path, method: :patch, local: true do |f|
+    %div.form-group
+      %label= t(:email_frequency_label)
+      %div
+        - BaseUser::EMAIL_FREQUENCY_OPTIONS.each do |option|
+          %div.radio
+            = radio_button_tag 'email_frequency', option, @email_frequency == option
+            = label_tag "email_frequency_#{option}", t("email_frequency_#{option}")
+            %br
+            %small.text-muted= t("email_frequency_#{option}_description")
+
+    %div.form-group
+      = f.submit t(:save_preferences), class: 'btn btn-primary'

@@ -12,6 +12,7 @@ RSpec.describe 'copyright_expiration rake task' do
   let(:task) { Rake::Task['copyright_expiration'] }
   let(:current_year) { Time.zone.today.year }
   let(:target_year) { current_year - 71 }
+  let(:output) { StringIO.new }
 
   before do
     task.reenable # Allow the task to be run multiple times
@@ -29,17 +30,19 @@ RSpec.describe 'copyright_expiration rake task' do
     end
 
     it 'does not update any records' do
-      expect { task.invoke }.not_to(change { authority_copyrighted.reload.intellectual_property })
+      expect { task.invoke(nil, output) }.not_to(change { authority_copyrighted.reload.intellectual_property })
     end
 
     it 'reports statistics' do
-      #      expect { task.invoke }.to output(/Authorities:/).to_stdout
-      #                            .and output(/Manifestations:/).to_stdout
-      expect { task.invoke }.to output(include(/Manifestations:/, /Authorities:/)).to_stdout
+      task.invoke(nil, output)
+      output_string = output.string
+      expect(output_string).to match(/Authorities:/)
+      expect(output_string).to match(/Manifestations:/)
     end
 
     it 'indicates dry-run mode' do
-      expect { task.invoke }.to output(/Running in DRY-RUN mode/).to_stdout
+      task.invoke(nil, output)
+      expect(output.string).to match(/Running in DRY-RUN mode/)
     end
   end
 
@@ -66,22 +69,23 @@ RSpec.describe 'copyright_expiration rake task' do
     end
 
     it 'updates authority to public_domain' do
-      expect { task.invoke('execute') }.to change { authority_copyrighted.reload.intellectual_property }
+      expect { task.invoke('execute', output) }.to change { authority_copyrighted.reload.intellectual_property }
         .from('copyrighted').to('public_domain')
     end
 
     it 'updates expression to public_domain when all authorities are public_domain' do
-      expect { task.invoke('execute') }.to change { expression_copyrighted.reload.intellectual_property }
+      expect { task.invoke('execute', output) }.to change { expression_copyrighted.reload.intellectual_property }
         .from('copyrighted').to('public_domain')
     end
 
     it 'indicates execute mode' do
-      expect { task.invoke('execute') }.to output(/Running in EXECUTE mode/).to_stdout
+      task.invoke('execute', output)
+      expect(output.string).to match(/Running in EXECUTE mode/)
     end
 
     it 'reports updated statistics' do
-      output = capture_stdout { task.invoke('execute') }
-      expect(output).to match(/Updated: 1/)
+      task.invoke('execute', output)
+      expect(output.string).to match(/Updated: 1/)
     end
   end
 
@@ -120,7 +124,7 @@ RSpec.describe 'copyright_expiration rake task' do
     end
 
     it 'updates expression when all involved authorities are public_domain' do
-      expect { task.invoke('execute') }.to change { expression_multi_author.reload.intellectual_property }
+      expect { task.invoke('execute', output) }.to change { expression_multi_author.reload.intellectual_property }
         .from('copyrighted').to('public_domain')
     end
   end
@@ -160,11 +164,11 @@ RSpec.describe 'copyright_expiration rake task' do
     end
 
     it 'does not update expression if not all authorities are public_domain' do
-      expect { task.invoke('execute') }.not_to(change { expression_mixed.reload.intellectual_property })
+      expect { task.invoke('execute', output) }.not_to(change { expression_mixed.reload.intellectual_property })
     end
 
     it 'still updates the authority that died 71 years ago' do
-      expect { task.invoke('execute') }.to change { authority1.reload.intellectual_property }
+      expect { task.invoke('execute', output) }.to change { authority1.reload.intellectual_property }
         .from('copyrighted').to('public_domain')
     end
   end
@@ -178,13 +182,13 @@ RSpec.describe 'copyright_expiration rake task' do
     end
 
     it 'skips authorities already marked as public_domain' do
-      output = capture_stdout { task.invoke }
-      expect(output).to match(/already public_domain, skipping/)
+      task.invoke(nil, output)
+      expect(output.string).to match(/already public_domain, skipping/)
     end
 
     it 'does not count skipped authorities in updated count' do
-      output = capture_stdout { task.invoke }
-      expect(output).to match(/Would update: 0/)
+      task.invoke(nil, output)
+      expect(output.string).to match(/Would update: 0/)
     end
   end
 
@@ -195,22 +199,13 @@ RSpec.describe 'copyright_expiration rake task' do
     let!(:authority2) { create(:authority, person: person2, intellectual_property: :copyrighted) }
 
     it 'reports correct number of authorities checked' do
-      output = capture_stdout { task.invoke }
-      expect(output).to match(/Checked: 2/)
+      task.invoke(nil, output)
+      expect(output.string).to match(/Checked: 2/)
     end
 
     it 'reports correct number of authorities to update' do
-      output = capture_stdout { task.invoke }
-      expect(output).to match(/Would update: 2/)
+      task.invoke(nil, output)
+      expect(output.string).to match(/Would update: 2/)
     end
-  end
-
-  def capture_stdout
-    original_stdout = $stdout
-    $stdout = StringIO.new
-    yield
-    $stdout.string
-  ensure
-    $stdout = original_stdout
   end
 end

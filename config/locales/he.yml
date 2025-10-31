@@ -164,6 +164,9 @@ he:
   some: חלקי
   full: מלא
   filter: סינון
+  filter_by_type: סינון לפי סוג
+  manifestations: יצירות
+  authorities: יוצרים
   ltr: משמאל לימין
   parse: הסבה
   remove_line_nums: הסר מספרי שורות
@@ -819,6 +822,7 @@ he:
   manifestations: מימושים
   collections: אוספים
   dictionary_entries: ערכים מילוניים
+  volumes: כותרים
   works_en: works
   to_tagging_instructions: להנחיות התיוג
   dictionary_entries_en: dictionary entries
@@ -829,7 +833,7 @@ he:
   read_more: קראו עוד
   dict_help_x_entries: "<p>העלאת מילון אליעזר בן־יהודה לרשת היא תהליך ארוך שעדיין נמצא בעיצומו. לאתר פרויקט בן־יהודה הועלו עד עתה %{x} ערכים. <p/>הערכים מוצגים בצורתם המקורית ככל הניתן, תוך שימור הפורמט ההיסטורי הייחודי של המילון.<p/>בעמוד זה מוצגת רשימת הערכים, כאשר ניתן לבחור להציג את שמות הערכים בלבד או רשימת ערכים הכוללת תקצירים של פירושי הערכים.<p/>בגלל אורכה, הרשימה מחולקת לעמודי משנה המכילים עד מאה ערכים כל אחד.<p/>ניתן לדפדף ברשימה באמצעות הבקרים הנמצאים מעל ומתחת לרשימה, המאפשרים מעבר עמודים ואיתור האות הראשונה של כל ערך.<p/>בנוסף, ניתן להפעיל פעולות סינון המאפשרות צמצום הרשימה על ידי בחירה של מאפיינים שונים.<p/>למען הפשטות, העמוד נטען תחילה ללא פקדי סינון, ורק לאחר שהמשתמש בוחר בכך יופיע לוח בקרת הסינון במקום טקסט הסבר זה.<p/>להפעלת אפשרויות הסינון ניתן להפעיל את המתג בבר העליון."
   welcome_to_ebydict: ברוכים הבאים למילון אליעזר בן־יהודה
-  dictionary_definition: הגדרה מילונית
+  dictionary_definition: ערך מילוני
   desktop_missing_entries: "[%{x} ערכים חסרים]"
   mobile_missing_entries: "[%{x} חסרים]"
   prev_entry: 'הקודם:'
@@ -1343,6 +1347,8 @@ he:
       subject: אזהרה לפני חסימה מפרויקט בן־יהודה
     block:
       subject: חסימה מפרויקט בן־יהודה
+    notification_digest:
+      subject: סיכום הודעות מפרויקט בן־יהודה
   api_keys_mailer:
     key_created:
       subject: מפתח ה־API שלך
@@ -1693,3 +1699,22 @@ he:
   out_of: "מתוך "
   full_display: תצוגה מלאה
   immediate_child_only: הצג רמה אחת בלבד
+  
+  # Email throttling system
+  email_preferences: העדפות דואל
+  email_frequency_label: תדירות קבלת הודעות דואל
+  email_frequency_unlimited: ללא הגבלה (בזמן אמת)
+  email_frequency_unlimited_description: תקבל/י הודעות מיד כשהן נשלחות
+  email_frequency_daily: לכל היותר פעם ביום
+  email_frequency_daily_description: תקבל/י לכל היותר הודעת דואל אחת ביום עם סיכום כל ההודעות
+  email_frequency_weekly: לכל היותר פעם בשבוע
+  email_frequency_weekly_description: תקבל/י לכל היותר הודעת דואל אחת בשבוע עם סיכום כל ההודעות
+  email_frequency_none: אל תשלחו לי הודעות דואל
+  email_frequency_none_description: לא תקבל/י שום הודעות דואל ממוכנות מהאתר
+  save_preferences: שמירת העדפות
+  preferences_updated: ההעדפות עודכנו בהצלחה
+  invalid_preference: העדפה לא חוקית
+  manage_email_preferences: ניהול העדפות דואל
+  email_footer_signup_invitation: אם תרצה/י לשלוט בתדירות קבלת הודעות הדואל, תוכל/י להירשם לאתר ולהגדיר את ההעדפות שלך.
+  notification_digest_intro: להלן סיכום ההודעות שצברנו עבורך
+  notification_render_error: שגיאה בעיבוד הודעה

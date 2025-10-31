@@ -61,10 +61,10 @@
               %td{style: extra_style}
                 - if session[:tagging_lock]
                   .quick-actions
-                    = button_to reject_tag_path(tag), method: :post, remote: true, class: 'reject-tag-btn confirmable ghost-btn', form_class: 'reject_tag_form', id: "reject_tag_btn_#{tag.id}", data: { 'confirm-title': t(:confirm_reject), p1: t(:confirm_reject), 'with-comment': false, element_id: "reject_tag_btn_#{tag.id}" } do
+                    = button_to reject_tag_path(tag), method: :post, remote: true, class: 'reject-tag-btn ghost-btn', form_class: 'reject_tag_form', id: "reject_tag_btn_#{tag.id}", data: { tag_id: tag.id, tag_name: tag.name } do
                       .by-icon-v02> -
                       = t(:reject)
-                    = button_to reject_tag_path(tag), method: :post, remote: true, class: 'reject-tag-btn confirmable ghost-btn', form_class: 'reject_tag_form', id: "reject_tag_with_explanation_btn_#{tag.id}", data: { confirm: t(:confirm_reject), p1: t(:explain_rejection), 'with-comment': true, element_id: "reject_tag_with_explanation_btn_#{tag.id}" } do
+                    = button_to reject_tag_path(tag), method: :post, remote: true, class: 'reject-tag-btn ghost-btn reject-with-explanation', form_class: 'reject_tag_form', id: "reject_tag_with_explanation_btn_#{tag.id}", data: { tag_id: tag.id, tag_name: tag.name } do
                       .by-icon-v02> -
                       = t(:reject_and_explain)
                     .additional_actions_container
@@ -161,13 +161,13 @@
               %td{style: extra_style}
                 .quick-actions
                   - if session[:tagging_lock]
-                    = button_to approve_tagging_path(tagging), method: :post, remote: true, class: 'ghost-btn approve-tagging-btn confirmable', form_class: 'approve-tagging-form', id: "approve_tagging_btn_#{tagging.id}", data: { 'confirm-title': t(:confirm_approve), p1: t(:confirm_approve), 'with-comment': false, element_id: "approve_tagging_btn_#{tagging.id}" } do
+                    = button_to approve_tagging_path(tagging), method: :post, remote: true, class: 'ghost-btn approve-tagging-btn', form_class: 'approve-tagging-form', id: "approve_tagging_btn_#{tagging.id}", data: { tagging_id: tagging.id } do
                       .by2-icon> N
                       = t(:approve)
-                    = button_to reject_tagging_path(tagging), method: :post, remote: true, class: 'ghost-btn reject-tagging-btn confirmable', form_class: 'reject-tagging-form', id: "reject_tagging_btn_#{tagging.id}", data: { 'confirm-title': t(:confirm_reject), p1: t(:confirm_reject), 'with-comment': false, element_id: "reject_tagging_btn_#{tagging.id}" } do
+                    = button_to reject_tagging_path(tagging), method: :post, remote: true, class: 'ghost-btn reject-tagging-btn', form_class: 'reject-tagging-form', id: "reject_tagging_btn_#{tagging.id}", data: { tagging_id: tagging.id } do
                       .by-icon-v02> -
                       = t(:reject)
-                    = button_to reject_tagging_path(tagging), method: :post, remote: true, class: 'ghost-btn reject-tagging-btn confirmable', form_class: 'reject-tagging-form', id: "reject_tagging_with_explanation_btn_#{tagging.id}", data: { 'confirm-title': t(:confirm_reject), p1: t(:confirm_reject), 'with-comment': true, element_id: "reject_tagging_with_explanation_btn_#{tagging.id}" } do
+                    = button_to reject_tagging_path(tagging), method: :post, remote: true, class: 'ghost-btn reject-tagging-btn reject-with-explanation', form_class: 'reject-tagging-form', id: "reject_tagging_with_explanation_btn_#{tagging.id}", data: { tagging_id: tagging.id } do
                       .by-icon-v02> -
                       = t(:reject_and_explain)
                     .ghost-btn.merge-tagging-btn{'data-tagging-id': tagging.id}
@@ -194,11 +194,144 @@
                     = t(:tagging_system_locked)
           
 :javascript
-  function remove_row(event, color) {
-    row = $(event.target).closest('tr');
-    row.find('td').css('background-color', color);
-    row.fadeOut(2000);
+  var originalRows = {};
+  
+  function showUndoMessage(row, message, undoCallback) {
+    var rowId = row.attr('id') || 'row_' + Date.now();
+    if (!row.attr('id')) {
+      row.attr('id', rowId);
+    }
+    
+    // Store the original row HTML
+    originalRows[rowId] = row.html();
+    
+    var numCols = row.find('td').length;
+    
+    // Replace row content with undo message
+    row.html(
+      '<td colspan="' + numCols + '" style="background-color: #fffacd; padding: 15px;">' +
+      '<span style="margin-left: 10px;">' + message + '</span>' +
+      '<button class="by-button-v02 undo-action-btn" style="margin-right: 10px; float: left;" data-row-id="' + rowId + '">ביטול</button>' +
+      '</td>'
+    );
+    
+    // Add undo button handler
+    row.find('.undo-action-btn').off('click').on('click', function() {
+      undoCallback(rowId);
+    });
   }
+  
+  function restoreOriginalRow(rowId) {
+    var row = $('#' + rowId);
+    if (originalRows[rowId]) {
+      row.html(originalRows[rowId]);
+      delete originalRows[rowId];
+      
+      // Rebind event handlers
+      bindQuickActionHandlers();
+      bindAdditionalActionHandlers();
+    }
+  }
+  
+  function bindQuickActionHandlers() {
+    // Reject tag handlers
+    $('.reject_tag_form').off('ajax:success').on('ajax:success', function(event, data, status, xhr) {
+      var button = $(event.target).find('.reject-tag-btn');
+      var row = button.closest('tr');
+      var tagName = button.data('tag-name');
+      var tagId = button.data('tag-id');
+      
+      showUndoMessage(row, 'התגית "' + tagName + '" נדחתה', function(rowId) {
+        $.ajax({
+          url: '#{undo_reject_tag_path(':id')}'.replace(':id', tagId),
+          type: 'POST',
+          headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+          success: function() {
+            restoreOriginalRow(rowId);
+          },
+          error: function() {
+            alert('שגיאה בביטול הפעולה');
+          }
+        });
+      });
+    });
+    
+    // Approve tagging handlers
+    $('.approve-tagging-form').off('ajax:success').on('ajax:success', function(event, data, status, xhr) {
+      var button = $(event.target).find('.approve-tagging-btn');
+      var row = button.closest('tr');
+      var taggingId = button.data('tagging-id');
+      
+      showUndoMessage(row, 'התיוג אושר', function(rowId) {
+        $.ajax({
+          url: '#{undo_approve_tagging_path(':id')}'.replace(':id', taggingId),
+          type: 'POST',
+          headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+          success: function() {
+            restoreOriginalRow(rowId);
+          },
+          error: function() {
+            alert('שגיאה בביטול הפעולה');
+          }
+        });
+      });
+    });
+    
+    // Reject tagging handlers
+    $('.reject-tagging-form').off('ajax:success').on('ajax:success', function(event, data, status, xhr) {
+      var button = $(event.target).find('.reject-tagging-btn');
+      var row = button.closest('tr');
+      var taggingId = button.data('tagging-id');
+      
+      showUndoMessage(row, 'התיוג נדחה', function(rowId) {
+        $.ajax({
+          url: '#{undo_reject_tagging_path(':id')}'.replace(':id', taggingId),
+          type: 'POST',
+          headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+          success: function() {
+            restoreOriginalRow(rowId);
+          },
+          error: function() {
+            alert('שגיאה בביטול הפעולה');
+          }
+        });
+      });
+    });
+    
+    
+    // Handle reject with explanation buttons
+    $('.reject-with-explanation').off('click').on('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var button = $(this);
+      var explanation = prompt('#{t(:explain_rejection)}');
+      if (!explanation) {
+        return;
+      }
+      
+      var form = button.parent();
+      var hiddenInput = $('<input type="hidden" name="reason" />').val(explanation);
+      form.append(hiddenInput);
+      form.submit();
+    });
+  }
+  
+  function bindAdditionalActionHandlers() {
+    $('.merge-tagging-btn').off('click').on('click', function(e) {
+      e.stopPropagation();
+      $('.modal').modal('hide');
+      url = "#{ merge_tagging_path(-1) }";
+      url = url.replace('-1', $(this).attr('data-tagging-id'));
+      $('#generalDlg').load(url);
+      $('#generalDlg').modal('show');
+    });
+    
+    $('.tagging-more').off('click').on('click', function(e) {
+      e.stopPropagation();
+      $(this).parent().parent().find('.additional_actions').toggle();
+    });
+  }
+  
   $(document).ready(function() {
     $('.pending-taggings').click(function(e){
       e.stopPropagation();
@@ -207,22 +340,9 @@
       $('#generalDlg').load(url);
       $('#generalDlg').modal('show');
     });
-    $('.reject_tag_form').on('ajax:complete', function(event, data, status, xhr) {
-      // response will come underneath of ‘data’ variable
-      remove_row(event, '#ff3333');
-    });
-    $('.approve-tag-btn').on('ajax:complete', function(event, data, status, xhr) {
-      // response will come underneath of ‘data’ variable
-      remove_row(event, '#33ff33');
-    });
-    $('.reject-tagging-form').on('ajax:complete', function(event, data, status, xhr) {
-      // response will come underneath of ‘data’ variable
-      remove_row(event, '#f7a7a7');
-    });
-    $('.approve-tagging-form').on('ajax:complete', function(event, data, status, xhr) {
-      // response will come underneath of ‘data’ variable
-      remove_row(event, '#a7f7a7');
-    });
+    
+    bindQuickActionHandlers();
+    bindAdditionalActionHandlers();
 
     $('#minmax_taggings').click(function() {
       if($('#layout-top').hasClass('active')) {
@@ -231,6 +351,7 @@
         $('#layout-top').click();
       }
     });
+    
     $('#minmax_tags').click(function() {      
       if($('#layout-bottom').hasClass('active')) {
         $('#layout-same').click();
@@ -238,18 +359,7 @@
         $('#layout-bottom').click();
       }
     });
-    $('.merge-tagging-btn').click(function(e) {
-      e.stopPropagation();
-      $('.modal').modal('hide');
-      url = "#{ merge_tagging_path(-1) }";
-      url = url.replace('-1', $(this).attr('data-tagging-id'));
-      $('#generalDlg').load(url);
-      $('#generalDlg').modal('show');
-    });
-    $('.tagging-more').click(function(e) {
-      e.stopPropagation();
-      $(this).parent().parent().find('.additional_actions').toggle();
-    });
+    
     if("#{@tag_id}" != "") {
       $('#minmax_taggings').click();
     }

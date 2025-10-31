@@ -43,7 +43,7 @@ describe ApiKeysController do
         let!(:existing_key) { create(:api_key) }
         let(:params) { { api_key: { description: 'test', email: existing_key.email }, ziburit: correct_ziburit } }
 
-        it 'fails with unprocessable_entity status' do
+        it 'fails with unprocessable_content status' do
           expect { subject }.to_not change { ApiKey.count }
           expect(response).to be_unprocessable
         end
@@ -53,7 +53,7 @@ describe ApiKeysController do
         let!(:existing_key) { create(:api_key) }
         let(:params) { { api_key: { description: 'test', email: existing_key.email }, ziburit: 'Pushkin' } }
 
-        it 'fails with unprocessable_entity status' do
+        it 'fails with unprocessable_content status' do
           expect { subject }.to_not change { ApiKey.count }
           expect(response).to be_unprocessable
         end
@@ -110,7 +110,7 @@ describe ApiKeysController do
 
       context 'when validation fails' do
         let(:params) { { id: api_key.id, api_key: { description: 'New Description', status: '' } } }
-        it 'fails with unprocessable_entity status' do
+        it 'fails with unprocessable_content status' do
           expect(subject).to be_unprocessable
           api_key.reload
           expect(api_key).to have_attributes(description: 'Old Description', status: 'enabled')

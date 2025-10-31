@@ -131,6 +131,7 @@ group :development do
   gem 'haml_lint', '~> 0.57.0', require: false
   gem 'immigrant'
   gem 'pronto'
+  gem 'pronto-brakeman', require: false
   gem 'pronto-haml', require: false
   gem 'pronto-rubocop', require: false
   gem 'rubocop', '1.79.1', require: false
@@ -144,7 +145,6 @@ end
 
 group :test, :development do
   gem 'brakeman'
-  gem 'bundler-audit'
   gem 'dotenv', '~> 3.1.2'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails'

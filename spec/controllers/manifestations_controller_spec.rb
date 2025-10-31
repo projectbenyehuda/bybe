@@ -315,6 +315,59 @@ describe ManifestationController do
           expect(unique_ids.length).to be >= 3
         end
       end
+
+      context 'when manifestation is in an uncollected collection with no siblings' do
+        let(:uncollected_collection) { create(:collection, :uncollected) }
+        let(:manifestation) { create(:manifestation, collections: [uncollected_collection]) }
+
+        before { subject }
+
+        it 'sets @containments with the collection item' do
+          expect(assigns(:containments)).to be_present
+          expect(assigns(:containments).first.collection).to eq(uncollected_collection)
+        end
+
+        it 'collection item has no prev or next siblings' do
+          ci = assigns(:containments).first
+          expect(ci.prev_sibling_item).to be_nil
+          expect(ci.next_sibling_item).to be_nil
+        end
+
+        it 'collection is a system collection' do
+          ci = assigns(:containments).first
+          expect(ci.collection.system?).to be true
+        end
+      end
+
+      context 'when manifestation is in a regular collection with siblings' do
+        let(:regular_collection) { create(:collection, collection_type: :volume) }
+        let(:manifestation1) { create(:manifestation) }
+        let(:manifestation2) { create(:manifestation) }
+        let(:manifestation3) { create(:manifestation) }
+
+        before do
+          regular_collection.append_item(manifestation1)
+          regular_collection.append_item(manifestation2)
+          regular_collection.append_item(manifestation3)
+          get :read, params: { id: manifestation2.id }
+        end
+
+        it 'sets @containments with the collection item' do
+          expect(assigns(:containments)).to be_present
+          expect(assigns(:containments).first.collection).to eq(regular_collection)
+        end
+
+        it 'collection item has prev and next siblings' do
+          ci = assigns(:containments).first
+          expect(ci.prev_sibling_item).to be_present
+          expect(ci.next_sibling_item).to be_present
+        end
+
+        it 'collection is not a system collection' do
+          ci = assigns(:containments).first
+          expect(ci.collection.system?).to be false
+        end
+      end
     end
 
     describe '#readmode' do
@@ -491,6 +544,84 @@ describe ManifestationController do
         expect { subject }.to change { Bookmark.count }.by(-1)
         expect(response).to be_successful
         expect { bookmark.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+
+    describe '#like' do
+      let(:user) { create(:user) }
+      let(:manifestation) { create(:manifestation) }
+      subject { post :like, params: { id: manifestation.id } }
+
+      context 'when user is not logged in' do
+        it 'returns ok status' do
+          expect(subject).to be_successful
+        end
+
+        it 'does not add user to likers' do
+          expect { subject }.not_to change { manifestation.likers.count }
+        end
+      end
+
+      context 'when user is logged in' do
+        before do
+          session[:user_id] = user.id
+        end
+
+        it 'returns ok status' do
+          expect(subject).to be_successful
+        end
+
+        it 'adds user to likers' do
+          expect { subject }.to change { manifestation.likers.count }.by(1)
+        end
+
+        context 'when user already liked the manifestation' do
+          before do
+            manifestation.likers << user
+          end
+
+          it 'does not add user to likers again' do
+            expect { subject }.not_to change { manifestation.likers.count }
+          end
+        end
+      end
+    end
+
+    describe '#unlike' do
+      let(:user) { create(:user) }
+      let(:manifestation) { create(:manifestation) }
+      subject { post :unlike, params: { id: manifestation.id } }
+
+      context 'when user is not logged in' do
+        it 'returns ok status' do
+          expect(subject).to be_successful
+        end
+      end
+
+      context 'when user is logged in' do
+        before do
+          session[:user_id] = user.id
+        end
+
+        it 'returns ok status' do
+          expect(subject).to be_successful
+        end
+
+        context 'when user has liked the manifestation' do
+          before do
+            manifestation.likers << user
+          end
+
+          it 'removes user from likers' do
+            expect { subject }.to change { manifestation.likers.count }.by(-1)
+          end
+        end
+
+        context 'when user has not liked the manifestation' do
+          it 'does not change likers count' do
+            expect { subject }.not_to change { manifestation.likers.count }
+          end
+        end
       end
     end
 

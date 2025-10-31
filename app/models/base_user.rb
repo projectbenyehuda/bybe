@@ -7,6 +7,7 @@ class BaseUser < ApplicationRecord
   has_many :visits, class_name: 'Ahoy::Visit', foreign_key: :user_id # track visits, for donation campaigns etc.
 
   DEFAULT_FONT_SIZE = '2'
+  EMAIL_FREQUENCY_OPTIONS = %w(unlimited daily weekly none).freeze
 
   # This record must be identified either by user_id or by session_id, but not by both
   validates_absence_of :session_id, if: -> { self.user_id.present? }
@@ -21,6 +22,7 @@ class BaseUser < ApplicationRecord
     property :suppress_donation_banner, default: 0
     property :jump_to_bookmarks
     property :accepted_tag_policy, default: 'false'
+    property :email_frequency, default: 'unlimited'
   end
 
   def get_preference(pref)

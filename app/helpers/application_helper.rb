@@ -40,7 +40,7 @@ module ApplicationHelper
   def safe_options_for_select(container, selected = nil)
     ret = ''
     container.each_pair do |heading, lineno|
-      ret += "<option value='#{lineno}' #{selected == heading ? 'selected=\'selected\'' : ''}>#{heading}</option>"
+      ret += "<option value='#{lineno}' #{'selected=\'selected\'' if selected == heading}>#{heading}</option>"
     end
     return ret.html_safe
   end
@@ -328,12 +328,12 @@ module ApplicationHelper
   end
 
   def collection_types_options
-    Collection.collection_types
+    Collection.collection_types.reject { |x| x == 'uncollected' }
               .map { |k, _v| [textify_collection_type(k), k] }
   end
 
   def collection_item_types_options
-    Collection.collection_types
+    Collection.collection_types.reject { |x| x == 'uncollected' }
               .map { |k, _v| [textify_collection_type(k), k] } +
       [
         [t(:work), 'Manifestation'],

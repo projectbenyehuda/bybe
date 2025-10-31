@@ -69,6 +69,8 @@ pronto run -c origin/master
 will run linters only on lines of code which were changed compared to `origin/master` branch. Our CI pipeline uses
 this approach for all PRs.
 
+NOTE: to run pronto tool you need to run `bundle install` first.
+
 License
 -------
 

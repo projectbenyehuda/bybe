@@ -2,4 +2,4 @@
 
 = t(:rec_published, :url => @url, :published_url => @published_url)
 
-!= raw t(:email_footer_html)
+!= email_footer_html(@rec.from)

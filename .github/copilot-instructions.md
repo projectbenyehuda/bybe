@@ -6,7 +6,7 @@ This codebase runs https://benyehuda.org -- the Project Ben-Yehuda digital libra
 
 ## Technology Stack
 
-- **Ruby Version**: 3.3.8
+- **Ruby Version**: 3.3.9
 - **Rails Version**: 8.0.2.1
 - **Database**: MySQL (mysql2 gem)
 - **Testing Framework**: RSpec with FactoryBot
@@ -23,7 +23,7 @@ This codebase runs https://benyehuda.org -- the Project Ben-Yehuda digital libra
 - Maximum line length: 120 characters
 - Maximum method length: 100 lines
 - Maximum class length: 1500 lines
-- Target Ruby version: 3.3.8
+- Target Ruby version: 3.3.9
 - Use rubocop-rails, rubocop-rspec, and rubocop-factory_bot plugins
 
 ### Important Style Notes
@@ -41,15 +41,18 @@ This codebase runs https://benyehuda.org -- the Project Ben-Yehuda digital libra
 - RuboCop integration enabled (except Layout/SpaceInsideParens)
 
 ### Running Linters
-```bash
-# Check single file with RuboCop
-rubocop <path_to_file>
 
-# Auto-correct with safe corrections
-rubocop -a <path_to_file>
+Use `pronto` gem to only lint lines of code changed in given PR
 
-# Check changes only (via Pronto)
-pronto run -c origin/master
+```shell
+# Check changes only (via Pronto) compared to master branch
+bundle exec pronto run -c origin/master
+```
+
+if PR is intended to be merged in a different branch (not a master) use:
+```shell
+# Check changes only (via Pronto) compared to given branch
+bundle exec pronto run -c origin/<TARGET_BRANCH>
 ```
 
 ## Testing Guidelines
@@ -62,6 +65,7 @@ pronto run -c origin/master
 - Up to 20 memoized helpers allowed per spec
 
 ## Common Patterns and Best Practices
+
 
 ### Hebrew Text Handling
 - Always consider right-to-left (RTL) text direction
@@ -78,7 +82,7 @@ pronto run -c origin/master
 ### Controllers
 - Use `before_action` for authorization checks
 - Common authorization methods: `require_editor`, `require_admin`, `require_user`
-- Flash messages use I18n: `flash[:notice] = t(:updated_successfully)`
+- Flash messages use I18n: `flash.notice = t(:updated_successfully)`
 
 ### Models and Associations
 - Property sets are used for key/value properties via the property_sets gem
@@ -133,10 +137,13 @@ Section titles like "שירה" (poetry), "פרוזה" (prose), "מאמרים ו�
 
 ## When Making Changes
 
-1. Run RuboCop on files you modify: `rubocop <path_to_file>`
-2. Use RuboCop auto-correct when appropriate: `rubocop -a <path_to_file>`
-3. Write RSpec tests for new functionality
-4. Consider the impact on Hebrew text rendering and RTL layout
-5. Check for N+1 queries when adding database queries
-6. Update related tests when modifying existing functionality
-7. Use Pronto to check only your changes: `pronto run -c origin/master`
+1. Create a separate branch to work in, never direcly push to master branch.
+1. Consider the impact on Hebrew text rendering and RTL layout
+1. Check for N+1 queries when adding database queries
+1. Write RSpec tests for new functionality
+1. Update related tests when modifying existing functionality
+1. Run rspec using our docker-compose setup `docker compose run --rm test-app rspec`
+1. Use Pronto to lint only your changes: `bundle exec pronto run -c origin/<BRANCH TO MERGE INTO>`
+1. Use RuboCop auto-correct when appropriate: `bundle exec rubocop -a <path_to_file>`
+1. Create a draft PR to merge your changes into a master (or into some other branch if specified explicitely) branch.
+1. Ensure all CI checks are completed successfully.

@@ -1,5 +1,6 @@
 volumes:
   mysql_data:
+  bundler_data:
   elasticsearch_data:
 services:
   mysql:
@@ -43,3 +44,36 @@ services:
     restart: unless-stopped
     ports:
       - 16379:6379
+  test-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.test
+    command: rspec
+    environment:
+      - RAILS_ENV=test
+    volumes:
+      - ./.git:/app/.git
+      - ./.gitignore:/app/.gitignore
+      - ./app:/app/app
+      - ./bin:/app/bin
+      - ./config:/app/config
+      - ./config/constants.yml.sample:/app/config/constants.yml
+      - ./config/s3.yml.sample:/app/config/s3.yml
+      - ./config/storage.yml.sample:/app/config/storage.yml
+      - ./db:/app/db
+      - ./js:/app/js
+      - ./lib:/app/lib
+      - ./spec:/app/spec
+      - ./vendor:/app/vendor
+      - ./Gemfile:/app/Gemfile
+      - ./Gemfile.lock:/app/Gemfile.lock
+      - ./Rakefile:/app/Rakefile
+      - ./config.ru:/app/config.ru
+      - ./docker/.env.test-app:/app/.env
+      - ./docker/test-app.sh:/app/test-app.sh
+      - bundler_data:/usr/local/bundle/:delegated
+    depends_on:
+      - mysql
+      - redis
+      - elasticsearch
+    restart: no
