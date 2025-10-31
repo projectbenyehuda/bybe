@@ -441,6 +441,9 @@ class HtmlFileController < ApplicationController
     # remove all <span> tags because pandoc generates them excessively
     buf.gsub!(/<span.*?>/m, '')
     buf.gsub!('</span>', '')
+    # remove other HTML tags that pandoc might output, but preserve <br /> tags
+    buf.gsub!(/<(div|p|a|strong|em|i|b|u)[^>]*>/i, '') # remove opening tags
+    buf.gsub!(/<\/(div|p|a|strong|em|i|b|u)>/i, '') # remove closing tags
     lines = buf.split("\n")
     in_footnotes = false
     prev_nikkud = false
@@ -482,7 +485,6 @@ class HtmlFileController < ApplicationController
     new_buffer.gsub!(/\n> *> +/, "\n> ") # we basically never want this super-large indented poetry
     new_buffer.gsub!(/\n\s*\n> *\n> /, "\n> \n> ") # remove extra newlines before verse lines
     new_buffer.gsub!('> <br />', '<br />') # remove PRE from line-break, which confuses the markdown processor
-    new_buffer.gsub!('</div>', "</div>\n") # add newlines after divs
     return new_buffer
   end
 
