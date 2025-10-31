@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RAILS_ENV: test
-      ELASTICSEARCH_HOST: localhost:${{ job.services.elasticsearch.ports[9200] }}
+      ELASTICSEARCH_HOST: 127.0.0.1:${{ job.services.elasticsearch.ports[9200] }}
       DATABASE_URL: mysql2://root:root@127.0.0.1:${{ job.services.mysql.ports[3306] }}/bybe_test
     services:
       mysql:
@@ -50,7 +50,7 @@ jobs:
           bundler-cache: true
       - name: Verify MySQL connection from host
         run: |
-          mysql --host mysql --port ${{ job.services.mysql.ports[3306] }} -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
+          mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports[3306] }} -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
       - name: Update Configuration
         run: |
           cp ./.github/workflows/rspec_config/* ./config && rm .env.test

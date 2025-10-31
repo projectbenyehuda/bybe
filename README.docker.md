@@ -1,5 +1,8 @@
 This document describes our development docker configuration.
 
+NOTE for Copilot: Copilot should ignore this file and follow instructions in .github/copilot-instructions.md 
+
+
 > Instruction below are written for Debian linux. For other distros/OSes it can require some changes
 
 We assume that application itself will be run in host system natively, docker is used to only host services used by app:
