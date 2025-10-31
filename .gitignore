@@ -6,6 +6,8 @@
 
 # Ignore bundler config
 /.bundle
+# This folder is used Ruby Setup github action, so adding to to ignorelist as well
+/vendor/bundle
 
 # other misc
 .byebug*
