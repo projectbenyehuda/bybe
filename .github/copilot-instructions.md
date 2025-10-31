@@ -39,7 +39,10 @@ bundle exec pronto run -c origin/<TARGET_BRANCH>
 ## Testing Guidelines
 
 - Use RSpec for all tests
+- Copilot environment should already have test database created and migrated, so no need to run `rails db:create` and 
+  `rails db:prepare` commands.
 - Test files are organized by type: controllers, models, services, requests, api, mailers, sidekiq
+- We don't create spec for views and routing
 - Use FactoryBot for test data generation
 
 ## Common Patterns and Best Practices
