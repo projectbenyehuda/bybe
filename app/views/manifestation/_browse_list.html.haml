@@ -96,7 +96,8 @@
         // Handle tag removal from comma-separated list
         const tagId = field.substring(4); // Remove 'tag_' prefix
         const tagIdsField = $('#works_filters #tag_ids');
-        const currentTags = tagIdsField.val().split(',').filter(function(id) { return id.trim() !== ''; });
+        const currentValue = tagIdsField.val() || '';
+        const currentTags = currentValue.split(',').filter(function(id) { return id.trim() !== ''; });
         const updatedTags = currentTags.filter(function(id) { return id.trim() !== tagId; });
         tagIdsField.val(updatedTags.join(','));
       } else {
