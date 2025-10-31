@@ -92,6 +92,14 @@
         $('#works_filters #author_ids').val('');
         $('#works_filters #authors_names').val('');
         $('#works_filters input[name="ckb_authors[]"]').prop('checked', false);
+      } else if (field.startsWith('tag_')) {
+        // Handle tag removal from comma-separated list
+        const tagId = field.substring(4); // Remove 'tag_' prefix
+        const tagIdsField = $('#works_filters #tag_ids');
+        const currentValue = tagIdsField.val() || '';
+        const currentTags = currentValue.split(',').filter(function(id) { return id.trim() !== ''; });
+        const updatedTags = currentTags.filter(function(id) { return id.trim() !== tagId; });
+        tagIdsField.val(updatedTags.join(','));
       } else {
         $('#works_filters #' + field).prop("checked", false);
       }

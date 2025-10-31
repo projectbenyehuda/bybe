@@ -130,6 +130,51 @@ describe ManifestationController do
           end
         end
       end
+
+      describe 'tag filtering' do
+        let!(:tag1) { create(:tag, name: 'Tag1') }
+        let!(:tag2) { create(:tag, name: 'Tag2') }
+        let!(:tag3) { create(:tag, name: 'Tag3') }
+
+        let(:expected_sort_by) { 'alphabetical' }
+        let(:expected_sort_dir) { 'asc' }
+
+        context 'when filtering by a single tag' do
+          let(:browse_params) { { tag_ids: tag1.id.to_s, sort_by: 'alphabetical_asc' } }
+          let(:expected_filter) { { 'tags' => ['Tag1'] } }
+
+          before do
+            expect(SearchManifestations).to receive(:call).
+              with(expected_sort_by, expected_sort_dir, expected_filter).and_call_original
+          end
+
+          it { is_expected.to be_successful }
+        end
+
+        context 'when filtering by two tags' do
+          let(:browse_params) { { tag_ids: "#{tag1.id},#{tag2.id}", sort_by: 'alphabetical_asc' } }
+          let(:expected_filter) { { 'tags' => %w(Tag1 Tag2) } }
+
+          before do
+            expect(SearchManifestations).to receive(:call).
+              with(expected_sort_by, expected_sort_dir, expected_filter).and_call_original
+          end
+
+          it { is_expected.to be_successful }
+        end
+
+        context 'when filtering by three tags' do
+          let(:browse_params) { { tag_ids: "#{tag1.id},#{tag2.id},#{tag3.id}", sort_by: 'alphabetical_asc' } }
+          let(:expected_filter) { { 'tags' => %w(Tag1 Tag2 Tag3) } }
+
+          before do
+            expect(SearchManifestations).to receive(:call).
+              with(expected_sort_by, expected_sort_dir, expected_filter).and_call_original
+          end
+
+          it { is_expected.to be_successful }
+        end
+      end
     end
 
     describe 'paging' do
