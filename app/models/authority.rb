@@ -91,9 +91,9 @@ class Authority < ApplicationRecord
     # Find all manifestations related to this authority through involved_authorities
     # This includes both work-level (authors) and expression-level (translators) authorities
     manifestations = Manifestation
-                     .joins("INNER JOIN expressions ON manifestations.expression_id = expressions.id")
-                     .joins("LEFT JOIN involved_authorities work_ias ON work_ias.item_id = expressions.work_id AND work_ias.item_type = 'Work'")
-                     .joins("LEFT JOIN involved_authorities expr_ias ON expr_ias.item_id = expressions.id AND expr_ias.item_type = 'Expression'")
+                     .joins("INNER JOIN #{Expression.table_name} ON #{Manifestation.table_name}.expression_id = #{Expression.table_name}.id")
+                     .joins("LEFT JOIN #{InvolvedAuthority.table_name} work_ias ON work_ias.item_id = #{Expression.table_name}.work_id AND work_ias.item_type = 'Work'")
+                     .joins("LEFT JOIN #{InvolvedAuthority.table_name} expr_ias ON expr_ias.item_id = #{Expression.table_name}.id AND expr_ias.item_type = 'Expression'")
                      .where("work_ias.authority_id = ? OR expr_ias.authority_id = ?", id, id)
                      .distinct
 

@@ -38,7 +38,7 @@ class InvolvedAuthority < ApplicationRecord
   def find_related_manifestations
     case item
     when Work
-      item.expressions.flat_map(&:manifestations)
+      item.expressions.includes(:manifestations).flat_map(&:manifestations)
     when Expression
       item.manifestations
     else
