@@ -20,30 +20,32 @@
             = render partial: 'metadata', locals: {tags_etc: true}
           - unless @single_text_volume
             - @containments.each do |ci|
-              .author-works-nav
-                .topNavEntry
-                  .link-nav
-                    - prev = ci.prev_sibling_item
-                    - if prev.present?
-                      - extra = prev[:skipped] > 0 ? "?skipped=#{prev[:skipped]}" : ''
-                      = link_to "#{default_link_by_class(prev[:item].class, prev[:item].id)}#{extra}" do
-                        %span.right-arrow= '2'
-                        = t(:to_previous_item)
-                .topNavEntry
-                  .link-nav{style: 'margin-left:20px; margin-right:20px;'}
-                    - unless ci.collection.system?
-                      = link_to default_link_by_class(ci.collection.class, ci.collection.id) do
-                        %span.right-arrow= '🢁'
-                        = textify_collection_up_link(ci.collection)
-                        %span.left-arrow= '🢁'
-                .topNavEntry
-                  .link-nav
-                    - nextsib = ci.next_sibling_item
-                    - if nextsib.present?
-                      - extra = nextsib[:skipped] > 0 ? "?skipped=#{nextsib[:skipped]}" : ''
-                      = link_to "#{default_link_by_class(nextsib[:item].class, nextsib[:item].id)}#{extra}" do
-                        = t(:to_next_item)
-                        %span.left-arrow= '1'
+              - prev = ci.prev_sibling_item
+              - nextsib = ci.next_sibling_item
+              - show_collection_link = !ci.collection.system?
+              - if prev.present? || nextsib.present? || show_collection_link
+                .author-works-nav
+                  .topNavEntry
+                    .link-nav
+                      - if prev.present?
+                        - extra = prev[:skipped] > 0 ? "?skipped=#{prev[:skipped]}" : ''
+                        = link_to "#{default_link_by_class(prev[:item].class, prev[:item].id)}#{extra}" do
+                          %span.right-arrow= '2'
+                          = t(:to_previous_item)
+                  .topNavEntry
+                    .link-nav{style: 'margin-left:20px; margin-right:20px;'}
+                      - if show_collection_link
+                        = link_to default_link_by_class(ci.collection.class, ci.collection.id) do
+                          %span.right-arrow= '🢁'
+                          = textify_collection_up_link(ci.collection)
+                          %span.left-arrow= '🢁'
+                  .topNavEntry
+                    .link-nav
+                      - if nextsib.present?
+                        - extra = nextsib[:skipped] > 0 ? "?skipped=#{nextsib[:skipped]}" : ''
+                        = link_to "#{default_link_by_class(nextsib[:item].class, nextsib[:item].id)}#{extra}" do
+                          = t(:to_next_item)
+                          %span.left-arrow= '1'
 
         .by-card-v02.proofable{ data: { item_id: @m.id, item_type: @m.class.name } }
           .work-area
