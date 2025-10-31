@@ -109,6 +109,7 @@ end
 
 group :test do
   gem 'faker', '~> 2.19.0'
+  gem 'fakeredis', require: 'fakeredis/rspec'
   gem 'rails-controller-testing', '~> 1.0.5'
   gem 'simplecov', require: false
   gem 'turn', '0.8.2', require: false
