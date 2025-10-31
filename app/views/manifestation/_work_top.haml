@@ -222,16 +222,26 @@
           $.ajax({
             url: "#{url_for(action: :unlike, id: @m.id) }",
             method: 'POST',
-            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') }
+            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+            success: function() {
+              $('.like').removeClass('icon-byheart-full').addClass('icon-byheart-empty');
+            },
+            error: function() {
+              console.error('Failed to unlike manifestation');
+            }
           });
-          $('.like').removeClass('icon-byheart-full').addClass('icon-byheart-empty');
         } else { // like
           $.ajax({
             url: "#{url_for(action: :like, id: @m.id) }",
             method: 'POST',
-            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') }
+            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+            success: function() {
+              $('.like').removeClass('icon-byheart-empty').addClass('icon-byheart-full');
+            },
+            error: function() {
+              console.error('Failed to like manifestation');
+            }
           });
-          $('.like').removeClass('icon-byheart-empty').addClass('icon-byheart-full');
         }
       }
     });
