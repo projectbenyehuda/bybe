@@ -31,16 +31,16 @@ class InvolvedAuthority < ApplicationRecord
   private
 
   def update_manifestation_responsibility_statement
-    manifestations = find_related_manifestations
-    manifestations.each(&:recalc_responsibility_statement!)
+    manifestation_ids = find_related_manifestation_ids
+    UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
   end
 
-  def find_related_manifestations
+  def find_related_manifestation_ids
     case item
     when Work
-      item.expressions.includes(:manifestations).flat_map(&:manifestations)
+      item.expressions.joins(:manifestations).pluck('manifestations.id').uniq
     when Expression
-      item.manifestations
+      item.manifestations.pluck(:id)
     else
       []
     end
