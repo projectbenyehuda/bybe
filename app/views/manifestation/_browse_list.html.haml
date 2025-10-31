@@ -94,8 +94,9 @@
         $('#works_filters input[name="ckb_authors[]"]').prop('checked', false);
       } else if (field.startsWith('tag_')) {
         // Handle tag filters - remove the specific tag ID from the comma-separated list
-        const tagId = field.substring(4); // Extract tag ID from "tag_123"
-        const tagIds = $('#tag_ids').val().split(',').filter(function(id) {
+        const tagId = field.replace('tag_', ''); // Extract tag ID from "tag_123"
+        const currentValue = $('#tag_ids').val() || '';
+        const tagIds = currentValue.split(',').filter(function(id) {
           return id !== tagId && id !== '';
         }).join(',');
         $('#tag_ids').val(tagIds);
