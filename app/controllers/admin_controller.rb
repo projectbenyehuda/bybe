@@ -32,7 +32,7 @@ class AdminController < ApplicationController
       @ingestibles_pending = Ingestible.where(status: 'awaiting_authorities')
     end
     if current_user.has_bit?('moderate_tags')
-      @pending_tags = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').count
+      @pending_tags = Tag.where(status: :pending).with_taggings.count
       @pending_taggings = Tagging.where(status: :pending).count
     end
     @open_recommendations = LegacyRecommendation.where(status: 'new').count.to_s
