@@ -25,4 +25,24 @@ class InvolvedAuthority < ApplicationRecord
   validates :role, inclusion: WORK_ROLES, if: ->(ia) { ia.item.is_a? Work }
   validates :role, inclusion: EXPRESSION_ROLES, if: ->(ia) { ia.item.is_a? Expression }
   validates :authority_id, uniqueness: { scope: %i(item_type item_id role) }
+
+  after_commit :update_manifestation_responsibility_statement, on: %i[create update destroy]
+
+  private
+
+  def update_manifestation_responsibility_statement
+    manifestation_ids = find_related_manifestation_ids
+    UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
+  end
+
+  def find_related_manifestation_ids
+    case item
+    when Work
+      item.expressions.joins(:manifestations).pluck('manifestations.id').uniq
+    when Expression
+      item.manifestations.pluck(:id)
+    else
+      []
+    end
+  end
 end
