@@ -442,8 +442,10 @@ class HtmlFileController < ApplicationController
     buf.gsub!(/<span.*?>/m, '')
     buf.gsub!('</span>', '')
     # remove other HTML tags that pandoc might output, but preserve <br /> tags
-    buf.gsub!(/<(div|p|a|strong|em|i|b|u|sup|sub|s|small|big)\b[^>]*>/i, '') # remove opening tags (word boundary prevents matching <br>)
-    buf.gsub!(/<\/(div|p|a|strong|em|i|b|u|sup|sub|s|small|big)>/i, '') # remove closing tags
+    # Use same tag list as Ingestible model for consistency
+    tags_pattern = Ingestible::PANDOC_HTML_TAGS_TO_REMOVE.join('|')
+    buf.gsub!(/<(#{tags_pattern})\b[^>]*>/i, '') # remove opening tags (word boundary prevents matching <br>)
+    buf.gsub!(/<\/(#{tags_pattern})>/i, '') # remove closing tags
     lines = buf.split("\n")
     in_footnotes = false
     prev_nikkud = false
