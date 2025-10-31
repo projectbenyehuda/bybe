@@ -85,6 +85,23 @@ class Authority < ApplicationRecord
     self.wikidata_uri = wikidata_uri.blank? ? nil : wikidata_uri.strip.downcase.gsub('q', 'Q')
   end
 
+  after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
+
+  def update_manifestation_responsibility_statements
+    # Find all manifestations related to this authority through involved_authorities
+    # This includes both work-level (authors) and expression-level (translators) authorities
+    manifestation_ids = Manifestation
+                         .joins("INNER JOIN expressions ON manifestations.expression_id = expressions.id")
+                         .joins("LEFT JOIN involved_authorities work_ias ON work_ias.item_id = expressions.work_id AND work_ias.item_type = 'Work'")
+                         .joins("LEFT JOIN involved_authorities expr_ias ON expr_ias.item_id = expressions.id AND expr_ias.item_type = 'Expression'")
+                         .where("work_ias.authority_id = ? OR expr_ias.authority_id = ?", id, id)
+                         .distinct
+                         .pluck(:id)
+
+    # Enqueue background job to update responsibility statements in bulk
+    UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
+  end
+
   # return all collections of type volume that are associated with this authority
   def volumes
     Collection.joins(:involved_authorities).where(collection_type: 'volume', involved_authorities: { authority_id: id })
