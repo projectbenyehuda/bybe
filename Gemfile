@@ -108,6 +108,7 @@ group :production do
 end
 
 group :test do
+  gem 'fakeredis', require: 'fakeredis/rspec'
   gem 'faker', '~> 2.19.0'
   gem 'rails-controller-testing', '~> 1.0.5'
   gem 'simplecov', require: false
