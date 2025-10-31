@@ -82,10 +82,10 @@ class MakeFreshDownloadable < ApplicationService
       when 'kwic'
         raise ArgumentError, 'KWIC format requires kwic_text parameter' if kwic_text.nil?
 
-        kwic_text.gsub!("\n", "\r\n") # windows linebreaks
+        formatted_text = kwic_text.gsub("\n", "\r\n") # windows linebreaks
         begin
           temp_file = Tempfile.new('tmp_kwic_' + download_entity.id.to_s, 'tmp/')
-          temp_file.puts(kwic_text)
+          temp_file.puts(formatted_text)
           temp_file.chmod(0o644)
           temp_file.rewind
           dl.stored_file.attach(io: temp_file, filename: filename)
@@ -93,7 +93,7 @@ class MakeFreshDownloadable < ApplicationService
           temp_file.close
         end
       else
-        raise I18n.t(:unrecognized_format)
+        raise StandardError, I18n.t(:unrecognized_format)
       end
 
       # Verify the attachment was successful
