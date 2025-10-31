@@ -96,10 +96,9 @@
         // Handle tag filters - remove the specific tag ID from the comma-separated list
         const tagId = field.replace('tag_', '');
         const currentValue = $('#works_filters #tag_ids').val() || '';
-        const tagIds = currentValue.split(',').filter(function(id) {
-          const trimmedId = id.trim();
-          return trimmedId !== tagId && trimmedId !== '';
-        }).join(',');
+        const tagIds = currentValue.split(',').map(function(id) { return id.trim(); })
+                                    .filter(function(id) { return id && id !== tagId; })
+                                    .join(',');
         $('#works_filters #tag_ids').val(tagIds);
       } else {
         $('#works_filters #' + field).prop("checked", false);
