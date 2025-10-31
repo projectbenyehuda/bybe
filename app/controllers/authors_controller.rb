@@ -14,7 +14,6 @@ class AuthorsController < ApplicationController
   before_action :set_author,
                 only: %i(show edit update destroy toc edit_toc print all_links delete_photo
                          whatsnew_popup latest_popup publish to_manual_toc volumes new_toc)
-  autocomplete :tag, :name, limit: 2
   layout 'backend', only: %i(manage_toc)
 
   def publish
@@ -141,11 +140,12 @@ class AuthorsController < ApplicationController
       end
     end
     # tags by tag_id
-    @tag_ids = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
-    if @tag_ids.present?
-      tag_data = Tag.where(id: @tag_ids).pluck(:id, :name)
+    tag_ids_array = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
+    if tag_ids_array.present?
+      tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
       ret << { terms: { tags: tag_data.map(&:last) } }
       @filters += tag_data.map { |x| [x.last, "tag_#{x.first}", :checkbox] }
+      @tag_ids = tag_ids_array.join(',') # Keep as comma-separated string for the form
     end
 
     # dates

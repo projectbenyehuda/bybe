@@ -164,6 +164,7 @@
       event.preventDefault();
       tag_id = data.item.tag_id.toString();
       $('#tag_ids').val( $('#tag_ids').val() == '' ? tag_id : $('#tag_ids').val()+','+tag_id);
+      $('#tags').val(''); // Clear the autocomplete field to allow adding more tags
       submit_filters();
     });
 

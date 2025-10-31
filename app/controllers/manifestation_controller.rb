@@ -14,7 +14,6 @@ class ManifestationController < ApplicationController
     c.refuse_unreasonable_page
   end
   autocomplete :manifestation, :title, limit: 20, display_value: :title_and_authors, full: true
-  autocomplete :tag, :name, limit: 2
 
   # layout false, only: [:print]
 
@@ -648,11 +647,12 @@ class ManifestationController < ApplicationController
     end
 
     # tags by tag_id
-    @tag_ids = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
-    if @tag_ids.present?
-      tag_data = Tag.where(id: @tag_ids).pluck(:id, :name)
+    tag_ids_array = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
+    if tag_ids_array.present?
+      tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
       ret['tags'] = tag_data.map(&:last)
       @filters += tag_data.map { |x| [x.last, "tag_#{x.first}", :checkbox] }
+      @tag_ids = tag_ids_array.join(',') # Keep as comma-separated string for the form
     end
 
     # copyright
