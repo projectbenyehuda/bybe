@@ -2,21 +2,18 @@ name: Pronto
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ '**' ]
 
 jobs:
   pronto:
     name: Linters
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container: damisul/bybe-base:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client libmysqlclient-dev wkhtmltopdf pandoc yaz libyaz-dev  libmagickwand-dev libpcap-dev memcached cmake
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:

@@ -63,6 +63,13 @@ sudo apt-get install -y \
 # Install Ruby dependencies
 bundle install
 
+# start Docker-managed services used for tests
+docker compose up redis mysql elasticsearch -d
+
+# Create test database
+bundle exec rake db:create RAILS_ENV=test
+bundle exec rake db:migrate RAILS_ENV=test
+
 # Verify setup
 bundle exec ruby --version
 ```
@@ -85,14 +92,20 @@ bundle exec rspec spec/path/to/spec_file.rb
 ## Running Linters
 
 ```bash
-# Run RuboCop on a single file
-bundle exec rubocop path/to/file.rb
+# Run Pronto (checks only changed files)
+bundle exec pronto run -c <TARGET BRANCH>
+```
 
+Note: &lt;TARGET BRANCH&gt; is the branch you want to merge your changes into.
+Usually it will be `origin/master`, but may be different in some tasks.
+
+If there are some rubocop errors, you can fix them with following commands:
+```bash
 # Run RuboCop with auto-correct
 bundle exec rubocop -a path/to/file.rb
 
-# Run Pronto (checks only changed files)
-bundle exec pronto run -c origin/master
+# Run RuboCop with unsafe auto-correct
+bundle exec rubocop -A path/to/file.rb
 ```
 
 ## Troubleshooting
@@ -109,12 +122,6 @@ If `bundle install` fails:
 1. Ensure all system dependencies are installed (see Quick Setup section)
 2. Check that you have the correct Ruby version active
 3. Try removing `Gemfile.lock` and running `bundle install` again (not recommended for production)
-
-### Tests Fail to Connect to Services
-
-The Copilot Agent environment doesn't include MySQL, Elasticsearch, etc. by default. Tests that require these services will fail unless:
-- You're running tests in a GitHub Actions workflow (which has these services configured)
-- You set up Docker containers locally (see `README.docker.md`)
 
 ## Version Management
 
