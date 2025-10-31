@@ -88,7 +88,7 @@ class Toc < ApplicationRecord
         buf = ::Regexp.last_match.post_match
         item = ::Regexp.last_match(1)
         # Use basic HTML entity encoding for all characters to ensure safety
-        anchor_name = coder.encode(::Regexp.last_match(2), :basic)
+        anchor_name = coder.encode(::Regexp.last_match(2), :named)
         if item[0] == 'ה' # linking to a legacy HtmlFile
           h = HtmlFile.find_by(id: item[1..-1].to_i)
           unless h.nil?
