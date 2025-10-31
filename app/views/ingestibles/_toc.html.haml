@@ -7,8 +7,8 @@
       %th= t(:associated_persons)
       %th= t(:genre)
       %th= t(:orig_lang)
-      %th= t(:copyright_status)
-  - @ingestible.decode_toc.each do |included, title, ias, genre, orig_lang, intellectual_property|
+      %th= t(:orphan_work_question)
+  - @ingestible.decode_toc.each do |included, title, ias, genre, orig_lang, intellectual_property, orphan_work|
     %tr
       %td= included == 'yes' ? '✓' : '✗'
       - found_in_markdown = @markdown_titles.include?(title)
@@ -89,7 +89,7 @@
         %td
           = select_tag :orig_lang, options_for_select(get_langs.map {|lang| [textify_lang(lang), lang]}, orig_lang), {class: 'toc-lang'}
         %td
-          = select_tag :intellectual_property, options_for_select(Expression.intellectual_properties.keys.reject{|x| x == 'copyrighted' || x == 'unknown'}.map { |code| [textify_intellectual_property(code), code] }, intellectual_property), {class: 'toc-intellectual-property'}
+          = check_box_tag :orphan_work, 'true', (orphan_work == 'true'), {class: 'toc-orphan-work'}
       - else
         %td
         %td
@@ -102,7 +102,7 @@
       var title = e.closest('tr').find('.toc-title').text();
       var genre = e.closest('tr').find('.toc-genre').val();
       var orig_lang = e.closest('tr').find('.toc-lang').val();
-      var intellectual_property = e.closest('tr').find('.toc-intellectual-property').val();
+      var orphan_work = e.closest('tr').find('.toc-orphan-work').is(':checked');
       $.ajax({
         url: "#{update_toc_ingestible_path(@ingestible)}",
         type: 'PATCH',
@@ -110,7 +110,7 @@
           title: title,
           genre: genre,
           orig_lang: orig_lang,
-          intellectual_property: intellectual_property,
+          orphan_work: orphan_work,
           authority_id: new_authority_id,
           authority_name: new_name,
           role: new_role,
@@ -132,7 +132,7 @@
       e.stopImmediatePropagation();
       update_toc($(this), null, null, null, null);
     });
-    $('.toc-intellectual-property').change(function(e) {
+    $('.toc-orphan-work').change(function(e) {
       e.preventDefault();
       e.stopImmediatePropagation();
       update_toc($(this), null, null, null, null);

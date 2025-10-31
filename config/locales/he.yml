@@ -427,6 +427,8 @@ he:
   photo: תמונה
   last_update: עדכון אחרון
   copyright_status: מצב זכויות יוצרים
+  orphan_work_question: יצירה יתומה?
+  orphan_work_help: (סמן אם ידוע שזו יצירה יתומה - זה ידרוס את החישוב האוטומטי)
   basic_details: פרטים בסיסיים
   submit: שליחה
   logo: לוגו
