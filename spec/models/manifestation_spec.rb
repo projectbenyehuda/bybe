@@ -264,4 +264,31 @@ describe Manifestation do
       end
     end
   end
+
+  describe '#recalc_responsibility_statement' do
+    let(:author) { create(:authority, name: 'Test Author') }
+    let(:translator) { create(:authority, name: 'Test Translator') }
+    let(:manifestation) { create(:manifestation, orig_lang: 'de', author: author, translator: translator) }
+
+    it 'updates responsibility_statement to match author_string' do
+      manifestation.recalc_responsibility_statement
+      expect(manifestation.responsibility_statement).to eq(manifestation.author_string!)
+    end
+
+    it 'does not save the record' do
+      expect { manifestation.recalc_responsibility_statement }.not_to change(manifestation, :updated_at)
+    end
+  end
+
+  describe '#recalc_responsibility_statement!' do
+    let(:author) { create(:authority, name: 'Test Author') }
+    let(:translator) { create(:authority, name: 'Test Translator') }
+    let(:manifestation) { create(:manifestation, orig_lang: 'de', author: author, translator: translator) }
+
+    it 'updates and saves responsibility_statement to match author_string' do
+      manifestation.recalc_responsibility_statement!
+      manifestation.reload
+      expect(manifestation.responsibility_statement).to eq(manifestation.author_string!)
+    end
+  end
 end

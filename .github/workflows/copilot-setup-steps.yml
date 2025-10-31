@@ -1,0 +1,62 @@
+name: "Copilot Setup Steps"
+
+# Automatically run the setup steps when they are changed to allow for easy validation, and
+# allow manual testing through the repository's "Actions" tab
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+      ELASTICSEARCH_HOST: 127.0.0.1:${{ job.services.elasticsearch.ports[9200] }}
+      DATABASE_URL: mysql2://root:root@127.0.0.1:${{ job.services.mysql.ports[3306] }}/bybe_test
+    services:
+      mysql:
+        image: mysql:8.0.36
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      elasticsearch:
+        image: elasticsearch:7.17.8
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: false
+          ingest.geoip.downloader.enabled: false
+          action.destructive_requires_name: false
+          ES_JAVA_OPTS: -Xms1024m -Xmx1024m
+        ports:
+          - 9200
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client libmysqlclient-dev wkhtmltopdf pandoc yaz libyaz-dev libmagickwand-dev libpcap-dev cmake
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Verify MySQL connection from host
+        run: |
+          mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports[3306] }} -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
+      - name: Update Configuration
+        run: |
+          cp ./.github/workflows/rspec_config/* ./config && rm .env.test
+      - name: Setup DB
+        run: |
+          bin/rails db:create
+          bin/rails db:migrate
