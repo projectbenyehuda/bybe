@@ -44,8 +44,6 @@ jobs:
           sudo apt-get install -y mysql-client libmysqlclient-dev wkhtmltopdf pandoc yaz libyaz-dev libmagickwand-dev libpcap-dev cmake
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -60,6 +58,8 @@ jobs:
           echo DATABASE_URL=mysql2://root:root@127.0.0.1:${{ job.services.mysql.ports[3306] }}/bybe_test >> ./.env.test.local
           ls -a
           cat ./.env.test.local
+      - name: Fetch target branch
+        run: git fetch origin ${{ github.event.pull_request.base.ref }}
       - name: Setup DB
         run: |
           bin/rails db:create
