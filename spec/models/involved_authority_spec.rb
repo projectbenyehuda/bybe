@@ -52,52 +52,56 @@ describe InvolvedAuthority do
     let(:new_author) { create(:authority, name: 'New Author') }
     let(:new_translator) { create(:authority, name: 'New Translator') }
 
-    around do |example|
-      Sidekiq::Testing.inline! do
-        example.run
+    describe 'job enqueueing' do
+      around do |example|
+        Sidekiq::Testing.fake! do
+          example.run
+        end
       end
-    end
 
-    describe 'when creating a new involved authority on work' do
-      it 'enqueues job to update the manifestation responsibility_statement' do
+      it 'enqueues job when creating a new involved authority on work' do
         expect do
           work.involved_authorities.create!(role: :author, authority: new_author)
         end.to change(UpdateManifestationResponsibilityStatementsJob.jobs, :size).by(1)
       end
 
-      it 'updates the manifestation responsibility_statement when job runs' do
-        expect do
-          work.involved_authorities.create!(role: :author, authority: new_author)
-          manifestation.reload
-        end.to change { manifestation.responsibility_statement }
-      end
-    end
-
-    describe 'when creating a new involved authority on expression' do
-      it 'enqueues job to update the manifestation responsibility_statement' do
+      it 'enqueues job when creating a new involved authority on expression' do
         expect do
           expression.involved_authorities.create!(role: :translator, authority: new_translator)
         end.to change(UpdateManifestationResponsibilityStatementsJob.jobs, :size).by(1)
       end
 
-      it 'updates the manifestation responsibility_statement when job runs' do
-        expect do
-          expression.involved_authorities.create!(role: :translator, authority: new_translator)
-          manifestation.reload
-        end.to change { manifestation.responsibility_statement }
-      end
-    end
-
-    describe 'when destroying an involved authority' do
-      let!(:involved_auth) { work.involved_authorities.first }
-
-      it 'enqueues job to update the manifestation responsibility_statement' do
+      it 'enqueues job when destroying an involved authority' do
+        involved_auth = work.involved_authorities.first
         expect do
           involved_auth.destroy!
         end.to change(UpdateManifestationResponsibilityStatementsJob.jobs, :size).by(1)
       end
+    end
 
-      it 'updates the manifestation responsibility_statement when job runs' do
+    describe 'responsibility_statement updates' do
+      around do |example|
+        Sidekiq::Testing.inline! do
+          example.run
+        end
+      end
+
+      it 'updates the manifestation responsibility_statement when creating work authority' do
+        expect do
+          work.involved_authorities.create!(role: :author, authority: new_author)
+          manifestation.reload
+        end.to change { manifestation.responsibility_statement }
+      end
+
+      it 'updates the manifestation responsibility_statement when creating expression authority' do
+        expect do
+          expression.involved_authorities.create!(role: :translator, authority: new_translator)
+          manifestation.reload
+        end.to change { manifestation.responsibility_statement }
+      end
+
+      it 'updates the manifestation responsibility_statement when destroying an involved authority' do
+        involved_auth = work.involved_authorities.first
         expect do
           involved_auth.destroy!
           manifestation.reload

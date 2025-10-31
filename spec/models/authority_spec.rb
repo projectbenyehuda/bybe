@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'sidekiq/testing'
 
 describe Authority do
   describe 'validations' do
@@ -440,6 +441,12 @@ describe Authority do
     describe 'responsibility_statement update on name change' do
       let(:author) { create(:authority, name: 'Original Name') }
       let!(:manifestation) { create(:manifestation, author: author) }
+
+      around do |example|
+        Sidekiq::Testing.inline! do
+          example.run
+        end
+      end
 
       it 'updates manifestation responsibility_statement when authority name changes' do
         expect do
