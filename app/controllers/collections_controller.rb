@@ -28,7 +28,7 @@ class CollectionsController < ApplicationController
     @header_partial = 'shared/collection_top'
     @scrollspy_target = 'chapternav'
     @colls_traversed = [@collection.id]
-    @print_url = url_for(action: :print, collection_id: @collection.id)
+    @print_url = collection_print_path(collection_id: @collection.id)
     @pagetype = :collection
     @taggings = @collection.taggings
     @included_recs = @collection.included_recommendations.count
@@ -102,7 +102,7 @@ class CollectionsController < ApplicationController
           #{@htmls.map { |h| downloadable_html(h) }.join("\n")}
 
           <hr />
-          #{I18n.t(:download_footer_html, url: url_for(@collection))}
+          #{I18n.t(:download_footer_html, url: collection_path(@collection))}
           </div></body></html>
         WRAPPER
         austr = textify_authorities_and_roles(@collection.involved_authorities)
@@ -126,7 +126,7 @@ class CollectionsController < ApplicationController
     end
     prep_for_show
     track_view(@collection)
-    @footer_url = url_for(@collection)
+    @footer_url = collection_path(@collection)
   end
 
   # GET /collections/new

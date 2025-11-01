@@ -15,7 +15,7 @@ class UserController < ApplicationController
     @q = params[:q]
     @u.crowdsourcer = true
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is now a crowdsourcer."
+    redirect_to user_list_path, notice: "#{@u.name} is now a crowdsourcer."
   end
 
   def make_editor
@@ -23,7 +23,7 @@ class UserController < ApplicationController
     @q = params[:q]
     @u.editor = true
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is now an editor."
+    redirect_to user_list_path, notice: "#{@u.name} is now an editor."
   end
 
   def make_admin
@@ -31,7 +31,7 @@ class UserController < ApplicationController
     @q = params[:q]
     @u.admin = true
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is now an admin."
+    redirect_to user_list_path, notice: "#{@u.name} is now an admin."
   end
 
   def unmake_editor
@@ -39,14 +39,14 @@ class UserController < ApplicationController
     @q = params[:q]
     @u.editor = false
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is no longer an editor."
+    redirect_to user_list_path, notice: "#{@u.name} is no longer an editor."
   end
  def unmake_crowdsourcer
     set_user
     @q = params[:q]
     @u.crowdsourcer = false
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is no longer a crowdsourcer."
+    redirect_to user_list_path, notice: "#{@u.name} is no longer a crowdsourcer."
   end
 
   def show
@@ -76,7 +76,7 @@ class UserController < ApplicationController
   def set_user
     @u = User.find(params[:id])
     if @u.nil?
-      redirect_to url_for(controller: :admin, action: :index), flash: {error: t(:no_such_user)}
+      redirect_to admin_index_path, flash: {error: t(:no_such_user)}
     end
   end
 end
