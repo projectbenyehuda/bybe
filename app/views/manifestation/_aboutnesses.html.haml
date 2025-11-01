@@ -1,6 +1,6 @@
 %h3= t(:aboutnesses)
 - if add
-  %span.static-btn= link_to t(:perform_add), manifestation_path(@m, action: :add_aboutnesses)
+  %span.static-btn= link_to t(:perform_add), "/manifestation/add_aboutnesses/#{@m.id}"
 %ol#aboutness_list
   - @w.topics.each do |ab|
     %li
