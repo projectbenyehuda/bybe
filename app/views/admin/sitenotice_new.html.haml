@@ -1,4 +1,4 @@
 .backend
   %h1= t(:new_sitenotice)
   = render partial: 'sitenotice_form', locals: {action: 'sitenotice_create', sn: @sn}
-  = link_to t(:back), url_for(action: :sitenotice_list)
+  = link_to t(:back), admin_sitenotice_list_path

@@ -12,7 +12,7 @@
 :javascript
   $(document).ready(function(){
     $('.remove_bookmark').click(function(){
-      $.ajax({url: "#{url_for(action: :remove_bookmark)}", method: 'POST', data: {id: #{@m.id}}});
+      $.ajax({url: "#{manifestation_remove_bookmark_path}", method: 'POST', data: {id: #{@m.id}}});
       $('.bookmark_marker').remove();
       $('#bookmarkPanelDlg').modal('hide');
       $('#bookmarkDeleteDlg').modal('hide');

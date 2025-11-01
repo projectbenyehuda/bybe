@@ -1,4 +1,4 @@
 %h1= t(:manage_toc, author: @author.name)
 %p= t(:manage_toc_explanation)
 = render partial: 'shared/manage_toc'
-= button_to t(:back), url_for(action: :toc, id: @author.id), {method: :get, class: 'btn-small-outline-v02'}
+= button_to t(:back), authority_path(@author), {method: :get, class: 'btn-small-outline-v02'}

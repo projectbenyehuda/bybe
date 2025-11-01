@@ -31,7 +31,7 @@
       - if @text.author.nil?
         = label_tag t(:legacy_guessed_person)
         - if @text.html_dir.person.nil?
-          %span{style: 'color:red'}= link_to t(:dir_not_associated), url_for(controller: :html_dirs, action: :edit, id: @text.html_dir.id)
+          %span{style: 'color:red'}= link_to t(:dir_not_associated), edit_html_dir_path(@text.html_dir)
         - else
           %span{style: 'color:green'}= link_to @text.html_dir.person.name, authors_show_path(id: @text.html_dir.person.id)
           = link_to t(:confirm), html_file_confirm_html_dir_person_path(@text), {remote: true, :class => "ajax_link", "data-done-msg" => t(:confirmed), "data-doing-msg" => t(:confirming)}
@@ -94,7 +94,7 @@
     {
       jQuery(this).next(".markdown").slideToggle(500);
     });
-  $('#bPoetry').click(function() { document.location.href="#{url_for(:controller => :html_file, :action => :poetry, :id => @text.id)}"; return false;});
+  $('#bPoetry').click(function() { document.location.href="#{html_file_poetry_path(id: @text.id)}"; return false;});
   });
 
   $(document).ready(function() {

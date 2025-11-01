@@ -4,7 +4,7 @@
   %p
     %b= link_to t(:edit_markdown), manifestation_edit_path(@m.id)
   %p
-    %b= link_to t(:render), url_for(action: :read, id: @m.id)
+    %b= link_to t(:render), manifestation_path(@m)
   %h1
     != "#{t(:work_details)}: #{@m.title} / #{linkify_people(@w.involved_authorities.map(&:authority))}"
     - if @e.translation

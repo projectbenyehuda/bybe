@@ -11,6 +11,6 @@
       %td= m.author_string
       %td= m.conversion_verified ? t(:yes) : t(:no)
       %td
-        = link_to t(:render), url_for(controller: :manifestation, action: :read, id: m.id)
+        = link_to t(:render), manifestation_path(m)
         = ' | '
         = link_to t(:edit_markdown), manifestation_edit_path(m.id)

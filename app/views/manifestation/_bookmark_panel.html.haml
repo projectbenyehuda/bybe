@@ -24,7 +24,7 @@
         csspath = $(saved_elem).getPath();
         shortcsspath = '#actualtext '+csspath.substring(csspath.lastIndexOf('div')+3, csspath.length);
         set_bookmark($(saved_elem));
-        url = "#{raw url_for(action: :set_bookmark)}";
+        url = "#{raw manifestation_set_bookmark_path}";
         $('#bookmarkPanelDlg').modal('hide');
         $.ajax({url: url, method: 'POST', data: {id: #{@m.id}, bookmark_path: shortcsspath}});
       }

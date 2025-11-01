@@ -52,7 +52,7 @@
                       %span.by-icon-v02 Q
                       = t(:curated_content)
           .work-page-top-icons-desktop
-            %a.white{:href => url_for(action: :readmode, id: @m.id)}
+            %a.white{:href => manifestation_readmode_path(@m)}
               %button.btn-small-outline-v02.btn-text-v02.reading-mode-btn-v02{'title' => "#{t(:readmode_tt)}", 'data-selector' => 'true', 'data-placement' => 'top', 'data-toggle' => 'tooltip', 'data-delay' => { "show": 200, "hide": 100 }}
                 %span.by-icon-v02> /
                 = t(:reading_mode)
@@ -77,7 +77,7 @@
               %a.by-icon-v02.pointer.sharebutton{title: "#{ t(:share_tt) }", 'data-selector' => 'true', 'data-placement' => 'top', 'data-toggle' => 'tooltip', 'data-delay' => { "show": 200, "hide": 100 }, style: 'margin-left:0;', tabindex: 0}= 'U'
           .chapters-and-icons-mobile
             .work-page-top-icons-mobile
-              %a.btn-small-outline-v02.btn-text-v02.reading-mode-icon-btn-v02{href: url_for(action: :readmode, id: @m.id)}
+              %a.btn-small-outline-v02.btn-text-v02.reading-mode-icon-btn-v02{href: manifestation_readmode_path(@m)}
                 %span.by-icon-v02 /
               .top-left-icons-group
                 .icons-group-v02
@@ -206,7 +206,7 @@
             csspath = $(elem).getPath();
             shortcsspath = '#actualtext '+csspath.substring(csspath.lastIndexOf('div')+3, csspath.length);
             set_bookmark($(elem));
-            url = "#{raw url_for(action: :set_bookmark)}";
+            url = "#{raw manifestation_set_bookmark_path}";
             $.ajax({url: url, method: 'POST', data: {id: #{@m.id}, bookmark_path: shortcsspath}});
           }
           $('#actualtext').off('click'); // disable handler

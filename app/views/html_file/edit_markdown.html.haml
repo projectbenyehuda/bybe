@@ -106,7 +106,7 @@
         e=null;
     });
     function submit_frbr() {
-      url = "#{url_for(controller: :html_file, action: :frbrize, id: @text.id)}"
+      url = "#{html_file_frbrize_path(@text)}"
       if($('#pub_status').val() != '')
         url += '?pub_status=' + $('#pub_status').val();
       location.href = url;

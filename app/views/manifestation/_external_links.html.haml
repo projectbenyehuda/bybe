@@ -4,4 +4,4 @@
       = link_to link.description, link.url
       = ' ('+t(link.linktype)+')'
       - if edit
-        = link_to t(:destroy), url_for(action: :remove_link, link_id: link.id, id: @m.id), :data => { :confirm => t(:are_you_sure) }
+        = link_to t(:destroy), manifestation_remove_link_path(link_id: link.id, id: @m.id), :data => { :confirm => t(:are_you_sure) }

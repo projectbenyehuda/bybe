@@ -38,7 +38,7 @@
           = link_to t(:show), manifestation_show_path(m.id)
           / = link_to t(:show), :action => 'show', :id => m
           = ' | '
-          = link_to t(:render), url_for(controller: :manifestation, action: :read, id: m.id)
+          = link_to t(:render), manifestation_path(m)
           = ' | '
           = link_to t(:edit_metadata), manifestation_edit_metadata_path(m.id)
           = ' | '

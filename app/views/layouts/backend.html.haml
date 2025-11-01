@@ -47,7 +47,7 @@
         - if current_user
           - if current_user.editor?
             %br/
-            %h2= link_to t(:back_to_dashboard), url_for(controller: :admin, action: :index)
+            %h2= link_to t(:back_to_dashboard), admin_index_path
         - unless @pagetype == :homepage
           = link_to t(:back_to_homepage), "/"
         %p

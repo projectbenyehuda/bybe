@@ -11,7 +11,7 @@
         %ul
           - BibSource.physical_sources.each do |bs|
             %li
-              = link_to bs.title, url_for(action: :shopping, source_id: bs.id)
+              = link_to bs.title, bib_shopping_path(source_id: bs.id)
               = " (#{Holding.to_obtain(bs.id).count.to_s})"
         %h2= link_to t(:pubs_maybe_done), action: :pubs_maybe_done
         %h2= t(:administration)

@@ -6,7 +6,7 @@
     - colcount = 0
     - while i < total and colcount < 3
       .col-md-4{id: "img#{actual_images[i].id}"}
-        = link_to(t(:destroy), url_for(action: :remove_image, id: m.id, image_id: actual_images[i].id), remote: true, :data => { :confirm => t(:are_you_sure) })
+        = link_to(t(:destroy), manifestation_path(m, action: :remove_image, image_id: actual_images[i].id), remote: true, :data => { :confirm => t(:are_you_sure) })
         .thumbnail
           = image_tag actual_images[i].variant(resize_to_fill: [150, nil])
       - i += 1

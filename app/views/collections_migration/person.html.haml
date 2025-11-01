@@ -13,5 +13,5 @@
 %p= t('.explanation')
 = render partial: 'shared/manage_toc'
 %strong
-  = button_to t('.mark_migrated'), url_for(action: :migrate, id: @author.id), {method: :post, class: 'by-button-v02'}
-= button_to t(:back), url_for(action: :index), {method: :get, class: 'btn-small-outline-v02'}
+  = button_to t('.mark_migrated'), collections_migration_migrate_path(id: @author.id), {method: :post, class: 'by-button-v02'}
+= button_to t(:back), collections_migration_index_path, {method: :get, class: 'btn-small-outline-v02'}

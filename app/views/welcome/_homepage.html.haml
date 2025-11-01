@@ -216,7 +216,7 @@
     $('#work-surprise-scroller').on('afterChange', function(event, slick, currentSlide) {
       if(currentSlide != work_slide) {
         $('#work-surprise-scroller').slick('slickRemove', currentSlide, true); // and discard old slide (one before currentSlide)
-        $.get("#{url_for(controller: :manifestation, action: :get_random, mode: :home)}", function(data) {
+        $.get("#{manifestation_get_random_path(mode: :home)}", function(data) {
           $('#work-surprise-scroller').slick('slickAdd', data);
         });
       }

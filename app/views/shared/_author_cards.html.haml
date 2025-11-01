@@ -89,7 +89,7 @@
       $('#surprise_author_carousel-a').carousel({interval: false, wrap: true});
       $('#surprise_author_link').click(function(){
         $('#surprise_author_carousel-a').carousel('next'); // switch to ready surprise
-        $('#a_side1').load("#{url_for(controller: :authors, action: :get_random_author, id_frag:'a', side:'1',mode:'gallery')}", function() {
+        $('#a_side1').load("#{authors_get_random_author_path(id_frag:'a', side:'1',mode:'gallery')}", function() {
           var $thediv = $("#a_side2 > div").clone();
           $('#surprise_popup_a').html($thediv.html());
         }); // and load next one

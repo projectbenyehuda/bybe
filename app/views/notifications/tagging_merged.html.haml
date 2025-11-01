@@ -1,6 +1,6 @@
 %div{align: 'right', dir: 'rtl'}
   %p= "#{@tagging_suggester}, #{@greeting}"
-  %p= t(:tagging_merged_email_html, tag: @tagging.tag.name, original_tag: @original_tagname, taggable: @tagging.taggable.title, url: url_for(@tagging.taggable))
+  %p= t(:tagging_merged_email_html, tag: @tagging.tag.name, original_tag: @original_tagname, taggable: @tagging.taggable.title, url: polymorphic_url(@tagging.taggable))
 
   %hr
 

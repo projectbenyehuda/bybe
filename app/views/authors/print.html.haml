@@ -49,7 +49,7 @@
   $(document).ready(function() {
     $(document).on('keyup',function(evt) {
       if (evt.keyCode == 27) {
-        window.location.href = '#{url_for(action: :toc, id: @author.id)}';
+        window.location.href = '#{authority_path(@author)}';
       }
     });
     window.print();

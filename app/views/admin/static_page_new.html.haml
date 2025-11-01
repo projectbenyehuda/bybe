@@ -1,4 +1,4 @@
 .backend
   %h1= t(:new_static_page)
   = render partial: 'static_page_form', locals: {action: 'static_page_create', sp: @vp}
-  = link_to t(:back), url_for(action: :static_pages_list)
+  = link_to t(:back), admin_static_pages_list_path

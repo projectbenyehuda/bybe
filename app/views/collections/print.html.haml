@@ -8,7 +8,7 @@
   $(document).ready(function() {
     $(document).on('keyup',function(evt) {
       if (evt.keyCode == 27) {
-        window.location.href = '#{url_for(action: :show, id: @collection.id)}';
+        window.location.href = '#{collection_path(@collection)}';
       }
     });
     window.print();
