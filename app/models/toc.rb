@@ -1,3 +1,6 @@
+require 'htmlentities'
+require 'erb'
+
 class Toc < ApplicationRecord
   has_paper_trail
   enum :status, { raw: 0, ready: 1, deprecated: 2 }
@@ -73,6 +76,7 @@ class Toc < ApplicationRecord
 
   def toc_links_to_markdown_links(buf)
     ret = ''
+    coder = HTMLEntities.new
     until buf.empty?
       m = buf.match(/&&&\s*פריט: (\S\d+)\s*&&&\s*כותרת: (.*?)\s*&&&/) # tolerate whitespace; this will be edited manually
       if m.nil?
@@ -83,18 +87,25 @@ class Toc < ApplicationRecord
         addition = ::Regexp.last_match(0) # by default
         buf = ::Regexp.last_match.post_match
         item = ::Regexp.last_match(1)
-        anchor_name = ::Regexp.last_match(2).gsub('[', '\[').gsub(']', '\]').gsub('"', '\"').gsub("'", "\\\\'")
+        # Use basic HTML entity encoding for all characters to ensure safety
+        anchor_name = coder.encode(::Regexp.last_match(2), :named)
         if item[0] == 'ה' # linking to a legacy HtmlFile
           h = HtmlFile.find_by(id: item[1..-1].to_i)
           unless h.nil?
-            addition = "[#{anchor_name}](#{h.url})"
+            # Use HTML link format to avoid issues with square brackets in anchor text
+            # Escape both the URL and anchor name for security
+            escaped_url = ERB::Util.html_escape(h.url)
+            addition = "<a href=\"#{escaped_url}\">#{anchor_name}</a>"
           end
         else # manifestation
           begin
             mft = Manifestation.find(item[1..-1].to_i)
             unless mft.nil?
-              addition = "[#{anchor_name}](#{Rails.application.routes.url_helpers.url_for(controller: :manifestation,
-                                                                                          action: :read, id: mft.id)})"
+              # Use HTML link format to avoid issues with square brackets in anchor text
+              url = Rails.application.routes.url_helpers.url_for(controller: :manifestation, action: :read, id: mft.id)
+              # Escape both the URL and anchor name for security
+              escaped_url = ERB::Util.html_escape(url)
+              addition = "<a href=\"#{escaped_url}\">#{anchor_name}</a>"
             end
           rescue StandardError
             Rails.logger.info("Manifestation not found: #{item[1..-1].to_i}!")

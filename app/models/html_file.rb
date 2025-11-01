@@ -149,7 +149,7 @@ class NokoDoc < Nokogiri::XML::SAX::Document
       if (s =~ /\p{Word}/)
         @spans.last[:anything] = true if @spans.count > 0  # TODO: optimize, add unless @spans.last[:anything] maybe
       end
-      reformat = s.gsub("\n", ' ').gsub('[', '\[').gsub(']', '\]') # avoid accidental hyperlinks
+      reformat = s.gsub("\n", ' ')
       if @in_title
         @title += reformat
       elsif @in_subhead
