@@ -567,7 +567,7 @@ module BybeUtils
 
   def html2txt(buf)
     coder = HTMLEntities.new
-    return strip_tags(coder.decode(buf)).gsub(/<!\[.*?\]>/, '')
+    return strip_tags(coder.decode(buf)).gsub(/<!\[.*?\]>/, '').tr('“”', '""').tr('‘’', "''").strip
   end
 
   def author_surname_and_initials(author_string) # TODO: support multiple authors

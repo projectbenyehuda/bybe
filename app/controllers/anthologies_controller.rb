@@ -70,17 +70,38 @@ class AnthologiesController < ApplicationController
       if dl.nil?
         prep_for_show
         filename = "#{@anthology.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.#{format}"
-        html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"he\" lang=\"he\" dir=\"rtl\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /></head><body dir='rtl'><div dir=\"rtl\" align=\"right\">#{@anthology.title}" + @htmls.map { |h|
-                                                                                                                                                                                                                                                                                                                                                                                                                "<h1>#{h[0]}</h1>\n#{h[1]}"
-                                                                                                                                                                                                                                                                                                                                                                                                              }.join("\n").force_encoding('UTF-8') + "\n\n<hr />" + I18n.t(:download_footer_html,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                           url: url_for(action: :show,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        id: @anthology.id)) + '</div></body></html>'
-        austr = begin
-          @anthology.user.name
-        rescue StandardError
-          ''
+
+        if format == 'kwic'
+          # Generate KWIC concordance for anthology
+          labelled_texts = []
+          @anthology.texts.is_text.each do |at|
+            next if at.manifestation.nil?
+
+            labelled_texts << {
+              label: at.manifestation.title,
+              buffer: at.manifestation.to_plaintext
+            }
+          end
+          kwic_text = GenerateKwicConcordance.call(labelled_texts)
+          austr = begin
+            @anthology.user.name
+          rescue StandardError
+            ''
+          end
+          dl = MakeFreshDownloadable.call(params[:format], filename, '', @anthology, austr, kwic_text: kwic_text)
+        else
+          html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"he\" lang=\"he\" dir=\"rtl\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /></head><body dir='rtl'><div dir=\"rtl\" align=\"right\">#{@anthology.title}" + @htmls.map { |h|
+                                                                                                                                                                                                                                                                                                                                                                                                                  "<h1>#{h[0]}</h1>\n#{h[1]}"
+                                                                                                                                                                                                                                                                                                                                                                                                                }.join("\n").force_encoding('UTF-8') + "\n\n<hr />" + I18n.t(:download_footer_html,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             url: url_for(action: :show,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          id: @anthology.id)) + '</div></body></html>'
+          austr = begin
+            @anthology.user.name
+          rescue StandardError
+            ''
+          end
+          dl = MakeFreshDownloadable.call(params[:format], filename, html, @anthology, austr)
         end
-        dl = MakeFreshDownloadable.call(params[:format], filename, html, @anthology, austr)
       end
       track_download(@anthology, format)
       redirect_to rails_blob_url(dl.stored_file, disposition: :attachment)

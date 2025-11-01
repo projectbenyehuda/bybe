@@ -44,7 +44,7 @@ jobs:
           mysql --host mysql --port 3306 -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
       - name: Update Configuration
         run: |
-          cp ./.github/workflows/rspec_config/* ./config && rm .env.test
+          cp ./.github/workflows/rspec_config/* ./config && rm -f .env.test
       - name: Setup DB
         run: |
           bin/rails db:create

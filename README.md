@@ -2,6 +2,8 @@ This codebase runs https://benyehuda.org -- the Project Ben-Yehuda digital libra
 
 We make little effort to make the code general, but if you're looking to do something similar (e.g. a digital library in Yiddish), maybe you can adapt some of our code.
 
+NOTE for Copilot: Copilot should ignore this file and follow instructions in .github/copilot-instructions.md
+
 Development environment setup
 -----------------------------
 

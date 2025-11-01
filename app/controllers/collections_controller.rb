@@ -75,22 +75,39 @@ class CollectionsController < ApplicationController
     if dl.nil?
       prep_for_show # TODO
       filename = "#{@collection.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.#{format}"
-      # TODO: implement ias
-      html = <<~WRAPPER
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="he" lang="he" dir="rtl">
-        <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
-        <body dir='rtl'><div dir="rtl" align="right">
-        <div style="font-size:300%; font-weight: bold;">#{@collection.title}</div>
-        #{@htmls.map { |h| downloadable_html(h) }.join("\n")}
 
-        <hr />
-        #{I18n.t(:download_footer_html, url: url_for(@collection))}
-        </div></body></html>
-      WRAPPER
-      austr = textify_authorities_and_roles(@collection.involved_authorities)
-      dl = MakeFreshDownloadable.call(params[:format], filename, html, @collection, austr)
+      if format == 'kwic'
+        # Generate KWIC concordance for collection
+        labelled_texts = []
+        @collection.flatten_items.each do |ci|
+          next if ci.item.nil? || ci.item_type != 'Manifestation'
+
+          labelled_texts << {
+            label: ci.title,
+            buffer: ci.item.to_plaintext
+          }
+        end
+        kwic_text = GenerateKwicConcordance.call(labelled_texts)
+        austr = textify_authorities_and_roles(@collection.involved_authorities)
+        dl = MakeFreshDownloadable.call(params[:format], filename, '', @collection, austr, kwic_text: kwic_text)
+      else
+        # TODO: implement ias
+        html = <<~WRAPPER
+          <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+          <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="he" lang="he" dir="rtl">
+          <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
+          <body dir='rtl'><div dir="rtl" align="right">
+          <div style="font-size:300%; font-weight: bold;">#{@collection.title}</div>
+          #{@htmls.map { |h| downloadable_html(h) }.join("\n")}
+
+          <hr />
+          #{I18n.t(:download_footer_html, url: url_for(@collection))}
+          </div></body></html>
+        WRAPPER
+        austr = textify_authorities_and_roles(@collection.involved_authorities)
+        dl = MakeFreshDownloadable.call(params[:format], filename, html, @collection, austr)
+      end
     end
 
     track_download(@collection, format)
