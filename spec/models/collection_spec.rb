@@ -199,6 +199,7 @@ describe Collection do
 
     let(:collection) { create(:collection) }
     let(:manifestation) { create(:manifestation) }
+    let(:index) { 1 }
 
     let!(:first_item) { create(:collection_item, collection: collection, seqno: 1) }
     let!(:second_item) { create(:collection_item, collection: collection, seqno: 2) }
@@ -239,6 +240,110 @@ describe Collection do
         expect(inserted_item).to have_attributes(seqno: 2, item: manifestation)
         expect(collection.collection_items).to eq [first_item, inserted_item, second_item, third_item]
         expect(collection.collection_items.map(&:seqno)).to eq [1, 2, 3, 4]
+      end
+    end
+
+    context 'when calling insert beyond cached size (exposes caching bug)' do
+      it 'correctly inserts at position beyond stale cached size' do
+        collection = create(:collection)
+        create(:collection_item, collection: collection, seqno: 1, alt_title: 'A')
+        create(:collection_item, collection: collection, seqno: 2, alt_title: 'B')
+        create(:collection_item, collection: collection, seqno: 3, alt_title: 'C')
+
+        # First insert loads and caches collection_items (size=3)
+        item1 = create(:manifestation)
+        collection.insert_item_at(item1, 2)
+
+        # DB now has 4 items, but cache still thinks size=3
+        # Insert at position 5 (beyond both cached and actual size)
+        # BUGGY: pos(5) > cached_size(3), uses cached.last.seqno + 1 = 3 + 1 = 4
+        # FIXED: pos(5) > actual_size(4), uses actual.last.seqno + 1 = 4 + 1 = 5
+        item2 = create(:manifestation)
+        collection.insert_item_at(item2, 5)
+
+        # Verify
+        collection.reload
+        seqnos = collection.collection_items.pluck(:seqno)
+
+        # Should be: 1, 2, 3, 4, 5 (item2 appended with seqno 5)
+        expect(seqnos).to eq([1, 2, 3, 4, 5])
+      end
+    end
+
+    context 'when association cached via array indexing before insert' do
+      it 'uses correct seqno despite cached array' do
+        collection = create(:collection)
+        item_a = create(:collection_item, collection: collection, seqno: 1, alt_title: 'A')
+        item_b = create(:collection_item, collection: collection, seqno: 2, alt_title: 'B')
+        item_c = create(:collection_item, collection: collection, seqno: 3, alt_title: 'C')
+
+        # Access via array indexing - this caches the association as an array
+        expect(collection.collection_items[0].alt_title).to eq('A')
+        expect(collection.collection_items[1].alt_title).to eq('B')
+
+        # Modify database to create gaps
+        item_b.update_column(:seqno, 5)
+        item_c.update_column(:seqno, 10)
+
+        # Insert should use fresh data, not cached
+        new_item = create(:manifestation)
+        collection.insert_item_at(new_item, 2)
+
+        # Verify
+        collection.reload
+        seqnos = collection.collection_items.order(:seqno).pluck(:seqno)
+        expect(seqnos).to eq([1, 5, 6, 11])  # NEW at 5, B at 6, C at 11
+      end
+    end
+
+    context 'with larger collection and multiple appends' do
+      it 'correctly appends when position exceeds stale cached size' do
+        collection = create(:collection)
+        5.times do |i|
+          create(:collection_item, collection: collection, seqno: i + 1, alt_title: "Item#{i + 1}")
+        end
+
+        # Perform 3 appends at the end without reloading
+        # Each append uses position = current_size + 1
+        # But cache thinks size is always 5
+        3.times do |i|
+          item = create(:manifestation)
+          # Try to append at the end by using a large position
+          collection.insert_item_at(item, 10 + i)  # positions 10, 11, 12 (all > size)
+        end
+
+        # Verify all items are in correct order with correct seqnos
+        collection.reload
+        seqnos = collection.collection_items.pluck(:seqno)
+
+        # Should have 8 items with increasing seqnos
+        expect(seqnos.size).to eq(8)
+        expect(seqnos).to eq([1, 2, 3, 4, 5, 6, 7, 8])
+      end
+    end
+
+    context 'when size checked before modification' do
+      it 'gets correct position despite stale size' do
+        collection = create(:collection)
+        create(:collection_item, collection: collection, seqno: 1, alt_title: 'A')
+        create(:collection_item, collection: collection, seqno: 2, alt_title: 'B')
+        create(:collection_item, collection: collection, seqno: 3, alt_title: 'C')
+
+        # Check size to cache it
+        expect(collection.collection_items.size).to eq(3)
+
+        # Modify seqnos to create gaps
+        collection.collection_items[1].update_column(:seqno, 10)
+        collection.collection_items[2].update_column(:seqno, 20)
+
+        # Insert at position 2 - should use fresh seqno data
+        new_item = create(:manifestation)
+        collection.insert_item_at(new_item, 2)
+
+        # Verify
+        collection.reload
+        seqnos = collection.collection_items.order(:seqno).pluck(:seqno)
+        expect(seqnos).to eq([1, 10, 11, 21])  # NEW at 10, B at 11, C at 21
       end
     end
   end
