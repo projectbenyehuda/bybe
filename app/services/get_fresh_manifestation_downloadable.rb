@@ -27,8 +27,7 @@ class GetFreshManifestationDownloadable < ApplicationService
         # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
         html_content = make_heading_ids_unique(html_content)
         html = "<div dir=\"rtl\" style=\"text-align:right\">#{manifestation.title_and_authors_html}" + html_content + "\n\n<hr />" + I18n.t(:download_footer_html,
-                                                                                                                                            url: Rails.application.routes.url_helpers.url_for(controller: :manifestation, action: :read,
-                                                                                                                                                                                              id: manifestation.id)) + '</div>'
+                                                                                                                                            url: Rails.application.routes.url_helpers.manifestation_path(manifestation)) + '</div>'
         dl = MakeFreshDownloadable.call(format, filename, html, manifestation, manifestation.author_string)
       end
     end

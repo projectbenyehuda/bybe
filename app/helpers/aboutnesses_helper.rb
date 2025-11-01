@@ -24,7 +24,7 @@ module AboutnessesHelper
     end
     if edit
       html += ' || '
-      html += link_to(t(:destroy), url_for(controller: :aboutnesses, action: :remove, id: ab.id, manifestation_id: @m.id), :data => { :confirm => t(:are_you_sure) })
+      html += link_to(t(:destroy), aboutnesses_remove_path(id: ab.id, manifestation_id: @m.id), :data => { :confirm => t(:are_you_sure) })
     end
   return html
   end

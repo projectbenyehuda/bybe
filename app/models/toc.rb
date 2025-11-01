@@ -93,8 +93,7 @@ class Toc < ApplicationRecord
           begin
             mft = Manifestation.find(item[1..-1].to_i)
             unless mft.nil?
-              addition = "[#{anchor_name}](#{Rails.application.routes.url_helpers.url_for(controller: :manifestation,
-                                                                                          action: :read, id: mft.id)})"
+              addition = "[#{anchor_name}](#{Rails.application.routes.url_helpers.manifestation_path(mft)})"
             end
           rescue StandardError
             Rails.logger.info("Manifestation not found: #{item[1..-1].to_i}!")

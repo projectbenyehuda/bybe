@@ -187,13 +187,13 @@ module ApplicationHelper
 
   def authors_linked_string(m)
     return m.expression.work.authors.map do |x|
-             "<a href=\"#{url_for(controller: :authors, action: :toc, id: x.id)}\">#{x.name}</a>"
+             "<a href=\"#{authority_path(x)}\">#{x.name}</a>"
            end.join(', ')
   end
 
   def translators_linked_string(m)
     return m.expression.translators.map do |x|
-             "<a href=\"#{url_for(controller: :authors, action: :toc, id: x.id)}\">#{x.name}</a>"
+             "<a href=\"#{authority_path(x)}\">#{x.name}</a>"
            end.join(', ')
   end
 
