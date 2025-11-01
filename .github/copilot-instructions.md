@@ -39,6 +39,7 @@ bundle exec pronto run -c origin/<TARGET_BRANCH>
 ## Testing Guidelines
 
 - Use RSpec for all tests
+- In development and test environments the app uses dotenv gem to load environment variables from `.env.*` files
 - Copilot environment should already have test database created and migrated, so no need to run `rails db:create` and 
   `rails db:prepare` commands.
 - Test files are organized by type: controllers, models, services, requests, api, mailers, sidekiq
