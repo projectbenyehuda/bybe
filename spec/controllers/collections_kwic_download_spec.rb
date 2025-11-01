@@ -6,6 +6,12 @@ describe CollectionsController do
   describe '#download' do
     describe 'with format=kwic' do
       context 'for a collection with multiple manifestations' do
+        subject do
+          create(:collection_item, collection: collection, item: manifestation1)
+          create(:collection_item, collection: collection, item: manifestation2)
+          post :download, params: { collection_id: collection.id, format: 'kwic' }
+        end
+
         let(:collection) { create(:collection, title: 'Test Collection') }
         let(:manifestation1) do
           create(
@@ -20,12 +26,6 @@ describe CollectionsController do
             title: 'Second Work',
             markdown: 'The brown bear.'
           )
-        end
-
-        subject do
-          create(:collection_item, collection: collection, item: manifestation1)
-          create(:collection_item, collection: collection, item: manifestation2)
-          post :download, params: { collection_id: collection.id, format: 'kwic' }
         end
 
         it 'returns a redirect' do
@@ -43,7 +43,7 @@ describe CollectionsController do
         it 'generates concordance content from all manifestations' do
           subject
           downloadable = collection.downloadables.find_by(doctype: 'kwic')
-          content = downloadable.stored_file.download
+          content = downloadable.stored_file.download.force_encoding('UTF-8')
           expect(content).to include('קונקורדנציה בתבנית KWIC')
           expect(content).to include('מילה: brown')
           # Should show instances from both texts
@@ -53,9 +53,9 @@ describe CollectionsController do
       end
 
       context 'when collection has suppress_download_and_print enabled' do
-        let(:collection) { create(:collection, suppress_download_and_print: true) }
-
         subject { post :download, params: { collection_id: collection.id, format: 'kwic' } }
+
+        let(:collection) { create(:collection, suppress_download_and_print: true) }
 
         it 'redirects with error' do
           subject
@@ -70,9 +70,9 @@ describe CollectionsController do
       end
 
       context 'when collection is empty' do
-        let(:empty_collection) { create(:collection, title: 'Empty Collection') }
-
         subject { post :download, params: { collection_id: empty_collection.id, format: 'kwic' } }
+
+        let(:empty_collection) { create(:collection, title: 'Empty Collection') }
 
         it 'returns a redirect' do
           subject
@@ -83,7 +83,7 @@ describe CollectionsController do
           subject
           downloadable = empty_collection.downloadables.find_by(doctype: 'kwic')
           expect(downloadable).to be_present
-          content = downloadable.stored_file.download
+          content = downloadable.stored_file.download.force_encoding('UTF-8')
           expect(content).to include('קונקורדנציה בתבנית KWIC')
           expect(content).not_to include('מילה:')
         end

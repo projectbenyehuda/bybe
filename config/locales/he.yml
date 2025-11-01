@@ -1719,3 +1719,4 @@ he:
   email_footer_signup_invitation: אם תרצה/י לשלוט בתדירות קבלת הודעות הדואל, תוכל/י להירשם לאתר ולהגדיר את ההעדפות שלך.
   notification_digest_intro: להלן סיכום ההודעות שצברנו עבורך
   notification_render_error: שגיאה בעיבוד הודעה
+  unrecognized_format: תבנית קובץ לא מוכרת

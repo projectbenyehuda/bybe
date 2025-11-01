@@ -5,6 +5,12 @@ require 'rails_helper'
 describe AnthologiesController do
   describe '#download' do
     describe 'with format=kwic' do
+      subject do
+        create(:anthology_text, anthology: anthology, manifestation: manifestation1)
+        create(:anthology_text, anthology: anthology, manifestation: manifestation2)
+        post :download, params: { id: anthology.id, format: 'kwic' }
+      end
+
       let(:user) { create(:user) }
       let(:anthology) { create(:anthology, user: user, access: :pub, title: 'Test Anthology') }
       let(:manifestation1) do
@@ -22,12 +28,6 @@ describe AnthologiesController do
         )
       end
 
-      subject do
-        create(:anthology_text, anthology: anthology, manifestation: manifestation1)
-        create(:anthology_text, anthology: anthology, manifestation: manifestation2)
-        post :download, params: { id: anthology.id, format: 'kwic' }
-      end
-
       it 'returns a redirect' do
         subject
         expect(response).to have_http_status(:redirect)
@@ -43,7 +43,7 @@ describe AnthologiesController do
       it 'generates concordance content from all anthology texts' do
         subject
         downloadable = anthology.downloadables.find_by(doctype: 'kwic')
-        content = downloadable.stored_file.download
+        content = downloadable.stored_file.download.force_encoding('UTF-8')
         expect(content).to include('קונקורדנציה בתבנית KWIC')
         expect(content).to include('מילה: brown')
         # Should show instances from both texts
