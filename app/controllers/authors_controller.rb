@@ -465,7 +465,7 @@ class AuthorsController < ApplicationController
       @unpublished = true unless @author.published?
 
       @tabclass = set_tab('authors')
-      @print_url = url_for(action: :print, id: @author.id)
+      @print_url = authors_print_path(id: @author.id)
       @pagetype = :author
       @header_partial = 'authors/author_top'
       @entity = @author
@@ -520,7 +520,7 @@ class AuthorsController < ApplicationController
   def print
     @print = true
     prep_for_print
-    @footer_url = url_for(action: :toc, id: @author.id)
+    @footer_url = authority_path(@author)
   end
 
   def edit_toc

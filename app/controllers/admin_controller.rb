@@ -184,7 +184,7 @@ class AdminController < ApplicationController
         ListItem.create!(listkey: 'proofs_by_user', user: current_user, item: proof)
       end
     end
-    redirect_to url_for(action: :index)
+    redirect_to admin_index_path
   end
 
   def assign_conversion_verification
@@ -199,7 +199,7 @@ class AdminController < ApplicationController
     li = ListItem.new(listkey: 'convs_by_user', user: current_user, item: @m)
     li.save!
 
-    redirect_to url_for(controller: :manifestation, action: :edit, id: @m.id)
+    redirect_to manifestation_edit_path(@m)
   end
 
   def conversion_verification
@@ -488,7 +488,7 @@ class AdminController < ApplicationController
     respond_to do |format|
       if @vp.save
         @vp.images.attach(params[:static_page][:images]) if params[:static_page][:images].present?
-        format.html { redirect_to url_for(action: :static_page_show, id: @vp.id), notice: t(:updated_successfully) }
+        format.html { redirect_to static_page_show_path(@vp), notice: t(:updated_successfully) }
         format.json { render json: @vp, status: :created, location: @vp }
       else
         format.html { render action: 'static_page_new' }
@@ -501,7 +501,7 @@ class AdminController < ApplicationController
     @vp = StaticPage.find(params[:id])
     if @vp.nil?
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     end
     @markdown = @vp.prepare_markdown
   end
@@ -514,7 +514,7 @@ class AdminController < ApplicationController
     @vp = StaticPage.find(params[:id])
     if @vp.nil?
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     elsif @vp.update(sp_params)
       @vp.images.attach(params[:static_page][:images]) if params[:static_page][:images].present?
       flash[:notice] = I18n.t(:updated_successfully)
@@ -544,7 +544,7 @@ class AdminController < ApplicationController
     respond_to do |format|
       if @vp.save
         format.html do
-          redirect_to url_for(action: :volunteer_profile_show, id: @vp.id), notice: t(:updated_successfully)
+          redirect_to volunteer_profile_show_path(@vp), notice: t(:updated_successfully)
         end
         format.json { render json: @vp, status: :created, location: @vp }
       else
@@ -559,7 +559,7 @@ class AdminController < ApplicationController
     return unless @vp.nil?
 
     flash[:error] = I18n.t(:no_such_item)
-    redirect_to url_for(action: :index)
+    redirect_to admin_index_path
   end
 
   def volunteer_profile_edit
@@ -570,7 +570,7 @@ class AdminController < ApplicationController
     @vp = VolunteerProfile.find(params[:id])
     if @vp.nil?
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     elsif @vp.update(vp_params)
       flash[:notice] = I18n.t(:updated_successfully)
       redirect_to action: :volunteer_profile_show, id: @vp.id
@@ -592,10 +592,10 @@ class AdminController < ApplicationController
       vpf.save!
 
       flash[:notice] = I18n.t(:created_successfully)
-      redirect_to url_for(action: :volunteer_profile_show, id: params[:vpid].to_i)
+      redirect_to volunteer_profile_show_path(params[:vpid].to_i)
     else
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     end
   end
 
@@ -605,10 +605,10 @@ class AdminController < ApplicationController
       vpid = vpf.volunteer_profile_id
       vpf.destroy!
       flash[:notice] = I18n.t(:deleted_successfully)
-      redirect_to url_for(action: :volunteer_profile_show, id: vpid)
+      redirect_to volunteer_profile_show_path(vpid)
     else
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     end
   end
 
@@ -641,7 +641,7 @@ class AdminController < ApplicationController
     respond_to do |format|
       if @sn.save
         Rails.cache.delete('sitenotices') # clear cached sitenotices
-        format.html { redirect_to url_for(action: :sitenotice_show, id: @sn.id), notice: t(:updated_successfully) }
+        format.html { redirect_to sitenotice_show_path(@sn), notice: t(:updated_successfully) }
         format.json { render json: @sn, status: :created, location: @sn }
       else
         format.html { render action: 'sitenotice_new' }
@@ -655,7 +655,7 @@ class AdminController < ApplicationController
     return unless @sn.nil?
 
     flash[:error] = I18n.t(:no_such_item)
-    redirect_to url_for(action: :index)
+    redirect_to admin_index_path
   end
 
   def sitenotice_edit
@@ -670,7 +670,7 @@ class AdminController < ApplicationController
     @sn.todate = Date.new(params[:todate][:year].to_i, params[:todate][:month].to_i, params[:todate][:day].to_i)
     if @sn.nil?
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     elsif @sn.save
       Rails.cache.delete('sitenotices') # clear cached sitenotices
       flash[:notice] = I18n.t(:updated_successfully)
@@ -711,7 +711,7 @@ class AdminController < ApplicationController
     @fc.user = current_user
     respond_to do |format|
       if @fc.save
-        format.html { redirect_to url_for(action: :featured_author_show, id: @fc.id), notice: t(:updated_successfully) }
+        format.html { redirect_to featured_author_show_path(@fc), notice: t(:updated_successfully) }
         format.json { render json: @fc, status: :created, location: @fc }
       else
         format.html { render action: 'featured_author_new' }
@@ -725,7 +725,7 @@ class AdminController < ApplicationController
     return unless @fc.nil?
 
     flash[:error] = I18n.t(:no_such_item)
-    redirect_to url_for(action: :index)
+    redirect_to admin_index_path
   end
 
   def featured_author_edit
@@ -745,7 +745,7 @@ class AdminController < ApplicationController
     @fc = FeaturedAuthor.find(params[:id])
     if @fc.nil?
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     elsif @fc.update(fa_params)
       flash[:notice] = I18n.t(:updated_successfully)
       redirect_to action: :featured_author_show, id: @fc.id
@@ -767,10 +767,10 @@ class AdminController < ApplicationController
       fcf.save!
 
       flash[:notice] = I18n.t(:created_successfully)
-      redirect_to url_for(action: :featured_author_show, id: fc.id)
+      redirect_to featured_author_show_path(fc)
     else
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     end
   end
 
@@ -780,10 +780,10 @@ class AdminController < ApplicationController
       fcid = fcf.featured_author_id
       fcf.destroy!
       flash[:notice] = I18n.t(:deleted_successfully)
-      redirect_to url_for(action: :featured_author_show, id: fcid)
+      redirect_to featured_author_show_path(fcid)
     else
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
+      redirect_to admin_index_path
     end
   end
 
@@ -818,7 +818,7 @@ class AdminController < ApplicationController
     @tag = Tag.find(params[:id])
     if @tag.nil?
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :tag_moderation)
+      redirect_to tag_moderation_path
     else
       stags = ListItem.where(listkey: 'tag_similarity', item: @tag).pluck(:extra).map do |x|
                 x.split(':')
@@ -838,7 +838,7 @@ class AdminController < ApplicationController
     @tagging = Tagging.find(params[:id])
     if @tagging.nil?
       flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :tag_moderation)
+      redirect_to tag_moderation_path
     else
       @suggester_taggings_count = @tagging.suggester.taggings.count
       @suggester_acceptance_rate = @tagging.suggester.taggings.where(status: :approved).count.to_f / @suggester_taggings_count
@@ -909,7 +909,7 @@ class AdminController < ApplicationController
     else
       flash[:error] = t(:tagging_system_locked)
     end
-    redirect_to url_for(action: :tag_moderation)
+    redirect_to tag_moderation_path
   end
 
   def merge_tagging
@@ -947,7 +947,7 @@ class AdminController < ApplicationController
     else
       flash[:error] = t(:tagging_system_locked)
     end
-    redirect_to url_for(action: :tag_moderation)
+    redirect_to tag_moderation_path
   end
 
   def approve_tag # approve tag and proceed to review taggings
@@ -958,7 +958,7 @@ class AdminController < ApplicationController
         t.approve!(current_user)
         Notifications.send_or_queue(:tag_approved, t.creator.email, t) unless t.creator.blocked? # don't send email if user is blocked
         flash[:notice] = t(:tag_approved)
-        redirect_to url_for(action: :tag_moderation, tag_id: t.id)
+        redirect_to tag_moderation_path(tag_id: t.id)
       else
         head :not_found
       end
@@ -976,10 +976,10 @@ class AdminController < ApplicationController
         Notifications.send_or_queue(:tag_approved, t.creator.email, t) unless t.creator.blocked? # don't send email if user is blocked
         next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?', t.created_at).order(:created_at).limit(1)
         if next_items.first.present?
-          redirect_to url_for(action: :tag_review, id: next_items.first.id)
+          redirect_to tag_review_path(next_items.first)
         else
           flash[:notice] = t(:no_more_to_review)
-          redirect_to url_for(action: :tag_moderation)
+          redirect_to tag_moderation_path
         end
       else
         head :not_found
@@ -1001,10 +1001,10 @@ class AdminController < ApplicationController
         next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?', t.created_at).order(:created_at).limit(1)
         if next_items.first.present?
           flash[:notice] = t(:tag_rejected)
-          redirect_to url_for(action: :tag_review, id: next_items.first.id)
+          redirect_to tag_review_path(next_items.first)
         else
           flash[:notice] = t(:no_more_to_review)
-          redirect_to url_for(action: :tag_moderation)
+          redirect_to tag_moderation_path
         end
       else
         head :not_found
@@ -1044,10 +1044,10 @@ class AdminController < ApplicationController
                                                            @tag.created_at).order(:created_at).limit(1)
             if next_items.first.present?
               flash[:notice] = t(:tag_escalated)
-              redirect_to url_for(action: :tag_review, id: next_items.first.id)
+              redirect_to tag_review_path(next_items.first)
             else
               flash[:notice] = t(:no_more_to_review)
-              redirect_to url_for(action: :tag_moderation)
+              redirect_to tag_moderation_path
             end
           end
           format.js
@@ -1182,7 +1182,7 @@ class AdminController < ApplicationController
       u.block!('tags', current_user, params[:reason])
 
       flash[:notice] = t(:user_blocked)
-      url = params[:return_url] || url_for(action: :tag_moderation)
+      url = params[:return_url] || tag_moderation_path
       redirect_to url
     else
       head :not_found
@@ -1269,7 +1269,7 @@ class AdminController < ApplicationController
     @next_tagging_id = Tagging.where(status: :pending).where('created_at > ?',
                                                              t.created_at).order(:created_at).limit(1).pluck(:id).first
     redirect_to(
-      @next_tagging_id.present? ? url_for(tagging_review_path(@next_tagging_id)) : url_for(action: :tag_moderation), notice: msg
+      @next_tagging_id.present? ? tagging_review_path(@next_tagging_id) : tag_moderation_path, notice: msg
     )
   end
 

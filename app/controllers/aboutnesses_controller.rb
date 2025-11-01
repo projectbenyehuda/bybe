@@ -25,6 +25,6 @@ class AboutnessesController < ApplicationController
       ab.destroy!
       flash[:notice] = t(:deleted_successfully)
     end
-    redirect_to url_for(controller: :manifestation, action: :show, id: params[:manifestation_id])
+    redirect_to manifestation_show_path(params[:manifestation_id])
   end
 end

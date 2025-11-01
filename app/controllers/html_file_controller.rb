@@ -34,7 +34,7 @@ class HtmlFileController < ApplicationController
       @text.status = 'Uploaded'
       respond_to do |format|
         if @text.save
-          format.html { redirect_to url_for(action: :edit_markdown, id: @text.id), notice: t(:updated_successfully) }
+          format.html { redirect_to html_file_edit_markdown_path(id: @text.id), notice: t(:updated_successfully) }
           format.json { render json: @text, status: :created, location: @text }
         else
           format.html { render action: 'new' }
@@ -207,9 +207,9 @@ class HtmlFileController < ApplicationController
     if @text.assignee.blank? or @text.assignee = current_user
       @text.assign(current_user.id)
       @text.parse
-      redirect_to url_for(action: :render_html, id: @text.id)
+      redirect_to html_file_render_html_path(id: @text.id)
     else
-      redirect_to url_for(action: :list) # help user find the newly-parsed files
+      redirect_to html_file_list_path # help user find the newly-parsed files
     end
   end
 
@@ -291,7 +291,7 @@ class HtmlFileController < ApplicationController
     else
       flash[:error] = t(:must_accept_before_publishing)
     end
-    redirect_to url_for(action: :list, status: 'Parsed') # help user find the newly-parsed files
+    redirect_to html_file_list_path(status: 'Parsed') # help user find the newly-parsed files
   end
 
   def unsplit
@@ -316,7 +316,7 @@ class HtmlFileController < ApplicationController
         elsif h.manifestations.empty?
           head :bad_request
         else
-          redirect_to url_for(controller: :manifestation, action: :read, id: h.manifestations[0].id)
+          redirect_to manifestation_path(h.manifestations[0])
         end
       else
         path = params[:path]
@@ -325,7 +325,7 @@ class HtmlFileController < ApplicationController
           d = HtmlDir.find_by_path(::Regexp.last_match(1))
           unless d.nil?
             unless d.person.nil?
-              redirect_to url_for(controller: :authors, action: :toc, id: d.person.id)
+              redirect_to authority_path(d.person)
             else
               @html = "<h1>#{t(:error)}</h1>"
             end

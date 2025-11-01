@@ -294,7 +294,7 @@ class ManifestationController < ApplicationController
   def print
     @print = true
     prep_for_print
-    @footer_url = url_for(action: :read, id: @m.id)
+    @footer_url = manifestation_path(@m)
   end
 
   def download
@@ -431,7 +431,7 @@ class ManifestationController < ApplicationController
                              else
                                { title: '', author: '' }
                              end
-    @urlbase = url_for(action: :show, id: 1)[0..-2]
+    @urlbase = manifestation_show_path(1)[0..-2]
     # DB
     if params[:title].blank? && params[:author].blank?
       @manifestations = Manifestation.includes(expression: :work).page(params[:page]).order('updated_at DESC')
@@ -926,7 +926,7 @@ class ManifestationController < ApplicationController
     @tabclass = set_tab('works')
     @entity = @m
     @pagetype = :manifestation
-    @print_url = url_for(action: :print, id: @m.id)
+    @print_url = manifestation_print_path(@m)
     @liked = (current_user.nil? ? false : @m.likers.include?(current_user))
     if @e.translation? && (@e.work.expressions.count > 1) # one is the one we're looking at...
       @additional_translations = []
