@@ -45,8 +45,8 @@ jobs:
           echo DATABASE_URL=mysql2://root:root@mysql:3306/bybe_test >> ./.env.test.local
       - name: Setup DB
         run: |
-          bin/rails db:create --RAILS_ENV=test
-          bin/rails db:migrate --RAILS_ENV=test
+          bin/rails db:create RAILS_ENV=test
+          bin/rails db:migrate RAILS_ENV=test
       - name: Run tests
         run: |
           bundle exec rspec
