@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+include ActiveSupport::Testing::TimeHelpers
 
 describe ManifestationController do
   describe '#download' do
     describe 'with format=kwic' do
       context 'for a manifestation' do
+        subject { get :download, params: { id: manifestation.id, format: 'kwic' } }
+
         let(:manifestation) do
           create(
             :manifestation,
@@ -13,8 +16,6 @@ describe ManifestationController do
             markdown: "# Test Title\n\nThe quick brown fox jumps over the lazy dog.\n\nThe dog barks."
           )
         end
-
-        subject { get :download, params: { id: manifestation.id, format: 'kwic' } }
 
         it 'returns a redirect' do
           subject
@@ -31,7 +32,7 @@ describe ManifestationController do
         it 'generates concordance content' do
           subject
           downloadable = manifestation.downloadables.find_by(doctype: 'kwic')
-          content = downloadable.stored_file.download
+          content = downloadable.stored_file.download.force_encoding('UTF-8')
           expect(content).to include('קונקורדנציה בתבנית KWIC')
           expect(content).to include('מילה: The')
           expect(content).to include('מילה: quick')
@@ -40,12 +41,12 @@ describe ManifestationController do
       end
 
       context 'when downloadable already exists and is fresh' do
+        subject { get :download, params: { id: manifestation.id, format: 'kwic' } }
+
         let(:manifestation) { create(:manifestation, markdown: 'Simple text.') }
         let!(:existing_downloadable) do
           create(:downloadable, :with_file, object: manifestation, doctype: :kwic)
         end
-
-        subject { get :download, params: { id: manifestation.id, format: 'kwic' } }
 
         it 'reuses the existing downloadable' do
           subject
@@ -55,6 +56,12 @@ describe ManifestationController do
       end
 
       context 'when downloadable exists but is outdated' do
+        subject do
+          manifestation.markdown += "\nAdding new content to make downloadable stale."
+          manifestation.save!
+          get :download, params: { id: manifestation.id, format: 'kwic' }
+        end
+
         let(:manifestation) { create(:manifestation, markdown: 'Old text.') }
         let!(:old_downloadable) do
           dl = create(:downloadable, :with_file, object: manifestation, doctype: :kwic)
@@ -62,21 +69,20 @@ describe ManifestationController do
           dl
         end
 
-        subject do
-          manifestation.touch # Update manifestation to make downloadable stale
-          get :download, params: { id: manifestation.id, format: 'kwic' }
-        end
-
-        it 'creates a new downloadable' do
+        it 'creates a fresh downloadable' do
+          old_updated_at = old_downloadable.updated_at
+          travel_to Time.now + 1.minute # ensure updated_at will be different
           subject
           downloadables = manifestation.downloadables.where(doctype: 'kwic')
-          expect(downloadables.count).to eq(2)
+          expect(downloadables.count).to eq(1) # new downloadable should have replaced the stale one's attachment
           latest = downloadables.order(updated_at: :desc).first
-          expect(latest.id).not_to eq(old_downloadable.id)
+          expect(latest.updated_at).not_to eq(old_updated_at)
         end
       end
 
       context 'with Hebrew text' do
+        subject { get :download, params: { id: manifestation.id, format: 'kwic' } }
+
         let(:manifestation) do
           create(
             :manifestation,
@@ -85,12 +91,10 @@ describe ManifestationController do
           )
         end
 
-        subject { get :download, params: { id: manifestation.id, format: 'kwic' } }
-
         it 'preserves Hebrew acronyms' do
           subject
           downloadable = manifestation.downloadables.find_by(doctype: 'kwic')
-          content = downloadable.stored_file.download
+          content = downloadable.stored_file.download.force_encoding('UTF-8')
           expect(content).to include('מילה: מפא"י')
           expect(content).to include('מילה: רמטכ"ל')
           expect(content).to include('מילה: צה"ל')
@@ -98,9 +102,9 @@ describe ManifestationController do
       end
 
       context 'with unrecognized format' do
-        let(:manifestation) { create(:manifestation) }
-
         subject { get :download, params: { id: manifestation.id, format: 'invalid' } }
+
+        let(:manifestation) { create(:manifestation) }
 
         it 'redirects with error' do
           subject
@@ -110,9 +114,9 @@ describe ManifestationController do
       end
 
       context 'when manifestation has only whitespace' do
-        let(:empty_manifestation) { create(:manifestation, markdown: "   \n\n   ") }
-
         subject { get :download, params: { id: empty_manifestation.id, format: 'kwic' } }
+
+        let(:empty_manifestation) { create(:manifestation, markdown: "   \n\n   ") }
 
         it 'generates concordance without errors' do
           subject
