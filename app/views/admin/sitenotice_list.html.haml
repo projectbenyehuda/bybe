@@ -1,7 +1,7 @@
 .backend
   %h2= t(:sitenotice_management)
 
-  %a{ href: url_for(action: :sitenotice_new)}
+  %a{ href: sitenotice_new_path}
     .btn{style: 'float:none'}
       %b= t(:new_sitenotice)
   %p
@@ -17,9 +17,9 @@
       %tr
         %td= v.fromdate.to_s
         %td= v.todate.to_s
-        %td= link_to v.body, url_for(action: :sitenotice_show, id: v.id)
+        %td= link_to v.body, sitenotice_show_path(v)
         %td!= v.enabled? ? "&#10004;" : ''
         %td
-          = link_to t(:edit), url_for(action: :sitenotice_show, id: v.id)
-          = link_to t(:destroy), url_for(action: :sitenotice_destroy, id: v.id), data: { confirm: t(:are_you_sure)}
+          = link_to t(:edit), sitenotice_show_path(v)
+          = link_to t(:destroy), sitenotice_destroy_path(v), data: { confirm: t(:are_you_sure)}
   != paginate @sns

@@ -1,7 +1,7 @@
 .backend
   %h2= t(:featured_authors_management)
 
-  %a{ href: url_for(action: :featured_author_new), style: 'color:white;padding-top:0.5rem;'}
+  %a{ href: featured_author_new_path, style: 'color:white;padding-top:0.5rem;'}
     .btn{style: 'float:none'}
       %b= t(:new_featured_author)
   %p
@@ -15,10 +15,10 @@
 
     - @fcs.each do |v|
       %tr
-        %td= link_to v.title, url_for(action: :featured_author_show, id: v.id)
+        %td= link_to v.title, featured_author_show_path(v)
         %td!= v.featured_list
         %td= v.person.nil? ? t(:none) : link_to(v.person.authority.name, authority_path(v.person.authority))
         %td
-          = link_to t(:edit), url_for(action: :featured_author_show, id: v.id)
-          = link_to t(:destroy), url_for(action: :featured_author_destroy, id: v.id), :data => { :confirm => t(:are_you_sure) }
+          = link_to t(:edit), featured_author_show_path(v)
+          = link_to t(:destroy), featured_author_destroy_path(v), :data => { :confirm => t(:are_you_sure) }
   != paginate @fcs

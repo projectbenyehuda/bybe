@@ -1,7 +1,7 @@
 .backend
   %h2= t(:static_pages)
 
-  %a{ href: url_for(action: :static_page_new), style: 'color:white'}
+  %a{ href: static_page_new_path, style: 'color:white'}
     .btn{style: 'float:none'}
       %b= t(:new_static_page)
   %p
@@ -16,9 +16,9 @@
 
     - @vps.each do |v|
       %tr
-        %td= link_to v.tag, url_for(action: :static_page_show, id: v.id)
+        %td= link_to v.tag, static_page_show_path(v)
         %td= v.title
         %td= t(v.status)
         %td= t(v.mode)
-        %td= link_to t(:edit), url_for(action: :static_page_edit, id: v.id)
+        %td= link_to t(:edit), static_page_edit_path(v)
   != paginate @vps

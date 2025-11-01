@@ -1,6 +1,6 @@
 .backend
   %h1= t(:featured_author)
-  %a{ href: url_for(action: :featured_author_edit, id: @fc.id)}
+  %a{ href: featured_author_edit_path(@fc)}
     .btn{style:'float:none'}
       %b= t(:edit)
   %br
@@ -25,7 +25,7 @@
       %tr
         %td= fcf.fromdate.strftime('%d-%m-%Y')
         %td= fcf.todate.strftime('%d-%m-%Y')
-        %td= link_to t(:destroy), url_for(action: :featured_author_delete_feature, id: fcf.id), :data => { :confirm => t(:are_you_sure) }
+        %td= link_to t(:destroy), featured_author_delete_feature_path(fcf), :data => { :confirm => t(:are_you_sure) }
   = form_tag 'add_feature' do
     = hidden_field_tag :fcid, @fc.id
     = label_tag t(:fromdate)+': '
@@ -35,4 +35,4 @@
     = select_date Date.today, prefix: :todate
     %br
     = submit_tag(t(:add_feature_date))
-  = link_to t(:back), url_for(action: :featured_author_list)
+  = link_to t(:back), admin_featured_author_list_path

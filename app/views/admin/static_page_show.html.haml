@@ -1,6 +1,6 @@
 .backend
   %h1= t(:static_page)
-  %a{ href: url_for(action: :static_page_edit, id: @vp.id)}
+  %a{ href: static_page_edit_path(@vp)}
     .btn{style:'float:none'}
       %b= t(:edit)
   %br
@@ -34,4 +34,4 @@
   - @vp.images.each do |img|
     %img{src: url_for(img)}
   / add status and mode
-  = link_to t(:back), url_for(action: :static_pages_list)
+  = link_to t(:back), admin_static_pages_list_path

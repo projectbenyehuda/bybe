@@ -1,6 +1,6 @@
 .backend
   %h1= t(:sitenotice)
-  %a{ href: url_for(action: :sitenotice_edit, id: @sn.id)}
+  %a{ href: sitenotice_edit_path(@sn)}
     .btn{style:'float:none'}
       %b= t(:edit)
   %br
@@ -15,4 +15,4 @@
     %span{style:'color:green'}= t(:enabled)
   - else
     %span{style:'color:red'}= t(:disabled)
-  = link_to t(:back), url_for(action: :sitenotice_list)
+  = link_to t(:back), admin_sitenotice_list_path

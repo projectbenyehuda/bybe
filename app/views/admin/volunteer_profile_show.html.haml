@@ -1,6 +1,6 @@
 .backend
   %h1= t(:volunteer_profile)
-  %a{ href: url_for(action: :volunteer_profile_edit, id: @vp.id)}
+  %a{ href: volunteer_profile_edit_path(@vp)}
     .btn{style:'float:none'}
       %b= t(:edit)
   %br
@@ -26,7 +26,7 @@
       %tr
         %td= vpf.fromdate.strftime('%d-%m-%Y')
         %td= vpf.todate.strftime('%d-%m-%Y')
-        %td= link_to t(:destroy), url_for(action: :volunteer_profile_delete_feature, id: vpf.id), :data => { :confirm => t(:are_you_sure) }
+        %td= link_to t(:destroy), volunteer_profile_delete_feature_path(vpf), :data => { :confirm => t(:are_you_sure) }
   = form_tag 'add_feature' do
     = hidden_field_tag :vpid, @vp.id
     = label_tag t(:fromdate)+': '
@@ -36,4 +36,4 @@
     = select_date Date.today, prefix: :todate
     %br
     = submit_tag(t(:add_feature_date))
-  = link_to t(:back), url_for(action: :volunteer_profiles_list)
+  = link_to t(:back), admin_volunteer_profiles_list_path

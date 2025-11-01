@@ -49,7 +49,7 @@
                 %li{ style: 'padding-right:10px' }= link_to "#{m.title} / #{m.authors_string}", proof_path(p)
           - else
             .red= t(:proof_for_missing_item)
-      = button_to t(:assign_proofs), url_for(action: :assign_proofs), {method: :get}
+      = button_to t(:assign_proofs), assign_proofs_path, {method: :get}
       - if current_user.admin?
         %p= link_to 'עיון בהגהות חדשות מן הציבור ('+@open_proofs+')', proofs_path(:status => 'new')
         %p= link_to 'עיון בהגהות טעונות עיון נוסף ('+@escalated_proofs+')', proofs_path(:status => 'escalated')
@@ -65,9 +65,9 @@
       %div
         %h2= t(:featured_content_heading)
         %p= link_to t('admin.featured_contents.index.title'), admin_featured_contents_path
-        %p= link_to t(:featured_authors_management), url_for(action: :featured_author_list)
-        %p= link_to t(:volunteer_profiles), url_for(action: :volunteer_profiles_list)
-        %p= link_to t(:static_pages), url_for(action: :static_pages_list)
+        %p= link_to t(:featured_authors_management), admin_featured_author_list_path
+        %p= link_to t(:volunteer_profiles), admin_volunteer_profiles_list_path
+        %p= link_to t(:static_pages), admin_static_pages_list_path
   - if current_user.admin?
     /.admin_dashboard_item
     /  %h2= t(:internal_search)
@@ -162,7 +162,7 @@
 :javascript
   $(document).ready(function() {
     $('#show_my_convs').click(function(){
-      $('#my_convs').load("#{url_for(action: :my_convs, id: current_user.id)}");
+      $('#my_convs').load("#{my_convs_path(current_user)}");
       $('#show_my_convs').remove();
     })
   });
