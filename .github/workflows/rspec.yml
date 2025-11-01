@@ -43,6 +43,7 @@ jobs:
           cp ./.github/workflows/rspec_config/* ./config
           echo ELASTICSEARCH_HOST=elasticsearch:9200 > ./.env.test.local
           echo DATABASE_URL=mysql2://root:root@mysql:3306/bybe_test >> ./.env.test.local
+          echo REDIS_URL=redis://redis:6379/1 >> ./.env.test.local
       - name: Setup DB
         run: |
           bin/rails db:create RAILS_ENV=test
