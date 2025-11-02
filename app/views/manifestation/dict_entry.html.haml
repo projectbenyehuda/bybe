@@ -31,7 +31,11 @@
                   = form_tag 'searchbox' do
                     = t(:search_the_dictionary)
                     = hidden_field_tag :mid, @m.id
-                    = autocomplete_field_tag :dictq, '', autocomplete_dict_entry_path, {'data-noMatchesLabel' => t(:no_matches_found), id: 'dict_autocomplete', placeholder: t(:search_term), class: 'field-v02', style: 'width: unset; margin-top: unset; margin-bottom:10px;', fields: {manifestation_id: '#mid'}}
+                    = autocomplete_field_tag :dictq, '', autocomplete_dict_entry_path,
+                                             { id: 'dict_autocomplete', placeholder: t(:search_term),
+                                               class: 'field-v02',
+                                               style: 'width: unset; margin-top: unset; margin-bottom:10px;',
+                                               fields: { manifestation_id: '#mid' } }
 
             .by-card-v02.left-side-card-v02
               -#.by-card-header-left-v02

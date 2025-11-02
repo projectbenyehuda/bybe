@@ -30,7 +30,7 @@
                   - else
                     %p= t(:merge_tag_generic_html, tag: @tag.name, src_tag_taggings_count: @tag.taggings_count).html_safe
                     %p#dest_tag
-                    = autocomplete_field_tag :tag, @tag.name, autocomplete_tag_name_path, {'data-noMatchesLabel' => t(:no_matches_found), class: 'field-v02'}
+                    = autocomplete_field_tag :tag, @tag.name, autocomplete_tag_name_path, { class: 'field-v02' }
                 .merge-list#tag_list{style: 'display:none;'}
                   %p= t(:select_tag_from_list)
                   .full-tags-list-area
