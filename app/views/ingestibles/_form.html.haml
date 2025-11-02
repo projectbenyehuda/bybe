@@ -40,7 +40,6 @@
             = autocomplete_field_tag :author,
                                      '',
                                      autocomplete_authority_name_and_aliases_path,
-                                     'data-noMatchesLabel' => t(:no_matches_found),
                                      id: 'aterm',
                                      style: 'width:400px;',
                                      id_element: '#authority_id'
@@ -54,7 +53,8 @@
             %br
 
             = f.label t('ingestible.any_volume')
-            = autocomplete_field_tag :volume, '', autocomplete_collection_title_path, 'data-noMatchesLabel' => t(:no_matches_found), id: 'cterm', style: 'width:400px;', id_element: '#prospective_volume_id'
+            = autocomplete_field_tag :volume, '', autocomplete_collection_title_path,
+                                     id: 'cterm', style: 'width:400px;', id_element: '#prospective_volume_id'
             %br
             = t(:or)
             %br

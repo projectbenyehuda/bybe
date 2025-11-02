@@ -13,13 +13,15 @@
       %br
       .admin_container
         %b= t(:or_search_term)
-        = autocomplete_field_tag :qterm, '', autocomplete_manifestation_title_path, 'data-noMatchesLabel' => t(:no_matches_found), id: 'qterm', style: 'background-color: #ffffff;', id_element: '#insert_mid'
+        = autocomplete_field_tag :qterm, '', autocomplete_manifestation_title_path,
+                                 id: 'qterm', style: 'background-color: #ffffff;', id_element: '#insert_mid'
 
         = hidden_field_tag :insert_mid, '', id: 'insert_mid'
       %br
       .admin_container
         %b= t(:or_search_for_collection)
-        = autocomplete_field_tag :cterm, '', autocomplete_collection_title_path, 'data-noMatchesLabel' => t(:no_matches_found), id: 'cterm', style: 'background-color: #ffffff;', id_element: '#insert_cid'
+        = autocomplete_field_tag :cterm, '', autocomplete_collection_title_path,
+                                 id: 'cterm', style: 'background-color: #ffffff;', id_element: '#insert_cid'
         = hidden_field_tag :insert_cid, '', id: 'insert_cid'
       %br
       .admin_container
