@@ -102,7 +102,7 @@ describe CollectionItemsController do
       end
     end
 
-    context 'when new_index is greater than number of items in desination collection' do
+    context 'when new_index is greater than number of items in destination collection' do
       let(:new_index) { 4 }
 
       it 'fails with bad request' do
