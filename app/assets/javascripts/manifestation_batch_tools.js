@@ -27,8 +27,8 @@ $(document).ready(function() {
     updateBatchActionsVisibility();
   });
 
-  // Individual checkbox change
-  $('.manifestation-checkbox').on('change', function() {
+  // Individual checkbox change - using event delegation
+  $(document).on('change', '.manifestation-checkbox', function() {
     var totalCheckboxes = $('.manifestation-checkbox').length;
     var checkedCheckboxes = $('.manifestation-checkbox:checked').length;
     $('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes);
@@ -42,8 +42,8 @@ $(document).ready(function() {
     setTimeout(function() {
       $row.fadeOut(3000, function() {
         $(this).remove();
-        // If no more rows, hide batch actions
-        if ($('#manifestations-table tbody tr').length === 0) {
+        // If no more visible rows, hide batch actions
+        if ($('#manifestations-table tbody tr:visible').length === 0) {
           $('#batch-actions-container').hide();
         }
       });
@@ -83,11 +83,13 @@ $(document).ready(function() {
     });
   }
 
-  // Single delete button click
-  $('.delete-manifestation').on('click', function(e) {
+  // Single delete button click - using event delegation
+  $(document).on('click', '.delete-manifestation', function(e) {
     e.preventDefault();
-    var manifestationId = $(this).data('manifestation-id');
-    if (confirm('Are you sure you want to delete this manifestation?')) {
+    var $btn = $(this);
+    var manifestationId = $btn.data('manifestation-id');
+    var confirmMessage = $btn.data('confirm');
+    if (confirm(confirmMessage)) {
       performAction(
         manifestationId,
         'delete',
@@ -97,8 +99,8 @@ $(document).ready(function() {
     }
   });
 
-  // Single unpublish button click
-  $('.unpublish-manifestation').on('click', function(e) {
+  // Single unpublish button click - using event delegation
+  $(document).on('click', '.unpublish-manifestation', function(e) {
     e.preventDefault();
     var manifestationId = $(this).data('manifestation-id');
     performAction(
@@ -112,17 +114,19 @@ $(document).ready(function() {
   // Batch delete
   $('#batch-destroy').on('click', function(e) {
     e.preventDefault();
+    var $container = $('#batch-actions-container');
     var selectedIds = [];
     $('.manifestation-checkbox:checked').each(function() {
       selectedIds.push($(this).data('manifestation-id'));
     });
 
     if (selectedIds.length === 0) {
-      alert('Please select at least one manifestation');
+      alert($container.data('please-select'));
       return;
     }
 
-    var confirmMessage = 'Are you sure you want to delete ' + selectedIds.length + ' manifestation(s)?';
+    var confirmTemplate = $container.data('confirm-batch-delete');
+    var confirmMessage = confirmTemplate.replace('%<count>s', selectedIds.length);
     if (confirm(confirmMessage)) {
       selectedIds.forEach(function(id) {
         performAction(
@@ -138,17 +142,19 @@ $(document).ready(function() {
   // Batch unpublish
   $('#batch-unpublish').on('click', function(e) {
     e.preventDefault();
+    var $container = $('#batch-actions-container');
     var selectedIds = [];
     $('.manifestation-checkbox:checked').each(function() {
       selectedIds.push($(this).data('manifestation-id'));
     });
 
     if (selectedIds.length === 0) {
-      alert('Please select at least one manifestation');
+      alert($container.data('please-select'));
       return;
     }
 
-    var confirmMessage = 'Are you sure you want to unpublish ' + selectedIds.length + ' manifestation(s)?';
+    var confirmTemplate = $container.data('confirm-batch-unpublish');
+    var confirmMessage = confirmTemplate.replace('%<count>s', selectedIds.length);
     if (confirm(confirmMessage)) {
       selectedIds.forEach(function(id) {
         performAction(

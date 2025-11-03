@@ -1206,7 +1206,9 @@ class AdminController < ApplicationController
     m = Manifestation.find(params[:id])
     m.destroy
     respond_to do |format|
-      format.html { redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:deleted_successfully) }
+      format.html do
+        redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:deleted_successfully)
+      end
       format.json { render json: { success: true, message: t(:deleted_successfully), id: params[:id] } }
     end
   end
@@ -1215,7 +1217,9 @@ class AdminController < ApplicationController
     m = Manifestation.find(params[:id])
     m.update(status: 'unpublished')
     respond_to do |format|
-      format.html { redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:updated_successfully) }
+      format.html do
+        redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:updated_successfully)
+      end
       format.json { render json: { success: true, message: t(:updated_successfully), id: params[:id] } }
     end
   end

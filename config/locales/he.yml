@@ -951,6 +951,10 @@ he:
   delete: מחיקה
   delete_selected: מחיקת הנבחרות
   unpublish_selected: הסתרת הנבחרות
+  confirm_delete_manifestation: האם אתה בטוח שברצונך למחוק יצירה זו?
+  confirm_batch_delete: האם אתה בטוח שברצונך למחוק %<count>s יצירה/ות?
+  confirm_batch_unpublish: האם אתה בטוח שברצונך להסתיר %<count>s יצירה/ות?
+  please_select_manifestation: נא לבחור לפחות יצירה אחת
   cancel_focus_on_this_tag: ביטול מיקוד בתגית זו
   anth_text_deletion: מחיקת פריט מהמקראה
   anth_text_deletion_p1: 'פעולה זו תמחק ללא אפשרות חזרה את הפריט:'
