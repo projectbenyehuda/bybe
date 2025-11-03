@@ -157,7 +157,7 @@ class CollectionItemsController < ApplicationController
     items.each_with_index do |ci, index|
       if ci.seqno != index + 1
         ci.seqno = index + 1
-        ci.save(validate: false) # skipping validation for performance
+        ci.save(validate: false) # skipping validation for performance - safe because only seqno is changed and items are already validated to be sequential
       end
     end
   end
