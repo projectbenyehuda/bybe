@@ -83,9 +83,9 @@
     // Handle visual feedback for row
     function showSuccess(rowId) {
       var $row = $('#manifestation-row-' + rowId);
-      $row.css('background-color', '#d4edda'); // light green
-      // also change background of cells
-      $row.find('td').css('background-color', '#d4edda');
+      $row.addClass('bg-success'); // Use Bootstrap success background
+      // also add class to cells
+      $row.find('td').addClass('bg-success');
       setTimeout(function() {
         $row.fadeOut(3000, function() {
           $(this).remove();
