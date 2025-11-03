@@ -8,8 +8,6 @@
 //= require rails-ujs
 //= require jquery-ui
 //= require jquery.slick
-//= require jquery-ui/widgets/autocomplete
-//= require autocomplete-rails
 //= require jquery.mark.min
 //= require jquery.caret
 //= require wikidata-sdk.min
