@@ -949,6 +949,8 @@ he:
   delete_photo: מחיקת תמונה (לצמיתות!)
   delete_link: הסרת קישורית
   delete: מחיקה
+  delete_selected: מחיקת הנבחרות
+  unpublish_selected: הסתרת הנבחרות
   cancel_focus_on_this_tag: ביטול מיקוד בתגית זו
   anth_text_deletion: מחיקת פריט מהמקראה
   anth_text_deletion_p1: 'פעולה זו תמחק ללא אפשרות חזרה את הפריט:'
