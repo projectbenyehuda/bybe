@@ -59,10 +59,10 @@ describe CollectionItemsController do
       expect { call }.to change { src_collection.collection_items.reload.count }.by(-1)
                      .and change { dest_collection.collection_items.reload.count }.by(1)
 
-      # Verify source collection has correct items and order
+      # Verify source collection has correct items and order with cleaned up seqno
       src_collection.reload
       expect(src_collection.collection_items.pluck(:alt_title)).to eq(%w(A B D E))
-      expect(src_collection.collection_items.pluck(:seqno)).to eq([1, 2, 4, 5])
+      expect(src_collection.collection_items.pluck(:seqno)).to eq([1, 2, 3, 4])
 
       # Verify destination collection has correct items and order
       dest_collection.reload
