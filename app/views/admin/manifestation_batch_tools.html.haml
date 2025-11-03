@@ -89,10 +89,7 @@
       setTimeout(function() {
         $row.fadeOut(3000, function() {
           $(this).remove();
-          // If no more visible rows, hide batch actions
-          if ($('#manifestations-table tbody tr:visible').length === 0) {
-            $('#batch-actions-container').hide();
-          }
+          checkAndHideBatchActions();
         });
       }, 500);
     }
@@ -104,13 +101,17 @@
       $row.find('.error-message').remove();
       // Insert error message as a full-width row below
       var colspan = $row.find('td').length;
-      var $errorRow = $('<tr class="error-message"><td colspan="' + colspan + '" dir="rtl"><div class="alert alert-danger" style="margin:0;">' + $('<div>').text(message).html() + '</div></td></tr>');
+      var escapedMessage = $('<div>').text(message).html();
+      var errorHtml = '<tr class="error-message"><td colspan="' + colspan +
+        '" dir="rtl"><div class="alert alert-danger" style="margin:0;">' +
+        escapedMessage + '</div></td></tr>';
+      var $errorRow = $(errorHtml);
       $row.after($errorRow);
     }
 
     // AJAX function to perform action on a single manifestation
     function performAction(manifestationId, action, url, method) {
-      $.ajax({
+      return $.ajax({
         url: url,
         method: method,
         dataType: 'json',
@@ -133,6 +134,13 @@
           showError(manifestationId, message);
         }
       });
+    }
+
+    // Helper function to check if all rows are hidden
+    function checkAndHideBatchActions() {
+      if ($('#manifestations-table tbody tr:visible').length === 0) {
+        $('#batch-actions-container').hide();
+      }
     }
 
     // Single delete button click - using event delegation
@@ -180,13 +188,19 @@
       var confirmTemplate = $container.data('confirm-batch-delete');
       var confirmMessage = confirmTemplate.replace('%<count>s', selectedIds.length);
       if (confirm(confirmMessage)) {
-        selectedIds.forEach(function(id) {
-          performAction(
+        // Use Promise.all to wait for all operations to complete
+        var promises = selectedIds.map(function(id) {
+          return performAction(
             id,
             'delete',
             '/admin/destroy_manifestation',
             'DELETE'
           );
+        });
+
+        // After all operations complete, check if we need to hide batch actions
+        Promise.all(promises).finally(function() {
+          checkAndHideBatchActions();
         });
       }
     });
@@ -208,13 +222,19 @@
       var confirmTemplate = $container.data('confirm-batch-unpublish');
       var confirmMessage = confirmTemplate.replace('%<count>s', selectedIds.length);
       if (confirm(confirmMessage)) {
-        selectedIds.forEach(function(id) {
-          performAction(
+        // Use Promise.all to wait for all operations to complete
+        var promises = selectedIds.map(function(id) {
+          return performAction(
             id,
             'unpublish',
             '/admin/unpublish_manifestation',
             'POST'
           );
+        });
+
+        // After all operations complete, check if we need to hide batch actions
+        Promise.all(promises).finally(function() {
+          checkAndHideBatchActions();
         });
       }
     });
