@@ -1198,23 +1198,54 @@ class AdminController < ApplicationController
   def manifestation_batch_tools
     return unless params[:ids].present?
 
-    ids = params[:ids].split(/\s+/)
+    ids = parse_manifestation_ids(params[:ids])
     @manifestations = Manifestation.where(id: ids)
   end
 
   def destroy_manifestation
     m = Manifestation.find(params[:id])
     m.destroy
-    redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:deleted_successfully)
+    respond_to do |format|
+      format.html do
+        redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:deleted_successfully)
+      end
+      format.json { render json: { success: true, message: t(:deleted_successfully), id: params[:id] } }
+    end
   end
 
   def unpublish_manifestation
     m = Manifestation.find(params[:id])
     m.update(status: 'unpublished')
-    redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:updated_successfully)
+    respond_to do |format|
+      format.html do
+        redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:updated_successfully)
+      end
+      format.json { render json: { success: true, message: t(:updated_successfully), id: params[:id] } }
+    end
   end
 
   private
+
+  def parse_manifestation_ids(input)
+    ids = []
+    # Split by whitespace
+    input.split(/\s+/).each do |token|
+      # Check if token contains a range separator (- or –)
+      if token =~ /^(\d+)[-–](\d+)$/
+        start_id = ::Regexp.last_match(1).to_i
+        end_id = ::Regexp.last_match(2).to_i
+        # Ensure start_id <= end_id; swap if necessary
+        if start_id > end_id
+          start_id, end_id = end_id, start_id
+        end
+        ids.concat((start_id..end_id).to_a)
+      else
+        # Single ID
+        ids << token.to_i if token =~ /^\d+$/
+      end
+    end
+    ids.uniq
+  end
 
   def vp_params
     params[:volunteer_profile].permit(:name, :bio, :about, :profile_image)

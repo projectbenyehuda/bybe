@@ -39,7 +39,15 @@ bundle exec pronto run -c origin/<TARGET_BRANCH>
 ## Testing Guidelines
 
 - Use RSpec for all tests
+- In development and test environments the app uses dotenv gem to load environment variables from `.env.*` and 
+  `.env.*.local` files. NEVER change content of those files or remove them, copilot environment should contain
+  `.env.test.local` file with proper settings for running rspec.  
+- Copilot environment should already have test database created and migrated, so no need to run `rails db:create` and 
+  `rails db:prepare` commands.
+- If you encounter problems while running rspec like missing db or wrong settings, don't try to resolve them. Simply
+  stop and report encountered problems.
 - Test files are organized by type: controllers, models, services, requests, api, mailers, sidekiq
+- We don't create spec for views and routing
 - Use FactoryBot for test data generation
 
 ## Common Patterns and Best Practices

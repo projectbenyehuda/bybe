@@ -305,14 +305,17 @@ class ManifestationController < ApplicationController
       return
     end
 
+    # NOTE: Asaf disabled this transaction because it caused a failure to attach the downloadable
+    #  in dev and testing environments. There is now a check for attachment inside the FreshDownloadable
+    #  logic so the transaction is less needed. If you re-enable it, please test thoroughly.
     # Wrapping download code into transaction to make it atomic
     # Without this we had situation when Downloadable object was created but attachmnt creation failed
-    Downloadable.transaction do
-      m = Manifestation.find(params[:id])
-      dl = GetFreshManifestationDownloadable.call(m, format)
-      track_download(m, format)
-      redirect_to rails_blob_url(dl.stored_file, disposition: :attachment)
-    end
+    # Downloadable.transaction do
+    m = Manifestation.find(params[:id])
+    dl = GetFreshManifestationDownloadable.call(m, format)
+    track_download(m, format)
+    redirect_to rails_blob_url(dl.stored_file, disposition: :attachment)
+    # end
   end
 
   def render_html
