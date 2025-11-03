@@ -1234,7 +1234,10 @@ class AdminController < ApplicationController
       if token =~ /^(\d+)[-–](\d+)$/
         start_id = ::Regexp.last_match(1).to_i
         end_id = ::Regexp.last_match(2).to_i
-        # Add all IDs in the range
+        # Ensure start_id <= end_id; swap if necessary
+        if start_id > end_id
+          start_id, end_id = end_id, start_id
+        end
         ids.concat((start_id..end_id).to_a)
       else
         # Single ID
