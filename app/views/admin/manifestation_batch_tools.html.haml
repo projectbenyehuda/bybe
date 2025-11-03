@@ -8,30 +8,30 @@
   = f.submit t('.fetch'), class: 'btn btn-primary'
 
 - if defined?(@manifestations) && @manifestations.present?
-  #batch-actions-container{style: 'margin-bottom: 15px; display: none;'}
-    %button#batch-destroy.btn.btn-danger{type: 'button'}
+  #batch-actions-container{ style: 'margin-bottom: 15px; display: none;' }
+    %button.btn.btn-danger#batch-destroy{ type: 'button' }
       = t(:delete_selected)
-    %button#batch-unpublish.btn.btn-warning{type: 'button'}
+    %button.btn.btn-warning#batch-unpublish{ type: 'button' }
       = t(:unpublish_selected)
-  %table#manifestations-table.table.table-bordered
+  %table.table.table-bordered#manifestations-table
     %thead
       %tr
         %th
-          %input#select-all{type: 'checkbox'}
+          %input#select-all{ type: 'checkbox' }
         %th= t(:id)
         %th= t(:title)
         %th= t(:authors)
         %th= t(:actions)
     %tbody
       - @manifestations.each do |m|
-        %tr{id: "manifestation-row-#{m.id}", data: { manifestation_id: m.id }}
+        %tr{ id: "manifestation-row-#{m.id}", data: { manifestation_id: m.id } }
           %td
-            %input.manifestation-checkbox{type: 'checkbox', data: { manifestation_id: m.id }}
+            %input.manifestation-checkbox{ type: 'checkbox', data: { manifestation_id: m.id } }
           %td= m.id
           %td= link_to m.title, manifestation_path(m)
           %td= m.author_string
           %td
-            %button.btn.btn-danger.btn-sm.delete-manifestation{type: 'button', data: { manifestation_id: m.id }}
+            %button.btn.btn-danger.btn-sm.delete-manifestation{ type: 'button', data: { manifestation_id: m.id } }
               = t(:delete)
-            %button.btn.btn-warning.btn-sm.unpublish-manifestation{type: 'button', data: { manifestation_id: m.id }}
+            %button.btn.btn-warning.btn-sm.unpublish-manifestation{ type: 'button', data: { manifestation_id: m.id } }
               = t(:unpublish)
