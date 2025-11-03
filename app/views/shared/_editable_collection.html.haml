@@ -109,8 +109,9 @@
           ///code to pass the data using AJAX
           if (newIndex != oldIndex) {
             $mask.show();
+            var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
             $.post(
-              '#{drag_item_collection_path(collection)}',
+              '/collection_items/' + itemId + '/drag_item',
               { old_index: oldIndex, new_index: newIndex }
             ).always(function() {
               $mask.hide();
@@ -120,16 +121,11 @@
       },
       receive: function(event, ui) {
         $mask.show();
+        var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
         $.post(
-          '#{collection_transplant_item_path(collection.id)}',
+          '/collection_items/' + itemId + '/transplant_item',
           {
             dest_coll_id: this.id.replace('#{nonce}_coll_',''),
-            src_coll_id: ui.sender[0].id.replace('#{nonce}_coll_',''),
-            item_id: ui.item[0].id.replace('#{nonce}_collitem_',''),
-            // read the previous index from the source sortable (ui.sender) rather than
-            // relying on an attribute on the moved DOM element which can be lost/changed
-            // during the transfer. Use radix 10 with parseInt for consistency.
-            old_pos: parseInt($(ui.sender[0]).attr('data-previndex'), 10) + 1,
             new_pos: ui.item.index() + 1
           }
         ).always(function() {

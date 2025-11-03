@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class CollectionItemsController < ApplicationController
-  before_action :set_collection_item, only: %i(show edit update destroy)
+  before_action :require_editor
+  before_action :set_collection_item, only: %i(show edit update destroy drag_item transplant_item)
 
   # GET /collection_items/1 or /collection_items/1.json
   def show; end
@@ -91,6 +92,37 @@ class CollectionItemsController < ApplicationController
       format.html { redirect_to collection_manage_path(@collection.id), notice: t(:deleted_successfully) }
       format.js
     end
+  end
+
+  # POST /collection_items/1/drag_item
+  def drag_item
+    collection = @collection_item.collection
+    # zero-based index of where we want to move this item
+    new_index = params.fetch(:new_index).to_i
+
+    Collection.transaction do
+      items = collection.collection_items.order(:seqno).to_a
+      old_index = items.index(@collection_item)
+      item_to_move = items.delete_at(old_index)
+      items.insert(new_index, item_to_move)
+
+      items.each_with_index do |ci, index|
+        ci.update!(seqno: index + 1) unless ci.seqno == index + 1
+      end
+    end
+    head :ok
+  end
+
+  # POST /collection_items/1/transplant_item
+  def transplant_item
+    dest_coll = Collection.find(params[:dest_coll_id].to_i)
+    src_coll = @collection_item.collection
+
+    ActiveRecord::Base.transaction do
+      dest_coll.insert_item_at(@collection_item, params[:new_pos].to_i)
+      src_coll.remove_item(@collection_item.id)
+    end
+    head :ok
   end
 
   private
