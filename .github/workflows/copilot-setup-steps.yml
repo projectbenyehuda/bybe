@@ -33,6 +33,10 @@ jobs:
           ES_JAVA_OPTS: -Xms1024m -Xmx1024m
         ports:
           - 9200
+      redis:
+        image: redis:7.2.3
+        ports:
+          - 6379
     steps:
       - name: Install dependencies
         run: |
@@ -52,12 +56,10 @@ jobs:
           cp ./.github/workflows/rspec_config/* ./config
           echo ELASTICSEARCH_HOST=127.0.0.1:${{ job.services.elasticsearch.ports[9200] }} > ./.env.test.local
           echo DATABASE_URL=mysql2://root:root@127.0.0.1:${{ job.services.mysql.ports[3306] }}/bybe_test >> ./.env.test.local
-      - name: Fetch target branch
-        run: git fetch origin ${{ github.event.pull_request.base.ref }}
+          echo REDIS_URL=redis://127.0.0.1:${{ job.services.redis.ports[6379] }}/1 >> ./.env.test.local
+      - name: Fetch all branches
+        run: git fetch origin
       - name: Setup DB
-        env:
-          RAILS_ENV: test
-          DATABASE_URL: mysql2://root:root@127.0.0.1:${{ job.services.mysql.ports[3306] }}/bybe_test
         run: |
-          bin/rails db:create
-          bin/rails db:migrate
+          bin/rails db:create RAILS_ENV=test
+          bin/rails db:migrate RAILS_ENV=test

@@ -949,6 +949,12 @@ he:
   delete_photo: מחיקת תמונה (לצמיתות!)
   delete_link: הסרת קישורית
   delete: מחיקה
+  delete_selected: מחיקת הנבחרות
+  unpublish_selected: הסתרת הנבחרות
+  confirm_delete_manifestation: האם את/ה בטוח/ה שברצונך למחוק יצירה זו?
+  confirm_batch_delete: האם את/ה בטוח/ה שברצונך למחוק %<count>s יצירה/ות?
+  confirm_batch_unpublish: האם את/ה בטוח/ה שברצונך להסתיר %<count>s יצירה/ות?
+  please_select_manifestation: נא לבחור לפחות יצירה אחת
   cancel_focus_on_this_tag: ביטול מיקוד בתגית זו
   anth_text_deletion: מחיקת פריט מהמקראה
   anth_text_deletion_p1: 'פעולה זו תמחק ללא אפשרות חזרה את הפריט:'
