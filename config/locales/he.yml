@@ -1720,3 +1720,4 @@ he:
   notification_digest_intro: להלן סיכום ההודעות שצברנו עבורך
   notification_render_error: שגיאה בעיבוד הודעה
   unrecognized_format: תבנית קובץ לא מוכרת
+  collection_item_operation_error: אירעה שגיאה בלתי צפויה, נא לטעון מחדש את האוסף

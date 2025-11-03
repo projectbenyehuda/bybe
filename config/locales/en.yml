@@ -287,3 +287,4 @@ en:
   works: Works
   volumes: Volumes
   unrecognized_format: Unrecognized file format
+  collection_item_operation_error: Unexpected error occurred, please reload collection

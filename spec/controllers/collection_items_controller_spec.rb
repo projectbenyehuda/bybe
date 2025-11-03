@@ -37,6 +37,18 @@ describe CollectionItemsController do
 
       it_behaves_like 'drags successfully'
     end
+
+    context 'when old_index does not match actual position' do
+      let(:old_index) { 0 }
+      let(:new_index) { 2 }
+
+      it 'returns bad request' do
+        # Manually set the collection_item to use a different index (item at position 2)
+        actual_collection_item = collection.collection_items[2]
+        post :drag_item, params: { id: actual_collection_item.id, old_index: old_index, new_index: new_index }
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
   end
 
   describe '#transplant_item' do
