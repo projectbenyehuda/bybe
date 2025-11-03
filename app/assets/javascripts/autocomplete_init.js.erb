@@ -1,7 +1,5 @@
 // Configure default options for autocomplete-rails gem
-// Set Hebrew "no matches" message as default (from config/locales/he.yml :no_matches_found)
-$(document).ready(function() {
-  if (typeof $.railsAutocomplete !== 'undefined' && $.railsAutocomplete.options) {
-    $.railsAutocomplete.options.noMatchesLabel = '<%= I18n.t(:no_matches_found) %>';
-  }
-});
+//= require jquery-ui/widgets/autocomplete
+//= require autocomplete-rails
+
+jQuery.railsAutocomplete.options.noMatchesLabel = '<%= I18n.t(:no_matches_found) %>';
