@@ -92,8 +92,7 @@
       dropOnEmpty: true,
       start: function(e, ui) {
         // creates a temporary attribute on the element with the old index
-        $(this).attr('data-previndex', ui.item.index());
-        ui.item.attr('data-previndex', ui.item.index());
+        ui.item.data('oldIndex', ui.item.index());
       },
       update: function(e, ui) {
         var draggedOut = this !== ui.item.parent()[0] && !$.contains(this, ui.item.parent()[0]);
@@ -103,8 +102,7 @@
         if (sameList) {
           // gets the new and old index then removes the temporary attribute
           var newIndex = ui.item.index();
-          var oldIndex = parseInt($(this).attr('data-previndex'));
-          $(this).removeAttr('data-previndex');
+          var oldIndex = ui.item.data('oldIndex');
 
           ///code to pass the data using AJAX
           if (newIndex != oldIndex) {
