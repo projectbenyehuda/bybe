@@ -24,6 +24,50 @@ describe AdminController do
       expect(response.body).to include('Test 2')
     end
 
+    it 'supports range notation with minus character' do
+      # Create manifestations with sequential IDs
+      m1 = create(:manifestation, title: 'Range Test 1', status: :published)
+      m2 = create(:manifestation, title: 'Range Test 2', status: :published)
+      m3 = create(:manifestation, title: 'Range Test 3', status: :published)
+
+      # Use range notation
+      get :manifestation_batch_tools, params: { ids: "#{m1.id}-#{m3.id}" }
+
+      expect(response.body).to include('Range Test 1')
+      expect(response.body).to include('Range Test 2')
+      expect(response.body).to include('Range Test 3')
+    end
+
+    it 'supports range notation with en-dash character' do
+      # Create manifestations with sequential IDs
+      m1 = create(:manifestation, title: 'Dash Test 1', status: :published)
+      m2 = create(:manifestation, title: 'Dash Test 2', status: :published)
+      m3 = create(:manifestation, title: 'Dash Test 3', status: :published)
+
+      # Use en-dash range notation
+      get :manifestation_batch_tools, params: { ids: "#{m1.id}–#{m3.id}" }
+
+      expect(response.body).to include('Dash Test 1')
+      expect(response.body).to include('Dash Test 2')
+      expect(response.body).to include('Dash Test 3')
+    end
+
+    it 'supports mixed ranges and individual IDs' do
+      # Create manifestations
+      m1 = create(:manifestation, title: 'Mixed 1', status: :published)
+      m2 = create(:manifestation, title: 'Mixed 2', status: :published)
+      m3 = create(:manifestation, title: 'Mixed 3', status: :published)
+      m4 = create(:manifestation, title: 'Mixed 4', status: :published)
+
+      # Mix ranges and individual IDs
+      get :manifestation_batch_tools, params: { ids: "#{m1.id}-#{m2.id} #{m4.id}" }
+
+      expect(response.body).to include('Mixed 1')
+      expect(response.body).to include('Mixed 2')
+      expect(response.body).not_to include('Mixed 3')
+      expect(response.body).to include('Mixed 4')
+    end
+
     it 'deletes a manifestation' do
       expect do
         delete :destroy_manifestation, params: { id: manifestations.first.id }

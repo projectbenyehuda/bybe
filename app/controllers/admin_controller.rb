@@ -1198,7 +1198,7 @@ class AdminController < ApplicationController
   def manifestation_batch_tools
     return unless params[:ids].present?
 
-    ids = params[:ids].split(/\s+/)
+    ids = parse_manifestation_ids(params[:ids])
     @manifestations = Manifestation.where(id: ids)
   end
 
@@ -1225,6 +1225,24 @@ class AdminController < ApplicationController
   end
 
   private
+
+  def parse_manifestation_ids(input)
+    ids = []
+    # Split by whitespace
+    input.split(/\s+/).each do |token|
+      # Check if token contains a range separator (- or –)
+      if token =~ /^(\d+)[-–](\d+)$/
+        start_id = ::Regexp.last_match(1).to_i
+        end_id = ::Regexp.last_match(2).to_i
+        # Add all IDs in the range
+        ids.concat((start_id..end_id).to_a)
+      else
+        # Single ID
+        ids << token.to_i if token =~ /^\d+$/
+      end
+    end
+    ids.uniq
+  end
 
   def vp_params
     params[:volunteer_profile].permit(:name, :bio, :about, :profile_image)
