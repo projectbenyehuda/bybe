@@ -177,11 +177,8 @@ class Ingestible < ApplicationRecord
 
   # copied from HtmlFileController's new_postprocess
   def postprocess(buf)
-    # join lines in <span> elements that, er, span more than one line
-    buf.gsub!(%r{<span.*?>.*?\n.*?</span>}) { |thematch| thematch.sub("\n", ' ') }
-    # remove all <span> tags because pandoc generates them excessively
-    buf.gsub!(/<span.*?>/m, '')
-    buf.gsub!('</span>', '')
+    # remove all SPAN tags left by pandoc from buf
+    buf = buf.gsub(/<span[^>]*>/m, '').gsub('</span>', '')
     lines = buf.split("\n")
     in_footnotes = false
     prev_nikkud = false
@@ -214,7 +211,8 @@ class Ingestible < ApplicationRecord
         end
       end
     end
-    new_buffer = lines.join "\n"
+    # join the lines back together, keeping only one '>' character at the start of paragraphs, i.e. removing '>' from consecutive lines that are being joined to a line already starting with '>'
+    new_buffer = lines.join("\n").gsub(/\n> +>/, "\n> ")
     new_buffer.gsub!("\n\s*\n\s*\n", "\n\n")
     ['.', ',', ':', ';', '?', '!'].each do |c|
       new_buffer.gsub!(" #{c}", c) # remove spaces before punctuation
