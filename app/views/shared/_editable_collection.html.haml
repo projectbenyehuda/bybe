@@ -128,7 +128,7 @@
           '/collection_items/' + itemId + '/transplant_item',
           {
             dest_coll_id: this.id.replace('#{nonce}_coll_',''),
-            new_pos: ui.item.index() + 1
+            new_index: ui.item.index()
           }
         ).fail(function() {
           alert('#{I18n.t(:collection_item_operation_error)}');

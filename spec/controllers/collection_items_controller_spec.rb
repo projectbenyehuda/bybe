@@ -41,12 +41,10 @@ describe CollectionItemsController do
     context 'when old_index does not match actual position' do
       let(:old_index) { 0 }
       let(:new_index) { 2 }
+      let(:collection_item) { collection.collection_items[2] }
 
       it 'returns bad request' do
-        # Manually set the collection_item to use a different index (item at position 2)
-        actual_collection_item = collection.collection_items[2]
-        post :drag_item, params: { id: actual_collection_item.id, old_index: old_index, new_index: new_index }
-        expect(response).to have_http_status(:bad_request)
+        expect(call).to have_http_status(:bad_request)
       end
     end
   end
@@ -56,7 +54,7 @@ describe CollectionItemsController do
       post :transplant_item, params: {
         id: item_to_move.id,
         dest_coll_id: dest_collection.id,
-        new_pos: new_pos
+        new_index: new_index
       }
     end
 
@@ -65,7 +63,7 @@ describe CollectionItemsController do
     let!(:src_collection) { create(:collection, title_placeholders: src_titles) }
     let!(:dest_collection) { create(:collection, title_placeholders: dest_titles) }
     let(:item_to_move) { src_collection.collection_items[2] } # Item 'C'
-    let(:new_pos) { 2 } # Insert at position 2 (between '1' and '2')
+    let(:new_index) { 2 } # Insert at position 2 (between '2' and '3')
 
     it 'moves item from source to destination collection' do
       expect { call }.to change { src_collection.collection_items.reload.count }.by(-1)
@@ -78,16 +76,39 @@ describe CollectionItemsController do
 
       # Verify destination collection has correct items and order
       dest_collection.reload
-      expect(dest_collection.collection_items.pluck(:alt_title)).to eq(%w(1 C 2 3))
+      expect(dest_collection.collection_items.pluck(:alt_title)).to eq(%w(1 2 C 3))
       expect(dest_collection.collection_items.pluck(:seqno)).to eq([1, 2, 3, 4])
-    end
 
-    it 'updates the collection_item to belong to destination collection' do
-      original_item_id = item_to_move.id
-      call
+      # Ensure item is moved to destination collection
       item_to_move.reload
       expect(item_to_move.collection).to eq(dest_collection)
-      expect(CollectionItem).to exist(id: original_item_id)
+    end
+
+    context 'when destination collection matches source collection' do
+      let(:dest_collection) { src_collection }
+
+      it 'fails with bad request' do
+        expect(call).to be_bad_request
+        expect(response.body).to eq('Destination collection cannot be the same as source collection')
+      end
+    end
+
+    context 'when new_index is negative' do
+      let(:new_index) { -1 }
+
+      it 'fails with bad request' do
+        expect(call).to be_bad_request
+        expect(response.body).to eq('Wrong new_index')
+      end
+    end
+
+    context 'when new_index is greater than number of items in desination collection' do
+      let(:new_index) { 4 }
+
+      it 'fails with bad request' do
+        expect(call).to be_bad_request
+        expect(response.body).to eq('Wrong new_index')
+      end
     end
   end
 end
