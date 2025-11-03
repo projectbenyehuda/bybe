@@ -100,7 +100,12 @@
     function showError(rowId, message) {
       var $row = $('#manifestation-row-' + rowId);
       $row.css('background-color', '#f8d7da'); // light red
-      alert('Error: ' + message);
+      // Remove any existing error message
+      $row.find('.error-message').remove();
+      // Insert error message as a full-width row below
+      var colspan = $row.find('td').length;
+      var $errorRow = $('<tr class="error-message"><td colspan="' + colspan + '" dir="rtl"><div class="alert alert-danger" style="margin:0;">' + $('<div>').text(message).html() + '</div></td></tr>');
+      $row.after($errorRow);
     }
 
     // AJAX function to perform action on a single manifestation
