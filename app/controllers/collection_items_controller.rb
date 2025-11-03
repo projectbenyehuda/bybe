@@ -118,7 +118,7 @@ class CollectionItemsController < ApplicationController
     dest_coll = Collection.find(params[:dest_coll_id].to_i)
     new_pos = params[:new_pos].to_i
 
-    ActiveRecord::Base.transaction do
+    Collection.transaction do
       # Calculate the new seqno for the item in the destination collection
       new_seqno = if new_pos <= 1
                     1
