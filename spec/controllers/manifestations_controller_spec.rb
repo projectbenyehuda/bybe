@@ -315,6 +315,59 @@ describe ManifestationController do
           expect(unique_ids.length).to be >= 3
         end
       end
+
+      context 'when manifestation is in an uncollected collection with no siblings' do
+        let(:uncollected_collection) { create(:collection, :uncollected) }
+        let(:manifestation) { create(:manifestation, collections: [uncollected_collection]) }
+
+        before { subject }
+
+        it 'sets @containments with the collection item' do
+          expect(assigns(:containments)).to be_present
+          expect(assigns(:containments).first.collection).to eq(uncollected_collection)
+        end
+
+        it 'collection item has no prev or next siblings' do
+          ci = assigns(:containments).first
+          expect(ci.prev_sibling_item).to be_nil
+          expect(ci.next_sibling_item).to be_nil
+        end
+
+        it 'collection is a system collection' do
+          ci = assigns(:containments).first
+          expect(ci.collection.system?).to be true
+        end
+      end
+
+      context 'when manifestation is in a regular collection with siblings' do
+        let(:regular_collection) { create(:collection, collection_type: :volume) }
+        let(:manifestation1) { create(:manifestation) }
+        let(:manifestation2) { create(:manifestation) }
+        let(:manifestation3) { create(:manifestation) }
+
+        before do
+          regular_collection.append_item(manifestation1)
+          regular_collection.append_item(manifestation2)
+          regular_collection.append_item(manifestation3)
+          get :read, params: { id: manifestation2.id }
+        end
+
+        it 'sets @containments with the collection item' do
+          expect(assigns(:containments)).to be_present
+          expect(assigns(:containments).first.collection).to eq(regular_collection)
+        end
+
+        it 'collection item has prev and next siblings' do
+          ci = assigns(:containments).first
+          expect(ci.prev_sibling_item).to be_present
+          expect(ci.next_sibling_item).to be_present
+        end
+
+        it 'collection is not a system collection' do
+          ci = assigns(:containments).first
+          expect(ci.collection.system?).to be false
+        end
+      end
     end
 
     describe '#readmode' do

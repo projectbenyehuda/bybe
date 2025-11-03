@@ -4,59 +4,50 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    branches: [ '**' ]
 
 jobs:
   test:
     name: RSpec
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: damisul/bybe-base:latest
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.0.36
         env:
           MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      elasticsearch:
+        image: elasticsearch:7.17.8
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: false
+          ingest.geoip.downloader.enabled: false
+          action.destructive_requires_name: false
+          ES_JAVA_OPTS: -Xms1024m -Xmx1024m
+      redis:
+        image: redis:7.2.3
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client libmysqlclient-dev wkhtmltopdf pandoc yaz libyaz-dev libmagickwand-dev libpcap-dev cmake
-      - name: Configure sysctl limits
-        run: |
-          sudo swapoff -a
-          sudo sysctl -w vm.swappiness=1
-          sudo sysctl -w fs.file-max=262144
-          sudo sysctl -w vm.max_map_count=262144
-      - name: Runs Elasticsearch
-        uses: elastic/elastic-github-actions/elasticsearch@master
-        with:
-          stack-version: 7.17.8
-          security-enabled: false
+        uses: actions/checkout@v5
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
       - name: Verify MySQL connection from host
         run: |
-          mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports[3306] }} -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
+          mysql --host mysql --port 3306 -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
       - name: Update Configuration
         run: |
-          cp ./.github/workflows/rspec_config/* ./config && rm .env.test
+          cp ./.github/workflows/rspec_config/* ./config
+          echo ELASTICSEARCH_HOST=elasticsearch:9200 > ./.env.test.local
+          echo DATABASE_URL=mysql2://root:root@mysql:3306/bybe_test >> ./.env.test.local
+          echo REDIS_URL=redis://redis:6379/1 >> ./.env.test.local
       - name: Setup DB
-        env:
-          RAILS_ENV: test
-          DATABASE_URL: mysql2://root:root@127.0.0.1:${{ job.services.mysql.ports[3306] }}/bybe_test
         run: |
-          bin/rails db:create
-          bin/rails db:migrate
+          bin/rails db:create RAILS_ENV=test
+          bin/rails db:migrate RAILS_ENV=test
       - name: Run tests
-        env:
-          RAILS_ENV: test
-          ELASTICSEARCH_HOST: localhost:${{ job.services.elasticsearch.ports[9200] }}
-          DATABASE_URL: mysql2://root:root@127.0.0.1:${{ job.services.mysql.ports[3306] }}/bybe_test
         run: |
           bundle exec rspec

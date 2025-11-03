@@ -219,18 +219,10 @@
       if("#{current_user}" != '') {
         if($('.like').hasClass("icon-byheart-full")) { // already liked
           // unlike
-          $.ajax({
-            url: "#{url_for(action: :unlike, id: @m.id) }",
-            method: 'POST',
-            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') }
-          });
+          $.post("#{manifestation_unlike_path(id: @m.id)}");
           $('.like').removeClass('icon-byheart-full').addClass('icon-byheart-empty');
         } else { // like
-          $.ajax({
-            url: "#{url_for(action: :like, id: @m.id) }",
-            method: 'POST',
-            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') }
-          });
+          $.post("#{manifestation_like_path(id: @m.id)}");
           $('.like').removeClass('icon-byheart-empty').addClass('icon-byheart-full');
         }
       }

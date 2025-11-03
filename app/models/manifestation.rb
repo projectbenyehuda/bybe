@@ -311,6 +311,15 @@ class Manifestation < ApplicationRecord
     save!
   end
 
+  def recalc_responsibility_statement
+    self.responsibility_statement = author_string!
+  end
+
+  def recalc_responsibility_statement!
+    recalc_responsibility_statement
+    save!
+  end
+
   # TODO: calculate this by month
   def self.popular_works_by_genre(genre, xlat)
     if xlat
