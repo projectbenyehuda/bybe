@@ -75,13 +75,14 @@ describe AdminController do
     end
 
     it 'deletes a manifestation via JSON' do
+      deleted_id = manifestations.first.id
       expect do
-        delete :destroy_manifestation, params: { id: manifestations.first.id }, format: :json
+        delete :destroy_manifestation, params: { id: deleted_id }, format: :json
       end.to change(Manifestation, :count).by(-1)
 
       json_response = response.parsed_body
       expect(json_response['success']).to be true
-      expect(json_response['id']).to eq(manifestations.first.id.to_s)
+      expect(json_response['id']).to eq(deleted_id.to_s)
     end
 
     it 'unpublishes a manifestation' do
