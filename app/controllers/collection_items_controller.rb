@@ -106,15 +106,14 @@ class CollectionItemsController < ApplicationController
       item_to_move = items.delete_at(old_index)
       items.insert(new_index, item_to_move)
 
-      items.each_with_index do |ci, index|
-        ci.update!(seqno: index + 1) unless ci.seqno == index + 1
-      end
+      update_seqno(items)
     end
     head :ok
   end
 
   # POST /collection_items/1/transplant_item
   def transplant_item
+    src_coll = @collection_item.collection
     dest_coll = Collection.find(params[:dest_coll_id].to_i)
     new_pos = params[:new_pos].to_i
 
@@ -129,17 +128,27 @@ class CollectionItemsController < ApplicationController
                   end
 
       # Make space in the destination collection
-      dest_coll.collection_items.where('seqno >= ?', new_seqno).order(:seqno).each do |ci|
+      dest_coll.collection_items.where(seqno: new_seqno..).order(:seqno).each do |ci|
         ci.increment!(:seqno)
       end
 
       # Update the collection_item to belong to the new collection with the new seqno
       @collection_item.update!(collection: dest_coll, seqno: new_seqno)
+
+      # Clean up seqno in the source collection
+      update_seqno(src_coll.collection_items.order(:seqno).to_a)
     end
     head :ok
   end
 
   private
+
+  # Updates seqno for a list of collection items to be sequential starting from 1
+  def update_seqno(items)
+    items.each_with_index do |ci, index|
+      ci.update!(seqno: index + 1) unless ci.seqno == index + 1
+    end
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_collection_item
