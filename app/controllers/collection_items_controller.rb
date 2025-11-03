@@ -99,15 +99,16 @@ class CollectionItemsController < ApplicationController
     collection = @collection_item.collection
     # zero-based index of where we want to move this item
     new_index = params.fetch(:new_index).to_i
-    old_index_param = params.fetch(:old_index).to_i
+    old_index = params.fetch(:old_index).to_i
 
     Collection.transaction do
       items = collection.collection_items.order(:seqno).to_a
-      old_index = items.index(@collection_item)
 
       # Validate that the old_index parameter matches the actual current position
-      if old_index != old_index_param
-        head :bad_request
+      real_index = items.index(@collection_item)
+      if old_index != real_index
+        render plain: "Dragged item has different index: #{old_index} expected but it is #{real_index}",
+               status: :bad_request
         return
       end
 
@@ -122,29 +123,29 @@ class CollectionItemsController < ApplicationController
   # POST /collection_items/1/transplant_item
   def transplant_item
     src_coll = @collection_item.collection
-    dest_coll = Collection.find(params[:dest_coll_id].to_i)
-    new_pos = params[:new_pos].to_i
+    dest_coll = Collection.find(params.fetch(:dest_coll_id))
+
+    if src_coll == dest_coll
+      render plain: 'Destination collection cannot be the same as source collection', status: :bad_request
+      return
+    end
+
+    new_index = params.fetch(:new_index).to_i
+    src_items = src_coll.collection_items.order(:seqno).to_a
+    dest_items = dest_coll.collection_items.order(:seqno).to_a
+
+    if new_index < 0 || new_index > dest_items.count
+      render plain: 'Wrong new_index', status: :bad_request
+      return
+    end
 
     Collection.transaction do
-      # Calculate the new seqno for the item in the destination collection
-      new_seqno = if new_pos <= 1
-                    1
-                  elsif new_pos > dest_coll.collection_items.size
-                    dest_coll.collection_items.maximum(:seqno).to_i + 1
-                  else
-                    dest_coll.collection_items.order(:seqno)[new_pos - 1].seqno
-                  end
+      src_items.reject! { |item| item.id == @collection_item.id }
+      dest_items.insert(new_index, @collection_item)
 
-      # Make space in the destination collection
-      dest_coll.collection_items.where(seqno: new_seqno..).order(:seqno).each do |ci|
-        ci.increment!(:seqno)
-      end
-
-      # Update the collection_item to belong to the new collection with the new seqno
-      @collection_item.update!(collection: dest_coll, seqno: new_seqno)
-
-      # Clean up seqno in the source collection
-      update_seqno(src_coll.collection_items.order(:seqno).to_a)
+      @collection_item.update!(collection: dest_coll)
+      update_seqno(src_items)
+      update_seqno(dest_items)
     end
     head :ok
   end
@@ -154,7 +155,10 @@ class CollectionItemsController < ApplicationController
   # Updates seqno for a list of collection items to be sequential starting from 1
   def update_seqno(items)
     items.each_with_index do |ci, index|
-      ci.update!(seqno: index + 1) unless ci.seqno == index + 1
+      if ci.seqno != index + 1
+        ci.seqno = index + 1
+        ci.save(validate: false) # skipping validation for performance
+      end
     end
   end
 
