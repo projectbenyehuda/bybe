@@ -8,19 +8,30 @@
   = f.submit t('.fetch'), class: 'btn btn-primary'
 
 - if defined?(@manifestations) && @manifestations.present?
-  %table.table.table-bordered
+  #batch-actions-container{style: 'margin-bottom: 15px; display: none;'}
+    %button#batch-destroy.btn.btn-danger{type: 'button'}
+      = t(:delete_selected)
+    %button#batch-unpublish.btn.btn-warning{type: 'button'}
+      = t(:unpublish_selected)
+  %table#manifestations-table.table.table-bordered
     %thead
       %tr
+        %th
+          %input#select-all{type: 'checkbox'}
         %th= t(:id)
         %th= t(:title)
         %th= t(:authors)
         %th= t(:actions)
     %tbody
       - @manifestations.each do |m|
-        %tr
+        %tr{id: "manifestation-row-#{m.id}", data: { manifestation_id: m.id }}
+          %td
+            %input.manifestation-checkbox{type: 'checkbox', data: { manifestation_id: m.id }}
           %td= m.id
           %td= link_to m.title, manifestation_path(m)
           %td= m.author_string
           %td
-            = button_to t(:delete), destroy_manifestation_admin_index_path(id: m.id), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger btn-sm'
-            = button_to t(:unpublish), unpublish_manifestation_admin_index_path(id: m.id), method: :post, class: 'btn btn-warning btn-sm', form: { style: 'display:inline' }
+            %button.btn.btn-danger.btn-sm.delete-manifestation{type: 'button', data: { manifestation_id: m.id }}
+              = t(:delete)
+            %button.btn.btn-warning.btn-sm.unpublish-manifestation{type: 'button', data: { manifestation_id: m.id }}
+              = t(:unpublish)

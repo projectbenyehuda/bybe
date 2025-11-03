@@ -15,6 +15,9 @@ en:
   update: Update
   destroy: Destroy
   delete: Delete
+  delete_selected: Delete Selected
+  unpublish: Unpublish
+  unpublish_selected: Unpublish Selected
   created_successfully: Created Successfully
   updated_successfully: Updated Successfully
   deleted_successfully: Deleted Successfully
