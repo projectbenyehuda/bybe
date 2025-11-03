@@ -116,11 +116,25 @@ class CollectionItemsController < ApplicationController
   # POST /collection_items/1/transplant_item
   def transplant_item
     dest_coll = Collection.find(params[:dest_coll_id].to_i)
-    src_coll = @collection_item.collection
+    new_pos = params[:new_pos].to_i
 
     ActiveRecord::Base.transaction do
-      dest_coll.insert_item_at(@collection_item, params[:new_pos].to_i)
-      src_coll.remove_item(@collection_item.id)
+      # Calculate the new seqno for the item in the destination collection
+      new_seqno = if new_pos <= 1
+                    1
+                  elsif new_pos > dest_coll.collection_items.size
+                    dest_coll.collection_items.maximum(:seqno).to_i + 1
+                  else
+                    dest_coll.collection_items.order(:seqno)[new_pos - 1].seqno
+                  end
+
+      # Make space in the destination collection
+      dest_coll.collection_items.where('seqno >= ?', new_seqno).order(:seqno).each do |ci|
+        ci.increment!(:seqno)
+      end
+
+      # Update the collection_item to belong to the new collection with the new seqno
+      @collection_item.update!(collection: dest_coll, seqno: new_seqno)
     end
     head :ok
   end

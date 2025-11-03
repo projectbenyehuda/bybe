@@ -187,7 +187,7 @@ describe Collection do
     i2 = create(:collection_item, collection: c, seqno: 3)
     i3 = create(:collection_item, collection: c, seqno: 2)
     expect(c.collection_items.count).to eq 3
-    c.remove_item(i3.id)
+    i3.destroy!
     c.reload
     expect(c.collection_items.count).to eq 2
     expect(c.collection_items.first).to eq i1
