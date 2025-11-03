@@ -8,7 +8,15 @@
   = f.submit t('.fetch'), class: 'btn btn-primary'
 
 - if defined?(@manifestations) && @manifestations.present?
-  #batch-actions-container{ style: 'margin-bottom: 15px; display: none;' }
+  - confirm_delete_msg = t(:confirm_batch_delete, count: '%<count>s')
+  - confirm_unpublish_msg = t(:confirm_batch_unpublish, count: '%<count>s')
+  - please_select_msg = t(:please_select_manifestation)
+  -# rubocop:disable Layout/HashAlignment
+  - batch_data = { confirm_batch_delete: confirm_delete_msg,
+                    confirm_batch_unpublish: confirm_unpublish_msg,
+                    please_select: please_select_msg }
+  -# rubocop:enable Layout/HashAlignment
+  #batch-actions-container{ style: 'margin-bottom: 15px; display: none;', data: batch_data }
     %button.btn.btn-danger#batch-destroy{ type: 'button' }
       = t(:delete_selected)
     %button.btn.btn-warning#batch-unpublish{ type: 'button' }
@@ -31,7 +39,8 @@
           %td= link_to m.title, manifestation_path(m)
           %td= m.author_string
           %td
-            %button.btn.btn-danger.btn-sm.delete-manifestation{ type: 'button', data: { manifestation_id: m.id } }
+            - delete_data = { manifestation_id: m.id, confirm: t(:confirm_delete_manifestation) }
+            %button.btn.btn-danger.btn-sm.delete-manifestation{ type: 'button', data: delete_data }
               = t(:delete)
             %button.btn.btn-warning.btn-sm.unpublish-manifestation{ type: 'button', data: { manifestation_id: m.id } }
               = t(:unpublish)
