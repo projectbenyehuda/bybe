@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class CollectionItemsController < ApplicationController
-  before_action :require_editor
+  before_action :require_editor, except: %i(show)
   before_action :set_collection_item, only: %i(show edit update destroy drag_item transplant_item)
 
   # GET /collection_items/1 or /collection_items/1.json
@@ -99,10 +99,18 @@ class CollectionItemsController < ApplicationController
     collection = @collection_item.collection
     # zero-based index of where we want to move this item
     new_index = params.fetch(:new_index).to_i
+    old_index_param = params.fetch(:old_index).to_i
 
     Collection.transaction do
       items = collection.collection_items.order(:seqno).to_a
       old_index = items.index(@collection_item)
+
+      # Validate that the old_index parameter matches the actual current position
+      if old_index != old_index_param
+        head :bad_request
+        return
+      end
+
       item_to_move = items.delete_at(old_index)
       items.insert(new_index, item_to_move)
 

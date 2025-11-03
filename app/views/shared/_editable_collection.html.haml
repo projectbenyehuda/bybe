@@ -113,7 +113,9 @@
             $.post(
               '/collection_items/' + itemId + '/drag_item',
               { old_index: oldIndex, new_index: newIndex }
-            ).always(function() {
+            ).fail(function() {
+              alert('#{I18n.t(:collection_item_operation_error)}');
+            }).always(function() {
               $mask.hide();
             });
           }
@@ -128,7 +130,9 @@
             dest_coll_id: this.id.replace('#{nonce}_coll_',''),
             new_pos: ui.item.index() + 1
           }
-        ).always(function() {
+        ).fail(function() {
+          alert('#{I18n.t(:collection_item_operation_error)}');
+        }).always(function() {
           $mask.hide();
         });
         event.stopPropagation();

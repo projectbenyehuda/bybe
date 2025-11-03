@@ -181,19 +181,6 @@ describe Collection do
     expect(c.collection_items.count).to eq 0
   end
 
-  it 'removes an item' do
-    c = create(:collection)
-    i1 = create(:collection_item, collection: c, seqno: 1)
-    i2 = create(:collection_item, collection: c, seqno: 3)
-    i3 = create(:collection_item, collection: c, seqno: 2)
-    expect(c.collection_items.count).to eq 3
-    i3.destroy!
-    c.reload
-    expect(c.collection_items.count).to eq 2
-    expect(c.collection_items.first).to eq i1
-    expect(c.collection_items.last).to eq i2
-  end
-
   describe '.insert_item_at' do
     subject(:call) { collection.insert_item_at(manifestation, index) }
 

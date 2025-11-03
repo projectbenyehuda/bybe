@@ -294,6 +294,7 @@ en:
   works: Works
   volumes: Volumes
   unrecognized_format: Unrecognized file format
+  collection_item_operation_error: Unexpected error occurred, please reload collection
   kwic_sort_by: "Sort by:"
   kwic_sort_alphabetical: Alphabetical
   kwic_sort_frequency: Frequency
