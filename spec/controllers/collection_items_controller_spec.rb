@@ -70,10 +70,12 @@ describe CollectionItemsController do
       expect(dest_collection.collection_items.pluck(:seqno)).to eq([1, 2, 3, 4])
     end
 
-    it 'removes the original item from source collection' do
+    it 'updates the collection_item to belong to destination collection' do
       original_item_id = item_to_move.id
       call
-      expect(CollectionItem.where(id: original_item_id).exists?).to be_falsey
+      item_to_move.reload
+      expect(item_to_move.collection).to eq(dest_collection)
+      expect(CollectionItem).to exist(id: original_item_id)
     end
   end
 end
