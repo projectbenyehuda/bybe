@@ -11,7 +11,7 @@ if ENV['RACK_ENV'] == 'production'
   before_fork do
     require 'puma_worker_killer'
     PumaWorkerKiller.config do |config|
-      config.ram           = 4096 # mb
+      config.ram           = 6096 # mb
       config.frequency     = 60    # seconds
       config.percent_usage = 0.98
       #config.rolling_restart_frequency = 12 * 3600 # 12 hours in seconds, or 12.hours if using Rails
