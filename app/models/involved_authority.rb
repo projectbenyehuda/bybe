@@ -28,6 +28,7 @@ class InvolvedAuthority < ApplicationRecord
 
   # Recalculate intellectual property when authorities change
   after_commit :recalculate_expression_intellectual_property
+  after_commit :update_manifestation_responsibility_statement, on: %i[create update destroy]
 
   private
 
@@ -54,6 +55,23 @@ class InvolvedAuthority < ApplicationRecord
       if expression.intellectual_property != computed_ip.to_s
         expression.update_column(:intellectual_property, Expression.intellectual_properties[computed_ip])
       end
+    end
+  end
+  private
+
+  def update_manifestation_responsibility_statement
+    manifestation_ids = find_related_manifestation_ids
+    UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
+  end
+
+  def find_related_manifestation_ids
+    case item
+    when Work
+      item.expressions.joins(:manifestations).pluck('manifestations.id').uniq
+    when Expression
+      item.manifestations.pluck(:id)
+    else
+      []
     end
   end
 end

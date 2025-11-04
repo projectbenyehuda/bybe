@@ -8,19 +8,234 @@
   = f.submit t('.fetch'), class: 'btn btn-primary'
 
 - if defined?(@manifestations) && @manifestations.present?
-  %table.table.table-bordered
+  - confirm_delete_msg = t(:confirm_batch_delete, count: '%<count>s')
+  - confirm_unpublish_msg = t(:confirm_batch_unpublish, count: '%<count>s')
+  - please_select_msg = t(:please_select_manifestation)
+  -# rubocop:disable Layout/HashAlignment
+  - batch_data = { confirm_batch_delete: confirm_delete_msg,
+                    confirm_batch_unpublish: confirm_unpublish_msg,
+                    please_select: please_select_msg }
+  -# rubocop:enable Layout/HashAlignment
+  #batch-actions-container{ style: 'margin-bottom: 15px; display: none;', data: batch_data }
+    %button.btn.btn-danger#batch-destroy{ type: 'button' }
+      = t(:delete_selected)
+    %button.btn.btn-warning#batch-unpublish{ type: 'button' }
+      = t(:unpublish_selected)
+  %table.table.table-bordered#manifestations-table
     %thead
       %tr
+        %th
+          %input#select-all{ type: 'checkbox' }
         %th= t(:id)
         %th= t(:title)
         %th= t(:authors)
         %th= t(:actions)
     %tbody
       - @manifestations.each do |m|
-        %tr
+        %tr{ id: "manifestation-row-#{m.id}", data: { manifestation_id: m.id } }
+          %td
+            %input.manifestation-checkbox{ type: 'checkbox', data: { manifestation_id: m.id } }
           %td= m.id
           %td= link_to m.title, manifestation_path(m)
           %td= m.author_string
           %td
-            = button_to t(:delete), destroy_manifestation_admin_index_path(id: m.id), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger btn-sm'
-            = button_to t(:unpublish), unpublish_manifestation_admin_index_path(id: m.id), method: :post, class: 'btn btn-warning btn-sm', form: { style: 'display:inline' }
+            - delete_data = { manifestation_id: m.id, confirm: t(:confirm_delete_manifestation) }
+            %button.btn.btn-danger.btn-sm.delete-manifestation{ type: 'button', data: delete_data }
+              = t(:delete)
+            %button.btn.btn-warning.btn-sm.unpublish-manifestation{ type: 'button', data: { manifestation_id: m.id } }
+              = t(:unpublish)
+:javascript
+  $(document).ready(function() {
+    if ($('#manifestations-table').length === 0) {
+      return; // Only run on manifestation_batch_tools page
+    }
+
+    // Get CSRF token for AJAX requests
+    function getCsrfToken() {
+      return $('meta[name="csrf-token"]').attr('content');
+    }
+
+    // Show/hide batch actions based on checkbox selection
+    function updateBatchActionsVisibility() {
+      var checkedCount = $('.manifestation-checkbox:checked').length;
+      if (checkedCount > 0) {
+        $('#batch-actions-container').show();
+      } else {
+        $('#batch-actions-container').hide();
+      }
+    }
+
+    // Select all / unselect all functionality
+    $('#select-all').on('change', function() {
+      var isChecked = $(this).prop('checked');
+      $('.manifestation-checkbox').prop('checked', isChecked);
+      updateBatchActionsVisibility();
+    });
+
+    // Individual checkbox change - using event delegation
+    $(document).on('change', '.manifestation-checkbox', function() {
+      var totalCheckboxes = $('.manifestation-checkbox').length;
+      var checkedCheckboxes = $('.manifestation-checkbox:checked').length;
+      $('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes);
+      updateBatchActionsVisibility();
+    });
+
+    // Handle visual feedback for row
+    function showSuccess(rowId) {
+      var $row = $('#manifestation-row-' + rowId);
+      $row.addClass('bg-success'); // Use Bootstrap success background
+      // also add class to cells
+      $row.find('td').addClass('bg-success');
+      setTimeout(function() {
+        $row.fadeOut(3000, function() {
+          $(this).remove();
+          checkAndHideBatchActions();
+        });
+      }, 500);
+    }
+
+    function showError(rowId, message) {
+      var $row = $('#manifestation-row-' + rowId);
+      $row.css('background-color', '#f8d7da'); // light red
+      // Remove any existing error message
+      $row.find('.error-message').remove();
+      // Insert error message as a full-width row below
+      var colspan = $row.find('td').length;
+      var escapedMessage = $('<div>').text(message).html();
+      var errorHtml = '<tr class="error-message"><td colspan="' + colspan +
+        '" dir="rtl"><div class="alert alert-danger" style="margin:0;">' +
+        escapedMessage + '</div></td></tr>';
+      var $errorRow = $(errorHtml);
+      $row.after($errorRow);
+    }
+
+    // AJAX function to perform action on a single manifestation
+    function performAction(manifestationId, action, url, method) {
+      return $.ajax({
+        url: url,
+        method: method,
+        dataType: 'json',
+        headers: {
+          'X-CSRF-Token': getCsrfToken()
+        },
+        data: { id: manifestationId },
+        success: function(response) {
+          if (response.success) {
+            showSuccess(manifestationId);
+          } else {
+            showError(manifestationId, response.message || 'Unknown error');
+          }
+        },
+        error: function(xhr, status, error) {
+          var message = 'Request failed: ' + error;
+          if (xhr.responseJSON && xhr.responseJSON.message) {
+            message = xhr.responseJSON.message;
+          }
+          showError(manifestationId, message);
+        }
+      });
+    }
+
+    // Helper function to check if all rows are hidden
+    function checkAndHideBatchActions() {
+      if ($('#manifestations-table tbody tr:visible').length === 0) {
+        $('#batch-actions-container').hide();
+      }
+    }
+
+    // Single delete button click - using event delegation
+    $(document).on('click', '.delete-manifestation', function(e) {
+      e.preventDefault();
+      var $btn = $(this);
+      var manifestationId = $btn.data('manifestation-id');
+      var confirmMessage = $btn.data('confirm');
+      if (confirm(confirmMessage)) {
+        performAction(
+          manifestationId,
+          'delete',
+          '/admin/destroy_manifestation',
+          'DELETE'
+        );
+      }
+    });
+
+    // Single unpublish button click - using event delegation
+    $(document).on('click', '.unpublish-manifestation', function(e) {
+      e.preventDefault();
+      var manifestationId = $(this).data('manifestation-id');
+      performAction(
+        manifestationId,
+        'unpublish',
+        '/admin/unpublish_manifestation',
+        'POST'
+      );
+    });
+
+    // Batch delete
+    $('#batch-destroy').on('click', function(e) {
+      e.preventDefault();
+      var $container = $('#batch-actions-container');
+      var selectedIds = [];
+      $('.manifestation-checkbox:checked').each(function() {
+        selectedIds.push($(this).data('manifestation-id'));
+      });
+
+      if (selectedIds.length === 0) {
+        alert($container.data('please-select'));
+        return;
+      }
+
+      var confirmTemplate = $container.data('confirm-batch-delete');
+      var confirmMessage = confirmTemplate.replace('%<count>s', selectedIds.length);
+      if (confirm(confirmMessage)) {
+        // Use Promise.all to wait for all operations to complete
+        var promises = selectedIds.map(function(id) {
+          return performAction(
+            id,
+            'delete',
+            '/admin/destroy_manifestation',
+            'DELETE'
+          );
+        });
+
+        // After all operations complete, check if we need to hide batch actions
+        Promise.all(promises).finally(function() {
+          checkAndHideBatchActions();
+        });
+      }
+    });
+
+    // Batch unpublish
+    $('#batch-unpublish').on('click', function(e) {
+      e.preventDefault();
+      var $container = $('#batch-actions-container');
+      var selectedIds = [];
+      $('.manifestation-checkbox:checked').each(function() {
+        selectedIds.push($(this).data('manifestation-id'));
+      });
+
+      if (selectedIds.length === 0) {
+        alert($container.data('please-select'));
+        return;
+      }
+
+      var confirmTemplate = $container.data('confirm-batch-unpublish');
+      var confirmMessage = confirmTemplate.replace('%<count>s', selectedIds.length);
+      if (confirm(confirmMessage)) {
+        // Use Promise.all to wait for all operations to complete
+        var promises = selectedIds.map(function(id) {
+          return performAction(
+            id,
+            'unpublish',
+            '/admin/unpublish_manifestation',
+            'POST'
+          );
+        });
+
+        // After all operations complete, check if we need to hide batch actions
+        Promise.all(promises).finally(function() {
+          checkAndHideBatchActions();
+        });
+      }
+    });
+  });

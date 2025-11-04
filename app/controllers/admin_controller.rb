@@ -32,7 +32,7 @@ class AdminController < ApplicationController
       @ingestibles_pending = Ingestible.where(status: 'awaiting_authorities')
     end
     if current_user.has_bit?('moderate_tags')
-      @pending_tags = Tag.where(status: :pending).count
+      @pending_tags = Tag.where(status: :pending).with_taggings.count
       @pending_taggings = Tagging.where(status: :pending).count
     end
     @open_recommendations = LegacyRecommendation.where(status: 'new').count.to_s
@@ -797,7 +797,7 @@ class AdminController < ApplicationController
                       else
                         :pending
                       end
-    @pending_tags = Tag.includes(:taggings).where(status: status_to_query).distinct.order(:created_at)
+    @pending_tags = Tag.includes(:taggings).where(status: status_to_query).where('COALESCE(taggings_count, 0) > 0').distinct.order(:created_at)
     if params[:tag_id].present?
       @tag_id = params[:tag_id].to_i
       @tag = Tag.find(@tag_id)
@@ -825,9 +825,9 @@ class AdminController < ApplicationController
               end.sort_by { |score, _tag| score }.reverse
       @similar_tags = Tag.where(id: stags.map { |x| x[1] })
       calculate_editor_tagging_stats
-      @next_tag_id = Tag.where(status: :pending).where('created_at > ?',
+      @next_tag_id = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
                                                        @tag.created_at).order(:created_at).limit(1).pluck(:id).first
-      @prev_tag_id = Tag.where(status: :pending).where('created_at < ?',
+      @prev_tag_id = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at < ?',
                                                        @tag.created_at).order('created_at desc').limit(1).pluck(:id).first
     end
   end
@@ -974,7 +974,7 @@ class AdminController < ApplicationController
       if t.present?
         t.approve!(current_user)
         Notifications.send_or_queue(:tag_approved, t.creator.email, t) unless t.creator.blocked? # don't send email if user is blocked
-        next_items = Tag.where(status: :pending).where('created_at > ?', t.created_at).order(:created_at).limit(1)
+        next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?', t.created_at).order(:created_at).limit(1)
         if next_items.first.present?
           redirect_to url_for(action: :tag_review, id: next_items.first.id)
         else
@@ -998,7 +998,7 @@ class AdminController < ApplicationController
         # if params[:reason].present?
         Notifications.send_or_queue(:tag_rejected, t.creator.email, t, params[:reason]) unless t.creator.blocked? # don't send email if user is already blocked
         # end
-        next_items = Tag.where(status: :pending).where('created_at > ?', t.created_at).order(:created_at).limit(1)
+        next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?', t.created_at).order(:created_at).limit(1)
         if next_items.first.present?
           flash[:notice] = t(:tag_rejected)
           redirect_to url_for(action: :tag_review, id: next_items.first.id)
@@ -1040,7 +1040,7 @@ class AdminController < ApplicationController
         @tag.escalate!(current_user)
         respond_to do |format|
           format.html do
-            next_items = Tag.where(status: :pending).where('created_at > ?',
+            next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
                                                            @tag.created_at).order(:created_at).limit(1)
             if next_items.first.present?
               flash[:notice] = t(:tag_escalated)
@@ -1198,23 +1198,54 @@ class AdminController < ApplicationController
   def manifestation_batch_tools
     return unless params[:ids].present?
 
-    ids = params[:ids].split(/\s+/)
+    ids = parse_manifestation_ids(params[:ids])
     @manifestations = Manifestation.where(id: ids)
   end
 
   def destroy_manifestation
     m = Manifestation.find(params[:id])
     m.destroy
-    redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:deleted_successfully)
+    respond_to do |format|
+      format.html do
+        redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:deleted_successfully)
+      end
+      format.json { render json: { success: true, message: t(:deleted_successfully), id: params[:id] } }
+    end
   end
 
   def unpublish_manifestation
     m = Manifestation.find(params[:id])
     m.update(status: 'unpublished')
-    redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:updated_successfully)
+    respond_to do |format|
+      format.html do
+        redirect_to manifestation_batch_tools_admin_index_path(ids: params[:ids]), notice: t(:updated_successfully)
+      end
+      format.json { render json: { success: true, message: t(:updated_successfully), id: params[:id] } }
+    end
   end
 
   private
+
+  def parse_manifestation_ids(input)
+    ids = []
+    # Split by whitespace
+    input.split(/\s+/).each do |token|
+      # Check if token contains a range separator (- or –)
+      if token =~ /^(\d+)[-–](\d+)$/
+        start_id = ::Regexp.last_match(1).to_i
+        end_id = ::Regexp.last_match(2).to_i
+        # Ensure start_id <= end_id; swap if necessary
+        if start_id > end_id
+          start_id, end_id = end_id, start_id
+        end
+        ids.concat((start_id..end_id).to_a)
+      else
+        # Single ID
+        ids << token.to_i if token =~ /^\d+$/
+      end
+    end
+    ids.uniq
+  end
 
   def vp_params
     params[:volunteer_profile].permit(:name, :bio, :about, :profile_image)

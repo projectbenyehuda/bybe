@@ -14,7 +14,6 @@ class ManifestationController < ApplicationController
     c.refuse_unreasonable_page
   end
   autocomplete :manifestation, :title, limit: 20, display_value: :title_and_authors, full: true
-  autocomplete :tag, :name, limit: 2
 
   # layout false, only: [:print]
 
@@ -306,14 +305,17 @@ class ManifestationController < ApplicationController
       return
     end
 
+    # NOTE: Asaf disabled this transaction because it caused a failure to attach the downloadable
+    #  in dev and testing environments. There is now a check for attachment inside the FreshDownloadable
+    #  logic so the transaction is less needed. If you re-enable it, please test thoroughly.
     # Wrapping download code into transaction to make it atomic
     # Without this we had situation when Downloadable object was created but attachmnt creation failed
-    Downloadable.transaction do
-      m = Manifestation.find(params[:id])
-      dl = GetFreshManifestationDownloadable.call(m, format)
-      track_download(m, format)
-      redirect_to rails_blob_url(dl.stored_file, disposition: :attachment)
-    end
+    # Downloadable.transaction do
+    m = Manifestation.find(params[:id])
+    dl = GetFreshManifestationDownloadable.call(m, format)
+    track_download(m, format)
+    redirect_to rails_blob_url(dl.stored_file, disposition: :attachment)
+    # end
   end
 
   def render_html
@@ -648,11 +650,12 @@ class ManifestationController < ApplicationController
     end
 
     # tags by tag_id
-    @tag_ids = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
-    if @tag_ids.present?
-      tag_data = Tag.where(id: @tag_ids).pluck(:id, :name)
+    tag_ids_array = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
+    if tag_ids_array.present?
+      tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
       ret['tags'] = tag_data.map(&:last)
       @filters += tag_data.map { |x| [x.last, "tag_#{x.first}", :checkbox] }
+      @tag_ids = tag_ids_array.join(',') # Keep as comma-separated string for the form
     end
 
     # copyright
@@ -909,7 +912,7 @@ class ManifestationController < ApplicationController
       lines.insert(linenum, insert_text)
       tmphash[ch_count.to_s.rjust(4, '0') + sanitize_heading(lines[linenum + 1][2..-1].strip)] = linenum.to_s
     end
-    tmphash.keys.reverse.map { |k| @chapters << [k[4..].gsub('\[', '[').gsub('\]', ']'), tmphash[k]] }
+    tmphash.keys.reverse.map { |k| @chapters << [k[4..], tmphash[k]] }
     @selected_chapter = tmphash.keys.last
     @html = MultiMarkdown.new(lines.join('')).to_html.force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '').gsub('<table>', '<div style="overflow-x:auto;"><table>').gsub('</table>', '</table></div>') # remove MMD's automatic figcaptions and make tables scroll to avoid breaking narrow mobile devices
     # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates

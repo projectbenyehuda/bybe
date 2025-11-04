@@ -1,7 +1,7 @@
 # Creates or overwrites downloadable from given Html file using provided file format
 class MakeFreshDownloadable < ApplicationService
   # @return created Downloadable object
-  def call(format, filename, html, download_entity, author_string)
+  def call(format, filename, html, download_entity, author_string, kwic_text: nil)
     html = images_to_absolute_url(html)
     dl = download_entity.downloadables.where(doctype: format).first
     if dl.nil?
@@ -79,8 +79,22 @@ class MakeFreshDownloadable < ApplicationService
           File.delete(epubname) # delete temporary generated EPUB
           File.delete(mobiname) # delete temporary generated MOBI
         end
+      when 'kwic'
+        raise ArgumentError, 'KWIC format requires kwic_text parameter' if kwic_text.nil?
+
+        formatted_text = kwic_text.gsub("\n", "\r\n") # windows linebreaks
+        begin
+          temp_file = Tempfile.new('tmp_kwic_' + download_entity.id.to_s, 'tmp/')
+          temp_file.puts(formatted_text)
+          temp_file.rewind
+          temp_file.chmod(0o644) # Set file permissions after writing and rewinding
+          dl.stored_file.attach(io: temp_file, filename: filename)
+        ensure
+          temp_file.close
+        end
       else
-        raise t(:unrecognized_format)
+        # Raise a specific error for unrecognized formats (I18n message for user display)
+        raise ArgumentError, "Unrecognized format: #{format}. Valid formats: #{Downloadable.doctypes.keys.join(', ')}"
       end
 
       # Verify the attachment was successful

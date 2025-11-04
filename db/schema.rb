@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_29_203200) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_30_234900) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -673,7 +673,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_29_203200) do
     t.index ["relevance"], name: "index_news_items_on_relevance"
   end
 
-  create_table "pending_notifications", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "pending_notifications", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "recipient_email", null: false
     t.string "notification_type", null: false
     t.text "notification_data"
