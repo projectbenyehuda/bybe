@@ -5,6 +5,7 @@ require 'pandoc-ruby' # for generic DOCX-to-HTML conversions
 # Ingestible is a set of text being prepared for inclusion into a main database
 class Ingestible < ApplicationRecord
   LOCK_TIMEOUT_IN_SECONDS = 60 * 15 # 15 minutes
+  COPYRIGHTED_IP_OPTIONS = %w(by_permission orphan).freeze
 
   enum :status, { draft: 0, ingested: 1, failed: 2, awaiting_authorities: 3 }
   enum :scenario, { single: 0, multiple: 1, mixed: 2 }
@@ -182,7 +183,7 @@ class Ingestible < ApplicationRecord
     lines = buf.split("\n")
     in_footnotes = false
     prev_nikkud = false
-    (0..lines.length - 1).each do |i|
+    (0..(lines.length - 1)).each do |i|
       lines[i].strip!
       if lines[i].empty? && prev_nikkud
         lines[i] = '> '
@@ -250,7 +251,7 @@ class Ingestible < ApplicationRecord
     end
 
     if multiple_works? && markdown =~ /\[\^\d+\]/ # if there are footnotes in the text
-      footnotes_fixed_buffers = relocate_footnotes.map { |k, v| v }
+      footnotes_fixed_buffers = relocate_footnotes.map { |_k, v| v }
       buf.each_index do |i|
         buf[i][:content] = footnotes_fixed_buffers[i]
       end
@@ -279,16 +280,17 @@ class Ingestible < ApplicationRecord
     i = 1
     markdown.split(/^(&&& .*)/).each do |bit|
       if bit[0..3] == '&&& '
-        prev_key = "#{bit[4..-1].strip}_ZZ#{i}" # remember next section's title
+        prev_key = "#{bit[4..].strip}_ZZ#{i}" # remember next section's title
         stop = false
-        begin
+        loop do
           if prev_key =~ /\[\^\d+\]/ # if the title line has a footnote
             footbuf += ::Regexp.last_match(0) # store the footnote
             prev_key.sub!(::Regexp.last_match(0), '').strip! # and remove it from the title
           else
             stop = true
           end
-        end until stop # handle multiple footnotes if they exist.
+          break if stop
+        end
       else
         ret[prev_key] = footbuf + bit unless prev_key.nil? # buffer the text to be put in the prev_key next iteration
         titles_order << prev_key unless prev_key.nil?
@@ -347,10 +349,10 @@ class Ingestible < ApplicationRecord
   def calculate_copyright_status(text_authorities)
     # Merge authorities per role to get the complete list
     merged_authorities = merge_authorities_per_role(text_authorities, default_authorities)
-    
+
     # Also include collection authorities as they may be relevant
     collection_auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
-    
+
     # Collect all authority IDs that need to be checked
     authority_ids = []
     merged_authorities.each do |auth|
@@ -359,15 +361,17 @@ class Ingestible < ApplicationRecord
     collection_auths.each do |auth|
       authority_ids << auth['authority_id'] if auth['authority_id'].present?
     end
-    
+
     # If no authorities with IDs, we can't determine status - return copyrighted to be safe
     return 'copyrighted' if authority_ids.empty?
-    
-    # Check if all authorities are public_domain
-    authorities = Authority.where(id: authority_ids.uniq)
-    all_public_domain = authorities.all? { |a| a.intellectual_property_public_domain? }
-    
-    all_public_domain ? 'public_domain' : 'copyrighted'
+
+    # Check if any authority is not public_domain
+    # More efficient than loading all records
+    has_non_public_domain = Authority.where(id: authority_ids.uniq)
+                                     .where.not(intellectual_property: :public_domain)
+                                     .exists?
+
+    has_non_public_domain ? 'copyrighted' : 'public_domain'
   end
 
   private
@@ -387,7 +391,7 @@ class Ingestible < ApplicationRecord
     return work_auths if default_auths.empty?
 
     # Get roles present in work authorities
-    work_roles = work_auths.map { |a| a['role'] }.uniq
+    work_roles = work_auths.pluck('role').uniq
 
     # Start with work authorities, then add defaults for roles not present in work authorities
     result = work_auths.dup

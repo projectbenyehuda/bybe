@@ -91,7 +91,9 @@
         %td
           - calculated_copyright = @ingestible.calculate_copyright_status(ias)
           - if calculated_copyright == 'copyrighted'
-            = select_tag :intellectual_property, options_for_select([['by_permission', 'by_permission'], ['orphan', 'orphan']].map { |label, code| [textify_intellectual_property(code), code] }, intellectual_property || 'by_permission'), {class: 'toc-intellectual-property'}
+            - default_ip = intellectual_property || 'by_permission'
+            - select_opts = { class: 'toc-intellectual-property' }
+            = select_tag :intellectual_property, options_for_select(copyrighted_ip_options, default_ip), select_opts
           - else
             %span.text-muted= t(:public_domain)
       - else
