@@ -89,7 +89,11 @@
         %td
           = select_tag :orig_lang, options_for_select(get_langs.map {|lang| [textify_lang(lang), lang]}, orig_lang), {class: 'toc-lang'}
         %td
-          = select_tag :intellectual_property, options_for_select(Expression.intellectual_properties.keys.reject{|x| x == 'copyrighted' || x == 'unknown'}.map { |code| [textify_intellectual_property(code), code] }, intellectual_property), {class: 'toc-intellectual-property'}
+          - calculated_copyright = @ingestible.calculate_copyright_status(ias)
+          - if calculated_copyright == 'copyrighted'
+            = select_tag :intellectual_property, options_for_select([['by_permission', 'by_permission'], ['orphan', 'orphan']].map { |label, code| [textify_intellectual_property(code), code] }, intellectual_property || 'by_permission'), {class: 'toc-intellectual-property'}
+          - else
+            %span.text-muted= t(:public_domain)
       - else
         %td
         %td
