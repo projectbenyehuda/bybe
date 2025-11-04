@@ -621,6 +621,7 @@ class IngestiblesController < ApplicationController
         end
         @changes[:texts] << [m.id, m.title, m.responsibility_statement]
         m.recalc_cached_people!
+        m.update_alternate_titles!
         if @ingestible.pub_link.present? && @ingestible.pub_link_text.present?
           m.external_links.create!(linktype: :publisher_site, url: @ingestible.pub_link,
                                    description: @ingestible.pub_link_text)
