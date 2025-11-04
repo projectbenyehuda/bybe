@@ -1,7 +1,7 @@
 //= require jquery3
 //= require rails-ujs
-//= require jquery-ui/widgets/autocomplete
-//= require autocomplete-rails
+//= require jquery-ui
+//= require autocomplete_init
 
 $(function() {
     $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
