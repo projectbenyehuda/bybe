@@ -213,7 +213,7 @@ class Ingestible < ApplicationRecord
       end
     end
     # join the lines back together, keeping only one '>' character at the start of paragraphs, i.e. removing '>' from consecutive lines that are being joined to a line already starting with '>'
-    new_buffer = lines.join("\n").gsub(/\n>\s*>/, "\n> ")
+    new_buffer = lines.join("\n")
     new_buffer.gsub!("\n\s*\n\s*\n", "\n\n")
     ['.', ',', ':', ';', '?', '!'].each do |c|
       new_buffer.gsub!(" #{c}", c) # remove spaces before punctuation
