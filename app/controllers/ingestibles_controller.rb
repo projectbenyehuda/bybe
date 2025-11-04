@@ -520,7 +520,7 @@ class IngestiblesController < ApplicationController
     return work_auths if default_auths.empty?
 
     # Get roles present in work authorities
-    work_roles = work_auths.pluck('role').uniq
+    work_roles = work_auths.map { |a| a['role'] }.uniq
 
     # Start with work authorities, then add defaults for roles not present in work authorities
     result = work_auths.dup
