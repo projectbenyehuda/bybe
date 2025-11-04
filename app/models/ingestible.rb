@@ -339,4 +339,64 @@ class Ingestible < ApplicationRecord
   def release_lock!
     update_columns(locked_at: nil, locked_by_user_id: nil) # we deliberately skip validations here
   end
+
+  # Calculate expected copyright status based on involved authorities
+  # Returns 'public_domain' if all authorities are public_domain, 'copyrighted' otherwise
+  # @param text_authorities [String] JSON string of text-specific authorities
+  # @return [String] 'public_domain' or 'copyrighted'
+  def calculate_copyright_status(text_authorities)
+    # Merge authorities per role to get the complete list
+    merged_authorities = merge_authorities_per_role(text_authorities, default_authorities)
+    
+    # Also include collection authorities as they may be relevant
+    collection_auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
+    
+    # Collect all authority IDs that need to be checked
+    authority_ids = []
+    merged_authorities.each do |auth|
+      authority_ids << auth['authority_id'] if auth['authority_id'].present?
+    end
+    collection_auths.each do |auth|
+      authority_ids << auth['authority_id'] if auth['authority_id'].present?
+    end
+    
+    # If no authorities with IDs, we can't determine status - return copyrighted to be safe
+    return 'copyrighted' if authority_ids.empty?
+    
+    # Check if all authorities are public_domain
+    authorities = Authority.where(id: authority_ids.uniq)
+    all_public_domain = authorities.all? { |a| a.intellectual_property_public_domain? }
+    
+    all_public_domain ? 'public_domain' : 'copyrighted'
+  end
+
+  private
+
+  # Merge work-specific authorities with defaults per role
+  # If a role is specified in work authorities, it overrides the default for that role
+  # If a role is not specified in work authorities, the default for that role is used
+  # If work authorities is '[]', no defaults are used (explicit empty)
+  def merge_authorities_per_role(work_authorities, default_authorities)
+    # Handle explicit empty array - no defaults should apply
+    return [] if work_authorities == '[]'
+
+    work_auths = work_authorities.present? ? JSON.parse(work_authorities) : []
+    default_auths = default_authorities.present? ? JSON.parse(default_authorities) : []
+
+    # If no defaults, just return work authorities
+    return work_auths if default_auths.empty?
+
+    # Get roles present in work authorities
+    work_roles = work_auths.map { |a| a['role'] }.uniq
+
+    # Start with work authorities, then add defaults for roles not present in work authorities
+    result = work_auths.dup
+    default_auths.each do |default_auth|
+      unless work_roles.include?(default_auth['role'])
+        result << default_auth
+      end
+    end
+
+    result
+  end
 end

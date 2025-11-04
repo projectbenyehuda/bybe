@@ -563,11 +563,21 @@ class IngestiblesController < ApplicationController
         end
         period = determine_period_by_involved_authorities(w.orig_lang == 'he' ? author_ids : translator_ids) # translator's period is the relevant one for translations
         pub_status = determine_publication_status_by_involved_authorities(author_ids + translator_ids + other_authorities.map(&:first))
+        
+        # Calculate copyright status and set intellectual property accordingly
+        calculated_copyright = @ingestible.calculate_copyright_status(toc_line[2])
+        intellectual_property_value = if calculated_copyright == 'public_domain'
+                                        'public_domain'
+                                      else
+                                        # Use the selected value from TOC, or default from ingestible
+                                        toc_line[5].presence || @ingestible.intellectual_property || 'by_permission'
+                                      end
+        
         e = w.expressions.build(
           title: toc_line[1],
           language: 'he',
           period: period, # what to do if corporate body?
-          intellectual_property: toc_line[5],
+          intellectual_property: intellectual_property_value,
           source_edition: @ingestible.publisher,
           date: @ingestible.year_published
         )

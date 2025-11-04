@@ -94,8 +94,8 @@
         %br
         = f.label t(:orig_lang)
         = f.select :orig_lang, options_for_select(get_langs.map {|lang| [textify_lang(lang), lang]}, @ingestible.orig_lang)
-        = f.label t(:copyright_status)
-        = f.select :intellectual_property, options_for_select(Expression.intellectual_properties.keys.reject{|x| x == 'copyrighted' || x == 'unknown'}.map { |code| [textify_intellectual_property(code), code] }, @ingestible.intellectual_property)
+        = f.label t(:default_copyright_for_protected_texts)
+        = f.select :intellectual_property, options_for_select([['by_permission', 'by_permission'], ['orphan', 'orphan']].map { |label, code| [textify_intellectual_property(code), code] }, @ingestible.intellectual_property || 'by_permission')
         %br
         = f.label t(:publisher_link)
         = f.text_field :pub_link, style: 'width:400px;'
