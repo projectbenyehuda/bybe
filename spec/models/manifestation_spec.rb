@@ -76,6 +76,7 @@ describe Manifestation do
 
   describe '.authors_string' do
     subject { manifestation.authors_string }
+
     context 'when authors present' do
       let(:author_1) { create(:authority, name: 'Alpha') }
       let(:author_2) { create(:authority, name: 'Beta') }
@@ -102,6 +103,7 @@ describe Manifestation do
 
   describe '.translators_string' do
     subject { manifestation.translators_string }
+
     context 'when translators present' do
       let(:translator_1) { create(:authority, name: 'Alpha') }
       let(:translator_2) { create(:authority, name: 'Beta') }
@@ -224,7 +226,8 @@ describe Manifestation do
 
   describe '.to_html' do
     subject { manifestation.to_html }
-    let(:manifestation) { create(:manifestation, markdown: "## Test", status: status) }
+
+    let(:manifestation) { create(:manifestation, markdown: '## Test', status: status) }
 
     context 'when published' do
       let(:status) { :published }
@@ -289,6 +292,56 @@ describe Manifestation do
       manifestation.recalc_responsibility_statement!
       manifestation.reload
       expect(manifestation.responsibility_statement).to eq(manifestation.author_string!)
+    end
+  end
+
+  describe '#recalc_cached_people' do
+    let(:author) { create(:authority, name: 'Test Author') }
+    let(:translator) { create(:authority, name: 'Test Translator') }
+    let(:manifestation) { create(:manifestation, orig_lang: 'de', author: author, translator: translator) }
+
+    it 'updates cached_people to match author_string' do
+      manifestation.recalc_cached_people
+      expect(manifestation.cached_people).to eq(manifestation.author_string!)
+    end
+
+    it 'does not save the record' do
+      expect { manifestation.recalc_cached_people }.not_to change(manifestation, :updated_at)
+    end
+
+    context 'when work has no authors' do
+      let(:manifestation) { create(:manifestation) }
+
+      before do
+        manifestation.expression.work.involved_authorities.delete_all
+        manifestation.reload
+      end
+
+      it 'sets cached_people to nil representation' do
+        manifestation.recalc_cached_people
+        expect(manifestation.cached_people).to eq(I18n.t(:nil))
+      end
+    end
+  end
+
+  describe '#recalc_cached_people!' do
+    let(:author) { create(:authority, name: 'Test Author') }
+    let(:translator) { create(:authority, name: 'Test Translator') }
+    let(:manifestation) { create(:manifestation, orig_lang: 'de', author: author, translator: translator) }
+
+    it 'updates and saves cached_people to match author_string' do
+      manifestation.recalc_cached_people!
+      manifestation.reload
+      expect(manifestation.cached_people).to eq(manifestation.author_string!)
+    end
+
+    it 'persists the cached_people changes to the database' do
+      # Ensure cached_people is initially different from author_string
+      manifestation.update_column(:cached_people, 'different value')
+
+      manifestation.recalc_cached_people!
+      manifestation.reload
+      expect(manifestation.cached_people).to eq(manifestation.author_string!)
     end
   end
 end

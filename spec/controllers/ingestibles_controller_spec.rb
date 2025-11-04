@@ -370,6 +370,77 @@ describe IngestiblesController do
         # Count should not increase
         expect(collection.involved_authorities.count).to eq(initial_count)
       end
+
+      context 'when calculating copyright status' do
+        let(:public_domain_author) { create(:authority, intellectual_property: :public_domain) }
+        let(:copyrighted_author) { create(:authority, intellectual_property: :copyrighted) }
+
+        it 'sets intellectual_property to public_domain when all authorities are public domain' do
+          # Set up ingestible with public domain author
+          updated_toc = " yes || Work 1 || #{[{ seqno: 1, authority_id: public_domain_author.id, authority_name: public_domain_author.name,
+                                                role: 'author' }].to_json} || prose || fr || public_domain"
+          ingestible.update!(toc_buffer: updated_toc)
+          ingestible.update_parsing
+
+          post :ingest, params: { id: ingestible.id }
+
+          manifestation = Manifestation.order(id: :desc).first
+          expect(manifestation.expression.intellectual_property).to eq('public_domain')
+        end
+
+        it 'uses TOC intellectual_property value when copyright calculation determines work is copyrighted' do
+          # Set up ingestible with copyrighted author but by_permission in TOC
+          updated_toc = " yes || Work 1 || #{[{ seqno: 1, authority_id: copyrighted_author.id, authority_name: copyrighted_author.name,
+                                                role: 'author' }].to_json} || prose || fr || by_permission"
+          ingestible.update!(toc_buffer: updated_toc)
+          ingestible.update_parsing
+
+          post :ingest, params: { id: ingestible.id }
+
+          manifestation = Manifestation.order(id: :desc).first
+          expect(manifestation.expression.intellectual_property).to eq('by_permission')
+        end
+
+        it 'falls back to ingestible intellectual_property when TOC value is blank and work is copyrighted' do
+          # Set up ingestible with copyrighted author, no TOC IP, but ingestible IP
+          updated_toc = " yes || Work 1 || #{[{ seqno: 1, authority_id: copyrighted_author.id, authority_name: copyrighted_author.name,
+                                                role: 'author' }].to_json} || prose || fr || "
+          ingestible.update!(toc_buffer: updated_toc, intellectual_property: 'copyrighted')
+          ingestible.update_parsing
+
+          post :ingest, params: { id: ingestible.id }
+
+          manifestation = Manifestation.order(id: :desc).first
+          expect(manifestation.expression.intellectual_property).to eq('copyrighted')
+        end
+
+        it 'uses by_permission as ultimate fallback when everything else is blank' do
+          # Set up ingestible with copyrighted author, no IP values anywhere
+          updated_toc = " yes || Work 1 || #{[{ seqno: 1, authority_id: copyrighted_author.id, authority_name: copyrighted_author.name,
+                                                role: 'author' }].to_json} || prose || fr || "
+          ingestible.update!(toc_buffer: updated_toc, intellectual_property: nil)
+          ingestible.update_parsing
+
+          post :ingest, params: { id: ingestible.id }
+
+          manifestation = Manifestation.order(id: :desc).first
+          expect(manifestation.expression.intellectual_property).to eq('by_permission')
+        end
+      end
+
+      it 'calls recalc_cached_people! on created manifestations' do
+        expect_any_instance_of(Manifestation).to receive(:recalc_cached_people!)
+        post :ingest, params: { id: ingestible.id }
+      end
+
+      it 'updates cached_people field on manifestations after ingestion' do
+        post :ingest, params: { id: ingestible.id }
+
+        manifestation = Manifestation.order(id: :desc).first
+        # Verify that cached_people was set to the author string
+        expected_author_string = manifestation.author_string!
+        expect(manifestation.cached_people).to eq(expected_author_string)
+      end
     end
   end
 end
