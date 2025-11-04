@@ -507,6 +507,15 @@ class IngestiblesController < ApplicationController
     @changes[:placeholders] << toc_line[1]
   end
 
+  # Determine if orphan_work override should be applied
+  # Work-level setting (toc_line[6]) takes precedence over ingestible-level default
+  # @param toc_line [Array] the TOC line array where toc_line[6] contains the work-level orphan_work flag
+  # @param ingestible [Ingestible] the ingestible object with the default orphan_work setting
+  # @return [Boolean] true if orphan_work should override the computed intellectual property
+  def determine_orphan_work_override(toc_line, ingestible)
+    (toc_line[6] == 'true') || (toc_line[6].blank? && ingestible.orphan_work)
+  end
+
   # Merge work-specific authorities with defaults per role
   # If a role is specified in work authorities, it overrides the default for that role
   # If a role is not specified in work authorities, the default for that role is used
@@ -569,8 +578,8 @@ class IngestiblesController < ApplicationController
         # Compute intellectual property from all involved authorities
         all_authority_ids = author_ids + translator_ids + other_authorities.map(&:first)
         computed_ip = ComputeIntellectualProperty.call(all_authority_ids)
-        # Check for orphan_work override at work level (toc_line[6]) or ingestible level
-        orphan_work = (toc_line[6] == 'true') || (toc_line[6].blank? && @ingestible.orphan_work)
+        # Check for orphan_work override using helper method
+        orphan_work = determine_orphan_work_override(toc_line, @ingestible)
         final_ip = orphan_work ? :orphan : computed_ip
         e = w.expressions.build(
           title: toc_line[1],

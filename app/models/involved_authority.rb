@@ -35,7 +35,8 @@ class InvolvedAuthority < ApplicationRecord
   def recalculate_expression_intellectual_property
     # Find the expression(s) affected by this authority change
     expressions = if item.is_a?(Expression)
-                    [item]
+                    # Preload associations for single expression case to avoid N+1 queries
+                    Expression.includes(work: :involved_authorities, involved_authorities: :authority).where(id: item.id)
                   elsif item.is_a?(Work)
                     # Preload associations to avoid N+1 queries
                     item.expressions.includes(work: :involved_authorities, involved_authorities: :authority)

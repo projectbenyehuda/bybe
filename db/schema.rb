@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_30_234900) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_31_155616) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -572,6 +572,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_30_234900) do
     t.string "originating_task"
     t.integer "last_editor_id"
     t.text "collection_authorities"
+    t.boolean "orphan_work", default: false, null: false
     t.index ["last_editor_id"], name: "index_ingestibles_on_last_editor_id"
     t.index ["locked_by_user_id"], name: "index_ingestibles_on_locked_by_user_id"
     t.index ["originating_task"], name: "index_ingestibles_on_originating_task"

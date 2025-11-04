@@ -10,10 +10,11 @@ task recalculate_intellectual_property: :environment do
   skipped = 0
   
   # Preload associations to avoid N+1 queries
-  Expression.includes(work: :involved_authorities, involved_authorities: :involved_authorities).find_each.with_index do |expression, index|
+  Expression.includes(work: :involved_authorities, involved_authorities: []).find_each.with_index do |expression, index|
     # Get all involved authorities for this expression
-    work_authority_ids = expression.work.involved_authorities.pluck(:authority_id)
-    expression_authority_ids = expression.involved_authorities.pluck(:authority_id)
+    # Note: authority_id is a foreign key, so accessing it doesn't trigger queries
+    work_authority_ids = expression.work.involved_authorities.map(&:authority_id)
+    expression_authority_ids = expression.involved_authorities.map(&:authority_id)
     authority_ids = (work_authority_ids + expression_authority_ids).uniq
 
     # Compute intellectual property
