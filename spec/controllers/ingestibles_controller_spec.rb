@@ -433,6 +433,11 @@ describe IngestiblesController do
         post :ingest, params: { id: ingestible.id }
       end
 
+      it 'calls update_alternate_titles on created manifestations' do
+        expect_any_instance_of(Manifestation).to receive(:update_alternate_titles)
+        post :ingest, params: { id: ingestible.id }
+      end
+
       it 'updates cached_people field on manifestations after ingestion' do
         post :ingest, params: { id: ingestible.id }
 
@@ -440,6 +445,21 @@ describe IngestiblesController do
         # Verify that cached_people was set to the author string
         expected_author_string = manifestation.author_string!
         expect(manifestation.cached_people).to eq(expected_author_string)
+      end
+
+      context 'test alternate titles population' do
+        let(:markdown) { "&&& מִטָה ושֻׁלְחָן\n\nSome content for work 1" }
+        let(:toc_buffer) do
+          " yes || מִטָה ושֻׁלְחָן || #{[{ seqno: 1, authority_id: author.id, authority_name: author.name,
+                                           role: 'author' }].to_json} || prose || fr || public_domain"
+        end
+
+        it 'populates alternate_titles field on manifestations after ingestion' do
+          post :ingest, params: { id: ingestible.id }
+
+          manifestation = Manifestation.order(id: :desc).first
+          expect(manifestation.alternate_titles).to eq('מטה ושלחן; מיטה ושולחן')
+        end
       end
     end
   end

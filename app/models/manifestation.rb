@@ -25,7 +25,7 @@ class Manifestation < ApplicationRecord
   has_many_attached :images, dependent: :destroy
   has_many :collection_items, as: :item, dependent: :destroy
   before_save :update_sort_title!
-  before_save :update_alternate_titles!, if: :title_changed?
+  before_save :update_alternate_titles, if: :title_changed?
   before_save :recalc_cached_people, if: :expression_id_changed?
   before_save :recalc_responsibility_statement, if: :expression_id_changed?
 
@@ -66,7 +66,7 @@ class Manifestation < ApplicationRecord
     self.sort_title = ::Regexp.last_match.post_match if sort_title =~ /^\d+\. /
   end
 
-  def update_alternate_titles!
+  def update_alternate_titles
     existingstr = alternate_titles || ''
     existing = existingstr.split(';').map(&:strip)
     newforms = AlternateHebrewForms.call(title)
