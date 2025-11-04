@@ -102,7 +102,7 @@
       var title = e.closest('tr').find('.toc-title').text();
       var genre = e.closest('tr').find('.toc-genre').val();
       var orig_lang = e.closest('tr').find('.toc-lang').val();
-      var orphan_work = e.closest('tr').find('.toc-orphan-work').is(':checked');
+      var orphan_work = e.closest('tr').find('.toc-orphan-work').is(':checked') ? 'true' : 'false';
       $.ajax({
         url: "#{update_toc_ingestible_path(@ingestible)}",
         type: 'PATCH',
