@@ -11,6 +11,12 @@ task recalculate_intellectual_property: :environment do
   
   # Preload associations to avoid N+1 queries
   Expression.includes(work: :involved_authorities, involved_authorities: []).find_each.with_index do |expression, index|
+    # Skip if current state is 'orphan' - that was set manually and can't be calculated
+    if expression.intellectual_property_orphan?
+      skipped += 1
+      next
+    end
+
     # Get all involved authorities for this expression
     # Note: authority_id is a foreign key, so accessing it doesn't trigger queries
     work_authority_ids = expression.work.involved_authorities.map(&:authority_id)
