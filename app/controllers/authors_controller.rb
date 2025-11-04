@@ -427,10 +427,10 @@ class AuthorsController < ApplicationController
                             .page(params[:page])
                             .order(params[:order].nil? ? ['tocs.status, sort_name'] : params[:order])
 
-    @q = params[:q]
+    @q = params[:q].strip unless params[:q].nil?
     return if @q.blank?
 
-    @authorities = @authorities.where('name like ? or other_designation like ?', "%#{params[:q]}%", "%#{params[:q]}%")
+    @authorities = @authorities.where('name like ? or other_designation like ?', "%#{@q}%", "%#{@q}%")
   end
 
   def add_link
