@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module IngestibleHelper
   def title_from_prospective_volume_id(prospective_volume_id, ptitle)
     return ptitle if ptitle.present?
@@ -7,7 +9,7 @@ module IngestibleHelper
       c = Collection.find(prospective_volume_id)
       return c.title_and_authors if c.present?
     end
-    pub = Publication.find(prospective_volume_id[1..-1])
+    pub = Publication.find(prospective_volume_id[1..])
     return "#{pub.authority.name} – #{pub.title} (#{t(:new)}!)"
   end
 
@@ -21,6 +23,12 @@ module IngestibleHelper
       'lredbg'
     else
       ''
+    end
+  end
+
+  def copyrighted_ip_options
+    Ingestible::COPYRIGHTED_IP_OPTIONS.map do |code|
+      [textify_intellectual_property(code), code]
     end
   end
 
@@ -51,7 +59,7 @@ module IngestibleHelper
     return work_auths if default_auths.empty?
 
     # Get roles present in work authorities
-    work_roles = work_auths.map { |a| a['role'] }.uniq
+    work_roles = work_auths.pluck('role').uniq
 
     # Start with work authorities, then add defaults for roles not present in work authorities
     result = work_auths.dup
