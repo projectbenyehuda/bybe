@@ -936,7 +936,6 @@ small p{
   margin-right: 0; /* Reset browser default margin-right for proper RTL list rendering */
 }
 .footnotes ol li {
-  list-style-position: inside; /* for some reason 'outside' doesn't work in Safari in RTL context */
   display: list-item; 
   scroll-margin-top: 175px;
   /* Safari-specific fix for RTL list markers */
