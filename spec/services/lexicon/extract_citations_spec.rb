@@ -7,7 +7,7 @@ describe Lexicon::ExtractCitations do
 
   let(:html_doc) { File.open(filename) { |f| Nokogiri::HTML(f) } }
 
-  context 'when male person is parsed' do
+  context 'when male person is parsed', vcr: { cassette_name: 'lexicon/extract_citations_00024' } do
     let(:filename) { Rails.root.join('spec/data/lexicon/00024.php') }
 
     it 'parses citations' do
@@ -15,7 +15,7 @@ describe Lexicon::ExtractCitations do
     end
   end
 
-  context 'when female person is parsed' do
+  context 'when female person is parsed', vcr: { cassette_name: 'lexicon/extract_citations_00002' } do
     let(:filename) { Rails.root.join('spec/data/lexicon/00002.php') }
 
     it 'parses citations' do
