@@ -1,0 +1,116 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.deepseek.com/chat/completions
+    body:
+      encoding: UTF-8
+      string: '{"model":"deepseek-chat","messages":[{"role":"system","content":"  User
+        will send you a set of bibliography records in html form, most of them are
+        in Hebrew, but English and other \n  languages are possible. Each record represents
+        single work (e.g. book, or article) about a person, or one of this \n  person''s
+        works.\n\n  Usually bibliography is represented as set of <ul> tags, with
+        optional short header before each. Header represents \n  subject, and <li>
+        elements inside <ul> represents individual work about this subject.\n\n  You
+        need to parse it and turn into a JSON array representing works grouped by
+        subjects:\n  [\n    { subject: ''Subject 1'', works: [ <ARRAY of Works 1>
+        ] },\n    { subject: ''Subject 2'', works: [ <ARRAY of Works 2> ] },\n    ...\n  ]\n\n  Each
+        element in array of works is a JSON object representing single bibliography
+        record with following structure:\n  - authors - array of Authors who authored
+        work. Author can be represented as text entry, or as a link to page about
+        \n    this author. So author record contains two string attributes: name (mandatory)
+        and link (optional)\n  - title - title of work (e.g. title of article) - mandatory\n  -
+        from_publication - name of publication where work was published (e.g. name
+        of collection of articles, name of the \n    journal where article was published,
+        etc). You should include there additional information helping to identify
+        \n    publication, like year and number of issue for journal article, volume
+        number for multivolume collection, etc.\n  - pages - string representing page,
+        or pages interval, e.g. \"7\", \"5-12\"\n  - link - (optional) sometimes html
+        will contain a link to actual work or article.\n  - notes - (optional) some
+        additional notes, not fitting into other fields (like ''First published at...'')\n  -
+        raw - HTML markup representing content of <li> tag representing this work
+        (without wrapping <li>, </li> tags)\n\n  Example of work JSON:\n  {\n    \"authors\":
+        [\n      {\n        \"name\": \"איזיקוביץ, גילי\",\n        \"link\": null\n      },\n      {\n        \"name\":
+        \"ארליך, צור\",\n        \"link\": \"00563.php\"\n      }\n    ],\n    \"title\":
+        \"״אני הקלישאה, אין לי ארץ אחרת״\",\n    \"from_publication\": \"הארץ, גלריה,
+        י״ג באייר תשפ״ג, 4 במאי 2023\",\n    \"pages\": \"1–3\",\n    \"link\": \"https://somejournal.com/article.html\",\n    \"notes\":
+        \"ראיון עם הסופרת גבריאלה אביגור-רותם לרגל צאת ספרה החדש\"\n    \"raw\": \"<HTML
+        content>\"\n  }\n"},{"role":"user","content":"<font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"disc\"> </ul> <font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"disc\"> </ul> <font color=\"#FF0000\">על
+        \"ארה\"</font> <ul style=\"MARGIN-TOP: 0in\" type=\"disc\"> <li><b><a href=\"00019.php\">וויינר,
+        חיים.</a></b>&nbsp; \"ארה\".&nbsp;&nbsp; בספרו: <b>פרקי חיים וספרות</b> /
+        ליקט וכינס זאב וויינר (ירושלים : קרית-ספר, תש\"ך 1960), עמ'' 89־90 &lt;פורסם
+        לראשונה ב\"הדואר\", 7 בפברואר 1930&gt;</li> </ul> <font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"disc\"> </ul> <font color=\"#FF0000\">על
+        \"חופים\"</font> <ul style=\"MARGIN-TOP: 0in\" type=\"disc\"> <li><b><a href=\"01811.php\">פנואלי,
+        ש.י.</a></b> [פינלס]&nbsp; \"בחופים\".&nbsp; <u>הארץ</u>, ז'' בניסן תרצ\"ד,
+        23 במארס 1934, עמ'' 5.</li> </ul> <font color=\"#FF0000\"></font> <ul style=\"MARGIN-TOP:
+        0in\" type=\"disc\"> </ul> <font color=\"#FF0000\">על \"בלדות מעבר לנוער\"</font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"disc\"> <li><b><a href=\"02034.php\">בורלא,
+        יהודה.</a></b> <a target=\"_blank\" href=\"http://www.jpress.org.il/Default/Skins/TAUHe/Client.asp?Skin=TAUHe&amp;Enter=True&amp;Ref=REFWLzE5MzgvMTIvMDIjQXIwMDMwNg==&amp;Mode=Gif&amp;Locale=hebrew-skin-custom&amp;AW=1281249519109&amp;AppName=2\">\"בלדות
+        מעבר לנוער\".</a>&nbsp; <u>דבר</u>, ט'' בכסלו תרצ\"ט, 2 בדצמבר 1938, עמ''
+        3<a target=\"_blank\" href=\"00024-files/davar19381202.htm\">.</a></li> </ul>
+        <font color=\"#FF0000\"></font> <ul style=\"MARGIN-TOP: 0in\" type=\"disc\">
+        </ul> <font color=\"#FF0000\">על \"הדמות הקסומה\"</font> <ul style=\"MARGIN-TOP:
+        0in\" type=\"disc\"> <li><b><a href=\"01063.php\">ברוידס, אברהם.</a></b>&nbsp;
+        <a target=\"_blank\" href=\"http://jpress2.tau.ac.il/Repository/getFiles.asp?Style=OliveXLib:LowLevelEntityToSaveGifMSIE_TAUHE&amp;Type=text/html&amp;Locale=hebrew-skin-custom&amp;Path=DAV/1947/08/08&amp;ChunkNum=-1&amp;ID=Ar00702\">
+        מאצטבת הספרים</a>: \"הדמות הקסומה\" לשמואל בס.&nbsp; <u>דבר</u>, כ\"ב באב
+        תש\"ז, 8 באוגוסט 1947, עמ'' 7.</li> </ul> <font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"disc\"> </ul> <font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"disc\"> </ul>"}],"stream":false,"response_format":{"type":"json_object"}}'
+    headers:
+      User-Agent:
+      - Faraday v2.13.4
+      Authorization:
+      - Bearer DEEPSEEK_API_KEY
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 06 Nov 2025 19:19:02 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Vary:
+      - origin, access-control-request-method, access-control-request-headers
+      Access-Control-Allow-Credentials:
+      - 'true'
+      X-Ds-Trace-Id:
+      - 51af9781fda073513f92683c497c7e5a
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Content-Type-Options:
+      - nosniff
+      Cf-Cache-Status:
+      - DYNAMIC
+      Set-Cookie:
+      - __cf_bm=awpIEtS2VQGZP7_aPycMNgnHJgchwpp8y0oe_Uh.EoE-1762456742-1.0.1.1-c66OaxvfHPg5N_rtbcm4kOmB3zjq7iRKdrdoJfCRd49BI14VGuY7rfnBE6fGxfSDMF699sp3OvT6Rw644xgJF2XbFZuQlW45zP5Foz.RI2A;
+        path=/; expires=Thu, 06-Nov-25 19:49:02 GMT; domain=.deepseek.com; HttpOnly;
+        Secure; SameSite=None
+      Report-To:
+      - '{"endpoints":[{"url":"https:\/\/csp-reporting.cloudflare.com\/cdn-cgi\/script_monitor\/report?m=v6N0.22ieseEpmitqAf3oUtb52Uonug9FEja6mu28.w-1762456742-1.0.1.1-twyZ4boNx4jgkRDyGq6RQPZu71.VbgMc3OWBmerw_1MHS0q7HNRcy85pNl3SU7cS763_2aHwDiCFuZ34uNpNBW8FkYd9Lev.HS.G6usjZgPDmgWjgZHZ.wff_lILEQEHImLxb5DSKWXmUuVf4L4s9KoB5fO7S5bLSdwQhL.lyIoZSt_XvTGWoDpurYe53hZL"}],"group":"cf-csp-endpoint","max_age":86400}'
+      Content-Security-Policy-Report-Only:
+      - script-src 'none'; report-uri https://csp-reporting.cloudflare.com/cdn-cgi/script_monitor/report?m=v6N0.22ieseEpmitqAf3oUtb52Uonug9FEja6mu28.w-1762456742-1.0.1.1-twyZ4boNx4jgkRDyGq6RQPZu71.VbgMc3OWBmerw_1MHS0q7HNRcy85pNl3SU7cS763_2aHwDiCFuZ34uNpNBW8FkYd9Lev.HS.G6usjZgPDmgWjgZHZ.wff_lILEQEHImLxb5DSKWXmUuVf4L4s9KoB5fO7S5bLSdwQhL.lyIoZSt_XvTGWoDpurYe53hZL;
+        report-to cf-csp-endpoint
+      Server:
+      - cloudflare
+      Cf-Ray:
+      - 99a6f0a97aedd90b-WAW
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        eyJpZCI6ImQ3OTYzMmVhLTg5MWYtNGU0Ny05M2EzLTg4YWIyZmNlNDUxZCIsIm9iamVjdCI6ImNoYXQuY29tcGxldGlvbiIsImNyZWF0ZWQiOjE3NjI0NTY3NDEsIm1vZGVsIjoiZGVlcHNlZWstY2hhdCIsImNob2ljZXMiOlt7ImluZGV4IjowLCJtZXNzYWdlIjp7InJvbGUiOiJhc3Npc3RhbnQiLCJjb250ZW50IjoiW1xuICB7XG4gICAgXCJzdWJqZWN0XCI6IFwi16LXnCBcXFwi15DXqNeUXFxcIlwiLFxuICAgIFwid29ya3NcIjogW1xuICAgICAge1xuICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgIHtcbiAgICAgICAgICAgIFwibmFtZVwiOiBcIteV15XXmdeZ16DXqCwg15fXmdeZ151cIixcbiAgICAgICAgICAgIFwibGlua1wiOiBcIjAwMDE5LnBocFwiXG4gICAgICAgICAgfVxuICAgICAgICBdLFxuICAgICAgICBcInRpdGxlXCI6IFwiXFxcIteQ16jXlFxcXCJcIixcbiAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi16TXqNen15kg15fXmdeZ150g15XXodek16jXldeqIC8g15zXmden15gg15XXm9eZ16DXoSDXlteQ15Eg15XXldeZ15nXoNeoICjXmdeo15XXqdec15nXnSA6INen16jXmdeqLdeh16TXqCwg16rXqVxcXCLXmiAxOTYwKVwiLFxuICAgICAgICBcInBhZ2VzXCI6IFwiODnigJM5MFwiLFxuICAgICAgICBcImxpbmtcIjogbnVsbCxcbiAgICAgICAgXCJub3Rlc1wiOiBcItek15XXqNeh150g15zXqNeQ16nXldeg15Qg15FcXFwi15TXk9eV15DXqFxcXCIsIDcg15HXpNeR16jXldeQ16ggMTkzMFwiLFxuICAgICAgICBcInJhd1wiOiBcIjxiPjxhIGhyZWY9XFxcIjAwMDE5LnBocFxcXCI+15XXldeZ15nXoNeoLCDXl9eZ15nXnS48L2E+PC9iPiZuYnNwOyBcXFwi15DXqNeUXFxcIi4mbmJzcDsmbmJzcDsg15HXodek16jXlTogPGI+16TXqNen15kg15fXmdeZ150g15XXodek16jXldeqPC9iPiAvINec15nXp9eYINeV15vXmdeg16Eg15bXkNeRINeV15XXmdeZ16DXqCAo15nXqNeV16nXnNeZ150gOiDXp9eo15nXqi3Xodek16gsINeq16lcXFwi15ogMTk2MCksINei154nIDg51r45MCAmbHQ716TXldeo16HXnSDXnNeo15DXqdeV16DXlCDXkVxcXCLXlNeT15XXkNeoXFxcIiwgNyDXkdek15HXqNeV15DXqCAxOTMwJmd0O1wiXG4gICAgICB9XG4gICAgXVxuICB9LFxuICB7XG4gICAgXCJzdWJqZWN0XCI6IFwi16LXnCBcXFwi15fXldek15nXnVxcXCJcIixcbiAgICBcIndvcmtzXCI6IFtcbiAgICAgIHtcbiAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICB7XG4gICAgICAgICAgICBcIm5hbWVcIjogXCLXpNeg15XXkNec15ksINepLteZLlwiLFxuICAgICAgICAgICAgXCJsaW5rXCI6IFwiMDE4MTEucGhwXCJcbiAgICAgICAgICB9XG4gICAgICAgIF0sXG4gICAgICAgIFwidGl0bGVcIjogXCJcXFwi15HXl9eV16TXmdedXFxcIlwiLFxuICAgICAgICBcImZyb21fcHVibGljYXRpb25cIjogXCLXlNeQ16jXpSwg15YnINeR16DXmdeh158g16rXqNemXFxcIteTLCAyMyDXkdee15DXqNehIDE5MzRcIixcbiAgICAgICAgXCJwYWdlc1wiOiBcIjVcIixcbiAgICAgICAgXCJsaW5rXCI6IG51bGwsXG4gICAgICAgIFwibm90ZXNcIjogbnVsbCxcbiAgICAgICAgXCJyYXdcIjogXCI8Yj48YSBocmVmPVxcXCIwMTgxMS5waHBcXFwiPtek16DXldeQ15zXmSwg16ku15kuPC9hPjwvYj4gW9ek15nXoNec16FdJm5ic3A7IFxcXCLXkdeX15XXpNeZ151cXFwiLiZuYnNwOyA8dT7XlNeQ16jXpTwvdT4sINeWJyDXkdeg15nXodefINeq16jXplxcXCLXkywgMjMg15HXnteQ16jXoSAxOTM0LCDXoteeJyA1LlwiXG4gICAgICB9XG4gICAgXVxuICB9LFxuICB7XG4gICAgXCJzdWJqZWN0XCI6IFwi16LXnCBcXFwi15HXnNeT15XXqiDXntei15HXqCDXnNeg15XXoteoXFxcIlwiLFxuICAgIFwid29ya3NcIjogW1xuICAgICAge1xuICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgIHtcbiAgICAgICAgICAgIFwibmFtZVwiOiBcIteR15XXqNec15AsINeZ15TXldeT15RcIixcbiAgICAgICAgICAgIFwibGlua1wiOiBcIjAyMDM0LnBocFwiXG4gICAgICAgICAgfVxuICAgICAgICBdLFxuICAgICAgICBcInRpdGxlXCI6IFwiXFxcIteR15zXk9eV16og157XoteR16gg15zXoNeV16LXqFxcXCJcIixcbiAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi15PXkdeoLCDXmCcg15HXm9eh15zXlSDXqteo16ZcXFwi15gsIDIg15HXk9em157XkdeoIDE5MzhcIixcbiAgICAgICAgXCJwYWdlc1wiOiBcIjNcIixcbiAgICAgICAgXCJsaW5rXCI6IFwiaHR0cDovL3d3dy5qcHJlc3Mub3JnLmlsL0RlZmF1bHQvU2tpbnMvVEFVSGUvQ2xpZW50LmFzcD9Ta2luPVRBVUhlJmFtcDtFbnRlcj1UcnVlJmFtcDtSZWY9UkVGV0x6RTVNemd2TVRJdk1ESWpRWEl3TURNd05nPT0mYW1wO01vZGU9R2lmJmFtcDtMb2NhbGU9aGVicmV3LXNraW4tY3VzdG9tJmFtcDtBVz0xMjgxMjQ5NTE5MTA5JmFtcDtBcHBOYW1lPTJcIixcbiAgICAgICAgXCJub3Rlc1wiOiBudWxsLFxuICAgICAgICBcInJhd1wiOiBcIjxiPjxhIGhyZWY9XFxcIjAyMDM0LnBocFxcXCI+15HXldeo15zXkCwg15nXlNeV15PXlC48L2E+PC9iPiA8YSB0YXJnZXQ9XFxcIl9ibGFua1xcXCIgaHJlZj1cXFwiaHR0cDovL3d3dy5qcHJlc3Mub3JnLmlsL0RlZmF1bHQvU2tpbnMvVEFVSGUvQ2xpZW50LmFzcD9Ta2luPVRBVUhlJmFtcDtFbnRlcj1UcnVlJmFtcDtSZWY9UkVGV0x6RTVNemd2TVRJdk1ESWpRWEl3TURNd05nPT0mYW1wO01vZGU9R2lmJmFtcDtMb2NhbGU9aGVicmV3LXNraW4tY3VzdG9tJmFtcDtBVz0xMjgxMjQ5NTE5MTA5JmFtcDtBcHBOYW1lPTJcXFwiPlxcXCLXkdec15PXldeqINee16LXkdeoINec16DXldei16hcXFwiLjwvYT4mbmJzcDsgPHU+15PXkdeoPC91Piwg15gnINeR15vXodec15Ug16rXqNemXFxcIteYLCAyINeR15PXptee15HXqCAxOTM4LCDXoteeJyAzPGEgdGFyZ2V0PVxcXCJfYmxhbmtcXFwiIGhyZWY9XFxcIjAwMDI0LWZpbGVzL2RhdmFyMTkzODEyMDIuaHRtXFxcIj4uPC9hPlwiXG4gICAgICB9XG4gICAgXVxuICB9LFxuICB7XG4gICAgXCJzdWJqZWN0XCI6IFwi16LXnCBcXFwi15TXk9ee15XXqiDXlNen16HXldee15RcXFwiXCIsXG4gICAgXCJ3b3Jrc1wiOiBbXG4gICAgICB7XG4gICAgICAgIFwiYXV0aG9yc1wiOiBbXG4gICAgICAgICAge1xuICAgICAgICAgICAgXCJuYW1lXCI6IFwi15HXqNeV15nXk9ehLCDXkNeR16jXlNedXCIsXG4gICAgICAgICAgICBcImxpbmtcIjogXCIwMTA2My5waHBcIlxuICAgICAgICAgIH1cbiAgICAgICAgXSxcbiAgICAgICAgXCJ0aXRsZVwiOiBcIlxcXCLXlNeT157XldeqINeU16fXodeV157XlFxcXCIg15zXqdee15XXkNecINeR16FcIixcbiAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi15PXkdeoLCDXm1xcXCLXkSDXkdeQ15Eg16rXqVxcXCLXliwgOCDXkdeQ15XXkteV16HXmCAxOTQ3XCIsXG4gICAgICAgIFwicGFnZXNcIjogXCI3XCIsXG4gICAgICAgIFwibGlua1wiOiBcImh0dHA6Ly9qcHJlc3MyLnRhdS5hYy5pbC9SZXBvc2l0b3J5L2dldEZpbGVzLmFzcD9TdHlsZT1PbGl2ZVhMaWI6TG93TGV2ZWxFbnRpdHlUb1NhdmVHaWZNU0lFX1RBVUhFJmFtcDtUeXBlPXRleHQvaHRtbCZhbXA7TG9jYWxlPWhlYnJldy1za2luLWN1c3RvbSZhbXA7UGF0aD1EQVYvMTk0Ny8wOC8wOCZhbXA7Q2h1bmtOdW09LTEmYW1wO0lEPUFyMDA3MDJcIixcbiAgICAgICAgXCJub3Rlc1wiOiBudWxsLFxuICAgICAgICBcInJhd1wiOiBcIjxiPjxhIGhyZWY9XFxcIjAxMDYzLnBocFxcXCI+15HXqNeV15nXk9ehLCDXkNeR16jXlNedLjwvYT48L2I+Jm5ic3A7IDxhIHRhcmdldD1cXFwiX2JsYW5rXFxcIiBocmVmPVxcXCJodHRwOi8vanByZXNzMi50YXUuYWMuaWwvUmVwb3NpdG9yeS9nZXRGaWxlcy5hc3A/U3R5bGU9T2xpdmVYTGliOkxvd0xldmVsRW50aXR5VG9TYXZlR2lmTVNJRV9UQVVIRSZhbXA7VHlwZT10ZXh0L2h0bWwmYW1wO0xvY2FsZT1oZWJyZXctc2tpbi1jdXN0b20mYW1wO1BhdGg9REFWLzE5NDcvMDgvMDgmYW1wO0NodW5rTnVtPS0xJmFtcDtJRD1BcjAwNzAyXFxcIj4g157XkNem15jXkdeqINeU16HXpNeo15nXnTwvYT46IFxcXCLXlNeT157XldeqINeU16fXodeV157XlFxcXCIg15zXqdee15XXkNecINeR16EuJm5ic3A7IDx1PteT15HXqDwvdT4sINebXFxcIteRINeR15DXkSDXqtepXFxcIteWLCA4INeR15DXldeS15XXodeYIDE5NDcsINei154nIDcuXCJcbiAgICAgIH1cbiAgICBdXG4gIH1cbl0ifSwibG9ncHJvYnMiOm51bGwsImZpbmlzaF9yZWFzb24iOiJzdG9wIn1dLCJ1c2FnZSI6eyJwcm9tcHRfdG9rZW5zIjoxNTc2LCJjb21wbGV0aW9uX3Rva2VucyI6MTI4NSwidG90YWxfdG9rZW5zIjoyODYxLCJwcm9tcHRfdG9rZW5zX2RldGFpbHMiOnsiY2FjaGVkX3Rva2VucyI6MH0sInByb21wdF9jYWNoZV9oaXRfdG9rZW5zIjowLCJwcm9tcHRfY2FjaGVfbWlzc190b2tlbnMiOjE1NzZ9LCJzeXN0ZW1fZmluZ2VycHJpbnQiOiJmcF9mZmM3MjgxZDQ4X3Byb2QwODIwX2ZwOF9rdmNhY2hlIn0=
+  recorded_at: Thu, 06 Nov 2025 19:19:41 GMT
+recorded_with: VCR 6.3.1

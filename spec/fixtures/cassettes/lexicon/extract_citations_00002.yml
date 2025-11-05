@@ -1,0 +1,233 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://api.deepseek.com/chat/completions
+    body:
+      encoding: UTF-8
+      string: '{"model":"deepseek-chat","messages":[{"role":"system","content":"  User
+        will send you a set of bibliography records in html form, most of them are
+        in Hebrew, but English and other\n  languages are possible. Each record represents
+        single work (e.g. book, or article) about a person, or one of this\n  person''s
+        works.\n\n  Usually bibliography is represented as set of <ul> tags, with
+        optional short header before each. Header represents\n  subject, and <li>
+        elements inside <ul> represents individual work about this subject.\n\n  You
+        need to parse it and turn into a JSON array representing works grouped by
+        subjects:\n  [\n    { subject: ''Subject 1'', works: [ <ARRAY of Works 1>
+        ] },\n    { subject: ''Subject 2'', works: [ <ARRAY of Works 2> ] },\n    ...\n  ]\n\n  Each
+        element in array of works is a JSON object representing single bibliography
+        record with following structure:\n  - authors - array of Authors who authored
+        work. Author can be represented as text entry, or as a link to page about\n    this
+        author. So author record contains two string attributes: name (mandatory)
+        and link (optional)\n  - title - title of work (e.g. title of article) - mandatory\n  -
+        from_publication - name of publication where work was published (e.g. name
+        of collection of articles, name of the\n    journal where article was published,
+        etc). You should include there additional information helping to identify\n    publication,
+        like year and number of issue for journal article, volume number for multivolume
+        collection, etc.\n  - pages - string representing page, or pages interval,
+        e.g. \"7\", \"5-12\"\n  - link - (optional) sometimes html will contain a
+        link to actual work or article.\n  - notes - (optional) some additional notes,
+        not fitting into other fields (like ''First published at...'')\n  - raw -
+        HTML markup representing content of <li> tag representing this work (without
+        wrapping <li>, </li> tags)\n\n  Example of work JSON:\n  {\n    \"authors\":
+        [\n      {\n        \"name\": \"איזיקוביץ, גילי\",\n        \"link\": null\n      },\n      {\n        \"name\":
+        \"ארליך, צור\",\n        \"link\": \"00563.php\"\n      }\n    ],\n    \"title\":
+        \"״אני הקלישאה, אין לי ארץ אחרת״\",\n    \"from_publication\": \"הארץ, גלריה,
+        י״ג באייר תשפ״ג, 4 במאי 2023\",\n    \"pages\": \"1–3\",\n    \"link\": \"https://somejournal.com/article.html\",\n    \"notes\":
+        \"ראיון עם הסופרת גבריאלה אביגור-רותם לרגל צאת ספרה החדש\"\n    \"raw\": \"<HTML
+        content>\"\n  }\n"},{"role":"user","content":"<font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"circle\"> <li> <b>אביגור־רותם, גבריאלה.</b>
+        מישהו יכול להוכיח שאת לא? <u>הארץ, מוסף ספרים</u>, גל׳ 660 (י״ד בתשרי תשס״ו,
+        17 באוקטובר 2005), עמ׳ 18.</li> <li> <b>אביגור־רותם, גבריאלה.</b> להינעל ואז
+        להרפות. <u>ידיעות אחרונות</u>, 24 שעות, י׳ בכסלו תשס״ח, 20 בנובמבר 2007, עמ׳
+        18 &lt;עם הסופרת על ספרים וכתיבת ספרים ואיך נעשים סופרים&gt;</li> <li> <b><a
+        href=\"00777.php\">גרנות, משה.</a></b> הלשון הגבוהה והקורא המותש: על יצירתה
+        של גבריאלה אביגור־רותם. <u>מהות</u>, חוב׳ כ״ח (קיץ תשס״ד 2004), עמ׳ 133–138
+        &lt;נדפס גם ב׳עכשיו׳, חוב׳ 69–70 (אביב תשס״ה 2005), עמ׳ 399–404&gt;</li> <li>
+        <b>ליבנה, נרי. </b> <a target=\"_blank\" href=\"http://www.haaretz.co.il/magazine/.premium-1.2183165\">מבוך
+        המתים.</a> <u>הארץ</u>, מוסף שבועי, ג׳ בטבת תשע״ד, 6 בדצמבר 2013, עמ׳ 26–34
+        &lt;ראיון עם הסופרת&gt;</li> <li> <b><a href=\"01848.php\">שחם, חיה.</a> </b>
+        אורידיקה צועדת בעקבות אורפיאוס ושרה (פרשנות נשית מתקנת של המיתוס בשירי משוררות).
+        <u>ביקורת ופרשנות</u>: כתב־עת למחקר ספרות עם־ישראל, כרך 33 (1998), עמ׳ 61–85
+        &lt;על שירים מאת גבריאלה אביגור־רותם, <a href=\"00308.php\">נורית זרחי</a>,
+        <a href=\"01849.php\">עליזה נהור</a>, <a href=\"01850.php\">איריס מנור</a>
+        ו<a href=\"01233.php\">לאה שניר</a>&gt;</li> </ul> <font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"circle\"> </ul> <font color=\"#FF0000\">על
+        ״חומות וקיסרים״</font> <ul style=\"MARGIN-TOP: 0in\" type=\"circle\"> <li>
+        <b>גוטקינד, נעמי.</b> ליריקה גבישית. <u>הצופה</u>, ט״ו בסיון תש״ן, 8 ביוני
+        1990, עמ׳ 6.</li> <li> <b><a href=\"01233.php\">שניר, לאה.</a></b> העיר האסורה.
+        <u>במחנה</u>, גל׳ 27 (21 במארס 1990), עמ׳ 44. </li> <li> <b><a href=\"01233.php\">שניר,
+        לאה.</a></b> הזמן הצהוב של סין. <u>מעריב</u>, ספרות, כ״ט בסיון תש״ן, 22 ביוני
+        1990, עמ׳ 6. </li> </ul> <font color=\"#FF0000\"></font> <ul style=\"MARGIN-TOP:
+        0in\" type=\"circle\"> </ul> <font color=\"#FF0000\">על ״מוצרט לא היה יהודי״</font>
+        <ul style=\"margin-top:0in\" type=\"circle\"> <li> <b>אופיר, עדי.</b> מאה
+        שנים של בדידות יהודית, גבריאלה אביגור־רותם. <u>מעריב</u>, 14 בפברואר 1992,
+        עמ׳ 49</li> <li> <b>אוריין, יהודית.</b> היא תהיה סופרת גדולה מאוד. <u>ידיעות
+        אחרונות</u>, המוסף לשבת, י׳ באדר א׳ תשנ״ב, 14 בפברואר 1992, עמ׳ 24</li> <li>
+        <b><a href=\"00473.php\">בושס, הדה.</a></b> ההסטוריה כורעת ללדת. <u>הארץ</u>,
+        25 בפברואר 1992, עמ׳ ב 4.</li> <li> <b>גוטקינד, נעמי.</b> דליקטסן ואלפחורס.
+        <u>הצופה</u>, ט״ו באדר ב׳ תשנ״ב, 20 במארס 1992, עמ׳ 6, 8.</li> <li> <b><a
+        href=\"00230.php\">גור, בתיה.</a></b> שבוע של ספרים. <u>הארץ</u>, 21 בפברואר
+        1992, עמ׳ ב 9.</li> <li> <b>האן, לאה.</b> מראה שטוחה וראי קעור. <u>עכשיו</u>,
+        חוב׳ 58 (1992), עמ׳ 302–306.</li> <li> <b>מוסקונה־לרמן, בילי.</b> הנבחרת של
+        יגאל שוורץ נגד כל העולם. <u>מעריב</u>, סופשבוע, 21 בדצמבר 1990, עמ׳ 54–57
+        &lt;בין היתר על ״מוצרט לא היה יהודי״&gt;</li> <li> <b><a href=\"00822.php\">מלמד,
+        אריאנה.</a></b> כדודים נצטלהבו הפאמפה. <u>חדשות</u>, המדריך, ג׳ באדר א׳ תשנ״ב,
+        7 בפברואר 1992, עמ׳ 31. </li> <li> <b>נמדר, ראובן.</b> אל השורה הראשונה. <u>מאזנים</u>,
+        כרך ס״ו, גל׳ 6 (1992), עמ׳ 39–40. </li> <li> <b>פרליס, איזה.</b> סאגה ארגנטינית
+        של מספרת ישראלית. <u>על המשמר</u>, כ״ב באדר ב׳ תשנ״ב, 27 במארס 1992, עמ׳ 18.
+        </li> <li> <b>קלע, אמיר.</b> יפות ומתיפיפות. <u>על המשמר</u>, חותם, 21 בפברואר
+        1992, עמ׳ 18. </li> <li> <b><a href=\"01233.php\">שניר, לאה.</a></b> ״מוצרט
+        לא היה יהודי״ (ראיון – לאה שניר שואלת וגבריאלה אביגור־רותם מנסה לענות). <u>עלי
+        שיח</u>, חוב׳ 34 (1994), עמ׳ 104–109. </li> <li> <b><a href=\"00380.php\">שץ,
+        אבנר.</a></b> על התבדותן של נבואות הלב. <u>הארץ</u>, י״ט באייר תשנ״ב, 22 במאי
+        1992, עמ׳ ב 9.</li> <li> <b><a href=\"00093.php\">שקד, מלכה</a>.</b> פנים
+        חדשות : הרומן העכשווי על תולדות משפחה. <u>עתון 77</u>, גל׳ 153 (תשרי–חשון
+        תשנ״ג, אוקטובר 1992), עמ׳ 22–27 &lt;כולל דיון על ״מר מאני״ של <a href=\"00459.php\">א.ב.
+        יהושע</a>, ״עשו״ של <a href=\"00070.php\">מאיר שלו</a> ו״מוצרט לא היה יהודי״
+        מאת גבריאלה אביגור־רותם&gt;</li> <li class=\"left-to-right\"> <b>Furstenberg,
+        Rochelle.</b> A stake in the family. <u>Hebrew Modern Literature</u>, N.S.,
+        no. 11 (Autumn/Winter 1993), pp. 12–13.</li> </ul> <font color=\"#FF0000\">על
+        ״חמסין וציפורים משוגעות״</font> <ul style=\"margin-top:0in\" type=\"circle\">
+        <li> <b><a href=\"00006.php\">אדמון, תלמה.</a></b> הדרך אל הספר הטוב. <u>מעריב</u>,
+        מוסף שבת – ספרות וספרים, י׳ באדר תשס״ב, 22 בפברואר 2002, עמ׳ 26.</li> <li>
+        <b><a href=\"00391.php\">אורן, יוסף.</a></b> ״חמסין וציפורים משוגעות״. בספרו:
+        <u> ״סוגות בסיפורת הישראלית״</u> (ראשון לציון : יחד, תשס״ד 2004), עמ׳ 33–56</li>
+        <li> <b><a href=\"00022.php\">אלמוג, רות.</a></b> מפגן כוח: שבוע של ספרים.
+        <u>הארץ</u>, תרבות וספרות, כ״א באב תשס״א, 10 באוגוסט 2001, עמ׳ ב 14.</li>
+        <li> <b><a href=\"00731.php\">גוברין, נורית.</a></b> חפירות הנפש : ארכיאולוגיה
+        וארכיאולוגים בספרות העברית. <u>האומה</u>, שנה נ״ב, גל׳ 198 (קיץ תשע״ה, מאי
+        2015), עמ׳ 89–100.</li> <li> <b><a href=\"00823.php\">הולצמן, אבנר.</a></b>
+        <a target=\"_blank\" href=\"http://www.ynet.co.il/articles/1,7340,L-719068,FF.html\">מאוד
+        ישראלי.</a> <u>ידיעות אחרונות</u>, המוסף לשבת – תרבות, ספרות, אמנות, י״א באייר
+        תשס״א, 4 במאי 2001, עמ׳ 26–27 &lt;<span lang=\"he\">חזר ונדפס בספרו: <b><a
+        href=\"00823001.php\">מפת דרכים</a></b> : סיפורת עברית כיום (תל־אביב : הקיבוץ
+        המאוחד : ספרי סימן קריאה, 2005), עמ׳ 253–255 בשם: ״בין כנען לטרזין״&gt;</span>
+        </li> <li> <b>לוין, דפנה.</b> המרכז זז. בספרה <b>המרחב השלישי </b>: מרכז ופריפריה
+        בספרות ישראלית (תל־אביב : רסלינג, 2016), עמ׳ 31–70.</li> <li> <b><a href=\"00374.php\">מלצר,
+        יורם.</a></b> כוונות גבוהות שהתממשו. <u>מעריב</u>, מוסף שבת – ספרות וספרים,
+        ג׳ בסיוון תשס״א, 25 במאי 2001, עמ׳ 26.</li> <li> <b>פז, מירי.</b> ארכיאולוגית
+        של הזכרון. <u>עתון 77</u>, גל׳ 256 (סיוון תשס״א, יוני 2001), עמ׳ 6.</li> <li>
+        <b>פרס ספיר.</b> גבריאלה אביגור רותם – חמסין וציפורים משוגעות: פרס ספיר לספרות
+        תשס״ב 2002. <u>הארץ, מוסף ספרים</u>, גל׳ 483 (י״ח בסיוון תשס״ב, 29 במאי 2002),
+        עמ׳ 10.</li> <li> <b>קרפל, דליה.</b> <a target=\"_blank\" href=\"http://www.haaretz.co.il/misc/1.762643\">פריחה
+        מאוחרת.</a> <u>הארץ</u>, מוסף שבועי, כ״ז בטבת תשס״ב, 11 בינואר 2002, עמ׳ 48
+        &lt;ראיון עם הסופרת עם צאת ספרה לאור&gt;</li> <li> <b><a href=\"00020.php\">רותם,
+        יהודית.</a></b> תמצית הישראליות. <u>הארץ, מוסף ספרים</u>, גל׳ 434 (כ״ט בסיוון
+        תשס״א, 20 ביוני 2001), עמ׳ 1, 10.</li> <li class=\"left-to-right\"> <b>Domb,
+        Risa.</b> Nothing is as it was : Time and change in <i>Heatwave and Crazy
+        Birds</i> by Gabriela Avigur<span lang=\"en-us\">-</span>Rotem.<i> </i>in
+        her: <b> Identity and modern Israeli literature</b> (London : Vallentine Mitchell,
+        2006), pp. 90–103.</li> <li class=\"left-to-right\"> <b>Itzhaki, Masha.</b>
+        Gabriela Avigur Rotem: ״Canicule et oiseaux fous״. <u>Les cahiers du judaisme</u>,
+        num. 20 (2006), pp. 135–136.</li> </ul> <font color=\"#FF0000\">על ״אדום עתיק״</font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"circle\"> <li> <b>אדיבי־שושן, אסתר.</b>
+        <a target=\"_blank\" href=\"http://www.haaretz.co.il/hasite/spages/886193.html\">
+        העבר וההווה נפגשים בבית הקברות.</a> <u>הארץ</u>, תרבות וספרות, י״ב באב תשס״ז,
+        27 ביולי 2007, עמ׳ 4.</li> <li> <b><a href=\"00391.php\">אורן, יוסף.</a></b>
+        סיפור ״המאה הציונית״ ברומאן על נשים חזקות ומרתקות. <u>האומה</u>, שנה מ״ה,
+        גל׳׳ 170 (חורף תשס״ח, דצמבר 2007), עמ׳ 84–96 &lt;חזר ונדפס בספרו <b> <a href=\"00391001.php\">משמרות
+        בסיפורת הישראלית</a></b> (ראשון לציון : יחד, תשס״ח 2008), עמ׳ 107–123&gt;.</li>
+        <li> <b><a href=\"00563.php\">ארליך, צור.</a></b> כמה אנו קשורים למקום הזה.
+        <u>מקור ראשון</u>, דיוקן, כ״ד באלול תשס״ז, 7 בספטמבר 2007, עמ׳ 38.</li> <li>
+        <b><a href=\"00846.php\">גלסנר, אריק</a>.</b> <a target=\"_blank\" href=\"http://arikglasner.wordpress.com/2008/04/24/%D7%A2%D7%9C-%D7%90%D7%93%D7%95%D7%9D-%D7%A2%D7%AA%D7%99%D7%A7-%D7%A9%D7%9C-%D7%92%D7%91%D7%A8%D7%99%D7%90%D7%9C%D7%94-%D7%90%D7%91%D7%99%D7%92%D7%95%D7%A8-%D7%A8%D7%95%D7%AA%D7%9D/\">
+        החמצה על החמצה.</a> <u>מעריב</u>, מוסף שבת, ט״ו בסיון תשס״ז, 1 ביוני 2007,
+        עמ׳ 26<span lang=\"en-us\"> <a target=\"_blank\" href=\"https://archive.today/OWDGw\">*</a></span>
+        </li> <li> <b>טיקוצקי, גדעון.</b> שובם של האחוסלים. <u>ידיעות אחרונות</u>,
+        המוסף לספרות, כ״ו באב תשס״ז, 10 באוגוסט 2007, עמ׳ 29.</li> <li> <b><a href=\"00825.php\">יגיל,
+        רן.</a></b> <a target=\"_blank\" href=\"http://www.blogs.bananot.co.il/showPost.php?blogID=171&amp;itemID=9554#post9554\">
+        אדום עתיק : ריאיון עם גבריאלה אביגור־רותם על ספרה החדש.</a> <u> עמדה</u>:
+        ביטאון לספרות, גל׳ 19 (סתיו–חורף 2008), עמ׳ 167<font face=\"Arial Unicode
+        MS\">–170 &lt;פורסם גם באתרו של רן יגיל ב־</font>31 בינואר 2009&gt;</li> <li>
+        <b><a href=\"01579.php\">נגב, אילת.</a></b> חמסין ושכנים משולהבים. <u>ידיעות
+        אחרונות</u>, 7 ימים, ח׳ בסיון תשס״ז, 25 במאי 2007, עמ׳ 62.</li> <li> <b>עוז־זלצברגר,
+        פניה.</b> <a target=\"_blank\" href=\"http://www.haaretz.com/hasite/spages/879917.html\">
+        הפער בין אז לעכשיו.</a> <u>הארץ, מוסף ספרים</u>, גל׳ 750 (כ״ה בתמוז תשס״ז,
+        11 ביולי 2007), עמ׳ 9.</li> <li> <b><a href=\"00628.php\">שחורי, דפנה.</a></b>
+        <a target=\"_blank\" href=\"http://digital-edition.israelhayom.co.il/Olive/ODE/Israel/Default.aspx?href=ITD/2011/05/06&amp;pageno=104&amp;entity=Ar10401&amp;view=entity\">
+        יקב בוטיק בגליל.</a> <u>ישראל היום</u>, שישבת, ב׳ באייר תשע״א, 6 במאי 2011,
+        עמ׳ 48.</li> </ul> <font color=\"#FF0000\">על ״כל סיפור הוא חתול פתאום״</font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"circle\"> <li> <b><a href=\"00391.php\">אורן,
+        יוסף.</a></b> <a target=\"_blank\" href=\"http://www.e-mago.co.il/magazine-1098.htm\">
+        סיפור הוא לפעמים יותר מחתול.</a> <span lang=\"en-us\"><u>e-mago</u> &lt;</span>מקוון&gt;,
+        19 בינואר 2014 <a target=\"_blank\" href=\"https://archive.today/g2Cvc\">*</a>
+        &lt;פורסם גם במגזין ׳מראה׳, גל׳ 297 והמשכו בגל׳ 298 וכן ב׳חדשות בן עזר׳, גל׳
+        <a target=\"_blank\" href=\"hbe/hbe00898.php#55\">898</a> ו־<a target=\"_blank\"
+        href=\"hbe/hbe00899.php#56\">899</a>&gt;</li> <li> <b><a href=\"00563.php\">ארליך,
+        צור</a>.</b> <a target=\"_blank\" href=\"http://tsurehrlich.blogspot.com/2013/12/blog-post_20.html\">
+        החיים בלי אפידרמיס.</a> <u>מקור ראשון</u>, דיוקן, י״ז בטבת תשע״ד, 20 בדצמבר
+        2013, עמ׳ 22–26 <a target=\"_blank\" href=\"https://archive.today/fJlq6\">*</a>
+        </li> <li> <b>גזבר, יהודה.</b> <a target=\"_blank\" href=\"http://musaf-shabbat.com/2014/01/31/%D7%9E%D7%99-%D7%99%D7%95%D7%93%D7%A2-%D7%90%D7%A0%D7%94-%D7%99%D7%94%D7%95%D7%93%D7%94-%D7%92%D7%96%D7%91%D7%A8/\">
+        מי יודע אנה</a>. <u>מקור ראשון</u>, שבת, גל׳ (ל׳ בשבט תשע״ד, 31 בינואר 2014),
+        עמ׳ 22 <a target=\"_blank\" href=\"https://archive.today/vtYV2\">*</a> &lt;פורסם
+        גם ב<a target=\"_blank\" href=\"http://gizbar.wordpress.com/2014/01/31/%D7%9B%D7%9C-%D7%A1%D7%99%D7%A4%D7%95%D7%A8-%D7%94%D7%95%D7%90-%D7%97%D7%AA%D7%95%D7%9C-%D7%A4%D7%AA%D7%90%D7%95%D7%9D-%D7%91%D7%99%D7%A7%D7%95%D7%A8%D7%AA/\">אתרו
+        של יהודה גזבר</a> <a target=\"_blank\" href=\"https://archive.today/DBuOF\">
+        *</a>&gt;</li> <li> <b>הרצוג, עמרי.</b> <a target=\"_blank\" href=\"http://www.haaretz.co.il/literature/prose/.premium-1.2202696\">
+        בדרך אל החתולה.</a> <u>הארץ, מוסף ספרים</u>, גל׳ (ב׳ בשבט תשע״ד, 3 בינואר
+        2014), עמ׳ 8–9.</li> <li> <b>ליבנה, נרי. </b> <a target=\"_blank\" href=\"http://www.haaretz.co.il/magazine/.premium-1.2183165\">מבוך
+        המתים.</a> <u>הארץ</u>, מוסף שבועי, ג׳ בטבת תשע״ד, 6 בדצמבר 2013, עמ׳ 26–34
+        &lt;ראיון עם הסופרת&gt;</li> <li> <b>סרוסי, אתי.</b> ביקורת ספר: <a target=\"_blank\"
+        href=\"http://peopleofthebook.co.il/books/2142\">״כל סיפור הוא חתול פתאום״</a>
+        מאת גבריאלה אביגור־רותם מופלא. <u>אנשי הספר</u> &lt;מקוון&gt;, 22 בינואר 2014
+        <a target=\"_blank\" href=\"https://archive.today/NTC7Y\">*</a> </li> <li>
+        <b>קידר, דורית.</b> <a target=\"_blank\" href=\"http://korebasfarim.com/2013/12/15/%D7%91%D7%99%D7%A7%D7%95%D7%A8%D7%AA-%D7%90%D7%95%D7%A8%D7%97%D7%AA-%D7%93%D7%95%D7%A8%D7%99%D7%AA-%D7%A7%D7%99%D7%93%D7%A8-%D7%A2%D7%9C-%D7%9B%D7%9C-%D7%A1%D7%99%D7%A4%D7%95%D7%A8-%D7%94%D7%95/\">
+        דהירה בנתיב פירורי החיים</a>. <u>קורא בספרים</u> &lt;מקוון&gt;, 15 בדצמבר
+        2013 <a target=\"_blank\" href=\"https://archive.today/Tl8jB\">*</a> </li>
+        <li> <b>רוזנטל, דוד.</b> <a target=\"_blank\" href=\"http://e.walla.co.il/?w=/273/2708821\">״כל
+        סיפור הוא חתול פתאום״: עדיף שלא להתחיל</a>. <u>וואלה!תרבות</u> &lt;מקוון&gt;,
+        11 בינואר 2014 <a target=\"_blank\" href=\"https://archive.today/p6qBQ\">*</a>
+        </li> </ul> <font color=\"#FF0000\"></font> <ul style=\"MARGIN-TOP: 0in\"
+        type=\"circle\"> </ul> <font color=\"#FF0000\"></font> <ul style=\"MARGIN-TOP:
+        0in\" type=\"circle\"> </ul> <font color=\"#FF0000\"></font> <ul style=\"MARGIN-TOP:
+        0in\" type=\"circle\"> </ul> <font color=\"#FF0000\"></font> <ul style=\"MARGIN-TOP:
+        0in\" type=\"circle\"> </ul>"}],"stream":false,"response_format":{"type":"json_object"}}'
+    headers:
+      User-Agent:
+      - Faraday v2.13.4
+      Authorization:
+      - Bearer DEEPSEEK_API_KEY
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Thu, 06 Nov 2025 20:49:28 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Vary:
+      - origin, access-control-request-method, access-control-request-headers
+      Access-Control-Allow-Credentials:
+      - 'true'
+      X-Ds-Trace-Id:
+      - 0f3d0866381fc5587c9945eff5580524
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Content-Type-Options:
+      - nosniff
+      Cf-Cache-Status:
+      - DYNAMIC
+      Set-Cookie:
+      - __cf_bm=Z1iEj2qDeB.NDSDP8eN7N5CHpPz_m6_Lx.dvJKMhtZw-1762462168-1.0.1.1-VTNICcY2Eb4fgSS7SyapDzaXgmvlne.zzWcojXakJveZQqLgkWjFE9jmSZF1zO.W3pHhirmkLeYUIl4JTGRxHMpJULNezspuSKZ3Qx6ut0o;
+        path=/; expires=Thu, 06-Nov-25 21:19:28 GMT; domain=.deepseek.com; HttpOnly;
+        Secure; SameSite=None
+      Server:
+      - cloudflare
+      Cf-Ray:
+      - 99a775287d141b5d-WAW
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        Cgp7ImlkIjoiOTE4NjI2ZWYtMWUyMC00YjJjLTgyYjktMGM2NTczN2IxYTNlIiwib2JqZWN0IjoiY2hhdC5jb21wbGV0aW9uIiwiY3JlYXRlZCI6MTc2MjQ2MjE2OCwibW9kZWwiOiJkZWVwc2Vlay1jaGF0IiwiY2hvaWNlcyI6W3siaW5kZXgiOjAsIm1lc3NhZ2UiOnsicm9sZSI6ImFzc2lzdGFudCIsImNvbnRlbnQiOiJ7XG4gICAgW1xuICAgICAgICB7XG4gICAgICAgICAgICBcInN1YmplY3RcIjogXCJcIixcbiAgICAgICAgICAgIFwid29ya3NcIjogW1xuICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIm5hbWVcIjogXCLXkNeR15nXkteV16jWvteo15XXqtedLCDXkteR16jXmdeQ15zXlFwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsXG4gICAgICAgICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgICAgIF0sXG4gICAgICAgICAgICAgICAgICAgIFwidGl0bGVcIjogXCLXnteZ16nXlNeVINeZ15vXldecINec15TXldeb15nXlyDXqdeQ16og15zXkD9cIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi15TXkNeo16UsINee15XXodejINeh16TXqNeZ150sINeS15zXsyA2NjAgKNeZ17TXkyDXkdeq16nXqNeZINeq16nXode015UsIDE3INeR15DXlden15jXldeR16ggMjAwNSlcIixcbiAgICAgICAgICAgICAgICAgICAgXCJwYWdlc1wiOiBcIjE4XCIsXG4gICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcIm5vdGVzXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+15DXkdeZ15LXldeo1r7XqNeV16rXnSwg15LXkdeo15nXkNec15QuPC9iPiDXnteZ16nXlNeVINeZ15vXldecINec15TXldeb15nXlyDXqdeQ16og15zXkD8gPHU+15TXkNeo16UsINee15XXodejINeh16TXqNeZ1508L3U+LCDXktec17MgNjYwICjXmde015Mg15HXqtep16jXmSDXqtep16HXtNeVLCAxNyDXkdeQ15XXp9eY15XXkdeoIDIwMDUpLCDXotee17MgMTguXCJcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIm5hbWVcIjogXCLXkNeR15nXkteV16jWvteo15XXqtedLCDXkteR16jXmdeQ15zXlFwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsXG4gICAgICAgICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgICAgIF0sXG4gICAgICAgICAgICAgICAgICAgIFwidGl0bGVcIjogXCLXnNeU15nXoNei15wg15XXkNeWINec15TXqNek15XXqlwiLFxuICAgICAgICAgICAgICAgICAgICBcImZyb21fcHVibGljYXRpb25cIjogXCLXmdeT15nXoteV16og15DXl9eo15XXoNeV16osIDI0INep16LXldeqLCDXmdezINeR15vXodec15Ug16rXqdeh17TXlywgMjAg15HXoNeV15HXnteR16ggMjAwN1wiLFxuICAgICAgICAgICAgICAgICAgICBcInBhZ2VzXCI6IFwiMThcIixcbiAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwibm90ZXNcIjogXCLXotedINeU16HXldek16jXqiDXotecINeh16TXqNeZ150g15XXm9eq15nXkdeqINeh16TXqNeZ150g15XXkNeZ15og16DXotep15nXnSDXodeV16TXqNeZ151cIixcbiAgICAgICAgICAgICAgICAgICAgXCJyYXdcIjogXCI8Yj7XkNeR15nXkteV16jWvteo15XXqtedLCDXkteR16jXmdeQ15zXlC48L2I+INec15TXmdeg16LXnCDXldeQ15Yg15zXlNeo16TXldeqLiA8dT7XmdeT15nXoteV16og15DXl9eo15XXoNeV16o8L3U+LCAyNCDXqdei15XXqiwg15nXsyDXkdeb16HXnNeVINeq16nXode015csIDIwINeR16DXldeR157XkdeoIDIwMDcsINei157XsyAxOCAmbHQ716LXnSDXlNeh15XXpNeo16og16LXnCDXodek16jXmdedINeV15vXqteZ15HXqiDXodek16jXmdedINeV15DXmdeaINeg16LXqdeZ150g16HXldek16jXmdedJmd0O1wiXG4gICAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgIFwiYXV0aG9yc1wiOiBbXG4gICAgICAgICAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJuYW1lXCI6IFwi15LXqNeg15XXqiwg157XqdeUXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IFwiMDA3NzcucGhwXCJcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgXSxcbiAgICAgICAgICAgICAgICAgICAgXCJ0aXRsZVwiOiBcIteU15zXqdeV158g15TXkteR15XXlNeUINeV15TXp9eV16jXkCDXlNee15XXqtepOiDXotecINeZ16bXmdeo16rXlCDXqdecINeS15HXqNeZ15DXnNeUINeQ15HXmdeS15XXqNa+16jXldeq151cIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi157XlNeV16osINeX15XXkdezINeb17TXlyAo16fXmdelINeq16nXode015MgMjAwNClcIixcbiAgICAgICAgICAgICAgICAgICAgXCJwYWdlc1wiOiBcIjEzM+KAkzEzOFwiLFxuICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJub3Rlc1wiOiBcIteg15PXpNehINeS150g15HXs9ei15vXqdeZ15XXsywg15fXldeR17MgNjnigJM3MCAo15DXkdeZ15Eg16rXqdeh17TXlCAyMDA1KSwg16LXntezIDM5OeKAkzQwNFwiLFxuICAgICAgICAgICAgICAgICAgICBcInJhd1wiOiBcIjxiPjxhIGhyZWY9XFxcIjAwNzc3LnBocFxcXCI+15LXqNeg15XXqiwg157XqdeULjwvYT48L2I+INeU15zXqdeV158g15TXkteR15XXlNeUINeV15TXp9eV16jXkCDXlNee15XXqtepOiDXotecINeZ16bXmdeo16rXlCDXqdecINeS15HXqNeZ15DXnNeUINeQ15HXmdeS15XXqNa+16jXldeq150uIDx1Ptee15TXldeqPC91Piwg15fXldeR17Mg15vXtNeXICjXp9eZ16Ug16rXqdeh17TXkyAyMDA0KSwg16LXntezIDEzM+KAkzEzOCAmbHQ716DXk9ek16Eg15LXnSDXkdez16LXm9ep15nXldezLCDXl9eV15HXsyA2OeKAkzcwICjXkNeR15nXkSDXqtep16HXtNeUIDIwMDUpLCDXotee17MgMzk54oCTNDA0Jmd0O1wiXG4gICAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgIFwiYXV0aG9yc1wiOiBbXG4gICAgICAgICAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJuYW1lXCI6IFwi15zXmdeR16DXlCwg16DXqNeZXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGxcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgXSxcbiAgICAgICAgICAgICAgICAgICAgXCJ0aXRsZVwiOiBcItee15HXldeaINeU157XqteZ151cIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi15TXkNeo16UsINee15XXodejINep15HXldei15ksINeS17Mg15HXmNeR16og16rXqdei17TXkywgNiDXkdeT16bXnteR16ggMjAxM1wiLFxuICAgICAgICAgICAgICAgICAgICBcInBhZ2VzXCI6IFwiMjbigJMzNFwiLFxuICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogXCJodHRwOi8vd3d3LmhhYXJldHouY28uaWwvbWFnYXppbmUvLnByZW1pdW0tMS4yMTgzMTY1XCIsXG4gICAgICAgICAgICAgICAgICAgIFwibm90ZXNcIjogXCLXqNeQ15nXldefINei150g15TXodeV16TXqNeqXCIsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+15zXmdeR16DXlCwg16DXqNeZLiA8L2I+IDxhIHRhcmdldD1cXFwiX2JsYW5rXFxcIiBocmVmPVxcXCJodHRwOi8vd3d3LmhhYXJldHouY28uaWwvbWFnYXppbmUvLnByZW1pdW0tMS4yMTgzMTY1XFxcIj7XnteR15XXmiDXlNee16rXmdedLjwvYT4gPHU+15TXkNeo16U8L3U+LCDXnteV16HXoyDXqdeR15XXoteZLCDXktezINeR15jXkdeqINeq16nXote015MsIDYg15HXk9em157XkdeoIDIwMTMsINei157XsyAyNuKAkzM0ICZsdDvXqNeQ15nXldefINei150g15TXodeV16TXqNeqJmd0O1wiXG4gICAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgIFwiYXV0aG9yc1wiOiBbXG4gICAgICAgICAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJuYW1lXCI6IFwi16nXl9edLCDXl9eZ15RcIixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogXCIwMTg0OC5waHBcIlxuICAgICAgICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgICBdLFxuICAgICAgICAgICAgICAgICAgICBcInRpdGxlXCI6IFwi15DXldeo15nXk9eZ16fXlCDXpteV16LXk9eqINeR16LXp9eR15XXqiDXkNeV16jXpNeZ15DXldehINeV16nXqNeUICjXpNeo16nXoNeV16og16DXqdeZ16og157Xqten16DXqiDXqdecINeU157Xmdeq15XXoSDXkdep15nXqNeZINee16nXldeo16jXldeqKVwiLFxuICAgICAgICAgICAgICAgICAgICBcImZyb21fcHVibGljYXRpb25cIjogXCLXkdeZ16fXldeo16og15XXpNeo16nXoNeV16o6INeb16rXkda+16LXqiDXnNee15fXp9eoINeh16TXqNeV16og16LXnda+15nXqdeo15DXnCwg15vXqNeaIDMzICgxOTk4KVwiLFxuICAgICAgICAgICAgICAgICAgICBcInBhZ2VzXCI6IFwiNjHigJM4NVwiLFxuICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJub3Rlc1wiOiBcItei15wg16nXmdeo15nXnSDXnteQ16og15LXkdeo15nXkNec15Qg15DXkdeZ15LXldeo1r7XqNeV16rXnSwg16DXldeo15nXqiDXlteo15fXmSwg16LXnNeZ15bXlCDXoNeU15XXqCwg15DXmdeo15nXoSDXnteg15XXqCDXldec15DXlCDXqdeg15nXqFwiLFxuICAgICAgICAgICAgICAgICAgICBcInJhd1wiOiBcIjxiPjxhIGhyZWY9XFxcIjAxODQ4LnBocFxcXCI+16nXl9edLCDXl9eZ15QuPC9hPiA8L2I+INeQ15XXqNeZ15PXmden15Qg16bXldei15PXqiDXkdei16fXkdeV16og15DXldeo16TXmdeQ15XXoSDXldep16jXlCAo16TXqNep16DXldeqINeg16nXmdeqINee16rXp9eg16og16nXnCDXlNee15nXqteV16Eg15HXqdeZ16jXmSDXntep15XXqNeo15XXqikuIDx1PteR15nXp9eV16jXqiDXldek16jXqdeg15XXqjwvdT46INeb16rXkda+16LXqiDXnNee15fXp9eoINeh16TXqNeV16og16LXnda+15nXqdeo15DXnCwg15vXqNeaIDMzICgxOTk4KSwg16LXntezIDYx4oCTODUgJmx0O9ei15wg16nXmdeo15nXnSDXnteQ16og15LXkdeo15nXkNec15Qg15DXkdeZ15LXldeo1r7XqNeV16rXnSwgPGEgaHJlZj1cXFwiMDAzMDgucGhwXFxcIj7XoNeV16jXmdeqINeW16jXl9eZPC9hPiwgPGEgaHJlZj1cXFwiMDE4NDkucGhwXFxcIj7Xotec15nXlteUINeg15TXldeoPC9hPiwgPGEgaHJlZj1cXFwiMDE4NTAucGhwXFxcIj7XkNeZ16jXmdehINee16DXldeoPC9hPiDXlTxhIGhyZWY9XFxcIjAxMjMzLnBocFxcXCI+15zXkNeUINep16DXmdeoPC9hPiZndDtcIlxuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgIF1cbiAgICAgICAgfSxcbiAgICAgICAge1xuICAgICAgICAgICAgXCJzdWJqZWN0XCI6IFwi16LXnCDXtNeX15XXnteV16og15XXp9eZ16HXqNeZ153XtFwiLFxuICAgICAgICAgICAgXCJ3b3Jrc1wiOiBbXG4gICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibmFtZVwiOiBcIteS15XXmNen15nXoNeTLCDXoNei157XmVwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsXG4gICAgICAgICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgICAgIF0sXG4gICAgICAgICAgICAgICAgICAgIFwidGl0bGVcIjogXCLXnNeZ16jXmden15Qg15LXkdeZ16nXmdeqXCIsXG4gICAgICAgICAgICAgICAgICAgIFwiZnJvbV9wdWJsaWNhdGlvblwiOiBcIteU16bXldek15QsINeY17TXlSDXkdeh15nXldefINeq16nXtNefLCA4INeR15nXldeg15kgMTk5MFwiLFxuICAgICAgICAgICAgICAgICAgICBcInBhZ2VzXCI6IFwiNlwiLFxuICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJub3Rlc1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcInJhd1wiOiBcIjxiPteS15XXmNen15nXoNeTLCDXoNei157XmS48L2I+INec15nXqNeZ16fXlCDXkteR15nXqdeZ16ouIDx1PteU16bXldek15Q8L3U+LCDXmNe015Ug15HXodeZ15XXnyDXqtep17TXnywgOCDXkdeZ15XXoNeZIDE5OTAsINei157XsyA2LlwiXG4gICAgICAgICAgICAgICAgfSxcbiAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgIFwiYXV0aG9yc1wiOiBbXG4gICAgICAgICAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJuYW1lXCI6IFwi16nXoNeZ16gsINec15DXlFwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBcIjAxMjMzLnBocFwiXG4gICAgICAgICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgICAgIF0sXG4gICAgICAgICAgICAgICAgICAgIFwidGl0bGVcIjogXCLXlNei15nXqCDXlNeQ16HXldeo15RcIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi15HXnteX16DXlCwg15LXnNezIDI3ICgyMSDXkdee15DXqNehIDE5OTApXCIsXG4gICAgICAgICAgICAgICAgICAgIFwicGFnZXNcIjogXCI0NFwiLFxuICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJub3Rlc1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcInJhd1wiOiBcIjxiPjxhIGhyZWY9XFxcIjAxMjMzLnBocFxcXCI+16nXoNeZ16gsINec15DXlC48L2E+PC9iPiDXlNei15nXqCDXlNeQ16HXldeo15QuIDx1PteR157Xl9eg15Q8L3U+LCDXktec17MgMjcgKDIxINeR157XkNeo16EgMTk5MCksINei157XsyA0NC5cIlxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibmFtZVwiOiBcItep16DXmdeoLCDXnNeQ15RcIixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogXCIwMTIzMy5waHBcIlxuICAgICAgICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgICBdLFxuICAgICAgICAgICAgICAgICAgICBcInRpdGxlXCI6IFwi15TXltee158g15TXpteU15XXkSDXqdecINeh15nXn1wiLFxuICAgICAgICAgICAgICAgICAgICBcImZyb21fcHVibGljYXRpb25cIjogXCLXntei16jXmdeRLCDXodek16jXldeqLCDXm9e015gg15HXodeZ15XXnyDXqtep17TXnywgMjIg15HXmdeV16DXmSAxOTkwXCIsXG4gICAgICAgICAgICAgICAgICAgIFwicGFnZXNcIjogXCI2XCIsXG4gICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcIm5vdGVzXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+PGEgaHJlZj1cXFwiMDEyMzMucGhwXFxcIj7Xqdeg15nXqCwg15zXkNeULjwvYT48L2I+INeU15bXntefINeU16bXlNeV15Eg16nXnCDXodeZ158uIDx1Ptee16LXqNeZ15E8L3U+LCDXodek16jXldeqLCDXm9e015gg15HXodeZ15XXnyDXqtep17TXnywgMjIg15HXmdeV16DXmSAxOTkwLCDXotee17MgNi5cIlxuICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgIF1cbiAgICAgICAgfSxcbiAgICAgICAge1xuICAgICAgICAgICAgXCJzdWJqZWN0XCI6IFwi16LXnCDXtNee15XXpteo15gg15zXkCDXlNeZ15Qg15nXlNeV15PXmde0XCIsXG4gICAgICAgICAgICBcIndvcmtzXCI6IFtcbiAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgIFwiYXV0aG9yc1wiOiBbXG4gICAgICAgICAgICAgICAgICAgICAgICB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJuYW1lXCI6IFwi15DXldek15nXqCwg16LXk9eZXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGxcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgXSxcbiAgICAgICAgICAgICAgICAgICAgXCJ0aXRsZVwiOiBcItee15DXlCDXqdeg15nXnSDXqdecINeR15PXmdeT15XXqiDXmdeU15XXk9eZ16osINeS15HXqNeZ15DXnNeUINeQ15HXmdeS15XXqNa+16jXldeq151cIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi157Xoteo15nXkSwgMTQg15HXpNeR16jXldeQ16ggMTk5MlwiLFxuICAgICAgICAgICAgICAgICAgICBcInBhZ2VzXCI6IFwiNDlcIixcbiAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwibm90ZXNcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJyYXdcIjogXCI8Yj7XkNeV16TXmdeoLCDXoteT15kuPC9iPiDXnteQ15Qg16nXoNeZ150g16nXnCDXkdeT15nXk9eV16og15nXlNeV15PXmdeqLCDXkteR16jXmdeQ15zXlCDXkNeR15nXkteV16jWvteo15XXqtedLiA8dT7Xntei16jXmdeRPC91PiwgMTQg15HXpNeR16jXldeQ16ggMTk5Miwg16LXntezIDQ5XCJcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIm5hbWVcIjogXCLXkNeV16jXmdeZ158sINeZ15TXldeT15nXqlwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsXG4gICAgICAgICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgICAgIF0sXG4gICAgICAgICAgICAgICAgICAgIFwidGl0bGVcIjogXCLXlNeZ15Ag16rXlNeZ15Qg16HXldek16jXqiDXkteT15XXnNeUINee15DXldeTXCIsXG4gICAgICAgICAgICAgICAgICAgIFwiZnJvbV9wdWJsaWNhdGlvblwiOiBcIteZ15PXmdei15XXqiDXkNeX16jXldeg15XXqiwg15TXnteV16HXoyDXnNep15HXqiwg15nXsyDXkdeQ15PXqCDXkNezINeq16nXoNe015EsIDE0INeR16TXkdeo15XXkNeoIDE5OTJcIixcbiAgICAgICAgICAgICAgICAgICAgXCJwYWdlc1wiOiBcIjI0XCIsXG4gICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcIm5vdGVzXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+15DXldeo15nXmdefLCDXmdeU15XXk9eZ16ouPC9iPiDXlNeZ15Ag16rXlNeZ15Qg16HXldek16jXqiDXkteT15XXnNeUINee15DXldeTLiA8dT7XmdeT15nXoteV16og15DXl9eo15XXoNeV16o8L3U+LCDXlNee15XXodejINec16nXkdeqLCDXmdezINeR15DXk9eoINeQ17Mg16rXqdeg17TXkSwgMTQg15HXpNeR16jXldeQ16ggMTk5Miwg16LXntezIDI0XCJcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIm5hbWVcIjogXCLXkdeV16nXoSwg15TXk9eUXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IFwiMDA0NzMucGhwXCJcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgXSxcbiAgICAgICAgICAgICAgICAgICAgXCJ0aXRsZVwiOiBcIteU15TXodeY15XXqNeZ15Qg15vXldeo16LXqiDXnNec15PXqlwiLFxuICAgICAgICAgICAgICAgICAgICBcImZyb21fcHVibGljYXRpb25cIjogXCLXlNeQ16jXpSwgMjUg15HXpNeR16jXldeQ16ggMTk5MlwiLFxuICAgICAgICAgICAgICAgICAgICBcInBhZ2VzXCI6IFwi15EgNFwiLFxuICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJub3Rlc1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcInJhd1wiOiBcIjxiPjxhIGhyZWY9XFxcIjAwNDczLnBocFxcXCI+15HXldep77+916EsINeU15PXlC48L2E+PC9iPiDXlNeU16HXmNeV16jXmdeUINeb15XXqNei16og15zXnNeT16ouIDx1PteU15DXqNelPC91PiwgMjUg15HXpNeR16jXldeQ16ggMTk5Miwg16LXntezINeRIDQuXCJcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIm5hbWVcIjogXCLXkteV15jXp9eZ16DXkywg16DXotee15lcIixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbFxuICAgICAgICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgICBdLFxuICAgICAgICAgICAgICAgICAgICBcInRpdGxlXCI6IFwi15PXnNeZ16fXmNeh158g15XXkNec16TXl9eV16jXoVwiLFxuICAgICAgICAgICAgICAgICAgICBcImZyb21fcHVibGljYXRpb25cIjogXCLXlNem15XXpNeULCDXmNe015Ug15HXkNeT16gg15HXsyDXqtep16DXtNeRLCAyMCDXkdee15DXqNehIDE5OTJcIixcbiAgICAgICAgICAgICAgICAgICAgXCJwYWdlc1wiOiBcIjYsIDhcIixcbiAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwibm90ZXNcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJyYXdcIjogXCI8Yj7XkteV15jXp9eZ16DXkywg16DXotee15kuPC9iPiDXk9ec15nXp9eY16HXnyDXldeQ15zXpNeX15XXqNehLiA8dT7XlNem15XXpNeUPC91Piwg15jXtNeVINeR15DXk9eoINeR17Mg16rXqdeg17TXkSwgMjAg15HXnteQ16jXoSAxOTkyLCDXotee17MgNiwgOC5cIlxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibmFtZVwiOiBcIteS15XXqCwg15HXqteZ15RcIixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogXCIwMDIzMC5waHBcIlxuICAgICAgICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgICBdLFxuICAgICAgICAgICAgICAgICAgICBcInRpdGxlXCI6IFwi16nXkdeV16Ig16nXnCDXodek16jXmdedXCIsXG4gICAgICAgICAgICAgICAgICAgIFwiZnJvbV9wdWJsaWNhdGlvblwiOiBcIteU15DXqNelLCAyMSDXkdek15HXqNeV15DXqCAxOTkyXCIsXG4gICAgICAgICAgICAgICAgICAgIFwicGFnZXNcIjogXCLXkSA5XCIsXG4gICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcIm5vdGVzXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+PGEgaHJlZj1cXFwiMDAyMzAucGhwXFxcIj7XkteV16gsINeR16rXmdeULjwvYT48L2I+INep15HXldeiINep15wg16HXpNeo15nXnS4gPHU+15TXkNeo16U8L3U+LCAyMSDXkdek15HXqNeV15DXqCAxOTkyLCDXotee17Mg15EgOS5cIlxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibmFtZVwiOiBcIteU15DXnywg15zXkNeUXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGxcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgXSxcbiAgICAgICAgICAgICAgICAgICAgXCJ0aXRsZVwiOiBcItee16jXkNeUINep15jXldeX15Qg15XXqNeQ15kg16fXoteV16hcIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi16LXm9ep15nXlSwg15fXldeR17MgNTggKDE5OTIpXCIsXG4gICAgICAgICAgICAgICAgICAgIFwicGFnZXNcIjogXCIzMDLigJMzMDZcIixcbiAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwibm90ZXNcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJyYXdcIjogXCI8Yj7XlNeQ158sINec15DXlC48L2I+INee16jXkNeUINep15jXldeX15Qg15XXqNeQ15kg16fXoteV16guIDx1Ptei15vXqdeZ15U8L3U+LCDXl9eV15HXsyA1OCAoMTk5MiksINei157XsyAzMDLigJMzMDYuXCJcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIm5hbWVcIjogXCLXnteV16HXp9eV16DXlNa+15zXqNee158sINeR15nXnNeZXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGxcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgXSxcbiAgICAgICAgICAgICAgICAgICAgXCJ0aXRsZVwiOiBcIteU16DXkdeX16jXqiDXqdecINeZ15LXkNecINep15XXldeo16Ug16DXkteTINeb15wg15TXoteV15zXnVwiLFxuICAgICAgICAgICAgICAgICAgICBcImZyb21fcHVibGljYXRpb25cIjogXCLXntei16jXmdeRLCDXodeV16TXqdeR15XXoiwgMjEg15HXk9em157XkdeoIDE5OTBcIixcbiAgICAgICAgICAgICAgICAgICAgXCJwYWdlc1wiOiBcIjU04oCTNTdcIixcbiAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwibm90ZXNcIjogXCLXkdeZ158g15TXmdeq16gg16LXnCDXtNee15XXpteo15gg15zXkCDXlNeZ15Qg15nXlNeV15PXmde0XCIsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+157Xldeh16fXldeg15TWvtec16jXntefLCDXkdeZ15zXmS48L2I+INeU16DXkdeX16jXqiDXqdecINeZ15LXkNecINep15XXldeo16Ug16DXkteTINeb15wg15TXoteV15zXnS4gPHU+157Xoteo15nXkTwvdT4sINeh15XXpNep15HXldeiLCAyMSDXkdeT16bXnteR16ggMTk5MCwg16LXntezIDU04oCTNTcgJmx0O9eR15nXnyDXlNeZ16rXqCDXotecINe0157Xldem16jXmCDXnNeQINeU15nXlCDXmdeU15XXk9eZ17QmZ3Q7XCJcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIm5hbWVcIjogXCLXntec157Xkywg15DXqNeZ15DXoNeUXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IFwiMDA4MjIucGhwXCJcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgXSxcbiAgICAgICAgICAgICAgICAgICAgXCJ0aXRsZVwiOiBcIteb15PXldeT15nXnSDXoNem15jXnNeU15HXlSDXlNek15DXntek15RcIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi15fXk9ep15XXqiwg15TXnteT16jXmdeaLCDXktezINeR15DXk9eoINeQ17Mg16rXqdeg17TXkSwgNyDXkdek15HXqNeV15DXqCAxOTkyXCIsXG4gICAgICAgICAgICAgICAgICAgIFwicGFnZXNcIjogXCIzMVwiLFxuICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJub3Rlc1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcInJhd1wiOiBcIjxiPjxhIGhyZWY9XFxcIjAwODIyLnBocFxcXCI+157XnNee15MsINeQ16jXmdeQ16DXlC48L2E+PC9iPiDXm9eT15XXk9eZ150g16DXpteY15zXlNeR15Ug15TXpNeQ157XpNeULiA8dT7Xl9eT16nXldeqPC91Piwg15TXnteT16jXmdeaLCDXktezINeR15DXk9eoINeQ17Mg16rXqdeg17TXkSwgNyDXkdek15HXqNeV15DXqCAxOTkyLCDXotee17MgMzEuXCJcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgXCJhdXRob3JzXCI6IFtcbiAgICAgICAgICAgICAgICAgICAgICAgIHtcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIm5hbWVcIjogXCLXoNee15PXqCwg16jXkNeV15HXn1wiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsXG4gICAgICAgICAgICAgICAgICAgICAgICB9XG4gICAgICAgICAgICAgICAgICAgIF0sXG4gICAgICAgICAgICAgICAgICAgIFwidGl0bGVcIjogXCLXkNecINeU16nXldeo15Qg15TXqNeQ16nXldeg15RcIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi157XkNeW16DXmdedLCDXm9eo15og16HXtNeVLCDXktec17MgNiAoMTk5MilcIixcbiAgICAgICAgICAgICAgICAgICAgXCJwYWdlc1wiOiBcIjM54oCTNDBcIixcbiAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwibm90ZXNcIjogbnVsbCxcbiAgICAgICAgICAgICAgICAgICAgXCJyYXdcIjogXCI8Yj7XoNee15PXqCwg16jXkNeV15HXny48L2I+INeQ15wg15TXqdeV16jXlCDXlNeo15DXqdeV16DXlC4gPHU+157XkNeW16DXmdedPC91Piwg15vXqNeaINeh17TXlSwg15LXnNezIDYgKDE5OTIpLCDXotee17MgMznigJM0MC5cIlxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibmFtZVwiOiBcItek16jXnNeZ16EsINeQ15nXlteUXCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgXCJsaW5rXCI6IG51bGxcbiAgICAgICAgICAgICAgICAgICAgICAgIH1cbiAgICAgICAgICAgICAgICAgICAgXSxcbiAgICAgICAgICAgICAgICAgICAgXCJ0aXRsZVwiOiBcIteh15DXkteUINeQ16jXkteg15jXmdeg15nXqiDXqdecINee16HXpNeo16og15nXqdeo15DXnNeZ16pcIixcbiAgICAgICAgICAgICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi16LXnCDXlNee16nXnteoLCDXm9e015Eg15HXkNeT16gg15HXsyDXqtep16DXtNeRLCAyNyDXkdee15DXqNehIDE5OTJcIixcbiAgICAgICAgICAgICAgICAgICAgXCJwYWdlc1wiOiBcIjE4XCIsXG4gICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcIm5vdGVzXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+16TXqNec15nXoSwg15DXmdeW15QuPC9iPiDXodeQ15LXlCDXkNeo15LXoNeY15nXoNeZ16og16nXnCDXnteh16TXqNeqINeZ16nXqNeQ15zXmdeqLiA8dT7XotecINeU157Xqdee16g8L3U+LCDXm9e015Eg15HXkNeT16gg15HXsyDXqtep16DXtNeRLCAyNyDXkdee15DXqNehIDE5OTIsINei157XsyAxOC5cIlxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibmFtZVwiOiBcIten15zXoiwg15DXnteZ16hcIixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbFxuICAgICAgICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgICBdLFxuICAgICAgICAgICAgICAgICAgICBcInRpdGxlXCI6IFwi15nXpNeV16og15XXnteq15nXpNeZ16TXldeqXCIsXG4gICAgICAgICAgICAgICAgICAgIFwiZnJvbV9wdWJsaWNhdGlvblwiOiBcItei15wg15TXntep157XqCwg15fXldeq150sIDIxINeR16TXkdeo15XXkNeoIDE5OTJcIixcbiAgICAgICAgICAgICAgICAgICAgXCJwYWdlc1wiOiBcIjE4XCIsXG4gICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcIm5vdGVzXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+16fXnNeiLCDXkNee15nXqC48L2I+INeZ16TXldeqINeV157XqteZ16TXmdek15XXqi4gPHU+16LXnCDXlNee16nXnteoPC91Piwg15fXldeq150sIDIxINeR16TXkdeo15XXkNeoIDE5OTIsINei157XsyAxOC5cIlxuICAgICAgICAgICAgICAgIH0sXG4gICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICBcImF1dGhvcnNcIjogW1xuICAgICAgICAgICAgICAgICAgICAgICAge1xuICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwibmFtZVwiOiBcItep16DXmdeoLCDXnNeQ15RcIixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICBcImxpbmtcIjogXCIwMTIzMy5waHBcIlxuICAgICAgICAgICAgICAgICAgICAgICAgfVxuICAgICAgICAgICAgICAgICAgICBdLFxuICAgICAgICAgICAgICAgICAgICBcInRpdGxlXCI6IFwi17TXnteV16bXqNeYINec15Ag15TXmdeUINeZ15TXldeT15nXtCAo16jXkNeZ15XXnyDigJMg15zXkNeUINep16DXmdeoINep15XXkNec16og15XXkteR16jXmdeQ15zXlCDXkNeR15nXkteV16jWvteo15XXqtedINee16DXodeUINec16LXoNeV16opXCIsXG4gICAgICAgICAgICAgICAgICAgIFwiZnJvbV9wdWJsaWNhdGlvblwiOiBcItei15zXmSDXqdeZ15csINeX15XXkdezIDM0ICgxOTk0KVwiLFxuICAgICAgICAgICAgICAgICAgICBcInBhZ2VzXCI6IFwiMTA04oCTMTA5XCIsXG4gICAgICAgICAgICAgICAgICAgIFwibGlua1wiOiBudWxsLFxuICAgICAgICAgICAgICAgICAgICBcIm5vdGVzXCI6IG51bGwsXG4gICAgICAgICAgICAgICAgICAgIFwicmF3XCI6IFwiPGI+PGEgaHJlZj1cXFwiMDEyMzMucGhwXFxcIj7Xqdeg15nXqCwg15zXkNeULjwvYT48L2I+INe0157Xldem16jXmCDXnNeQINeU15nXlCDXmdeU15XXk9eZ17QgKNeo15DXmdeV158g4oCTINec15DXlCDXqdeg15nXqCDXqdeV15DXnNeqINeV15LXkdeo15nXkNec15Qg15DXkdeZ15LXldeo1r7XqNeV16rXnSDXnteg16HXlCDXnNei16DXldeqKS4gPHU+16LXnNeZINep15nXlzwvdT4sINeX15XXkdezICJ9LCJsb2dwcm9icyI6bnVsbCwiZmluaXNoX3JlYXNvbiI6Imxlbmd0aCJ9XSwidXNhZ2UiOnsicHJvbXB0X3Rva2VucyI6NzA2MSwiY29tcGxldGlvbl90b2tlbnMiOjQwOTcsInRvdGFsX3Rva2VucyI6MTExNTgsInByb21wdF90b2tlbnNfZGV0YWlscyI6eyJjYWNoZWRfdG9rZW5zIjo2NDB9LCJwcm9tcHRfY2FjaGVfaGl0X3Rva2VucyI6NjQwLCJwcm9tcHRfY2FjaGVfbWlzc190b2tlbnMiOjY0MjF9LCJzeXN0ZW1fZmluZ2VycHJpbnQiOiJmcF9mZmM3MjgxZDQ4X3Byb2QwODIwX2ZwOF9rdmNhY2hlIn0=
+  recorded_at: Thu, 06 Nov 2025 20:51:30 GMT
+recorded_with: VCR 6.3.1
