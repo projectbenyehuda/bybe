@@ -33,6 +33,7 @@ gem 'rack-cors', require: 'rack/cors'
 
 gem 'aws-sdk-s3' # for Active Storage
 gem 'diffy'
+gem "ruby_llm", "~> 1.9"
 
 gem 'simple_form', '~> 5.3.0'
 
@@ -117,6 +118,8 @@ group :test do
   gem 'rspec-sqlimit' # to limit number of SQL queries in tests https://github.com/nepalez/rspec-sqlimit
   gem 'simplecov', require: false
   gem 'turn', '0.8.2', require: false
+  gem 'vcr'
+  gem 'webmock'
 end
 
 group :development do
