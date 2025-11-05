@@ -872,8 +872,7 @@ class ManifestationController < ApplicationController
     return unless @print
 
     # remove MMD's automatic figcaptions
-    @html = MultiMarkdown.new(@m.markdown).to_html
-                         .force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '')
+    @html = @m.to_html
     # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
     @html = make_heading_ids_unique(@html)
   end
@@ -914,7 +913,7 @@ class ManifestationController < ApplicationController
     end
     tmphash.keys.reverse.map { |k| @chapters << [k[4..], tmphash[k]] }
     @selected_chapter = tmphash.keys.last
-    @html = MultiMarkdown.new(lines.join('')).to_html.force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '').gsub('<table>', '<div style="overflow-x:auto;"><table>').gsub('</table>', '</table></div>') # remove MMD's automatic figcaptions and make tables scroll to avoid breaking narrow mobile devices
+    @html = MarkdownToHtml.call(lines.join(''))
     # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
     @html = make_heading_ids_unique(@html)
     # add permalinks
