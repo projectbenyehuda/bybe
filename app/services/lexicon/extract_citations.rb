@@ -14,26 +14,16 @@ module Lexicon
       # The next element should be a 'font' tag containing all citations. Sometimes there could be one or more blank
       # paragraphs before it, so we need to skip them.
       citations_node = header.next_element
-      citations_node = citations_node.next_element while citations_node.name != 'font' && citations_node.text.blank?
+
+      while citations_node.name != 'font' && citations_node.text.blank? do
+        next_elem = citations_node = citations_node.next_element
+        citations_node.remove
+        citations_node = next_elem
+      end
 
       return [] if citations_node&.name != 'font'
 
-      result = []
-      next_elem = citations_node.element_children.first
-      # There should be set of pairs: first is a 'font' element, containing header describing item (work or person)
-      # citation is about, second is an 'ul' list representing set of citation.
-      while next_elem.present? && next_elem.name == 'font'
-        subject = next_elem.text&.squish
-
-        list = next_elem.next_element
-        unless list.name == 'ul' # unexpected format
-          Rails.logger.warn("Unexpected citation format, ul tag is expected after #{next_elem}")
-          break
-        end
-        result += parse_citations(list, subject)
-        next_elem = list.next_element
-      end
-
+      result = DeepSeekParseCitations.call(citations_node.inner_html)
       # remove header and citations node to simplify further processing
       header.remove
       citations_node.remove
