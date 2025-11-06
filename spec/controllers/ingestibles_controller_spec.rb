@@ -332,6 +332,12 @@ describe IngestiblesController do
         ingestible.update_parsing
       end
 
+      it 'redirects to show page after successful ingestion' do
+        post :ingest, params: { id: ingestible.id }
+        expect(response).to redirect_to(ingestible_path(ingestible))
+        expect(flash[:notice]).to eq(I18n.t('ingestibles.ingest.success'))
+      end
+
       it 'uses collection_authorities for collection involved authorities' do
         post :ingest, params: { id: ingestible.id }
         collection.reload

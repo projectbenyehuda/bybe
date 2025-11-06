@@ -121,7 +121,7 @@ class IngestiblesController < ApplicationController
         # - email (whom?) with news about the ingestion, and links to all the created entities
         # - show post-ingestion screen, with links to all created entities and affected authorities
         Rails.cache.delete('whatsnew_anonymous') # trigger an updating of whatsnew
-        redirect_to ingestibles_url, notice: t('.success')
+        redirect_to ingestible_url(@ingestible), notice: t('.success')
       end
     end
   end
