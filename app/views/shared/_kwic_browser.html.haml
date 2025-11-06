@@ -1,0 +1,188 @@
+-# KWIC Concordance Browser
+-# Shared partial for both Manifestations and Collections
+-# Parameters:
+-#   @entity - The Manifestation or Collection object
+-#   @entity_type - 'Manifestation' or 'Collection'
+-#   @concordance_entries - Array of concordance entries for current page
+-#   @total_entries - Total number of concordance entries
+-#   @page - Current page number
+-#   @total_pages - Total number of pages
+-#   @per_page - Entries per page
+-#   @filter_text - Current filter text
+
+.container-fluid.kwic-browser
+  .row
+    .col-md-12
+      .by-card-v02
+        .work-area
+          .work-content
+            .headline-1-v02= t(:kwic_browser_title)
+            
+            -# Filter and pagination controls
+            .kwic-controls.mb-4
+              .row
+                .col-md-6
+                  = form_tag '', method: :get, class: 'kwic-filter-form' do
+                    .input-group
+                      = text_field_tag :filter, @filter_text, 
+                          class: 'form-control', 
+                          placeholder: t(:kwic_filter_placeholder),
+                          dir: 'rtl'
+                      = hidden_field_tag :per_page, @per_page
+                      .input-group-append
+                        = submit_tag t(:search), class: 'btn btn-primary'
+                        - if @filter_text.present?
+                          = link_to t(:clear), url_for(filter: nil, per_page: @per_page), class: 'btn btn-secondary'
+                
+                .col-md-6.text-left
+                  .per-page-selector
+                    = t(:kwic_entries_per_page) + ': '
+                    - [25, 50, 100].each do |count|
+                      - if count == @per_page
+                        %strong= count
+                      - else
+                        = link_to count, url_for(per_page: count, filter: @filter_text, page: 1)
+                      &nbsp;
+            
+            -# Results info
+            .kwic-info.mb-3
+              %p
+                = t(:kwic_total_entries)
+                %strong= @total_entries
+                - if @total_pages > 0
+                  |
+                  = t(:kwic_showing_page, page: @page, total: @total_pages)
+            
+            -# Download buttons
+            .kwic-downloads.mb-4
+              - if @filter_text.present?
+                = link_to t(:kwic_download_filtered), 
+                    (@entity_type == 'Manifestation' ? manifestation_kwic_download_path(@entity, filter: @filter_text) : collection_kwic_download_path(@entity, filter: @filter_text)),
+                    class: 'btn btn-success'
+              - else
+                = link_to t(:kwic_download_full),
+                    (@entity_type == 'Manifestation' ? manifestation_kwic_download_path(@entity) : collection_kwic_download_path(@entity)),
+                    class: 'btn btn-success'
+            
+            -# Concordance entries
+            .kwic-entries
+              - if @concordance_entries.empty?
+                .alert.alert-info
+                  = t(:no_results)
+              - else
+                - @concordance_entries.each_with_index do |entry, entry_idx|
+                  .kwic-entry.mb-4{data: { token: entry[:token] }}
+                    .kwic-token.mb-2
+                      %h4
+                        = t(:kwic_token)
+                        %strong= entry[:token]
+                        %small.text-muted= "(#{entry[:instances].length})"
+                    
+                    .kwic-instances
+                      - entry[:instances].each_with_index do |instance, inst_idx|
+                        - instance_id = "kwic-instance-#{@page}-#{entry_idx}-#{inst_idx}"
+                        .kwic-instance.mb-2.p-2{style: 'border-right: 3px solid #ddd;'}
+                          .kwic-context{dir: 'rtl'}
+                            %span.before-context= instance[:before_context]
+                            %strong.token-highlight{style: 'background-color: #ffeb3b; padding: 2px 4px;'}= entry[:token]
+                            %span.after-context= instance[:after_context]
+                          
+                          .kwic-meta.mt-1{style: 'font-size: 0.9em;'}
+                            %span.text-muted
+                              = instance[:label]
+                              |
+                              = t(:kwic_paragraph)
+                              = instance[:paragraph]
+                            
+                            .kwic-actions.mt-1
+                              - if @entity_type == 'Manifestation'
+                                = link_to t(:kwic_go_to_source), 
+                                    manifestation_path(@entity),
+                                    class: 'btn btn-sm btn-outline-primary',
+                                    target: '_blank'
+                              - else
+                                -# For collections, we need to find the source manifestation
+                                - source_item = @entity.flatten_items.find { |ci| ci.title == instance[:label] && ci.item_type == 'Manifestation' }
+                                - if source_item && source_item.item
+                                  = link_to t(:kwic_go_to_source),
+                                      manifestation_path(source_item.item),
+                                      class: 'btn btn-sm btn-outline-primary',
+                                      target: '_blank'
+                              
+                              %button.btn.btn-sm.btn-outline-secondary.show-context-btn{
+                                data: { 
+                                  toggle: 'collapse',
+                                  target: "##{instance_id}-context"
+                                },
+                                'aria-expanded' => 'false',
+                                'aria-controls' => "#{instance_id}-context"
+                              }
+                                = t(:kwic_show_context)
+                          
+                          -# Collapsible context panel (will be populated on expand)
+                          .collapse.mt-2{id: "#{instance_id}-context"}
+                            .card.card-body{dir: 'rtl', style: 'background-color: #f9f9f9;'}
+                              -# Note: For MVP, we'll show just the context we have
+                              -# Future enhancement: Load full paragraph with prev/next via AJAX
+                              .context-content
+                                %p
+                                  %strong= t(:kwic_paragraph) + " #{instance[:paragraph]}:"
+                                %p= "...#{instance[:before_context]} [#{entry[:token]}] #{instance[:after_context]}..."
+            
+            -# Pagination
+            - if @total_pages > 1
+              .kwic-pagination.mt-4
+                %nav{'aria-label' => 'KWIC pagination'}
+                  %ul.pagination.justify-content-center
+                    - if @page > 1
+                      %li.page-item
+                        = link_to '«', url_for(page: @page - 1, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                    - else
+                      %li.page-item.disabled
+                        %span.page-link «
+                    
+                    - page_range = [[@page - 2, 1].max, [@page + 2, @total_pages].min]
+                    - if page_range[0] > 1
+                      %li.page-item
+                        = link_to '1', url_for(page: 1, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                      - if page_range[0] > 2
+                        %li.page-item.disabled
+                          %span.page-link ...
+                    
+                    - (page_range[0]..page_range[1]).each do |p|
+                      - if p == @page
+                        %li.page-item.active
+                          %span.page-link= p
+                      - else
+                        %li.page-item
+                          = link_to p, url_for(page: p, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                    
+                    - if page_range[1] < @total_pages
+                      - if page_range[1] < @total_pages - 1
+                        %li.page-item.disabled
+                          %span.page-link ...
+                      %li.page-item
+                        = link_to @total_pages, url_for(page: @total_pages, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                    
+                    - if @page < @total_pages
+                      %li.page-item
+                        = link_to '»', url_for(page: @page + 1, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                    - else
+                      %li.page-item.disabled
+                        %span.page-link »
+
+:javascript
+  $(function() {
+    // Toggle button text when context is shown/hidden
+    $('.show-context-btn').on('click', function() {
+      var $btn = $(this);
+      setTimeout(function() {
+        var isExpanded = $($btn.data('target')).hasClass('show');
+        if (isExpanded) {
+          $btn.text('#{t(:kwic_hide_context)}');
+        } else {
+          $btn.text('#{t(:kwic_show_context)}');
+        }
+      }, 350); // Wait for collapse animation
+    });
+  });

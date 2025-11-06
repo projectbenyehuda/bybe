@@ -510,6 +510,20 @@ he:
   txt_format: טקסט בלבד, ללא הדגשות ועיצוב
   odt_format: מסמך ליברה-אופיס
   kwic_format: קונקורדנציה בתבנית KWIC
+  kwic_concordance: קונקורדנציה
+  kwic_browser_title: דפדוף בקונקורדנציה
+  kwic_filter_placeholder: סנן לפי מילה...
+  kwic_show_context: הצג הקשר מורחב
+  kwic_hide_context: הסתר הקשר
+  kwic_go_to_source: עבור למקור
+  kwic_download_filtered: הורד קונקורדנציה מסוננת
+  kwic_download_full: הורד קונקורדנציה מלאה
+  kwic_entries_per_page: ערכים בעמוד
+  kwic_total_entries: "סה\"כ ערכים:"
+  kwic_showing_page: "עמוד %{page} מתוך %{total}"
+  kwic_token: "מילה:"
+  kwic_paragraph: פסקה
+  kwic_loading_context: טוען הקשר...
   no_date: אין תאריך
   title_not_informative: כותרת היצירה חסרה הֶקשר או מטעה
   override_validation: דלג על בדיקת שדות
