@@ -242,6 +242,19 @@ class CollectionsController < ApplicationController
     if dl&.stored_file&.attached?
       kwic_text = dl.stored_file.download.force_encoding('UTF-8')
       @concordance_data = ParseKwicConcordance.call(kwic_text)
+      
+      # Enrich instances with manifestation IDs for context fetching
+      @collection.flatten_items.each do |ci|
+        next if ci.item.nil? || ci.item_type != 'Manifestation'
+        
+        @concordance_data.each do |entry|
+          entry[:instances].each do |instance|
+            if instance[:label] == ci.title
+              instance[:manifestation_id] = ci.item.id
+            end
+          end
+        end
+      end
     else
       # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
       labelled_texts = []
@@ -286,6 +299,21 @@ class CollectionsController < ApplicationController
     end
 
     prep_user_content(:collection)
+  end
+
+  # Get extended context for a paragraph (AJAX endpoint)
+  def kwic_context
+    manifestation_id = params[:manifestation_id].to_i
+    paragraph_num = params[:paragraph].to_i
+    
+    manifestation = Manifestation.find(manifestation_id)
+    context = get_extended_context(manifestation, paragraph_num)
+    
+    render json: {
+      prev: context[:prev],
+      current: context[:current],
+      next: context[:next]
+    }
   end
 
   # Download filtered or full KWIC concordance for collection

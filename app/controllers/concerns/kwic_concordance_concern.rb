@@ -4,6 +4,38 @@
 module KwicConcordanceConcern
   extend ActiveSupport::Concern
 
+  # Get extended context for a paragraph (includes prev/next paragraphs)
+  # @param manifestation [Manifestation] The manifestation object
+  # @param paragraph_num [Integer] The paragraph number (1-indexed)
+  # @return [Hash] Hash with :prev, :current, :next paragraph HTML
+  def get_extended_context(manifestation, paragraph_num)
+    # Convert markdown to HTML
+    html = MarkdownToHtml.call(manifestation.markdown)
+    
+    # Extract all paragraphs
+    paragraphs = extract_paragraphs(html)
+    
+    # Get the requested paragraph and its neighbors (paragraph_num is 1-indexed)
+    result = {
+      prev: paragraph_num > 1 ? paragraphs[paragraph_num - 2] : nil,
+      current: paragraphs[paragraph_num - 1],
+      next: paragraph_num < paragraphs.length ? paragraphs[paragraph_num] : nil
+    }
+    
+    result
+  end
+
+  # Extract paragraph elements from HTML
+  # @param html [String] HTML content
+  # @return [Array<String>] Array of paragraph HTML strings
+  def extract_paragraphs(html)
+    return [] if html.blank?
+    
+    # Parse HTML and extract <p> elements
+    doc = Nokogiri::HTML.fragment(html)
+    doc.css('p').map(&:to_html)
+  end
+
   private
 
   # Ensure a KWIC downloadable exists for the given entity (Manifestation or Collection)

@@ -54,6 +54,7 @@ Bybeconv::Application.routes.draw do
     get 'print'
     get 'kwic'
     get 'kwic_download'
+    get 'kwic_context/:manifestation_id/:paragraph', action: :kwic_context, as: :kwic_context
     get 'periodical_issues'
     post 'add_periodical_issue'
   end
@@ -252,6 +253,7 @@ Bybeconv::Application.routes.draw do
   match 'print/:id' => 'manifestation#print', as: 'manifestation_print', via: %i(get post)
   get 'kwic/:id' => 'manifestation#kwic', as: 'manifestation_kwic'
   get 'kwic/:id/download' => 'manifestation#kwic_download', as: 'manifestation_kwic_download'
+  get 'kwic/:id/context/:paragraph' => 'manifestation#kwic_context', as: 'manifestation_kwic_context'
   get 'manifestation/show/:id' => 'manifestation#show', as: 'manifestation_show'
   get 'manifestation/render_html'
   get 'manifestation/chomp_period/:id' => 'manifestation#chomp_period', as: 'manifestation_chomp_period'
