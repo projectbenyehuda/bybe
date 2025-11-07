@@ -276,7 +276,7 @@ class CollectionsController < ApplicationController
 
   # Download filtered or full KWIC concordance for collection
   def kwic_download
-    @collection = Collection.find(params[:id] || params[:collection_id])
+    @collection = Collection.find(params[:collection_id])
 
     # Generate concordance data from all manifestations in collection
     labelled_texts = []
