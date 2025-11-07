@@ -160,6 +160,107 @@ describe CollectionsController do
         expect(tokens).to include('עברי')
       end
     end
+
+    context 'with sort parameter' do
+      context 'alphabetical sort' do
+        subject do
+          create(:collection_item, collection: collection, item: manifestation)
+          get :kwic, params: { collection_id: collection.id, sort: 'alphabetical' }
+        end
+
+        let(:collection) { create(:collection) }
+        let(:manifestation) do
+          create(:manifestation, markdown: 'zebra apple banana apple zebra apple')
+        end
+
+        it 'sorts tokens alphabetically' do
+          subject
+          tokens = assigns(:concordance_data).map { |e| e[:token] }
+          expect(tokens).to eq(tokens.sort)
+        end
+
+        it 'assigns sort_by variable' do
+          subject
+          expect(assigns(:sort_by)).to eq('alphabetical')
+        end
+      end
+
+      context 'frequency sort' do
+        subject do
+          create(:collection_item, collection: collection, item: manifestation)
+          get :kwic, params: { collection_id: collection.id, sort: 'frequency' }
+        end
+
+        let(:collection) { create(:collection) }
+        let(:manifestation) do
+          create(:manifestation, markdown: 'apple banana apple cherry apple banana apple')
+        end
+
+        it 'sorts tokens by frequency descending' do
+          subject
+          frequencies = assigns(:concordance_data).map { |e| e[:instances].length }
+          expect(frequencies).to eq(frequencies.sort.reverse)
+        end
+
+        it 'assigns sort_by variable' do
+          subject
+          expect(assigns(:sort_by)).to eq('frequency')
+        end
+
+        it 'places most frequent token first' do
+          subject
+          first_token = assigns(:concordance_data).first[:token]
+          expect(first_token).to eq('apple')
+          expect(assigns(:concordance_data).first[:instances].length).to eq(4)
+        end
+      end
+
+      context 'no sort parameter' do
+        subject do
+          create(:collection_item, collection: collection, item: manifestation)
+          get :kwic, params: { collection_id: collection.id }
+        end
+
+        let(:collection) { create(:collection) }
+        let(:manifestation) { create(:manifestation, markdown: 'zebra apple banana') }
+
+        it 'defaults to alphabetical' do
+          subject
+          expect(assigns(:sort_by)).to eq('alphabetical')
+          tokens = assigns(:concordance_data).map { |e| e[:token] }
+          expect(tokens).to eq(tokens.sort)
+        end
+      end
+    end
+
+    context 'with filter and sort combined' do
+      subject do
+        create(:collection_item, collection: collection, item: manifestation)
+        get :kwic, params: { collection_id: collection.id, filter: 'ow', sort: 'frequency' }
+      end
+
+      let(:collection) { create(:collection) }
+      let(:manifestation) do
+        create(
+          :manifestation,
+          markdown: 'brown fox brown bear brown owl yellow brown crown brown'
+        )
+      end
+
+      it 'filters then sorts by frequency' do
+        subject
+        # Should have tokens containing 'ow'
+        filtered_tokens = assigns(:concordance_data).map { |e| e[:token] }
+        filtered_tokens.each { |token| expect(token).to include('ow') }
+        
+        # Should be sorted by frequency
+        frequencies = assigns(:concordance_data).map { |e| e[:instances].length }
+        expect(frequencies).to eq(frequencies.sort.reverse)
+        
+        # 'brown' should be first (5 occurrences)
+        expect(assigns(:concordance_data).first[:token]).to eq('brown')
+      end
+    end
   end
 
   describe '#kwic_download' do

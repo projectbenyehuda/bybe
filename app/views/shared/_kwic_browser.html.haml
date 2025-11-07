@@ -29,10 +29,11 @@
                           placeholder: t(:kwic_filter_placeholder),
                           dir: 'rtl'
                       = hidden_field_tag :per_page, @per_page
+                      = hidden_field_tag :sort, @sort_by
                       .input-group-append
                         = submit_tag t(:search), class: 'btn btn-primary'
                         - if @filter_text.present?
-                          = link_to t(:clear), url_for(filter: nil, per_page: @per_page), class: 'btn btn-secondary'
+                          = link_to t(:clear), url_for(filter: nil, per_page: @per_page, sort: @sort_by), class: 'btn btn-secondary'
                 
                 .col-md-6.text-left
                   .per-page-selector
@@ -41,8 +42,24 @@
                       - if count == @per_page
                         %strong= count
                       - else
-                        = link_to count, url_for(per_page: count, filter: @filter_text, page: 1)
+                        = link_to count, url_for(per_page: count, filter: @filter_text, sort: @sort_by, page: 1)
                       &nbsp;
+            
+            -# Sort controls
+            .kwic-sort-controls.mb-3
+              .row
+                .col-md-12.text-left
+                  %span= t(:kwic_sort_by)
+                  &nbsp;
+                  - if @sort_by == 'alphabetical'
+                    %strong= t(:kwic_sort_alphabetical)
+                  - else
+                    = link_to t(:kwic_sort_alphabetical), url_for(sort: 'alphabetical', filter: @filter_text, per_page: @per_page, page: 1)
+                  &nbsp;|&nbsp;
+                  - if @sort_by == 'frequency'
+                    %strong= t(:kwic_sort_frequency)
+                  - else
+                    = link_to t(:kwic_sort_frequency), url_for(sort: 'frequency', filter: @filter_text, per_page: @per_page, page: 1)
             
             -# Results info
             .kwic-info.mb-3
@@ -139,7 +156,7 @@
                   %ul.pagination.justify-content-center
                     - if @page > 1
                       %li.page-item
-                        = link_to '«', url_for(page: @page - 1, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                        = link_to '«', url_for(page: @page - 1, per_page: @per_page, filter: @filter_text, sort: @sort_by), class: 'page-link'
                     - else
                       %li.page-item.disabled
                         %span.page-link «
@@ -147,7 +164,7 @@
                     - page_range = [[@page - 2, 1].max, [@page + 2, @total_pages].min]
                     - if page_range[0] > 1
                       %li.page-item
-                        = link_to '1', url_for(page: 1, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                        = link_to '1', url_for(page: 1, per_page: @per_page, filter: @filter_text, sort: @sort_by), class: 'page-link'
                       - if page_range[0] > 2
                         %li.page-item.disabled
                           %span.page-link ...
@@ -158,18 +175,18 @@
                           %span.page-link= p
                       - else
                         %li.page-item
-                          = link_to p, url_for(page: p, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                          = link_to p, url_for(page: p, per_page: @per_page, filter: @filter_text, sort: @sort_by), class: 'page-link'
                     
                     - if page_range[1] < @total_pages
                       - if page_range[1] < @total_pages - 1
                         %li.page-item.disabled
                           %span.page-link ...
                       %li.page-item
-                        = link_to @total_pages, url_for(page: @total_pages, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                        = link_to @total_pages, url_for(page: @total_pages, per_page: @per_page, filter: @filter_text, sort: @sort_by), class: 'page-link'
                     
                     - if @page < @total_pages
                       %li.page-item
-                        = link_to '»', url_for(page: @page + 1, per_page: @per_page, filter: @filter_text), class: 'page-link'
+                        = link_to '»', url_for(page: @page + 1, per_page: @per_page, filter: @filter_text, sort: @sort_by), class: 'page-link'
                     - else
                       %li.page-item.disabled
                         %span.page-link »
