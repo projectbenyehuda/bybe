@@ -270,7 +270,7 @@ class CollectionsController < ApplicationController
 
   # Display KWIC concordance browser for a collection
   def kwic
-    @collection = Collection.find(params[:id])
+    @collection = Collection.find(params[:id] || params[:collection_id])
     
     unless @collection.has_multiple_manifestations?
       flash[:error] = t(:no_such_item)
@@ -282,7 +282,6 @@ class CollectionsController < ApplicationController
     @pagetype = :collection
     @entity = @collection
     @entity_type = 'Collection'
-    @header_partial = 'shared/collection_top'
 
     # Generate concordance data from all manifestations in collection
     labelled_texts = []
@@ -325,7 +324,7 @@ class CollectionsController < ApplicationController
 
   # Download filtered or full KWIC concordance for collection
   def kwic_download
-    @collection = Collection.find(params[:id])
+    @collection = Collection.find(params[:id] || params[:collection_id])
 
     # Generate concordance data from all manifestations in collection
     labelled_texts = []
