@@ -223,7 +223,7 @@ class CollectionsController < ApplicationController
   # Display KWIC concordance browser for a collection
   def kwic
     @collection = Collection.find(params[:collection_id])
-    
+
     unless @collection.has_multiple_manifestations?
       flash[:error] = t(:no_such_item)
       redirect_to @collection
@@ -234,6 +234,9 @@ class CollectionsController < ApplicationController
     @pagetype = :collection
     @entity = @collection
     @entity_type = 'Collection'
+
+    # Use fresh downloadable mechanism to ensure KWIC downloadable exists
+    ensure_kwic_downloadable_exists(@collection)
 
     # Generate concordance data from all manifestations in collection
     labelled_texts = []
@@ -247,13 +250,13 @@ class CollectionsController < ApplicationController
         item_type: 'Manifestation'
       }
     end
-    
+
     @concordance_data = kwic_concordance(labelled_texts)
 
     # Pagination setup
     @per_page = (params[:per_page] || 25).to_i
     @per_page = 25 unless [25, 50, 100].include?(@per_page)
-    
+
     # Filtering
     @filter_text = params[:filter].to_s.strip
     if @filter_text.present?
@@ -288,7 +291,7 @@ class CollectionsController < ApplicationController
         buffer: ci.item.to_plaintext
       }
     end
-    
+
     concordance_data = kwic_concordance(labelled_texts)
 
     # Apply filter if present
@@ -301,10 +304,10 @@ class CollectionsController < ApplicationController
 
     # Generate text file
     kwic_text = format_concordance_as_text(concordance_data)
-    
+
     filename = "#{@collection.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
-    
-    send_data kwic_text, 
+
+    send_data kwic_text,
               filename: filename,
               type: 'text/plain; charset=utf-8',
               disposition: 'attachment'
@@ -363,7 +366,7 @@ class CollectionsController < ApplicationController
   protected
 
   def downloadable_html(h)
-    title, ias, html, is_curated, genre, i, ci = h
+    title, ias, html, = h
     austr = textify_authorities_and_roles(ias)
     out = "<h1>#{title}</h1>\n"
     out += "<h2>#{austr}</h2>" if austr.present?

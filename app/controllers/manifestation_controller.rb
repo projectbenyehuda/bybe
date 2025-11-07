@@ -439,7 +439,7 @@ class ManifestationController < ApplicationController
       @manifestations = Manifestation.includes(expression: :work).page(params[:page]).order('updated_at DESC')
     elsif params[:author].blank?
       @manifestations = Manifestation.includes(expression: :work).where('title like ?',
-                                                                        '%' + params[:title] + '%').page(params[:page]).order('sort_title ASC') #
+                                                                        '%' + params[:title] + '%').page(params[:page]).order('sort_title ASC')
     elsif params[:title].blank?
       @manifestations = Manifestation.includes(expression: :work).where('cached_people like ?',
                                                                         "%#{params[:author]}%").page(params[:page]).order('sort_title asc')
@@ -599,6 +599,9 @@ class ManifestationController < ApplicationController
     @entity = @m
     @entity_type = 'Manifestation'
 
+    # Use fresh downloadable mechanism to ensure KWIC downloadable exists
+    ensure_kwic_downloadable_exists(@m)
+
     # Generate concordance data
     labelled_texts = [{
       label: @m.title,
@@ -611,7 +614,7 @@ class ManifestationController < ApplicationController
     # Pagination setup
     @per_page = (params[:per_page] || 25).to_i
     @per_page = 25 unless [25, 50, 100].include?(@per_page)
-    
+
     # Filtering
     @filter_text = params[:filter].to_s.strip
     if @filter_text.present?
@@ -657,10 +660,10 @@ class ManifestationController < ApplicationController
 
     # Generate text file
     kwic_text = format_concordance_as_text(concordance_data)
-    
+
     filename = "#{@m.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
-    
-    send_data kwic_text, 
+
+    send_data kwic_text,
               filename: filename,
               type: 'text/plain; charset=utf-8',
               disposition: 'attachment'
@@ -904,7 +907,7 @@ class ManifestationController < ApplicationController
   def prep_ab(whole, subset, fieldname)
     ret = []
     abc_present = whole.pluck(fieldname).map { |t| t.blank? ? '' : t[0] }.uniq.sort
-    dummy = subset[0] # bizarrely, unless we force this query, the pluck below returns *a wrong set* (off by one page or so)
+    subset[0] # bizarrely, unless we force this query, the pluck below returns *a wrong set* (off by one page or so)
     abc_active = subset.pluck(fieldname).map { |t| t.blank? ? '' : t[0] }.uniq.sort
     LETTERS.each do |l|
       status = ''
@@ -1027,5 +1030,4 @@ class ManifestationController < ApplicationController
     end
     @single_text_volume = @containments.count == 1 && !@containments.first.collection.has_multiple_manifestations?
   end
-
 end
