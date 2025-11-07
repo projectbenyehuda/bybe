@@ -218,56 +218,6 @@ class CollectionsController < ApplicationController
     head :forbidden if @collection.collection_type == 'uncollected' # refuse to edit uncollected collections
   end
 
-  private
-
-  # Use callbacks to share common setup or constraints between actions.
-  def set_collection
-    @collection = Collection.find(params[:id])
-  end
-
-  # Only allow a list of trusted parameters through.
-  def collection_params
-    params.require(:collection).permit(:title, :sort_title, :subtitle, :issn, :collection_type, :inception,
-                                       :inception_year, :publisher_line, :pub_year, :publication_id, :toc_id, :toc_strategy, :alternate_titles)
-  end
-
-  def prep_for_show
-    @htmls = []
-    i = 1
-    if @collection.periodical? # we don't want to show an entire periodical's run in a single Web page; instead, we show the complete TOC of all issues
-      @collection.collection_items.each do |ci|
-        next unless ci.item.present? && ci.item_type == 'Collection' && ci.item.collection_type == 'periodical_issue'
-
-        html = ci.item.toc_html
-        @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false, ci.genre, i, ci]
-        i += 1
-      end
-    else
-      @collection.collection_items.each do |ci|
-        next if ci.item.present? && ci.item_type == 'Manifestation' && ci.item.status != 'published' # deleted or unpublished manifestations
-
-        html = ci.to_html
-        # next unless html.present?
-        @htmls << [ci.title, ci.involved_authorities, html.present? ? footnotes_noncer(ci.to_html, i) : '', false, ci.genre,
-                   i, ci]
-        i += 1
-      end
-    end
-    @collection_total_items = @collection.collection_items.reject { |ci| ci.paratext }.count
-    @collection_minus_placeholders = @collection.collection_items.reject do |ci|
-      !ci.public? || ci.paratext.present? || ci.alt_title.present?
-    end.count
-    @authority_for_image = if @collection.authors.present?
-                             @collection.authors.first
-                           elsif @collection.translators.present?
-                             @collection.translators.first
-                           elsif @collection.editors.present?
-                             @collection.editors.first
-                           else
-                             Authority.new(name: '')
-                           end
-  end
-
   # Display KWIC concordance browser for a collection
   def kwic
     @collection = Collection.find(params[:id] || params[:collection_id])
@@ -356,6 +306,56 @@ class CollectionsController < ApplicationController
               filename: filename,
               type: 'text/plain; charset=utf-8',
               disposition: 'attachment'
+  end
+
+  private
+
+  # Use callbacks to share common setup or constraints between actions.
+  def set_collection
+    @collection = Collection.find(params[:id])
+  end
+
+  # Only allow a list of trusted parameters through.
+  def collection_params
+    params.require(:collection).permit(:title, :sort_title, :subtitle, :issn, :collection_type, :inception,
+                                       :inception_year, :publisher_line, :pub_year, :publication_id, :toc_id, :toc_strategy, :alternate_titles)
+  end
+
+  def prep_for_show
+    @htmls = []
+    i = 1
+    if @collection.periodical? # we don't want to show an entire periodical's run in a single Web page; instead, we show the complete TOC of all issues
+      @collection.collection_items.each do |ci|
+        next unless ci.item.present? && ci.item_type == 'Collection' && ci.item.collection_type == 'periodical_issue'
+
+        html = ci.item.toc_html
+        @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false, ci.genre, i, ci]
+        i += 1
+      end
+    else
+      @collection.collection_items.each do |ci|
+        next if ci.item.present? && ci.item_type == 'Manifestation' && ci.item.status != 'published' # deleted or unpublished manifestations
+
+        html = ci.to_html
+        # next unless html.present?
+        @htmls << [ci.title, ci.involved_authorities, html.present? ? footnotes_noncer(ci.to_html, i) : '', false, ci.genre,
+                   i, ci]
+        i += 1
+      end
+    end
+    @collection_total_items = @collection.collection_items.reject { |ci| ci.paratext }.count
+    @collection_minus_placeholders = @collection.collection_items.reject do |ci|
+      !ci.public? || ci.paratext.present? || ci.alt_title.present?
+    end.count
+    @authority_for_image = if @collection.authors.present?
+                             @collection.authors.first
+                           elsif @collection.translators.present?
+                             @collection.translators.first
+                           elsif @collection.editors.present?
+                             @collection.editors.first
+                           else
+                             Authority.new(name: '')
+                           end
   end
 
   protected
