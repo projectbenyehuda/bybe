@@ -119,6 +119,7 @@
             ).fail(function(xhr) {
               var errorMsg = xhr.responseText || ('Status ' + xhr.status);
               alert('#{I18n.t(:collection_item_operation_error, error: '')}' + errorMsg);
+              location.reload();
             }).always(function() {
               $mask.hide();
             });
@@ -142,6 +143,7 @@
         ).fail(function(xhr) {
           var errorMsg = xhr.responseText || ('Status ' + xhr.status);
           alert('#{I18n.t(:collection_item_operation_error, error: '')}' + errorMsg);
+          location.reload();
         }).always(function() {
           $mask.hide();
         });

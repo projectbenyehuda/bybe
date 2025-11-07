@@ -185,10 +185,12 @@ class CollectionItemsController < ApplicationController
   # Updates seqno for a list of collection items to be sequential starting from 1
   def update_seqno(items)
     items.each_with_index do |ci, index|
-      if ci.seqno != index + 1
-        ci.seqno = index + 1
-        ci.save(validate: false) # skipping validation for performance - safe because only seqno is changed and items are already validated to be sequential
-      end
+      next if ci.seqno == index + 1
+
+      ci.seqno = index + 1
+      # skipping validation for performance - safe because only seqno is changed
+      # and items are already validated to be sequential
+      ci.save(validate: false)
     end
   end
 
