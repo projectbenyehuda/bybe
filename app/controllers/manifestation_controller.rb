@@ -600,16 +600,22 @@ class ManifestationController < ApplicationController
     @entity_type = 'Manifestation'
 
     # Use fresh downloadable mechanism to ensure KWIC downloadable exists
-    ensure_kwic_downloadable_exists(@m)
+    dl = ensure_kwic_downloadable_exists(@m)
 
-    # Generate concordance data
-    labelled_texts = [{
-      label: @m.title,
-      buffer: @m.to_plaintext,
-      item_id: @m.id,
-      item_type: 'Manifestation'
-    }]
-    @concordance_data = kwic_concordance(labelled_texts)
+    # Parse concordance data from the stored downloadable
+    if dl&.stored_file&.attached?
+      kwic_text = dl.stored_file.download.force_encoding('UTF-8')
+      @concordance_data = ParseKwicConcordance.call(kwic_text)
+    else
+      # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
+      labelled_texts = [{
+        label: @m.title,
+        buffer: @m.to_plaintext,
+        item_id: @m.id,
+        item_type: 'Manifestation'
+      }]
+      @concordance_data = kwic_concordance(labelled_texts)
+    end
 
     # Pagination setup
     @per_page = (params[:per_page] || 25).to_i

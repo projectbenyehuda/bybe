@@ -7,7 +7,7 @@ class CollectionsController < ApplicationController
   include BybeUtils
   include KwicConcordanceConcern
 
-  before_action :require_editor, except: %i(show download print)
+  before_action :require_editor, except: %i(show download print kwic kwic_download)
   before_action :set_collection, only: %i(show edit update destroy drag_item)
 
   # GET /collections or /collections.json
@@ -236,22 +236,27 @@ class CollectionsController < ApplicationController
     @entity_type = 'Collection'
 
     # Use fresh downloadable mechanism to ensure KWIC downloadable exists
-    ensure_kwic_downloadable_exists(@collection)
+    dl = ensure_kwic_downloadable_exists(@collection)
 
-    # Generate concordance data from all manifestations in collection
-    labelled_texts = []
-    @collection.flatten_items.each do |ci|
-      next if ci.item.nil? || ci.item_type != 'Manifestation'
+    # Parse concordance data from the stored downloadable
+    if dl&.stored_file&.attached?
+      kwic_text = dl.stored_file.download.force_encoding('UTF-8')
+      @concordance_data = ParseKwicConcordance.call(kwic_text)
+    else
+      # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
+      labelled_texts = []
+      @collection.flatten_items.each do |ci|
+        next if ci.item.nil? || ci.item_type != 'Manifestation'
 
-      labelled_texts << {
-        label: ci.title,
-        buffer: ci.item.to_plaintext,
-        item_id: ci.item.id,
-        item_type: 'Manifestation'
-      }
+        labelled_texts << {
+          label: ci.title,
+          buffer: ci.item.to_plaintext,
+          item_id: ci.item.id,
+          item_type: 'Manifestation'
+        }
+      end
+      @concordance_data = kwic_concordance(labelled_texts)
     end
-
-    @concordance_data = kwic_concordance(labelled_texts)
 
     # Pagination setup
     @per_page = (params[:per_page] || 25).to_i
