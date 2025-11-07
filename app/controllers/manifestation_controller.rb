@@ -636,6 +636,18 @@ class ManifestationController < ApplicationController
       end
     end
 
+    # Sorting
+    @sort_by = params[:sort].to_s.strip
+    @sort_by = 'alphabetical' unless %w[alphabetical frequency].include?(@sort_by)
+    
+    if @sort_by == 'frequency'
+      # Sort by frequency (descending - most frequent first)
+      @concordance_data = @concordance_data.sort_by { |entry| -entry[:instances].length }
+    else
+      # Default: alphabetical (ascending)
+      @concordance_data = @concordance_data.sort_by { |entry| entry[:token] }
+    end
+
     @total_entries = @concordance_data.length
     @page = (params[:page] || 1).to_i
     @total_pages = (@total_entries.to_f / @per_page).ceil

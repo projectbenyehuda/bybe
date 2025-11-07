@@ -528,6 +528,9 @@ he:
   kwic_previous_paragraph: פסקה קודמת
   kwic_current_paragraph: פסקה נוכחית
   kwic_next_paragraph: פסקה הבאה
+  kwic_sort_by: "מיון לפי:"
+  kwic_sort_alphabetical: א-ב
+  kwic_sort_frequency: שכיחות
   error_loading_context: שגיאה בטעינת ההקשר
   loading: טוען...
   no_date: אין תאריך
