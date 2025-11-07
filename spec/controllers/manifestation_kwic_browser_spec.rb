@@ -131,7 +131,7 @@ describe ManifestationController do
         let(:manifestation) do
           create(
             :manifestation,
-            markdown: 'zebra apple banana apple zebra apple'
+            markdown: 'zebra apple banana apple zebra apple cherry'
           )
         end
 
@@ -173,6 +173,20 @@ describe ManifestationController do
           first_token = assigns(:concordance_data).first[:token]
           expect(first_token).to eq('apple')
           expect(assigns(:concordance_data).first[:instances].length).to eq(4)
+        end
+
+        it 'uses alphabetical order as secondary sort for equal frequencies' do
+          # Create text with equal frequencies
+          manifestation = create(:manifestation, markdown: 'zebra apple zebra apple')
+          get :kwic, params: { id: manifestation.id, sort: 'frequency' }
+          
+          # Both have 2 occurrences, so should be sorted alphabetically
+          tokens = assigns(:concordance_data).map { |e| e[:token] }
+          frequencies = assigns(:concordance_data).map { |e| e[:instances].length }
+          
+          expect(frequencies.first).to eq(frequencies.last) # Equal frequencies
+          expect(tokens.first).to eq('apple') # Alphabetically first
+          expect(tokens.last).to eq('zebra') # Alphabetically last
         end
       end
 
