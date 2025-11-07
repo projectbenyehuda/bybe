@@ -108,11 +108,17 @@
           if (newIndex != oldIndex) {
             $mask.show();
             var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
+            var collectionId = this.id.replace('#{nonce}_coll_','');
             $.post(
               '/collection_items/' + itemId + '/drag_item',
-              { old_index: oldIndex, new_index: newIndex }
-            ).fail(function() {
-              alert('#{I18n.t(:collection_item_operation_error)}');
+              {
+                collection_id: collectionId,
+                old_index: oldIndex,
+                new_index: newIndex
+              }
+            ).fail(function(xhr) {
+              var errorMsg = xhr.responseText || ('Status ' + xhr.status);
+              alert('#{I18n.t(:collection_item_operation_error, error: '')}' + errorMsg);
             }).always(function() {
               $mask.hide();
             });
@@ -122,14 +128,20 @@
       receive: function(event, ui) {
         $mask.show();
         var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
+        var destCollId = this.id.replace('#{nonce}_coll_','');
+        var srcCollId = ui.sender[0].id.replace('#{nonce}_coll_','');
+        var oldIndex = parseInt($(ui.sender[0]).attr('data-previndex'));
         $.post(
           '/collection_items/' + itemId + '/transplant_item',
           {
-            dest_coll_id: this.id.replace('#{nonce}_coll_',''),
+            src_collection_id: srcCollId,
+            dest_collection_id: destCollId,
+            old_index: oldIndex,
             new_index: ui.item.index()
           }
-        ).fail(function() {
-          alert('#{I18n.t(:collection_item_operation_error)}');
+        ).fail(function(xhr) {
+          var errorMsg = xhr.responseText || ('Status ' + xhr.status);
+          alert('#{I18n.t(:collection_item_operation_error, error: '')}' + errorMsg);
         }).always(function() {
           $mask.hide();
         });
