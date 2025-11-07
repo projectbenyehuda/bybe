@@ -116,7 +116,7 @@ describe CollectionsController do
     end
 
     context 'with empty collection' do
-      subject { get :kwic, params: { id: empty_collection.id } }
+      subject { get :kwic, params: { collection_id: empty_collection.id } }
 
       let(:empty_collection) { create(:collection) }
 
