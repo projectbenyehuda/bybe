@@ -286,7 +286,7 @@ class CollectionsController < ApplicationController
     # Sorting
     @sort_by = params[:sort].to_s.strip
     @sort_by = 'alphabetical' unless %w[alphabetical frequency].include?(@sort_by)
-    @concordance_data = sort_concordance_data(@concordance_data, @sort_by)
+    @concordance_data = sort_concordance_data(@concordance_data, 'frequency') if @sort_by == 'frequency' # data is already alphabetical by default
 
     @total_entries = @concordance_data.length
     @page = (params[:page] || 1).to_i
