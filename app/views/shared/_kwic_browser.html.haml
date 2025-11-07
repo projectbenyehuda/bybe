@@ -112,22 +112,24 @@
                               %button.btn.btn-sm.btn-outline-secondary.show-context-btn{
                                 data: { 
                                   toggle: 'collapse',
-                                  target: "##{instance_id}-context"
+                                  target: "##{instance_id}-context",
+                                  manifestation_id: instance[:manifestation_id],
+                                  paragraph: instance[:paragraph],
+                                  entity_type: @entity_type
                                 },
                                 'aria-expanded' => 'false',
-                                'aria-controls' => "#{instance_id}-context"
+                                'aria-controls' => "#{instance_id}-context",
+                                class: 'kwic-context-toggle'
                               }
                                 = t(:kwic_show_context)
                           
-                          -# Collapsible context panel (will be populated on expand)
+                          -# Collapsible context panel (will be populated on expand via AJAX)
                           .collapse.mt-2{id: "#{instance_id}-context"}
                             .card.card-body{dir: 'rtl', style: 'background-color: #f9f9f9;'}
-                              -# Note: For MVP, we'll show just the context we have
-                              -# Future enhancement: Load full paragraph with prev/next via AJAX
                               .context-content
-                                %p
-                                  %strong= t(:kwic_paragraph) + " #{instance[:paragraph]}:"
-                                %p= "...#{instance[:before_context]} [#{entry[:token]}] #{instance[:after_context]}..."
+                                .text-center.text-muted
+                                  %em= t(:loading)
+                                  %span.spinner-border.spinner-border-sm{role: 'status'}
             
             -# Pagination
             - if @total_pages > 1
@@ -173,13 +175,61 @@
 
 :javascript
   $(function() {
-    // Toggle button text when context is shown/hidden
-    $('.show-context-btn').on('click', function() {
+    // Track which contexts have been loaded
+    var loadedContexts = {};
+    
+    // Toggle button text and load context when shown
+    $('.kwic-context-toggle').on('click', function() {
       var $btn = $(this);
+      var targetId = $btn.data('target');
+      var $target = $(targetId);
+      var manifestationId = $btn.data('manifestation_id');
+      var paragraph = $btn.data('paragraph');
+      var entityType = $btn.data('entity_type');
+      
       setTimeout(function() {
-        var isExpanded = $($btn.data('target')).hasClass('show');
+        var isExpanded = $target.hasClass('show');
         if (isExpanded) {
           $btn.text('#{t(:kwic_hide_context)}');
+          
+          // Load context if not already loaded
+          if (!loadedContexts[targetId]) {
+            loadedContexts[targetId] = true;
+            var contextUrl;
+            
+            if (entityType === 'Manifestation') {
+              contextUrl = '/kwic/' + manifestationId + '/context/' + paragraph;
+            } else {
+              // For collections, we need the collection ID and manifestation ID
+              var collectionId = window.location.pathname.split('/')[2];
+              contextUrl = '/collections/' + collectionId + '/kwic_context/' + manifestationId + '/' + paragraph;
+            }
+            
+            $.ajax({
+              url: contextUrl,
+              method: 'GET',
+              success: function(data) {
+                var html = '';
+                
+                if (data.prev) {
+                  html += '<div class="mb-3"><strong>#{t(:kwic_previous_paragraph)}:</strong><div>' + data.prev + '</div></div>';
+                }
+                
+                if (data.current) {
+                  html += '<div class="mb-3"><strong>#{t(:kwic_current_paragraph)}:</strong><div>' + data.current + '</div></div>';
+                }
+                
+                if (data.next) {
+                  html += '<div class="mb-3"><strong>#{t(:kwic_next_paragraph)}:</strong><div>' + data.next + '</div></div>';
+                }
+                
+                $target.find('.context-content').html(html);
+              },
+              error: function() {
+                $target.find('.context-content').html('<div class="alert alert-danger">#{t(:error_loading_context)}</div>');
+              }
+            });
+          }
         } else {
           $btn.text('#{t(:kwic_show_context)}');
         }
