@@ -1028,5 +1028,4 @@ class ManifestationController < ApplicationController
     @single_text_volume = @containments.count == 1 && !@containments.first.collection.has_multiple_manifestations?
   end
 
-  private
 end
