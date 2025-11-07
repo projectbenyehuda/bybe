@@ -49,7 +49,7 @@
               %p
                 = t(:kwic_total_entries)
                 %strong= @total_entries
-                - if @total_pages > 0
+                - if @total_pages && @total_pages > 0
                   |
                   = t(:kwic_showing_page, page: @page, total: @total_pages)
             
@@ -57,11 +57,11 @@
             .kwic-downloads.mb-4
               - if @filter_text.present?
                 = link_to t(:kwic_download_filtered), 
-                    (@entity_type == 'Manifestation' ? manifestation_kwic_download_path(@entity, filter: @filter_text) : collection_kwic_download_path(@entity, filter: @filter_text)),
+                    (@entity_type == 'Manifestation' ? manifestation_kwic_download_path(@entity, filter: @filter_text) : collection_kwic_download_path(collection_id: @entity, filter: @filter_text)),
                     class: 'btn btn-success'
               - else
                 = link_to t(:kwic_download_full),
-                    (@entity_type == 'Manifestation' ? manifestation_kwic_download_path(@entity) : collection_kwic_download_path(@entity)),
+                    (@entity_type == 'Manifestation' ? manifestation_kwic_download_path(@entity) : collection_kwic_download_path(collection_id: @entity)),
                     class: 'btn btn-success'
             
             -# Concordance entries

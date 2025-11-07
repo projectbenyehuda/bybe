@@ -584,6 +584,86 @@ class ManifestationController < ApplicationController
     end
   end
 
+  # Display KWIC concordance browser for a manifestation
+  def kwic
+    @m = Manifestation.find(params[:id])
+    if @m.nil?
+      head :not_found
+      return
+    end
+
+    @page_title = "#{t(:kwic_concordance)} - #{@m.title} - #{t(:default_page_title)}"
+    @pagetype = :manifestation
+    @entity = @m
+    @entity_type = 'Manifestation'
+
+    # Generate concordance data
+    labelled_texts = [{
+      label: @m.title,
+      buffer: @m.to_plaintext,
+      item_id: @m.id,
+      item_type: 'Manifestation'
+    }]
+    @concordance_data = kwic_concordance(labelled_texts)
+
+    # Pagination setup
+    @per_page = (params[:per_page] || 25).to_i
+    @per_page = 25 unless [25, 50, 100].include?(@per_page)
+    
+    # Filtering
+    @filter_text = params[:filter].to_s.strip
+    if @filter_text.present?
+      @concordance_data = @concordance_data.select do |entry|
+        entry[:token].include?(@filter_text)
+      end
+    end
+
+    @total_entries = @concordance_data.length
+    @page = (params[:page] || 1).to_i
+    @total_pages = (@total_entries.to_f / @per_page).ceil
+    @page = [@page, @total_pages].min if @total_pages > 0
+    @page = 1 if @page < 1
+
+    offset = (@page - 1) * @per_page
+    @concordance_entries = @concordance_data[offset, @per_page] || []
+
+    prep_user_content(:manifestation)
+  end
+
+  # Download filtered or full KWIC concordance
+  def kwic_download
+    @m = Manifestation.find(params[:id])
+    if @m.nil?
+      head :not_found
+      return
+    end
+
+    # Generate concordance data
+    labelled_texts = [{
+      label: @m.title,
+      buffer: @m.to_plaintext
+    }]
+    concordance_data = kwic_concordance(labelled_texts)
+
+    # Apply filter if present
+    filter_text = params[:filter].to_s.strip
+    if filter_text.present?
+      concordance_data = concordance_data.select do |entry|
+        entry[:token].include?(filter_text)
+      end
+    end
+
+    # Generate text file
+    kwic_text = format_concordance_as_text(concordance_data)
+    
+    filename = "#{@m.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
+    
+    send_data kwic_text, 
+              filename: filename,
+              type: 'text/plain; charset=utf-8',
+              disposition: 'attachment'
+  end
+
   protected
 
   def valid_query?
@@ -944,87 +1024,6 @@ class ManifestationController < ApplicationController
         end
     end
     @single_text_volume = @containments.count == 1 && !@containments.first.collection.has_multiple_manifestations?
-  end
-
-  # Display KWIC concordance browser for a manifestation
-  def kwic
-    @m = Manifestation.find(params[:id])
-    if @m.nil?
-      head :not_found
-      return
-    end
-
-    @page_title = "#{t(:kwic_concordance)} - #{@m.title} - #{t(:default_page_title)}"
-    @pagetype = :manifestation
-    @entity = @m
-    @entity_type = 'Manifestation'
-    @header_partial = 'manifestation/work_top'
-
-    # Generate concordance data
-    labelled_texts = [{
-      label: @m.title,
-      buffer: @m.to_plaintext,
-      item_id: @m.id,
-      item_type: 'Manifestation'
-    }]
-    @concordance_data = kwic_concordance(labelled_texts)
-
-    # Pagination setup
-    @per_page = (params[:per_page] || 25).to_i
-    @per_page = 25 unless [25, 50, 100].include?(@per_page)
-    
-    # Filtering
-    @filter_text = params[:filter].to_s.strip
-    if @filter_text.present?
-      @concordance_data = @concordance_data.select do |entry|
-        entry[:token].include?(@filter_text)
-      end
-    end
-
-    @total_entries = @concordance_data.length
-    @page = (params[:page] || 1).to_i
-    @total_pages = (@total_entries.to_f / @per_page).ceil
-    @page = [@page, @total_pages].min if @total_pages > 0
-    @page = 1 if @page < 1
-
-    offset = (@page - 1) * @per_page
-    @concordance_entries = @concordance_data[offset, @per_page] || []
-
-    prep_user_content(:manifestation)
-  end
-
-  # Download filtered or full KWIC concordance
-  def kwic_download
-    @m = Manifestation.find(params[:id])
-    if @m.nil?
-      head :not_found
-      return
-    end
-
-    # Generate concordance data
-    labelled_texts = [{
-      label: @m.title,
-      buffer: @m.to_plaintext
-    }]
-    concordance_data = kwic_concordance(labelled_texts)
-
-    # Apply filter if present
-    filter_text = params[:filter].to_s.strip
-    if filter_text.present?
-      concordance_data = concordance_data.select do |entry|
-        entry[:token].include?(filter_text)
-      end
-    end
-
-    # Generate text file
-    kwic_text = format_concordance_as_text(concordance_data)
-    
-    filename = "#{@m.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
-    
-    send_data kwic_text, 
-              filename: filename,
-              type: 'text/plain; charset=utf-8',
-              disposition: 'attachment'
   end
 
   private
