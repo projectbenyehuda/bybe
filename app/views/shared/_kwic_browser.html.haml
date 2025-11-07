@@ -102,7 +102,7 @@
                                     target: '_blank'
                               - else
                                 -# For collections, we need to find the source manifestation
-                                - source_item = @entity.flatten_items.find { |ci| ci.title == instance[:label] && ci.item_type == 'Manifestation' }
+                                - source_item = @collection_items_by_label[instance[:label]]
                                 - if source_item && source_item.item
                                   = link_to t(:kwic_go_to_source),
                                       manifestation_path(source_item.item),

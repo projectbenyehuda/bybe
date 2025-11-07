@@ -274,6 +274,12 @@ class CollectionsController < ApplicationController
     offset = (@page - 1) * @per_page
     @concordance_entries = @concordance_data[offset, @per_page] || []
 
+    # Create a lookup hash for collection items to avoid N+1 queries in the view
+    @collection_items_by_label = {}
+    @collection.flatten_items.each do |ci|
+      @collection_items_by_label[ci.title] = ci if ci.item_type == 'Manifestation'
+    end
+
     prep_user_content(:collection)
   end
 
