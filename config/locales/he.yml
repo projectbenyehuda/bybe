@@ -4,6 +4,7 @@ he:
   id: מזהה
   inside: 'בתוך: '
   not_public_yet: '(עדיין לא פומבי)'
+  clear: נקה
   author_list: רשימת היוצרים
   first_last_name: "שם פרטי / משפחה"
   don_footer_title: אנו שמחים שאתם משתמשים באתר פרויקט בן־יהודה
