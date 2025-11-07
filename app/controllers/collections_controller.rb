@@ -224,8 +224,8 @@ class CollectionsController < ApplicationController
   def kwic
     @collection = Collection.find(params[:collection_id])
 
-    unless @collection.has_multiple_manifestations?
-      flash[:error] = t(:no_such_item)
+    unless @collection.flatten_items.any? { |ci| ci.item_type == 'Manifestation' && ci.item.present? }
+      flash[:error] = t(:empty_collection)
       redirect_to @collection
       return
     end
@@ -242,11 +242,11 @@ class CollectionsController < ApplicationController
     if dl&.stored_file&.attached?
       kwic_text = dl.stored_file.download.force_encoding('UTF-8')
       @concordance_data = ParseKwicConcordance.call(kwic_text)
-      
+
       # Enrich instances with manifestation IDs for context fetching
       @collection.flatten_items.each do |ci|
         next if ci.item.nil? || ci.item_type != 'Manifestation'
-        
+
         @concordance_data.each do |entry|
           entry[:instances].each do |instance|
             if instance[:label] == ci.title
@@ -297,18 +297,16 @@ class CollectionsController < ApplicationController
     @collection.flatten_items.each do |ci|
       @collection_items_by_label[ci.title] = ci if ci.item_type == 'Manifestation'
     end
-
-    prep_user_content(:collection)
   end
 
   # Get extended context for a paragraph (AJAX endpoint)
   def kwic_context
     manifestation_id = params[:manifestation_id].to_i
     paragraph_num = params[:paragraph].to_i
-    
+
     manifestation = Manifestation.find(manifestation_id)
     context = get_extended_context(manifestation, paragraph_num)
-    
+
     render json: {
       prev: context[:prev],
       current: context[:current],

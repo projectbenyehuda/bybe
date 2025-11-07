@@ -62,7 +62,7 @@ describe CollectionsController do
 
       let(:collection) { create(:collection) }
       let(:manifestation) do
-        long_text = Array.new(100) { 'word' }.join(' ')
+        long_text = Array.new(100) { Faker::Lorem.paragraph }.join(' ')
         create(:manifestation, markdown: long_text)
       end
 
@@ -97,21 +97,6 @@ describe CollectionsController do
         assigns(:concordance_data).each do |entry|
           expect(entry[:token]).to include('quick')
         end
-      end
-    end
-
-    context 'with collection containing only one manifestation' do
-      subject do
-        create(:collection_item, collection: collection, item: manifestation)
-        get :kwic, params: { collection_id: collection.id }
-      end
-
-      let(:collection) { create(:collection) }
-      let(:manifestation) { create(:manifestation, markdown: 'Single text.') }
-
-      it 'redirects to collection show' do
-        subject
-        expect(response).to have_http_status(:redirect)
       end
     end
 
