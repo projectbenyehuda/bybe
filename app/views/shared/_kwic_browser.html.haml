@@ -115,7 +115,8 @@
                                   target: "##{instance_id}-context",
                                   manifestation_id: instance[:manifestation_id],
                                   paragraph: instance[:paragraph],
-                                  entity_type: @entity_type
+                                  entity_type: @entity_type,
+                                  token: entry[:token]
                                 },
                                 'aria-expanded' => 'false',
                                 'aria-controls' => "#{instance_id}-context",
@@ -178,6 +179,49 @@
     // Track which contexts have been loaded
     var loadedContexts = {};
     
+    // Function to highlight token occurrences in HTML
+    function highlightToken(html, token) {
+      if (!html || !token) return html;
+      
+      // Create a temporary div to work with the HTML
+      var $temp = $('<div>').html(html);
+      
+      // Function to highlight text in text nodes
+      function highlightInNode(node) {
+        if (node.nodeType === 3) { // Text node
+          var text = node.nodeValue;
+          if (text && text.includes(token)) {
+            // Create a span with highlighted tokens
+            var span = document.createElement('span');
+            var parts = text.split(token);
+            
+            for (var i = 0; i < parts.length; i++) {
+              span.appendChild(document.createTextNode(parts[i]));
+              if (i < parts.length - 1) {
+                var highlight = document.createElement('span');
+                highlight.className = 'token-highlight';
+                highlight.style.backgroundColor = '#ffeb3b';
+                highlight.style.padding = '2px 4px';
+                highlight.appendChild(document.createTextNode(token));
+                span.appendChild(highlight);
+              }
+            }
+            
+            node.parentNode.replaceChild(span, node);
+          }
+        } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+          // Element node - recurse through children
+          var children = Array.from(node.childNodes);
+          children.forEach(function(child) {
+            highlightInNode(child);
+          });
+        }
+      }
+      
+      highlightInNode($temp[0]);
+      return $temp.html();
+    }
+    
     // Toggle button text and load context when shown
     $('.kwic-context-toggle').on('click', function() {
       var $btn = $(this);
@@ -186,6 +230,7 @@
       var manifestationId = $btn.data('manifestationId');
       var paragraph = $btn.data('paragraph');
       var entityType = $btn.data('entityType');
+      var token = $btn.data('token');
       
       setTimeout(function() {
         var isExpanded = !$target.hasClass('collapsed');
@@ -216,7 +261,9 @@
                 }
                 
                 if (data.current) {
-                  html += '<div class="mb-3"><strong>#{t(:kwic_current_paragraph)}:</strong><div>' + data.current + '</div></div>';
+                  // Highlight the token in the current paragraph
+                  var highlightedCurrent = highlightToken(data.current, token);
+                  html += '<div class="mb-3"><strong>#{t(:kwic_current_paragraph)}:</strong><div>' + highlightedCurrent + '</div></div>';
                 }
                 
                 if (data.next) {
