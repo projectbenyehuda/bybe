@@ -97,6 +97,15 @@ class CollectionItemsController < ApplicationController
   # POST /collection_items/1/drag_item
   def drag_item
     collection = @collection_item.collection
+
+    # Validate mandatory parameters
+    collection_id = params.fetch(:collection_id).to_i
+    if collection_id != collection.id
+      render plain: "[DragItem] Collection ID mismatch: expected #{collection.id} but got #{collection_id}",
+             status: :bad_request
+      return
+    end
+
     # zero-based index of where we want to move this item
     new_index = params.fetch(:new_index).to_i
     old_index = params.fetch(:old_index).to_i
@@ -107,7 +116,7 @@ class CollectionItemsController < ApplicationController
       # Validate that the old_index parameter matches the actual current position
       real_index = items.index(@collection_item)
       if old_index != real_index
-        render plain: "Dragged item has different index: #{old_index} expected but it is #{real_index}",
+        render plain: "[DragItem] Item index mismatch: expected #{real_index} but got #{old_index}",
                status: :bad_request
         return
       end
@@ -123,19 +132,40 @@ class CollectionItemsController < ApplicationController
   # POST /collection_items/1/transplant_item
   def transplant_item
     src_coll = @collection_item.collection
-    dest_coll = Collection.find(params.fetch(:dest_coll_id))
+
+    # Validate mandatory parameters
+    src_collection_id = params.fetch(:src_collection_id).to_i
+    if src_collection_id != src_coll.id
+      error_msg = '[TransplantItem] Source collection ID mismatch: ' \
+                  "expected #{src_coll.id} but got #{src_collection_id}"
+      render plain: error_msg, status: :bad_request
+      return
+    end
+
+    dest_coll = Collection.find(params.fetch(:dest_collection_id))
 
     if src_coll == dest_coll
-      render plain: 'Destination collection cannot be the same as source collection', status: :bad_request
+      render plain: '[TransplantItem] Destination collection cannot be the same as source collection',
+             status: :bad_request
       return
     end
 
     new_index = params.fetch(:new_index).to_i
+    old_index = params.fetch(:old_index).to_i
     src_items = src_coll.collection_items.order(:seqno).to_a
     dest_items = dest_coll.collection_items.order(:seqno).to_a
 
+    # Validate that the old_index parameter matches the actual current position in source collection
+    real_index = src_items.index(@collection_item)
+    if old_index != real_index
+      error_msg = '[TransplantItem] Item index mismatch in source collection: ' \
+                  "expected #{real_index} but got #{old_index}"
+      render plain: error_msg, status: :bad_request
+      return
+    end
+
     if new_index < 0 || new_index > dest_items.count
-      render plain: 'Wrong new_index', status: :bad_request
+      render plain: '[TransplantItem] Wrong new_index', status: :bad_request
       return
     end
 
