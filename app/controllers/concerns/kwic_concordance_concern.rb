@@ -26,11 +26,12 @@ module KwicConcordanceConcern
   # Sort concordance data by the specified method
   # @param concordance_data [Array<Hash>] Array of concordance entries
   # @param sort_by [String] Sort method: 'alphabetical' or 'frequency'
-  # @return [Array<Hash>] Sorted concordance data
+  # @return [Array<Hash>] Sorted concordance data (new array, input not modified)
   def sort_concordance_data(concordance_data, sort_by)
     if sort_by == 'frequency'
       # Sort by frequency (descending - most frequent first)
-      concordance_data.sort_by { |entry| -entry[:instances].length }
+      # For equal frequencies, use alphabetical order as secondary sort
+      concordance_data.sort_by { |entry| [-entry[:instances].length, entry[:token]] }
     else
       # Default: alphabetical (ascending)
       concordance_data.sort_by { |entry| entry[:token] }

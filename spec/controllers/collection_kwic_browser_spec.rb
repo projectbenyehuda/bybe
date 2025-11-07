@@ -170,7 +170,7 @@ describe CollectionsController do
 
         let(:collection) { create(:collection) }
         let(:manifestation) do
-          create(:manifestation, markdown: 'zebra apple banana apple zebra apple')
+          create(:manifestation, markdown: 'zebra apple banana apple zebra apple cherry')
         end
 
         it 'sorts tokens alphabetically' do
