@@ -8,9 +8,10 @@ module KwicConcordanceConcern
 
   # Ensure a KWIC downloadable exists for the given entity (Manifestation or Collection)
   # Uses the fresh downloadable mechanism to avoid regenerating if already exists
+  # @return [Downloadable, nil] The downloadable object
   def ensure_kwic_downloadable_exists(entity)
     dl = entity.fresh_downloadable_for('kwic')
-    return if dl.present? # Already exists and is fresh
+    return dl if dl.present? # Already exists and is fresh
 
     # Generate and save the downloadable
     if entity.is_a?(Collection)
