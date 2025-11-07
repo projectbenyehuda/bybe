@@ -606,7 +606,7 @@ class ManifestationController < ApplicationController
     if dl&.stored_file&.attached?
       kwic_text = dl.stored_file.download.force_encoding('UTF-8')
       @concordance_data = ParseKwicConcordance.call(kwic_text)
-      
+
       # Enrich instances with manifestation ID for context fetching
       @concordance_data.each do |entry|
         entry[:instances].each do |instance|
@@ -644,17 +644,15 @@ class ManifestationController < ApplicationController
 
     offset = (@page - 1) * @per_page
     @concordance_entries = @concordance_data[offset, @per_page] || []
-
-    prep_user_content(:manifestation)
   end
 
   # Get extended context for a paragraph (AJAX endpoint)
   def kwic_context
     @m = Manifestation.find(params[:id])
     paragraph_num = params[:paragraph].to_i
-    
+
     context = get_extended_context(@m, paragraph_num)
-    
+
     render json: {
       prev: context[:prev],
       current: context[:current],

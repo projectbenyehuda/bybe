@@ -44,7 +44,7 @@ describe ManifestationController do
 
       let(:manifestation) do
         # Create a longer text to have multiple pages
-        long_text = Array.new(100) { 'word' }.join(' ')
+        long_text = Array.new(100) { Faker::Lorem.paragraph }.join(' ')
         create(:manifestation, markdown: long_text)
       end
 
@@ -106,7 +106,7 @@ describe ManifestationController do
     end
 
     context 'with nonexistent manifestation' do
-      subject { get :kwic, params: { id: 999999 } }
+      subject { get :kwic, params: { id: 999_999 } }
 
       it 'returns not found' do
         expect { subject }.to raise_error(ActiveRecord::RecordNotFound)
