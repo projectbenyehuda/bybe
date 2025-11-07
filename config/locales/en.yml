@@ -295,7 +295,7 @@ en:
   works: Works
   volumes: Volumes
   unrecognized_format: Unrecognized file format
-  collection_item_operation_error: 'Error occurred: %{error}'
+  collection_item_operation_error: 'Error occurred: %{error}. Page will be reloaded.'
   kwic_sort_by: "Sort by:"
   kwic_sort_alphabetical: Alphabetical
   kwic_sort_frequency: Frequency
