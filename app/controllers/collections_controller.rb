@@ -4,6 +4,8 @@
 # Most of the actions require editor's permissions
 class CollectionsController < ApplicationController
   include Tracking
+  include BybeUtils
+  include KwicConcordanceConcern
 
   before_action :require_editor, except: %i(show download print)
   before_action :set_collection, only: %i(show edit update destroy drag_item)
@@ -367,38 +369,5 @@ class CollectionsController < ApplicationController
     out += "<h2>#{austr}</h2>" if austr.present?
     out += html
     out.force_encoding('UTF-8')
-  end
-
-  def format_concordance_as_text(concordance_data)
-    output = []
-    output << "קונקורדנציה בתבנית KWIC"
-    output << "=" * 50
-    output << ""
-
-    concordance_data.each do |entry|
-      token = entry[:token]
-      instances = entry[:instances]
-
-      output << "מילה: #{token}"
-      output << "-" * 40
-
-      instances.each do |instance|
-        label = instance[:label]
-        paragraph = instance[:paragraph]
-        before_context = instance[:before_context]
-        after_context = instance[:after_context]
-
-        line = "[#{label}, פסקה #{paragraph}] "
-        line += "#{before_context} " if before_context.present?
-        line += "[#{token}]"
-        line += " #{after_context}" if after_context.present?
-
-        output << line
-      end
-
-      output << ""
-    end
-
-    output.join("\n")
   end
 end
