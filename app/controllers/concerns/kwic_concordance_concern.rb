@@ -23,6 +23,20 @@ module KwicConcordanceConcern
     }
   end
 
+  # Sort concordance data by the specified method
+  # @param concordance_data [Array<Hash>] Array of concordance entries
+  # @param sort_by [String] Sort method: 'alphabetical' or 'frequency'
+  # @return [Array<Hash>] Sorted concordance data
+  def sort_concordance_data(concordance_data, sort_by)
+    if sort_by == 'frequency'
+      # Sort by frequency (descending - most frequent first)
+      concordance_data.sort_by { |entry| -entry[:instances].length }
+    else
+      # Default: alphabetical (ascending)
+      concordance_data.sort_by { |entry| entry[:token] }
+    end
+  end
+
   private
 
   # Ensure a KWIC downloadable exists for the given entity (Manifestation or Collection)
