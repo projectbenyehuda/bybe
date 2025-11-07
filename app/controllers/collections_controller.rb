@@ -222,7 +222,7 @@ class CollectionsController < ApplicationController
 
   # Display KWIC concordance browser for a collection
   def kwic
-    @collection = Collection.find(params[:id] || params[:collection_id])
+    @collection = Collection.find(params[:collection_id])
     
     unless @collection.has_multiple_manifestations?
       flash[:error] = t(:no_such_item)
