@@ -183,12 +183,12 @@
       var $btn = $(this);
       var targetId = $btn.data('target');
       var $target = $(targetId);
-      var manifestationId = $btn.data('manifestation_id');
+      var manifestationId = $btn.data('manifestationId');
       var paragraph = $btn.data('paragraph');
-      var entityType = $btn.data('entity_type');
+      var entityType = $btn.data('entityType');
       
       setTimeout(function() {
-        var isExpanded = $target.hasClass('show');
+        var isExpanded = !$target.hasClass('collapsed');
         if (isExpanded) {
           $btn.text('#{t(:kwic_hide_context)}');
           
