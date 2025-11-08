@@ -896,7 +896,7 @@ module BybeUtils
       buffer = text_entry[:buffer]
 
       # Split buffer into paragraphs (lines)
-      paragraphs = buffer.split("\n")
+      paragraphs = buffer.split("\n").map(&:strip).reject(&:empty?)
 
       paragraphs.each_with_index do |paragraph, para_index|
         # Tokenize paragraph, preserving Hebrew acronyms
