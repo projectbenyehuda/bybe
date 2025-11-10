@@ -48,7 +48,8 @@ module KwicConcordanceConcern
     return dl if dl.present? # Already exists and is fresh
 
     # Generate and save the downloadable
-    if entity.is_a?(Collection)
+    case entity
+    when Collection
       labelled_texts = []
       entity.flatten_items.each do |ci|
         next if ci.item.nil? || ci.item_type != 'Manifestation'
@@ -62,7 +63,7 @@ module KwicConcordanceConcern
       filename = "#{entity.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.kwic"
       austr = textify_authorities_and_roles(entity.involved_authorities)
       MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
-    elsif entity.is_a?(Manifestation)
+    when Manifestation
       labelled_texts = [{
         label: entity.title,
         buffer: entity.to_plaintext
@@ -72,10 +73,9 @@ module KwicConcordanceConcern
       involved_auths = entity.expression.involved_authorities + entity.expression.work.involved_authorities
       austr = textify_authorities_and_roles(involved_auths)
       MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
-    elsif entity.is_a?(Authority)
-      labelled_texts = []
-      entity.published_manifestations.each do |m|
-        labelled_texts << {
+    when Authority
+      labelled_texts = entity.published_manifestations.map do |m|
+        {
           label: m.title,
           buffer: m.to_plaintext
         }
