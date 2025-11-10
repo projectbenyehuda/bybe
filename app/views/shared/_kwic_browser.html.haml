@@ -73,13 +73,23 @@
             -# Download buttons
             .kwic-downloads.mb-4
               - if @filter_text.present?
-                = link_to t(:kwic_download_filtered), 
-                    (@entity_type == 'Manifestation' ? manifestation_kwic_download_path(@entity, filter: @filter_text) : collection_kwic_download_path(collection_id: @entity, filter: @filter_text)),
-                    class: 'btn btn-success'
+                - download_path = case @entity_type
+                  - when 'Manifestation'
+                    - manifestation_kwic_download_path(@entity, filter: @filter_text)
+                  - when 'Collection'
+                    - collection_kwic_download_path(collection_id: @entity, filter: @filter_text)
+                  - when 'Authority'
+                    - author_kwic_download_path(id: @entity, filter: @filter_text)
+                = link_to t(:kwic_download_filtered), download_path, class: 'btn btn-success'
               - else
-                = link_to t(:kwic_download_full),
-                    (@entity_type == 'Manifestation' ? manifestation_kwic_download_path(@entity) : collection_kwic_download_path(collection_id: @entity)),
-                    class: 'btn btn-success'
+                - download_path = case @entity_type
+                  - when 'Manifestation'
+                    - manifestation_kwic_download_path(@entity)
+                  - when 'Collection'
+                    - collection_kwic_download_path(collection_id: @entity)
+                  - when 'Authority'
+                    - author_kwic_download_path(id: @entity)
+                = link_to t(:kwic_download_full), download_path, class: 'btn btn-success'
             
             -# Concordance entries
             .kwic-entries
@@ -117,12 +127,19 @@
                                     manifestation_path(@entity),
                                     class: 'btn btn-sm btn-outline-primary',
                                     target: '_blank'
-                              - else
+                              - elsif @entity_type == 'Collection'
                                 -# For collections, we need to find the source manifestation
                                 - source_item = @collection_items_by_label[instance[:label]]
                                 - if source_item && source_item.item
                                   = link_to t(:kwic_go_to_source),
                                       manifestation_path(source_item.item),
+                                      class: 'btn btn-sm btn-outline-primary',
+                                      target: '_blank'
+                              - elsif @entity_type == 'Authority'
+                                -# For authorities, find manifestation by ID from enriched data
+                                - if instance[:manifestation_id]
+                                  = link_to t(:kwic_go_to_source),
+                                      manifestation_path(instance[:manifestation_id]),
                                       class: 'btn btn-sm btn-outline-primary',
                                       target: '_blank'
                               
@@ -261,10 +278,14 @@
             
             if (entityType === 'Manifestation') {
               contextUrl = '/kwic/' + manifestationId + '/context/' + paragraph;
-            } else {
+            } else if (entityType === 'Collection') {
               // For collections, we need the collection ID and manifestation ID
               var collectionId = window.location.pathname.split('/')[2];
               contextUrl = '/collections/' + collectionId + '/kwic_context/' + manifestationId + '/' + paragraph;
+            } else if (entityType === 'Authority') {
+              // For authorities, we need the authority ID and manifestation ID
+              var authorityId = window.location.pathname.split('/')[2];
+              contextUrl = '/author/' + authorityId + '/kwic/context/' + manifestationId + '/' + paragraph;
             }
             
             $.ajax({

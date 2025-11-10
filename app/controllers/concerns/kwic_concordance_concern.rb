@@ -40,7 +40,7 @@ module KwicConcordanceConcern
 
   private
 
-  # Ensure a KWIC downloadable exists for the given entity (Manifestation or Collection)
+  # Ensure a KWIC downloadable exists for the given entity (Manifestation, Collection, or Authority)
   # Uses the fresh downloadable mechanism to avoid regenerating if already exists
   # @return [Downloadable, nil] The downloadable object
   def ensure_kwic_downloadable_exists(entity)
@@ -71,6 +71,18 @@ module KwicConcordanceConcern
       filename = "#{entity.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.kwic"
       involved_auths = entity.expression.involved_authorities + entity.expression.work.involved_authorities
       austr = textify_authorities_and_roles(involved_auths)
+      MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
+    elsif entity.is_a?(Authority)
+      labelled_texts = []
+      entity.published_manifestations.each do |m|
+        labelled_texts << {
+          label: m.title,
+          buffer: m.to_plaintext
+        }
+      end
+      kwic_text = GenerateKwicConcordance.call(labelled_texts)
+      filename = "#{entity.name.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.kwic"
+      austr = entity.name
       MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
     end
   end
