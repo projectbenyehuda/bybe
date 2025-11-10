@@ -434,7 +434,7 @@ describe V1::TextsApi do
       tags = manifestation.approved_tags.pluck(:name).sort
       expect(enrichment['taggings']).to eq tags
 
-      recommendations = manifestation.recommendations.all_approved.order(:id)
+      recommendations = manifestation.recommendations.approved.order(:id)
       json_recommendations = enrichment['recommendations']
       recommendations.each_with_index do |r, i|
         json_recommendation = json_recommendations[i]

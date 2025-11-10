@@ -3,6 +3,8 @@ require 'pandoc-ruby'
 class ManifestationController < ApplicationController
   include FilteringAndPaginationConcern
   include Tracking
+  include BybeUtils
+  include KwicConcordanceConcern
 
   before_action only: %i(list show remove_link edit_metadata add_aboutnesses) do |c|
     c.require_editor('edit_catalog')
@@ -250,13 +252,11 @@ class ManifestationController < ApplicationController
   end
 
   def read
-    @m = Manifestation.joins(:expression).includes(:expression).find(params[:id].to_i)
-    if @m.nil?
-      head :not_found
-    elsif @m.expression.work.genre == 'lexicon' && DictionaryEntry.where(manifestation_id: @m.id).count > 0
+    @m = Manifestation.find(params[:id].to_i)
+    if @m.expression.work.genre == 'lexicon' && DictionaryEntry.exists?(manifestation: @m)
       redirect_to action: 'dict', id: @m.id
     elsif !@m.published? && (current_user.blank? || !current_user.editor?)
-      flash[:notice] = t(:work_not_available)
+      flash.notice = t(:work_not_available)
       redirect_to '/'
     else
       prep_for_read
@@ -265,14 +265,14 @@ class ManifestationController < ApplicationController
       @tagging = Tagging.new
       @tagging.taggable = @m
       @taggings = @m.taggings
-      @recommendations = @m.recommendations
-      @my_pending_recs = @recommendations.all_pending.where(user: current_user)
-      @app_recs = @recommendations.all_approved
-      @total_recs = @app_recs.count + @my_pending_recs.count
+
+      recommendations = @m.recommendations.preload(:user)
+      @my_pending_recs = recommendations.select { |r| r.pending? && r.user == current_user }
+      @app_recs = recommendations.select(&:approved?)
+      @total_recs = @my_pending_recs.size + @app_recs.size
 
       @links = @m.external_links.group_by { |l| l.linktype }
-      @random_work = Manifestation.where(id: Manifestation.pluck(:id).sample(5),
-                                         status: Manifestation.statuses[:published])[0]
+
       @header_partial = 'manifestation/work_top'
       @works_about = @w.works_about
       @scrollspy_target = 'chapternav'
@@ -437,7 +437,7 @@ class ManifestationController < ApplicationController
       @manifestations = Manifestation.includes(expression: :work).page(params[:page]).order('updated_at DESC')
     elsif params[:author].blank?
       @manifestations = Manifestation.includes(expression: :work).where('title like ?',
-                                                                        '%' + params[:title] + '%').page(params[:page]).order('sort_title ASC') #
+                                                                        '%' + params[:title] + '%').page(params[:page]).order('sort_title ASC')
     elsif params[:title].blank?
       @manifestations = Manifestation.includes(expression: :work).where('cached_people like ?',
                                                                         "%#{params[:author]}%").page(params[:page]).order('sort_title asc')
@@ -582,6 +582,119 @@ class ManifestationController < ApplicationController
       end
       render action: :edit
     end
+  end
+
+  # Display KWIC concordance browser for a manifestation
+  def kwic
+    @m = Manifestation.find(params[:id])
+    if @m.nil?
+      head :not_found
+      return
+    end
+
+    @page_title = "#{t(:kwic_concordance)} - #{@m.title} - #{t(:default_page_title)}"
+    @pagetype = :manifestation
+    @entity = @m
+    @entity_type = 'Manifestation'
+
+    # Use fresh downloadable mechanism to ensure KWIC downloadable exists
+    dl = ensure_kwic_downloadable_exists(@m)
+
+    # Parse concordance data from the stored downloadable
+    if dl&.stored_file&.attached?
+      kwic_text = dl.stored_file.download.force_encoding('UTF-8')
+      @concordance_data = ParseKwicConcordance.call(kwic_text)
+
+      # Enrich instances with manifestation ID for context fetching
+      @concordance_data.each do |entry|
+        entry[:instances].each do |instance|
+          instance[:manifestation_id] = @m.id
+        end
+      end
+    else
+      # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
+      labelled_texts = [{
+        label: @m.title,
+        buffer: @m.to_plaintext,
+        item_id: @m.id,
+        item_type: 'Manifestation'
+      }]
+      @concordance_data = kwic_concordance(labelled_texts)
+    end
+
+    # Pagination setup
+    @per_page = (params[:per_page] || 25).to_i
+    @per_page = 25 unless [25, 50, 100].include?(@per_page)
+
+    # Filtering
+    @filter_text = params[:filter].to_s.strip
+    if @filter_text.present?
+      @concordance_data = @concordance_data.select do |entry|
+        entry[:token].include?(@filter_text)
+      end
+    end
+
+    # Sorting
+    @sort_by = params[:sort].to_s.strip
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
+    @concordance_data = sort_concordance_data(@concordance_data, 'frequency') if @sort_by == 'frequency' # data is already alphabetical by default
+
+    @total_entries = @concordance_data.length
+    @page = (params[:page] || 1).to_i
+    @total_pages = (@total_entries.to_f / @per_page).ceil
+    @page = [@page, @total_pages].min if @total_pages > 0
+    @page = 1 if @page < 1
+
+    offset = (@page - 1) * @per_page
+    @concordance_entries = @concordance_data[offset, @per_page] || []
+  end
+
+  # Get extended context for a paragraph (AJAX endpoint)
+  def kwic_context
+    @m = Manifestation.find(params[:id])
+    paragraph_num = params[:paragraph].to_i
+
+    context = get_extended_context(@m, paragraph_num)
+
+    render json: {
+      prev: context[:prev],
+      current: context[:current],
+      next: context[:next]
+    }
+  end
+
+  # Download filtered or full KWIC concordance
+  def kwic_download
+    @m = Manifestation.find(params[:id])
+    if @m.nil?
+      head :not_found
+      return
+    end
+
+    # Generate concordance data
+    labelled_texts = [{
+      label: @m.title,
+      buffer: @m.to_plaintext
+    }]
+    concordance_data = kwic_concordance(labelled_texts)
+
+    # Apply filter if present
+    filter_text = params[:filter].to_s.strip
+    if filter_text.present?
+      concordance_data = concordance_data.select do |entry|
+        entry[:token].include?(filter_text)
+      end
+    end
+
+    # Generate text file
+    kwic_text = format_concordance_as_text(concordance_data)
+
+    filename = "#{@m.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
+
+    send_data kwic_text,
+              filename: filename,
+              type: 'text/plain; charset=utf-8',
+              disposition: 'attachment'
   end
 
   protected
@@ -822,7 +935,7 @@ class ManifestationController < ApplicationController
   def prep_ab(whole, subset, fieldname)
     ret = []
     abc_present = whole.pluck(fieldname).map { |t| t.blank? ? '' : t[0] }.uniq.sort
-    dummy = subset[0] # bizarrely, unless we force this query, the pluck below returns *a wrong set* (off by one page or so)
+    subset[0] # bizarrely, unless we force this query, the pluck below returns *a wrong set* (off by one page or so)
     abc_active = subset.pluck(fieldname).map { |t| t.blank? ? '' : t[0] }.uniq.sort
     LETTERS.each do |l|
       status = ''

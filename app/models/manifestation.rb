@@ -415,18 +415,15 @@ class Manifestation < ApplicationRecord
   end
 
   def self.get_popular_works
-    Rails.cache.fetch('m_popular_works', expires_in: 48.hours) do
-      evs = Ahoy::Event.where(name: 'view').where("JSON_EXTRACT(properties, '$.type') = 'Manifestation'").where(
-        'time > ?', 1.month.ago
-      )
-      pop = {}
-      evs.each do |x|
-        mid = x.properties['id']
-        pop[mid] = 0 unless pop[mid].present?
-        pop[mid] += 1
-      end
-      sorted_pop_keys = pop.keys.sort_by { |k| pop[k] }.reverse
-      Manifestation.find(sorted_pop_keys[0..9])
+    Rails.cache.fetch('m_popular_works', expires_in: 24.hours) do
+      ids = Ahoy::Event.where(name: 'view')
+                       .where(item_type: 'Manifestation')
+                       .where('time > ?', 1.month.ago)
+                       .group(:item_id)
+                       .order(Arel.sql('count(*) desc'))
+                       .limit(10)
+                       .pluck(:item_id)
+      find(ids)
     end
   end
 

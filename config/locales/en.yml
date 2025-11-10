@@ -295,3 +295,6 @@ en:
   works: Works
   volumes: Volumes
   unrecognized_format: Unrecognized file format
+  kwic_sort_by: "Sort by:"
+  kwic_sort_alphabetical: Alphabetical
+  kwic_sort_frequency: Frequency

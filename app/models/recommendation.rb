@@ -4,7 +4,4 @@ class Recommendation < ApplicationRecord
   belongs_to :manifestation
 
   enum :status, { pending: 0, approved: 1 }
-
-  scope :all_pending, -> { pending }
-  scope :all_approved, -> { approved }
 end
