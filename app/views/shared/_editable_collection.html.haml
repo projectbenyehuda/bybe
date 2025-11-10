@@ -134,7 +134,7 @@
         var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
         var destCollId = this.id.replace('#{nonce}_coll_','');
         var srcCollId = ui.sender[0].id.replace('#{nonce}_coll_','');
-        var oldIndex = parseInt($(ui.sender[0]).attr('data-previndex'));
+        var oldIndex = ui.item.data('oldIndex');
         $.post(
           '/collection_items/' + itemId + '/transplant_item',
           {
