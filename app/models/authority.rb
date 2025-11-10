@@ -340,32 +340,17 @@ class Authority < ApplicationRecord
                                            taggable_id: mm }).group('tags.id').order('count_all DESC').count
   end
 
-  # class variable
-  # rubocop:disable Style/ClassVars
-  @@popular_authors = nil
-
-  def self.recalc_popular
-    evs = Ahoy::Event.where(name: 'view').where("JSON_EXTRACT(properties, '$.type') = 'Authority'").where(
-      'time > ?', 1.month.ago
-    )
-    pop = {}
-    evs.each do |x|
-      au_id = x.properties['id']
-      pop[au_id] = 0 unless pop[au_id].present?
-      pop[au_id] += 1
-    end
-    sorted_pop_keys = pop.keys.sort_by { |k| pop[k] }.reverse
-    Authority.find(sorted_pop_keys[0..9])
-
-    @@popular_authors = has_toc.order(impressions_count: :desc).limit(10).all.to_a
-  end
-  # rubocop:enable Style/ClassVars
-
   def self.popular_authors
-    if @@popular_authors.nil?
-      recalc_popular
+    Rails.cache.fetch('m_popular_authors', expires_in: 24.hours) do
+      ids = Ahoy::Event.where(name: 'view')
+                       .where(item_type: 'Authority')
+                       .where('time > ?', 1.month.ago)
+                       .group(:item_id)
+                       .order(Arel.sql('count(*) desc'))
+                       .limit(10)
+                       .pluck(:item_id)
+      find(ids)
     end
-    return @@popular_authors
   end
 
   def favorite_of_user
