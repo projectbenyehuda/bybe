@@ -252,13 +252,11 @@ class ManifestationController < ApplicationController
   end
 
   def read
-    @m = Manifestation.joins(:expression).includes(:expression).find(params[:id].to_i)
-    if @m.nil?
-      head :not_found
-    elsif @m.expression.work.genre == 'lexicon' && DictionaryEntry.where(manifestation_id: @m.id).count > 0
+    @m = Manifestation.find(params[:id].to_i)
+    if @m.expression.work.genre == 'lexicon' && DictionaryEntry.exists?(manifestation: @m)
       redirect_to action: 'dict', id: @m.id
     elsif !@m.published? && (current_user.blank? || !current_user.editor?)
-      flash[:notice] = t(:work_not_available)
+      flash.notice = t(:work_not_available)
       redirect_to '/'
     else
       prep_for_read
@@ -267,14 +265,14 @@ class ManifestationController < ApplicationController
       @tagging = Tagging.new
       @tagging.taggable = @m
       @taggings = @m.taggings
-      @recommendations = @m.recommendations
-      @my_pending_recs = @recommendations.all_pending.where(user: current_user)
-      @app_recs = @recommendations.all_approved
-      @total_recs = @app_recs.count + @my_pending_recs.count
+
+      recommendations = @m.recommendations.preload(:user)
+      @my_pending_recs = recommendations.select { |r| r.pending? && r.user == current_user }
+      @app_recs = recommendations.select(&:approved?)
+      @total_recs = @my_pending_recs.size + @app_recs.size
 
       @links = @m.external_links.group_by { |l| l.linktype }
-      @random_work = Manifestation.where(id: Manifestation.pluck(:id).sample(5),
-                                         status: Manifestation.statuses[:published])[0]
+
       @header_partial = 'manifestation/work_top'
       @works_about = @w.works_about
       @scrollspy_target = 'chapternav'
@@ -638,7 +636,7 @@ class ManifestationController < ApplicationController
 
     # Sorting
     @sort_by = params[:sort].to_s.strip
-    @sort_by = 'alphabetical' unless %w[alphabetical frequency].include?(@sort_by)
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
     @concordance_data = sort_concordance_data(@concordance_data, 'frequency') if @sort_by == 'frequency' # data is already alphabetical by default
 
     @total_entries = @concordance_data.length

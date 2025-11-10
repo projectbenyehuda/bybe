@@ -70,6 +70,6 @@
         %span{:style => "font-weight:bold"}= t(:tags)+': '
         = render partial: 'shared/taggings', locals: {taggings: @taggings}
     .metadata.mobile-work-details
-      - if @app_recs.count > 0
+      - if @app_recs.present?
         %span{:style => "font-weight:bold"}= t(:recommendations)+': '
-        %span.pointer.linkcolor#jump-to-recs= t(:this_work_has_x_recommendations, x: @recommendations.all_approved.count)
+        %span.pointer.linkcolor#jump-to-recs= t(:this_work_has_x_recommendations, x: @app_recs.size)
