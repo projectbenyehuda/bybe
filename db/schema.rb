@@ -712,7 +712,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_08_233344) do
     t.string "deathdate"
     t.text "bio"
     t.text "works"
-    t.text "about"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "authority_id"
