@@ -9,7 +9,7 @@ describe CollectionItemsController do
     subject(:call) do
       post :drag_item, params: {
         id: collection_item.id,
-        collection_id: collection.id,
+        collection_id: collection_id,
         old_index: old_index,
         new_index: new_index
       }
@@ -17,6 +17,7 @@ describe CollectionItemsController do
 
     let(:titles) { Array.new(5) { |index| (index + 1).to_s } }
     let!(:collection) { create(:collection, title_placeholders: titles) }
+    let(:collection_id) { collection.id }
     let(:collection_item) { collection.collection_items[old_index] }
 
     shared_examples 'drags successfully' do
@@ -48,20 +49,13 @@ describe CollectionItemsController do
     context 'when collection_id does not match' do
       let(:old_index) { 0 }
       let(:new_index) { 2 }
-      let(:other_collection) { create(:collection) }
+      let(:collection_id) { -1 }
 
       it 'returns bad request with error message' do
-        post :drag_item, params: {
-          id: collection_item.id,
-          collection_id: other_collection.id,
-          old_index: old_index,
-          new_index: new_index
-        }
-        expect(response).to have_http_status(:bad_request)
-        expect(response.body).to start_with('[DragItem]')
-        expect(response.body).to include('Collection ID mismatch')
-        expect(response.body).to include(collection.id.to_s)
-        expect(response.body).to include(other_collection.id.to_s)
+        expect(call).to have_http_status(:bad_request)
+        expect(response.body).to eq(
+          "[DragItem] Collection ID mismatch: expected #{collection.id} but got #{collection_id}"
+        )
       end
     end
 
@@ -72,10 +66,7 @@ describe CollectionItemsController do
 
       it 'returns bad request with error message' do
         expect(call).to have_http_status(:bad_request)
-        expect(response.body).to start_with('[DragItem]')
-        expect(response.body).to include('Item index mismatch')
-        expect(response.body).to include('expected 2')
-        expect(response.body).to include('got 0')
+        expect(response.body).to eq('[DragItem] Item index mismatch: expected 2 but got 0')
       end
     end
   end
@@ -84,7 +75,7 @@ describe CollectionItemsController do
     subject(:call) do
       post :transplant_item, params: {
         id: item_to_move.id,
-        src_collection_id: src_collection.id,
+        src_collection_id: src_collection_id,
         dest_collection_id: dest_collection.id,
         old_index: old_index,
         new_index: new_index
@@ -95,6 +86,7 @@ describe CollectionItemsController do
     let(:dest_titles) { %w(1 2 3) }
     let!(:src_collection) { create(:collection, title_placeholders: src_titles) }
     let!(:dest_collection) { create(:collection, title_placeholders: dest_titles) }
+    let!(:src_collection_id) { src_collection.id }
     let(:item_to_move) { src_collection.collection_items[2] } # Item 'C'
     let(:old_index) { 2 } # Item is at position 2
     let(:new_index) { 2 } # Insert at position 2 (between '2' and '3')
@@ -119,21 +111,13 @@ describe CollectionItemsController do
     end
 
     context 'when src_collection_id does not match' do
-      let(:other_collection) { create(:collection) }
+      let(:src_collection_id) { -1 }
 
       it 'returns bad request with error message' do
-        post :transplant_item, params: {
-          id: item_to_move.id,
-          src_collection_id: other_collection.id,
-          dest_collection_id: dest_collection.id,
-          old_index: old_index,
-          new_index: new_index
-        }
-        expect(response).to have_http_status(:bad_request)
-        expect(response.body).to start_with('[TransplantItem]')
-        expect(response.body).to include('Source collection ID mismatch')
-        expect(response.body).to include(src_collection.id.to_s)
-        expect(response.body).to include(other_collection.id.to_s)
+        expect(call).to have_http_status(:bad_request)
+        expect(response.body).to eq(
+          "[TransplantItem] Source collection ID mismatch: expected #{src_collection.id} but got #{src_collection_id}"
+        )
       end
     end
 
@@ -142,10 +126,7 @@ describe CollectionItemsController do
 
       it 'returns bad request with error message' do
         expect(call).to have_http_status(:bad_request)
-        expect(response.body).to start_with('[TransplantItem]')
-        expect(response.body).to include('Item index mismatch in source collection')
-        expect(response.body).to include('expected 2')
-        expect(response.body).to include('got 0')
+        expect(response.body).to eq('[TransplantItem] Item index mismatch in source collection: expected 2 but got 0')
       end
     end
 
@@ -154,8 +135,7 @@ describe CollectionItemsController do
 
       it 'returns bad request with error message' do
         expect(call).to be_bad_request
-        expect(response.body).to start_with('[TransplantItem]')
-        expect(response.body).to include('Destination collection cannot be the same as source collection')
+        expect(response.body).to eq('[TransplantItem] Destination collection cannot be the same as source collection')
       end
     end
 
@@ -164,8 +144,7 @@ describe CollectionItemsController do
 
       it 'returns bad request with error message' do
         expect(call).to be_bad_request
-        expect(response.body).to start_with('[TransplantItem]')
-        expect(response.body).to include('Wrong new_index')
+        expect(response.body).to eq('[TransplantItem] Wrong new_index')
       end
     end
 
@@ -174,8 +153,7 @@ describe CollectionItemsController do
 
       it 'returns bad request with error message' do
         expect(call).to be_bad_request
-        expect(response.body).to start_with('[TransplantItem]')
-        expect(response.body).to include('Wrong new_index')
+        expect(response.body).to start_with('[TransplantItem] Wrong new_index')
       end
     end
   end
