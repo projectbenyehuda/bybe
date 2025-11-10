@@ -595,9 +595,8 @@ class AuthorsController < ApplicationController
       end
     else
       # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
-      labelled_texts = []
-      @author.published_manifestations.each do |m|
-        labelled_texts << {
+      labelled_texts = @author.published_manifestations.map do |m|
+        {
           label: m.title,
           buffer: m.to_plaintext,
           item_id: m.id,
@@ -621,7 +620,7 @@ class AuthorsController < ApplicationController
 
     # Sorting
     @sort_by = params[:sort].to_s.strip
-    @sort_by = 'alphabetical' unless %w[alphabetical frequency].include?(@sort_by)
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
     @concordance_data = sort_concordance_data(@concordance_data, @sort_by)
 
     # Pagination
@@ -652,9 +651,8 @@ class AuthorsController < ApplicationController
       @concordance_data = ParseKwicConcordance.call(kwic_text)
     else
       # Fallback
-      labelled_texts = []
-      @author.published_manifestations.each do |m|
-        labelled_texts << {
+      labelled_texts = @author.published_manifestations.map do |m|
+        {
           label: m.title,
           buffer: m.to_plaintext
         }
@@ -672,7 +670,7 @@ class AuthorsController < ApplicationController
 
     # Apply sort
     @sort_by = params[:sort].to_s.strip
-    @sort_by = 'alphabetical' unless %w[alphabetical frequency].include?(@sort_by)
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
     @concordance_data = sort_concordance_data(@concordance_data, @sort_by)
 
     # Format as text

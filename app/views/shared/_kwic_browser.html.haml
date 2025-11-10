@@ -72,24 +72,23 @@
             
             -# Download buttons
             .kwic-downloads.mb-4
-              - if @filter_text.present?
-                - download_path = case @entity_type
+              - download_path = if @filter_text.present?
+                - case @entity_type
                   - when 'Manifestation'
                     - manifestation_kwic_download_path(@entity, filter: @filter_text)
                   - when 'Collection'
                     - collection_kwic_download_path(collection_id: @entity, filter: @filter_text)
                   - when 'Authority'
                     - author_kwic_download_path(id: @entity, filter: @filter_text)
-                = link_to t(:kwic_download_filtered), download_path, class: 'btn btn-success'
               - else
-                - download_path = case @entity_type
+                - case @entity_type
                   - when 'Manifestation'
                     - manifestation_kwic_download_path(@entity)
                   - when 'Collection'
                     - collection_kwic_download_path(collection_id: @entity)
                   - when 'Authority'
                     - author_kwic_download_path(id: @entity)
-                = link_to t(:kwic_download_full), download_path, class: 'btn btn-success'
+              = link_to (@filter_text.present? ? t(:kwic_download_filtered) : t(:kwic_download_full)), download_path, class: 'btn btn-success'
             
             -# Concordance entries
             .kwic-entries
@@ -126,7 +125,8 @@
                                 = link_to t(:kwic_go_to_source), 
                                     manifestation_path(@entity),
                                     class: 'btn btn-sm btn-outline-primary',
-                                    target: '_blank'
+                                    target: '_blank',
+                                    rel: 'noopener'
                               - elsif @entity_type == 'Collection'
                                 -# For collections, we need to find the source manifestation
                                 - source_item = @collection_items_by_label[instance[:label]]
@@ -134,14 +134,16 @@
                                   = link_to t(:kwic_go_to_source),
                                       manifestation_path(source_item.item),
                                       class: 'btn btn-sm btn-outline-primary',
-                                      target: '_blank'
+                                      target: '_blank',
+                                      rel: 'noopener'
                               - elsif @entity_type == 'Authority'
                                 -# For authorities, find manifestation by ID from enriched data
                                 - if instance[:manifestation_id]
                                   = link_to t(:kwic_go_to_source),
                                       manifestation_path(instance[:manifestation_id]),
                                       class: 'btn btn-sm btn-outline-primary',
-                                      target: '_blank'
+                                      target: '_blank',
+                                      rel: 'noopener'
                               
                               %button.btn.btn-sm.btn-outline-secondary.show-context-btn{
                                 data: { 
