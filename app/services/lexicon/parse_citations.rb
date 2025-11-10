@@ -2,7 +2,7 @@
 
 module Lexicon
   # This service accepts HTML content reprsenting citations list for a Lexicon Entry and parses it using Deep Seek API
-  class DeepSeekParseCitations < ApplicationService
+  class ParseCitations < ApplicationService
     SYSTEM_PROMPT = <<PROMPT
   User will send you a set of bibliography records in html form, most of them are in Hebrew, but English and other
   languages are possible. Each record represents single work (e.g. book, or article) about a person, or one of this
@@ -11,12 +11,17 @@ module Lexicon
   Usually bibliography is represented as set of <ul> tags, with optional short header before each. Header represents
   subject, and <li> elements inside <ul> represents individual work about this subject.
 
-  You need to parse it and turn into a JSON array representing works grouped by subjects:
-  [
-    { subject: 'Subject 1', works: [ <ARRAY of Works 1> ] },
-    { subject: 'Subject 2', works: [ <ARRAY of Works 2> ] },
-    ...
-  ]
+  You need to parse it and turn into an JSON object with a single key `result` with a value of array of JSON objects 
+  representing works grouped by subjects:
+  ```
+  { 
+    result: [
+      { subject: 'Subject 1', works: [ <ARRAY of Works 1> ] },
+      { subject: 'Subject 2', works: [ <ARRAY of Works 2> ] },
+      ...
+    ]
+  }
+  ```
 
   Each element in array of works is a JSON object representing single bibliography record with following structure:
   - authors - array of Authors who authored work. Author can be represented as text entry, or as a link to page about
@@ -31,6 +36,7 @@ module Lexicon
   - raw - HTML markup representing content of <li> tag representing this work (without wrapping <li>, </li> tags)
 
   Example of work JSON:
+  ```
   {
     "authors": [
       {
@@ -49,16 +55,18 @@ module Lexicon
     "notes": "ראיון עם הסופרת גבריאלה אביגור-רותם לרגל צאת ספרה החדש"
     "raw": "<HTML content>"
   }
+  ```
 PROMPT
 
     def call(html)
-      chat = RubyLLM.chat(model: 'deepseek-chat')
-      chat.with_instructions(SYSTEM_PROMPT).with_params(response_format: { type: :json_object }, max_tokens: 8192)
+      chat = RubyLLM.chat(model: 'gpt-4.1-mini')
+      chat.with_instructions(SYSTEM_PROMPT).with_params(response_format: { type: :json_object })
 
       response = chat.ask(html.squish)
       result = []
+
       json_response = JSON.parse(response.content)
-      json_response.each do |subject_works|
+      json_response['result'].each do |subject_works|
         subject = subject_works['subject']
         subject_works['works'].each do |work|
           if work['authors'].size > 1
