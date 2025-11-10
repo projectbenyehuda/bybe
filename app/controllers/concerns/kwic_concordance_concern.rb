@@ -74,7 +74,7 @@ module KwicConcordanceConcern
       austr = textify_authorities_and_roles(involved_auths)
       MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
     when Authority
-      labelled_texts = entity.published_manifestations.map do |m|
+      labelled_texts = entity.published_manifestations(:author, :translator).map do |m|
         {
           label: m.title,
           buffer: m.to_plaintext
