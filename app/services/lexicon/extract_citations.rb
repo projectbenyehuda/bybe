@@ -23,7 +23,7 @@ module Lexicon
 
       return [] if citations_node&.name != 'font'
 
-      result = DeepSeekParseCitations.call(citations_node.inner_html)
+      result = ParseCitations.call(citations_node.inner_html)
       # remove header and citations node to simplify further processing
       header.remove
       citations_node.remove
