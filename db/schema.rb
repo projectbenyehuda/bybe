@@ -703,7 +703,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.string "deathdate"
     t.text "bio"
     t.text "works"
-    t.text "about"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "authority_id"
@@ -813,7 +812,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.index ["relevance"], name: "index_news_items_on_relevance"
   end
 
-  create_table "pending_notifications", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "pending_notifications", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "recipient_email", null: false
     t.string "notification_type", null: false
     t.text "notification_data"
