@@ -22,7 +22,7 @@
               = form_tag(action: :do_merge_tagging) do
                 %p= t(:merge_tagging_preview_html, tag: @tagging.tag.name, src_tag_taggings_count: @tagging.tag.taggings_count).html_safe
                 %p#dest_tag
-                = autocomplete_field_tag :tag, '', autocomplete_tag_name_path, {'data-noMatchesLabel' => t(:no_matches_found), class: 'field-v02'}
+                = autocomplete_field_tag :tag, '', autocomplete_tag_name_path, { class: 'field-v02' }
                 = hidden_field_tag :id, @tagging.id
                 = hidden_field_tag :with_tag, @with_tag.try(:id), id: 'with_tag'
                 .bottom-button-area.left-buttons
