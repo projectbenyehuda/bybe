@@ -86,6 +86,12 @@
     var $container = $("##{nonce}_coll_container_#{collection.id}");
     var $mask = $container.find('.collection-mask');
 
+    const onError = function(xhr) {
+      var errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+      alert('#{I18n.t(:collection_item_operation_error, error: 'PLACEHOLDER')}'.replace('PLACEHOLDER', errorMsg));
+      location.reload();
+    };
+
     $("##{nonce}_coll_#{collection.id}").sortable({
       handle: '.drag-handle',
       connectWith: '.collection.connectable',
@@ -116,11 +122,8 @@
                 old_index: oldIndex,
                 new_index: newIndex
               }
-            ).fail(function(xhr) {
-              var errorMsg = xhr.responseText || ('Status ' + xhr.status);
-              alert('#{I18n.t(:collection_item_operation_error, error: '')}' + errorMsg);
-              location.reload();
-            }).always(function() {
+            ).fail(onError)
+            .always(function() {
               $mask.hide();
             });
           }
@@ -140,11 +143,8 @@
             old_index: oldIndex,
             new_index: ui.item.index()
           }
-        ).fail(function(xhr) {
-          var errorMsg = xhr.responseText || ('Status ' + xhr.status);
-          alert('#{I18n.t(:collection_item_operation_error, error: '')}' + errorMsg);
-          location.reload();
-        }).always(function() {
+        ).fail(onError)
+        .always(function() {
           $mask.hide();
         });
         event.stopPropagation();
