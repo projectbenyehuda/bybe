@@ -42,28 +42,21 @@ module KwicConcordanceConcern
 
   # Ensure a KWIC downloadable exists for the given entity (Manifestation, Collection, or Authority)
   # Uses the fresh downloadable mechanism to avoid regenerating if already exists
-  # @return [Downloadable, nil] The downloadable object
+  # For Authority and Collection, triggers async job if no fresh downloadable exists
+  # For Manifestation, generates synchronously
+  # @return [Downloadable, nil] The downloadable object, or nil if async job was triggered
   def ensure_kwic_downloadable_exists(entity)
     dl = entity.fresh_downloadable_for('kwic')
     return dl if dl.present? # Already exists and is fresh
 
     # Generate and save the downloadable
     case entity
-    when Collection
-      labelled_texts = []
-      entity.flatten_items.each do |ci|
-        next if ci.item.nil? || ci.item_type != 'Manifestation'
-
-        labelled_texts << {
-          label: ci.title,
-          buffer: ci.item.to_plaintext
-        }
-      end
-      kwic_text = GenerateKwicConcordance.call(labelled_texts)
-      filename = "#{entity.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.kwic"
-      austr = textify_authorities_and_roles(entity.involved_authorities)
-      MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
+    when Collection, Authority
+      # Trigger async job for large entities
+      GenerateKwicConcordanceJob.perform_async(entity.class.name, entity.id)
+      nil # Return nil to signal async generation is in progress
     when Manifestation
+      # Generate synchronously for manifestations
       labelled_texts = [{
         label: entity.title,
         buffer: entity.to_plaintext
@@ -72,17 +65,6 @@ module KwicConcordanceConcern
       filename = "#{entity.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.kwic"
       involved_auths = entity.expression.involved_authorities + entity.expression.work.involved_authorities
       austr = textify_authorities_and_roles(involved_auths)
-      MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
-    when Authority
-      labelled_texts = entity.published_manifestations(:author, :translator).map do |m|
-        {
-          label: m.title,
-          buffer: m.to_plaintext
-        }
-      end
-      kwic_text = GenerateKwicConcordance.call(labelled_texts)
-      filename = "#{entity.name.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.kwic"
-      austr = entity.name
       MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
     end
   end
