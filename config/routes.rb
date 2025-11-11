@@ -230,6 +230,9 @@ Bybeconv::Application.routes.draw do
   get 'welcome/:id/featured_popup' => 'welcome#featured_popup', as: 'featured_content_popup'
   get 'welcome/:id/featured_author' => 'welcome#featured_author_popup', as: 'featured_author_popup'
   get 'author/:id/latest' => 'authors#latest_popup', as: 'author_latest_popup'
+  get 'author/:id/kwic' => 'authors#kwic', as: 'author_kwic'
+  get 'author/:id/kwic/download' => 'authors#kwic_download', as: 'author_kwic_download'
+  get 'author/:id/kwic/context/:manifestation_id/:paragraph' => 'authors#kwic_context', as: 'author_kwic_context'
   get 'add_tagging/:taggable_type/:taggable_id' => 'taggings#add_tagging_popup', as: 'add_tagging_popup'
   get 'pending_taggings/:tag_id' => 'taggings#pending_taggings_popup', as: 'pending_taggings_popup'
   get '/page/:tag' => 'static_pages#view', as: 'static_pages_by_tag', via: [:get]

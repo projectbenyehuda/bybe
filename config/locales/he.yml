@@ -540,6 +540,7 @@ he:
   title_starts_with_ordinals: הכותרת מתחילה עם סודר
   empty_work_title_or_no_content: יצירה ללא כותרת או ריקה מתוכן
   empty_collection: אוסף ללא פריטים
+  no_works_for_author: אין יצירות לסופר זה
   translation_must_have_translator: שפת המקור אינה עברית אך לא צוין מתרגם
   translation_must_have_original_language: צוין מתרגם אך לא צוינה שפת מקור
   reading_mode: טקסט בלבד

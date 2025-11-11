@@ -37,6 +37,7 @@ class Authority < ApplicationRecord
   has_many :publications, inverse_of: :authority, dependent: :destroy
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings, class_name: 'Tag'
+  has_many :downloadables, as: :object, dependent: :destroy
 
   belongs_to :person, optional: true
   belongs_to :corporate_body, optional: true
@@ -244,6 +245,21 @@ class Authority < ApplicationRecord
 
   def any_bibs?
     return publications.count > 0
+  end
+
+  # this will return the downloadable entity for the Authority *if* it is fresh
+  def fresh_downloadable_for(doctype)
+    dl = downloadables.where(doctype: doctype).first
+    return nil if dl.nil?
+    return nil unless dl.stored_file.attached? # invalid downloadable without file
+    return nil if dl.updated_at < updated_at # needs to be re-generated if authority was updated
+
+    # also ensure none of the published manifestations is fresher than the saved downloadable
+    published_manifestations.find_each do |m|
+      return nil if dl.updated_at < m.updated_at
+    end
+
+    dl
   end
 
   def self.cached_count
