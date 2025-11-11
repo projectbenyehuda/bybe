@@ -79,7 +79,6 @@ describe CollectionsController do
         collection.reload
       end
 
-
       subject do
         get :kwic, params: { collection_id: collection.id, per_page: 50, page: 2 }
       end
@@ -123,7 +122,6 @@ describe CollectionsController do
         collection.reload
 
       end
-
 
       subject do
         get :kwic, params: { collection_id: collection.id, filter: 'quick' }
@@ -220,7 +218,6 @@ describe CollectionsController do
         collection.reload
 
       end
-
 
       subject do
         get :kwic, params: { collection_id: collection.id }
@@ -401,7 +398,6 @@ describe CollectionsController do
         collection.reload
 
       end
-
 
       subject do
         get :kwic, params: { collection_id: collection.id, filter: 'ow', sort: 'frequency' }
