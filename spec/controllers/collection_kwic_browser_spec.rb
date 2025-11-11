@@ -69,23 +69,14 @@ describe CollectionsController do
       before do
         create(:collection_item, collection: collection, item: manifestation)
 
-
         # Make everything older
-
         collection.update_column(:updated_at, 10.minutes.ago)
-
         collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
-
         collection.flatten_items.select { |ci| ci.item_type == 'Manifestation' }.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
 
-        
-
         # Pre-generate the concordance (this will be newer than everything else)
-
         GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
-
         collection.reload
-
       end
 
 
