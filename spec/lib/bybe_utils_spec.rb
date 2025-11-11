@@ -208,9 +208,8 @@ describe BybeUtils do
         result = instance.kwic_concordance(input)
         tokens = result.map { |entry| entry[:token] }
 
-        # Apostrophes in contractions should be treated as word boundaries
-        expect(tokens).to include('I')
-        expect(tokens).to include('m')
+        # Apostrophes in contractions shouldn't be treated as word boundaries
+        expect(tokens).to include('I\'m')
       end
     end
 
