@@ -101,6 +101,8 @@ gem 'rswag-ui'
 # gem 'rdf-vocab' # for SKOS predefined vocab
 # gem 'sparql-client'#, '~> 2.0.1'
 
+  gem "sentry-ruby"
+  gem "sentry-rails"
 group :production do
   gem 'dalli'
   gem 'newrelic_rpm' # performance monitoring
