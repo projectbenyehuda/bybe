@@ -957,7 +957,7 @@ module BybeUtils
     # Split on non-word characters (except quotation marks which we need to check for acronyms)
     # This regex splits on anything that's not a letter, digit, or quotation mark
     # It will treat punctuation like ;:;|/ as word boundaries
-    text.split(/[^\p{L}\p{N}"]+/).each do |word_candidate|
+    text.split(/[^\p{L}\p{N}\p{Mn}"']+/).each do |word_candidate|
       next if word_candidate.empty?
 
       # At this point, word_candidate contains only letters, digits, and possibly quotation marks
