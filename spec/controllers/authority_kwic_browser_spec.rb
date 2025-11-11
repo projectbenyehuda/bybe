@@ -233,10 +233,12 @@ describe AuthorsController do
       let(:expression1) { create(:expression, work: work1) }
       let(:expression2) { create(:expression, work: work2) }
       let(:manifestation1) do
-        create(:manifestation, title: 'יצירה ראשונה', markdown: 'טקסט עברי ראשון.', expression: expression1, status: :published)
+        create(:manifestation, title: 'יצירה ראשונה', markdown: 'טקסט עברי ראשון.', expression: expression1,
+                               status: :published)
       end
       let(:manifestation2) do
-        create(:manifestation, title: 'יצירה שנייה', markdown: 'טקסט עברי שני.', expression: expression2, status: :published)
+        create(:manifestation, title: 'יצירה שנייה', markdown: 'טקסט עברי שני.', expression: expression2,
+                               status: :published)
       end
 
       before do
@@ -264,7 +266,8 @@ describe AuthorsController do
         let(:work) { create(:work) }
         let(:expression) { create(:expression, work: work) }
         let(:manifestation) do
-          create(:manifestation, markdown: 'zebra apple banana apple zebra apple cherry', expression: expression, status: :published)
+          create(:manifestation, markdown: 'zebra apple banana apple zebra apple cherry', expression: expression,
+                                 status: :published)
         end
 
         before { manifestation }
@@ -293,7 +296,8 @@ describe AuthorsController do
         let(:work) { create(:work) }
         let(:expression) { create(:expression, work: work) }
         let(:manifestation) do
-          create(:manifestation, markdown: 'apple banana apple cherry apple banana apple', expression: expression, status: :published)
+          create(:manifestation, markdown: 'apple banana apple cherry apple banana apple', expression: expression,
+                                 status: :published)
         end
 
         before { manifestation }
@@ -328,7 +332,9 @@ describe AuthorsController do
         let(:authority) { create(:authority, status: :published) }
         let(:work) { create(:work) }
         let(:expression) { create(:expression, work: work) }
-        let(:manifestation) { create(:manifestation, markdown: 'zebra apple banana', expression: expression, status: :published) }
+        let(:manifestation) do
+          create(:manifestation, markdown: 'zebra apple banana', expression: expression, status: :published)
+        end
 
         before { manifestation }
 
@@ -368,11 +374,11 @@ describe AuthorsController do
         # Should have tokens containing 'ow'
         filtered_tokens = assigns(:concordance_data).map { |e| e[:token] }
         filtered_tokens.each { |token| expect(token).to include('ow') }
-        
+
         # Should be sorted by frequency
         frequencies = assigns(:concordance_data).map { |e| e[:instances].length }
         expect(frequencies).to eq(frequencies.sort.reverse)
-        
+
         # 'brown' should be first (5 occurrences)
         expect(assigns(:concordance_data).first[:token]).to eq('brown')
       end
@@ -395,10 +401,12 @@ describe AuthorsController do
       let(:expression1) { create(:expression, work: work1) }
       let(:expression2) { create(:expression, work: work2) }
       let(:manifestation1) do
-        create(:manifestation, title: 'First Work', markdown: 'The quick brown fox.', expression: expression1, status: :published)
+        create(:manifestation, title: 'First Work', markdown: 'The quick brown fox.', expression: expression1,
+                               status: :published)
       end
       let(:manifestation2) do
-        create(:manifestation, title: 'Second Work', markdown: 'The brown bear.', expression: expression2, status: :published)
+        create(:manifestation, title: 'Second Work', markdown: 'The brown bear.', expression: expression2,
+                               status: :published)
       end
 
       before do
@@ -436,7 +444,8 @@ describe AuthorsController do
       let(:work1) { create(:work) }
       let(:expression1) { create(:expression, work: work1) }
       let(:manifestation1) do
-        create(:manifestation, title: 'First Work', markdown: 'The quick brown fox.', expression: expression1, status: :published)
+        create(:manifestation, title: 'First Work', markdown: 'The quick brown fox.', expression: expression1,
+                               status: :published)
       end
 
       before { manifestation1 }
@@ -533,7 +542,7 @@ describe AuthorsController do
 
       it 'returns context paragraphs' do
         subject
-        json = JSON.parse(response.body)
+        json = response.parsed_body
         expect(json['prev']).to eq('First paragraph.')
         expect(json['current']).to eq('Second paragraph.')
         expect(json['next']).to eq('Third paragraph.')
