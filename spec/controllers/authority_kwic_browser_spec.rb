@@ -8,6 +8,8 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         create(:involved_authority, authority: authority, item: work2, role: :author)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id }
       end
 
@@ -67,9 +69,39 @@ describe AuthorsController do
       end
     end
 
+    context 'when concordance does not exist yet' do
+      subject do
+        create(:involved_authority, authority: authority, item: work1, role: :author)
+        get :kwic, params: { id: authority.id }
+      end
+
+      let(:authority) { create(:authority, status: :published) }
+      let(:expression1) { create(:expression, work: work1) }
+      let(:work1) { create(:work) }
+      let(:manifestation1) do
+        create(
+          :manifestation,
+          title: 'First Work',
+          markdown: 'The quick brown fox.',
+          expression: expression1,
+          status: :published
+        )
+      end
+
+      before { manifestation1 }
+
+      it 'redirects with notice about async generation' do
+        subject
+        expect(response).to have_http_status(:redirect)
+        expect(flash[:notice]).to eq(I18n.t(:kwic_being_generated))
+      end
+    end
+
     context 'with pagination parameters' do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id, per_page: 50, page: 2 }
       end
 
@@ -97,6 +129,8 @@ describe AuthorsController do
     context 'with filter parameter' do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id, filter: 'quick' }
       end
 
@@ -139,6 +173,8 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         create(:involved_authority, authority: authority, item: expression2, role: :translator)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id }
       end
 
@@ -186,6 +222,8 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         create(:involved_authority, authority: authority, item: work2, role: :author)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id }
       end
 
@@ -217,6 +255,8 @@ describe AuthorsController do
       context 'alphabetical sort' do
         subject do
           create(:involved_authority, authority: authority, item: work, role: :author)
+          # Pre-generate the concordance
+          GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
           get :kwic, params: { id: authority.id, sort: 'alphabetical' }
         end
 
@@ -244,6 +284,8 @@ describe AuthorsController do
       context 'frequency sort' do
         subject do
           create(:involved_authority, authority: authority, item: work, role: :author)
+          # Pre-generate the concordance
+          GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
           get :kwic, params: { id: authority.id, sort: 'frequency' }
         end
 
@@ -278,6 +320,8 @@ describe AuthorsController do
       context 'no sort parameter' do
         subject do
           create(:involved_authority, authority: authority, item: work, role: :author)
+          # Pre-generate the concordance
+          GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
           get :kwic, params: { id: authority.id }
         end
 
@@ -300,6 +344,8 @@ describe AuthorsController do
     context 'with filter and sort combined' do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id, filter: 'ow', sort: 'frequency' }
       end
 
@@ -338,6 +384,8 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         create(:involved_authority, authority: authority, item: work2, role: :author)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic_download, params: { id: authority.id }
       end
 
@@ -378,9 +426,33 @@ describe AuthorsController do
       end
     end
 
+    context 'when concordance does not exist yet' do
+      subject do
+        create(:involved_authority, authority: authority, item: work1, role: :author)
+        get :kwic_download, params: { id: authority.id }
+      end
+
+      let(:authority) { create(:authority, status: :published) }
+      let(:work1) { create(:work) }
+      let(:expression1) { create(:expression, work: work1) }
+      let(:manifestation1) do
+        create(:manifestation, title: 'First Work', markdown: 'The quick brown fox.', expression: expression1, status: :published)
+      end
+
+      before { manifestation1 }
+
+      it 'redirects with notice about async generation' do
+        subject
+        expect(response).to have_http_status(:redirect)
+        expect(flash[:notice]).to eq(I18n.t(:kwic_being_generated))
+      end
+    end
+
     context 'with filter parameter' do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic_download, params: { id: authority.id, filter: 'brown' }
       end
 
@@ -409,6 +481,8 @@ describe AuthorsController do
     context 'with Hebrew authority' do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
+        # Pre-generate the concordance
+        GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic_download, params: { id: authority.id }
       end
 
