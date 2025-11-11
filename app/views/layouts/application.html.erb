@@ -42,7 +42,8 @@
     <meta property="og:image" content="<%= @og_image %>">
   <% end %>
   <%= csrf_meta_tags %>
-</head>
+  <%= Sentry.get_trace_propagation_meta.html_safe %>
+  </head>
 <body dir="rtl" style="position:relative;">
 <% unless @print %>
   <% unless @readmode %>
