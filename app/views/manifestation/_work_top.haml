@@ -229,7 +229,7 @@
     });
     $('.printbutton').click(function() {
       $('#text-menu-more').css('display', 'none');
-      window.open("#{@print_url}",'_blank');
+      window.open("#{manifestation_print_path(@m)}",'_blank');
     });
     $('.sharebutton').click(function(){
       $('#text-menu-more').css('display', 'none');
