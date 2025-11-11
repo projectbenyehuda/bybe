@@ -595,7 +595,7 @@ class AuthorsController < ApplicationController
       end
     else
       # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
-      labelled_texts = @author.published_manifestations.map do |m|
+      labelled_texts = @author.published_manifestations(:author, :translator).map do |m|
         {
           label: m.title,
           buffer: m.to_plaintext,
