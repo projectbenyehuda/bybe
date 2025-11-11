@@ -651,7 +651,7 @@ class AuthorsController < ApplicationController
       @concordance_data = ParseKwicConcordance.call(kwic_text)
     else
       # Fallback
-      labelled_texts = @author.published_manifestations.map do |m|
+      labelled_texts = @author.published_manifestations(:author, :translator).map do |m|
         {
           label: m.title,
           buffer: m.to_plaintext
