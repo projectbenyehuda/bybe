@@ -49,7 +49,7 @@ describe CollectionItemsController do
     context 'when collection_id does not match' do
       let(:old_index) { 0 }
       let(:new_index) { 2 }
-      let(:collection_id) { -1 }
+      let(:collection_id) { create(:collection).id }
 
       it 'returns bad request with error message' do
         expect(call).to have_http_status(:bad_request)
@@ -111,7 +111,7 @@ describe CollectionItemsController do
     end
 
     context 'when src_collection_id does not match' do
-      let(:src_collection_id) { -1 }
+      let(:src_collection_id) { create(:collection).id }
 
       it 'returns bad request with error message' do
         expect(call).to have_http_status(:bad_request)

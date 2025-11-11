@@ -2,7 +2,7 @@
 
 class CollectionItemsController < ApplicationController
   before_action :require_editor, except: %i(show)
-  before_action :set_collection_item, only: %i(show edit update destroy drag_item transplant_item)
+  around_action :set_collection_item, only: %i(show edit update destroy drag_item transplant_item)
 
   # GET /collection_items/1 or /collection_items/1.json
   def show; end
@@ -96,12 +96,15 @@ class CollectionItemsController < ApplicationController
 
   # POST /collection_items/1/drag_item
   def drag_item
-    collection = @collection_item.collection
+    collection_id = params.fetch(:collection_id).to_i
+    collection = Collection.lock.find(collection_id)
+    @collection_item.lock!
 
     # Validate mandatory parameters
-    collection_id = params.fetch(:collection_id).to_i
-    if collection_id != collection.id
-      render plain: "[DragItem] Collection ID mismatch: expected #{collection.id} but got #{collection_id}",
+
+    if collection_id != @collection_item.collection_id
+      render plain: "[DragItem] Collection ID mismatch: expected #{@collection_item.collection_id} " \
+                    "but got #{collection_id}",
              status: :bad_request
       return
     end
@@ -110,50 +113,54 @@ class CollectionItemsController < ApplicationController
     new_index = params.fetch(:new_index).to_i
     old_index = params.fetch(:old_index).to_i
 
-    Collection.transaction do
-      items = collection.collection_items.order(:seqno).to_a
+    items = collection.collection_items.order(:seqno).to_a
 
-      # Validate that the old_index parameter matches the actual current position
-      real_index = items.index(@collection_item)
-      if old_index != real_index
-        render plain: "[DragItem] Item index mismatch: expected #{real_index} but got #{old_index}",
-               status: :bad_request
-        return
-      end
-
-      item_to_move = items.delete_at(old_index)
-      items.insert(new_index, item_to_move)
-
-      update_seqno(items)
+    # Validate that the old_index parameter matches the actual current position
+    real_index = items.index(@collection_item)
+    if old_index != real_index
+      render plain: "[DragItem] Item index mismatch: expected #{real_index} but got #{old_index}",
+             status: :bad_request
+      return
     end
+
+    item_to_move = items.delete_at(old_index)
+    items.insert(new_index, item_to_move)
+
+    update_seqno(items)
     head :ok
   end
 
   # POST /collection_items/1/transplant_item
   def transplant_item
-    src_coll = @collection_item.collection
-
-    # Validate mandatory parameters
     src_collection_id = params.fetch(:src_collection_id).to_i
-    if src_collection_id != src_coll.id
-      error_msg = '[TransplantItem] Source collection ID mismatch: ' \
-                  "expected #{src_coll.id} but got #{src_collection_id}"
-      render plain: error_msg, status: :bad_request
-      return
-    end
+    dest_collection_id = params.fetch(:dest_collection_id).to_i
 
-    dest_coll = Collection.find(params.fetch(:dest_collection_id))
-
-    if src_coll == dest_coll
+    if src_collection_id == dest_collection_id
       render plain: '[TransplantItem] Destination collection cannot be the same as source collection',
              status: :bad_request
       return
     end
 
+    [src_collection_id, dest_collection_id].sort.each do |collection_id|
+      Collection.lock.find(collection_id)
+    end
+    @collection_item.lock!
+
+    src_collection = Collection.find(src_collection_id)
+
+    if src_collection_id != @collection_item.collection_id
+      error_msg = '[TransplantItem] Source collection ID mismatch: ' \
+                  "expected #{@collection_item.collection_id} but got #{src_collection_id}"
+      render plain: error_msg, status: :bad_request
+      return
+    end
+
+    dest_collection = Collection.find(dest_collection_id)
+
     new_index = params.fetch(:new_index).to_i
     old_index = params.fetch(:old_index).to_i
-    src_items = src_coll.collection_items.order(:seqno).to_a
-    dest_items = dest_coll.collection_items.order(:seqno).to_a
+    src_items = src_collection.collection_items.order(:seqno).to_a
+    dest_items = dest_collection.collection_items.order(:seqno).to_a
 
     # Validate that the old_index parameter matches the actual current position in source collection
     real_index = src_items.index(@collection_item)
@@ -164,19 +171,18 @@ class CollectionItemsController < ApplicationController
       return
     end
 
-    if new_index < 0 || new_index > dest_items.count
+    if new_index < 0 || new_index > dest_items.size
       render plain: '[TransplantItem] Wrong new_index', status: :bad_request
       return
     end
 
-    Collection.transaction do
-      src_items.reject! { |item| item.id == @collection_item.id }
-      dest_items.insert(new_index, @collection_item)
+    src_items.reject! { |item| item.id == @collection_item.id }
+    dest_items.insert(new_index, @collection_item)
 
-      @collection_item.update!(collection: dest_coll)
-      update_seqno(src_items)
-      update_seqno(dest_items)
-    end
+    @collection_item.update!(collection: dest_collection)
+    update_seqno(src_items)
+    update_seqno(dest_items)
+
     head :ok
   end
 
@@ -196,7 +202,10 @@ class CollectionItemsController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_collection_item
-    @collection_item = CollectionItem.find(params[:id])
+    Collection.transaction do
+      @collection_item = CollectionItem.find(params[:id])
+      yield
+    end
   end
 
   # Only allow a list of trusted parameters through.
