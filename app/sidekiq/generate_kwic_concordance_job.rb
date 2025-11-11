@@ -10,7 +10,7 @@ class GenerateKwicConcordanceJob
   # @param entity_id [Integer] The ID of the entity
   def perform(entity_type, entity_id)
     entity = entity_type.constantize.find(entity_id)
-    
+
     case entity_type
     when 'Collection'
       generate_collection_concordance(entity)
