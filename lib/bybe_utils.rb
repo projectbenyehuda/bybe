@@ -966,6 +966,11 @@ module BybeUtils
         # It's a Hebrew acronym - preserve the quotation mark
         # Examples: מפא"י, רמטכ"ל, חט"ב
         tokens << word_candidate
+      elsif word_candidate.start_with?("'") || (word_candidate.end_with?("'") && word_candidate.length > 2)
+        # Has single quotes at start or end - split on single quotes
+        word_candidate.split("'").each do |part|
+          tokens << part unless part.empty?
+        end
       elsif word_candidate.include?('"')
         # Has quotes but not in penultimate position - split on quotes
         # This handles cases like word"word or "word or word"
