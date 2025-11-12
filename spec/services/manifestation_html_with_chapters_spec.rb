@@ -5,8 +5,10 @@ require 'rails_helper'
 describe ManifestationHtmlWithChapters do
   describe '#call' do
     let(:permalink_base_url) { 'http://example.com/read/123' }
-    
+
     context 'when manifestation has no headings' do
+      subject { described_class.call(manifestation, permalink_base_url) }
+
       let(:markdown) { "# Title\n\nSome content without chapter headings." }
       let(:manifestation) { create(:manifestation, markdown: markdown) }
       let(:expected_html) do
@@ -21,8 +23,6 @@ describe ManifestationHtmlWithChapters do
         manifestation.recalc_heading_lines!
         manifestation.save!
       end
-
-      subject { described_class.call(manifestation, permalink_base_url) }
 
       it 'returns a hash with required keys' do
         expect(subject).to be_a(Hash)
@@ -45,6 +45,8 @@ describe ManifestationHtmlWithChapters do
     end
 
     context 'when manifestation has chapter headings' do
+      subject { described_class.call(manifestation, permalink_base_url) }
+
       let(:markdown) do
         <<~MD
           # Main Title
@@ -89,8 +91,6 @@ describe ManifestationHtmlWithChapters do
         manifestation.save!
       end
 
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       it 'returns a hash with required keys' do
         expect(subject).to be_a(Hash)
         expect(subject).to have_key(:html)
@@ -105,10 +105,10 @@ describe ManifestationHtmlWithChapters do
       it 'returns chapters array with chapter data' do
         chapters = subject[:chapters]
         expect(chapters).to eq([
-          ['Chapter 1', '2'],
-          ['Chapter 2', '5'],
-          ['Chapter 3', '8']
-        ])
+                                 ['Chapter 1', '2'],
+                                 ['Chapter 2', '5'],
+                                 ['Chapter 3', '8']
+                               ])
       end
 
       it 'sets selected_chapter to the last chapter' do
@@ -117,6 +117,8 @@ describe ManifestationHtmlWithChapters do
     end
 
     context 'when manifestation has duplicate heading text' do
+      subject { described_class.call(manifestation, permalink_base_url) }
+
       let(:markdown) do
         <<~MD
           # Main Title
@@ -158,8 +160,6 @@ describe ManifestationHtmlWithChapters do
         manifestation.save!
       end
 
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       it 'returns expected HTML content with unique IDs' do
         expect(subject[:html].strip).to eq(expected_html)
       end
@@ -167,14 +167,16 @@ describe ManifestationHtmlWithChapters do
       it 'returns chapters array with both chapters having same title' do
         chapters = subject[:chapters]
         expect(chapters).to eq([
-          ['Chapter 1', '2'],
-          ['Part 2', '5'],
-          ['Chapter 1', '7']
-        ])
+                                 ['Chapter 1', '2'],
+                                 ['Part 2', '5'],
+                                 ['Chapter 1', '7']
+                               ])
       end
     end
 
     context 'when manifestation has nested headings' do
+      subject { described_class.call(manifestation, permalink_base_url) }
+
       let(:markdown) do
         <<~MD
           # Main Title
@@ -225,8 +227,6 @@ describe ManifestationHtmlWithChapters do
         manifestation.save!
       end
 
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       it 'returns expected HTML content with h2 and h3 headings' do
         expect(subject[:html].strip).to eq(expected_html)
       end
@@ -234,13 +234,15 @@ describe ManifestationHtmlWithChapters do
       it 'returns chapters array with only h2 headings' do
         chapters = subject[:chapters]
         expect(chapters).to eq([
-          ['Chapter 1', '2'],
-          ['Chapter 2', '10']
-        ])
+                                 ['Chapter 1', '2'],
+                                 ['Chapter 2', '10']
+                               ])
       end
     end
 
     context 'when manifestation has headings with footnotes' do
+      subject { described_class.call(manifestation, permalink_base_url) }
+
       let(:markdown) do
         <<~MD
           # Main Title
@@ -294,8 +296,6 @@ describe ManifestationHtmlWithChapters do
         manifestation.save!
       end
 
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       it 'returns expected HTML content with footnotes' do
         expect(subject[:html].strip).to eq(expected_html)
       end
@@ -303,13 +303,15 @@ describe ManifestationHtmlWithChapters do
       it 'returns chapters array with sanitized titles (footnotes removed)' do
         chapters = subject[:chapters]
         expect(chapters).to eq([
-          ['Chapter 1', '2'],
-          ['Chapter 2', '5']
-        ])
+                                 ['Chapter 1', '2'],
+                                 ['Chapter 2', '5']
+                               ])
       end
     end
 
     context 'when manifestation has headings with HTML tags' do
+      subject { described_class.call(manifestation, permalink_base_url) }
+
       let(:markdown) do
         <<~MD
           # Main Title
@@ -345,8 +347,6 @@ describe ManifestationHtmlWithChapters do
         manifestation.save!
       end
 
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       it 'returns expected HTML content with HTML tags in headings' do
         expect(subject[:html].strip).to eq(expected_html)
       end
@@ -354,9 +354,9 @@ describe ManifestationHtmlWithChapters do
       it 'returns chapters array with sanitized titles (HTML tags stripped)' do
         chapters = subject[:chapters]
         expect(chapters).to eq([
-          ['Emphasized Chapter', '2'],
-          ['Chapter with bold', '5']
-        ])
+                                 ['Emphasized Chapter', '2'],
+                                 ['Chapter with bold', '5']
+                               ])
       end
     end
   end
