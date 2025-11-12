@@ -1354,6 +1354,7 @@ he:
   collection_circular_reference: אוסף מקושר לעצמו!
   uncollected_works_collection_title: יצירות שלא כונסו
   uncollected_works_collection_explanation: יצירות אלו לוקטו ממקורות שונים שאינם מופיעים במאגר בשלמותם, כגון כתבי עת, עיתונות, או עזבונות.
+  permalink: קישור קבוע
 
   notifications:
     proof_fixed:

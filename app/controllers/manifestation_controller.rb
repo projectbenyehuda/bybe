@@ -971,10 +971,10 @@ class ManifestationController < ApplicationController
   def prep_for_read
     prep_for_print
 
-    result = ManifestationHtmlWithChapters.call(@m, request.original_url)
-    @html = result[:html]
-    @chapters = result[:chapters]
-    @selected_chapter = result[:selected_chapter]
+    chapters_data = ManifestationHtmlWithChapters.call(@m)
+    @html = chapters_data[:html]
+    @chapters = chapters_data[:chapters]
+    @selected_chapter = chapters_data[:selected_chapter]
 
     @tabclass = set_tab('works')
     @entity = @m

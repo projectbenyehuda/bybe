@@ -3,13 +3,12 @@
 # Service to prepare HTML with chapter navigation for a manifestation
 # Extracts chapter headings, annotates them with anchors, and generates navigation data
 class ManifestationHtmlWithChapters < ApplicationService
+  include Rails.application.routes.url_helpers
   include ActionView::Helpers::SanitizeHelper
 
   # @param manifestation [Manifestation] The manifestation to process
-  # @param permalink_base_url [String] Base URL for generating chapter permalinks
   # @return [Hash] Contains :html, :chapters, and :selected_chapter
-  # rubocop:disable Layout/LineLength
-  def call(manifestation, permalink_base_url)
+  def call(manifestation)
     lines = manifestation.markdown.lines
     tmphash = {}
     chapters = [] # TODO: add sub-chapters, indenting two nbsps in dropdown
@@ -20,20 +19,24 @@ class ManifestationHtmlWithChapters < ApplicationService
       ch_count += 1
       insert_text = "<a name=\"ch#{linenum}\" class=\"ch_anch\" id=\"ch#{linenum}\">&nbsp;</a>\r\n"
       lines.insert(linenum, insert_text)
-      tmphash[ch_count.to_s.rjust(4, '0') + sanitize_heading(lines[linenum + 1][2..].strip)] = linenum.to_s
+      tmphash[ch_count.to_s.rjust(4, '0') + SanitizeHeading.call(lines[linenum + 1][2..].strip)] = linenum.to_s
     end
     tmphash.keys.reverse.map { |k| chapters << [k[4..], tmphash[k]] }
     selected_chapter = tmphash.keys.last
 
     html = MarkdownToHtml.call(lines.join)
-    # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    html = make_heading_ids_unique(html)
+    html = MakeHeadingIdsUnique.call(html)
 
     # add permalinks
+    permalink_base_url = manifestation_url(manifestation)
     html.gsub!(%r{<h2(.*?) id="(.*?)"(.*?)>(.*?)</h2>},
-               "<h2\\1 id=\"\\2\"\\3>\\4 &nbsp;&nbsp; <span style=\"font-size: 50%;\"><a title=\"קישור קבוע\" href=\"#{permalink_base_url}#\\2\">🔗</a></span></h2>")
+               '<h2\\1 id="\\2"\\3>\\4 &nbsp;&nbsp; ' \
+               "<span style=\"font-size: 50%;\"><a title=\"#{I18n.t(:permalink)}\" " \
+               "href=\"#{permalink_base_url}#\\2\">🔗</a></span></h2>")
     html.gsub!(%r{<h3(.*?) id="(.*?)"(.*?)>(.*?)</h3>},
-               "<h3\\1 id=\"\\2\"\\3>\\4 &nbsp;&nbsp; <span style=\"font-size: 50%;\"><a title=\"קישור קבוע\" href=\"#{permalink_base_url}#\\2\">🔗</a></span></h3>")
+               '<h3\\1 id="\\2"\\3>\\4 &nbsp;&nbsp; ' \
+               "<span style=\"font-size: 50%;\"><a title=\"#{I18n.t(:permalink)}\" " \
+               "href=\"#{permalink_base_url}#\\2\">🔗</a></span></h3>")
 
     {
       html: html,
@@ -41,29 +44,4 @@ class ManifestationHtmlWithChapters < ApplicationService
       selected_chapter: selected_chapter
     }
   end
-  # rubocop:enable Layout/LineLength
-
-  private
-
-  def sanitize_heading(heading)
-    # Remove footnotes, strip HTML tags, replace leading hashes with spaces, and clean up quotes
-    heading.gsub(/\[\^ftn\d+\]/, '')
-           .gsub(/\[\^\d+\]/, '')
-           .then { |s| strip_tags(s) }
-           .gsub(/^#+/, '&nbsp;&nbsp;&nbsp;')
-           .gsub('\"', '"')
-           .strip
-  end
-
-  # rubocop:disable Layout/LineLength
-  def make_heading_ids_unique(html)
-    # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    heading_seq = 0
-    html.gsub(%r{<(h[23])(.*?) id="(.*?)"(.*?)>(.*?)</\1>}) do
-      heading_seq += 1
-      tag = ::Regexp.last_match(1)
-      "<#{tag}#{::Regexp.last_match(2)} id=\"heading-#{heading_seq}\"#{::Regexp.last_match(4)}>#{::Regexp.last_match(5)}</#{tag}>"
-    end
-  end
-  # rubocop:enable Layout/LineLength
 end

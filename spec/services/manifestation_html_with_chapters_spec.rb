@@ -3,50 +3,44 @@
 require 'rails_helper'
 
 describe ManifestationHtmlWithChapters do
+  include Rails.application.routes.url_helpers
+
   describe '#call' do
-    let(:permalink_base_url) { 'http://example.com/read/123' }
+    subject(:result) { described_class.call(manifestation) }
+
+    let(:manifestation) { create(:manifestation, markdown: markdown) }
+    let(:permalink_base_url) { manifestation_url(manifestation) }
+
+    before do
+      manifestation.recalc_heading_lines!
+    end
+
+    shared_examples 'produces expected result' do
+      it 'returns a hash with expected data' do
+        expect(result).to eq(
+          html: expected_html,
+          chapters: expected_chapters,
+          selected_chapter: expected_selected_chapter
+        )
+      end
+    end
 
     context 'when manifestation has no headings' do
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       let(:markdown) { "# Title\n\nSome content without chapter headings." }
-      let(:manifestation) { create(:manifestation, markdown: markdown) }
       let(:expected_html) do
-        <<~HTML.strip
+        <<~HTML
           <h1 id="title">Title</h1>
 
           <p>Some content without chapter headings.</p>
         HTML
       end
+      let(:expected_chapters) { [] }
+      let(:expected_selected_chapter) { nil }
 
-      before do
-        manifestation.recalc_heading_lines!
-        manifestation.save!
-      end
-
-      it 'returns a hash with required keys' do
-        expect(subject).to be_a(Hash)
-        expect(subject).to have_key(:html)
-        expect(subject).to have_key(:chapters)
-        expect(subject).to have_key(:selected_chapter)
-      end
-
-      it 'returns empty chapters array' do
-        expect(subject[:chapters]).to eq([])
-      end
-
-      it 'returns nil selected_chapter' do
-        expect(subject[:selected_chapter]).to be_nil
-      end
-
-      it 'returns expected HTML content' do
-        expect(subject[:html].strip).to eq(expected_html)
-      end
+      it_behaves_like 'produces expected result'
     end
 
     context 'when manifestation has chapter headings' do
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       let(:markdown) do
         <<~MD
           # Main Title
@@ -61,64 +55,36 @@ describe ManifestationHtmlWithChapters do
           Content of chapter 3
         MD
       end
-      let(:manifestation) { create(:manifestation, markdown: markdown) }
       let(:expected_html) do
-        <<~HTML.strip
+        <<~HTML
           <h1 id="maintitle">Main Title</h1>
 
           <p><a name="ch2" class="ch_anch" id="ch2">&nbsp;</a></p>
 
-          <h2 id="heading-1">Chapter 1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-1">🔗</a></span></h2>
+          <h2 id="heading-1">Chapter 1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-1">🔗</a></span></h2>
 
           <p>Content of chapter 1</p>
 
           <p><a name="ch5" class="ch_anch" id="ch5">&nbsp;</a></p>
 
-          <h2 id="heading-2">Chapter 2 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-2">🔗</a></span></h2>
+          <h2 id="heading-2">Chapter 2 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-2">🔗</a></span></h2>
 
           <p>Content of chapter 2</p>
 
           <p><a name="ch8" class="ch_anch" id="ch8">&nbsp;</a></p>
 
-          <h2 id="heading-3">Chapter 3 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-3">🔗</a></span></h2>
+          <h2 id="heading-3">Chapter 3 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-3">🔗</a></span></h2>
 
           <p>Content of chapter 3</p>
         HTML
       end
+      let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '5'], ['Chapter 3', '8']] }
+      let(:expected_selected_chapter) { '0003Chapter 1' }
 
-      before do
-        manifestation.recalc_heading_lines!
-        manifestation.save!
-      end
-
-      it 'returns a hash with required keys' do
-        expect(subject).to be_a(Hash)
-        expect(subject).to have_key(:html)
-        expect(subject).to have_key(:chapters)
-        expect(subject).to have_key(:selected_chapter)
-      end
-
-      it 'returns expected HTML content' do
-        expect(subject[:html].strip).to eq(expected_html)
-      end
-
-      it 'returns chapters array with chapter data' do
-        chapters = subject[:chapters]
-        expect(chapters).to eq([
-                                 ['Chapter 1', '2'],
-                                 ['Chapter 2', '5'],
-                                 ['Chapter 3', '8']
-                               ])
-      end
-
-      it 'sets selected_chapter to the last chapter' do
-        expect(subject[:selected_chapter]).to eq('0003Chapter 1')
-      end
+      it_behaves_like 'produces expected result'
     end
 
     context 'when manifestation has duplicate heading text' do
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       let(:markdown) do
         <<~MD
           # Main Title
@@ -132,51 +98,34 @@ describe ManifestationHtmlWithChapters do
           Content of chapter 1 in part 2
         MD
       end
-      let(:manifestation) { create(:manifestation, markdown: markdown) }
       let(:expected_html) do
-        <<~HTML.strip
+        <<~HTML
           <h1 id="maintitle">Main Title</h1>
 
           <p><a name="ch2" class="ch_anch" id="ch2">&nbsp;</a></p>
 
-          <h2 id="heading-1">Chapter 1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-1">🔗</a></span></h2>
+          <h2 id="heading-1">Chapter 1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-1">🔗</a></span></h2>
 
           <p>Content of chapter 1 in part 1</p>
 
           <p><a name="ch5" class="ch_anch" id="ch5">&nbsp;</a></p>
 
-          <h2 id="heading-2">Part 2 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-2">🔗</a></span></h2>
+          <h2 id="heading-2">Part 2 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-2">🔗</a></span></h2>
 
           <p><a name="ch7" class="ch_anch" id="ch7">&nbsp;</a></p>
 
-          <h2 id="heading-3">Chapter 1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-3">🔗</a></span></h2>
+          <h2 id="heading-3">Chapter 1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-3">🔗</a></span></h2>
 
           <p>Content of chapter 1 in part 2</p>
         HTML
       end
+      let(:expected_chapters) { [['Chapter 1', '2'], ['Part 2', '5'], ['Chapter 1', '7']] }
+      let(:expected_selected_chapter) { '0003Chapter 1' }
 
-      before do
-        manifestation.recalc_heading_lines!
-        manifestation.save!
-      end
-
-      it 'returns expected HTML content with unique IDs' do
-        expect(subject[:html].strip).to eq(expected_html)
-      end
-
-      it 'returns chapters array with both chapters having same title' do
-        chapters = subject[:chapters]
-        expect(chapters).to eq([
-                                 ['Chapter 1', '2'],
-                                 ['Part 2', '5'],
-                                 ['Chapter 1', '7']
-                               ])
-      end
+      it_behaves_like 'produces expected result'
     end
 
     context 'when manifestation has nested headings' do
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       let(:markdown) do
         <<~MD
           # Main Title
@@ -195,54 +144,38 @@ describe ManifestationHtmlWithChapters do
           Content
         MD
       end
-      let(:manifestation) { create(:manifestation, markdown: markdown) }
       let(:expected_html) do
-        <<~HTML.strip
+        <<~HTML
           <h1 id="maintitle">Main Title</h1>
 
           <p><a name="ch2" class="ch_anch" id="ch2">&nbsp;</a></p>
 
-          <h2 id="heading-1">Chapter 1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-1">🔗</a></span></h2>
+          <h2 id="heading-1">Chapter 1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-1">🔗</a></span></h2>
 
-          <h3 id="heading-2">Section 1.1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-2">🔗</a></span></h3>
+          <h3 id="heading-2">Section 1.1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-2">🔗</a></span></h3>
 
           <p>Content</p>
 
-          <h3 id="heading-3">Section 1.2 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-3">🔗</a></span></h3>
+          <h3 id="heading-3">Section 1.2 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-3">🔗</a></span></h3>
 
           <p>Content</p>
 
           <p><a name="ch10" class="ch_anch" id="ch10">&nbsp;</a></p>
 
-          <h2 id="heading-4">Chapter 2 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-4">🔗</a></span></h2>
+          <h2 id="heading-4">Chapter 2 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-4">🔗</a></span></h2>
 
-          <h3 id="heading-5">Section 2.1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-5">🔗</a></span></h3>
+          <h3 id="heading-5">Section 2.1 &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-5">🔗</a></span></h3>
 
           <p>Content</p>
         HTML
       end
+      let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '10']] }
+      let(:expected_selected_chapter) { '0002Chapter 1' }
 
-      before do
-        manifestation.recalc_heading_lines!
-        manifestation.save!
-      end
-
-      it 'returns expected HTML content with h2 and h3 headings' do
-        expect(subject[:html].strip).to eq(expected_html)
-      end
-
-      it 'returns chapters array with only h2 headings' do
-        chapters = subject[:chapters]
-        expect(chapters).to eq([
-                                 ['Chapter 1', '2'],
-                                 ['Chapter 2', '10']
-                               ])
-      end
+      it_behaves_like 'produces expected result'
     end
 
     context 'when manifestation has headings with footnotes' do
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       let(:markdown) do
         <<~MD
           # Main Title
@@ -257,20 +190,19 @@ describe ManifestationHtmlWithChapters do
           [^ftn2]: Footnote 2
         MD
       end
-      let(:manifestation) { create(:manifestation, markdown: markdown) }
       let(:expected_html) do
-        <<~HTML.strip
+        <<~HTML
           <h1 id="maintitle">Main Title</h1>
 
           <p><a name="ch2" class="ch_anch" id="ch2">&nbsp;</a></p>
 
-          <h2 id="heading-1">Chapter 1<a href="#fn:1" id="fnref:1" title="see footnote" class="footnote"><sup>1</sup></a> &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-1">🔗</a></span></h2>
+          <h2 id="heading-1">Chapter 1<a href="#fn:1" id="fnref:1" title="see footnote" class="footnote"><sup>1</sup></a> &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-1">🔗</a></span></h2>
 
           <p>Content with footnote</p>
 
           <p><a name="ch5" class="ch_anch" id="ch5">&nbsp;</a></p>
 
-          <h2 id="heading-2">Chapter 2<a href="#fn:2" id="fnref:2" title="see footnote" class="footnote"><sup>2</sup></a> &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-2">🔗</a></span></h2>
+          <h2 id="heading-2">Chapter 2<a href="#fn:2" id="fnref:2" title="see footnote" class="footnote"><sup>2</sup></a> &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-2">🔗</a></span></h2>
 
           <p>More content</p>
 
@@ -290,28 +222,13 @@ describe ManifestationHtmlWithChapters do
           </div>
         HTML
       end
+      let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '5']] }
+      let(:expected_selected_chapter) { '0002Chapter 1' }
 
-      before do
-        manifestation.recalc_heading_lines!
-        manifestation.save!
-      end
-
-      it 'returns expected HTML content with footnotes' do
-        expect(subject[:html].strip).to eq(expected_html)
-      end
-
-      it 'returns chapters array with sanitized titles (footnotes removed)' do
-        chapters = subject[:chapters]
-        expect(chapters).to eq([
-                                 ['Chapter 1', '2'],
-                                 ['Chapter 2', '5']
-                               ])
-      end
+      it_behaves_like 'produces expected result'
     end
 
     context 'when manifestation has headings with HTML tags' do
-      subject { described_class.call(manifestation, permalink_base_url) }
-
       let(:markdown) do
         <<~MD
           # Main Title
@@ -323,41 +240,27 @@ describe ManifestationHtmlWithChapters do
           Content
         MD
       end
-      let(:manifestation) { create(:manifestation, markdown: markdown) }
       let(:expected_html) do
-        <<~HTML.strip
+        <<~HTML
           <h1 id="maintitle">Main Title</h1>
 
           <p><a name="ch2" class="ch_anch" id="ch2">&nbsp;</a></p>
 
-          <h2 id="heading-1"><em>Emphasized</em> Chapter &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-1">🔗</a></span></h2>
+          <h2 id="heading-1"><em>Emphasized</em> Chapter &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-1">🔗</a></span></h2>
 
           <p>Content</p>
 
           <p><a name="ch5" class="ch_anch" id="ch5">&nbsp;</a></p>
 
-          <h2 id="heading-2">Chapter with <strong>bold</strong> &nbsp;&nbsp; <span style="font-size: 50%;"><a title="קישור קבוע" href="http://example.com/read/123#heading-2">🔗</a></span></h2>
+          <h2 id="heading-2">Chapter with <strong>bold</strong> &nbsp;&nbsp; <span style="font-size: 50%;"><a title="#{I18n.t(:permalink)}" href="#{permalink_base_url}#heading-2">🔗</a></span></h2>
 
           <p>Content</p>
         HTML
       end
+      let(:expected_chapters) { [['Emphasized Chapter', '2'], ['Chapter with bold', '5']] }
+      let(:expected_selected_chapter) { '0002Emphasized Chapter' }
 
-      before do
-        manifestation.recalc_heading_lines!
-        manifestation.save!
-      end
-
-      it 'returns expected HTML content with HTML tags in headings' do
-        expect(subject[:html].strip).to eq(expected_html)
-      end
-
-      it 'returns chapters array with sanitized titles (HTML tags stripped)' do
-        chapters = subject[:chapters]
-        expect(chapters).to eq([
-                                 ['Emphasized Chapter', '2'],
-                                 ['Chapter with bold', '5']
-                               ])
-      end
+      it_behaves_like 'produces expected result'
     end
   end
 end
