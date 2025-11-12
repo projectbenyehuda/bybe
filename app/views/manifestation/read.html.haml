@@ -14,8 +14,8 @@
           %img.about-work-card-bookmark-fold-v02{alt: t(:background), src: '/assets/creator-bookmark-back2.png'}/
           .about-work-author-card-v02
             %img.about-work-author-pic-v02{alt: @author.name, src: @author.profile_image.url(:thumb)}/
-          .by-card-content-v02{class: @unpublished ? 'unpublished' : ''}
-            - if @unpublished
+          .by-card-content-v02{class: @m.published? ? '' : 'unpublished'}
+            - unless @m.published?
               .unpublished_badge= t(:unpublished)
             = render partial: 'metadata', locals: {tags_etc: true}
           - unless @single_text_volume
