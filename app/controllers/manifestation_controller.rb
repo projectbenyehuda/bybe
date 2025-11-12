@@ -285,9 +285,7 @@ class ManifestationController < ApplicationController
     @print = true
     prep_for_print
 
-    @html = @m.to_html
-    # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    @html = make_heading_ids_unique(@html)
+    @html = MakeHeadingIdsUnique.call(@m.to_html)
     @footer_url = manifestation_url(@m)
   end
 
@@ -997,13 +995,13 @@ class ManifestationController < ApplicationController
       ch_count += 1
       insert_text = "<a name=\"ch#{linenum}\" class=\"ch_anch\" id=\"ch#{linenum}\">&nbsp;</a>\r\n"
       lines.insert(linenum, insert_text)
-      tmphash[ch_count.to_s.rjust(4, '0') + sanitize_heading(lines[linenum + 1][2..-1].strip)] = linenum.to_s
+      tmphash[ch_count.to_s.rjust(4, '0') + SanitizeHeading.call(lines[linenum + 1][2..-1].strip)] = linenum.to_s
     end
     tmphash.keys.reverse.map { |k| @chapters << [k[4..], tmphash[k]] }
     @selected_chapter = tmphash.keys.last
     @html = MarkdownToHtml.call(lines.join(''))
     # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    @html = make_heading_ids_unique(@html)
+    @html = MakeHeadingIdsUnique.call(@html)
     # add permalinks
     @html.gsub!(%r{<h2(.*?) id="(.*?)"(.*?)>(.*?)</h2>},
                 "<h2\\1 id=\"\\2\"\\3>\\4 &nbsp;&nbsp; <span style=\"font-size: 50%;\"><a title=\"קישור קבוע\" href=\"#{request.original_url}#\\2\">🔗</a></span></h2>")
