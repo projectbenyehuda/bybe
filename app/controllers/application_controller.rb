@@ -367,14 +367,6 @@ class ApplicationController < ActionController::Base
     return ret
   end
 
-  def sanitize_heading(h)
-    SanitizeHeading.call(h)
-  end
-
-  def make_heading_ids_unique(html)
-    MakeHeadingIdsUnique.call(html)
-  end
-
   def current_user
     @current_user ||= User.find(session[:user_id]) if session[:user_id]
   rescue ActiveRecord::RecordNotFound
