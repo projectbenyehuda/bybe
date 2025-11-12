@@ -4,13 +4,11 @@ require 'rails_helper'
 
 describe SanitizeHeading do
   describe '#call' do
-    subject { SanitizeHeading.call(heading) }
-
     context 'when heading contains HTML tags' do
       let(:heading) { '<b>title</b>' }
 
       it 'strips HTML tags' do
-        expect(subject).to eq('title')
+        expect(described_class.call(heading)).to eq('title')
       end
     end
 
@@ -18,7 +16,7 @@ describe SanitizeHeading do
       let(:heading) { '<b><i>title</i></b>' }
 
       it 'strips all HTML tags' do
-        expect(subject).to eq('title')
+        expect(described_class.call(heading)).to eq('title')
       end
     end
 
@@ -26,7 +24,7 @@ describe SanitizeHeading do
       let(:heading) { '<b>title</b>[^ftn1]' }
 
       it 'strips HTML tags and removes footnotes' do
-        expect(subject).to eq('title')
+        expect(described_class.call(heading)).to eq('title')
       end
     end
 
@@ -34,7 +32,7 @@ describe SanitizeHeading do
       let(:heading) { 'title[^1]' }
 
       it 'removes footnotes' do
-        expect(subject).to eq('title')
+        expect(described_class.call(heading)).to eq('title')
       end
     end
 
@@ -42,7 +40,7 @@ describe SanitizeHeading do
       let(:heading) { '## title' }
 
       it 'replaces leading hashes with spaces' do
-        expect(subject).to eq('&nbsp;&nbsp;&nbsp; title')
+        expect(described_class.call(heading)).to eq('&nbsp;&nbsp;&nbsp; title')
       end
     end
 
@@ -50,7 +48,7 @@ describe SanitizeHeading do
       let(:heading) { 'title \"quoted\"' }
 
       it 'unescapes quotes' do
-        expect(subject).to eq('title "quoted"')
+        expect(described_class.call(heading)).to eq('title "quoted"')
       end
     end
 
@@ -58,7 +56,7 @@ describe SanitizeHeading do
       let(:heading) { '## <b>title</b>[^ftn1] \"text\"[^2]' }
 
       it 'properly sanitizes all elements' do
-        expect(subject).to eq('&nbsp;&nbsp;&nbsp; title "text"')
+        expect(described_class.call(heading)).to eq('&nbsp;&nbsp;&nbsp; title "text"')
       end
     end
 
@@ -66,7 +64,7 @@ describe SanitizeHeading do
       let(:heading) { 'simple title' }
 
       it 'returns the text unchanged' do
-        expect(subject).to eq('simple title')
+        expect(described_class.call(heading)).to eq('simple title')
       end
     end
 
@@ -74,7 +72,7 @@ describe SanitizeHeading do
       let(:heading) { '  title with spaces  ' }
 
       it 'strips leading and trailing whitespace' do
-        expect(subject).to eq('title with spaces')
+        expect(described_class.call(heading)).to eq('title with spaces')
       end
     end
   end
