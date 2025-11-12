@@ -367,26 +367,6 @@ class ApplicationController < ActionController::Base
     return ret
   end
 
-  def sanitize_heading(h)
-    # Remove footnotes, strip HTML tags, replace leading hashes with spaces, and clean up quotes
-    h.gsub(/\[\^ftn\d+\]/, '')
-     .gsub(/\[\^\d+\]/, '')
-     .then { |s| helpers.strip_tags(s) }
-     .gsub(/^#+/, '&nbsp;&nbsp;&nbsp;')
-     .gsub('\"', '"')
-     .strip
-  end
-
-  def make_heading_ids_unique(html)
-    # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    heading_seq = 0
-    html.gsub(%r{<(h[23])(.*?) id="(.*?)"(.*?)>(.*?)</\1>}) do
-      heading_seq += 1
-      tag = ::Regexp.last_match(1)
-      "<#{tag}#{::Regexp.last_match(2)} id=\"heading-#{heading_seq}\"#{::Regexp.last_match(4)}>#{::Regexp.last_match(5)}</#{tag}>"
-    end
-  end
-
   def current_user
     @current_user ||= User.find(session[:user_id]) if session[:user_id]
   rescue ActiveRecord::RecordNotFound

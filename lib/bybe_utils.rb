@@ -775,16 +775,6 @@ module BybeUtils
     h.save
   end
 
-  def make_heading_ids_unique(html)
-    # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    heading_seq = 0
-    html.gsub(%r{<h([23])(.*?) id="(.*?)"(.*?)>(.*?)</h[23]>}) do
-      heading_seq += 1
-      tag = "h#{::Regexp.last_match(1)}"
-      "<#{tag}#{::Regexp.last_match(2)} id=\"heading-#{heading_seq}\"#{::Regexp.last_match(4)}>#{::Regexp.last_match(5)}</#{tag}>"
-    end
-  end
-
   def footnotes_noncer(html, nonce) # salt footnote markers and bodies with a nonce, to make them unique in collections/anthologies
     # id of footnote reference in body text and link to footnote body
     ret = html.gsub(/<a href="#fn:(\d+)" id="fnref:(\d+)"/m) do |fn|
