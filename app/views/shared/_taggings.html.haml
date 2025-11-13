@@ -28,6 +28,6 @@
     $('.tags').click(function(e){
       if($(e.target).hasClass('tag-x')) return;
       e.stopPropagation();
-      ahoy.track('clicked tag name', {tag: $(this).attr('data-tagname')});
+      ahoy.track('clicked_tag', {tag: $(this).attr('data-tagname')});
     });
   });
