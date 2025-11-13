@@ -576,6 +576,13 @@ class AuthorsController < ApplicationController
     # Use fresh downloadable mechanism to ensure KWIC downloadable exists
     dl = ensure_kwic_downloadable_exists(@author)
 
+    # Check if concordance is being generated asynchronously
+    if dl.nil?
+      flash[:notice] = t(:kwic_being_generated)
+      redirect_to authority_path(@author)
+      return
+    end
+
     # Parse concordance data from the stored downloadable
     if dl&.stored_file&.attached?
       kwic_text = dl.stored_file.download.force_encoding('UTF-8')
@@ -594,16 +601,10 @@ class AuthorsController < ApplicationController
         end
       end
     else
-      # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
-      labelled_texts = @author.published_manifestations(:author, :translator).map do |m|
-        {
-          label: m.title,
-          buffer: m.to_plaintext,
-          item_id: m.id,
-          item_type: 'Manifestation'
-        }
-      end
-      @concordance_data = kwic_concordance(labelled_texts)
+      # This shouldn't happen since ensure_kwic_downloadable_exists returns nil for async generation
+      flash[:error] = t(:error_generating_concordance)
+      redirect_to authority_path(@author)
+      return
     end
 
     # Pagination setup
@@ -645,19 +646,22 @@ class AuthorsController < ApplicationController
     # Use fresh downloadable mechanism to ensure KWIC downloadable exists
     dl = ensure_kwic_downloadable_exists(@author)
 
+    # Check if concordance is being generated asynchronously
+    if dl.nil?
+      flash[:notice] = t(:kwic_being_generated)
+      redirect_to authority_path(@author)
+      return
+    end
+
     # Parse concordance data from the stored downloadable
     if dl&.stored_file&.attached?
       kwic_text = dl.stored_file.download.force_encoding('UTF-8')
       @concordance_data = ParseKwicConcordance.call(kwic_text)
     else
-      # Fallback
-      labelled_texts = @author.published_manifestations(:author, :translator).map do |m|
-        {
-          label: m.title,
-          buffer: m.to_plaintext
-        }
-      end
-      @concordance_data = kwic_concordance(labelled_texts)
+      # This shouldn't happen since ensure_kwic_downloadable_exists returns nil for async generation
+      flash[:error] = t(:error_generating_concordance)
+      redirect_to authority_path(@author)
+      return
     end
 
     # Apply filter if present

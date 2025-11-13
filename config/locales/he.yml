@@ -517,6 +517,8 @@ he:
   kwic_show_context: הצג הקשר מורחב
   kwic_hide_context: הסתר הקשר
   kwic_go_to_source: עבור למקור
+  kwic_being_generated: הקונקורדנציה נמצאת בהכנה. אנא נסו שוב בעוד 5-10 דקות.
+  error_generating_concordance: אירעה שגיאה בעת יצירת הקונקורדנציה. אנא נסו שוב מאוחר יותר.
   kwic_download_filtered: הורד קונקורדנציה מסוננת
   kwic_download_full: הורד קונקורדנציה מלאה
   kwic_entries_per_page: ערכים בעמוד

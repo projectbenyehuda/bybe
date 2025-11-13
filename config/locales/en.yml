@@ -299,3 +299,5 @@ en:
   kwic_sort_by: "Sort by:"
   kwic_sort_alphabetical: Alphabetical
   kwic_sort_frequency: Frequency
+  kwic_being_generated: The concordance is being generated. Please check back in 5-10 minutes.
+  error_generating_concordance: An error occurred while generating the concordance. Please try again later.

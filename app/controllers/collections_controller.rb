@@ -79,19 +79,11 @@ class CollectionsController < ApplicationController
       filename = "#{@collection.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.#{format}"
 
       if format == 'kwic'
-        # Generate KWIC concordance for collection
-        labelled_texts = []
-        @collection.flatten_items.each do |ci|
-          next if ci.item.nil? || ci.item_type != 'Manifestation'
-
-          labelled_texts << {
-            label: ci.title,
-            buffer: ci.item.to_plaintext
-          }
-        end
-        kwic_text = GenerateKwicConcordance.call(labelled_texts)
-        austr = textify_authorities_and_roles(@collection.involved_authorities)
-        dl = MakeFreshDownloadable.call(params[:format], filename, '', @collection, austr, kwic_text: kwic_text)
+        # Trigger async job for KWIC concordance generation
+        GenerateKwicConcordanceJob.perform_async('Collection', @collection.id)
+        flash[:notice] = t(:kwic_being_generated)
+        redirect_to @collection
+        return
       else
         # TODO: implement ias
         html = <<~WRAPPER
@@ -201,6 +193,13 @@ class CollectionsController < ApplicationController
     # Use fresh downloadable mechanism to ensure KWIC downloadable exists
     dl = ensure_kwic_downloadable_exists(@collection)
 
+    # Check if concordance is being generated asynchronously
+    if dl.nil?
+      flash[:notice] = t(:kwic_being_generated)
+      redirect_to @collection
+      return
+    end
+
     # Parse concordance data from the stored downloadable
     if dl&.stored_file&.attached?
       kwic_text = dl.stored_file.download.force_encoding('UTF-8')
@@ -219,19 +218,10 @@ class CollectionsController < ApplicationController
         end
       end
     else
-      # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
-      labelled_texts = []
-      @collection.flatten_items.each do |ci|
-        next if ci.item.nil? || ci.item_type != 'Manifestation'
-
-        labelled_texts << {
-          label: ci.title,
-          buffer: ci.item.to_plaintext,
-          item_id: ci.item.id,
-          item_type: 'Manifestation'
-        }
-      end
-      @concordance_data = kwic_concordance(labelled_texts)
+      # This shouldn't happen since ensure_kwic_downloadable_exists returns nil for async generation
+      flash[:error] = t(:error_generating_concordance)
+      redirect_to @collection
+      return
     end
 
     # Pagination setup

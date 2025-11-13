@@ -33,15 +33,31 @@ describe CollectionsController do
           expect(response).to have_http_status(:redirect)
         end
 
-        it 'creates a downloadable with kwic format' do
+        it 'triggers async job and shows notice message' do
           subject
+          expect(flash[:notice]).to eq(I18n.t(:kwic_being_generated))
+          expect(response).to redirect_to(collection)
+        end
+
+        it 'creates a downloadable with kwic format after job runs' do
+          create(:collection_item, collection: collection, item: manifestation1)
+          create(:collection_item, collection: collection, item: manifestation2)
+
+          # Execute the job synchronously
+          GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
           downloadable = collection.downloadables.find_by(doctype: 'kwic')
           expect(downloadable).to be_present
           expect(downloadable.stored_file).to be_attached
         end
 
-        it 'generates concordance content from all manifestations' do
-          subject
+        it 'generates concordance content from all manifestations after job runs' do
+          create(:collection_item, collection: collection, item: manifestation1)
+          create(:collection_item, collection: collection, item: manifestation2)
+
+          # Execute the job synchronously
+          GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
           downloadable = collection.downloadables.find_by(doctype: 'kwic')
           content = downloadable.stored_file.download.force_encoding('UTF-8')
           expect(content).to include('קונקורדנציה בתבנית KWIC')
@@ -49,6 +65,31 @@ describe CollectionsController do
           # Should show instances from both texts
           expect(content).to include('[First Work, פסקה')
           expect(content).to include('[Second Work, פסקה')
+        end
+
+        it 'returns downloadable immediately when fresh downloadable exists' do
+          create(:collection_item, collection: collection, item: manifestation1)
+          create(:collection_item, collection: collection, item: manifestation2)
+
+          # Make everything older first
+          collection.update_column(:updated_at, 10.minutes.ago)
+          collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+          manifestation1.update_column(:updated_at, 10.minutes.ago)
+          manifestation2.update_column(:updated_at, 10.minutes.ago)
+
+          # Pre-generate the downloadable (this will be newer than everything else)
+          GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
+          collection.reload
+
+          # Now request download
+          post :download, params: { collection_id: collection.id, format: 'kwic' }
+
+          expect(response).to have_http_status(:redirect)
+          expect(flash[:notice]).to be_nil
+          expect(flash[:error]).to be_nil
+          downloadable = collection.downloadables.find_by(doctype: 'kwic')
+          expect(downloadable).to be_present
         end
       end
 
@@ -79,8 +120,10 @@ describe CollectionsController do
           expect(response).to have_http_status(:redirect)
         end
 
-        it 'creates a downloadable with only header' do
-          subject
+        it 'creates a downloadable with only header after job runs' do
+          # Execute the job synchronously
+          GenerateKwicConcordanceJob.new.perform('Collection', empty_collection.id)
+
           downloadable = empty_collection.downloadables.find_by(doctype: 'kwic')
           expect(downloadable).to be_present
           content = downloadable.stored_file.download.force_encoding('UTF-8')

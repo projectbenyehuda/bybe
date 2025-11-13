@@ -5,11 +5,7 @@ require 'rails_helper'
 describe CollectionsController do
   describe '#kwic' do
     context 'with a collection containing multiple manifestations' do
-      subject do
-        create(:collection_item, collection: collection, item: manifestation1)
-        create(:collection_item, collection: collection, item: manifestation2)
-        get :kwic, params: { collection_id: collection.id }
-      end
+      subject { get :kwic, params: { collection_id: collection.id } }
 
       let(:collection) { create(:collection, title: 'Test Collection') }
       let(:manifestation1) do
@@ -25,6 +21,21 @@ describe CollectionsController do
           title: 'Second Work',
           markdown: 'The brown bear.'
         )
+      end
+
+      before do
+        create(:collection_item, collection: collection, item: manifestation1)
+        create(:collection_item, collection: collection, item: manifestation2)
+
+        # Make everything older
+        collection.update_column(:updated_at, 10.minutes.ago)
+        collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+        manifestation1.update_column(:updated_at, 10.minutes.ago)
+        manifestation2.update_column(:updated_at, 10.minutes.ago)
+
+        # Pre-generate the concordance (this will be newer than everything else)
+        GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+        collection.reload
       end
 
       it 'returns success' do
@@ -56,8 +67,22 @@ describe CollectionsController do
 
     context 'with pagination parameters' do
       subject do
-        create(:collection_item, collection: collection, item: manifestation)
         get :kwic, params: { collection_id: collection.id, per_page: 50, page: 2 }
+      end
+
+      before do
+        create(:collection_item, collection: collection, item: manifestation)
+
+        # Make everything older
+        collection.update_column(:updated_at, 10.minutes.ago)
+        collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+        collection.flatten_items.select do |ci|
+          ci.item_type == 'Manifestation'
+        end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
+
+        # Pre-generate the concordance (this will be newer than everything else)
+        GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+        collection.reload
       end
 
       let(:collection) { create(:collection) }
@@ -79,8 +104,27 @@ describe CollectionsController do
 
     context 'with filter parameter' do
       subject do
-        create(:collection_item, collection: collection, item: manifestation)
         get :kwic, params: { collection_id: collection.id, filter: 'quick' }
+      end
+
+      before do
+        create(:collection_item, collection: collection, item: manifestation)
+
+        # Make everything older
+
+        collection.update_column(:updated_at, 10.minutes.ago)
+
+        collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+
+        collection.flatten_items.select do |ci|
+          ci.item_type == 'Manifestation'
+        end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
+
+        # Pre-generate the concordance (this will be newer than everything else)
+
+        GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
+        collection.reload
       end
 
       let(:collection) { create(:collection) }
@@ -113,12 +157,7 @@ describe CollectionsController do
     end
 
     context 'with nested collections' do
-      subject do
-        # Create nested structure: collection -> sub_collection -> manifestation
-        create(:collection_item, collection: sub_collection, item: manifestation)
-        create(:collection_item, collection: collection, item: sub_collection)
-        get :kwic, params: { collection_id: collection.id }
-      end
+      subject { get :kwic, params: { collection_id: collection.id } }
 
       let(:collection) { create(:collection, title: 'Parent Collection') }
       let(:sub_collection) { create(:collection, title: 'Sub Collection') }
@@ -128,6 +167,23 @@ describe CollectionsController do
           title: 'Nested Work',
           markdown: 'Nested content here.'
         )
+      end
+
+      before do
+        # Create nested structure: collection -> sub_collection -> manifestation
+        create(:collection_item, collection: sub_collection, item: manifestation)
+        create(:collection_item, collection: collection, item: sub_collection)
+
+        # Make everything older
+        collection.update_column(:updated_at, 10.minutes.ago)
+        sub_collection.update_column(:updated_at, 10.minutes.ago)
+        manifestation.update_column(:updated_at, 10.minutes.ago)
+        collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+        sub_collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+
+        # Pre-generate the concordance (this will be newer than everything else)
+        GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+        collection.reload
       end
 
       it 'includes manifestations from nested collections' do
@@ -141,9 +197,28 @@ describe CollectionsController do
 
     context 'with Hebrew texts in collection' do
       subject do
+        get :kwic, params: { collection_id: collection.id }
+      end
+
+      before do
         create(:collection_item, collection: collection, item: manifestation1)
         create(:collection_item, collection: collection, item: manifestation2)
-        get :kwic, params: { collection_id: collection.id }
+
+        # Make everything older
+
+        collection.update_column(:updated_at, 10.minutes.ago)
+
+        collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+
+        collection.flatten_items.select do |ci|
+          ci.item_type == 'Manifestation'
+        end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
+
+        # Pre-generate the concordance (this will be newer than everything else)
+
+        GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
+        collection.reload
       end
 
       let(:collection) { create(:collection, title: 'אוסף עברי') }
@@ -164,8 +239,27 @@ describe CollectionsController do
     context 'with sort parameter' do
       context 'alphabetical sort' do
         subject do
-          create(:collection_item, collection: collection, item: manifestation)
           get :kwic, params: { collection_id: collection.id, sort: 'alphabetical' }
+        end
+
+        before do
+          create(:collection_item, collection: collection, item: manifestation)
+
+          # Make everything older
+
+          collection.update_column(:updated_at, 10.minutes.ago)
+
+          collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+
+          collection.flatten_items.select do |ci|
+            ci.item_type == 'Manifestation'
+          end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
+
+          # Pre-generate the concordance (this will be newer than everything else)
+
+          GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
+          collection.reload
         end
 
         let(:collection) { create(:collection) }
@@ -187,8 +281,27 @@ describe CollectionsController do
 
       context 'frequency sort' do
         subject do
-          create(:collection_item, collection: collection, item: manifestation)
           get :kwic, params: { collection_id: collection.id, sort: 'frequency' }
+        end
+
+        before do
+          create(:collection_item, collection: collection, item: manifestation)
+
+          # Make everything older
+
+          collection.update_column(:updated_at, 10.minutes.ago)
+
+          collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+
+          collection.flatten_items.select do |ci|
+            ci.item_type == 'Manifestation'
+          end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
+
+          # Pre-generate the concordance (this will be newer than everything else)
+
+          GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
+          collection.reload
         end
 
         let(:collection) { create(:collection) }
@@ -217,8 +330,27 @@ describe CollectionsController do
 
       context 'no sort parameter' do
         subject do
-          create(:collection_item, collection: collection, item: manifestation)
           get :kwic, params: { collection_id: collection.id }
+        end
+
+        before do
+          create(:collection_item, collection: collection, item: manifestation)
+
+          # Make everything older
+
+          collection.update_column(:updated_at, 10.minutes.ago)
+
+          collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+
+          collection.flatten_items.select do |ci|
+            ci.item_type == 'Manifestation'
+          end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
+
+          # Pre-generate the concordance (this will be newer than everything else)
+
+          GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
+          collection.reload
         end
 
         let(:collection) { create(:collection) }
@@ -235,8 +367,27 @@ describe CollectionsController do
 
     context 'with filter and sort combined' do
       subject do
-        create(:collection_item, collection: collection, item: manifestation)
         get :kwic, params: { collection_id: collection.id, filter: 'ow', sort: 'frequency' }
+      end
+
+      before do
+        create(:collection_item, collection: collection, item: manifestation)
+
+        # Make everything older
+
+        collection.update_column(:updated_at, 10.minutes.ago)
+
+        collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
+
+        collection.flatten_items.select do |ci|
+          ci.item_type == 'Manifestation'
+        end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
+
+        # Pre-generate the concordance (this will be newer than everything else)
+
+        GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
+
+        collection.reload
       end
 
       let(:collection) { create(:collection) }
@@ -252,11 +403,11 @@ describe CollectionsController do
         # Should have tokens containing 'ow'
         filtered_tokens = assigns(:concordance_data).map { |e| e[:token] }
         filtered_tokens.each { |token| expect(token).to include('ow') }
-        
+
         # Should be sorted by frequency
         frequencies = assigns(:concordance_data).map { |e| e[:instances].length }
         expect(frequencies).to eq(frequencies.sort.reverse)
-        
+
         # 'brown' should be first (5 occurrences)
         expect(assigns(:concordance_data).first[:token]).to eq('brown')
       end
