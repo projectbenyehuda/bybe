@@ -1004,7 +1004,7 @@ class ManifestationController < ApplicationController
   def set_manifestation
     @m = Manifestation.find(params[:id])
 
-    return if @m.published || current_user&.editor?
+    return if @m.published? || current_user&.editor?
 
     flash.notice = t(:work_not_available)
     redirect_to '/'
