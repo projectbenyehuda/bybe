@@ -971,42 +971,10 @@ class ManifestationController < ApplicationController
   def prep_for_read
     prep_for_print
 
-    lines = @m.markdown.lines
-    tmphash = {}
-    @chapters = [] # TODO: add sub-chapters, indenting two nbsps in dropdown
-
-    ## div-wrapping chapters, trying to debug the scrollspy...
-    # first = true
-    # @m.heading_lines.reverse.each{ |linenum|
-    #  insert_text = "<div id=\"ch#{linenum}\" role=\"tabpanel\"> <a name=\"ch#{linenum}\"></a>\r\n"
-    #  unless first
-    #    insert_text = "</div>" + insert_text
-    #  else
-    #    first = false
-    #  end
-    #  lines.insert(linenum, insert_text)
-    #  # lines.insert(linenum, "\n<p id=\"ch#{linenum}\"></p>\r\n")
-    #  tmphash[sanitize_heading(lines[linenum+1][2..-1].strip)] = linenum.to_s
-    # } # annotate headings in reverse order, to avoid offsetting the next heading
-    # lines << "</div>\n" unless first # close final section if any headings existed in the text
-    ch_count = 0
-    # annotate headings in reverse order, to avoid offsetting the next heading
-    @m.heading_lines.reverse.each do |linenum|
-      ch_count += 1
-      insert_text = "<a name=\"ch#{linenum}\" class=\"ch_anch\" id=\"ch#{linenum}\">&nbsp;</a>\r\n"
-      lines.insert(linenum, insert_text)
-      tmphash[ch_count.to_s.rjust(4, '0') + SanitizeHeading.call(lines[linenum + 1][2..-1].strip)] = linenum.to_s
-    end
-    tmphash.keys.reverse.map { |k| @chapters << [k[4..], tmphash[k]] }
-    @selected_chapter = tmphash.keys.last
-    @html = MarkdownToHtml.call(lines.join(''))
-    # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    @html = MakeHeadingIdsUnique.call(@html)
-    # add permalinks
-    @html.gsub!(%r{<h2(.*?) id="(.*?)"(.*?)>(.*?)</h2>},
-                "<h2\\1 id=\"\\2\"\\3>\\4 &nbsp;&nbsp; <span style=\"font-size: 50%;\"><a title=\"קישור קבוע\" href=\"#{request.original_url}#\\2\">🔗</a></span></h2>")
-    @html.gsub!(%r{<h3(.*?) id="(.*?)"(.*?)>(.*?)</h3>},
-                "<h3\\1 id=\"\\2\"\\3>\\4 &nbsp;&nbsp; <span style=\"font-size: 50%;\"><a title=\"קישור קבוע\" href=\"#{request.original_url}#\\2\">🔗</a></span></h3>")
+    chapters_data = ManifestationHtmlWithChapters.call(@m)
+    @html = chapters_data[:html]
+    @chapters = chapters_data[:chapters]
+    @selected_chapter = chapters_data[:selected_chapter]
 
     @tabclass = set_tab('works')
     @entity = @m
