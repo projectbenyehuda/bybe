@@ -1,9 +1,9 @@
 class Ahoy::Event < ApplicationRecord
   include Ahoy::QueryMethods
 
-  ALLOWED_NAMES = %w(view download page_view search).freeze
+  ALLOWED_NAMES = %w(view download page_view search clicked_tag).freeze
 
-  self.table_name = "ahoy_events"
+  self.table_name = 'ahoy_events'
 
   belongs_to :visit
   belongs_to :user, optional: true
