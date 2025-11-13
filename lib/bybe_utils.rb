@@ -743,6 +743,8 @@ module BybeUtils
   end
 
   def is_legacy_url(url)
+    return false if url =~ %r{rails/active_storage}
+
     url = '/' + url if url[0] != '/' # prepend slash if necessary
     h = HtmlFile.find_by_url(url)
     # also treat /{author} or /{author}/ or /{author}/index.html as legacy urls
