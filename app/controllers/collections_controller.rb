@@ -8,7 +8,7 @@ class CollectionsController < ApplicationController
   include KwicConcordanceConcern
 
   before_action :require_editor, except: %i(show download print kwic kwic_download)
-  before_action :set_collection, only: %i(show edit update destroy drag_item)
+  before_action :set_collection, only: %i(show edit update destroy)
 
   # GET /collections or /collections.json
   def index
@@ -168,43 +168,6 @@ class CollectionsController < ApplicationController
       format.html { redirect_to collections_url, notice: t(:deleted_successfully) }
       format.js
     end
-  end
-
-  # POST /collections/1/drag_item
-  def drag_item
-    # zero-based indexes of item in the list
-    old_index = params.fetch(:old_index).to_i
-    new_index = params.fetch(:new_index).to_i
-
-    Collection.transaction do
-      items = @collection.collection_items.order(:seqno).to_a
-      item_to_move = items.delete_at(old_index)
-      items.insert(new_index, item_to_move)
-
-      items.each_with_index do |ci, index|
-        ci.update!(seqno: index + 1) unless ci.seqno == index + 1
-      end
-    end
-    head :ok
-  end
-
-  # POST /collections/1/transplant_item
-  def transplant_item
-    @collection = Collection.find(params[:collection_id])
-    @dest_coll = Collection.find(params[:dest_coll_id].to_i)
-    @src_coll = Collection.find(params[:src_coll_id].to_i)
-    @old_item_id = params[:item_id].to_i
-    @item = CollectionItem.find(@old_item_id)
-    if @dest_coll.nil? || @src_coll.nil? || @item.nil?
-      flash[:error] = t(:no_such_item)
-      head :not_found
-      return
-    end
-    ActiveRecord::Base.transaction do
-      @new_item_id = @dest_coll.insert_item_at(@item, params[:new_pos].to_i)
-      @src_coll.remove_item(@old_item_id)
-    end
-    head :ok
   end
 
   def manage

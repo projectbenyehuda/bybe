@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class CollectionItemsController < ApplicationController
-  before_action :set_collection_item, only: %i(show edit update destroy)
+  before_action :require_editor, except: %i(show)
+  around_action :set_collection_item, only: %i(show edit update destroy drag_item transplant_item)
 
   # GET /collection_items/1 or /collection_items/1.json
   def show; end
@@ -93,11 +94,123 @@ class CollectionItemsController < ApplicationController
     end
   end
 
+  # POST /collection_items/1/drag_item
+  def drag_item
+    collection_id = params.fetch(:collection_id).to_i
+    collection = Collection.lock.find(collection_id)
+    @collection_item.lock!
+
+    # Validate mandatory parameters
+
+    if collection_id != @collection_item.collection_id
+      render plain: "[DragItem] Collection ID mismatch: expected #{@collection_item.collection_id} " \
+                    "but got #{collection_id}",
+             status: :bad_request
+      return
+    end
+
+    # zero-based index of where we want to move this item
+    new_index = params.fetch(:new_index).to_i
+    old_index = params.fetch(:old_index).to_i
+
+    items = collection.collection_items.order(:seqno).to_a
+
+    if new_index < 0 || new_index >= items.size
+      render plain: "[DragItem] Wrong new_index: #{new_index}", status: :bad_request
+      return
+    end
+
+    # Validate that the old_index parameter matches the actual current position
+    real_index = items.index(@collection_item)
+    if old_index != real_index
+      render plain: "[DragItem] Item index mismatch: expected #{real_index} but got #{old_index}",
+             status: :bad_request
+      return
+    end
+
+    item_to_move = items.delete_at(old_index)
+    items.insert(new_index, item_to_move)
+
+    update_seqno(items)
+    head :ok
+  end
+
+  # POST /collection_items/1/transplant_item
+  def transplant_item
+    src_collection_id = params.fetch(:src_collection_id).to_i
+    dest_collection_id = params.fetch(:dest_collection_id).to_i
+
+    if src_collection_id == dest_collection_id
+      render plain: '[TransplantItem] Destination collection cannot be the same as source collection',
+             status: :bad_request
+      return
+    end
+
+    [src_collection_id, dest_collection_id].sort.each do |collection_id|
+      Collection.lock.find(collection_id)
+    end
+    @collection_item.lock!
+
+    src_collection = Collection.find(src_collection_id)
+
+    if src_collection_id != @collection_item.collection_id
+      error_msg = '[TransplantItem] Source collection ID mismatch: ' \
+                  "expected #{@collection_item.collection_id} but got #{src_collection_id}"
+      render plain: error_msg, status: :bad_request
+      return
+    end
+
+    dest_collection = Collection.find(dest_collection_id)
+
+    new_index = params.fetch(:new_index).to_i
+    old_index = params.fetch(:old_index).to_i
+    src_items = src_collection.collection_items.order(:seqno).to_a
+    dest_items = dest_collection.collection_items.order(:seqno).to_a
+
+    # Validate that the old_index parameter matches the actual current position in source collection
+    real_index = src_items.index(@collection_item)
+    if old_index != real_index
+      error_msg = '[TransplantItem] Item index mismatch in source collection: ' \
+                  "expected #{real_index} but got #{old_index}"
+      render plain: error_msg, status: :bad_request
+      return
+    end
+
+    if new_index < 0 || new_index > dest_items.size
+      render plain: "[TransplantItem] Wrong new_index: #{new_index}", status: :bad_request
+      return
+    end
+
+    src_items.reject! { |item| item.id == @collection_item.id }
+    dest_items.insert(new_index, @collection_item)
+
+    @collection_item.update!(collection: dest_collection)
+    update_seqno(src_items)
+    update_seqno(dest_items)
+
+    head :ok
+  end
+
   private
+
+  # Updates seqno for a list of collection items to be sequential starting from 1
+  def update_seqno(items)
+    items.each_with_index do |ci, index|
+      next if ci.seqno == index + 1
+
+      ci.seqno = index + 1
+      # skipping validation for performance - safe because only seqno is changed
+      # and items are already validated to be sequential
+      ci.save(validate: false)
+    end
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_collection_item
-    @collection_item = CollectionItem.find(params[:id])
+    Collection.transaction do
+      @collection_item = CollectionItem.find(params[:id])
+      yield
+    end
   end
 
   # Only allow a list of trusted parameters through.

@@ -438,15 +438,6 @@ class Collection < ApplicationRecord
     item.save!
   end
 
-  def remove_item(item_id)
-    raise 'pass an item ID, not an object' if item_id.instance_of?(CollectionItem)
-
-    ci = collection_items.where(id: item_id).first
-    return false if ci.nil?
-
-    ci.destroy!
-  end
-
   def fetch_credits
     return cached_credits if cached_credits.present?
 
