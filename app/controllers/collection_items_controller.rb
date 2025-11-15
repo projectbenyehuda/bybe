@@ -115,6 +115,11 @@ class CollectionItemsController < ApplicationController
 
     items = collection.collection_items.order(:seqno).to_a
 
+    if new_index < 0 || new_index >= items.size
+      render plain: "[DragItem] Wrong new_index: #{new_index}", status: :bad_request
+      return
+    end
+
     # Validate that the old_index parameter matches the actual current position
     real_index = items.index(@collection_item)
     if old_index != real_index
@@ -172,7 +177,7 @@ class CollectionItemsController < ApplicationController
     end
 
     if new_index < 0 || new_index > dest_items.size
-      render plain: '[TransplantItem] Wrong new_index', status: :bad_request
+      render plain: "[TransplantItem] Wrong new_index: #{new_index}", status: :bad_request
       return
     end
 

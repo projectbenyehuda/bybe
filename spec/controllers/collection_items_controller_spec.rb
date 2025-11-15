@@ -31,9 +31,9 @@ describe CollectionItemsController do
     end
 
     context 'when we drag item forwards' do
-      let(:old_index) { 0 }
-      let(:new_index) { 2 }
-      let(:expected_order) { %w(2 3 1 4 5) }
+      let(:old_index) { 2 }
+      let(:new_index) { 4 }
+      let(:expected_order) { %w(1 2 4 5 3) }
 
       it_behaves_like 'drags successfully'
     end
@@ -67,6 +67,37 @@ describe CollectionItemsController do
       it 'returns bad request with error message' do
         expect(call).to have_http_status(:bad_request)
         expect(response.body).to eq('[DragItem] Item index mismatch: expected 2 but got 0')
+      end
+    end
+
+    context 'when new_index is negative' do
+      let(:old_index) { 2 }
+      let(:new_index) { -1 }
+      let(:expected_order) { %w(3 1 2 4 5) }
+
+      it 'returns bad request with error message' do
+        expect(call).to have_http_status(:bad_request)
+        expect(response.body).to eq('[DragItem] Wrong new_index: -1')
+      end
+    end
+
+    context 'when new_index is equal to number of items in collection' do
+      let(:old_index) { 0 }
+      let(:new_index) { 5 }
+
+      it 'returns bad request with error message' do
+        expect(call).to have_http_status(:bad_request)
+        expect(response.body).to eq('[DragItem] Wrong new_index: 5')
+      end
+    end
+
+    context 'when new_index is greater than number of items in collection' do
+      let(:old_index) { 0 }
+      let(:new_index) { 6 }
+
+      it 'returns bad request with error message' do
+        expect(call).to have_http_status(:bad_request)
+        expect(response.body).to eq('[DragItem] Wrong new_index: 6')
       end
     end
   end
@@ -144,7 +175,7 @@ describe CollectionItemsController do
 
       it 'returns bad request with error message' do
         expect(call).to be_bad_request
-        expect(response.body).to eq('[TransplantItem] Wrong new_index')
+        expect(response.body).to eq('[TransplantItem] Wrong new_index: -1')
       end
     end
 
@@ -153,7 +184,7 @@ describe CollectionItemsController do
 
       it 'returns bad request with error message' do
         expect(call).to be_bad_request
-        expect(response.body).to start_with('[TransplantItem] Wrong new_index')
+        expect(response.body).to start_with('[TransplantItem] Wrong new_index: 4')
       end
     end
   end
