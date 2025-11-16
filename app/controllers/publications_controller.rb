@@ -100,22 +100,24 @@ class PublicationsController < ApplicationController
 
   # GET /publications/autocomplete_publication_title
   def autocomplete_publication_title
-    items = ElasticsearchAutocomplete.call(
-      params[:term],
-      PublicationsAutocompleteIndex,
-      %i(title)
-    )
+    term = params[:term]
+    items = if term&.present?
+              Publication.where('title LIKE ?', "#{term}%").limit(20)
+            else
+              []
+            end
 
     render json: json_for_autocomplete(items, :title)
   end
 
   # GET /publications/autocomplete_authority_name
   def autocomplete_authority_name
-    items = ElasticsearchAutocomplete.call(
-      params[:term],
-      AuthoritiesAutocompleteIndex,
-      %i(name other_designation)
-    )
+    term = params[:term]
+    items = if term&.present?
+              Authority.where('name LIKE ?', "#{term}%").limit(20)
+            else
+              []
+            end
 
     render json: json_for_autocomplete(items, :name)
   end
