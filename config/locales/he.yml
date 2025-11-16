@@ -4,6 +4,7 @@ he:
   id: מזהה
   inside: 'בתוך: '
   not_public_yet: '(עדיין לא פומבי)'
+  clear: נקה
   author_list: רשימת היוצרים
   first_last_name: "שם פרטי / משפחה"
   don_footer_title: אנו שמחים שאתם משתמשים באתר פרויקט בן־יהודה
@@ -427,6 +428,7 @@ he:
   photo: תמונה
   last_update: עדכון אחרון
   copyright_status: מצב זכויות יוצרים
+  default_copyright_for_protected_texts: מצב ברירת מחדל לטקסטים מוגנים
   basic_details: פרטים בסיסיים
   submit: שליחה
   logo: לוגו
@@ -508,12 +510,39 @@ he:
   mobi_format: תבנית להתקנים ישנים יותר
   txt_format: טקסט בלבד, ללא הדגשות ועיצוב
   odt_format: מסמך ליברה-אופיס
+  kwic_format: קונקורדנציה בתבנית KWIC
+  kwic_concordance: קונקורדנציה
+  kwic_browser_title: דפדוף בקונקורדנציה
+  kwic_filter_placeholder: סנן לפי מילה...
+  kwic_show_context: הצג הקשר מורחב
+  kwic_hide_context: הסתר הקשר
+  kwic_go_to_source: עבור למקור
+  kwic_being_generated: הקונקורדנציה נמצאת בהכנה. אנא נסו שוב בעוד 5-10 דקות.
+  error_generating_concordance: אירעה שגיאה בעת יצירת הקונקורדנציה. אנא נסו שוב מאוחר יותר.
+  kwic_download_filtered: הורד קונקורדנציה מסוננת
+  kwic_download_full: הורד קונקורדנציה מלאה
+  kwic_entries_per_page: ערכים בעמוד
+  kwic_total_entries: "סה\"כ ערכים:"
+  kwic_showing_page: "עמוד %{page} מתוך %{total}"
+  kwic_token: "מילה:"
+  kwic_paragraph: פסקה
+  kwic_loading_context: טוען הקשר...
+  kwic_previous_paragraph: פסקה קודמת
+  kwic_current_paragraph: פסקה נוכחית
+  kwic_next_paragraph: פסקה הבאה
+  kwic_sort_by: "מיון לפי:"
+  kwic_sort_alphabetical: א-ב
+  kwic_sort_frequency: שכיחות
+  error_loading_context: שגיאה בטעינת ההקשר
+  loading: טוען...
   no_date: אין תאריך
   title_not_informative: כותרת היצירה חסרה הֶקשר או מטעה
   override_validation: דלג על בדיקת שדות
   title_ends_with_period: הכותרת מסתיימת בנקודה
   title_starts_with_ordinals: הכותרת מתחילה עם סודר
   empty_work_title_or_no_content: יצירה ללא כותרת או ריקה מתוכן
+  empty_collection: אוסף ללא פריטים
+  no_works_for_author: אין יצירות לסופר זה
   translation_must_have_translator: שפת המקור אינה עברית אך לא צוין מתרגם
   translation_must_have_original_language: צוין מתרגם אך לא צוינה שפת מקור
   reading_mode: טקסט בלבד
@@ -948,6 +977,12 @@ he:
   delete_photo: מחיקת תמונה (לצמיתות!)
   delete_link: הסרת קישורית
   delete: מחיקה
+  delete_selected: מחיקת הנבחרות
+  unpublish_selected: הסתרת הנבחרות
+  confirm_delete_manifestation: האם את/ה בטוח/ה שברצונך למחוק יצירה זו?
+  confirm_batch_delete: האם את/ה בטוח/ה שברצונך למחוק %<count>s יצירה/ות?
+  confirm_batch_unpublish: האם את/ה בטוח/ה שברצונך להסתיר %<count>s יצירה/ות?
+  please_select_manifestation: נא לבחור לפחות יצירה אחת
   cancel_focus_on_this_tag: ביטול מיקוד בתגית זו
   anth_text_deletion: מחיקת פריט מהמקראה
   anth_text_deletion_p1: 'פעולה זו תמחק ללא אפשרות חזרה את הפריט:'
@@ -1718,3 +1753,5 @@ he:
   email_footer_signup_invitation: אם תרצה/י לשלוט בתדירות קבלת הודעות הדואל, תוכל/י להירשם לאתר ולהגדיר את ההעדפות שלך.
   notification_digest_intro: להלן סיכום ההודעות שצברנו עבורך
   notification_render_error: שגיאה בעיבוד הודעה
+  unrecognized_format: תבנית קובץ לא מוכרת
+  collection_item_operation_error: 'אירעה שגיאה: %{error}. הדף ייטען מחדש.'

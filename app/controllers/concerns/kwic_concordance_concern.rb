@@ -1,0 +1,104 @@
+# frozen_string_literal: true
+
+# Concern for KWIC concordance functionality shared between controllers
+module KwicConcordanceConcern
+  extend ActiveSupport::Concern
+
+  # Get extended context for a paragraph (includes prev/next paragraphs)
+  # @param manifestation [Manifestation] The manifestation object
+  # @param paragraph_num [Integer] The paragraph number (1-indexed)
+  # @return [Hash] Hash with :prev, :current, :next paragraph HTML
+  def get_extended_context(manifestation, paragraph_num)
+    # Convert markdown to plaintext
+    plaintext = manifestation.to_plaintext
+
+    # Extract all paragraphs
+    paragraphs = plaintext.split("\n").map(&:strip).reject(&:empty?)
+
+    # Get the requested paragraph and its neighbors (paragraph_num is 1-indexed)
+    {
+      prev: paragraph_num > 1 ? paragraphs[paragraph_num - 2] : nil,
+      current: paragraphs[paragraph_num - 1],
+      next: paragraph_num < paragraphs.length ? paragraphs[paragraph_num] : nil
+    }
+  end
+
+  # Sort concordance data by the specified method
+  # @param concordance_data [Array<Hash>] Array of concordance entries
+  # @param sort_by [String] Sort method: 'alphabetical' or 'frequency'
+  # @return [Array<Hash>] Sorted concordance data (new array, input not modified)
+  def sort_concordance_data(concordance_data, sort_by)
+    if sort_by == 'frequency'
+      # Sort by frequency (descending - most frequent first)
+      # For equal frequencies, use alphabetical order as secondary sort
+      concordance_data.sort_by { |entry| [-entry[:instances].length, entry[:token]] }
+    else
+      # Default: alphabetical (ascending)
+      concordance_data.sort_by { |entry| entry[:token] }
+    end
+  end
+
+  private
+
+  # Ensure a KWIC downloadable exists for the given entity (Manifestation, Collection, or Authority)
+  # Uses the fresh downloadable mechanism to avoid regenerating if already exists
+  # For Authority and Collection, triggers async job if no fresh downloadable exists
+  # For Manifestation, generates synchronously
+  # @return [Downloadable, nil] The downloadable object, or nil if async job was triggered
+  def ensure_kwic_downloadable_exists(entity)
+    dl = entity.fresh_downloadable_for('kwic')
+    return dl if dl.present? # Already exists and is fresh
+
+    # Generate and save the downloadable
+    case entity
+    when Collection, Authority
+      # Trigger async job for large entities
+      GenerateKwicConcordanceJob.perform_async(entity.class.name, entity.id)
+      nil # Return nil to signal async generation is in progress
+    when Manifestation
+      # Generate synchronously for manifestations
+      labelled_texts = [{
+        label: entity.title,
+        buffer: entity.to_plaintext
+      }]
+      kwic_text = GenerateKwicConcordance.call(labelled_texts)
+      filename = "#{entity.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.kwic"
+      involved_auths = entity.expression.involved_authorities + entity.expression.work.involved_authorities
+      austr = textify_authorities_and_roles(involved_auths)
+      MakeFreshDownloadable.call('kwic', filename, '', entity, austr, kwic_text: kwic_text)
+    end
+  end
+
+  def format_concordance_as_text(concordance_data)
+    output = []
+    output << 'קונקורדנציה בתבנית KWIC'
+    output << ('=' * 50)
+    output << ''
+
+    concordance_data.each do |entry|
+      token = entry[:token]
+      instances = entry[:instances]
+
+      output << "מילה: #{token}"
+      output << ('-' * 40)
+
+      instances.each do |instance|
+        label = instance[:label]
+        paragraph = instance[:paragraph]
+        before_context = instance[:before_context]
+        after_context = instance[:after_context]
+
+        line = "[#{label}, פסקה #{paragraph}] "
+        line += "#{before_context} " if before_context.present?
+        line += "[#{token}]"
+        line += " #{after_context}" if after_context.present?
+
+        output << line
+      end
+
+      output << ''
+    end
+
+    output.join("\n")
+  end
+end

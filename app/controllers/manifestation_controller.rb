@@ -3,6 +3,8 @@ require 'pandoc-ruby'
 class ManifestationController < ApplicationController
   include FilteringAndPaginationConcern
   include Tracking
+  include BybeUtils
+  include KwicConcordanceConcern
 
   before_action only: %i(list show remove_link edit_metadata add_aboutnesses) do |c|
     c.require_editor('edit_catalog')
@@ -14,7 +16,6 @@ class ManifestationController < ApplicationController
     c.refuse_unreasonable_page
   end
   autocomplete :manifestation, :title, limit: 20, display_value: :title_and_authors, full: true
-  autocomplete :tag, :name, limit: 2
 
   # layout false, only: [:print]
 
@@ -251,13 +252,11 @@ class ManifestationController < ApplicationController
   end
 
   def read
-    @m = Manifestation.joins(:expression).includes(:expression).find(params[:id].to_i)
-    if @m.nil?
-      head :not_found
-    elsif @m.expression.work.genre == 'lexicon' && DictionaryEntry.where(manifestation_id: @m.id).count > 0
+    @m = Manifestation.find(params[:id].to_i)
+    if @m.expression.work.genre == 'lexicon' && DictionaryEntry.exists?(manifestation: @m)
       redirect_to action: 'dict', id: @m.id
     elsif !@m.published? && (current_user.blank? || !current_user.editor?)
-      flash[:notice] = t(:work_not_available)
+      flash.notice = t(:work_not_available)
       redirect_to '/'
     else
       prep_for_read
@@ -266,14 +265,14 @@ class ManifestationController < ApplicationController
       @tagging = Tagging.new
       @tagging.taggable = @m
       @taggings = @m.taggings
-      @recommendations = @m.recommendations
-      @my_pending_recs = @recommendations.all_pending.where(user: current_user)
-      @app_recs = @recommendations.all_approved
-      @total_recs = @app_recs.count + @my_pending_recs.count
+
+      recommendations = @m.recommendations.preload(:user)
+      @my_pending_recs = recommendations.select { |r| r.pending? && r.user == current_user }
+      @app_recs = recommendations.select(&:approved?)
+      @total_recs = @my_pending_recs.size + @app_recs.size
 
       @links = @m.external_links.group_by { |l| l.linktype }
-      @random_work = Manifestation.where(id: Manifestation.pluck(:id).sample(5),
-                                         status: Manifestation.statuses[:published])[0]
+
       @header_partial = 'manifestation/work_top'
       @works_about = @w.works_about
       @scrollspy_target = 'chapternav'
@@ -306,14 +305,17 @@ class ManifestationController < ApplicationController
       return
     end
 
+    # NOTE: Asaf disabled this transaction because it caused a failure to attach the downloadable
+    #  in dev and testing environments. There is now a check for attachment inside the FreshDownloadable
+    #  logic so the transaction is less needed. If you re-enable it, please test thoroughly.
     # Wrapping download code into transaction to make it atomic
     # Without this we had situation when Downloadable object was created but attachmnt creation failed
-    Downloadable.transaction do
-      m = Manifestation.find(params[:id])
-      dl = GetFreshManifestationDownloadable.call(m, format)
-      track_download(m, format)
-      redirect_to rails_blob_url(dl.stored_file, disposition: :attachment)
-    end
+    # Downloadable.transaction do
+    m = Manifestation.find(params[:id])
+    dl = GetFreshManifestationDownloadable.call(m, format)
+    track_download(m, format)
+    redirect_to rails_blob_url(dl.stored_file, disposition: :attachment)
+    # end
   end
 
   def render_html
@@ -435,7 +437,7 @@ class ManifestationController < ApplicationController
       @manifestations = Manifestation.includes(expression: :work).page(params[:page]).order('updated_at DESC')
     elsif params[:author].blank?
       @manifestations = Manifestation.includes(expression: :work).where('title like ?',
-                                                                        '%' + params[:title] + '%').page(params[:page]).order('sort_title ASC') #
+                                                                        '%' + params[:title] + '%').page(params[:page]).order('sort_title ASC')
     elsif params[:title].blank?
       @manifestations = Manifestation.includes(expression: :work).where('cached_people like ?',
                                                                         "%#{params[:author]}%").page(params[:page]).order('sort_title asc')
@@ -582,6 +584,119 @@ class ManifestationController < ApplicationController
     end
   end
 
+  # Display KWIC concordance browser for a manifestation
+  def kwic
+    @m = Manifestation.find(params[:id])
+    if @m.nil?
+      head :not_found
+      return
+    end
+
+    @page_title = "#{t(:kwic_concordance)} - #{@m.title} - #{t(:default_page_title)}"
+    @pagetype = :manifestation
+    @entity = @m
+    @entity_type = 'Manifestation'
+
+    # Use fresh downloadable mechanism to ensure KWIC downloadable exists
+    dl = ensure_kwic_downloadable_exists(@m)
+
+    # Parse concordance data from the stored downloadable
+    if dl&.stored_file&.attached?
+      kwic_text = dl.stored_file.download.force_encoding('UTF-8')
+      @concordance_data = ParseKwicConcordance.call(kwic_text)
+
+      # Enrich instances with manifestation ID for context fetching
+      @concordance_data.each do |entry|
+        entry[:instances].each do |instance|
+          instance[:manifestation_id] = @m.id
+        end
+      end
+    else
+      # Fallback: generate if downloadable is missing (shouldn't happen after ensure_kwic_downloadable_exists)
+      labelled_texts = [{
+        label: @m.title,
+        buffer: @m.to_plaintext,
+        item_id: @m.id,
+        item_type: 'Manifestation'
+      }]
+      @concordance_data = kwic_concordance(labelled_texts)
+    end
+
+    # Pagination setup
+    @per_page = (params[:per_page] || 25).to_i
+    @per_page = 25 unless [25, 50, 100].include?(@per_page)
+
+    # Filtering
+    @filter_text = params[:filter].to_s.strip
+    if @filter_text.present?
+      @concordance_data = @concordance_data.select do |entry|
+        entry[:token].include?(@filter_text)
+      end
+    end
+
+    # Sorting
+    @sort_by = params[:sort].to_s.strip
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
+    @concordance_data = sort_concordance_data(@concordance_data, 'frequency') if @sort_by == 'frequency' # data is already alphabetical by default
+
+    @total_entries = @concordance_data.length
+    @page = (params[:page] || 1).to_i
+    @total_pages = (@total_entries.to_f / @per_page).ceil
+    @page = [@page, @total_pages].min if @total_pages > 0
+    @page = 1 if @page < 1
+
+    offset = (@page - 1) * @per_page
+    @concordance_entries = @concordance_data[offset, @per_page] || []
+  end
+
+  # Get extended context for a paragraph (AJAX endpoint)
+  def kwic_context
+    @m = Manifestation.find(params[:id])
+    paragraph_num = params[:paragraph].to_i
+
+    context = get_extended_context(@m, paragraph_num)
+
+    render json: {
+      prev: context[:prev],
+      current: context[:current],
+      next: context[:next]
+    }
+  end
+
+  # Download filtered or full KWIC concordance
+  def kwic_download
+    @m = Manifestation.find(params[:id])
+    if @m.nil?
+      head :not_found
+      return
+    end
+
+    # Generate concordance data
+    labelled_texts = [{
+      label: @m.title,
+      buffer: @m.to_plaintext
+    }]
+    concordance_data = kwic_concordance(labelled_texts)
+
+    # Apply filter if present
+    filter_text = params[:filter].to_s.strip
+    if filter_text.present?
+      concordance_data = concordance_data.select do |entry|
+        entry[:token].include?(filter_text)
+      end
+    end
+
+    # Generate text file
+    kwic_text = format_concordance_as_text(concordance_data)
+
+    filename = "#{@m.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
+
+    send_data kwic_text,
+              filename: filename,
+              type: 'text/plain; charset=utf-8',
+              disposition: 'attachment'
+  end
+
   protected
 
   def valid_query?
@@ -648,11 +763,12 @@ class ManifestationController < ApplicationController
     end
 
     # tags by tag_id
-    @tag_ids = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
-    if @tag_ids.present?
-      tag_data = Tag.where(id: @tag_ids).pluck(:id, :name)
+    tag_ids_array = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
+    if tag_ids_array.present?
+      tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
       ret['tags'] = tag_data.map(&:last)
       @filters += tag_data.map { |x| [x.last, "tag_#{x.first}", :checkbox] }
+      @tag_ids = tag_ids_array.join(',') # Keep as comma-separated string for the form
     end
 
     # copyright
@@ -819,7 +935,7 @@ class ManifestationController < ApplicationController
   def prep_ab(whole, subset, fieldname)
     ret = []
     abc_present = whole.pluck(fieldname).map { |t| t.blank? ? '' : t[0] }.uniq.sort
-    dummy = subset[0] # bizarrely, unless we force this query, the pluck below returns *a wrong set* (off by one page or so)
+    subset[0] # bizarrely, unless we force this query, the pluck below returns *a wrong set* (off by one page or so)
     abc_active = subset.pluck(fieldname).map { |t| t.blank? ? '' : t[0] }.uniq.sort
     LETTERS.each do |l|
       status = ''
@@ -869,8 +985,7 @@ class ManifestationController < ApplicationController
     return unless @print
 
     # remove MMD's automatic figcaptions
-    @html = MultiMarkdown.new(@m.markdown).to_html
-                         .force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '')
+    @html = @m.to_html
     # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
     @html = make_heading_ids_unique(@html)
   end
@@ -909,9 +1024,9 @@ class ManifestationController < ApplicationController
       lines.insert(linenum, insert_text)
       tmphash[ch_count.to_s.rjust(4, '0') + sanitize_heading(lines[linenum + 1][2..-1].strip)] = linenum.to_s
     end
-    tmphash.keys.reverse.map { |k| @chapters << [k[4..].gsub('\[', '[').gsub('\]', ']'), tmphash[k]] }
+    tmphash.keys.reverse.map { |k| @chapters << [k[4..], tmphash[k]] }
     @selected_chapter = tmphash.keys.last
-    @html = MultiMarkdown.new(lines.join('')).to_html.force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '').gsub('<table>', '<div style="overflow-x:auto;"><table>').gsub('</table>', '</table></div>') # remove MMD's automatic figcaptions and make tables scroll to avoid breaking narrow mobile devices
+    @html = MarkdownToHtml.call(lines.join(''))
     # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
     @html = make_heading_ids_unique(@html)
     # add permalinks

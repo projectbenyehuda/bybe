@@ -25,6 +25,9 @@ class Manifestation < ApplicationRecord
   has_many_attached :images, dependent: :destroy
   has_many :collection_items, as: :item, dependent: :destroy
   before_save :update_sort_title!
+  before_save :update_alternate_titles, if: :title_changed?
+  before_save :recalc_cached_people, if: :expression_id_changed?
+  before_save :recalc_responsibility_statement, if: :expression_id_changed?
 
   enum :status, { published: 0, nonpd: 1, unpublished: 2, deprecated: 3 }
 
@@ -61,6 +64,14 @@ class Manifestation < ApplicationRecord
 
     self.sort_title = title.strip_nikkud.tr('[]()*"\'', '').tr('-־', ' ').strip
     self.sort_title = ::Regexp.last_match.post_match if sort_title =~ /^\d+\. /
+  end
+
+  def update_alternate_titles
+    existingstr = alternate_titles || ''
+    existing = existingstr.split(';').map(&:strip)
+    newforms = AlternateHebrewForms.call(title)
+    combined = (existing + newforms).uniq
+    self.alternate_titles = combined.join('; ')
   end
 
   def genre
@@ -311,6 +322,15 @@ class Manifestation < ApplicationRecord
     save!
   end
 
+  def recalc_responsibility_statement
+    self.responsibility_statement = author_string!
+  end
+
+  def recalc_responsibility_statement!
+    recalc_responsibility_statement
+    save!
+  end
+
   # TODO: calculate this by month
   def self.popular_works_by_genre(genre, xlat)
     if xlat
@@ -395,18 +415,15 @@ class Manifestation < ApplicationRecord
   end
 
   def self.get_popular_works
-    Rails.cache.fetch('m_popular_works', expires_in: 48.hours) do
-      evs = Ahoy::Event.where(name: 'view').where("JSON_EXTRACT(properties, '$.type') = 'Manifestation'").where(
-        'time > ?', 1.month.ago
-      )
-      pop = {}
-      evs.each do |x|
-        mid = x.properties['id']
-        pop[mid] = 0 unless pop[mid].present?
-        pop[mid] += 1
-      end
-      sorted_pop_keys = pop.keys.sort_by { |k| pop[k] }.reverse
-      Manifestation.find(sorted_pop_keys[0..9])
+    Rails.cache.fetch('m_popular_works', expires_in: 24.hours) do
+      ids = Ahoy::Event.where(name: 'view')
+                       .where(item_type: 'Manifestation')
+                       .where('time > ?', 1.month.ago)
+                       .group(:item_id)
+                       .order(Arel.sql('count(*) desc'))
+                       .limit(10)
+                       .pluck(:item_id)
+      find(ids)
     end
   end
 

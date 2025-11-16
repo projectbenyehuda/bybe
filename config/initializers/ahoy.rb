@@ -8,4 +8,4 @@ Ahoy.api = true
 # we recommend configuring local geocoding as well
 # see https://github.com/ankane/ahoy#geocoding
 Ahoy.geocode = false
-Ahoy.user_method = ->(controller) { controller.base_user(true) }
+Ahoy.user_method = ->(controller) { controller.base_user(true) if controller.respond_to?(:base_user) }

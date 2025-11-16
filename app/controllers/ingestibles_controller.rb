@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 class IngestiblesController < ApplicationController
   include LockIngestibleConcern
   include BybeUtils
@@ -59,7 +60,7 @@ class IngestiblesController < ApplicationController
   def undo
     changes = JSON.parse(@ingestible.ingested_changes)
     @collection = changes['collections'].present? ? Collection.find(changes['collections'].first[0]) : nil
-    changes['texts'].each do |id, title, authorstr|
+    changes['texts'].each do |id, _title, _authorstr|
       m = Manifestation.find(id)
       @collection.collection_items.where(item: m).destroy_all unless @collection.nil?
       m.destroy!
@@ -120,7 +121,7 @@ class IngestiblesController < ApplicationController
         # - email (whom?) with news about the ingestion, and links to all the created entities
         # - show post-ingestion screen, with links to all created entities and affected authorities
         Rails.cache.delete('whatsnew_anonymous') # trigger an updating of whatsnew
-        redirect_to ingestibles_url, notice: t('.success')
+        redirect_to ingestible_url(@ingestible), notice: t('.success')
       end
     end
   end
@@ -130,7 +131,7 @@ class IngestiblesController < ApplicationController
     @ingestible.update_parsing # refresh markdown or text buffers if necessary
     prep(true) # rendering of HTML needed for editing screen
     @tab = params[:tab]
-    @authority_by_name = Authority.all.map { |a| [a.name, a.id] }.to_h
+    @authority_by_name = Authority.all.to_h { |a| [a.name, a.id] }
   end
 
   # POST /ingestibles or /ingestibles.json
@@ -173,7 +174,7 @@ class IngestiblesController < ApplicationController
       toc_buf << x[1]
     end
     @toc_list = toc_buf.join("\n")
-    @authority_by_name = Authority.all.map { |a| [a.name, a.id] }.to_h
+    @authority_by_name = Authority.all.to_h { |a| [a.name, a.id] }
 
     render layout: false
   end
@@ -193,10 +194,10 @@ class IngestiblesController < ApplicationController
   end
 
   def update_markdown
-    markdown_params = params.require(:ingestible).permit(:markdown)
+    markdown_params = params.expect(ingestible: [:markdown])
     # get rid of leading whitespace
     pos = markdown_params['markdown'].index(/\S/)
-    markdown_params['markdown'] = markdown_params['markdown'][pos..-1] if pos.present? && pos > 0
+    markdown_params['markdown'] = markdown_params['markdown'][pos..] if pos.present? && pos > 0
 
     @ingestible.update!(markdown_params)
     redirect_to edit_ingestible_url(@ingestible, tab: 'full_markdown'), notice: t(:updated_successfully)
@@ -221,7 +222,7 @@ class IngestiblesController < ApplicationController
         authorities.reject! { |a| a['seqno'] == params[:seqno].to_i }
         x[2] = authorities.to_json
       end
-      if params[:new_person_tbd].present? or params[:authority_id].present?
+      if params[:new_person_tbd].present? || params[:authority_id].present?
         authorities = x[2].present? ? JSON.parse(x[2]) : []
         highest_seqno = authorities.pluck('seqno').max || 0
         new_authority = { 'seqno' => highest_seqno + 1, 'role' => params[:role] }
@@ -252,7 +253,7 @@ class IngestiblesController < ApplicationController
     end
     return unless updated
 
-    @authority_by_name = Authority.all.map { |a| [a.name, a.id] }.to_h
+    @authority_by_name = Authority.all.to_h { |a| [a.name, a.id] }
 
     @ingestible.update_columns(toc_buffer: @ingestible.encode_toc(cur_toc))
   end
@@ -298,7 +299,7 @@ class IngestiblesController < ApplicationController
     @html = ''
     @disable_submit = false
     @markdown_titles = []
-    return unless @ingestible.works_buffer.present?
+    return if @ingestible.works_buffer.blank?
 
     sections = JSON.parse(@ingestible.works_buffer)
     sections.each_with_index do |section, index|
@@ -389,7 +390,7 @@ class IngestiblesController < ApplicationController
     end
     @empty_texts = []
     @ingestible.texts.each do |t|
-      next if t.content.present? && t.content.strip.length > 0
+      next if t.content.present? && !t.content.strip.empty?
 
       @empty_texts << t.title
     end
@@ -399,29 +400,29 @@ class IngestiblesController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def ingestible_params
-    params.require(:ingestible).permit(
-      :title,
-      :status,
-      :scenario,
-      :genre,
-      :publisher,
-      :year_published,
-      :orig_lang,
-      :intellectual_property,
-      :periodical_id,
-      :docx,
-      :metadata,
-      :comments,
-      :no_volume,
-      :attach_photos,
-      :problem,
-      :prospective_volume_id,
-      :prospective_volume_title,
-      :pub_link,
-      :pub_link_text,
-      :toc_buffer,
-      :credits,
-      :originating_task
+    params.expect(
+      ingestible: %i(title
+                     status
+                     scenario
+                     genre
+                     publisher
+                     year_published
+                     orig_lang
+                     intellectual_property
+                     periodical_id
+                     docx
+                     metadata
+                     comments
+                     no_volume
+                     attach_photos
+                     problem
+                     prospective_volume_id
+                     prospective_volume_title
+                     pub_link
+                     pub_link_text
+                     toc_buffer
+                     credits
+                     originating_task)
     )
   end
 
@@ -429,7 +430,7 @@ class IngestiblesController < ApplicationController
     created_volume = false
     if @ingestible.prospective_volume_id.present?
       if @ingestible.prospective_volume_id[0] == 'P' # new volume from known Publication
-        @publication = Publication.find(@ingestible.prospective_volume_id[1..-1])
+        @publication = Publication.find(@ingestible.prospective_volume_id[1..])
         @collection = Collection.find_by(publication: @publication) # might have been created by another ingestion while we we working on this, after identifying the publication...
         if @collection.nil? # new volume from known Publication
           publine = @ingestible.publisher.presence || @publication.publisher_line
@@ -457,24 +458,24 @@ class IngestiblesController < ApplicationController
     @collection.credits = credits
     @collection.save!
     @changes[:collections] << [@collection.id, @collection.title, created_volume ? 'created' : 'updated'] # record the new volume for the post-ingestion screen
-    
+
     # Add collection-level involved authorities (whether new or existing collection)
-    if @ingestible.collection_authorities.present?
-      JSON.parse(@ingestible.collection_authorities).each do |auth|
-        next unless auth['authority_id'].present? # skip authorities not yet in database
-        
-        # Check if this authority+role combination already exists on the collection
-        existing = @collection.involved_authorities.find_by(
-          authority_id: auth['authority_id'],
-          role: auth['role']
-        )
-        next if existing.present?
-        
-        @collection.involved_authorities.create!(
-          authority: Authority.find(auth['authority_id']),
-          role: auth['role']
-        )
-      end
+    return if @ingestible.collection_authorities.blank?
+
+    JSON.parse(@ingestible.collection_authorities).each do |auth|
+      next if auth['authority_id'].blank? # skip authorities not yet in database
+
+      # Check if this authority+role combination already exists on the collection
+      existing = @collection.involved_authorities.find_by(
+        authority_id: auth['authority_id'],
+        role: auth['role']
+      )
+      next if existing.present?
+
+      @collection.involved_authorities.create!(
+        authority: Authority.find(auth['authority_id']),
+        role: auth['role']
+      )
     end
   end
 
@@ -561,13 +562,25 @@ class IngestiblesController < ApplicationController
             other_authorities << [ia['authority_id'], ia['role']]
           end
         end
-        period = determine_period_by_involved_authorities(w.orig_lang == 'he' ? author_ids : translator_ids) # translator's period is the relevant one for translations
-        pub_status = determine_publication_status_by_involved_authorities(author_ids + translator_ids + other_authorities.map(&:first))
+        # translator's period is the relevant one for translations
+        period = determine_period_by_involved_authorities(w.orig_lang == 'he' ? author_ids : translator_ids)
+        all_authority_ids = author_ids + translator_ids + other_authorities.map(&:first)
+        pub_status = determine_publication_status_by_involved_authorities(all_authority_ids)
+
+        # Calculate copyright status and set intellectual property accordingly
+        calculated_copyright = @ingestible.calculate_copyright_status(toc_line[2])
+        intellectual_property_value = if calculated_copyright == 'public_domain'
+                                        'public_domain'
+                                      else
+                                        # Use the selected value from TOC, or default from ingestible
+                                        toc_line[5].presence || @ingestible.intellectual_property || 'by_permission'
+                                      end
+
         e = w.expressions.build(
           title: toc_line[1],
           language: 'he',
           period: period, # what to do if corporate body?
-          intellectual_property: toc_line[5],
+          intellectual_property: intellectual_property_value,
           source_edition: @ingestible.publisher,
           date: @ingestible.year_published
         )
@@ -624,10 +637,10 @@ class IngestiblesController < ApplicationController
             @collection.append_item(m) # append the new text to the (current) end of the collection if there were no placeholders already
           end
         end
-      end # transaction
-    end # Chewy strategy
+      end
+    end
   rescue StandardError
-    @failures << "#{toc_line[1]} - #{$!}"
+    @failures << "#{toc_line[1]} - #{$ERROR_INFO}"
     return I18n.t(:frbrization_error)
   end
 end

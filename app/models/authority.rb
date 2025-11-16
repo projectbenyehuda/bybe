@@ -37,6 +37,7 @@ class Authority < ApplicationRecord
   has_many :publications, inverse_of: :authority, dependent: :destroy
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings, class_name: 'Tag'
+  has_many :downloadables, as: :object, dependent: :destroy
 
   belongs_to :person, optional: true
   belongs_to :corporate_body, optional: true
@@ -83,6 +84,23 @@ class Authority < ApplicationRecord
   before_validation do
     # 'Q' in wikidata URI must be uppercase
     self.wikidata_uri = wikidata_uri.blank? ? nil : wikidata_uri.strip.downcase.gsub('q', 'Q')
+  end
+
+  after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
+
+  def update_manifestation_responsibility_statements
+    # Find all manifestations related to this authority through involved_authorities
+    # This includes both work-level (authors) and expression-level (translators) authorities
+    manifestation_ids = Manifestation
+                         .joins("INNER JOIN expressions ON manifestations.expression_id = expressions.id")
+                         .joins("LEFT JOIN involved_authorities work_ias ON work_ias.item_id = expressions.work_id AND work_ias.item_type = 'Work'")
+                         .joins("LEFT JOIN involved_authorities expr_ias ON expr_ias.item_id = expressions.id AND expr_ias.item_type = 'Expression'")
+                         .where("work_ias.authority_id = ? OR expr_ias.authority_id = ?", id, id)
+                         .distinct
+                         .pluck(:id)
+
+    # Enqueue background job to update responsibility statements in bulk
+    UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
   end
 
   # return all collections of type volume that are associated with this authority
@@ -229,6 +247,21 @@ class Authority < ApplicationRecord
     return publications.count > 0
   end
 
+  # this will return the downloadable entity for the Authority *if* it is fresh
+  def fresh_downloadable_for(doctype)
+    dl = downloadables.where(doctype: doctype).first
+    return nil if dl.nil?
+    return nil unless dl.stored_file.attached? # invalid downloadable without file
+    return nil if dl.updated_at < updated_at # needs to be re-generated if authority was updated
+
+    # also ensure none of the published manifestations is fresher than the saved downloadable
+    published_manifestations.find_each do |m|
+      return nil if dl.updated_at < m.updated_at
+    end
+
+    dl
+  end
+
   def self.cached_count
     Rails.cache.fetch('au_total_count', expires_in: 12.hours) do
       count
@@ -323,32 +356,17 @@ class Authority < ApplicationRecord
                                            taggable_id: mm }).group('tags.id').order('count_all DESC').count
   end
 
-  # class variable
-  # rubocop:disable Style/ClassVars
-  @@popular_authors = nil
-
-  def self.recalc_popular
-    evs = Ahoy::Event.where(name: 'view').where("JSON_EXTRACT(properties, '$.type') = 'Authority'").where(
-      'time > ?', 1.month.ago
-    )
-    pop = {}
-    evs.each do |x|
-      au_id = x.properties['id']
-      pop[au_id] = 0 unless pop[au_id].present?
-      pop[au_id] += 1
-    end
-    sorted_pop_keys = pop.keys.sort_by { |k| pop[k] }.reverse
-    Authority.find(sorted_pop_keys[0..9])
-
-    @@popular_authors = has_toc.order(impressions_count: :desc).limit(10).all.to_a
-  end
-  # rubocop:enable Style/ClassVars
-
   def self.popular_authors
-    if @@popular_authors.nil?
-      recalc_popular
+    Rails.cache.fetch('m_popular_authors', expires_in: 24.hours) do
+      ids = Ahoy::Event.where(name: 'view')
+                       .where(item_type: 'Authority')
+                       .where('time > ?', 1.month.ago)
+                       .group(:item_id)
+                       .order(Arel.sql('count(*) desc'))
+                       .limit(10)
+                       .pluck(:item_id)
+      find(ids)
     end
-    return @@popular_authors
   end
 
   def favorite_of_user

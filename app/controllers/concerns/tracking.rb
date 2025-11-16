@@ -63,9 +63,8 @@ module Tracking
   # @param properties Hash object containing additional properties to associate with event
   # NOTE: this method always adds to `properties` action and controller names, so no need to add them explicitely
   def track_event(event, properties = {})
-    raise "Unknown event: #{event}" unless Ahoy::Event::ALLOWED_NAMES.include?(event)
-
     return if spider?
+    raise "Unknown event: #{event}" unless Ahoy::Event::ALLOWED_NAMES.include?(event)
 
     properties[:controller] = controller_name
     properties[:action] = action_name

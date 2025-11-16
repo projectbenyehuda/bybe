@@ -53,7 +53,6 @@
     = render layout: 'shared/collapsible_block', locals: { container_name: 'collftags', title: t(:tags) } do
       = autocomplete_field_tag :tagstr, '', autocomplete_tag_name_path,
                                id_element: '#tag_id',
-                               'data-noMatchesLabel' => t(:no_matches_found),
                                class: 'field-v02 field-without-label author-name-field',
                                id: 'tags', placeholder: t(:tag)
       = hidden_field_tag :tag_ids, @tag_ids, id: 'tag_ids'
@@ -100,6 +99,7 @@
       event.preventDefault();
       tag_id = data.item.tag_id.toString();
       $('#tag_ids').val( $('#tag_ids').val() == '' ? tag_id : $('#tag_ids').val()+','+tag_id);
+      $('#tags').val(''); // Clear the autocomplete field to allow adding more tags
       submit_filters();
     });
 

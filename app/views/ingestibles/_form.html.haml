@@ -40,7 +40,6 @@
             = autocomplete_field_tag :author,
                                      '',
                                      autocomplete_authority_name_and_aliases_path,
-                                     'data-noMatchesLabel' => t(:no_matches_found),
                                      id: 'aterm',
                                      style: 'width:400px;',
                                      id_element: '#authority_id'
@@ -54,7 +53,8 @@
             %br
 
             = f.label t('ingestible.any_volume')
-            = autocomplete_field_tag :volume, '', autocomplete_collection_title_path, 'data-noMatchesLabel' => t(:no_matches_found), id: 'cterm', style: 'width:400px;', id_element: '#prospective_volume_id'
+            = autocomplete_field_tag :volume, '', autocomplete_collection_title_path,
+                                     id: 'cterm', style: 'width:400px;', id_element: '#prospective_volume_id'
             %br
             = t(:or)
             %br
@@ -94,8 +94,9 @@
         %br
         = f.label t(:orig_lang)
         = f.select :orig_lang, options_for_select(get_langs.map {|lang| [textify_lang(lang), lang]}, @ingestible.orig_lang)
-        = f.label t(:copyright_status)
-        = f.select :intellectual_property, options_for_select(Expression.intellectual_properties.keys.reject{|x| x == 'copyrighted' || x == 'unknown'}.map { |code| [textify_intellectual_property(code), code] }, @ingestible.intellectual_property)
+        = f.label t(:default_copyright_for_protected_texts)
+        - default_ip = @ingestible.intellectual_property || 'by_permission'
+        = f.select :intellectual_property, options_for_select(copyrighted_ip_options, default_ip)
         %br
         = f.label t(:publisher_link)
         = f.text_field :pub_link, style: 'width:400px;'

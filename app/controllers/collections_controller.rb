@@ -4,9 +4,11 @@
 # Most of the actions require editor's permissions
 class CollectionsController < ApplicationController
   include Tracking
+  include BybeUtils
+  include KwicConcordanceConcern
 
-  before_action :require_editor, except: %i(show download print)
-  before_action :set_collection, only: %i(show edit update destroy drag_item)
+  before_action :require_editor, except: %i(show download print kwic kwic_download)
+  before_action :set_collection, only: %i(show edit update destroy)
 
   # GET /collections or /collections.json
   def index
@@ -75,22 +77,31 @@ class CollectionsController < ApplicationController
     if dl.nil?
       prep_for_show # TODO
       filename = "#{@collection.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.#{format}"
-      # TODO: implement ias
-      html = <<~WRAPPER
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="he" lang="he" dir="rtl">
-        <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
-        <body dir='rtl'><div dir="rtl" align="right">
-        <div style="font-size:300%; font-weight: bold;">#{@collection.title}</div>
-        #{@htmls.map { |h| downloadable_html(h) }.join("\n")}
 
-        <hr />
-        #{I18n.t(:download_footer_html, url: url_for(@collection))}
-        </div></body></html>
-      WRAPPER
-      austr = textify_authorities_and_roles(@collection.involved_authorities)
-      dl = MakeFreshDownloadable.call(params[:format], filename, html, @collection, austr)
+      if format == 'kwic'
+        # Trigger async job for KWIC concordance generation
+        GenerateKwicConcordanceJob.perform_async('Collection', @collection.id)
+        flash[:notice] = t(:kwic_being_generated)
+        redirect_to @collection
+        return
+      else
+        # TODO: implement ias
+        html = <<~WRAPPER
+          <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+          <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="he" lang="he" dir="rtl">
+          <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
+          <body dir='rtl'><div dir="rtl" align="right">
+          <div style="font-size:300%; font-weight: bold;">#{@collection.title}</div>
+          #{@htmls.map { |h| downloadable_html(h) }.join("\n")}
+
+          <hr />
+          #{I18n.t(:download_footer_html, url: url_for(@collection))}
+          </div></body></html>
+        WRAPPER
+        austr = textify_authorities_and_roles(@collection.involved_authorities)
+        dl = MakeFreshDownloadable.call(params[:format], filename, html, @collection, austr)
+      end
     end
 
     track_download(@collection, format)
@@ -159,46 +170,142 @@ class CollectionsController < ApplicationController
     end
   end
 
-  # POST /collections/1/drag_item
-  def drag_item
-    # zero-based indexes of item in the list
-    old_index = params.fetch(:old_index).to_i
-    new_index = params.fetch(:new_index).to_i
-
-    Collection.transaction do
-      items = @collection.collection_items.order(:seqno).to_a
-      item_to_move = items.delete_at(old_index)
-      items.insert(new_index, item_to_move)
-
-      items.each_with_index do |ci, index|
-        ci.update!(seqno: index + 1) unless ci.seqno == index + 1
-      end
-    end
-    head :ok
-  end
-
-  # POST /collections/1/transplant_item
-  def transplant_item
-    @collection = Collection.find(params[:collection_id])
-    @dest_coll = Collection.find(params[:dest_coll_id].to_i)
-    @src_coll = Collection.find(params[:src_coll_id].to_i)
-    @old_item_id = params[:item_id].to_i
-    @item = CollectionItem.find(@old_item_id)
-    if @dest_coll.nil? || @src_coll.nil? || @item.nil?
-      flash[:error] = t(:no_such_item)
-      head :not_found
-      return
-    end
-    ActiveRecord::Base.transaction do
-      @new_item_id = @dest_coll.insert_item_at(@item, params[:new_pos].to_i)
-      @src_coll.remove_item(@old_item_id)
-    end
-    head :ok
-  end
-
   def manage
     @collection = Collection.find(params[:collection_id])
     head :forbidden if @collection.collection_type == 'uncollected' # refuse to edit uncollected collections
+  end
+
+  # Display KWIC concordance browser for a collection
+  def kwic
+    @collection = Collection.find(params[:collection_id])
+
+    unless @collection.flatten_items.any? { |ci| ci.item_type == 'Manifestation' && ci.item.present? }
+      flash[:error] = t(:empty_collection)
+      redirect_to @collection
+      return
+    end
+
+    @page_title = "#{t(:kwic_concordance)} - #{@collection.title} - #{t(:default_page_title)}"
+    @pagetype = :collection
+    @entity = @collection
+    @entity_type = 'Collection'
+
+    # Use fresh downloadable mechanism to ensure KWIC downloadable exists
+    dl = ensure_kwic_downloadable_exists(@collection)
+
+    # Check if concordance is being generated asynchronously
+    if dl.nil?
+      flash[:notice] = t(:kwic_being_generated)
+      redirect_to @collection
+      return
+    end
+
+    # Parse concordance data from the stored downloadable
+    if dl&.stored_file&.attached?
+      kwic_text = dl.stored_file.download.force_encoding('UTF-8')
+      @concordance_data = ParseKwicConcordance.call(kwic_text)
+
+      # Enrich instances with manifestation IDs for context fetching
+      @collection.flatten_items.each do |ci|
+        next if ci.item.nil? || ci.item_type != 'Manifestation'
+
+        @concordance_data.each do |entry|
+          entry[:instances].each do |instance|
+            if instance[:label] == ci.title
+              instance[:manifestation_id] = ci.item.id
+            end
+          end
+        end
+      end
+    else
+      # This shouldn't happen since ensure_kwic_downloadable_exists returns nil for async generation
+      flash[:error] = t(:error_generating_concordance)
+      redirect_to @collection
+      return
+    end
+
+    # Pagination setup
+    @per_page = (params[:per_page] || 25).to_i
+    @per_page = 25 unless [25, 50, 100].include?(@per_page)
+
+    # Filtering
+    @filter_text = params[:filter].to_s.strip
+    if @filter_text.present?
+      @concordance_data = @concordance_data.select do |entry|
+        entry[:token].include?(@filter_text)
+      end
+    end
+
+    # Sorting
+    @sort_by = params[:sort].to_s.strip
+    @sort_by = 'alphabetical' unless %w[alphabetical frequency].include?(@sort_by)
+    @concordance_data = sort_concordance_data(@concordance_data, 'frequency') if @sort_by == 'frequency' # data is already alphabetical by default
+
+    @total_entries = @concordance_data.length
+    @page = (params[:page] || 1).to_i
+    @total_pages = (@total_entries.to_f / @per_page).ceil
+    @page = [@page, @total_pages].min if @total_pages > 0
+    @page = 1 if @page < 1
+
+    offset = (@page - 1) * @per_page
+    @concordance_entries = @concordance_data[offset, @per_page] || []
+
+    # Create a lookup hash for collection items to avoid N+1 queries in the view
+    @collection_items_by_label = {}
+    @collection.flatten_items.each do |ci|
+      @collection_items_by_label[ci.title] = ci if ci.item_type == 'Manifestation'
+    end
+  end
+
+  # Get extended context for a paragraph (AJAX endpoint)
+  def kwic_context
+    manifestation_id = params[:manifestation_id].to_i
+    paragraph_num = params[:paragraph].to_i
+
+    manifestation = Manifestation.find(manifestation_id)
+    context = get_extended_context(manifestation, paragraph_num)
+
+    render json: {
+      prev: context[:prev],
+      current: context[:current],
+      next: context[:next]
+    }
+  end
+
+  # Download filtered or full KWIC concordance for collection
+  def kwic_download
+    @collection = Collection.find(params[:collection_id])
+
+    # Generate concordance data from all manifestations in collection
+    labelled_texts = []
+    @collection.flatten_items.each do |ci|
+      next if ci.item.nil? || ci.item_type != 'Manifestation'
+
+      labelled_texts << {
+        label: ci.title,
+        buffer: ci.item.to_plaintext
+      }
+    end
+
+    concordance_data = kwic_concordance(labelled_texts)
+
+    # Apply filter if present
+    filter_text = params[:filter].to_s.strip
+    if filter_text.present?
+      concordance_data = concordance_data.select do |entry|
+        entry[:token].include?(filter_text)
+      end
+    end
+
+    # Generate text file
+    kwic_text = format_concordance_as_text(concordance_data)
+
+    filename = "#{@collection.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
+
+    send_data kwic_text,
+              filename: filename,
+              type: 'text/plain; charset=utf-8',
+              disposition: 'attachment'
   end
 
   private
@@ -254,7 +361,7 @@ class CollectionsController < ApplicationController
   protected
 
   def downloadable_html(h)
-    title, ias, html, is_curated, genre, i, ci = h
+    title, ias, html, = h
     austr = textify_authorities_and_roles(ias)
     out = "<h1>#{title}</h1>\n"
     out += "<h2>#{austr}</h2>" if austr.present?

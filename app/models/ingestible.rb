@@ -5,6 +5,7 @@ require 'pandoc-ruby' # for generic DOCX-to-HTML conversions
 # Ingestible is a set of text being prepared for inclusion into a main database
 class Ingestible < ApplicationRecord
   LOCK_TIMEOUT_IN_SECONDS = 60 * 15 # 15 minutes
+  COPYRIGHTED_IP_OPTIONS = %w(by_permission orphan).freeze
 
   enum :status, { draft: 0, ingested: 1, failed: 2, awaiting_authorities: 3 }
   enum :scenario, { single: 0, multiple: 1, mixed: 2 }
@@ -177,15 +178,12 @@ class Ingestible < ApplicationRecord
 
   # copied from HtmlFileController's new_postprocess
   def postprocess(buf)
-    # join lines in <span> elements that, er, span more than one line
-    buf.gsub!(%r{<span.*?>.*?\n.*?</span>}) { |thematch| thematch.sub("\n", ' ') }
-    # remove all <span> tags because pandoc generates them excessively
-    buf.gsub!(/<span.*?>/m, '')
-    buf.gsub!('</span>', '')
+    # remove all SPAN tags left by pandoc from buf
+    buf = buf.gsub(/<span[^>]*>/m, '').gsub('</span>', '')
     lines = buf.split("\n")
     in_footnotes = false
     prev_nikkud = false
-    (0..lines.length - 1).each do |i|
+    (0..(lines.length - 1)).each do |i|
       lines[i].strip!
       if lines[i].empty? && prev_nikkud
         lines[i] = '> '
@@ -201,7 +199,10 @@ class Ingestible < ApplicationRecord
         in_footnotes = true if lines[i] =~ /^\[\^\d+\]:/
         if nikkud
           # make full-nikkud lines PRE
-          lines[i] = "> #{lines[i]}" unless (lines[i] =~ /\[\^\d+/) || title_line(lines[i]) # produce a blockquote (PRE ignores bold/markup)
+          # Only add > if line doesn't already start with > (prevent > appearing mid-line after joining)
+          unless (lines[i] =~ /\[\^\d+/) || title_line(lines[i]) || (lines[i] =~ /^\s*>/)
+            lines[i] = "> #{lines[i]}"
+          end
           prev_nikkud = true
         else
           prev_nikkud = false
@@ -211,7 +212,8 @@ class Ingestible < ApplicationRecord
         end
       end
     end
-    new_buffer = lines.join "\n"
+    # join the lines back together, keeping only one '>' character at the start of paragraphs, i.e. removing '>' from consecutive lines that are being joined to a line already starting with '>'
+    new_buffer = lines.join("\n")
     new_buffer.gsub!("\n\s*\n\s*\n", "\n\n")
     ['.', ',', ':', ';', '?', '!'].each do |c|
       new_buffer.gsub!(" #{c}", c) # remove spaces before punctuation
@@ -249,7 +251,7 @@ class Ingestible < ApplicationRecord
     end
 
     if multiple_works? && markdown =~ /\[\^\d+\]/ # if there are footnotes in the text
-      footnotes_fixed_buffers = relocate_footnotes.map { |k, v| v }
+      footnotes_fixed_buffers = relocate_footnotes.map { |_k, v| v }
       buf.each_index do |i|
         buf[i][:content] = footnotes_fixed_buffers[i]
       end
@@ -278,16 +280,17 @@ class Ingestible < ApplicationRecord
     i = 1
     markdown.split(/^(&&& .*)/).each do |bit|
       if bit[0..3] == '&&& '
-        prev_key = "#{bit[4..-1].strip}_ZZ#{i}" # remember next section's title
+        prev_key = "#{bit[4..].strip}_ZZ#{i}" # remember next section's title
         stop = false
-        begin
+        loop do
           if prev_key =~ /\[\^\d+\]/ # if the title line has a footnote
             footbuf += ::Regexp.last_match(0) # store the footnote
             prev_key.sub!(::Regexp.last_match(0), '').strip! # and remove it from the title
           else
             stop = true
           end
-        end until stop # handle multiple footnotes if they exist.
+          break if stop
+        end
       else
         ret[prev_key] = footbuf + bit unless prev_key.nil? # buffer the text to be put in the prev_key next iteration
         titles_order << prev_key unless prev_key.nil?
@@ -337,5 +340,67 @@ class Ingestible < ApplicationRecord
 
   def release_lock!
     update_columns(locked_at: nil, locked_by_user_id: nil) # we deliberately skip validations here
+  end
+
+  # Calculate expected copyright status based on involved authorities
+  # Returns 'public_domain' if all authorities are public_domain, 'copyrighted' otherwise
+  # @param text_authorities [String] JSON string of text-specific authorities
+  # @return [String] 'public_domain' or 'copyrighted'
+  def calculate_copyright_status(text_authorities)
+    # Merge authorities per role to get the complete list
+    merged_authorities = merge_authorities_per_role(text_authorities, default_authorities)
+
+    # Also include collection authorities as they may be relevant
+    collection_auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
+
+    # Collect all authority IDs that need to be checked
+    authority_ids = []
+    merged_authorities.each do |auth|
+      authority_ids << auth['authority_id'] if auth['authority_id'].present?
+    end
+    collection_auths.each do |auth|
+      authority_ids << auth['authority_id'] if auth['authority_id'].present?
+    end
+
+    # If no authorities with IDs, we can't determine status - return copyrighted to be safe
+    return 'copyrighted' if authority_ids.empty?
+
+    # Check if any authority is not public_domain
+    # More efficient than loading all records
+    has_non_public_domain = Authority.where(id: authority_ids.uniq)
+                                     .where.not(intellectual_property: :public_domain)
+                                     .exists?
+
+    has_non_public_domain ? 'copyrighted' : 'public_domain'
+  end
+
+  private
+
+  # Merge work-specific authorities with defaults per role
+  # If a role is specified in work authorities, it overrides the default for that role
+  # If a role is not specified in work authorities, the default for that role is used
+  # If work authorities is '[]', no defaults are used (explicit empty)
+  def merge_authorities_per_role(work_authorities, default_authorities)
+    # Handle explicit empty array - no defaults should apply
+    return [] if work_authorities == '[]'
+
+    work_auths = work_authorities.present? ? JSON.parse(work_authorities) : []
+    default_auths = default_authorities.present? ? JSON.parse(default_authorities) : []
+
+    # If no defaults, just return work authorities
+    return work_auths if default_auths.empty?
+
+    # Get roles present in work authorities
+    work_roles = work_auths.map { |a| a['role'] }.uniq
+
+    # Start with work authorities, then add defaults for roles not present in work authorities
+    result = work_auths.dup
+    default_auths.each do |default_auth|
+      unless work_roles.include?(default_auth['role'])
+        result << default_auth
+      end
+    end
+
+    result
   end
 end

@@ -14,7 +14,7 @@
           = form_tag( :action => 'list') do
             = label_tag(:title_l, t(:title))
             /= hidden_field_tag(:title, session[:mft_q_params][:title])
-            = autocomplete_field_tag :title, session[:mft_q_params][:title], autocomplete_manifestation_title_path, 'data-noMatchesLabel' => t(:no_matches_found)
+            = autocomplete_field_tag :title, session[:mft_q_params][:title], autocomplete_manifestation_title_path
 
             = label_tag(:author_l, t(:author))
             /= text_field_tag(:author, session[:mft_q_params][:author])

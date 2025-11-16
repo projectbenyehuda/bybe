@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'hebrew'
 
 describe Manifestation do
   describe '.safe_filename' do
@@ -76,6 +77,7 @@ describe Manifestation do
 
   describe '.authors_string' do
     subject { manifestation.authors_string }
+
     context 'when authors present' do
       let(:author_1) { create(:authority, name: 'Alpha') }
       let(:author_2) { create(:authority, name: 'Beta') }
@@ -102,6 +104,7 @@ describe Manifestation do
 
   describe '.translators_string' do
     subject { manifestation.translators_string }
+
     context 'when translators present' do
       let(:translator_1) { create(:authority, name: 'Alpha') }
       let(:translator_2) { create(:authority, name: 'Beta') }
@@ -224,7 +227,8 @@ describe Manifestation do
 
   describe '.to_html' do
     subject { manifestation.to_html }
-    let(:manifestation) { create(:manifestation, markdown: "## Test", status: status) }
+
+    let(:manifestation) { create(:manifestation, markdown: '## Test', status: status) }
 
     context 'when published' do
       let(:status) { :published }
@@ -261,6 +265,203 @@ describe Manifestation do
     context 'when no downloadable exists' do
       it 'returns nil' do
         expect(manifestation.fresh_downloadable_for('pdf')).to be_nil
+      end
+    end
+  end
+
+  describe '#recalc_responsibility_statement' do
+    let(:author) { create(:authority, name: 'Test Author') }
+    let(:translator) { create(:authority, name: 'Test Translator') }
+    let(:manifestation) { create(:manifestation, orig_lang: 'de', author: author, translator: translator) }
+
+    it 'updates responsibility_statement to match author_string' do
+      manifestation.recalc_responsibility_statement
+      expect(manifestation.responsibility_statement).to eq(manifestation.author_string!)
+    end
+
+    it 'does not save the record' do
+      expect { manifestation.recalc_responsibility_statement }.not_to change(manifestation, :updated_at)
+    end
+  end
+
+  describe '#recalc_responsibility_statement!' do
+    let(:author) { create(:authority, name: 'Test Author') }
+    let(:translator) { create(:authority, name: 'Test Translator') }
+    let(:manifestation) { create(:manifestation, orig_lang: 'de', author: author, translator: translator) }
+
+    it 'updates and saves responsibility_statement to match author_string' do
+      manifestation.recalc_responsibility_statement!
+      manifestation.reload
+      expect(manifestation.responsibility_statement).to eq(manifestation.author_string!)
+    end
+  end
+
+  describe '#recalc_cached_people' do
+    let(:author) { create(:authority, name: 'Test Author') }
+    let(:translator) { create(:authority, name: 'Test Translator') }
+    let(:manifestation) { create(:manifestation, orig_lang: 'de', author: author, translator: translator) }
+
+    it 'updates cached_people to match author_string' do
+      manifestation.recalc_cached_people
+      expect(manifestation.cached_people).to eq(manifestation.author_string!)
+    end
+
+    it 'does not save the record' do
+      expect { manifestation.recalc_cached_people }.not_to change(manifestation, :updated_at)
+    end
+
+    context 'when work has no authors' do
+      let(:manifestation) { create(:manifestation) }
+
+      before do
+        manifestation.expression.work.involved_authorities.delete_all
+        manifestation.reload
+      end
+
+      it 'sets cached_people to nil representation' do
+        manifestation.recalc_cached_people
+        expect(manifestation.cached_people).to eq(I18n.t(:nil))
+      end
+    end
+  end
+
+  describe '#recalc_cached_people!' do
+    let(:author) { create(:authority, name: 'Test Author') }
+    let(:translator) { create(:authority, name: 'Test Translator') }
+    let(:manifestation) { create(:manifestation, orig_lang: 'de', author: author, translator: translator) }
+
+    it 'updates and saves cached_people to match author_string' do
+      manifestation.recalc_cached_people!
+      manifestation.reload
+      expect(manifestation.cached_people).to eq(manifestation.author_string!)
+    end
+
+    it 'persists the cached_people changes to the database' do
+      # Ensure cached_people is initially different from author_string
+      manifestation.update_column(:cached_people, 'different value')
+
+      manifestation.recalc_cached_people!
+      manifestation.reload
+      expect(manifestation.cached_people).to eq(manifestation.author_string!)
+    end
+  end
+
+  describe '#update_alternate_titles' do
+    let(:manifestation) { create(:manifestation, title: 'פִּתְאֹם') }
+
+    it 'updates alternate_titles with forms from AlternateHebrewForms service' do
+      manifestation.update_alternate_titles
+      expect(manifestation.alternate_titles).to eq('פתאם; פיתאום')
+    end
+
+    it 'preserves existing alternate titles and adds new ones' do
+      manifestation.update_column(:alternate_titles, 'עוד משהו')
+      manifestation.update_alternate_titles
+      expect(manifestation.alternate_titles).to eq('עוד משהו; פתאם; פיתאום')
+    end
+
+    it 'removes duplicates when combining existing and new alternate forms' do
+      manifestation.update_column(:alternate_titles, 'פיתאום')
+      manifestation.update_alternate_titles
+      expect(manifestation.alternate_titles).to eq('פיתאום; פתאם')
+    end
+
+    it 'handles empty existing alternate_titles' do
+      manifestation.update_column(:alternate_titles, '')
+      manifestation.update_alternate_titles
+      expect(manifestation.alternate_titles).to eq('פתאם; פיתאום')
+    end
+
+    it 'handles nil existing alternate_titles' do
+      manifestation.update_column(:alternate_titles, nil)
+      manifestation.update_alternate_titles
+      expect(manifestation.alternate_titles).to eq('פתאם; פיתאום')
+    end
+
+    context 'when alternate_titles has some other (user-provided) names' do
+      it 'preserves existing alternate_titles' do
+        manifestation.update_column(:alternate_titles, 'משהו אחר')
+        manifestation.update_alternate_titles
+        expect(manifestation.alternate_titles).to eq('משהו אחר; פתאם; פיתאום')
+      end
+    end
+  end
+
+  describe 'before_save callbacks' do
+    let(:manifestation) { build(:manifestation, title: 'מִבְחַר שִירִים') }
+
+    describe 'update_alternate_titles callback' do
+      it 'is triggered when title changes' do
+        expect(manifestation).to receive(:update_alternate_titles)
+        manifestation.save!
+      end
+
+      it 'is not triggered when title does not change' do
+        manifestation.save!
+        manifestation.reload
+        expect(manifestation).not_to receive(:update_alternate_titles)
+        manifestation.update!(comment: 'new comment')
+      end
+
+      it 'is triggered when title changes on update' do
+        manifestation.save!
+        manifestation.reload
+        expect(manifestation).to receive(:update_alternate_titles)
+        manifestation.update!(title: 'כותר חדש')
+      end
+    end
+
+    describe 'recalc_cached_people callback' do
+      let(:expression) { create(:expression) }
+      let(:new_expression) { create(:expression) }
+
+      it 'is triggered when expression_id changes' do
+        manifestation.expression = expression
+        expect(manifestation).to receive(:recalc_cached_people)
+        manifestation.save!
+      end
+
+      it 'is not triggered when expression_id does not change' do
+        manifestation.expression = expression
+        manifestation.save!
+        manifestation.reload
+        expect(manifestation).not_to receive(:recalc_cached_people)
+        manifestation.update!(comment: 'new comment')
+      end
+
+      it 'is triggered when expression_id changes on update' do
+        manifestation.expression = expression
+        manifestation.save!
+        manifestation.reload
+        expect(manifestation).to receive(:recalc_cached_people)
+        manifestation.update!(expression: new_expression)
+      end
+    end
+
+    describe 'recalc_responsibility_statement callback' do
+      let(:expression) { create(:expression) }
+      let(:new_expression) { create(:expression) }
+
+      it 'is triggered when expression_id changes' do
+        manifestation.expression = expression
+        expect(manifestation).to receive(:recalc_responsibility_statement)
+        manifestation.save!
+      end
+
+      it 'is not triggered when expression_id does not change' do
+        manifestation.expression = expression
+        manifestation.save!
+        manifestation.reload
+        expect(manifestation).not_to receive(:recalc_responsibility_statement)
+        manifestation.update!(comment: 'new comment')
+      end
+
+      it 'is triggered when expression_id changes on update' do
+        manifestation.expression = expression
+        manifestation.save!
+        manifestation.reload
+        expect(manifestation).to receive(:recalc_responsibility_statement)
+        manifestation.update!(expression: new_expression)
       end
     end
   end

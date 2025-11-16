@@ -567,7 +567,7 @@ module BybeUtils
 
   def html2txt(buf)
     coder = HTMLEntities.new
-    return strip_tags(coder.decode(buf)).gsub(/<!\[.*?\]>/, '')
+    return strip_tags(coder.decode(buf)).gsub(/<!\[.*?\]>/, '').tr('“”', '""').tr('‘’', "''").strip
   end
 
   def author_surname_and_initials(author_string) # TODO: support multiple authors
@@ -743,6 +743,8 @@ module BybeUtils
   end
 
   def is_legacy_url(url)
+    return false if url =~ %r{rails/active_storage}
+
     url = '/' + url if url[0] != '/' # prepend slash if necessary
     h = HtmlFile.find_by_url(url)
     # also treat /{author} or /{author}/ or /{author}/index.html as legacy urls
@@ -896,7 +898,7 @@ module BybeUtils
       buffer = text_entry[:buffer]
 
       # Split buffer into paragraphs (lines)
-      paragraphs = buffer.split("\n")
+      paragraphs = buffer.split("\n").map(&:strip).reject(&:empty?)
 
       paragraphs.each_with_index do |paragraph, para_index|
         # Tokenize paragraph, preserving Hebrew acronyms
@@ -957,7 +959,7 @@ module BybeUtils
     # Split on non-word characters (except quotation marks which we need to check for acronyms)
     # This regex splits on anything that's not a letter, digit, or quotation mark
     # It will treat punctuation like ;:;|/ as word boundaries
-    text.split(/[^\p{L}\p{N}"]+/).each do |word_candidate|
+    text.split(/[^\p{L}\p{N}\p{Mn}"']+/).each do |word_candidate|
       next if word_candidate.empty?
 
       # At this point, word_candidate contains only letters, digits, and possibly quotation marks
@@ -966,6 +968,11 @@ module BybeUtils
         # It's a Hebrew acronym - preserve the quotation mark
         # Examples: מפא"י, רמטכ"ל, חט"ב
         tokens << word_candidate
+      elsif word_candidate.start_with?("'") || (word_candidate.end_with?("'") && word_candidate.length > 2)
+        # Has single quotes at start or end - split on single quotes
+        word_candidate.split("'").each do |part|
+          tokens << part unless part.empty?
+        end
       elsif word_candidate.include?('"')
         # Has quotes but not in penultimate position - split on quotes
         # This handles cases like word"word or "word or word"

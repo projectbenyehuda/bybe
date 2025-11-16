@@ -5,6 +5,7 @@ include ApplicationHelper
 class AuthorsController < ApplicationController
   include FilteringAndPaginationConcern
   include Tracking
+  include KwicConcordanceConcern
 
   before_action only: %i(new publish create show edit list add_link delete_link
                          delete_photo edit_toc update to_manual_toc add_link manage_toc volumes) do |c|
@@ -13,8 +14,8 @@ class AuthorsController < ApplicationController
 
   before_action :set_author,
                 only: %i(show edit update destroy toc edit_toc print all_links delete_photo
-                         whatsnew_popup latest_popup publish to_manual_toc volumes new_toc)
-  autocomplete :tag, :name, limit: 2
+                         whatsnew_popup latest_popup publish to_manual_toc volumes new_toc
+                         kwic kwic_download kwic_context)
   layout 'backend', only: %i(manage_toc)
 
   def publish
@@ -141,11 +142,12 @@ class AuthorsController < ApplicationController
       end
     end
     # tags by tag_id
-    @tag_ids = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
-    if @tag_ids.present?
-      tag_data = Tag.where(id: @tag_ids).pluck(:id, :name)
+    tag_ids_array = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
+    if tag_ids_array.present?
+      tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
       ret << { terms: { tags: tag_data.map(&:last) } }
       @filters += tag_data.map { |x| [x.last, "tag_#{x.first}", :checkbox] }
+      @tag_ids = tag_ids_array.join(',') # Keep as comma-separated string for the form
     end
 
     # dates
@@ -427,10 +429,10 @@ class AuthorsController < ApplicationController
                             .page(params[:page])
                             .order(params[:order].nil? ? ['tocs.status, sort_name'] : params[:order])
 
-    @q = params[:q]
+    @q = params[:q].strip unless params[:q].nil?
     return if @q.blank?
 
-    @authorities = @authorities.where('name like ? or other_designation like ?', "%#{params[:q]}%", "%#{params[:q]}%")
+    @authorities = @authorities.where('name like ? or other_designation like ?', "%#{@q}%", "%#{@q}%")
   end
 
   def add_link
@@ -557,6 +559,144 @@ class AuthorsController < ApplicationController
     @top_nodes = GenerateTocTree.call(@author)
     @nonce = 'top'
     @page_title = "#{t(:edit_toc)}: #{@author.name}"
+  end
+
+  def kwic
+    unless @author.published_manifestations.any?
+      flash[:error] = t(:no_works_for_author)
+      redirect_to authority_path(@author)
+      return
+    end
+
+    @page_title = "#{t(:kwic_concordance)} - #{@author.name} - #{t(:default_page_title)}"
+    @pagetype = :author
+    @entity = @author
+    @entity_type = 'Authority'
+
+    # Use fresh downloadable mechanism to ensure KWIC downloadable exists
+    dl = ensure_kwic_downloadable_exists(@author)
+
+    # Check if concordance is being generated asynchronously
+    if dl.nil?
+      flash[:notice] = t(:kwic_being_generated)
+      redirect_to authority_path(@author)
+      return
+    end
+
+    # Parse concordance data from the stored downloadable
+    if dl&.stored_file&.attached?
+      kwic_text = dl.stored_file.download.force_encoding('UTF-8')
+      @concordance_data = ParseKwicConcordance.call(kwic_text)
+
+      # Enrich instances with manifestation IDs for context fetching
+      # Map labels to manifestation IDs
+      @manifestations_by_label = {}
+      @author.published_manifestations.each do |m|
+        @manifestations_by_label[m.title] = m.id
+      end
+
+      @concordance_data.each do |entry|
+        entry[:instances].each do |instance|
+          instance[:manifestation_id] = @manifestations_by_label[instance[:label]]
+        end
+      end
+    else
+      # This shouldn't happen since ensure_kwic_downloadable_exists returns nil for async generation
+      flash[:error] = t(:error_generating_concordance)
+      redirect_to authority_path(@author)
+      return
+    end
+
+    # Pagination setup
+    @per_page = (params[:per_page] || 25).to_i
+    @per_page = 25 unless [25, 50, 100].include?(@per_page)
+
+    # Filtering
+    @filter_text = params[:filter].to_s.strip
+    if @filter_text.present?
+      @concordance_data = @concordance_data.select do |entry|
+        entry[:token].include?(@filter_text)
+      end
+    end
+
+    # Sorting
+    @sort_by = params[:sort].to_s.strip
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
+    @concordance_data = sort_concordance_data(@concordance_data, @sort_by)
+
+    # Pagination
+    @total_entries = @concordance_data.length
+    @page = (params[:page] || 1).to_i
+    @page = 1 if @page < 1
+    @total_pages = (@total_entries.to_f / @per_page).ceil
+    @page = @total_pages if @page > @total_pages && @total_pages > 0
+
+    start_idx = (@page - 1) * @per_page
+    end_idx = start_idx + @per_page - 1
+    @concordance_entries = @concordance_data[start_idx..end_idx] || []
+  end
+
+  def kwic_download
+    unless @author.published_manifestations.any?
+      flash[:error] = t(:no_works_for_author)
+      redirect_to authority_path(@author)
+      return
+    end
+
+    # Use fresh downloadable mechanism to ensure KWIC downloadable exists
+    dl = ensure_kwic_downloadable_exists(@author)
+
+    # Check if concordance is being generated asynchronously
+    if dl.nil?
+      flash[:notice] = t(:kwic_being_generated)
+      redirect_to authority_path(@author)
+      return
+    end
+
+    # Parse concordance data from the stored downloadable
+    if dl&.stored_file&.attached?
+      kwic_text = dl.stored_file.download.force_encoding('UTF-8')
+      @concordance_data = ParseKwicConcordance.call(kwic_text)
+    else
+      # This shouldn't happen since ensure_kwic_downloadable_exists returns nil for async generation
+      flash[:error] = t(:error_generating_concordance)
+      redirect_to authority_path(@author)
+      return
+    end
+
+    # Apply filter if present
+    @filter_text = params[:filter].to_s.strip
+    if @filter_text.present?
+      @concordance_data = @concordance_data.select do |entry|
+        entry[:token].include?(@filter_text)
+      end
+    end
+
+    # Apply sort
+    @sort_by = params[:sort].to_s.strip
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
+    @concordance_data = sort_concordance_data(@concordance_data, @sort_by)
+
+    # Format as text
+    content = format_concordance_as_text(@concordance_data)
+
+    # Send as downloadable file
+    filename = "#{@author.name.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
+    send_data content, filename: filename, type: 'text/plain; charset=utf-8', disposition: 'attachment'
+  end
+
+  def kwic_context
+    manifestation_id = params[:manifestation_id].to_i
+    paragraph_num = params[:paragraph].to_i
+
+    manifestation = Manifestation.find(manifestation_id)
+    context = get_extended_context(manifestation, paragraph_num)
+
+    render json: {
+      prev: context[:prev],
+      current: context[:current],
+      next: context[:next]
+    }
   end
 
   protected

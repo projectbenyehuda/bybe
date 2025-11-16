@@ -28,7 +28,7 @@
                 #add-tag-form
                   %div{style: 'display:inline;margin-top:0.6rem;'}
                     %h2.field-label= t(:suggested_tag_name)
-                    = autocomplete_field_tag :tag, '', autocomplete_tag_name_path, {'data-noMatchesLabel' => t(:no_matches_found), class: 'field-v02'}
+                    = autocomplete_field_tag :tag, '', autocomplete_tag_name_path, { class: 'field-v02' }
                     = hidden_field_tag :taggable_id, @tagging.taggable_id
                     = hidden_field_tag :taggable_type, @tagging.taggable_type
                     = hidden_field_tag :tag_id, '', id: 'tag_id'

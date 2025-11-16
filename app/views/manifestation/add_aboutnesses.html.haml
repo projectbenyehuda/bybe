@@ -17,7 +17,8 @@
   %h3= t(:add_work)
   #add-work
     = form_for @aboutness, remote: true do |f|
-      = autocomplete_field_tag :work_autocomplete, '', autocomplete_manifestation_title_path, id_element: '#add_work_topic', 'data-noMatchesLabel' => t(:no_matches_found)
+      = autocomplete_field_tag :work_autocomplete, '', autocomplete_manifestation_title_path,
+                               id_element: '#add_work_topic'
       = hidden_field_tag :add_work_topic, nil
       = hidden_field_tag :aboutness_type, 'Work'
       = hidden_field_tag :work_id, @w.id
