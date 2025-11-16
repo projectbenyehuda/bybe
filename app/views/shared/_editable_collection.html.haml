@@ -101,33 +101,33 @@
         ui.item.data('oldIndex', ui.item.index());
       },
       update: function(e, ui) {
-        var draggedOut = this !== ui.item.parent()[0] && !$.contains(this, ui.item.parent()[0]);
+        var draggedOut = this !== ui.item.parent()[0];
         var draggedIn = ui.sender !== null;
-        var sameList = !draggedOut && !draggedIn;
 
-        if (sameList) {
-          // gets the new and old index then removes the temporary attribute
-          var newIndex = ui.item.index();
-          var oldIndex = ui.item.data('oldIndex');
+        if (draggedOut || draggedIn) {
+          // inter-list drag is handled by the `receive` event
+          return;
+        }
 
-          ///code to pass the data using AJAX
-          if (newIndex != oldIndex) {
-            $mask.show();
-            var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
-            var collectionId = this.id.replace('#{nonce}_coll_','');
-            $.post(
-              '/collection_items/' + itemId + '/drag_item',
-              {
-                collection_id: collectionId,
-                old_index: oldIndex,
-                new_index: newIndex
-              }
-            ).fail(onError)
-            .always(function() {
-              $mask.hide();
-            });
-          }
-        } // inter-list drag is handled by the receive event
+        var newIndex = ui.item.index();
+        var oldIndex = ui.item.data('oldIndex');
+
+        if (newIndex != oldIndex) {
+          $mask.show();
+          var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
+          var collectionId = this.id.replace('#{nonce}_coll_','');
+          $.post(
+            '/collection_items/' + itemId + '/drag_item',
+            {
+              collection_id: collectionId,
+              old_index: oldIndex,
+              new_index: newIndex
+            }
+          ).fail(onError)
+          .always(function() {
+            $mask.hide();
+          });
+        }
       },
       receive: function(event, ui) {
         $mask.show();
