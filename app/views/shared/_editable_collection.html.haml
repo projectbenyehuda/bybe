@@ -86,14 +86,19 @@
     var $container = $("##{nonce}_coll_container_#{collection.id}");
     var $mask = $container.find('.collection-mask');
 
+    const onError = function(xhr) {
+      var errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+      alert('#{I18n.t(:collection_item_operation_error, error: 'PLACEHOLDER')}'.replace('PLACEHOLDER', errorMsg));
+      location.reload();
+    };
+
     $("##{nonce}_coll_#{collection.id}").sortable({
       handle: '.drag-handle',
       connectWith: '.collection.connectable',
       dropOnEmpty: true,
       start: function(e, ui) {
         // creates a temporary attribute on the element with the old index
-        $(this).attr('data-previndex', ui.item.index());
-        ui.item.attr('data-previndex', ui.item.index());
+        ui.item.data('oldIndex', ui.item.index());
       },
       update: function(e, ui) {
         var draggedOut = this !== ui.item.parent()[0] && !$.contains(this, ui.item.parent()[0]);
@@ -103,16 +108,22 @@
         if (sameList) {
           // gets the new and old index then removes the temporary attribute
           var newIndex = ui.item.index();
-          var oldIndex = parseInt($(this).attr('data-previndex'));
-          $(this).removeAttr('data-previndex');
+          var oldIndex = ui.item.data('oldIndex');
 
           ///code to pass the data using AJAX
           if (newIndex != oldIndex) {
             $mask.show();
+            var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
+            var collectionId = this.id.replace('#{nonce}_coll_','');
             $.post(
-              '#{drag_item_collection_path(collection)}',
-              { old_index: oldIndex, new_index: newIndex }
-            ).always(function() {
+              '/collection_items/' + itemId + '/drag_item',
+              {
+                collection_id: collectionId,
+                old_index: oldIndex,
+                new_index: newIndex
+              }
+            ).fail(onError)
+            .always(function() {
               $mask.hide();
             });
           }
@@ -120,19 +131,20 @@
       },
       receive: function(event, ui) {
         $mask.show();
+        var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
+        var destCollId = this.id.replace('#{nonce}_coll_','');
+        var srcCollId = ui.sender[0].id.replace('#{nonce}_coll_','');
+        var oldIndex = ui.item.data('oldIndex');
         $.post(
-          '#{collection_transplant_item_path(collection.id)}',
+          '/collection_items/' + itemId + '/transplant_item',
           {
-            dest_coll_id: this.id.replace('#{nonce}_coll_',''),
-            src_coll_id: ui.sender[0].id.replace('#{nonce}_coll_',''),
-            item_id: ui.item[0].id.replace('#{nonce}_collitem_',''),
-            // read the previous index from the source sortable (ui.sender) rather than
-            // relying on an attribute on the moved DOM element which can be lost/changed
-            // during the transfer. Use radix 10 with parseInt for consistency.
-            old_pos: parseInt($(ui.sender[0]).attr('data-previndex'), 10) + 1,
-            new_pos: ui.item.index() + 1
+            src_collection_id: srcCollId,
+            dest_collection_id: destCollId,
+            old_index: oldIndex,
+            new_index: ui.item.index()
           }
-        ).always(function() {
+        ).fail(onError)
+        .always(function() {
           $mask.hide();
         });
         event.stopPropagation();
