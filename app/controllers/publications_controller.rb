@@ -98,6 +98,28 @@ class PublicationsController < ApplicationController
     end
   end
 
+  # GET /publications/autocomplete_publication_title
+  def autocomplete_publication_title
+    items = ElasticsearchAutocomplete.call(
+      params[:term],
+      PublicationsAutocompleteIndex,
+      %i(title)
+    )
+
+    render json: json_for_autocomplete(items, :title)
+  end
+
+  # GET /publications/autocomplete_authority_name
+  def autocomplete_authority_name
+    items = ElasticsearchAutocomplete.call(
+      params[:term],
+      AuthoritiesAutocompleteIndex,
+      %i(name other_designation)
+    )
+
+    render json: json_for_autocomplete(items, :name)
+  end
+
   private
 
   def set_publication

@@ -91,6 +91,10 @@ Bybeconv::Application.routes.draw do
   resources :news_items
   resources :bib_sources
   resources :holdings
+  get 'publications/autocomplete_publication_title' => 'publications#autocomplete_publication_title',
+      as: 'publications_autocomplete_publication_title'
+  get 'publications/autocomplete_authority_name' => 'publications#autocomplete_authority_name',
+      as: 'publications_autocomplete_authority_name'
   resources :publications
   get 'bib/index'
   get 'bib/scans' => 'bib#scans', as: 'bib_scans'

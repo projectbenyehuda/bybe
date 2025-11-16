@@ -1,4 +1,6 @@
 class Publication < ApplicationRecord
+  update_index('publications_autocomplete') { self } # update PublicationsAutocompleteIndex when entity is updated
+
   belongs_to :authority, inverse_of: :publications
   belongs_to :bib_source
   has_many :holdings, dependent: :destroy
