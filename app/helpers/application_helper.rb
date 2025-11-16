@@ -202,7 +202,7 @@ module ApplicationHelper
     case intellectual_property
     when 'public_domain'
       return 'm'
-    when 'copyrighted', 'by_permission', 'permission_for_all', 'permission_for_selected'
+    when 'copyrighted', 'by_permission', 'permission_for_all', 'permission_for_selected', 'orphan'
       return 'x'
     end
   end
