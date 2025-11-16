@@ -12,7 +12,7 @@
           %br
           %b= label_tag(t(:author))
           = autocomplete_field_tag(:author, params[:author],
-                                   publications_autocomplete_authority_name_path,
+                                   autocomplete_authority_name_and_aliases_path,
                                    { style: 'margin-right:20px; width:300px; background:white' })
           %br
           %b= label_tag(t(:status))
