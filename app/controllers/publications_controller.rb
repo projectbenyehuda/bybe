@@ -10,7 +10,7 @@ class PublicationsController < ApplicationController
       query << "publications.title like '%#{params['title']}%'"
     end
     if params['author'].present?
-      query << "people.name like '%#{params['author']}%'"
+      query << "authorities.name like '%#{params['author']}%'"
     end
     if params['status'].present?
       query << "publications.status = '#{Publication.statuses[params['status']]}'"
