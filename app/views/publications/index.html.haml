@@ -3,13 +3,13 @@
     .col-md-12
       %h2= t(:bib_records)
       %div{style:'background:mediumseagreen'}
-        = form_tag '', method: :get do
+        = form_tag '', method: :get, id: 'publications_filter_form' do
           %br
           %b= label_tag(t(:title))
-          = text_field_tag(:title, params[:title], {style: 'margin-right:20px; width:300px; background:white'})
+          = autocomplete_field_tag(:title, params[:title], autocomplete_publication_title_path, { style: 'margin-right:20px; width:300px; background:white' })
           %br
           %b= label_tag(t(:author))
-          = text_field_tag(:author, params[:author], {style: 'margin-right:20px; width:300px; background:white'})
+          = autocomplete_field_tag(:author, params[:author], autocomplete_authority_name_and_aliases_path, { style: 'margin-right:20px; width:300px; background:white' })
           %br
           %b= label_tag(t(:status))
           = select_tag(:status, options_for_select(['']+Publication.statuses.keys.map{|st| [t(st), st]}, params[:status]))
@@ -22,3 +22,23 @@
       != paginate @publications
       = link_to t(:back_to_bib_workshop), bib_index_path
 = render 'shared/note_saving'
+
+:javascript
+  $(document).ready(function() {
+    // Auto-submit form when autocomplete selection is made for title
+    $('#title').on('railsAutocomplete.select', function(event, data) {
+      event.preventDefault();
+      $('#publications_filter_form').submit();
+    });
+
+    // Auto-submit form when autocomplete selection is made for author
+    $('#author').on('railsAutocomplete.select', function(event, data) {
+      event.preventDefault();
+      $('#publications_filter_form').submit();
+    });
+
+    // Auto-submit form when status dropdown changes
+    $('select[name="status"]').on('change', function() {
+      $('#publications_filter_form').submit();
+    });
+  });
