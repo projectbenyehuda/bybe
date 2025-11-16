@@ -16,12 +16,12 @@ class PublicationsController < ApplicationController
       query << "publications.status = '#{Publication.statuses[params['status']]}'"
     end
     unless query.empty?
-      @publications = Publication.joins(:person).includes([:person, { holdings: :bib_source }]).where(query.join(' and ')).order(
-        status: :asc, person_id: :asc
+      @publications = Publication.joins(:authority).includes([:authority, { holdings: :bib_source }]).where(query.join(' and ')).order(
+        status: :asc, authority_id: :asc
       ).page(params[:page])
     else
-      @publications = Publication.includes([:person, { holdings: :bib_source }]).order(status: :asc,
-                                                                                       person_id: :asc).page(params[:page])
+      @publications = Publication.includes([:authority, { holdings: :bib_source }]).order(status: :asc,
+                                                                                          authority_id: :asc).page(params[:page])
     end
   end
 
