@@ -88,4 +88,12 @@
       entry_id = data.item.id.toString();
       window.location.href = '/dict/'+$('#mid').val()+'/'+entry_id;
     });
+    
+    // Prevent Enter key from submitting the form
+    $('#dict_autocomplete').on('keydown', function(event){
+      if(event.which === 13) { // Enter key
+        event.preventDefault();
+        return false;
+      }
+    });
   });
