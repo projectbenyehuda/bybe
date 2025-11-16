@@ -101,7 +101,7 @@ class PublicationsController < ApplicationController
   # GET /publications/autocomplete_publication_title
   def autocomplete_publication_title
     term = params[:term]
-    items = if term&.present?
+    items = if term.present?
               Publication.where('title LIKE ?', "#{term}%").limit(20)
             else
               []
@@ -113,7 +113,7 @@ class PublicationsController < ApplicationController
   # GET /publications/autocomplete_authority_name
   def autocomplete_authority_name
     term = params[:term]
-    items = if term&.present?
+    items = if term.present?
               Authority.where('name LIKE ?', "#{term}%").limit(20)
             else
               []

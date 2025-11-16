@@ -6,10 +6,14 @@
         = form_tag '', method: :get, id: 'publications_filter_form' do
           %br
           %b= label_tag(t(:title))
-          = autocomplete_field_tag(:title, params[:title], publications_autocomplete_publication_title_path, {style: 'margin-right:20px; width:300px; background:white'})
+          = autocomplete_field_tag(:title, params[:title],
+                                   publications_autocomplete_publication_title_path,
+                                   { style: 'margin-right:20px; width:300px; background:white' })
           %br
           %b= label_tag(t(:author))
-          = autocomplete_field_tag(:author, params[:author], publications_autocomplete_authority_name_path, {style: 'margin-right:20px; width:300px; background:white'})
+          = autocomplete_field_tag(:author, params[:author],
+                                   publications_autocomplete_authority_name_path,
+                                   { style: 'margin-right:20px; width:300px; background:white' })
           %br
           %b= label_tag(t(:status))
           = select_tag(:status, options_for_select(['']+Publication.statuses.keys.map{|st| [t(st), st]}, params[:status]))
