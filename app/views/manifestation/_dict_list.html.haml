@@ -128,4 +128,11 @@
       window.location.href = '/dict/'+$('#mid').val()+'/'+entry_id;
     });
 
+    // Prevent Enter key from submitting the form
+    $('#dict_autocomplete').on('keydown', function(event){
+      if(event.key === 'Enter') {
+        event.preventDefault();
+      }
+    });
+
   });
