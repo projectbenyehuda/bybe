@@ -22,7 +22,6 @@ class ManifestationHtmlWithChapters < ApplicationService
       tmphash[ch_count.to_s.rjust(4, '0') + SanitizeHeading.call(lines[linenum + 1][2..].strip)] = linenum.to_s
     end
     tmphash.keys.reverse.map { |k| chapters << [k[4..], tmphash[k]] }
-    selected_chapter = tmphash.keys.last
 
     html = MarkdownToHtml.call(lines.join)
     html = MakeHeadingIdsUnique.call(html)
@@ -40,8 +39,7 @@ class ManifestationHtmlWithChapters < ApplicationService
 
     {
       html: html,
-      chapters: chapters,
-      selected_chapter: selected_chapter
+      chapters: chapters
     }
   end
 end

@@ -19,8 +19,7 @@ describe ManifestationHtmlWithChapters do
       it 'returns a hash with expected data' do
         expect(result).to eq(
           html: expected_html,
-          chapters: expected_chapters,
-          selected_chapter: expected_selected_chapter
+          chapters: expected_chapters
         )
       end
     end
@@ -35,7 +34,6 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [] }
-      let(:expected_selected_chapter) { nil }
 
       it_behaves_like 'produces expected result'
     end
@@ -79,7 +77,6 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '5'], ['Chapter 3', '8']] }
-      let(:expected_selected_chapter) { '0003Chapter 1' }
 
       it_behaves_like 'produces expected result'
     end
@@ -120,7 +117,6 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Chapter 1', '2'], ['Part 2', '5'], ['Chapter 1', '7']] }
-      let(:expected_selected_chapter) { '0003Chapter 1' }
 
       it_behaves_like 'produces expected result'
     end
@@ -170,7 +166,6 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '10']] }
-      let(:expected_selected_chapter) { '0002Chapter 1' }
 
       it_behaves_like 'produces expected result'
     end
@@ -223,7 +218,6 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '5']] }
-      let(:expected_selected_chapter) { '0002Chapter 1' }
 
       it_behaves_like 'produces expected result'
     end
@@ -258,7 +252,6 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Emphasized Chapter', '2'], ['Chapter with bold', '5']] }
-      let(:expected_selected_chapter) { '0002Emphasized Chapter' }
 
       it_behaves_like 'produces expected result'
     end
