@@ -974,7 +974,6 @@ class ManifestationController < ApplicationController
     chapters_data = ManifestationHtmlWithChapters.call(@m)
     @html = chapters_data[:html]
     @chapters = chapters_data[:chapters]
-    @selected_chapter = chapters_data[:selected_chapter]
 
     @tabclass = set_tab('works')
     @entity = @m
