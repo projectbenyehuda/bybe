@@ -76,5 +76,48 @@ describe MarkdownToHtml do
         expect(result).to include('<p>Text content</p>')
       end
     end
+
+    context 'when markdown contains links' do
+      it 'adds target="_blank" to external links' do
+        markdown = "This is [a link](https://example.com) in text."
+        result = MarkdownToHtml.call(markdown)
+
+        expect(result).to include('target="_blank"')
+        expect(result).to include('<a href="https://example.com" target="_blank">a link</a>')
+      end
+
+      it 'adds target="_blank" to multiple links' do
+        markdown = "First [link one](https://example.com) and [link two](https://another.com)."
+        result = MarkdownToHtml.call(markdown)
+
+        expect(result).to include('<a href="https://example.com" target="_blank">link one</a>')
+        expect(result).to include('<a href="https://another.com" target="_blank">link two</a>')
+      end
+
+      it 'adds target="_blank" to links with existing attributes' do
+        markdown = 'Link with [title attribute](https://example.com "Example Site").'
+        result = MarkdownToHtml.call(markdown)
+
+        expect(result).to include('target="_blank"')
+        expect(result).to include('href="https://example.com"')
+      end
+
+      it 'adds target="_blank" to footnote return links' do
+        markdown = "Text with footnote[^1].\n\n[^1]: Footnote content."
+        result = MarkdownToHtml.call(markdown)
+
+        # Footnote return links should also have target="_blank"
+        expect(result).to include('class="reversefootnote"')
+        expect(result).to include('target="_blank"')
+      end
+
+      it 'handles links in different contexts' do
+        markdown = "# Title\n\nParagraph with [link](https://example.com).\n\n- List item with [link](https://test.com)"
+        result = MarkdownToHtml.call(markdown)
+
+        expect(result).to include('<a href="https://example.com" target="_blank">link</a>')
+        expect(result).to include('<a href="https://test.com" target="_blank">link</a>')
+      end
+    end
   end
 end
