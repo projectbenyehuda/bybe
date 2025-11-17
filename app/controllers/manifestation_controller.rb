@@ -971,7 +971,10 @@ class ManifestationController < ApplicationController
   def prep_for_read
     prep_for_print
 
-    chapters_data = ManifestationHtmlWithChapters.call(@m)
+    chapters_data = Rails.cache.fetch("#{@m.cache_key_with_version}_with_chapters", expires_in: 24.hours) do
+      ManifestationHtmlWithChapters.call(@m)
+    end
+
     @html = chapters_data[:html]
     @chapters = chapters_data[:chapters]
 
