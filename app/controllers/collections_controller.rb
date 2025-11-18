@@ -324,8 +324,19 @@ class CollectionsController < ApplicationController
   def prep_for_show
     @htmls = []
     i = 1
+    # Eager load associations to avoid N+1 queries
+    collection_items = @collection.collection_items.includes(
+      item: [
+        :recommendations,
+        { expression: [
+          { involved_authorities: :authority },
+          { work: { involved_authorities: :authority } }
+        ] }
+      ]
+    )
+    
     if @collection.periodical? # we don't want to show an entire periodical's run in a single Web page; instead, we show the complete TOC of all issues
-      @collection.collection_items.each do |ci|
+      collection_items.each do |ci|
         next unless ci.item.present? && ci.item_type == 'Collection' && ci.item.collection_type == 'periodical_issue'
 
         html = ci.item.toc_html
@@ -333,7 +344,7 @@ class CollectionsController < ApplicationController
         i += 1
       end
     else
-      @collection.collection_items.each do |ci|
+      collection_items.each do |ci|
         next if ci.item.present? && ci.item_type == 'Manifestation' && ci.item.status != 'published' # deleted or unpublished manifestations
 
         html = ci.to_html
@@ -343,8 +354,8 @@ class CollectionsController < ApplicationController
         i += 1
       end
     end
-    @collection_total_items = @collection.collection_items.reject { |ci| ci.paratext }.count
-    @collection_minus_placeholders = @collection.collection_items.reject do |ci|
+    @collection_total_items = collection_items.reject { |ci| ci.paratext }.count
+    @collection_minus_placeholders = collection_items.reject do |ci|
       !ci.public? || ci.paratext.present? || ci.alt_title.present?
     end.count
     @authority_for_image = if @collection.authors.present?
