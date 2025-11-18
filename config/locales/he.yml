@@ -1059,7 +1059,7 @@ he:
   record_source: מקור הרשומה
   select_person_first: יש לשייך יוצר/ת לפני שיוך פריטים
   select_publication_first: יש ללחוץ על שורת פריט משמאל לפני שיוך עותק
-  item_pattern: "תבנית קישור לפריט בקטלוג (המזהה יישתל במקום שבו תכתבו __ID__)"
+  item_pattern: "תבנית קישורית לפריט בקטלוג (המזהה יישתל במקום שבו תכתבו __ID__)"
   add_publication: '+פריט --->'
   add_holding: '+עותק --->'
   enabled: מופעל
@@ -1354,6 +1354,7 @@ he:
   collection_circular_reference: אוסף מקושר לעצמו!
   uncollected_works_collection_title: יצירות שלא כונסו
   uncollected_works_collection_explanation: יצירות אלו לוקטו ממקורות שונים שאינם מופיעים במאגר בשלמותם, כגון כתבי עת, עיתונות, או עזבונות.
+  permalink: קישורית קבועה
 
   notifications:
     proof_fixed:
