@@ -1,0 +1,89 @@
+-# Search highlight navigation controls
+- if local_assigns[:search_query].present?
+  #search-highlight-controls{style: 'display: none; position: fixed; top: 80px; left: 20px; z-index: 1000; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'}
+    .search-highlight-info
+      %span#current-match 0
+      %span /
+      %span#total-matches 0
+      %span= t(:matches)
+    .search-highlight-buttons{style: 'margin-top: 5px;'}
+      %button#prev-match.btn.btn-sm.btn-outline-secondary{style: 'margin-left: 5px;'}
+        %span ◀
+      %button#next-match.btn.btn-sm.btn-outline-secondary{style: 'margin-left: 5px;'}
+        %span ▶
+      %button#close-highlights.btn.btn-sm.btn-outline-danger{style: 'margin-left: 10px;'}
+        %span ✕
+
+:javascript
+  $(document).ready(function() {
+    var searchQuery = "#{j(search_query)}";
+    if (searchQuery && searchQuery.trim() !== '') {
+      var $textContainer = $('#actualtext');
+      var currentMatchIndex = 0;
+      var totalMatches = 0;
+
+      // Use Mark.js to highlight all occurrences
+      var markInstance = new Mark($textContainer[0]);
+      markInstance.mark(searchQuery, {
+        separateWordSearch: false,
+        accuracy: 'partially',
+        diacritics: false,
+        done: function() {
+          var $marks = $textContainer.find('mark');
+          totalMatches = $marks.length;
+          
+          if (totalMatches > 0) {
+            $('#search-highlight-controls').show();
+            $('#total-matches').text(totalMatches);
+            
+            // Add class to current match
+            $marks.eq(0).addClass('current-match');
+            currentMatchIndex = 0;
+            $('#current-match').text(currentMatchIndex + 1);
+            
+            // Scroll to first match
+            scrollToMatch($marks.eq(0));
+          }
+        }
+      });
+
+      function scrollToMatch($match) {
+        if ($match.length > 0) {
+          var headerHeight = $('header').outerHeight() || 0;
+          var offsetTop = $match.offset().top - headerHeight - 100;
+          $('html, body').animate({
+            scrollTop: offsetTop
+          }, 300);
+        }
+      }
+
+      function updateCurrentMatch() {
+        var $marks = $textContainer.find('mark');
+        $marks.removeClass('current-match');
+        $marks.eq(currentMatchIndex).addClass('current-match');
+        $('#current-match').text(currentMatchIndex + 1);
+        scrollToMatch($marks.eq(currentMatchIndex));
+      }
+
+      $('#next-match').click(function() {
+        var $marks = $textContainer.find('mark');
+        if (totalMatches > 0) {
+          currentMatchIndex = (currentMatchIndex + 1) % totalMatches;
+          updateCurrentMatch();
+        }
+      });
+
+      $('#prev-match').click(function() {
+        var $marks = $textContainer.find('mark');
+        if (totalMatches > 0) {
+          currentMatchIndex = (currentMatchIndex - 1 + totalMatches) % totalMatches;
+          updateCurrentMatch();
+        }
+      });
+
+      $('#close-highlights').click(function() {
+        markInstance.unmark();
+        $('#search-highlight-controls').hide();
+      });
+    }
+  });

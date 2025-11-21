@@ -2,6 +2,8 @@
 - if @m.sefaria_linker
   %script{ type: 'text/javascript', charset:'utf-8', src:'https://www.sefaria.org/linker.v3.js'}
 
+= render partial: 'shared/search_highlight_controls', locals: { search_query: params[:q] }
+
 .row.text-page-content
   .col-12.col-lg-8
     .logo-for-print
