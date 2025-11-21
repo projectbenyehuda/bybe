@@ -19,6 +19,8 @@ class Collection < ApplicationRecord
   belongs_to :publication, optional: true
   belongs_to :toc, optional: true
   has_many :collection_items, -> { order(:seqno) }, inverse_of: :collection, dependent: :destroy
+  has_many :parent_collection_items, class_name: 'CollectionItem', as: :item, inverse_of: :item, dependent: :destroy
+
   has_many :inclusions, class_name: 'CollectionItem', as: :item, dependent: :destroy # inclusions of this collection in other collections
   has_many :aboutnesses, as: :aboutable, dependent: :destroy # works that are ABOUT this collection
   # has_many :topics, class_name: 'Aboutness', dependent: :destroy # topics that this work is ABOUT
@@ -483,11 +485,6 @@ class Collection < ApplicationRecord
 
   def parent_collections
     parent_collection_items.preload(:collection).map(&:collection)
-  end
-
-  # returns collection_items where given collection is specified as an item
-  def parent_collection_items
-    CollectionItem.where(item: self)
   end
 
   # update status of ALL manifestations included in this collection, including in nested collections

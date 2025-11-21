@@ -15,6 +15,8 @@ class ManifestationController < ApplicationController
   before_action only: %i(all genre period by_tag) do |c|
     c.refuse_unreasonable_page
   end
+  before_action :set_manifestation, only: %i(print read readmode)
+
   autocomplete :manifestation, :title, limit: 20, display_value: :title_and_authors, full: true
 
   # layout false, only: [:print]
@@ -187,9 +189,7 @@ class ManifestationController < ApplicationController
 
   def dict
     @m = Manifestation.joins(:expression).includes(:expression).find(params[:id])
-    if @m.nil?
-      head :not_found
-    elsif @m.expression.work.genre == 'lexicon'
+    if @m.expression.work.genre == 'lexicon'
       @page = params[:page] || 1
       @page = 1 if ['0', ''].include?(@page) # slider sets page to zero or '', awkwardly
       @dict_list_mode = params[:dict_list_mode] || 'list'
@@ -252,12 +252,8 @@ class ManifestationController < ApplicationController
   end
 
   def read
-    @m = Manifestation.find(params[:id].to_i)
     if @m.expression.work.genre == 'lexicon' && DictionaryEntry.exists?(manifestation: @m)
       redirect_to action: 'dict', id: @m.id
-    elsif !@m.published? && (current_user.blank? || !current_user.editor?)
-      flash.notice = t(:work_not_available)
-      redirect_to '/'
     else
       prep_for_read
       @proof = Proof.new
@@ -282,19 +278,15 @@ class ManifestationController < ApplicationController
 
   def readmode
     @readmode = true
-    @m = Manifestation.find(params[:id])
-    if !@m.published? && (current_user.blank? || !current_user.editor?)
-      flash[:notice] = t(:work_not_available)
-      redirect_to '/'
-    else
-      prep_for_read
-    end
+    prep_for_read
   end
 
   def print
     @print = true
     prep_for_print
-    @footer_url = url_for(action: :read, id: @m.id)
+
+    @html = MakeHeadingIdsUnique.call(@m.to_html)
+    @footer_url = manifestation_url(@m)
   end
 
   def download
@@ -958,23 +950,15 @@ class ManifestationController < ApplicationController
   end
 
   def prep_for_print
-    @m = Manifestation.find(params[:id])
-
-    if !@m.published? && (current_user.blank? || !current_user.editor?)
-      flash[:notice] = t(:work_not_available)
-      redirect_to '/'
-      return
-    end
-
     @e = @m.expression
     @w = @e.work
-    @author = @w.authors[0] # TODO: handle multiple authors
 
     # We track view event for text itself and for all authors and translators
     track_view(@m)
     @m.authors.each { |author| track_view(author) }
     @m.translators.each { |translator| track_view(translator) }
 
+    @author = @w.authors[0] # TODO: handle multiple authors
     if @author.nil?
       @author = Authority.new(name: '?')
     end
@@ -982,63 +966,21 @@ class ManifestationController < ApplicationController
     @illustrators = @m.involved_authorities_by_role(:illustrator)
     @editors = @m.involved_authorities_by_role(:editor)
     @page_title = "#{@m.title_and_authors} - #{t(:default_page_title)}"
-    return unless @print
-
-    # remove MMD's automatic figcaptions
-    @html = @m.to_html
-    # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    @html = make_heading_ids_unique(@html)
   end
 
   def prep_for_read
-    @print = false
     prep_for_print
-    return if @m.nil?
 
-    # Note that we are accessing an unpublished work, if that's the case
-    @unpublished = true unless @m.published?
-
-    lines = @m.markdown.lines
-    tmphash = {}
-    @chapters = [] # TODO: add sub-chapters, indenting two nbsps in dropdown
-
-    ## div-wrapping chapters, trying to debug the scrollspy...
-    # first = true
-    # @m.heading_lines.reverse.each{ |linenum|
-    #  insert_text = "<div id=\"ch#{linenum}\" role=\"tabpanel\"> <a name=\"ch#{linenum}\"></a>\r\n"
-    #  unless first
-    #    insert_text = "</div>" + insert_text
-    #  else
-    #    first = false
-    #  end
-    #  lines.insert(linenum, insert_text)
-    #  # lines.insert(linenum, "\n<p id=\"ch#{linenum}\"></p>\r\n")
-    #  tmphash[sanitize_heading(lines[linenum+1][2..-1].strip)] = linenum.to_s
-    # } # annotate headings in reverse order, to avoid offsetting the next heading
-    # lines << "</div>\n" unless first # close final section if any headings existed in the text
-    ch_count = 0
-    # annotate headings in reverse order, to avoid offsetting the next heading
-    @m.heading_lines.reverse.each do |linenum|
-      ch_count += 1
-      insert_text = "<a name=\"ch#{linenum}\" class=\"ch_anch\" id=\"ch#{linenum}\">&nbsp;</a>\r\n"
-      lines.insert(linenum, insert_text)
-      tmphash[ch_count.to_s.rjust(4, '0') + sanitize_heading(lines[linenum + 1][2..-1].strip)] = linenum.to_s
+    chapters_data = Rails.cache.fetch("#{@m.cache_key_with_version}_with_chapters", expires_in: 24.hours) do
+      ManifestationHtmlWithChapters.call(@m)
     end
-    tmphash.keys.reverse.map { |k| @chapters << [k[4..], tmphash[k]] }
-    @selected_chapter = tmphash.keys.last
-    @html = MarkdownToHtml.call(lines.join(''))
-    # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-    @html = make_heading_ids_unique(@html)
-    # add permalinks
-    @html.gsub!(%r{<h2(.*?) id="(.*?)"(.*?)>(.*?)</h2>},
-                "<h2\\1 id=\"\\2\"\\3>\\4 &nbsp;&nbsp; <span style=\"font-size: 50%;\"><a title=\"קישור קבוע\" href=\"#{request.original_url}#\\2\">🔗</a></span></h2>")
-    @html.gsub!(%r{<h3(.*?) id="(.*?)"(.*?)>(.*?)</h3>},
-                "<h3\\1 id=\"\\2\"\\3>\\4 &nbsp;&nbsp; <span style=\"font-size: 50%;\"><a title=\"קישור קבוע\" href=\"#{request.original_url}#\\2\">🔗</a></span></h3>")
+
+    @html = chapters_data[:html]
+    @chapters = chapters_data[:chapters]
 
     @tabclass = set_tab('works')
     @entity = @m
     @pagetype = :manifestation
-    @print_url = url_for(action: :print, id: @m.id)
     @liked = (current_user.nil? ? false : @m.likers.include?(current_user))
     if @e.translation? && (@e.work.expressions.count > 1) # one is the one we're looking at...
       @additional_translations = []
@@ -1057,5 +999,16 @@ class ManifestationController < ApplicationController
         end
     end
     @single_text_volume = @containments.count == 1 && !@containments.first.collection.has_multiple_manifestations?
+  end
+
+  private
+
+  def set_manifestation
+    @m = Manifestation.find(params[:id])
+
+    return if @m.published? || current_user&.editor?
+
+    flash.notice = t(:work_not_available)
+    redirect_to '/'
   end
 end

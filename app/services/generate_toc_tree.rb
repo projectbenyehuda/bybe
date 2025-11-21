@@ -54,12 +54,27 @@ class GenerateTocTree < ApplicationService
     end
   end
 
-  # Fetches children of given collection node and adds them as children to it
+  # Fetches children of given collection nodes and adds them as children to it
   # Returns list of child nodes representing other sub-collections (only not yet traversed)
   def fetch_children(parent_nodes)
     next_level = []
+
+    all_parent_collections = parent_nodes.map(&:collection)
+
+    ActiveRecord::Associations::Preloader.new(
+      records: all_parent_collections,
+      associations: { collection_items: :item, involved_authorities: :authority }
+    ).call
+
+    all_manifestation_children = all_parent_collections.map(&:collection_items).flatten
+                                                       .map(&:item).select { |item| item.is_a?(Manifestation) }
+    ActiveRecord::Associations::Preloader.new(
+      records: all_manifestation_children,
+      associations: { expression: { involved_authorities: :authority, work: { involved_authorities: :authority } } }
+    ).call
+
     parent_nodes.each do |parent_node|
-      parent_node.collection.collection_items.preload(:item).map do |ci|
+      parent_node.collection.collection_items.map do |ci|
         child_item = if ci.item.is_a?(Collection)
                        # nested collection
                        item = collection_node(ci.item, nil, nil)
@@ -97,10 +112,14 @@ class GenerateTocTree < ApplicationService
   end
 
   def get_parents(nodes)
-    # NOTE: consider using batch loading
+    ActiveRecord::Associations::Preloader.new(
+      records: nodes.map(&:collection),
+      associations: { involved_authorities: :authority, parent_collection_items: :collection }
+    ).call
+
     parents = []
     nodes.each do |node|
-      parent_collection_items = node.collection.parent_collection_items.preload(:collection)
+      parent_collection_items = node.collection.parent_collection_items
       next if parent_collection_items.empty?
 
       parent_collection_items.each do |collection_item|

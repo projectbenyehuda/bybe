@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_16_230201) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_20_191013) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -860,7 +860,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_16_230201) do
     t.string "email"
     t.string "provider"
     t.string "uid"
-    t.string "oauth_token"
+    t.string "oauth_token", limit: 4096
     t.datetime "oauth_expires_at", precision: nil
     t.boolean "admin"
     t.datetime "created_at", precision: nil, null: false

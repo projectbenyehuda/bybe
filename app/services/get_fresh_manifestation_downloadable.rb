@@ -1,8 +1,6 @@
 # Checks if Manifestation's Downloadable exists for the given format
 # If exists but outdated it updates blob with fresh data, if not exists it creates new Downloadable for a file
 class GetFreshManifestationDownloadable < ApplicationService
-  include BybeUtils
-
   # @return fresh Manifestation downloadable for given file format
   def call(manifestation, format)
     dl = manifestation.fresh_downloadable_for(format)
@@ -25,7 +23,7 @@ class GetFreshManifestationDownloadable < ApplicationService
           %r{<figcaption>.*?</figcaption>}, ''
         )
         # Replace MultiMarkdown-generated ids with unique sequential ids to avoid duplicates
-        html_content = make_heading_ids_unique(html_content)
+        html_content = MakeHeadingIdsUnique.call(html_content)
         html = "<div dir=\"rtl\" style=\"text-align:right\">#{manifestation.title_and_authors_html}" + html_content + "\n\n<hr />" + I18n.t(:download_footer_html,
                                                                                                                                             url: Rails.application.routes.url_helpers.url_for(controller: :manifestation, action: :read,
                                                                                                                                                                                               id: manifestation.id)) + '</div>'
