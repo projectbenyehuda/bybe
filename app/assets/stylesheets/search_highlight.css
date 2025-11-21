@@ -52,14 +52,3 @@ mark.current-match {
 }
 
 /* Ensure highlights are visible in both prose and poetry */
-.maintext-prose-body mark,
-.maintext-poetry-body mark {
-  background-color: #ffeb3b;
-  color: #000;
-}
-
-.maintext-prose-body mark.current-match,
-.maintext-poetry-body mark.current-match {
-  background-color: #ff9800;
-  color: #fff;
-}
