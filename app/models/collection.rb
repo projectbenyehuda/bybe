@@ -393,8 +393,8 @@ class Collection < ApplicationRecord
   end
 
   def editors_string
-    auths = involved_authorities.where(role: 'editor')
-    return auths.map(&:authority).map(&:name).join(', ') if auths.count > 0
+    auths = involved_authorities_by_role('editor')
+    return auths.map(&:name).join(', ') unless auths.empty?
 
     parent_collections.each do |pc| # iterate until we find editors
       s = pc.editors_string
@@ -502,7 +502,7 @@ class Collection < ApplicationRecord
   end
 
   def parent_collections
-    parent_collection_items.preload(:collection).map(&:collection)
+    parent_collection_items.map(&:collection)
   end
 
   # update status of ALL manifestations included in this collection, including in nested collections
