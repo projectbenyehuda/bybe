@@ -76,5 +76,63 @@ describe MarkdownToHtml do
         expect(result).to include('<p>Text content</p>')
       end
     end
+
+    context 'when markdown contains links' do
+      it 'adds target="_blank" to external links' do
+        markdown = 'This is [a link](https://example.com) in text.'
+        result = described_class.call(markdown)
+
+        expect(result).to include('target="_blank"')
+        expect(result).to include('<a href="https://example.com" target="_blank">a link</a>')
+      end
+
+      it 'adds target="_blank" to multiple links' do
+        markdown = 'First [link one](https://example.com) and [link two](https://another.com).'
+        result = described_class.call(markdown)
+
+        expect(result).to include('<a href="https://example.com" target="_blank">link one</a>')
+        expect(result).to include('<a href="https://another.com" target="_blank">link two</a>')
+      end
+
+      it 'adds target="_blank" to links with existing attributes' do
+        markdown = 'Link with [title attribute](https://example.com "Example Site").'
+        result = described_class.call(markdown)
+
+        expect(result).to include('target="_blank"')
+        expect(result).to include('href="https://example.com"')
+      end
+
+      it 'does not add target="_blank" to footnote return links' do
+        markdown = "Text with footnote[^1].\n\n[^1]: Footnote content."
+        result = described_class.call(markdown)
+
+        # Footnote return links should NOT have target="_blank"
+        expect(result).to include('class="reversefootnote"')
+        # Ensure that reversefootnote links do not have target="_blank"
+        expect(result).not_to match(/<a[^>]*class="reversefootnote"[^>]*target="_blank"/)
+        # Footnote reference links should also not have target="_blank"
+        expect(result).not_to match(/<a[^>]*href="#fn:1"[^>]*target="_blank"/)
+      end
+
+      it 'does not add target="_blank" to internal anchor links' do
+        markdown = "See the [introduction](#intro) section.\n\n<a name=\"intro\"></a>\n## Introduction"
+        result = described_class.call(markdown)
+
+        # Internal anchor links should NOT have target="_blank"
+        expect(result).to include('href="#intro"')
+        expect(result).not_to match(/<a[^>]*href="#intro"[^>]*target="_blank"/)
+        # Named anchors (without href) should NOT have target="_blank"
+        expect(result).to include('<a name="intro"></a>')
+        expect(result).not_to match(/<a name="intro"[^>]*target="_blank"/)
+      end
+
+      it 'handles links in different contexts' do
+        markdown = "# Title\n\nParagraph with [link](https://example.com).\n\n- List item with [link](https://test.com)"
+        result = described_class.call(markdown)
+
+        expect(result).to include('<a href="https://example.com" target="_blank">link</a>')
+        expect(result).to include('<a href="https://test.com" target="_blank">link</a>')
+      end
+    end
   end
 end
