@@ -189,13 +189,13 @@ describe BybeUtils do
     context 'with quotation marks that are not acronyms' do
       let(:input) do
         [
-          { label: 'test1', buffer: '"שלום" אמר לי' },  # Quoted word
-          { label: 'test2', buffer: 'הוא אמר "כן"' },  # Quoted word at end
+          { label: 'test1', buffer: '"שלום" אמר לי' }, # Quoted word
+          { label: 'test2', buffer: 'הוא אמר "כן"' }, # Quoted word at end
           { label: 'test3', buffer: '"א' },  # Quote before single letter (not acronym)
           { label: 'test4', buffer: 'א"' },  # Quote after single letter (not acronym)
-          { label: 'test5', buffer: "'hello' world" },  # Single quotes around word
-          { label: 'test6', buffer: "word's" },  # Possessive (should keep apostrophe in middle)
-          { label: 'test7', buffer: '"מפא"י היא מפלגה ישראלית"' },  # Acronym inside quotes
+          { label: 'test5', buffer: "'hello' world" }, # Single quotes around word
+          { label: 'test6', buffer: "word's" }, # Possessive (should keep apostrophe in middle)
+          { label: 'test7', buffer: '"מפא"י היא מפלגה ישראלית"' } # Acronym inside quotes
         ]
       end
 
@@ -206,12 +206,12 @@ describe BybeUtils do
         # Should not have any tokens starting with quotes
         problematic_tokens = tokens.select { |t| t.start_with?('"', "'") }
         expect(problematic_tokens).to be_empty,
-          "Found tokens starting with quotes: #{problematic_tokens.inspect}"
+                                      "Found tokens starting with quotes: #{problematic_tokens.inspect}"
       end
 
       it 'does not create tokens ending with quotation marks (except acronyms)' do
         result = instance.kwic_concordance(input)
-        
+
         # Get all tokens that end with quotes
         tokens_ending_with_quotes = result.select do |entry|
           token = entry[:token]
@@ -223,7 +223,7 @@ describe BybeUtils do
           token = entry[:token]
           is_acronym = token.length >= 3 && token[-2] == '"'
           expect(is_acronym).to be(true),
-            "Token #{token.inspect} ends with quote but is not a valid acronym"
+                                "Token #{token.inspect} ends with quote but is not a valid acronym"
         end
       end
 
@@ -248,12 +248,12 @@ describe BybeUtils do
         # no token starts or ends with just a quote
         tokens.each do |token|
           expect(token).not_to start_with('"', "'"),
-            "Token #{token.inspect} should not start with a quote"
+                               "Token #{token.inspect} should not start with a quote"
           # Allow tokens to end with ' if it's part of the word (like can't)
           # but not if it's a standalone quote
           if token.end_with?("'")
             expect(token.length).to be > 1,
-              "Token #{token.inspect} should not be just a quote"
+                                    "Token #{token.inspect} should not be just a quote"
           end
         end
       end
@@ -264,12 +264,12 @@ describe BybeUtils do
 
         # Should include the acronym without surrounding quotes
         expect(tokens).to include('מפא"י'),
-          "Should extract acronym מפא\"י from quoted expression"
-        
+                          'Should extract acronym מפא"י from quoted expression'
+
         # Should not have tokens starting or ending with quotes
         problematic_tokens = tokens.select { |t| t.start_with?('"', "'") }
         expect(problematic_tokens).to be_empty,
-          "Found tokens starting with quotes: #{problematic_tokens.inspect}"
+                                      "Found tokens starting with quotes: #{problematic_tokens.inspect}"
       end
     end
 
