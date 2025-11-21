@@ -33,7 +33,7 @@
           - if result.instance_of?(ManifestationsIndex)
             %b= t(:work)
             %br
-            %b= link_to attrs['title'], manifestation_path(attrs['id'])
+            %b= link_to attrs['title'], manifestation_path(attrs['id'], q: @search.query)
             = " / #{attrs['author_string']}"
             = " (#{textify_genre(attrs['genre'])})"
             - unless result.tags.empty?
@@ -49,7 +49,8 @@
           - elsif result.instance_of?(CollectionsIndex)
             %b= textify_collection_type(result.collection_type)
             %br
-            %b= link_to([result.title, result.subtitle].compact_blank.join(' / '), collection_path(result.id))
+            - collection_title = [result.title, result.subtitle].compact_blank.join(' / ')
+            %b= link_to(collection_title, collection_path(result.id, q: @search.query))
           - elsif result.instance_of?(AuthoritiesIndex)
             %b= t(:author)
             %br

@@ -1,4 +1,5 @@
 .top-element
+= render partial: 'shared/search_highlight_controls', locals: { search_query: params[:q] }
 #content.container-fluid
   - cauthors = @collection.authors
   - ceditors = @collection.editors
@@ -111,7 +112,7 @@
                     - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
                     - if translators.present?
                       %p= "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
-              .by-card-content-v02#actualtext
+              .by-card-content-v02.textcard#actualtext
                 != html
           - credit_lines = @collection.fetch_credits.lines
           - if credit_lines.present?

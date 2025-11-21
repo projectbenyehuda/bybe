@@ -67,6 +67,7 @@ en:
   collapse_collection: Collapse collection
   or_search_term: "Or search for an existing work called:"
   or_search_for_collection: "Or search for collection:"
+  matches: matches
   perform_add: Add
   not_an_editor: This page is only available for editors
   permalink: Permanent link
