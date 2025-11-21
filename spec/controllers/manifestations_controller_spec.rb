@@ -379,10 +379,9 @@ describe ManifestationController do
     end
 
     describe '#read with search query parameter' do
-      subject { get :read, params: { id: manifestation.id, q: 'search term' } }
-
       it 'accepts query parameter and renders successfully' do
-        expect(subject).to be_successful
+        get :read, params: { id: manifestation.id, q: 'search term' }
+        expect(response).to be_successful
         expect(response.body).to include('actualtext')
       end
     end
