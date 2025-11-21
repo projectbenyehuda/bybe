@@ -17,8 +17,8 @@ class MarkdownToHtml < ApplicationService
     # Add target="_blank" to external links (not internal anchor links starting with #)
     html.gsub!(/<a\s+([^>]*?)>/) do
       attributes = ::Regexp.last_match(1)
-      # Skip internal anchor links (href="#...") and links that already have target attribute
-      if attributes.match?(/\bhref="#/) || attributes.match?(/\btarget=/)
+      # Skip if: no href attribute, internal anchor links (href="#..."), or already has target attribute
+      if !attributes.match?(/\bhref=/) || attributes.match?(/\bhref="#/) || attributes.match?(/\btarget=/)
         "<a #{attributes}>"
       else
         "<a #{attributes} target=\"_blank\">"
