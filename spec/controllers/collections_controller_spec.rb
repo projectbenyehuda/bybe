@@ -93,6 +93,14 @@ describe CollectionsController do
     end
   end
 
+  describe '#show with search query parameter' do
+    subject { get :show, params: { id: collection.id, q: 'search term' } }
+
+    it 'accepts query parameter and renders successfully' do
+      expect(subject).to be_successful
+    end
+  end
+
   describe 'editor actions' do
     include_context 'when editor logged in'
 

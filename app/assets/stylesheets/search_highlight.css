@@ -1,0 +1,47 @@
+/* Search highlighting styles */
+
+/* Highlighted text styling */
+mark {
+  background-color: #ffeb3b;
+  color: #000;
+  padding: 2px 0;
+  border-radius: 2px;
+}
+
+/* Current match gets a different color */
+mark.current-match {
+  background-color: #ff9800;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Search highlight controls styling */
+#search-highlight-controls {
+  font-family: inherit;
+  direction: rtl;
+  text-align: right;
+}
+
+#search-highlight-controls .search-highlight-info {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+#search-highlight-controls .search-highlight-buttons {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+/* Ensure highlights are visible in both prose and poetry */
+.maintext-prose-body mark,
+.maintext-poetry-body mark {
+  background-color: #ffeb3b;
+  color: #000;
+}
+
+.maintext-prose-body mark.current-match,
+.maintext-poetry-body mark.current-match {
+  background-color: #ff9800;
+  color: #fff;
+}
