@@ -94,4 +94,23 @@
         $controls.hide();
       });
     }
+    // Keyboard shortcuts for navigation (F3/Shift+F3, Ctrl+G/Ctrl+Shift+G, Escape)
+    $(document).on('keydown', function(e) {
+      // Only handle shortcuts if controls are visible
+      if ($controls.is(':visible')) {
+        // F3 or Ctrl+G
+        if (e.key === 'F3' || (e.ctrlKey && (e.key === 'g' || e.key === 'G'))) {
+          e.preventDefault();
+          if (e.shiftKey) {
+            $('#prev-match').click();
+          } else {
+            $('#next-match').click();
+          }
+        }
+        // Escape to close highlights
+        else if (e.key === 'Escape') {
+          $('#close-highlights').click();
+        }
+      }
+    });
   });
