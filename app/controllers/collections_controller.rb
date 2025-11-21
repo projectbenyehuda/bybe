@@ -17,22 +17,22 @@ class CollectionsController < ApplicationController
 
   # GET /collections/1 or /collections/1.json
   def show
-    unless @collection.has_multiple_manifestations?
-      ci = @collection.flatten_items.select { |x| x.item_type == 'Manifestation' }.first
-      if ci.nil?
-        flash[:error] = t(:no_such_item)
-        redirect_to '/'
-      else
-        redirect_to manifestation_path(ci.item.id)
-      end
-      return
+    data = FetchCollection.call(@collection)
+
+    if data.all_manifestations.empty?
+      flash[:error] = t(:no_such_item)
+      redirect_to '/'
+    elsif data.all_manifestations.size == 1
+      redirect_to manifestation_path(data.all_manifestations.first)
     end
+
     @header_partial = 'shared/collection_top'
     @scrollspy_target = 'chapternav'
     @colls_traversed = [@collection.id]
     @print_url = url_for(action: :print, collection_id: @collection.id)
     @pagetype = :collection
     @taggings = @collection.taggings
+
     @included_recs = @collection.included_recommendations.count
     @total_recs = @collection.recommendations.count + @included_recs
     @credits = render_to_string(partial: 'collections/credits', locals: { collection: @collection })
