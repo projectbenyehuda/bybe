@@ -121,6 +121,9 @@ describe MarkdownToHtml do
         # Internal anchor links should NOT have target="_blank"
         expect(result).to include('href="#intro"')
         expect(result).not_to match(/<a[^>]*href="#intro"[^>]*target="_blank"/)
+        # Named anchors (without href) should NOT have target="_blank"
+        expect(result).to include('<a name="intro"></a>')
+        expect(result).not_to match(/<a name="intro"[^>]*target="_blank"/)
       end
 
       it 'handles links in different contexts' do
