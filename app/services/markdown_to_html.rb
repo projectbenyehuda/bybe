@@ -14,10 +14,15 @@ class MarkdownToHtml < ApplicationService
       # Change first <p> element in footnotes to <span> to prevent line break
       "#{::Regexp.last_match(1)}<span>#{::Regexp.last_match(2)}</span>"
     end
-    # Add target="_blank" to all links that do not already have a target attribute
-    html.gsub!(%r{<a\s+((?:(?!\btarget=)[^>])*)>}) do
+    # Add target="_blank" to external links (not internal anchor links starting with #)
+    html.gsub!(/<a\s+([^>]*?)>/) do
       attributes = ::Regexp.last_match(1)
-      "<a #{attributes} target=\"_blank\">"
+      # Skip internal anchor links (href="#...") and links that already have target attribute
+      if attributes.match?(/\bhref="#/) || attributes.match?(/\btarget=/)
+        "<a #{attributes}>"
+      else
+        "<a #{attributes} target=\"_blank\">"
+      end
     end
     html
   end
