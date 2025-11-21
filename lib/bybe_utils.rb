@@ -191,13 +191,13 @@ module BybeUtils
               section_texts, "anth_#{user_anthology.id}", "#{Rails.application.routes.url_helpers.root_url}#{Rails.application.routes.url_helpers.anthology_path(user_anthology)}")
   end
 
-  def make_epub_from_single_html(html, entity, author_string)
+  def make_epub_from_single_html(html, entity, _author_string)
     fname = ''
     case entity.class.to_s
     when 'Manifestation'
       section_titles = html.scan(%r{<h2.*?>(.*?)</h2}).map { |x| x[0] }
       if section_titles.count < (entity.expression.translation? ? 3 : 2) # text witout chapters
-        section_texts = [html]
+        [html]
       else
         section_texts = html.split(%r{<h2.*?</h2>})
         offset = entity.expression.translation? ? 2 : 1
@@ -345,7 +345,7 @@ module BybeUtils
   # just return a boolean if the buffer is "full" nikkud
   def full_nikkud(text)
     info = count_nikkud(text)
-    false || (info[:total] > 1000 and info[:ratio] > 0.5) || (info[:total] <= 1000 and info[:ratio] > 0.3)
+    (info[:total] > 1000 and info[:ratio] > 0.5) || (info[:total] <= 1000 and info[:ratio] > 0.3)
   end
 
   # retrieve author name for (relative) directory name d, using provided hash known_authors to cache results
@@ -543,11 +543,11 @@ module BybeUtils
     return buf if m.nil? # though, seriously?
 
     tmpbuf = ::Regexp.last_match.pre_match
-    m = buf.match(/<!-- end BY head -->/)
+    buf.match(/<!-- end BY head -->/)
     tmpbuf += ::Regexp.last_match.post_match
-    m = tmpbuf.match(/<!-- begin BY body -->/)
+    tmpbuf.match(/<!-- begin BY body -->/)
     newbuf = ::Regexp.last_match.pre_match
-    m = tmpbuf.match(/<!-- end BY body -->/)
+    tmpbuf.match(/<!-- end BY body -->/)
     newbuf += ::Regexp.last_match.post_match
     return newbuf
   end
@@ -779,22 +779,21 @@ module BybeUtils
 
   def footnotes_noncer(html, nonce) # salt footnote markers and bodies with a nonce, to make them unique in collections/anthologies
     # id of footnote reference in body text and link to footnote body
-    ret = html.gsub(/<a href="#fn:(\d+)" id="fnref:(\d+)"/m) do |fn|
+    ret = html.gsub(/<a href="#fn:(\d+)" id="fnref:(\d+)"/m) do |_fn|
       "<a href=\"#fn:#{nonce}_#{::Regexp.last_match(1)}\" id=\"fnref:#{nonce}_#{::Regexp.last_match(2)}\""
     end
     # link back to footnote reference in body text
-    ret.gsub!(/<a href="#fnref:(\d+)"/m) do |fn|
+    ret.gsub!(/<a href="#fnref:(\d+)"/m) do |_fn|
       "<a href=\"#fnref:#{nonce}_#{::Regexp.last_match(1)}\""
     end
     # id of footnote body anchor
-    ret.gsub!(/<li id="fn:(\d+)"/m) do |fn|
+    ret.gsub!(/<li id="fn:(\d+)"/m) do |_fn|
       "<li id=\"fn:#{nonce}_#{::Regexp.last_match(1)}\""
     end
     ret
   end
 
   def pub_title_for_comparison(s)
-    ret = ''
     ret = if s['/'].nil?
             s[0..[10, s.length].min]
           else
@@ -953,20 +952,20 @@ module BybeUtils
       next if word_candidate.empty?
 
       # At this point, word_candidate contains only letters, digits, and possibly quotation marks
-      
+
       # First, strip leading and trailing quotes to see what's inside
       stripped = word_candidate.gsub(/^["']+|["']+$/, '')
-      
+
       # Check if the stripped content is a Hebrew acronym
       # A valid acronym must:
       # - Have at least 3 characters (e.g., X"Y)
       # - Have " in the penultimate position
       # - Have letters before and after the "
-      is_acronym = stripped.length >= 3 && 
-                   stripped[-2] == '"' && 
-                   stripped[-3] =~ /\p{L}/ && 
+      is_acronym = stripped.length >= 3 &&
+                   stripped[-2] == '"' &&
+                   stripped[-3] =~ /\p{L}/ &&
                    stripped[-1] =~ /\p{L}/
-      
+
       if is_acronym
         # It's a Hebrew acronym - use the stripped version (quotes at boundaries removed)
         # Examples: "מפא"י" -> מפא"י, מפא"י -> מפא"י
