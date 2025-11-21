@@ -19,6 +19,12 @@
     var searchQuery = "#{j(search_query)}";
     if (searchQuery && searchQuery.trim() !== '') {
       var $textContainer = $('#actualtext');
+      
+      // Check if text container exists before proceeding
+      if ($textContainer.length === 0) {
+        return;
+      }
+      
       var currentMatchIndex = 0;
       var totalMatches = 0;
 
