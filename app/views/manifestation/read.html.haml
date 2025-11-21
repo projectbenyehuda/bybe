@@ -52,10 +52,10 @@
             .work-content{"data-spy" => 'scroll', "data-target" => '#chapternav'}
               -# TODO: more nuanced rendering here
               - if @m.as_prose?
-                #actualtext.maintext-prose-body.search-margin
+                #actualtext.maintext-prose-body.search-margin.textcard
                   != raw(@html)
               - else
-                #actualtext.maintext-poetry-body.search-margin
+                #actualtext.maintext-poetry-body.search-margin.textcard
                   != raw(@html)
             .work-side-color
               .work-genre{ style: "background-image: url(\"/assets/work_side_icons_#{@w.genre}.svg\"); background-repeat: no-repeat; background-size:auto;" }
