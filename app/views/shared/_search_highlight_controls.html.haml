@@ -31,8 +31,7 @@
       var totalMatches = 0;
 
       // Use Mark.js to highlight all occurrences
-      var markInstance = new Mark($textContainer[0]);
-      markInstance.mark(searchQuery, {
+      $textContainer.mark(searchQuery, {
         separateWordSearch: false,
         accuracy: 'partially',
         diacritics: false,
@@ -91,7 +90,7 @@
       });
 
       $('#close-highlights').click(function() {
-        markInstance.unmark();
+        $textContainer.unmark();
         $controls.hide();
       });
     }
