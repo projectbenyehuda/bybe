@@ -7,11 +7,11 @@
       %span#total-matches 0
       %span= t(:matches)
     .search-highlight-buttons
-      %button.btn.btn-sm.btn-outline-secondary#prev-match
+      %button.btn.btn-sm.btn-outline-secondary#prev-match{ 'aria-label': t(:previous_match) }
         %span ▶
-      %button.btn.btn-sm.btn-outline-secondary#next-match
+      %button.btn.btn-sm.btn-outline-secondary#next-match{ 'aria-label': t(:next_match) }
         %span ◀
-      %button.btn.btn-sm.btn-outline-danger#close-highlights
+      %button.btn.btn-sm.btn-outline-danger#close-highlights{ 'aria-label': t(:close_highlights) }
         %span ✕
 
 :javascript
