@@ -34,7 +34,7 @@
       $textContainer.mark(searchQuery, {
         separateWordSearch: false,
         accuracy: 'partially',
-        diacritics: false,
+        diacritics: true,
         done: function() {
           var $marks = $textContainer.find('mark');
           totalMatches = $marks.length;
