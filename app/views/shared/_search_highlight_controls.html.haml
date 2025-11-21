@@ -8,9 +8,9 @@
       %span= t(:matches)
     .search-highlight-buttons
       %button.btn.btn-sm.btn-outline-secondary#prev-match
-        %span ◀
-      %button.btn.btn-sm.btn-outline-secondary#next-match
         %span ▶
+      %button.btn.btn-sm.btn-outline-secondary#next-match
+        %span ◀
       %button.btn.btn-sm.btn-outline-danger#close-highlights
         %span ✕
 
@@ -20,7 +20,7 @@
     var searchQuery = $controls.data('search-query');
 
     if (searchQuery && searchQuery.trim() !== '') {
-      var $textContainer = $('#actualtext');
+      var $textContainer = $('.textcard');
 
       // Check if text container exists before proceeding
       if ($textContainer.length === 0) {
@@ -57,8 +57,8 @@
       function scrollToMatch($match) {
         if ($match.length > 0) {
           var $header = $('header').first();
-          var headerHeight = $header.length > 0 ? $header.outerHeight() : 0;
-          var offsetTop = $match.offset().top - headerHeight - 100;
+          var headerHeight = $header.length > 0 ? $header.height() : 0;
+          var offsetTop = $match.offset().top - headerHeight - 255;
           $('html, body').animate({
             scrollTop: offsetTop
           }, 300);

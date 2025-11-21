@@ -21,8 +21,8 @@ mark.current-match {
   direction: rtl;
   text-align: right;
   position: fixed;
-  top: 80px;
-  left: 20px;
+  top: 180px;
+  right: 400px;
   z-index: 1000;
   background: #f8f9fa;
   border: 1px solid #dee2e6;
