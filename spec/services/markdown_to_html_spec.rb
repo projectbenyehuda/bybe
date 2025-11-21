@@ -102,13 +102,14 @@ describe MarkdownToHtml do
         expect(result).to include('href="https://example.com"')
       end
 
-      it 'adds target="_blank" to footnote return links' do
+      it 'does not add target="_blank" to footnote return links' do
         markdown = "Text with footnote[^1].\n\n[^1]: Footnote content."
         result = MarkdownToHtml.call(markdown)
 
-        # Footnote return links should also have target="_blank"
+        # Footnote return links should NOT have target="_blank"
         expect(result).to include('class="reversefootnote"')
-        expect(result).to include('target="_blank"')
+        # Ensure that reversefootnote links do not have target="_blank"
+        expect(result).not_to match(/<a[^>]*class="reversefootnote"[^>]*target="_blank"/)
       end
 
       it 'handles links in different contexts' do
