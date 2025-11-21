@@ -953,24 +953,55 @@ module BybeUtils
       next if word_candidate.empty?
 
       # At this point, word_candidate contains only letters, digits, and possibly quotation marks
-      # Check if it's a Hebrew acronym (has " in penultimate position)
-      if word_candidate.length >= 2 && word_candidate[-2] == '"'
-        # It's a Hebrew acronym - preserve the quotation mark
-        # Examples: מפא"י, רמטכ"ל, חט"ב
-        tokens << word_candidate
-      elsif word_candidate.start_with?("'") || (word_candidate.end_with?("'") && word_candidate.length > 2)
-        # Has single quotes at start or end - split on single quotes
-        word_candidate.split("'").each do |part|
-          tokens << part unless part.empty?
+      
+      # First, strip leading and trailing quotes to see what's inside
+      stripped = word_candidate.gsub(/^["']+|["']+$/, '')
+      
+      # Check if the stripped content is a Hebrew acronym
+      # A valid acronym must:
+      # - Have at least 3 characters (e.g., X"Y)
+      # - Have " in the penultimate position
+      # - Have letters before and after the "
+      is_acronym = stripped.length >= 3 && 
+                   stripped[-2] == '"' && 
+                   stripped[-3] =~ /\p{L}/ && 
+                   stripped[-1] =~ /\p{L}/
+      
+      if is_acronym
+        # It's a Hebrew acronym - use the stripped version (quotes at boundaries removed)
+        # Examples: "מפא"י" -> מפא"י, מפא"י -> מפא"י
+        tokens << stripped
+      elsif stripped != word_candidate
+        # Had quotes at boundaries that we stripped - now check what's left
+        if stripped.include?('"')
+          # Still has double quotes in the middle (not acronym) - split on them
+          stripped.split('"').each do |part|
+            tokens << part unless part.empty?
+          end
+        elsif stripped.include?("'") && stripped.count("'") == 1 && stripped.length > 2
+          # Single apostrophe in middle - likely a contraction, keep it
+          tokens << stripped unless stripped.empty?
+        elsif stripped.include?("'")
+          # Multiple apostrophes - split on them
+          stripped.split("'").each do |part|
+            tokens << part unless part.empty?
+          end
+        else
+          # No quotes left after stripping boundaries
+          tokens << stripped unless stripped.empty?
         end
       elsif word_candidate.include?('"')
-        # Has quotes but not in penultimate position - split on quotes
-        # This handles cases like word"word or "word or word"
+        # Has double quotes but not at boundaries and not acronym - split
         word_candidate.split('"').each do |part|
           tokens << part unless part.empty?
         end
+      elsif word_candidate.include?("'") && word_candidate.count("'") > 1
+        # Has multiple apostrophes - split on them
+        word_candidate.split("'").each do |part|
+          tokens << part unless part.empty?
+        end
       else
-        # Regular word without quotes
+        # Regular word without problematic quotes (may have apostrophe in contraction)
         tokens << word_candidate
       end
     end
