@@ -14,14 +14,16 @@ class GenerateKwicConcordanceJob
   # @return [Boolean] true if a job is already in progress, false otherwise
   def self.in_progress?(entity_type, entity_id)
     # In test mode with fake jobs, check the jobs array
+    # Note: inline mode executes jobs immediately, so there's no queueing issue
     # We need to check if Sidekiq::Testing is defined because it's only loaded in test environment
-    if defined?(Sidekiq::Testing) && (Sidekiq::Testing.fake? || Sidekiq::Testing.inline?)
+    if defined?(Sidekiq::Testing) && Sidekiq::Testing.fake?
       return jobs.any? do |job|
         job['args'][0] == entity_type && job['args'][1] == entity_id
       end
     end
 
     # Check queued jobs (not yet started)
+    # Using any? for efficient early termination
     queue = Sidekiq::Queue.new
     queued = queue.any? do |job|
       job.klass == 'GenerateKwicConcordanceJob' &&
@@ -34,9 +36,10 @@ class GenerateKwicConcordanceJob
     # Check currently running jobs
     workers = Sidekiq::Workers.new
     workers.any? do |_process_id, _thread_id, work|
-      work['payload']['class'] == 'GenerateKwicConcordanceJob' &&
-        work['payload']['args'][0] == entity_type &&
-        work['payload']['args'][1] == entity_id
+      # Use dig to safely access nested hash values
+      work.dig('payload', 'class') == 'GenerateKwicConcordanceJob' &&
+        work.dig('payload', 'args', 0) == entity_type &&
+        work.dig('payload', 'args', 1) == entity_id
     end
   end
 
