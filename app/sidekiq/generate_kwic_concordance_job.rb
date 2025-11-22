@@ -33,13 +33,11 @@ class GenerateKwicConcordanceJob
 
     # Check currently running jobs
     workers = Sidekiq::Workers.new
-    running = workers.any? do |_process_id, _thread_id, work|
+    workers.any? do |_process_id, _thread_id, work|
       work['payload']['class'] == 'GenerateKwicConcordanceJob' &&
         work['payload']['args'][0] == entity_type &&
         work['payload']['args'][1] == entity_id
     end
-
-    running
   end
 
   # @param entity_type [String] The entity type: 'Authority' or 'Collection'
