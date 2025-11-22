@@ -1757,3 +1757,5 @@ he:
   notification_render_error: שגיאה בעיבוד הודעה
   unrecognized_format: תבנית קובץ לא מוכרת
   collection_item_operation_error: 'אירעה שגיאה: %{error}. הדף ייטען מחדש.'
+  next_match: המופע הבא
+  previous_match: המופע הקודם
