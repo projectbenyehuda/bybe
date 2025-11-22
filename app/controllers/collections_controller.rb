@@ -225,8 +225,8 @@ class CollectionsController < ApplicationController
     end
 
     # Pagination setup
-    @per_page = (params[:per_page] || 25).to_i
-    @per_page = 25 unless [25, 50, 100].include?(@per_page)
+    @per_page = (params[:per_page] || 10).to_i
+    @per_page = 10 unless [10, 25, 50].include?(@per_page)
 
     # Filtering
     @filter_text = params[:filter].to_s.strip
@@ -238,7 +238,7 @@ class CollectionsController < ApplicationController
 
     # Sorting
     @sort_by = params[:sort].to_s.strip
-    @sort_by = 'alphabetical' unless %w[alphabetical frequency].include?(@sort_by)
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
     @concordance_data = sort_concordance_data(@concordance_data, 'frequency') if @sort_by == 'frequency' # data is already alphabetical by default
 
     @total_entries = @concordance_data.length
