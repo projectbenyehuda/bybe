@@ -52,8 +52,11 @@ module KwicConcordanceConcern
     # Generate and save the downloadable
     case entity
     when Collection, Authority
-      # Trigger async job for large entities
-      GenerateKwicConcordanceJob.perform_async(entity.class.name, entity.id)
+      # Check if a job is already in progress for this entity
+      unless GenerateKwicConcordanceJob.in_progress?(entity.class.name, entity.id)
+        # Trigger async job for large entities
+        GenerateKwicConcordanceJob.perform_async(entity.class.name, entity.id)
+      end
       nil # Return nil to signal async generation is in progress
     when Manifestation
       # Generate synchronously for manifestations
