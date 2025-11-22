@@ -118,9 +118,9 @@ describe ManifestationController do
 
       let(:manifestation) { create(:manifestation, markdown: 'Some text here.') }
 
-      it 'defaults to 25' do
+      it 'defaults to 10' do
         subject
-        expect(assigns(:per_page)).to eq(25)
+        expect(assigns(:per_page)).to eq(10)
       end
     end
 
