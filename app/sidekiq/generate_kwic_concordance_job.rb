@@ -1,10 +1,46 @@
 # frozen_string_literal: true
 
+require 'sidekiq/api'
+
 # Sidekiq job to generate KWIC concordance asynchronously for Authority and Collection entities
 # This is used for larger entities where concordance generation may take a long time
 class GenerateKwicConcordanceJob
   include Sidekiq::Job
   include BybeUtils
+
+  # Check if a job for this entity is already queued or running
+  # @param entity_type [String] The entity type: 'Authority' or 'Collection'
+  # @param entity_id [Integer] The ID of the entity
+  # @return [Boolean] true if a job is already in progress, false otherwise
+  def self.in_progress?(entity_type, entity_id)
+    # In test mode with fake jobs, check the jobs array
+    # We need to check if Sidekiq::Testing is defined because it's only loaded in test environment
+    if defined?(Sidekiq::Testing) && (Sidekiq::Testing.fake? || Sidekiq::Testing.inline?)
+      return jobs.any? do |job|
+        job['args'][0] == entity_type && job['args'][1] == entity_id
+      end
+    end
+
+    # Check queued jobs (not yet started)
+    queue = Sidekiq::Queue.new
+    queued = queue.any? do |job|
+      job.klass == 'GenerateKwicConcordanceJob' &&
+        job.args[0] == entity_type &&
+        job.args[1] == entity_id
+    end
+
+    return true if queued
+
+    # Check currently running jobs
+    workers = Sidekiq::Workers.new
+    running = workers.any? do |_process_id, _thread_id, work|
+      work['payload']['class'] == 'GenerateKwicConcordanceJob' &&
+        work['payload']['args'][0] == entity_type &&
+        work['payload']['args'][1] == entity_id
+    end
+
+    running
+  end
 
   # @param entity_type [String] The entity type: 'Authority' or 'Collection'
   # @param entity_id [Integer] The ID of the entity
