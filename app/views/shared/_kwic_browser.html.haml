@@ -38,7 +38,7 @@
                 .col-md-6.text-left
                   .per-page-selector
                     = t(:kwic_entries_per_page) + ': '
-                    - [25, 50, 100].each do |count|
+                    - [10, 25, 50].each do |count|
                       - if count == @per_page
                         %strong= count
                       - else
