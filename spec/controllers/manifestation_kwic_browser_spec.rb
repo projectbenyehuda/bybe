@@ -28,7 +28,7 @@ describe ManifestationController do
 
       it 'assigns pagination variables' do
         subject
-        expect(assigns(:per_page)).to eq(25)
+        expect(assigns(:per_page)).to eq(10)
         expect(assigns(:page)).to eq(1)
         expect(assigns(:total_entries)).to be > 0
       end
@@ -118,9 +118,9 @@ describe ManifestationController do
 
       let(:manifestation) { create(:manifestation, markdown: 'Some text here.') }
 
-      it 'defaults to 25' do
+      it 'defaults to 10' do
         subject
-        expect(assigns(:per_page)).to eq(25)
+        expect(assigns(:per_page)).to eq(10)
       end
     end
 
@@ -231,11 +231,11 @@ describe ManifestationController do
         # Should have tokens containing 'ow': brown, yellow, crown, owl
         filtered_tokens = assigns(:concordance_data).map { |e| e[:token] }
         filtered_tokens.each { |token| expect(token).to include('ow') }
-        
+
         # Should be sorted by frequency
         frequencies = assigns(:concordance_data).map { |e| e[:instances].length }
         expect(frequencies).to eq(frequencies.sort.reverse)
-        
+
         # 'brown' should be first (5 occurrences)
         expect(assigns(:concordance_data).first[:token]).to eq('brown')
       end

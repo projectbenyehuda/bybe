@@ -54,7 +54,7 @@ describe CollectionsController do
 
       it 'assigns pagination variables' do
         subject
-        expect(assigns(:per_page)).to eq(25)
+        expect(assigns(:per_page)).to eq(10)
         expect(assigns(:page)).to eq(1)
         expect(assigns(:total_entries)).to be > 0
       end
