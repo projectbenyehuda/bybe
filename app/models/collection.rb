@@ -25,6 +25,7 @@ class Collection < ApplicationRecord
   has_many :aboutnesses, as: :aboutable, dependent: :destroy # works that are ABOUT this collection
   # has_many :topics, class_name: 'Aboutness', dependent: :destroy # topics that this work is ABOUT
   has_many :downloadables, as: :object, dependent: :destroy
+  has_many :external_links, as: :linkable, dependent: :destroy
 
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings, class_name: 'Tag'
@@ -398,6 +399,23 @@ class Collection < ApplicationRecord
     parent_collections.each do |pc| # iterate until we find editors
       s = pc.editors_string
       return s if s.present?
+    end
+
+    return nil
+  end
+
+  def publisher_link
+    link = external_links.detect(&:linktype_publisher_site?)
+    return link if link.present?
+
+    seen_colls = []
+    parent_collections.each do |pc| # iterate until we find publisher link
+      next if seen_colls.include?(pc.id)
+
+      link = pc.publisher_link
+      return link if link.present?
+
+      seen_colls << pc.id
     end
 
     return nil

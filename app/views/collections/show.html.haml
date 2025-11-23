@@ -62,6 +62,15 @@
                     %div
                       %span.by-icon-v02= glyph_for_genre(genre)
                       = textify_genre(genre)
+                - publisher_link = @collection.publisher_link
+                - if publisher_link.present?
+                  .metadata
+                    -# simple case: default title, link to url with description as link text
+                    - if publisher_link.description.index('&&&').nil?
+                      %span{style: 'font-weight: bold'}= t(:made_available_by)
+                      = link_to publisher_link.description, publisher_link.url
+                    - else # custom case: use description as raw-HTML format string, replacing &&&(.*)&&& with the link
+                      != publisher_link.description.sub(/&&&(.*)&&&/, "<a href=\"#{publisher_link.url}\" target=\"_blank\">\\1</a>")
                 - if @collection.periodical? # we won't usually know the complete issue count of periodicals in progress, and counting extant issues only would imply the periodical run is complete
                   .metadata= t(:x_issues_available, x: @collection.collection_items.count)
                 - elsif @collection_minus_placeholders == @collection_total_items

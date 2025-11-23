@@ -56,7 +56,7 @@
 
   -# tags and recommendations
   - if tags_etc
-    - publisher_link = @m.external_links.detect(&:linktype_publisher_site?)
+    - publisher_link = @m.publisher_link
     - if publisher_link.present?
       .metadata
         -# simple case: default title, link to url with description as link text
