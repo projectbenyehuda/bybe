@@ -14,6 +14,7 @@ class Ingestible < ApplicationRecord
   belongs_to :locked_by_user, class_name: 'User', optional: true
   belongs_to :last_editor, class_name: 'User', optional: true
   belongs_to :volume, optional: true, class_name: 'Collection'
+  belongs_to :project, optional: true
 
   DEFAULTS_SCHEMA = {}.freeze
   validates :title, presence: true

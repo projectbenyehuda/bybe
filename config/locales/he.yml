@@ -1766,4 +1766,24 @@ he:
   collection_item_operation_error: 'אירעה שגיאה: %{error}. הדף ייטען מחדש.'
   next_match: המופע הבא
   previous_match: המופע הקודם
-  close_highlights: ביטול הדגשת תוצאות
+  close_highlights: ביטול הדגשת תוצאות  # Projects
+  projects:
+    index:
+      title: ניהול פרויקטים
+    new:
+      title: פרויקט חדש
+    edit:
+      title: עריכת פרויקט
+    active: פעיל
+    inactive: לא פעיל
+    no_end_date: אין תאריך סיום
+    contact_information: פרטי קשר
+    default_link_info: קישור ברירת מחדל
+    end_date_hint: השאירו ריק אם הפרויקט פעיל ללא תאריך סיום
+    default_external_link_hint: קישור זה יתווסף אוטומטית כקישור מסוג 'אתר מפרסם' לכל קלט ואסופה המקושרים לפרויקט זה
+    default_link_description_hint: תיאור הקישור שיוצג לגולשים
+  ingestible:
+    project: פרויקט
+    select_project: בחירת פרויקט
+    no_project: ללא פרויקט
+    project_help: אם הקלט משוייך לפרויקט, הקישור הברירתי של הפרויקט יתווסף אוטומטית לאסופה וליצירות

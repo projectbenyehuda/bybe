@@ -11,6 +11,8 @@ Bybeconv::Application.routes.draw do
     end
     resources :featured_content_features, only: %i(destroy)
 
+    resources :projects
+
     resources :authorities, only: [] do
       member do
         post :refresh_uncollected_works_collection

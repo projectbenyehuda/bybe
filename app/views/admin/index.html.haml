@@ -14,6 +14,9 @@
         %p= link_to t(:catalog_dashboard), manifestation_list_path
         %p= link_to t(:ingestibles_system), ingestibles_path
         %p= link_to t('collections_migration.index.title'), collections_migration_index_path
+    - if current_user.admin?
+      %b
+        %p= link_to t('projects.index.title'), admin_projects_path
       %p
       %p
         %small= link_to t(:upload_file), html_file_new_path
