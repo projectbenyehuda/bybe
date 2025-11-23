@@ -166,7 +166,6 @@ he:
   full: מלא
   filter: סינון
   filter_by_type: סינון לפי סוג
-  manifestations: יצירות
   authorities: יוצרים
   ltr: משמאל לימין
   parse: הסבה
@@ -1767,3 +1766,4 @@ he:
   next_match: המופע הבא
   previous_match: המופע הקודם
   close_highlights: ביטול הדגשת תוצאות
+  one_work: יצירה אחת
