@@ -11,6 +11,7 @@ en:
   back: Back
   edit: Edit
   save: Save
+  ok: OK
   cancel: Cancel
   update: Update
   destroy: Destroy
