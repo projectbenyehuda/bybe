@@ -103,5 +103,65 @@ describe SearchController do
         expect(assigns(:results).map(&:id)).to eq([authority.id, manifestation.id])
       end
     end
+
+    context 'when filter is persisted in session' do
+      it 'remembers the filter selection for subsequent searches' do
+        # First search with manifestations filter
+        get :results, params: { q: 'Test', index_types: ['manifestations'] }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 1
+        expect(assigns(:results).map(&:class).map(&:name)).to eq %w(ManifestationsIndex)
+
+        # Second search without filter parameter - should use session
+        get :results, params: { q: 'Test' }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 1
+        expect(assigns(:results).map(&:class).map(&:name)).to eq %w(ManifestationsIndex)
+      end
+
+      it 'allows changing the filter selection' do
+        # First search with manifestations filter
+        get :results, params: { q: 'Test', index_types: ['manifestations'] }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 1
+
+        # Second search with authorities filter - should override session
+        get :results, params: { q: 'Test', index_types: ['authorities'] }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 1
+        expect(assigns(:results).map(&:class).map(&:name)).to eq %w(AuthoritiesIndex)
+
+        # Third search without filter parameter - should use new filter from session
+        get :results, params: { q: 'Test' }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 1
+        expect(assigns(:results).map(&:class).map(&:name)).to eq %w(AuthoritiesIndex)
+      end
+
+      it 'allows resetting to all types by unchecking all filters' do
+        # First search with manifestations filter
+        get :results, params: { q: 'Test', index_types: ['manifestations'] }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 1
+
+        # Submit form with no checkboxes selected (simulating unchecking all)
+        # Rails will send index_types as [''] from the hidden field
+        get :results, params: { q: 'Test', index_types: [''] }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 5 # All types should be returned
+        expect(assigns(:results).map(&:class).map(&:name)).to eq %w(
+          AuthoritiesIndex
+          ManifestationsIndex
+          CollectionsIndex
+          CollectionsIndex
+          DictIndex
+        )
+
+        # Subsequent search without params should use "all types" from session
+        get :results, params: { q: 'Test' }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 5
+      end
+    end
   end
 end
