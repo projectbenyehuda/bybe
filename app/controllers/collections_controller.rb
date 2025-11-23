@@ -59,22 +59,42 @@ class CollectionsController < ApplicationController
 
   # POST /collections/create_periodical_with_issue
   def create_periodical_with_issue
-    periodical_title = params[:periodical_title]
-    issue_title = params[:issue_title]
+    periodical_title = params.require(:periodical_title)
+    issue_title = params.require(:issue_title)
+
+    # Validate that titles are not blank
+    if periodical_title.blank? || issue_title.blank?
+      render json: { success: false, error: I18n.t('ingestible.both_titles_required') },
+             status: :unprocessable_content
+      return
+    end
 
     # Create the periodical collection
-    @periodical = Collection.create!(
+    @periodical = Collection.create(
       title: periodical_title,
       sort_title: periodical_title,
       collection_type: 'periodical'
     )
 
+    unless @periodical.persisted?
+      render json: { success: false, error: @periodical.errors.full_messages.join(', ') },
+             status: :unprocessable_content
+      return
+    end
+
     # Create the first issue within the periodical
-    @issue = Collection.create!(
+    @issue = Collection.create(
       title: issue_title,
       sort_title: issue_title,
       collection_type: 'periodical_issue'
     )
+
+    unless @issue.persisted?
+      @periodical.destroy # Clean up the periodical if issue creation fails
+      render json: { success: false, error: @issue.errors.full_messages.join(', ') },
+             status: :unprocessable_content
+      return
+    end
 
     # Add the issue to the periodical
     @periodical.append_item(@issue)
@@ -86,6 +106,8 @@ class CollectionsController < ApplicationController
       issue_id: @issue.id,
       issue_title: @issue.title
     }
+  rescue ActionController::ParameterMissing => e
+    render json: { success: false, error: e.message }, status: :unprocessable_content
   rescue StandardError => e
     render json: { success: false, error: e.message }, status: :unprocessable_content
   end
