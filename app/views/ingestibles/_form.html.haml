@@ -70,6 +70,12 @@
             %div#periodical_issues_div{style: 'display:none;'}
               = t('ingestible.pick_issue')
               = select_tag :periodical_issues, [], {id: 'periodical_issues'}
+            %br
+            = t(:or)
+            %br
+            = f.label t('ingestible.create_new_periodical')
+            %button.btn-small-outline-v02#create_new_periodical{type: 'button', style: 'display: unset;'}
+              %b.btn-text-v02= t('ingestible.create_new_periodical_button')
 
         .field
           -#= f.label :scenario
@@ -310,6 +316,69 @@
     });
     $('#ingestible_prospective_volume_title').on('change', function() {
       $('#ingestible_no_volume').prop('checked', false);
+    });
+    $('#create_new_periodical').on('click', function(e) {
+      e.preventDefault();
+      // Create a dialog for entering periodical and first issue titles
+      var dialogHtml = '<form>' +
+        '<label>#{t("ingestible.periodical_title")}:</label><br>' +
+        '<input type="text" name="periodical_title" id="new_periodical_title" style="width:100%; margin-bottom:10px;"><br>' +
+        '<label>#{t("ingestible.first_issue_title")}:</label><br>' +
+        '<input type="text" name="issue_title" id="new_issue_title" style="width:100%;">' +
+        '</form>';
+      
+      $(dialogHtml).dialog({
+        modal: true,
+        title: '#{t("ingestible.create_new_periodical")}',
+        width: 500,
+        buttons: {
+          '#{t(:ok)}': function () {
+            var periodicalTitle = $('#new_periodical_title').val().trim();
+            var issueTitle = $('#new_issue_title').val().trim();
+            
+            if (!periodicalTitle || !issueTitle) {
+              alert('#{t("ingestible.both_titles_required")}');
+              return;
+            }
+            
+            var dialog = $(this);
+            
+            $.post("#{create_periodical_with_issue_path}", {
+              periodical_title: periodicalTitle,
+              issue_title: issueTitle
+            })
+            .done(function(data) {
+              if (data.success) {
+                // Populate the periodical dropdown with the new periodical
+                $('#ingestible_periodical_id').append($('<option>', {
+                  value: data.periodical_id,
+                  text: data.periodical_title,
+                  selected: true
+                }));
+                
+                // Trigger the periodical selection to load issues
+                $('#ingestible_periodical_id').trigger('change');
+                
+                // After a short delay, select the newly created issue
+                setTimeout(function() {
+                  $('#periodical_issues').val(data.issue_id);
+                  $('#periodical_issues').trigger('change');
+                }, 500);
+                
+                dialog.dialog('close');
+              } else {
+                alert('#{t("ingestible.creation_failed")}: ' + data.error);
+              }
+            })
+            .fail(function() {
+              alert('#{t("ingestible.creation_failed")}');
+            });
+          },
+          '#{t(:cancel)}': function () {
+            $(this).dialog('close');
+          }
+        }
+      });
     });
     $('#edit_toc').on('click', function(e) {
       e.preventDefault();
