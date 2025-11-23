@@ -290,6 +290,12 @@
               text: "#{t('ingestible.add_new_issue')}"
             }));
 
+            // Check if there's a pending issue to select (from create_new_periodical)
+            if (window.pendingIssueId) {
+              $('#periodical_issues').val(window.pendingIssueId);
+              $('#periodical_issues').trigger('change');
+              window.pendingIssueId = null;
+            }
           }
         }
       });

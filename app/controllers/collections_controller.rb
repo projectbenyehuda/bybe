@@ -69,7 +69,7 @@ class CollectionsController < ApplicationController
       return
     end
 
-    success = false
+    error_response = nil
     ActiveRecord::Base.transaction do
       # Create the periodical collection
       @periodical = Collection.create(
@@ -79,8 +79,7 @@ class CollectionsController < ApplicationController
       )
 
       unless @periodical.persisted?
-        render json: { success: false, error: @periodical.errors.full_messages.join(', ') },
-               status: :unprocessable_content
+        error_response = { success: false, error: @periodical.errors.full_messages.join(', ') }
         raise ActiveRecord::Rollback
       end
 
@@ -92,18 +91,18 @@ class CollectionsController < ApplicationController
       )
 
       unless @issue.persisted?
-        render json: { success: false, error: @issue.errors.full_messages.join(', ') },
-               status: :unprocessable_content
+        error_response = { success: false, error: @issue.errors.full_messages.join(', ') }
         raise ActiveRecord::Rollback
       end
 
       # Add the issue to the periodical
       @periodical.append_item(@issue)
-
-      success = true
     end
 
-    return unless success
+    if error_response
+      render json: error_response, status: :unprocessable_content
+      return
+    end
 
     render json: {
       success: true,
