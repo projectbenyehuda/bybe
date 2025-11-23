@@ -213,7 +213,8 @@
             data['publications'].forEach(function(publication) {
               $('#authority_volumes').append($('<option>', {
                 value: 'P'+publication.id.toString(),
-                text: "#{t('ingestible.new_volume')} " + publication.title
+                text: "#{t('ingestible.new_volume')} " + publication.title,
+                'data-actual-title': publication.title
               }));
             });
           }
@@ -223,8 +224,14 @@
     $('#authority_volumes').on('change', function() {
       $('#prospective_volume_id').val($('#authority_volumes').val());
       new_title = $('#authority_volumes option:selected').text();
+      // For publications, use the actual title without the prefix
+      actual_title = $('#authority_volumes option:selected').data('actual-title');
+      if (actual_title) {
+        $('#prospective_volume_title').val(actual_title);
+      } else {
+        $('#prospective_volume_title').val(new_title);
+      }
       $('#volume_title').text(new_title);
-      $('#prospective_volume_title').val(new_title);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
     });

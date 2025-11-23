@@ -467,6 +467,72 @@ describe IngestiblesController do
           expect(manifestation.alternate_titles).to eq('מטה ושלחן; מיטה ושולחן')
         end
       end
+
+      context 'when creating volume from Publication' do
+        let(:publication) { create(:publication, title: 'Original Publication Title') }
+        let(:markdown) { "&&& Work 1\n\nSome content for work 1" }
+        let(:toc_buffer) do
+          " yes || Work 1 || #{[{ seqno: 1, authority_id: author.id, authority_name: author.name,
+                                  role: 'author' }].to_json} || prose || fr || public_domain"
+        end
+
+        context 'when prospective_volume_title is not provided' do
+          let(:ingestible) do
+            create(:ingestible,
+                   markdown: markdown,
+                   toc_buffer: toc_buffer,
+                   prospective_volume_id: "P#{publication.id}",
+                   prospective_volume_title: nil,
+                   publisher: 'Test Publisher',
+                   no_volume: false,
+                   year_published: '2023',
+                   default_authorities: [{ seqno: 1, authority_id: translator.id, authority_name: translator.name,
+                                           role: 'translator' }].to_json)
+          end
+
+          it 'creates volume with publication title' do
+            ingestible.update_parsing
+            post :ingest, params: { id: ingestible.id }
+            
+            created_collection = Collection.find_by(publication: publication)
+            expect(created_collection).to be_present
+            expect(created_collection.title).to eq('Original Publication Title')
+          end
+        end
+
+        context 'when prospective_volume_title is provided (edited by user)' do
+          let(:ingestible) do
+            create(:ingestible,
+                   markdown: markdown,
+                   toc_buffer: toc_buffer,
+                   prospective_volume_id: "P#{publication.id}",
+                   prospective_volume_title: 'Edited Volume Title',
+                   publisher: 'Test Publisher',
+                   no_volume: false,
+                   year_published: '2023',
+                   default_authorities: [{ seqno: 1, authority_id: translator.id, authority_name: translator.name,
+                                           role: 'translator' }].to_json)
+          end
+
+          it 'creates volume with edited title from prospective_volume_title' do
+            ingestible.update_parsing
+            post :ingest, params: { id: ingestible.id }
+            
+            created_collection = Collection.find_by(publication: publication)
+            expect(created_collection).to be_present
+            expect(created_collection.title).to eq('Edited Volume Title')
+          end
+
+          it 'does not change the Publication title' do
+            ingestible.update_parsing
+            original_pub_title = publication.title
+            post :ingest, params: { id: ingestible.id }
+            
+            publication.reload
+            expect(publication.title).to eq(original_pub_title)
+          end
+        end
+      end
     end
   end
 end
