@@ -69,47 +69,54 @@ class CollectionsController < ApplicationController
       return
     end
 
-    # Create the periodical collection
-    @periodical = Collection.create(
-      title: periodical_title,
-      sort_title: periodical_title,
-      collection_type: 'periodical'
-    )
+    ActiveRecord::Base.transaction do
+      # Create the periodical collection
+      @periodical = Collection.create(
+        title: periodical_title,
+        sort_title: periodical_title,
+        collection_type: 'periodical'
+      )
 
-    unless @periodical.persisted?
-      render json: { success: false, error: @periodical.errors.full_messages.join(', ') },
-             status: :unprocessable_content
-      return
+      unless @periodical.persisted?
+        render json: { success: false, error: @periodical.errors.full_messages.join(', ') },
+               status: :unprocessable_content
+        return
+      end
+
+      # Create the first issue within the periodical
+      @issue = Collection.create(
+        title: issue_title,
+        sort_title: issue_title,
+        collection_type: 'periodical_issue'
+      )
+
+      unless @issue.persisted?
+        raise ActiveRecord::Rollback
+      end
+
+      # Add the issue to the periodical
+      @periodical.append_item(@issue)
+
+      render json: {
+        success: true,
+        periodical_id: @periodical.id,
+        periodical_title: @periodical.title,
+        issue_id: @issue.id,
+        issue_title: @issue.title
+      }
     end
 
-    # Create the first issue within the periodical
-    @issue = Collection.create(
-      title: issue_title,
-      sort_title: issue_title,
-      collection_type: 'periodical_issue'
-    )
-
-    unless @issue.persisted?
-      @periodical.destroy # Clean up the periodical if issue creation fails
+    # Handle the case where issue creation failed
+    if @issue && !@issue.persisted?
       render json: { success: false, error: @issue.errors.full_messages.join(', ') },
              status: :unprocessable_content
-      return
     end
-
-    # Add the issue to the periodical
-    @periodical.append_item(@issue)
-
-    render json: {
-      success: true,
-      periodical_id: @periodical.id,
-      periodical_title: @periodical.title,
-      issue_id: @issue.id,
-      issue_title: @issue.title
-    }
   rescue ActionController::ParameterMissing => e
     render json: { success: false, error: e.message }, status: :unprocessable_content
   rescue StandardError => e
-    render json: { success: false, error: e.message }, status: :unprocessable_content
+    Rails.logger.error("Failed to create periodical with issue: #{e.message}")
+    render json: { success: false, error: I18n.t('ingestible.creation_failed') },
+           status: :unprocessable_content
   end
 
   # GET /collections/1/download
