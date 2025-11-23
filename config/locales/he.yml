@@ -166,7 +166,6 @@ he:
   full: מלא
   filter: סינון
   filter_by_type: סינון לפי סוג
-  manifestations: יצירות
   authorities: יוצרים
   ltr: משמאל לימין
   parse: הסבה
@@ -1766,7 +1765,7 @@ he:
   collection_item_operation_error: 'אירעה שגיאה: %{error}. הדף ייטען מחדש.'
   next_match: המופע הבא
   previous_match: המופע הקודם
-  close_highlights: ביטול הדגשת תוצאות  # Projects
+  close_highlights: ביטול הדגשת תוצאות  
   projects:
     index:
       title: ניהול פרויקטים
@@ -1787,3 +1786,4 @@ he:
     select_project: בחירת פרויקט
     no_project: ללא פרויקט
     project_help: אם הקלט משוייך לפרויקט, הקישור הברירתי של הפרויקט יתווסף אוטומטית לאסופה וליצירות
+  one_work: יצירה אחת
