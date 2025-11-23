@@ -230,8 +230,86 @@ describe CollectionsController do
           linktype: 'publisher_site',
           description: 'Test Publisher'
         }, format: :js
-
         expect(response).to be_successful
+      end
+    end
+    describe '#create_periodical_with_issue' do
+      subject(:call) do
+        post :create_periodical_with_issue, params: params_hash
+      end
+
+      context 'when params are valid' do
+        let(:params_hash) { { periodical_title: 'Test Periodical', issue_title: 'Issue 1' } }
+
+        it 'creates periodical and first issue' do
+          expect { call }.to change(Collection, :count).by(2)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be true
+
+          periodical = Collection.find(response_json['periodical_id'])
+          expect(periodical.title).to eq 'Test Periodical'
+          expect(periodical.collection_type).to eq 'periodical'
+
+          issue = Collection.find(response_json['issue_id'])
+          expect(issue.title).to eq 'Issue 1'
+          expect(issue.collection_type).to eq 'periodical_issue'
+
+          # Check that issue is included in periodical
+          expect(periodical.coll_items).to include(issue)
+        end
+      end
+
+      context 'when periodical title is blank' do
+        let(:params_hash) { { periodical_title: '', issue_title: 'Issue 1' } }
+
+        it 'returns error json' do
+          expect { call }.to not_change(Collection, :count)
+          expect(response).to have_http_status(:unprocessable_content)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be false
+          expect(response_json['error']).to be_present
+        end
+      end
+
+      context 'when issue title is blank' do
+        let(:params_hash) { { periodical_title: 'Test Periodical', issue_title: '' } }
+
+        it 'returns error json' do
+          expect { call }.to not_change(Collection, :count)
+          expect(response).to have_http_status(:unprocessable_content)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be false
+          expect(response_json['error']).to be_present
+        end
+      end
+
+      context 'when periodical_title parameter is missing' do
+        let(:params_hash) { { issue_title: 'Issue 1' } }
+
+        it 'returns error json' do
+          expect { call }.to not_change(Collection, :count)
+          expect(response).to have_http_status(:unprocessable_content)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be false
+          expect(response_json['error']).to be_present
+        end
+      end
+
+      context 'when issue_title parameter is missing' do
+        let(:params_hash) { { periodical_title: 'Test Periodical' } }
+
+        it 'returns error json' do
+          expect { call }.to not_change(Collection, :count)
+          expect(response).to have_http_status(:unprocessable_content)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be false
+          expect(response_json['error']).to be_present
+        end
       end
     end
   end

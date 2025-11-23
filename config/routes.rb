@@ -61,6 +61,10 @@ Bybeconv::Application.routes.draw do
     post 'remove_external_link'
   end
 
+  # Not inside resources block because it doesn't require a collection_id (creates new periodical)
+  post 'collections/create_periodical_with_issue' => 'collections#create_periodical_with_issue',
+       as: 'create_periodical_with_issue'
+
   get 'autocomplete_publication_title' => 'admin#autocomplete_publication_title', as: 'autocomplete_publication_title'
   get 'autocomplete_collection_title' => 'admin#autocomplete_collection_title', as: 'autocomplete_collection_title'
   get 'autocomplete_authority_name_and_aliases' => 'admin#autocomplete_authority_name_and_aliases',

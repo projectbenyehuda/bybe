@@ -556,6 +556,7 @@ he:
   update_bookmark: העברת הסימניה לפסקה הראשונה בתצוגה
   bookmark_removed: הסימניה הוסרה
   remember_this_choice: בחירת התנהגות זו באופן קבוע <BR>(ניתן לשנות בהגדרות באזור האישי)
+  ok: אישור
   cancel: ביטול
   close: סגירה
   by: מאת
@@ -1707,6 +1708,12 @@ he:
     pick_issue: בחירת גליון
     add_new_issue: (הוספת גליון חדש)
     new_issue_title: 'כותרת הגליון החדש (לדוגמה: "חדרים 4" או "גליון 56")'
+    create_new_periodical: צור כתב עת חדש
+    create_new_periodical_button: צור כתב עת חדש
+    periodical_title: שם כתב העת
+    first_issue_title: שם הגליון הראשון
+    both_titles_required: יש להזין את שם כתב העת ושם הגליון הראשון
+    creation_failed: יצירת כתב העת נכשלה
     need_to_save: יש לשמור את ההעלאה לאחר עדכון כותר
     need_to_save_explanation: השמירה תעדכן אישים מקושרים להעלאה (לפי הכותר)
     translator_missing: שפת המקור אינה עברית ולא הוגדר מתרגם!
