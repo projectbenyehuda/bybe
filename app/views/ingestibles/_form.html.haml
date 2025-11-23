@@ -360,11 +360,10 @@
                 // Trigger the periodical selection to load issues
                 $('#ingestible_periodical_id').trigger('change');
 
-                // After a short delay, select the newly created issue
-                setTimeout(function() {
-                  $('#periodical_issues').val(data.issue_id);
-                  $('#periodical_issues').trigger('change');
-                }, 500);
+                // Store the newly created issue ID to select after issues are loaded
+                window.pendingIssueId = data.issue_id;
+                // The AJAX handler that populates #periodical_issues should check window.pendingIssueId
+                // and select the issue if present, then clear window.pendingIssueId.
 
                 dialog.dialog('close');
               } else {
