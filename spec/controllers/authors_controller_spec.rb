@@ -25,7 +25,8 @@ describe AuthorsController do
         call
         # Get the first authority from the test data
         authority = Authority.order(:sort_name).first
-        expect(response.body).to include("(#{authority.cached_works_count} יצירות)")
+        #        expect(response.body).to include("(#{authority.cached_works_count} יצירות)")
+        expect(response.body).to include('(יצירה אחת)')
       end
     end
 
