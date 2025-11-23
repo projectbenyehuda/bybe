@@ -41,6 +41,30 @@
     %span.by-button-v02.cancel_editable_edit{style:'padding-top:7px;display:inline-block;'}= t(:cancel)
     = render partial: 'involved_authorities/list', locals: { item: collection, edit: true }
 
+#external_links_section{ style: 'margin-top: 20px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd;' }
+  %h3= t(:external_links)
+  #external_links_list
+    - collection.external_links.each do |link|
+      .external_link_item{ id: "external_link_#{link.id}", style: 'margin-bottom: 10px; padding: 5px; background-color: white;' }
+        %span.link_info
+          = link_to link.description, link.url, target: :_blank
+          = " (#{t(link.linktype)})"
+        %button.delete_external_link.by-button-v02.by-button-secondary-v02{ type: 'button', data: { link_id: link.id, collection_id: collection.id }, style: 'margin-left: 10px; float: right;' }
+          = t(:delete)
+  .add_external_link_form{ style: 'margin-top: 15px; padding: 10px; border-top: 1px solid #ddd;' }
+    %h4= t(:add_external_link)
+    = form_tag add_external_link_collection_path(collection), method: :post, remote: true, id: 'add_external_link_form' do
+      .form-group
+        = label_tag :url, t(:add_url)
+        = text_field_tag :url, '', class: 'form-control', style: 'width: 100%;'
+      .form-group
+        = label_tag :linktype, t(:link_type)
+        = select_tag :linktype, options_for_select(ExternalLink.linktypes.map { |lt| [t(lt[0]), lt[0]] }), class: 'form-control'
+      .form-group
+        = label_tag :description, t(:link_description)
+        = text_field_tag :description, '', class: 'form-control', style: 'width: 100%;'
+      = submit_tag t(:add), class: 'by-button-v02'
+
 .headline-2-v02{'data-collection-id': collection.id, 'data-nonce': nonce}
   .button_series
     .collection_insert_button.by-button-v02
@@ -154,5 +178,29 @@
         displayContainer.find('.subcollection').hide();
       }
       // Optionally, trigger an AJAX call to fetch data dynamically based on mode
+    });
+
+    // Handle external link deletion
+    $('body').on('click', '.delete_external_link', function(e){
+      e.preventDefault();
+      if (!confirm('#{I18n.t(:are_you_sure)}')) {
+        return;
+      }
+      var btn = $(this);
+      var linkId = btn.data('link-id');
+      var collectionId = btn.data('collection-id');
+      $.ajax({
+        url: '/collections/' + collectionId + '/remove_external_link',
+        type: 'POST',
+        data: { link_id: linkId },
+        success: function(data) {
+          $('#external_link_' + linkId).fadeOut(300, function() {
+            $(this).remove();
+          });
+        },
+        error: function(xhr) {
+          alert('#{I18n.t(:error)}: ' + xhr.responseText);
+        }
+      });
     });
   });

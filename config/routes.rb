@@ -57,6 +57,8 @@ Bybeconv::Application.routes.draw do
     get 'kwic_context/:manifestation_id/:paragraph', action: :kwic_context, as: :kwic_context
     get 'periodical_issues'
     post 'add_periodical_issue'
+    post 'add_external_link'
+    post 'remove_external_link'
   end
 
   get 'autocomplete_publication_title' => 'admin#autocomplete_publication_title', as: 'autocomplete_publication_title'

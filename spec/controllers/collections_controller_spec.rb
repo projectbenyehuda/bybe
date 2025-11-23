@@ -198,7 +198,71 @@ describe CollectionsController do
         expect(flash.notice).to eq I18n.t(:deleted_successfully)
       end
     end
+  end
 
+  describe '#add_external_link' do
+    include_context 'when editor logged in'
 
+    let(:collection) { create(:collection) }
+
+    context 'with valid parameters' do
+      it 'creates an external link for the collection' do
+        expect do
+          post :add_external_link, params: {
+            collection_id: collection.id,
+            url: 'https://example.com',
+            linktype: 'publisher_site',
+            description: 'Test Publisher'
+          }, format: :js
+        end.to change(ExternalLink, :count).by(1)
+
+        link = collection.external_links.last
+        expect(link.url).to eq 'https://example.com'
+        expect(link.linktype).to eq 'publisher_site'
+        expect(link.description).to eq 'Test Publisher'
+        expect(link.status).to eq 'approved'
+      end
+
+      it 'returns success' do
+        post :add_external_link, params: {
+          collection_id: collection.id,
+          url: 'https://example.com',
+          linktype: 'publisher_site',
+          description: 'Test Publisher'
+        }, format: :js
+
+        expect(response).to be_successful
+      end
+    end
+  end
+
+  describe '#remove_external_link' do
+    include_context 'when editor logged in'
+
+    let(:collection) { create(:collection) }
+    let!(:external_link) do
+      create(:external_link, linkable: collection, linktype: :publisher_site, url: 'https://example.com',
+                             description: 'Test Publisher')
+    end
+
+    it 'removes the external link' do
+      expect do
+        post :remove_external_link, params: {
+          collection_id: collection.id,
+          link_id: external_link.id
+        }
+      end.to change(ExternalLink, :count).by(-1)
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'returns error for non-existent link' do
+      post :remove_external_link, params: {
+        collection_id: collection.id,
+        link_id: 999_999
+      }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
   end
 end
