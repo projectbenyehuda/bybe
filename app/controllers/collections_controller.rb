@@ -61,26 +61,26 @@ class CollectionsController < ApplicationController
   def create_periodical_with_issue
     periodical_title = params[:periodical_title]
     issue_title = params[:issue_title]
-    
+
     # Create the periodical collection
     @periodical = Collection.create!(
       title: periodical_title,
       sort_title: periodical_title,
       collection_type: 'periodical'
     )
-    
+
     # Create the first issue within the periodical
     @issue = Collection.create!(
       title: issue_title,
       sort_title: issue_title,
       collection_type: 'periodical_issue'
     )
-    
+
     # Add the issue to the periodical
     @periodical.append_item(@issue)
-    
-    render json: { 
-      success: true, 
+
+    render json: {
+      success: true,
       periodical_id: @periodical.id,
       periodical_title: @periodical.title,
       issue_id: @issue.id,
