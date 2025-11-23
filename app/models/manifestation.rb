@@ -195,7 +195,7 @@ class Manifestation < ApplicationRecord
 
     # check containing collections for a publisher link
     collection_items.each do |ci|
-      next unless ci.collection.present?
+      next if ci.collection.blank?
 
       link = ci.collection.publisher_link
       return link if link.present?

@@ -348,7 +348,7 @@ describe Collection do
       link1 = create(:external_link, linkable: collection, linktype: :wikipedia)
       link2 = create(:external_link, linkable: collection, linktype: :publisher_site)
 
-      expect(collection.external_links).to match_array([link1, link2])
+      expect(collection.external_links).to contain_exactly(link1, link2)
     end
 
     it 'deletes associated external links when collection is destroyed' do
