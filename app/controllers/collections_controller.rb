@@ -57,6 +57,39 @@ class CollectionsController < ApplicationController
     @collection.append_item(@issue)
   end
 
+  # POST /collections/create_periodical_with_issue
+  def create_periodical_with_issue
+    periodical_title = params[:periodical_title]
+    issue_title = params[:issue_title]
+    
+    # Create the periodical collection
+    @periodical = Collection.create!(
+      title: periodical_title,
+      sort_title: periodical_title,
+      collection_type: 'periodical'
+    )
+    
+    # Create the first issue within the periodical
+    @issue = Collection.create!(
+      title: issue_title,
+      sort_title: issue_title,
+      collection_type: 'periodical_issue'
+    )
+    
+    # Add the issue to the periodical
+    @periodical.append_item(@issue)
+    
+    render json: { 
+      success: true, 
+      periodical_id: @periodical.id,
+      periodical_title: @periodical.title,
+      issue_id: @issue.id,
+      issue_title: @issue.title
+    }
+  rescue StandardError => e
+    render json: { success: false, error: e.message }, status: :unprocessable_content
+  end
+
   # GET /collections/1/download
   def download
     @collection = Collection.find(params[:collection_id])
