@@ -59,6 +59,7 @@ Bybeconv::Application.routes.draw do
     post 'add_periodical_issue'
   end
 
+  # Not inside resources block because it doesn't require a collection_id (creates new periodical)
   post 'collections/create_periodical_with_issue' => 'collections#create_periodical_with_issue',
        as: 'create_periodical_with_issue'
 
