@@ -42,7 +42,11 @@
       - @authors.each do |au|
         %li
           = link_to au.sort_name.presence || '_', authority_path(au.id)
-          (#{au.cached_works_count} יצירות)
+          %span{style: 'font-size: 80%'}
+            - if au.cached_works_count > 1
+              = "(#{au.cached_works_count} #{t(:works)})"
+            - else
+              = "(#{t(:one_work)})"
           .authors-list-years= decorator.call(au)
   = hidden_field_tag(:hurl, request.original_url)
   = render partial: 'shared/filters/pagination', locals: { form_id: 'authors_filters', add_js: true }
