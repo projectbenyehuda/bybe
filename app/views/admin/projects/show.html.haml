@@ -17,9 +17,8 @@
     - else
       %span.badge.badge-secondary= t('projects.inactive')
 
-  - if @project.contact_person_name.present? ||
-       @project.contact_person_phone.present? ||
-       @project.contact_person_email.present?
+  - contact_info_present = @project.contact_person_name.present? || @project.contact_person_phone.present? || @project.contact_person_email.present?
+  - if contact_info_present
     %hr
     %h3= t('projects.contact_information')
     - if @project.contact_person_name.present?
