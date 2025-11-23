@@ -69,6 +69,7 @@ class CollectionsController < ApplicationController
       return
     end
 
+    success = false
     ActiveRecord::Base.transaction do
       # Create the periodical collection
       @periodical = Collection.create(
@@ -80,7 +81,7 @@ class CollectionsController < ApplicationController
       unless @periodical.persisted?
         render json: { success: false, error: @periodical.errors.full_messages.join(', ') },
                status: :unprocessable_content
-        return
+        raise ActiveRecord::Rollback
       end
 
       # Create the first issue within the periodical
@@ -91,26 +92,26 @@ class CollectionsController < ApplicationController
       )
 
       unless @issue.persisted?
+        render json: { success: false, error: @issue.errors.full_messages.join(', ') },
+               status: :unprocessable_content
         raise ActiveRecord::Rollback
       end
 
       # Add the issue to the periodical
       @periodical.append_item(@issue)
 
-      render json: {
-        success: true,
-        periodical_id: @periodical.id,
-        periodical_title: @periodical.title,
-        issue_id: @issue.id,
-        issue_title: @issue.title
-      }
+      success = true
     end
 
-    # Handle the case where issue creation failed
-    if @issue && !@issue.persisted?
-      render json: { success: false, error: @issue.errors.full_messages.join(', ') },
-             status: :unprocessable_content
-    end
+    return unless success
+
+    render json: {
+      success: true,
+      periodical_id: @periodical.id,
+      periodical_title: @periodical.title,
+      issue_id: @issue.id,
+      issue_title: @issue.title
+    }
   rescue ActionController::ParameterMissing => e
     render json: { success: false, error: e.message }, status: :unprocessable_content
   rescue StandardError => e
