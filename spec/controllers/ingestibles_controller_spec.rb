@@ -493,7 +493,7 @@ describe IngestiblesController do
           it 'creates volume with publication title' do
             ingestible.update_parsing
             post :ingest, params: { id: ingestible.id }
-            
+
             created_collection = Collection.find_by(publication: publication)
             expect(created_collection).to be_present
             expect(created_collection.title).to eq('Original Publication Title')
@@ -517,7 +517,7 @@ describe IngestiblesController do
           it 'creates volume with edited title from prospective_volume_title' do
             ingestible.update_parsing
             post :ingest, params: { id: ingestible.id }
-            
+
             created_collection = Collection.find_by(publication: publication)
             expect(created_collection).to be_present
             expect(created_collection.title).to eq('Edited Volume Title')
@@ -527,7 +527,7 @@ describe IngestiblesController do
             ingestible.update_parsing
             original_pub_title = publication.title
             post :ingest, params: { id: ingestible.id }
-            
+
             publication.reload
             expect(publication.title).to eq(original_pub_title)
           end
