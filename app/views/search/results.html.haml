@@ -9,6 +9,7 @@
     
     = form_tag search_results_internal_path, method: :get, class: 'form-inline mb-3' do
       = hidden_field_tag :q, @search.query
+      = hidden_field_tag 'index_types[]', '', id: 'index_types_placeholder'
       .form-group.mr-3
         %label.mr-2= "#{t(:filter_by_type)}:"
         .form-check.form-check-inline
