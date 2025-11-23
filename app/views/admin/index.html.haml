@@ -24,11 +24,12 @@
         %small= link_to t(:html_files_list), html_file_list_path
       %h3= t(:current_editing_files)
       %ul
-        - @current_uploads.each do |upl|
-          %li{id: 'cu'+upl.id.to_s}
-            = link_to upl.title, html_file_edit_markdown_path(id: upl.id)
-            != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-            = link_to t(:mark_as_obsolete), {controller: :html_file, action: :mark_superseded, id: upl.id}, {remote: true, data: {confirm: t(:confirm_hide)}}
+        - if current_user.has_bit?('edit_catalog')
+          - @current_uploads.each do |upl|
+            %li{id: 'cu'+upl.id.to_s}
+              = link_to upl.title, html_file_edit_markdown_path(id: upl.id)
+              != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+              = link_to t(:mark_as_obsolete), {controller: :html_file, action: :mark_superseded, id: upl.id}, {remote: true, data: {confirm: t(:confirm_hide)}}
 
   - if current_user.has_bit?('bib_workshop')
     .admin_dashboard_item
