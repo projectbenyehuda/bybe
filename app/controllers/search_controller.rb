@@ -8,8 +8,20 @@ class SearchController < ApplicationController
     begin
       @searchterm = params[:search].nil? ? sanitize_term(params[:q]) : sanitize_term(params[:search])
       
-      # Get index_types from params, defaulting to all types on first search
-      index_types = params[:index_types] || SiteWideSearch.available_index_types
+      # Get index_types from params, session, or default to all types
+      if params.key?(:index_types)
+        # Form was submitted - user explicitly selected filters (or unchecked all)
+        # Filter out blank values and default to all types if nothing selected
+        index_types = params[:index_types].compact_blank
+        index_types = SiteWideSearch.available_index_types if index_types.empty?
+        session[:search_index_types] = index_types
+      elsif session[:search_index_types].present?
+        # Use previously selected filters from session
+        index_types = session[:search_index_types]
+      else
+        # First search without filters - default to all types
+        index_types = SiteWideSearch.available_index_types
+      end
       
       @search = SiteWideSearch.new(query: @searchterm, index_types: index_types)
 
