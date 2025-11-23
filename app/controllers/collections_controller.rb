@@ -237,6 +237,35 @@ class CollectionsController < ApplicationController
     head :forbidden if @collection.collection_type == 'uncollected' # refuse to edit uncollected collections
   end
 
+  def add_external_link
+    @collection = Collection.find(params[:collection_id])
+    @link = @collection.external_links.create!(
+      url: params[:url],
+      linktype: params[:linktype],
+      description: params[:description],
+      status: :approved
+    )
+    
+    respond_to do |format|
+      format.js
+    end
+  rescue StandardError => e
+    @error = e.message
+    respond_to do |format|
+      format.js { render js: "alert('#{I18n.t(:error)}: ' + #{e.message.to_json});" }
+    end
+  end
+
+  def remove_external_link
+    @collection = Collection.find(params[:collection_id])
+    @link = @collection.external_links.find(params[:link_id])
+    @link.destroy!
+    
+    head :ok
+  rescue StandardError => e
+    render plain: e.message, status: :unprocessable_entity
+  end
+
   # Display KWIC concordance browser for a collection
   def kwic
     @collection = Collection.find(params[:collection_id])
