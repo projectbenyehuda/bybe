@@ -183,4 +183,24 @@ describe Ingestible do
       end
     end
   end
+
+  describe 'project association' do
+    let(:project) { create(:project, default_external_link: 'https://example.com', default_link_description: 'Test Link') }
+    let(:ingestible) { create(:ingestible, project: project) }
+
+    it 'belongs to a project' do
+      expect(ingestible.project).to eq(project)
+    end
+
+    it 'can be created without a project' do
+      ingestible_without_project = create(:ingestible, project: nil)
+      expect(ingestible_without_project).to be_valid
+      expect(ingestible_without_project.project).to be_nil
+    end
+
+    it 'has access to project external link information' do
+      expect(ingestible.project.default_external_link).to eq('https://example.com')
+      expect(ingestible.project.default_link_description).to eq('Test Link')
+    end
+  end
 end
