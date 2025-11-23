@@ -188,6 +188,22 @@ class Manifestation < ApplicationRecord
     return ret.flatten
   end
 
+  # return publisher_site link from this manifestation or from any containing collection
+  def publisher_link
+    link = external_links.detect(&:linktype_publisher_site?)
+    return link if link.present?
+
+    # check containing collections for a publisher link
+    collection_items.each do |ci|
+      next if ci.collection.blank?
+
+      link = ci.collection.publisher_link
+      return link if link.present?
+    end
+
+    return nil
+  end
+
   def to_html
     if published?
       MarkdownToHtml.call(markdown)

@@ -265,4 +265,96 @@ describe Collection do
       end
     end
   end
+
+  describe '#publisher_link' do
+    let(:collection) { create(:collection) }
+
+    context 'when collection has a publisher_site external link' do
+      let!(:publisher_link) do
+        create(:external_link, linkable: collection, linktype: :publisher_site, url: 'https://example.com',
+                               description: 'Test Publisher')
+      end
+
+      it 'returns the publisher link' do
+        expect(collection.publisher_link).to eq publisher_link
+      end
+    end
+
+    context 'when collection has no publisher link but parent collection does' do
+      let(:parent_collection) { create(:collection) }
+      let!(:publisher_link) do
+        create(:external_link, linkable: parent_collection, linktype: :publisher_site, url: 'https://example.com',
+                               description: 'Test Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: parent_collection, item: collection)
+      end
+
+      it 'returns the parent collection publisher link' do
+        expect(collection.publisher_link).to eq publisher_link
+      end
+    end
+
+    context 'when collection has no publisher link and no parent has one' do
+      it 'returns nil' do
+        expect(collection.publisher_link).to be_nil
+      end
+    end
+
+    context 'when collection has publisher link and parent also has one' do
+      let(:parent_collection) { create(:collection) }
+      let!(:collection_link) do
+        create(:external_link, linkable: collection, linktype: :publisher_site, url: 'https://collection.com',
+                               description: 'Collection Publisher')
+      end
+      let!(:parent_link) do
+        create(:external_link, linkable: parent_collection, linktype: :publisher_site, url: 'https://parent.com',
+                               description: 'Parent Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: parent_collection, item: collection)
+      end
+
+      it 'returns the collection own link, not the parent' do
+        expect(collection.publisher_link).to eq collection_link
+      end
+    end
+
+    context 'when collection has nested parent collections with publisher links' do
+      let(:grandparent_collection) { create(:collection) }
+      let(:parent_collection) { create(:collection) }
+      let!(:grandparent_link) do
+        create(:external_link, linkable: grandparent_collection, linktype: :publisher_site,
+                               url: 'https://grandparent.com', description: 'Grandparent Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: grandparent_collection, item: parent_collection)
+        create(:collection_item, collection: parent_collection, item: collection)
+      end
+
+      it 'cascades to find the grandparent link' do
+        expect(collection.publisher_link).to eq grandparent_link
+      end
+    end
+  end
+
+  describe 'external_links association' do
+    let(:collection) { create(:collection) }
+
+    it 'can have associated external links' do
+      link1 = create(:external_link, linkable: collection, linktype: :wikipedia)
+      link2 = create(:external_link, linkable: collection, linktype: :publisher_site)
+
+      expect(collection.external_links).to contain_exactly(link1, link2)
+    end
+
+    it 'deletes associated external links when collection is destroyed' do
+      create(:external_link, linkable: collection, linktype: :publisher_site)
+
+      expect { collection.destroy! }.to change(ExternalLink, :count).by(-1)
+    end
+  end
 end
