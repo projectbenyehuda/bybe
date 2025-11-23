@@ -76,6 +76,16 @@
             %button.btn-small-outline-v02#create_new_periodical{ type: 'button', style: 'display: unset;' }
               %b.btn-text-v02= t('ingestible.create_new_periodical_button')
 
+        .field{ style: 'border: 1px solid #ccc; padding: 10px; margin-top: 10px;' }
+          %h3= t('ingestible.project')
+          = f.label t('ingestible.select_project')
+          = f.select :project_id,
+            options_for_select(Project.active.order(:name).map { |p| [p.name, p.id] },
+                               @ingestible.project_id),
+            { include_blank: t('ingestible.no_project') },
+            { class: 'form-control' }
+          %p.text-muted= t('ingestible.project_help')
+
         .field
           -#= f.label :scenario
           -#= f.select :scenario, options_for_select(Ingestible.scenarios.map{|k,v| [t("ingestible.scenario.#{k}"), k]}, @ingestible.scenario)
