@@ -53,7 +53,7 @@
           = t(:delete)
   .add_external_link_form{ style: 'margin-top: 15px; padding: 10px; border-top: 1px solid #ddd;' }
     %h4= t(:add_external_link)
-    = form_tag add_external_link_collection_path(collection), method: :post, remote: true, id: 'add_external_link_form' do
+    = form_tag collection_add_external_link_path(collection), method: :post, remote: true, id: 'add_external_link_form' do
       .form-group
         = label_tag :url, t(:add_url)
         = text_field_tag :url, '', class: 'form-control', style: 'width: 100%;'
