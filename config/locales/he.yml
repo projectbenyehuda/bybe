@@ -1728,6 +1728,10 @@ he:
     no_existing_authorities: אין אישים קיימים בכותר זה
     new_authority: חדש
     clear_defaults: הסרת ברירות מחדל
+    project: מיזם
+    select_project: בחירת מיזם
+    no_project: ללא מיזם
+    project_help: אם ההעלאה משוייכת למיזם, הקישורית לדף ההוצאה המוגדרת במיזם תתווסף אוטומטית לאוסף וליצירות
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: נחלת הכלל
   viaf_id: "מזהה במאגר VIAF‏"
@@ -1768,22 +1772,17 @@ he:
   close_highlights: ביטול הדגשת תוצאות  
   projects:
     index:
-      title: ניהול פרויקטים
+      title: ניהול מיזמים
     new:
-      title: פרויקט חדש
+      title: מיזם חדש
     edit:
-      title: עריכת פרויקט
+      title: עריכת מיזם
     active: פעיל
     inactive: לא פעיל
     no_end_date: אין תאריך סיום
     contact_information: פרטי קשר
     default_link_info: קישור ברירת מחדל
-    end_date_hint: השאירו ריק אם הפרויקט פעיל ללא תאריך סיום
-    default_external_link_hint: קישור זה יתווסף אוטומטית כקישור מסוג 'אתר מפרסם' לכל קלט ואסופה המקושרים לפרויקט זה
-    default_link_description_hint: תיאור הקישור שיוצג לגולשים
-  ingestible:
-    project: פרויקט
-    select_project: בחירת פרויקט
-    no_project: ללא פרויקט
-    project_help: אם הקלט משוייך לפרויקט, הקישור הברירתי של הפרויקט יתווסף אוטומטית לאסופה וליצירות
+    end_date_hint: השאירו ריק אם המיזם פעיל ללא תאריך סיום
+    default_external_link_hint: קישור זה יתווסף אוטומטית כקישור מסוג 'דף באתר ההוצאה' לכל אוסף ויצירה המקושרים למיזם זה
+    default_link_description_hint: תיאור הקישור שיוצג לקוראים
   one_work: יצירה אחת

@@ -700,7 +700,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_23_171830) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.text "description"
     t.date "start_date"

@@ -87,17 +87,16 @@ he:
           draft: טיוטה בעבודה
           ingested: נקלטה בקטלוג
           failed: ההעלאה נכשלה
-  project:
-    one: פרויקט
-    other: פרויקטים
-    attributes:
-      name: שם הפרויקט
-      description: תיאור
-      start_date: תאריך התחלה
-      end_date: תאריך סיום
-      contact_person_name: שם איש קשר
-      contact_person_phone: טלפון איש קשר
-      contact_person_email: דואל איש קשר
-      comments: הערות
-      default_external_link: קישור ברירת מחדל
-      default_link_description: תיאור הקישור
+      project:
+        one: מיזם
+        other: מיזמים
+        name: שם מיזם
+        description: תיאור
+        start_date: תאריך התחלה
+        end_date: תאריך סיום
+        contact_person_name: שם איש קשר
+        contact_person_phone: טלפון איש קשר
+        contact_person_email: דואל איש קשר
+        comments: הערות
+        default_external_link: קישור ברירת מחדל
+        default_link_description: תיאור הקישור
