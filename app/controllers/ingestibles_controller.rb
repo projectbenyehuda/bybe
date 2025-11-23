@@ -435,7 +435,8 @@ class IngestiblesController < ApplicationController
         if @collection.nil? # new volume from known Publication
           publine = @ingestible.publisher.presence || @publication.publisher_line
           pubyear = @ingestible.year_published.presence || @publication.pub_year
-          @collection = Collection.create!(title: @publication.title,
+          volume_title = @ingestible.prospective_volume_title.presence || @publication.title
+          @collection = Collection.create!(title: volume_title,
                                            collection_type: 'volume', publication: @publication,
                                            publisher_line: publine, pub_year: pubyear)
           created_volume = true
