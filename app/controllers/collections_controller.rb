@@ -57,6 +57,68 @@ class CollectionsController < ApplicationController
     @collection.append_item(@issue)
   end
 
+  # POST /collections/create_periodical_with_issue
+  def create_periodical_with_issue
+    periodical_title = params.require(:periodical_title)
+    issue_title = params.require(:issue_title)
+
+    # Validate that titles are not blank
+    if periodical_title.blank? || issue_title.blank?
+      render json: { success: false, error: I18n.t('ingestible.both_titles_required') },
+             status: :unprocessable_content
+      return
+    end
+
+    error_response = nil
+    ActiveRecord::Base.transaction do
+      # Create the periodical collection
+      @periodical = Collection.create(
+        title: periodical_title,
+        sort_title: periodical_title,
+        collection_type: 'periodical'
+      )
+
+      unless @periodical.persisted?
+        error_response = { success: false, error: @periodical.errors.full_messages.join(', ') }
+        raise ActiveRecord::Rollback
+      end
+
+      # Create the first issue within the periodical
+      @issue = Collection.create(
+        title: issue_title,
+        sort_title: issue_title,
+        collection_type: 'periodical_issue'
+      )
+
+      unless @issue.persisted?
+        error_response = { success: false, error: @issue.errors.full_messages.join(', ') }
+        raise ActiveRecord::Rollback
+      end
+
+      # Add the issue to the periodical
+      @periodical.append_item(@issue)
+    end
+
+    if error_response
+      render json: error_response, status: :unprocessable_content
+      return
+    end
+
+    render json: {
+      success: true,
+      periodical_id: @periodical.id,
+      periodical_title: @periodical.title,
+      issue_id: @issue.id,
+      issue_title: @issue.title
+    }
+  rescue ActionController::ParameterMissing => e
+    render json: { success: false, error: e.message }, status: :unprocessable_content
+  rescue StandardError => e
+    Rails.logger.error("Failed to create periodical with issue: #{e.message}")
+    render json: { success: false, error: I18n.t('ingestible.creation_failed') },
+           status: :unprocessable_content
+  end
+
   # GET /collections/1/download
   def download
     @collection = Collection.find(params[:collection_id])
