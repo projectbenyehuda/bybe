@@ -1,0 +1,8 @@
+.backend
+  %h1
+    = @project.name
+    = ': '
+    = t(:edit)
+  = render partial: 'form', locals: { project: @project }
+  %p
+  = link_to t(:back), admin_project_path(@project)

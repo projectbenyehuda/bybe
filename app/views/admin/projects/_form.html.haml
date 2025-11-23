@@ -1,0 +1,20 @@
+= simple_form_for [:admin, project] do |f|
+  .form-inputs
+    = f.error_notification
+    = f.input :name, required: true
+    = f.input :description, as: :text, input_html: { rows: 5, cols: 100 }
+    = f.input :start_date, as: :date, html5: true
+    = f.input :end_date, as: :date, html5: true, hint: t('projects.end_date_hint')
+    %hr
+    %h4= t('projects.contact_information')
+    = f.input :contact_person_name
+    = f.input :contact_person_phone
+    = f.input :contact_person_email
+    %hr
+    %h4= t('projects.default_link_info')
+    = f.input :default_external_link, hint: t('projects.default_external_link_hint')
+    = f.input :default_link_description, hint: t('projects.default_link_description_hint')
+    %hr
+    = f.input :comments, as: :text, input_html: { rows: 5, cols: 100 }
+    .actions
+      = f.submit t(:save), class: 'btn btn-primary'
