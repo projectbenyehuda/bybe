@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+# Admin controller for managing Projects
 module Admin
+  # Projects controller handles CRUD operations for Projects
   class ProjectsController < ApplicationController
     before_action :require_admin
     before_action :set_project, only: %i(show edit update destroy)

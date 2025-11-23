@@ -16,8 +16,10 @@
       %span.badge.badge-success= t('projects.active')
     - else
       %span.badge.badge-secondary= t('projects.inactive')
-  
-  - if @project.contact_person_name.present? || @project.contact_person_phone.present? || @project.contact_person_email.present?
+
+  - if @project.contact_person_name.present? ||
+       @project.contact_person_phone.present? ||
+       @project.contact_person_email.present?
     %hr
     %h3= t('projects.contact_information')
     - if @project.contact_person_name.present?
@@ -32,18 +34,19 @@
       %p
         %b= Project.human_attribute_name(:contact_person_email) + ':'
         = @project.contact_person_email
-  
+
   - if @project.default_external_link.present?
     %hr
     %h3= t('projects.default_link_info')
     %p
       %b= Project.human_attribute_name(:default_external_link) + ':'
-      = link_to @project.default_external_link, @project.default_external_link, target: '_blank'
+      = link_to @project.default_external_link, @project.default_external_link,
+        target: '_blank', rel: 'noopener'
     - if @project.default_link_description.present?
       %p
         %b= Project.human_attribute_name(:default_link_description) + ':'
         = @project.default_link_description
-  
+
   - if @project.comments.present?
     %hr
     %p

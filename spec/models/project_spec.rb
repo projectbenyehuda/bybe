@@ -22,20 +22,20 @@ RSpec.describe Project, type: :model do
     let!(:inactive_past_end) { create(:project, :inactive) }
 
     it 'includes projects with no end date' do
-      expect(Project.active).to include(active_no_end_date)
+      expect(described_class.active).to include(active_no_end_date)
     end
 
     it 'includes projects with future end date' do
-      expect(Project.active).to include(active_future_end)
+      expect(described_class.active).to include(active_future_end)
     end
 
     it 'excludes projects with past end date' do
-      expect(Project.active).not_to include(inactive_past_end)
+      expect(described_class.active).not_to include(inactive_past_end)
     end
 
     it 'includes projects with end date equal to today' do
       today_project = create(:project, end_date: Date.current)
-      expect(Project.active).to include(today_project)
+      expect(described_class.active).to include(today_project)
     end
   end
 end

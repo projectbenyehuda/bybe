@@ -20,9 +20,9 @@ RSpec.describe 'Admin::Projects', type: :request do
     end
 
     it 'displays all projects' do
-      project1 = create(:project, name: 'Project Alpha')
-      project2 = create(:project, name: 'Project Beta')
-      
+      create(:project, name: 'Project Alpha')
+      create(:project, name: 'Project Beta')
+
       get admin_projects_path
       expect(response.body).to include('Project Alpha')
       expect(response.body).to include('Project Beta')
@@ -37,7 +37,7 @@ RSpec.describe 'Admin::Projects', type: :request do
 
     it 'displays project details' do
       project = create(:project, name: 'Test Project', description: 'Test Description')
-      
+
       get admin_project_path(project)
       expect(response.body).to include('Test Project')
       expect(response.body).to include('Test Description')
