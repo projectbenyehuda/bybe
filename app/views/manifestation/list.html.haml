@@ -32,8 +32,10 @@
 :javascript
   $(document).ready(function(){
     $('#title').bind('railsAutocomplete.select', function(event, data){
-      /* Do something here */
-      window.location.href = "#{@urlbase}"+data.item.id
+      window.location.href = "#{@urlbase}"+data.item.id;
+    });
+    $('#author').bind('railsAutocomplete.select', function(event, data){
+      window.location.href = "#{authority_path(999)}".replace(999, data.item.id);
     });
 
   });
