@@ -75,7 +75,7 @@
                       - link_html = "<a href=\"#{escaped_url}\" target=\"_blank\">\\1</a>"
                       != publisher_link.description.sub(/&&&(.*)&&&/, link_html)
                 - if @collection.periodical? # we won't usually know the complete issue count of periodicals in progress, and counting extant issues only would imply the periodical run is complete
-                  .metadata= t(:x_issues_available, x: @collection.collection_items.count)
+                  .metadata= t(:x_issues_available, x: @collection.collection_items.size)
                 - elsif @collection_minus_placeholders == @collection_total_items
                   .metadata= t(:full_collection_available, ctype: textify_collection_type(@collection.collection_type))
                 - else

@@ -16,10 +16,24 @@ describe CollectionsController do
 
     it { is_expected.to be_successful }
 
+    context 'when collection and subcollections contains a single manifestation' do
+      let(:manifestation) { create(:manifestation) }
+
+      let(:subcollection) do
+        create(:collection, manifestations: [manifestation])
+      end
+
+      let(:collection) do
+        create(:collection, included_collections: [subcollection])
+      end
+
+      it { is_expected.to redirect_to manifestation_path(manifestation) }
+    end
+
     context 'when collection is not periodical' do
       let(:collection_type) { (Collection.collection_types.keys - ['periodical'] - Collection::SYSTEM_TYPES).sample }
 
-      context 'when collection contains manifestations' do
+      context 'when collection contains several manifestations' do
         let(:collection) do
           create(
             :collection,
