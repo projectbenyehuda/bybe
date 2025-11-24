@@ -6,9 +6,10 @@
 
   // Global Dragula instance for collection items
   window.initializeCollectionDragula = function() {
-    // Don't initialize if already done
+    // Destroy existing instance if it exists
     if (window.collectionDrakeInstance) {
-      return window.collectionDrakeInstance;
+      window.collectionDrakeInstance.destroy();
+      window.collectionDrakeInstance = null;
     }
 
     var collectionContainers = Array.from(document.querySelectorAll('.collection.connectable'));
@@ -18,6 +19,7 @@
 
     var drake = dragula(collectionContainers, {
       moves: function(el, container, handle) {
+        if (!handle || !handle.classList) return false;
         return handle.classList.contains('drag-handle') || handle.closest('.drag-handle');
       }
     });
@@ -38,14 +40,25 @@
 
       var newIndex = Array.from(target.children).indexOf(el);
       var oldIdx = parseInt(el.getAttribute('data-old-index'), 10);
-      var itemId = el.id.match(/_collitem_(\d+)$/)[1];
-      var destCollId = target.id.match(/_coll_(\d+)$/)[1];
-      var srcCollId = source.id.match(/_coll_(\d+)$/)[1];
+      
+      var itemIdMatch = el.id.match(/_collitem_(\d+)$/);
+      var destCollIdMatch = target.id.match(/_coll_(\d+)$/);
+      var srcCollIdMatch = source.id.match(/_coll_(\d+)$/);
+      
+      if (!itemIdMatch || !destCollIdMatch || !srcCollIdMatch) {
+        console.error('Invalid element IDs during drag operation', el.id, target.id, source.id);
+        $mask.hide();
+        return;
+      }
+      
+      var itemId = itemIdMatch[1];
+      var destCollId = destCollIdMatch[1];
+      var srcCollId = srcCollIdMatch[1];
 
       el.removeAttribute('data-old-index');
 
       var onError = function(xhr) {
-        var errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+        var errorMsg = xhr.status === 400 ? xhr.responseText : 'Status ' + xhr.status;
         var msg = 'Collection operation error: ' + errorMsg;
         alert(msg);
         location.reload();
@@ -88,6 +101,7 @@
 
     var drake = dragula([container], {
       moves: function(el, container, handle) {
+        if (!handle || !handle.classList) return false;
         return handle.classList.contains('drag-handle') || handle.closest('.drag-handle');
       }
     });
