@@ -36,7 +36,10 @@
 
       var $container = $(el).closest('.container-fluid');
       var $mask = $container.find('.collection-mask');
-      $mask.show();
+      
+      if ($mask.length > 0) {
+        $mask.show();
+      }
 
       var newIndex = Array.from(target.children).indexOf(el);
       var oldIdx = parseInt(el.getAttribute('data-old-index'), 10);
@@ -46,8 +49,11 @@
       var srcCollIdMatch = source.id.match(/_coll_(\d+)$/);
       
       if (!itemIdMatch || !destCollIdMatch || !srcCollIdMatch) {
-        console.error('Invalid element IDs during drag operation', el.id, target.id, source.id);
-        $mask.hide();
+        console.error('Invalid element IDs during drag operation. Expected format: nonce_collitem_ID and nonce_coll_ID', 
+                      'Element:', el.id, 'Target:', target.id, 'Source:', source.id);
+        if ($mask.length > 0) {
+          $mask.hide();
+        }
         return;
       }
       
@@ -70,9 +76,15 @@
             collection_id: destCollId,
             old_index: oldIdx,
             new_index: newIndex
-          }).fail(onError).always(function() { $mask.hide(); });
+          }).fail(onError).always(function() { 
+            if ($mask.length > 0) {
+              $mask.hide();
+            }
+          });
         } else {
-          $mask.hide();
+          if ($mask.length > 0) {
+            $mask.hide();
+          }
         }
       } else {
         $.post('/collection_items/' + itemId + '/transplant_item', {
@@ -80,13 +92,22 @@
           dest_collection_id: destCollId,
           old_index: oldIdx,
           new_index: newIndex
-        }).fail(onError).always(function() { $mask.hide(); });
+        }).fail(onError).always(function() { 
+          if ($mask.length > 0) {
+            $mask.hide();
+          }
+        });
       }
     });
 
-    drake.on('cancel', function() {
-      var $mask = $('.collection-mask');
-      $mask.hide();
+    drake.on('cancel', function(el) {
+      if (el) {
+        var $container = $(el).closest('.container-fluid');
+        var $mask = $container.find('.collection-mask');
+        if ($mask.length > 0) {
+          $mask.hide();
+        }
+      }
     });
 
     window.collectionDrakeInstance = drake;
