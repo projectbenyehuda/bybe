@@ -8,12 +8,7 @@ class CollectionsController < ApplicationController
   include KwicConcordanceConcern
 
   before_action :require_editor, except: %i(show download print kwic kwic_download)
-  before_action :set_collection, only: %i(show edit update destroy)
-
-  # GET /collections or /collections.json
-  def index
-    @collections = Collection.all
-  end
+  before_action :set_collection, only: %i(show update destroy)
 
   # GET /collections/1 or /collections/1.json
   def show
@@ -181,14 +176,6 @@ class CollectionsController < ApplicationController
     track_view(@collection)
     @footer_url = url_for(@collection)
   end
-
-  # GET /collections/new
-  def new
-    @collection = Collection.new
-  end
-
-  # GET /collections/1/edit
-  def edit; end
 
   # POST /collections or /collections.json
   def create
