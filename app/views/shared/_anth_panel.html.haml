@@ -121,28 +121,10 @@
       $('#add_work_block').css('display', 'inline');
       m = $(location).attr("href").split('/').pop();
     }
-    $('#anth_texts').sortable({
-      handle: '.drag-handle',
-      start: function(e, ui) {
-        // creates a temporary attribute on the element with the old index
-        $(this).attr('data-previndex', ui.item.index());
-      },
-      update: function(e, ui) {
-        // gets the new and old index then removes the temporary attribute
-        var newIndex = ui.item.index();
-        var oldIndex = $(this).attr('data-previndex');
-        var element_id = ui.item.attr('id').replace('anth_text_','');
-        //alert('id of Item moved = '+element_id+' old position = '+oldIndex+' new position = '+newIndex);
-        $(this).removeAttr('data-previndex');
-
-        ///code to pass the data using AJAX
-        if (newIndex != oldIndex) {
-          $.post('#{anthology_seq_path('999')}'.replace('999',cur_anth.toString()),
-              { id: cur_anth, anth_text_id: element_id, old_pos: oldIndex, new_pos: newIndex }
-          );
-        }
-      }
-    });
+    // Initialize Dragula for anthology texts
+    if (typeof window.initializeAnthologyDragula === 'function') {
+      window.initializeAnthologyDragula(cur_anth);
+    }
     if(cur_anth != 0) {
       $.cur_anth = cur_anth;
       $('#access').on('change', function() {

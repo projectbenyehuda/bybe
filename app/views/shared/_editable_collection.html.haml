@@ -92,62 +92,8 @@
       location.reload();
     };
 
-    $("##{nonce}_coll_#{collection.id}").sortable({
-      handle: '.drag-handle',
-      connectWith: '.collection.connectable',
-      dropOnEmpty: true,
-      start: function(e, ui) {
-        // creates a temporary attribute on the element with the old index
-        ui.item.data('oldIndex', ui.item.index());
-      },
-      update: function(e, ui) {
-        var draggedOut = this !== ui.item.parent()[0];
-        var draggedIn = ui.sender !== null;
-
-        if (draggedOut || draggedIn) {
-          // inter-list drag is handled by the `receive` event
-          return;
-        }
-
-        var newIndex = ui.item.index();
-        var oldIndex = ui.item.data('oldIndex');
-
-        if (newIndex != oldIndex) {
-          $mask.show();
-          var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
-          var collectionId = this.id.replace('#{nonce}_coll_','');
-          $.post(
-            '/collection_items/' + itemId + '/drag_item',
-            {
-              collection_id: collectionId,
-              old_index: oldIndex,
-              new_index: newIndex
-            }
-          ).fail(onError)
-          .always(function() {
-            $mask.hide();
-          });
-        }
-      },
-      receive: function(event, ui) {
-        $mask.show();
-        var itemId = ui.item[0].id.replace('#{nonce}_collitem_','');
-        var destCollId = this.id.replace('#{nonce}_coll_','');
-        var srcCollId = ui.sender[0].id.replace('#{nonce}_coll_','');
-        var oldIndex = ui.item.data('oldIndex');
-        $.post(
-          '/collection_items/' + itemId + '/transplant_item',
-          {
-            src_collection_id: srcCollId,
-            dest_collection_id: destCollId,
-            old_index: oldIndex,
-            new_index: ui.item.index()
-          }
-        ).fail(onError)
-        .always(function() {
-          $mask.hide();
-        });
-        event.stopPropagation();
-      }
-    });
+    // Initialize or update the global Dragula instance
+    if (typeof window.initializeCollectionDragula === 'function') {
+      window.initializeCollectionDragula();
+    }
   });

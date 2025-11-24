@@ -7,6 +7,7 @@
 //= require jquery
 //= require rails-ujs
 //= require jquery-ui
+//= require dragula.min
 //= require jquery.slick
 //= require jquery.mark.min
 //= require jquery.caret
