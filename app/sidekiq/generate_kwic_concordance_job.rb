@@ -36,6 +36,9 @@ class GenerateKwicConcordanceJob
     # Check currently running jobs
     workers = Sidekiq::Workers.new
     workers.any? do |_process_id, _thread_id, work|
+      # Guard against race condition where work may be a String instead of Hash
+      next unless work.is_a?(Hash)
+
       # Use dig to safely access nested hash values
       work.dig('payload', 'class') == 'GenerateKwicConcordanceJob' &&
         work.dig('payload', 'args', 0) == entity_type &&
