@@ -422,7 +422,8 @@ class IngestiblesController < ApplicationController
                      pub_link_text
                      toc_buffer
                      credits
-                     originating_task)
+                     originating_task
+                     project_id)
     )
   end
 
@@ -435,7 +436,8 @@ class IngestiblesController < ApplicationController
         if @collection.nil? # new volume from known Publication
           publine = @ingestible.publisher.presence || @publication.publisher_line
           pubyear = @ingestible.year_published.presence || @publication.pub_year
-          @collection = Collection.create!(title: @publication.title,
+          volume_title = @ingestible.prospective_volume_title.presence || @publication.title
+          @collection = Collection.create!(title: volume_title,
                                            collection_type: 'volume', publication: @publication,
                                            publisher_line: publine, pub_year: pubyear)
           created_volume = true
@@ -458,6 +460,17 @@ class IngestiblesController < ApplicationController
     @collection.credits = credits
     @collection.save!
     @changes[:collections] << [@collection.id, @collection.title, created_volume ? 'created' : 'updated'] # record the new volume for the post-ingestion screen
+
+    # Add publisher external link from project if present
+    # Check if this link already exists on the collection
+    if @ingestible.project.present? && @ingestible.project.default_external_link.present? && !@collection.external_links.exists?(linktype: :publisher_site,
+                                                                                                                                 url: @ingestible.project.default_external_link)
+      @collection.external_links.create!(
+        linktype: :publisher_site,
+        url: @ingestible.project.default_external_link,
+        description: @ingestible.project.default_link_description
+      )
+    end
 
     # Add collection-level involved authorities (whether new or existing collection)
     return if @ingestible.collection_authorities.blank?
@@ -621,6 +634,19 @@ class IngestiblesController < ApplicationController
         end
         @changes[:texts] << [m.id, m.title, m.responsibility_statement]
         m.recalc_cached_people!
+
+        # Add publisher external link from project if present
+        if @ingestible.project.present? && @ingestible.project.default_external_link.present? && !m.external_links.exists?(
+          linktype: :publisher_site, url: @ingestible.project.default_external_link
+        )
+          m.external_links.create!(
+            linktype: :publisher_site,
+            url: @ingestible.project.default_external_link,
+            description: @ingestible.project.default_link_description
+          )
+        end
+
+        # Add publisher link from ingestible form if present (takes priority/is additional)
         if @ingestible.pub_link.present? && @ingestible.pub_link_text.present?
           m.external_links.create!(linktype: :publisher_site, url: @ingestible.pub_link,
                                    description: @ingestible.pub_link_text)

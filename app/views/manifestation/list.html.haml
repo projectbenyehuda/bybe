@@ -32,8 +32,7 @@
 :javascript
   $(document).ready(function(){
     $('#title').bind('railsAutocomplete.select', function(event, data){
-      /* Do something here */
-      window.location.href = "#{@urlbase}"+data.item.id
+      window.location.href = "#{@urlbase}"+data.item.id;
     });
 
   });

@@ -465,4 +465,104 @@ describe Manifestation do
       end
     end
   end
+
+  describe '#publisher_link' do
+    let(:manifestation) { create(:manifestation) }
+
+    context 'when manifestation has a publisher_site external link' do
+      let!(:publisher_link) do
+        create(:external_link, linkable: manifestation, linktype: :publisher_site, url: 'https://example.com',
+                               description: 'Test Publisher')
+      end
+
+      it 'returns the publisher link' do
+        expect(manifestation.publisher_link).to eq publisher_link
+      end
+    end
+
+    context 'when manifestation has no publisher link but is in a collection with one' do
+      let(:collection) { create(:collection) }
+      let!(:publisher_link) do
+        create(:external_link, linkable: collection, linktype: :publisher_site, url: 'https://example.com',
+                               description: 'Test Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: collection, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns the collection publisher link' do
+        expect(manifestation.publisher_link).to eq publisher_link
+      end
+    end
+
+    context 'when manifestation is in a nested collection hierarchy with publisher links' do
+      let(:grandparent_collection) { create(:collection) }
+      let(:parent_collection) { create(:collection) }
+      let!(:grandparent_link) do
+        create(:external_link, linkable: grandparent_collection, linktype: :publisher_site,
+                               url: 'https://grandparent.com', description: 'Grandparent Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: grandparent_collection, item: parent_collection)
+        create(:collection_item, collection: parent_collection, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'cascades through collections to find the grandparent link' do
+        expect(manifestation.publisher_link).to eq grandparent_link
+      end
+    end
+
+    context 'when manifestation has no publisher link and no containing collection has one' do
+      it 'returns nil' do
+        expect(manifestation.publisher_link).to be_nil
+      end
+    end
+
+    context 'when manifestation has publisher link and collection also has one' do
+      let(:collection) { create(:collection) }
+      let!(:manifestation_link) do
+        create(:external_link, linkable: manifestation, linktype: :publisher_site, url: 'https://manifestation.com',
+                               description: 'Manifestation Publisher')
+      end
+      let!(:collection_link) do
+        create(:external_link, linkable: collection, linktype: :publisher_site, url: 'https://collection.com',
+                               description: 'Collection Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: collection, item: manifestation)
+      end
+
+      it 'returns the manifestation own link, not the collection' do
+        expect(manifestation.publisher_link).to eq manifestation_link
+      end
+    end
+
+    context 'when manifestation is in multiple collections with publisher links' do
+      let(:collection1) { create(:collection) }
+      let(:collection2) { create(:collection) }
+      let!(:link1) do
+        create(:external_link, linkable: collection1, linktype: :publisher_site, url: 'https://collection1.com',
+                               description: 'Collection 1 Publisher')
+      end
+      let!(:link2) do
+        create(:external_link, linkable: collection2, linktype: :publisher_site, url: 'https://collection2.com',
+                               description: 'Collection 2 Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: collection1, item: manifestation, seqno: 1)
+        create(:collection_item, collection: collection2, item: manifestation, seqno: 2)
+        manifestation.reload
+      end
+
+      it 'returns the first found publisher link' do
+        expect(manifestation.publisher_link).to eq link1
+      end
+    end
+  end
 end

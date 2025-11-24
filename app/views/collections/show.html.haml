@@ -1,4 +1,5 @@
 .top-element
+= render partial: 'shared/search_highlight_controls', locals: { search_query: params[:q] }
 #content.container-fluid
   - cauthors = @collection.authors
   - ceditors = @collection.editors
@@ -61,8 +62,20 @@
                     %div
                       %span.by-icon-v02= glyph_for_genre(genre)
                       = textify_genre(genre)
+                - publisher_link = @collection.publisher_link
+                - if publisher_link.present?
+                  .metadata
+                    -# simple case: default title, link to url with description as link text
+                    - if publisher_link.description.index('&&&').nil?
+                      %span{ style: 'font-weight: bold' }= t(:made_available_by)
+                      = link_to publisher_link.description, publisher_link.url
+                    - else
+                      -# custom case: use description as raw-HTML format string, replacing &&&(.*)&&& with the link
+                      - escaped_url = ERB::Util.html_escape(publisher_link.url)
+                      - link_html = "<a href=\"#{escaped_url}\" target=\"_blank\">\\1</a>"
+                      != publisher_link.description.sub(/&&&(.*)&&&/, link_html)
                 - if @collection.periodical? # we won't usually know the complete issue count of periodicals in progress, and counting extant issues only would imply the periodical run is complete
-                  .metadata= t(:x_issues_available, x: @collection.collection_items.count)
+                  .metadata= t(:x_issues_available, x: @collection.collection_items.size)
                 - elsif @collection_minus_placeholders == @collection_total_items
                   .metadata= t(:full_collection_available, ctype: textify_collection_type(@collection.collection_type))
                 - else
@@ -111,7 +124,7 @@
                     - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
                     - if translators.present?
                       %p= "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
-              .by-card-content-v02#actualtext
+              .by-card-content-v02.textcard#actualtext
                 != html
           - credit_lines = @collection.fetch_credits.lines
           - if credit_lines.present?

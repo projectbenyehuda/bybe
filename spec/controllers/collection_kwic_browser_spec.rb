@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'sidekiq/testing'
 
 describe CollectionsController do
   describe '#kwic' do
@@ -54,7 +55,7 @@ describe CollectionsController do
 
       it 'assigns pagination variables' do
         subject
-        expect(assigns(:per_page)).to eq(25)
+        expect(assigns(:per_page)).to eq(10)
         expect(assigns(:page)).to eq(1)
         expect(assigns(:total_entries)).to be > 0
       end
@@ -153,6 +154,38 @@ describe CollectionsController do
         subject
         expect(response).to have_http_status(:redirect)
         expect(flash[:error]).to be_present
+      end
+    end
+
+    context 'when concordance does not exist yet and multiple requests are made' do
+      let(:collection) { create(:collection, title: 'Test Collection') }
+      let(:manifestation) do
+        create(
+          :manifestation,
+          title: 'Test Work',
+          markdown: 'Test content.'
+        )
+      end
+
+      before do
+        create(:collection_item, collection: collection, item: manifestation)
+        GenerateKwicConcordanceJob.jobs.clear
+      end
+
+      it 'only queues one job even with multiple requests' do
+        Sidekiq::Testing.fake! do
+          # First request should queue a job
+          get :kwic, params: { collection_id: collection.id }
+          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+
+          # Second request should not queue another job
+          get :kwic, params: { collection_id: collection.id }
+          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+
+          # Third request should also not queue another job
+          get :kwic, params: { collection_id: collection.id }
+          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+        end
       end
     end
 

@@ -45,7 +45,7 @@
               %span.dropdown-arrow )
               .by-dropdown-content-v02.dropdown_full-width#chapter_dropdown_content
                 - @chapters.each do |ch|
-                  %p.pointer.jumpch.linkcolor{style:'text-overflow: ellipsis;overflow-x: hidden;', 'data-target' => "ch#{ch[1]}"}= ch[0]
+                  %p.pointer.jumpch.linkcolor{style:'text-overflow: ellipsis;overflow-x: hidden;', 'data-target' => "ch#{ch[1]}"}!= ch[0]
                 - unless @curated_content.nil?
                   .dropdown-menu-seperator
                     %a{href:'#curated'}
@@ -116,7 +116,7 @@
               - @chapters.each do |ch|
                 %li.nav-item
                   %a{'class' => 'nav-link nav-chapter-name nav-link-chapter pointer linkcolor '+(first ? ' active' : ''), href: "#ch#{ch[1]}", id: "nl#{ch[1]}", 'data-asaf' => "ch#{ch[1]}",'data-toggle' => 'tooltip', 'title' => ch[0], 'data-placement' => 'top', 'data-delay' => { "show": 500, "hide": 100 }}
-                    = ch[0]
+                    != ch[0]
                 - first = false
               -# %li.nav-item
               -#   %a.nav-link.nav-link-arrows

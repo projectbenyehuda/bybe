@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'sidekiq/testing'
 
 describe AuthorsController do
   describe '#kwic' do
@@ -58,7 +59,7 @@ describe AuthorsController do
 
       it 'assigns pagination variables' do
         subject
-        expect(assigns(:per_page)).to eq(25)
+        expect(assigns(:per_page)).to eq(10)
         expect(assigns(:page)).to eq(1)
         expect(assigns(:total_entries)).to be > 0
       end
@@ -94,6 +95,43 @@ describe AuthorsController do
         subject
         expect(response).to have_http_status(:redirect)
         expect(flash[:notice]).to eq(I18n.t(:kwic_being_generated))
+      end
+    end
+
+    context 'when concordance does not exist yet and multiple requests are made' do
+      let(:authority) { create(:authority, status: :published) }
+      let(:expression1) { create(:expression, work: work1) }
+      let(:work1) { create(:work) }
+      let(:manifestation1) do
+        create(
+          :manifestation,
+          title: 'First Work',
+          markdown: 'The quick brown fox.',
+          expression: expression1,
+          status: :published
+        )
+      end
+
+      before do
+        create(:involved_authority, authority: authority, item: work1, role: :author)
+        manifestation1
+        GenerateKwicConcordanceJob.jobs.clear
+      end
+
+      it 'only queues one job even with multiple requests' do
+        Sidekiq::Testing.fake! do
+          # First request should queue a job
+          get :kwic, params: { id: authority.id }
+          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+
+          # Second request should not queue another job
+          get :kwic, params: { id: authority.id }
+          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+
+          # Third request should also not queue another job
+          get :kwic, params: { id: authority.id }
+          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+        end
       end
     end
 

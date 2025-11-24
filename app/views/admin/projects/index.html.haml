@@ -1,0 +1,32 @@
+.backend
+  %h2= t('projects.index.title')
+
+  %a{ href: new_admin_project_path, style: 'color:white;padding-top:0.5rem;' }
+    .btn.btn-primary.btn-sm
+      %b= t('projects.new.title')
+  %p
+  %br
+  %table.table
+    %thead
+      %tr
+        %th= Project.human_attribute_name(:name)
+        %th= Project.human_attribute_name(:start_date)
+        %th= Project.human_attribute_name(:end_date)
+        %th= t(:status)
+        %th
+    %tbody
+      - @projects.each do |project|
+        %tr
+          %td= link_to project.name, admin_project_path(project)
+          %td= project.start_date&.strftime('%d-%m-%Y')
+          %td= project.end_date&.strftime('%d-%m-%Y') || t('projects.active')
+          %td
+            - if project.end_date.nil? || project.end_date >= Date.current
+              %span.badge.badge-success= t('projects.active')
+            - else
+              %span.badge.badge-secondary= t('projects.inactive')
+          %td
+            = link_to t(:edit), edit_admin_project_path(project)
+            = link_to t(:destroy), admin_project_path(project),
+              data: { turbo_method: :delete, turbo_confirm: t(:are_you_sure) }
+  != paginate @projects

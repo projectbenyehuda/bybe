@@ -56,15 +56,18 @@
 
   -# tags and recommendations
   - if tags_etc
-    - publisher_link = @m.external_links.detect(&:linktype_publisher_site?)
+    - publisher_link = @m.publisher_link
     - if publisher_link.present?
       .metadata
         -# simple case: default title, link to url with description as link text
         - if publisher_link.description.index('&&&').nil?
           %span{style: 'font-weight: bold'}= t(:made_available_by)
           = link_to publisher_link.description, publisher_link.url
-        - else # custom case: use description as raw-HTML format string, replacing &&&(.*)&&& with the link
-          != publisher_link.description.sub(/&&&(.*)&&&/, "<a href=\"#{publisher_link.url}\" target=\"_blank\">\\1</a>")
+        - else
+          -# custom case: use description as raw-HTML format string, replacing &&&(.*)&&& with the link
+          - escaped_url = ERB::Util.html_escape(publisher_link.url)
+          - link_html = "<a href=\"#{escaped_url}\" target=\"_blank\">\\1</a>"
+          != publisher_link.description.sub(/&&&(.*)&&&/, link_html)
     .metadata.mobile-work-details
       - if @taggings.approved.count > 0
         %span{:style => "font-weight:bold"}= t(:tags)+': '

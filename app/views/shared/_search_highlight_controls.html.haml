@@ -1,0 +1,116 @@
+-# Search highlight navigation controls
+- if local_assigns[:search_query].present?
+  #search-highlight-controls{ style: 'display: none;', data: { search_query: search_query } }
+    .search-highlight-info
+      %span#current-match 0
+      %span /
+      %span#total-matches 0
+      %span= t(:matches)
+    .search-highlight-buttons
+      %button.btn.btn-sm.btn-outline-secondary#prev-match{ 'aria-label': t(:previous_match) }
+        %span ▶
+      %button.btn.btn-sm.btn-outline-secondary#next-match{ 'aria-label': t(:next_match) }
+        %span ◀
+      %button.btn.btn-sm.btn-outline-danger#close-highlights{ 'aria-label': t(:close_highlights) }
+        %span ✕
+
+:javascript
+  $(document).ready(function() {
+    var $controls = $('#search-highlight-controls');
+    var searchQuery = $controls.data('search-query');
+
+    if (searchQuery && searchQuery.trim() !== '') {
+      var $textContainer = $('.textcard');
+
+      // Check if text container exists before proceeding
+      if ($textContainer.length === 0) {
+        return;
+      }
+
+      var currentMatchIndex = 0;
+      var totalMatches = 0;
+
+      // Use Mark.js to highlight all occurrences
+      $textContainer.mark(searchQuery, {
+        separateWordSearch: false,
+        accuracy: 'partially',
+        diacritics: true,
+        done: function() {
+          var $marks = $textContainer.find('mark');
+          totalMatches = $marks.length;
+
+          if (totalMatches > 0) {
+            $controls.show();
+            $('#total-matches').text(totalMatches);
+
+            // Add class to current match
+            $marks.eq(0).addClass('current-match');
+            currentMatchIndex = 0;
+            $('#current-match').text(currentMatchIndex + 1);
+
+            // Scroll to first match
+            scrollToMatch($marks.eq(0));
+          }
+        }
+      });
+
+      function scrollToMatch($match) {
+        if ($match.length > 0) {
+          var $header = $('header').first();
+          var headerHeight = $header.length > 0 ? $header.height() : 0;
+          var offsetTop = $match.offset().top - headerHeight - 255;
+          $('html, body').animate({
+            scrollTop: offsetTop
+          }, 300);
+        }
+      }
+
+      function updateCurrentMatch() {
+        var $marks = $textContainer.find('mark');
+        $marks.removeClass('current-match');
+        $marks.eq(currentMatchIndex).addClass('current-match');
+        $('#current-match').text(currentMatchIndex + 1);
+        scrollToMatch($marks.eq(currentMatchIndex));
+      }
+
+      $('#next-match').click(function() {
+        var $marks = $textContainer.find('mark');
+        if (totalMatches > 0) {
+          currentMatchIndex = (currentMatchIndex + 1) % totalMatches;
+          updateCurrentMatch();
+        }
+      });
+
+      $('#prev-match').click(function() {
+        var $marks = $textContainer.find('mark');
+        if (totalMatches > 0) {
+          currentMatchIndex = (currentMatchIndex - 1 + totalMatches) % totalMatches;
+          updateCurrentMatch();
+        }
+      });
+
+      $('#close-highlights').click(function() {
+        $textContainer.unmark();
+        $controls.hide();
+      });
+    }
+    // Keyboard shortcuts for navigation (F3/Shift+F3, Ctrl+G/Ctrl+Shift+G, Escape)
+    $(document).on('keydown', function(e) {
+      // Only handle shortcuts if controls are visible
+      if ($controls.is(':visible')) {
+        // F3 or Ctrl+G
+        if (e.key === 'F3' || (e.ctrlKey && (e.key === 'g' || e.key === 'G'))) {
+          e.preventDefault();
+          if (e.shiftKey) {
+            $('#prev-match').click();
+          } else {
+            $('#next-match').click();
+          }
+        }
+        // Escape to close highlights
+        else if (e.key === 'Escape') {
+          $('#close-highlights').click();
+        }
+      }
+    });
+  });

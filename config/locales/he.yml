@@ -166,7 +166,6 @@ he:
   full: מלא
   filter: סינון
   filter_by_type: סינון לפי סוג
-  manifestations: יצירות
   authorities: יוצרים
   ltr: משמאל לימין
   parse: הסבה
@@ -556,6 +555,7 @@ he:
   update_bookmark: העברת הסימניה לפסקה הראשונה בתצוגה
   bookmark_removed: הסימניה הוסרה
   remember_this_choice: בחירת התנהגות זו באופן קבוע <BR>(ניתן לשנות בהגדרות באזור האישי)
+  ok: אישור
   cancel: ביטול
   close: סגירה
   by: מאת
@@ -611,6 +611,7 @@ he:
   search_in_text: חיפוש ביצירה
   search_results: תוצאות חיפוש
   search_total: סך תוצאות החיפוש
+  matches: התאמות
   items: פריטים
   x_words: "%{x} מילים"
   search_terms: מה חיפשת
@@ -1706,6 +1707,12 @@ he:
     pick_issue: בחירת גליון
     add_new_issue: (הוספת גליון חדש)
     new_issue_title: 'כותרת הגליון החדש (לדוגמה: "חדרים 4" או "גליון 56")'
+    create_new_periodical: צור כתב עת חדש
+    create_new_periodical_button: צור כתב עת חדש
+    periodical_title: שם כתב העת
+    first_issue_title: שם הגליון הראשון
+    both_titles_required: יש להזין את שם כתב העת ושם הגליון הראשון
+    creation_failed: יצירת כתב העת נכשלה
     need_to_save: יש לשמור את ההעלאה לאחר עדכון כותר
     need_to_save_explanation: השמירה תעדכן אישים מקושרים להעלאה (לפי הכותר)
     translator_missing: שפת המקור אינה עברית ולא הוגדר מתרגם!
@@ -1721,6 +1728,10 @@ he:
     no_existing_authorities: אין אישים קיימים בכותר זה
     new_authority: חדש
     clear_defaults: הסרת ברירות מחדל
+    project: מיזם
+    select_project: בחירת מיזם
+    no_project: ללא מיזם
+    project_help: אם ההעלאה משוייכת למיזם, הקישורית לדף ההוצאה המוגדרת במיזם תתווסף אוטומטית לאוסף וליצירות
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: נחלת הכלל
   viaf_id: "מזהה במאגר VIAF‏"
@@ -1756,3 +1767,22 @@ he:
   notification_render_error: שגיאה בעיבוד הודעה
   unrecognized_format: תבנית קובץ לא מוכרת
   collection_item_operation_error: 'אירעה שגיאה: %{error}. הדף ייטען מחדש.'
+  next_match: המופע הבא
+  previous_match: המופע הקודם
+  close_highlights: ביטול הדגשת תוצאות  
+  projects:
+    index:
+      title: ניהול מיזמים
+    new:
+      title: מיזם חדש
+    edit:
+      title: עריכת מיזם
+    active: פעיל
+    inactive: לא פעיל
+    no_end_date: אין תאריך סיום
+    contact_information: פרטי קשר
+    default_link_info: קישור ברירת מחדל
+    end_date_hint: השאירו ריק אם המיזם פעיל ללא תאריך סיום
+    default_external_link_hint: קישור זה יתווסף אוטומטית כקישור מסוג 'דף באתר ההוצאה' לכל אוסף ויצירה המקושרים למיזם זה
+    default_link_description_hint: תיאור הקישור שיוצג לקוראים
+  one_work: יצירה אחת

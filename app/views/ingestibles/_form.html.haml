@@ -70,6 +70,21 @@
             %div#periodical_issues_div{style: 'display:none;'}
               = t('ingestible.pick_issue')
               = select_tag :periodical_issues, [], {id: 'periodical_issues'}
+            %br
+            = t(:or)
+            %br
+            %button.btn-small-outline-v02#create_new_periodical{ type: 'button', style: 'display: unset;' }
+              %b.btn-text-v02= t('ingestible.create_new_periodical_button')
+
+        .field{ style: 'border: 1px solid #ccc; padding: 10px; margin-top: 10px;' }
+          %h3= t('ingestible.project')
+          = f.label t('ingestible.select_project')
+          = f.select :project_id,
+            options_for_select(Project.active.order(:name).map { |p| [p.name, p.id] },
+                               @ingestible.project_id),
+            { include_blank: t('ingestible.no_project') },
+            { class: 'form-control' }
+          %p.text-muted= t('ingestible.project_help')
 
         .field
           -#= f.label :scenario
@@ -213,7 +228,8 @@
             data['publications'].forEach(function(publication) {
               $('#authority_volumes').append($('<option>', {
                 value: 'P'+publication.id.toString(),
-                text: "#{t('ingestible.new_volume')} " + publication.title
+                text: "#{t('ingestible.new_volume')} " + publication.title,
+                'data-actual-title': publication.title
               }));
             });
           }
@@ -223,8 +239,14 @@
     $('#authority_volumes').on('change', function() {
       $('#prospective_volume_id').val($('#authority_volumes').val());
       new_title = $('#authority_volumes option:selected').text();
+      // For publications, use the actual title without the prefix
+      actual_title = $('#authority_volumes option:selected').data('actual-title');
+      if (actual_title) {
+        $('#ingestible_prospective_volume_title').val(actual_title);
+      } else {
+        $('#ingestible_prospective_volume_title').val(new_title);
+      }
       $('#volume_title').text(new_title);
-      $('#prospective_volume_title').val(new_title);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
     });
@@ -248,7 +270,7 @@
         $('#prospective_volume_id').val($('#periodical_issues').val());
         new_title = $('#periodical_issues option:selected').text();
         $('#volume_title').text(new_title);
-        $('#prospective_volume_title').val(new_title);
+        $('#ingestible_prospective_volume_title').val(new_title);
     }
       $('#need_to_save').show();
       $('#ingestible_no_volume').prop('checked', false);
@@ -278,6 +300,12 @@
               text: "#{t('ingestible.add_new_issue')}"
             }));
 
+            // Check if there's a pending issue to select (from create_new_periodical)
+            if (window.pendingIssueId) {
+              $('#periodical_issues').val(window.pendingIssueId);
+              $('#periodical_issues').trigger('change');
+              window.pendingIssueId = null;
+            }
           }
         }
       });
@@ -285,7 +313,7 @@
     });
     $('#cterm').on('railsAutocomplete.select', function(event, data){
       $('#prospective_volume_id').val(data.item.id);
-      $('#prospective_volume_title').val(data.item.value);
+      $('#ingestible_prospective_volume_title').val(data.item.value);
       $('#volume_title').text(data.item.value);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
@@ -310,6 +338,69 @@
     });
     $('#ingestible_prospective_volume_title').on('change', function() {
       $('#ingestible_no_volume').prop('checked', false);
+    });
+    $('#create_new_periodical').on('click', function(e) {
+      e.preventDefault();
+      // Create a dialog for entering periodical and first issue titles
+      var dialogHtml = '<form>' +
+        '<label>#{t('ingestible.periodical_title')}:</label><br>' +
+        '<input type="text" name="periodical_title" id="new_periodical_title" ' +
+        'style="width:100%; margin-bottom:10px;"><br>' +
+        '<label>#{t('ingestible.first_issue_title')}:</label><br>' +
+        '<input type="text" name="issue_title" id="new_issue_title" style="width:100%;">' +
+        '</form>';
+
+      $(dialogHtml).dialog({
+        modal: true,
+        title: '#{t('ingestible.create_new_periodical')}',
+        width: 500,
+        buttons: {
+          '#{t(:ok)}': function () {
+            var periodicalTitle = $('#new_periodical_title').val().trim();
+            var issueTitle = $('#new_issue_title').val().trim();
+
+            if (!periodicalTitle || !issueTitle) {
+              alert('#{t('ingestible.both_titles_required')}');
+              return;
+            }
+
+            var dialog = $(this);
+
+            $.post("#{create_periodical_with_issue_path}", {
+              periodical_title: periodicalTitle,
+              issue_title: issueTitle
+            })
+            .done(function(data) {
+              if (data.success) {
+                // Populate the periodical dropdown with the new periodical
+                $('#ingestible_periodical_id').append($('<option>', {
+                  value: data.periodical_id,
+                  text: data.periodical_title,
+                  selected: true
+                }));
+
+                // Trigger the periodical selection to load issues
+                $('#ingestible_periodical_id').trigger('change');
+
+                // Store the newly created issue ID to select after issues are loaded
+                window.pendingIssueId = data.issue_id;
+                // The AJAX handler that populates #periodical_issues should check window.pendingIssueId
+                // and select the issue if present, then clear window.pendingIssueId.
+
+                dialog.dialog('close');
+              } else {
+                alert('#{t('ingestible.creation_failed')}: ' + data.error);
+              }
+            })
+            .fail(function() {
+              alert('#{t('ingestible.creation_failed')}');
+            });
+          },
+          '#{t(:cancel)}': function () {
+            $(this).dialog('close');
+          }
+        }
+      });
     });
     $('#edit_toc').on('click', function(e) {
       e.preventDefault();

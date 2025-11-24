@@ -16,10 +16,24 @@ describe CollectionsController do
 
     it { is_expected.to be_successful }
 
+    context 'when collection and subcollections contains a single manifestation' do
+      let(:manifestation) { create(:manifestation) }
+
+      let(:subcollection) do
+        create(:collection, manifestations: [manifestation])
+      end
+
+      let(:collection) do
+        create(:collection, included_collections: [subcollection])
+      end
+
+      it { is_expected.to redirect_to manifestation_path(manifestation) }
+    end
+
     context 'when collection is not periodical' do
       let(:collection_type) { (Collection.collection_types.keys - ['periodical'] - Collection::SYSTEM_TYPES).sample }
 
-      context 'when collection contains manifestations' do
+      context 'when collection contains several manifestations' do
         let(:collection) do
           create(
             :collection,
@@ -90,6 +104,13 @@ describe CollectionsController do
           expect(response.body).to have_css(".proofable[data-item-id='#{ci.item_id}'][data-item-type='Collection']")
         end
       end
+    end
+  end
+
+  describe '#show with search query parameter' do
+    it 'accepts query parameter and renders successfully' do
+      get :show, params: { id: collection.id, q: 'search term' }
+      expect(response).to be_successful
     end
   end
 
@@ -191,7 +212,149 @@ describe CollectionsController do
         expect(flash.notice).to eq I18n.t(:deleted_successfully)
       end
     end
+  end
 
+  describe '#add_external_link' do
+    include_context 'when editor logged in'
 
+    let(:collection) { create(:collection) }
+
+    context 'with valid parameters' do
+      it 'creates an external link for the collection' do
+        expect do
+          post :add_external_link, params: {
+            collection_id: collection.id,
+            url: 'https://example.com',
+            linktype: 'publisher_site',
+            description: 'Test Publisher'
+          }, format: :js
+        end.to change(ExternalLink, :count).by(1)
+
+        link = collection.external_links.last
+        expect(link.url).to eq 'https://example.com'
+        expect(link.linktype).to eq 'publisher_site'
+        expect(link.description).to eq 'Test Publisher'
+        expect(link.status).to eq 'approved'
+      end
+
+      it 'returns success' do
+        post :add_external_link, params: {
+          collection_id: collection.id,
+          url: 'https://example.com',
+          linktype: 'publisher_site',
+          description: 'Test Publisher'
+        }, format: :js
+        expect(response).to be_successful
+      end
+    end
+    describe '#create_periodical_with_issue' do
+      subject(:call) do
+        post :create_periodical_with_issue, params: params_hash
+      end
+
+      context 'when params are valid' do
+        let(:params_hash) { { periodical_title: 'Test Periodical', issue_title: 'Issue 1' } }
+
+        it 'creates periodical and first issue' do
+          expect { call }.to change(Collection, :count).by(2)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be true
+
+          periodical = Collection.find(response_json['periodical_id'])
+          expect(periodical.title).to eq 'Test Periodical'
+          expect(periodical.collection_type).to eq 'periodical'
+
+          issue = Collection.find(response_json['issue_id'])
+          expect(issue.title).to eq 'Issue 1'
+          expect(issue.collection_type).to eq 'periodical_issue'
+
+          # Check that issue is included in periodical
+          expect(periodical.coll_items).to include(issue)
+        end
+      end
+
+      context 'when periodical title is blank' do
+        let(:params_hash) { { periodical_title: '', issue_title: 'Issue 1' } }
+
+        it 'returns error json' do
+          expect { call }.to not_change(Collection, :count)
+          expect(response).to have_http_status(:unprocessable_content)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be false
+          expect(response_json['error']).to be_present
+        end
+      end
+
+      context 'when issue title is blank' do
+        let(:params_hash) { { periodical_title: 'Test Periodical', issue_title: '' } }
+
+        it 'returns error json' do
+          expect { call }.to not_change(Collection, :count)
+          expect(response).to have_http_status(:unprocessable_content)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be false
+          expect(response_json['error']).to be_present
+        end
+      end
+
+      context 'when periodical_title parameter is missing' do
+        let(:params_hash) { { issue_title: 'Issue 1' } }
+
+        it 'returns error json' do
+          expect { call }.to not_change(Collection, :count)
+          expect(response).to have_http_status(:unprocessable_content)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be false
+          expect(response_json['error']).to be_present
+        end
+      end
+
+      context 'when issue_title parameter is missing' do
+        let(:params_hash) { { periodical_title: 'Test Periodical' } }
+
+        it 'returns error json' do
+          expect { call }.to not_change(Collection, :count)
+          expect(response).to have_http_status(:unprocessable_content)
+
+          response_json = response.parsed_body
+          expect(response_json['success']).to be false
+          expect(response_json['error']).to be_present
+        end
+      end
+    end
+  end
+
+  describe '#remove_external_link' do
+    include_context 'when editor logged in'
+
+    let(:collection) { create(:collection) }
+    let!(:external_link) do
+      create(:external_link, linkable: collection, linktype: :publisher_site, url: 'https://example.com',
+                             description: 'Test Publisher')
+    end
+
+    it 'removes the external link' do
+      expect do
+        post :remove_external_link, params: {
+          collection_id: collection.id,
+          link_id: external_link.id
+        }
+      end.to change(ExternalLink, :count).by(-1)
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it 'returns error for non-existent link' do
+      post :remove_external_link, params: {
+        collection_id: collection.id,
+        link_id: 999_999
+      }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
   end
 end

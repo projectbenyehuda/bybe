@@ -19,10 +19,13 @@ class Collection < ApplicationRecord
   belongs_to :publication, optional: true
   belongs_to :toc, optional: true
   has_many :collection_items, -> { order(:seqno) }, inverse_of: :collection, dependent: :destroy
+  has_many :parent_collection_items, class_name: 'CollectionItem', as: :item, inverse_of: :item, dependent: :destroy
+
   has_many :inclusions, class_name: 'CollectionItem', as: :item, dependent: :destroy # inclusions of this collection in other collections
   has_many :aboutnesses, as: :aboutable, dependent: :destroy # works that are ABOUT this collection
   # has_many :topics, class_name: 'Aboutness', dependent: :destroy # topics that this work is ABOUT
   has_many :downloadables, as: :object, dependent: :destroy
+  has_many :external_links, as: :linkable, dependent: :destroy
 
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings, class_name: 'Tag'
@@ -390,12 +393,29 @@ class Collection < ApplicationRecord
   end
 
   def editors_string
-    auths = involved_authorities.where(role: 'editor')
-    return auths.map(&:authority).map(&:name).join(', ') if auths.count > 0
+    auths = involved_authorities_by_role('editor')
+    return auths.map(&:name).join(', ') unless auths.empty?
 
     parent_collections.each do |pc| # iterate until we find editors
       s = pc.editors_string
       return s if s.present?
+    end
+
+    return nil
+  end
+
+  def publisher_link
+    link = external_links.detect(&:linktype_publisher_site?)
+    return link if link.present?
+
+    seen_colls = []
+    parent_collections.each do |pc| # iterate until we find publisher link
+      next if seen_colls.include?(pc.id)
+
+      link = pc.publisher_link
+      return link if link.present?
+
+      seen_colls << pc.id
     end
 
     return nil
@@ -459,35 +479,8 @@ class Collection < ApplicationRecord
     save!
   end
 
-  # pos is effective 1-based position in the list, not the seqno (which is not necessarily contiguous!)
-  def insert_item_at(item, pos)
-    Collection.transaction do
-      new_seqno = if pos <= 1
-                    1
-                  elsif pos > collection_items.size
-                    collection_items.last.seqno + 1
-                  else
-                    collection_items[pos - 1].seqno
-                  end
-
-      collection_items.where('seqno >= ?', new_seqno).order(:seqno).each do |coli|
-        coli.increment!(:seqno)
-      end
-
-      @ci = collection_item_from_anything(item)
-      @ci.seqno = new_seqno
-      @ci.save!
-    end
-    @ci.id
-  end
-
   def parent_collections
-    parent_collection_items.preload(:collection).map(&:collection)
-  end
-
-  # returns collection_items where given collection is specified as an item
-  def parent_collection_items
-    CollectionItem.where(item: self)
+    parent_collection_items.map(&:collection)
   end
 
   # update status of ALL manifestations included in this collection, including in nested collections

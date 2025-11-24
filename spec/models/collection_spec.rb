@@ -181,55 +181,6 @@ describe Collection do
     expect(c.collection_items.count).to eq 0
   end
 
-  describe '.insert_item_at' do
-    subject(:call) { collection.insert_item_at(manifestation, index) }
-
-    let(:collection) { create(:collection) }
-    let(:manifestation) { create(:manifestation) }
-
-    let!(:first_item) { create(:collection_item, collection: collection, seqno: 1) }
-    let!(:second_item) { create(:collection_item, collection: collection, seqno: 2) }
-    let!(:third_item) { create(:collection_item, collection: collection, seqno: 3) }
-
-    let(:inserted_item) { CollectionItem.order(id: :desc).first }
-
-    before do
-      collection.reload
-      call
-      collection.reload
-    end
-
-    context 'when insert at the end of the list' do
-      let(:index) { 4 }
-
-      it 'inserts successfully' do
-        expect(inserted_item).to have_attributes(seqno: 4, item: manifestation)
-        expect(collection.collection_items).to eq [first_item, second_item, third_item, inserted_item]
-        expect(collection.collection_items.map(&:seqno)).to eq [1, 2, 3, 4]
-      end
-    end
-
-    context 'when insert at the beginning of the list' do
-      let(:index) { 1 }
-
-      it 'inserts successfully' do
-        expect(inserted_item).to have_attributes(seqno: 1, item: manifestation)
-        expect(collection.collection_items).to eq [inserted_item, first_item, second_item, third_item]
-        expect(collection.collection_items.map(&:seqno)).to eq [1, 2, 3, 4]
-      end
-    end
-
-    context 'when insert at specified position' do
-      let(:index) { 2 }
-
-      it 'inserts successfully' do
-        expect(inserted_item).to have_attributes(seqno: 2, item: manifestation)
-        expect(collection.collection_items).to eq [first_item, inserted_item, second_item, third_item]
-        expect(collection.collection_items.map(&:seqno)).to eq [1, 2, 3, 4]
-      end
-    end
-  end
-
   it 'knows its parent collections' do
     c = create(:collection)
     p1 = create(:collection)
@@ -263,6 +214,98 @@ describe Collection do
       it 'returns nil' do
         expect(collection.fresh_downloadable_for('pdf')).to be_nil
       end
+    end
+  end
+
+  describe '#publisher_link' do
+    let(:collection) { create(:collection) }
+
+    context 'when collection has a publisher_site external link' do
+      let!(:publisher_link) do
+        create(:external_link, linkable: collection, linktype: :publisher_site, url: 'https://example.com',
+                               description: 'Test Publisher')
+      end
+
+      it 'returns the publisher link' do
+        expect(collection.publisher_link).to eq publisher_link
+      end
+    end
+
+    context 'when collection has no publisher link but parent collection does' do
+      let(:parent_collection) { create(:collection) }
+      let!(:publisher_link) do
+        create(:external_link, linkable: parent_collection, linktype: :publisher_site, url: 'https://example.com',
+                               description: 'Test Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: parent_collection, item: collection)
+      end
+
+      it 'returns the parent collection publisher link' do
+        expect(collection.publisher_link).to eq publisher_link
+      end
+    end
+
+    context 'when collection has no publisher link and no parent has one' do
+      it 'returns nil' do
+        expect(collection.publisher_link).to be_nil
+      end
+    end
+
+    context 'when collection has publisher link and parent also has one' do
+      let(:parent_collection) { create(:collection) }
+      let!(:collection_link) do
+        create(:external_link, linkable: collection, linktype: :publisher_site, url: 'https://collection.com',
+                               description: 'Collection Publisher')
+      end
+      let!(:parent_link) do
+        create(:external_link, linkable: parent_collection, linktype: :publisher_site, url: 'https://parent.com',
+                               description: 'Parent Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: parent_collection, item: collection)
+      end
+
+      it 'returns the collection own link, not the parent' do
+        expect(collection.publisher_link).to eq collection_link
+      end
+    end
+
+    context 'when collection has nested parent collections with publisher links' do
+      let(:grandparent_collection) { create(:collection) }
+      let(:parent_collection) { create(:collection) }
+      let!(:grandparent_link) do
+        create(:external_link, linkable: grandparent_collection, linktype: :publisher_site,
+                               url: 'https://grandparent.com', description: 'Grandparent Publisher')
+      end
+
+      before do
+        create(:collection_item, collection: grandparent_collection, item: parent_collection)
+        create(:collection_item, collection: parent_collection, item: collection)
+      end
+
+      it 'cascades to find the grandparent link' do
+        expect(collection.publisher_link).to eq grandparent_link
+      end
+    end
+  end
+
+  describe 'external_links association' do
+    let(:collection) { create(:collection) }
+
+    it 'can have associated external links' do
+      link1 = create(:external_link, linkable: collection, linktype: :wikipedia)
+      link2 = create(:external_link, linkable: collection, linktype: :publisher_site)
+
+      expect(collection.external_links).to contain_exactly(link1, link2)
+    end
+
+    it 'deletes associated external links when collection is destroyed' do
+      create(:external_link, linkable: collection, linktype: :publisher_site)
+
+      expect { collection.destroy! }.to change(ExternalLink, :count).by(-1)
     end
   end
 end

@@ -608,8 +608,8 @@ class AuthorsController < ApplicationController
     end
 
     # Pagination setup
-    @per_page = (params[:per_page] || 25).to_i
-    @per_page = 25 unless [25, 50, 100].include?(@per_page)
+    @per_page = (params[:per_page] || 10).to_i
+    @per_page = 10 unless [10, 25, 50].include?(@per_page)
 
     # Filtering
     @filter_text = params[:filter].to_s.strip

@@ -30,4 +30,5 @@ class AuthoritiesIndex < Chewy::Index
   field :pby_publication_date, type: 'date', value: ->(a) { a.published_at }
   field :wikipedia_snippet
   field :tags, type: 'keyword', value: -> { approved_tags.map(&:name) }
+  field :cached_works_count, type: 'integer', value: ->(a) { a.cached_works_count }
 end

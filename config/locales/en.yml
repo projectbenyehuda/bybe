@@ -11,6 +11,7 @@ en:
   back: Back
   edit: Edit
   save: Save
+  ok: OK
   cancel: Cancel
   update: Update
   destroy: Destroy
@@ -67,6 +68,7 @@ en:
   collapse_collection: Collapse collection
   or_search_term: "Or search for an existing work called:"
   or_search_for_collection: "Or search for collection:"
+  matches: matches
   perform_add: Add
   not_an_editor: This page is only available for editors
   permalink: Permanent link
@@ -259,6 +261,17 @@ en:
     no_existing_authorities: No existing authorities in this collection
     new_authority: New
     clear_defaults: Clear Defaults
+    pick_periodical: Select Periodical
+    pick_issue: Select Issue
+    add_new_issue: (Add New Issue)
+    new_issue_title: 'New Issue Title (e.g. "Chambers 4" or "Issue 56")'
+    create_new_periodical: Create New Periodical
+    create_new_periodical_button: Create New Periodical
+    periodical_title: Periodical Name
+    first_issue_title: First Issue Name
+    both_titles_required: Both periodical name and first issue name are required
+    creation_failed: Periodical creation failed
+    need_to_save: Please save the ingestible after updating the collection
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: Public Domain
   viaf_id: ID in VIAF Database

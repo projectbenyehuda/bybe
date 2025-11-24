@@ -11,6 +11,8 @@ Bybeconv::Application.routes.draw do
     end
     resources :featured_content_features, only: %i(destroy)
 
+    resources :projects
+
     resources :authorities, only: [] do
       member do
         post :refresh_uncollected_works_collection
@@ -48,7 +50,8 @@ Bybeconv::Application.routes.draw do
       post :transplant_item
     end
   end
-  resources :collections do
+
+  resources :collections, only: %i(show create update destroy) do
     get 'manage'
     post 'download'
     get 'print'
@@ -57,7 +60,13 @@ Bybeconv::Application.routes.draw do
     get 'kwic_context/:manifestation_id/:paragraph', action: :kwic_context, as: :kwic_context
     get 'periodical_issues'
     post 'add_periodical_issue'
+    post 'add_external_link'
+    post 'remove_external_link'
   end
+
+  # Not inside resources block because it doesn't require a collection_id (creates new periodical)
+  post 'collections/create_periodical_with_issue' => 'collections#create_periodical_with_issue',
+       as: 'create_periodical_with_issue'
 
   get 'autocomplete_publication_title' => 'admin#autocomplete_publication_title', as: 'autocomplete_publication_title'
   get 'autocomplete_collection_title' => 'admin#autocomplete_collection_title', as: 'autocomplete_collection_title'

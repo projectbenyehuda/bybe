@@ -18,6 +18,18 @@ describe AuthorsController do
 
     it { is_expected.to be_successful }
 
+    context 'when displaying work counts' do
+      render_views
+
+      it 'displays work count next to author name' do
+        call
+        # Get the first authority from the test data
+        authority = Authority.order(:sort_name).first
+        #        expect(response.body).to include("(#{authority.cached_works_count} יצירות)")
+        expect(response.body).to include('(יצירה אחת)')
+      end
+    end
+
     describe 'sorting' do
       AuthorsController::SORTING_PROPERTIES.each_key do |sort|
         %w(asc desc).each do |dir|

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_16_230201) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_23_171830) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -573,9 +573,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_16_230201) do
     t.string "originating_task"
     t.integer "last_editor_id"
     t.text "collection_authorities"
+    t.bigint "project_id"
     t.index ["last_editor_id"], name: "index_ingestibles_on_last_editor_id"
     t.index ["locked_by_user_id"], name: "index_ingestibles_on_locked_by_user_id"
     t.index ["originating_task"], name: "index_ingestibles_on_originating_task"
+    t.index ["project_id"], name: "index_ingestibles_on_project_id"
     t.index ["status"], name: "index_ingestibles_on_status"
     t.index ["title"], name: "index_ingestibles_on_title"
     t.index ["user_id"], name: "index_ingestibles_on_user_id"
@@ -696,6 +698,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_16_230201) do
     t.string "wikipedia_url"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+  end
+
+  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.date "start_date"
+    t.date "end_date"
+    t.string "contact_person_name"
+    t.string "contact_person_phone"
+    t.string "contact_person_email"
+    t.text "comments"
+    t.string "default_external_link"
+    t.string "default_link_description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "proofs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -860,7 +877,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_16_230201) do
     t.string "email"
     t.string "provider"
     t.string "uid"
-    t.string "oauth_token"
+    t.string "oauth_token", limit: 4096
     t.datetime "oauth_expires_at", precision: nil
     t.boolean "admin"
     t.datetime "created_at", precision: nil, null: false
@@ -974,6 +991,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_16_230201) do
   add_foreign_key "holdings", "bib_sources"
   add_foreign_key "holdings", "publications"
   add_foreign_key "ingestibles", "collections", column: "volume_id"
+  add_foreign_key "ingestibles", "projects"
   add_foreign_key "ingestibles", "users", column: "last_editor_id"
   add_foreign_key "ingestibles", "users", column: "locked_by_user_id"
   add_foreign_key "involved_authorities", "authorities"

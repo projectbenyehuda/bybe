@@ -8,31 +8,23 @@ class CollectionsController < ApplicationController
   include KwicConcordanceConcern
 
   before_action :require_editor, except: %i(show download print kwic kwic_download)
-  before_action :set_collection, only: %i(show edit update destroy)
-
-  # GET /collections or /collections.json
-  def index
-    @collections = Collection.all
-  end
+  before_action :set_collection, only: %i(show update destroy)
 
   # GET /collections/1 or /collections/1.json
   def show
-    unless @collection.has_multiple_manifestations?
-      ci = @collection.flatten_items.select { |x| x.item_type == 'Manifestation' }.first
-      if ci.nil?
-        flash[:error] = t(:no_such_item)
-        redirect_to '/'
-      else
-        redirect_to manifestation_path(ci.item.id)
-      end
-      return
+    data = FetchCollection.call(@collection)
+
+    if data.all_manifestations.size == 1
+      redirect_to manifestation_path(data.all_manifestations.first)
     end
+
     @header_partial = 'shared/collection_top'
     @scrollspy_target = 'chapternav'
     @colls_traversed = [@collection.id]
     @print_url = url_for(action: :print, collection_id: @collection.id)
     @pagetype = :collection
     @taggings = @collection.taggings
+
     @included_recs = @collection.included_recommendations.count
     @total_recs = @collection.recommendations.count + @included_recs
     @credits = render_to_string(partial: 'collections/credits', locals: { collection: @collection })
@@ -55,6 +47,68 @@ class CollectionsController < ApplicationController
       @issue.involved_authorities.create!(authority_id: ia.authority.id, role: ia.role)
     end
     @collection.append_item(@issue)
+  end
+
+  # POST /collections/create_periodical_with_issue
+  def create_periodical_with_issue
+    periodical_title = params.require(:periodical_title)
+    issue_title = params.require(:issue_title)
+
+    # Validate that titles are not blank
+    if periodical_title.blank? || issue_title.blank?
+      render json: { success: false, error: I18n.t('ingestible.both_titles_required') },
+             status: :unprocessable_content
+      return
+    end
+
+    error_response = nil
+    ActiveRecord::Base.transaction do
+      # Create the periodical collection
+      @periodical = Collection.create(
+        title: periodical_title,
+        sort_title: periodical_title,
+        collection_type: 'periodical'
+      )
+
+      unless @periodical.persisted?
+        error_response = { success: false, error: @periodical.errors.full_messages.join(', ') }
+        raise ActiveRecord::Rollback
+      end
+
+      # Create the first issue within the periodical
+      @issue = Collection.create(
+        title: issue_title,
+        sort_title: issue_title,
+        collection_type: 'periodical_issue'
+      )
+
+      unless @issue.persisted?
+        error_response = { success: false, error: @issue.errors.full_messages.join(', ') }
+        raise ActiveRecord::Rollback
+      end
+
+      # Add the issue to the periodical
+      @periodical.append_item(@issue)
+    end
+
+    if error_response
+      render json: error_response, status: :unprocessable_content
+      return
+    end
+
+    render json: {
+      success: true,
+      periodical_id: @periodical.id,
+      periodical_title: @periodical.title,
+      issue_id: @issue.id,
+      issue_title: @issue.title
+    }
+  rescue ActionController::ParameterMissing => e
+    render json: { success: false, error: e.message }, status: :unprocessable_content
+  rescue StandardError => e
+    Rails.logger.error("Failed to create periodical with issue: #{e.message}")
+    render json: { success: false, error: I18n.t('ingestible.creation_failed') },
+           status: :unprocessable_content
   end
 
   # GET /collections/1/download
@@ -123,14 +177,6 @@ class CollectionsController < ApplicationController
     @footer_url = url_for(@collection)
   end
 
-  # GET /collections/new
-  def new
-    @collection = Collection.new
-  end
-
-  # GET /collections/1/edit
-  def edit; end
-
   # POST /collections or /collections.json
   def create
     @collection = Collection.new(collection_params)
@@ -173,6 +219,35 @@ class CollectionsController < ApplicationController
   def manage
     @collection = Collection.find(params[:collection_id])
     head :forbidden if @collection.collection_type == 'uncollected' # refuse to edit uncollected collections
+  end
+
+  def add_external_link
+    @collection = Collection.find(params[:collection_id])
+    @link = @collection.external_links.create!(
+      url: params[:url],
+      linktype: params[:linktype],
+      description: params[:description],
+      status: :approved
+    )
+    
+    respond_to do |format|
+      format.js
+    end
+  rescue StandardError => e
+    @error = e.message
+    respond_to do |format|
+      format.js { render js: "alert('#{I18n.t(:error)}: ' + #{e.message.to_json});" }
+    end
+  end
+
+  def remove_external_link
+    @collection = Collection.find(params[:collection_id])
+    @link = @collection.external_links.find(params[:link_id])
+    @link.destroy!
+    
+    head :ok
+  rescue StandardError => e
+    render plain: e.message, status: :unprocessable_entity
   end
 
   # Display KWIC concordance browser for a collection
@@ -225,8 +300,8 @@ class CollectionsController < ApplicationController
     end
 
     # Pagination setup
-    @per_page = (params[:per_page] || 25).to_i
-    @per_page = 25 unless [25, 50, 100].include?(@per_page)
+    @per_page = (params[:per_page] || 10).to_i
+    @per_page = 10 unless [10, 25, 50].include?(@per_page)
 
     # Filtering
     @filter_text = params[:filter].to_s.strip
@@ -238,7 +313,7 @@ class CollectionsController < ApplicationController
 
     # Sorting
     @sort_by = params[:sort].to_s.strip
-    @sort_by = 'alphabetical' unless %w[alphabetical frequency].include?(@sort_by)
+    @sort_by = 'alphabetical' unless %w(alphabetical frequency).include?(@sort_by)
     @concordance_data = sort_concordance_data(@concordance_data, 'frequency') if @sort_by == 'frequency' # data is already alphabetical by default
 
     @total_entries = @concordance_data.length

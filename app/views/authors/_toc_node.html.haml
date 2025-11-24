@@ -57,8 +57,7 @@
     - collection = toc_node.collection
     - type_prefix = collection.collection_type == 'uncollected' ? '' : textify_collection_type(collection.collection_type)
     - uncollected = collection.collection_type == 'uncollected'
-    - any_published = collection.any_published_manifestations?
-    - is_involved = collection.involved_authorities.where(authority_id: authority_id, role: role).present?
+    - is_involved = collection.involved_authorities.any? { |ia| ia.authority_id == authority_id && ia.role == role.to_s }
     - unless full_toc
       - full_toc = is_involved # only show full TOC for collections where this particular author is a principal contributor
     - children = full_toc ? toc_node.sorted_children : toc_node.children_by_role(role, authority_id)

@@ -134,6 +134,9 @@ GEM
     brakeman (7.1.0)
       racc
     builder (3.3.0)
+    bullet (8.1.0)
+      activesupport (>= 3.0.0)
+      uniform_notifier (~> 1.11)
     capistrano (3.19.2)
       airbrussh (>= 1.0.0)
       i18n
@@ -167,6 +170,7 @@ GEM
       activesupport (>= 5.2)
       elasticsearch (>= 7.14.0, < 8)
       elasticsearch-dsl
+    choice (0.2.0)
     client_side_validations (22.3.1)
       js_regex (~> 3.7)
       rails (>= 6.1)
@@ -241,6 +245,8 @@ GEM
     erubi (1.13.1)
     et-orbi (1.2.11)
       tzinfo
+    evil-seed (0.7.0)
+      activerecord (>= 5.0)
     execjs (2.10.0)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
@@ -573,6 +579,11 @@ GEM
       activesupport (>= 5.0.0)
       minitest
       nokogiri (>= 1.6)
+    rails-erd (1.7.2)
+      activerecord (>= 4.2)
+      activesupport (>= 4.2)
+      choice (~> 0.2.0)
+      ruby-graphviz (~> 1.2)
     rails-html-sanitizer (1.6.2)
       loofah (~> 2.21)
       nokogiri (>= 1.15.7, != 1.16.7, != 1.16.6, != 1.16.5, != 1.16.4, != 1.16.3, != 1.16.2, != 1.16.1, != 1.16.0.rc1, != 1.16.0)
@@ -623,6 +634,10 @@ GEM
       pkg-config (~> 1.4)
     rmultimarkdown (6.4.0.4)
       bundler
+    rspec (3.13.2)
+      rspec-core (~> 3.13.0)
+      rspec-expectations (~> 3.13.0)
+      rspec-mocks (~> 3.13.0)
     rspec-core (3.13.4)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.5)
@@ -639,6 +654,9 @@ GEM
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
+    rspec-sqlimit (1.0.0)
+      activerecord (>= 4.2.0)
+      rspec (~> 3.0)
     rspec-support (3.13.4)
     rswag-api (2.16.0)
       activesupport (>= 5.2, < 8.1)
@@ -672,6 +690,8 @@ GEM
     rubocop-rspec (3.6.0)
       lint_roller (~> 1.1)
       rubocop (~> 1.72, >= 1.72.1)
+    ruby-graphviz (1.2.5)
+      rexml
     ruby-lsp (0.23.23)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
@@ -780,6 +800,7 @@ GEM
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
+    uniform_notifier (1.18.0)
     uri (1.0.3)
     useragent (0.16.11)
     version_gem (1.1.8)
@@ -822,6 +843,7 @@ DEPENDENCIES
   blazer
   bootstrap4-datetime-picker-rails
   brakeman
+  bullet
   capistrano (~> 3.11)
   capistrano-rails (~> 1.4)
   capistrano-rvm
@@ -838,6 +860,7 @@ DEPENDENCIES
   docx
   dotenv (~> 3.1.2)
   ed25519
+  evil-seed
   execjs
   factory_bot_rails (~> 6.2.0)
   faker (~> 2.19.0)
@@ -888,6 +911,7 @@ DEPENDENCIES
   rack-cors
   rails (= 8.0.2.1)
   rails-controller-testing (~> 1.0.5)
+  rails-erd
   rails-i18n (~> 8)
   rails-jquery-autocomplete (>= 1.0.5)
   rails-ujs
@@ -895,6 +919,7 @@ DEPENDENCIES
   rmagick
   rmultimarkdown
   rspec-rails
+  rspec-sqlimit
   rswag-api
   rswag-ui
   rubocop (= 1.79.1)
