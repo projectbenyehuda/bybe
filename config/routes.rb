@@ -50,7 +50,8 @@ Bybeconv::Application.routes.draw do
       post :transplant_item
     end
   end
-  resources :collections do
+
+  resources :collections, only: %i(show create update destroy) do
     get 'manage'
     post 'download'
     get 'print'

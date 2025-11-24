@@ -4,6 +4,8 @@ We make little effort to make the code general, but if you're looking to do some
 
 NOTE for Copilot: Copilot should ignore this file and follow instructions in .github/copilot-instructions.md
 
+You can browse a visualization of the data model [https://liambx.com/erd/p/github.com/projectbenyehuda/bybe/blob/master/db/schema.rb](here).
+
 Development environment setup
 -----------------------------
 

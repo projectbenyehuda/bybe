@@ -393,8 +393,8 @@ class Collection < ApplicationRecord
   end
 
   def editors_string
-    auths = involved_authorities.where(role: 'editor')
-    return auths.map(&:authority).map(&:name).join(', ') if auths.count > 0
+    auths = involved_authorities_by_role('editor')
+    return auths.map(&:name).join(', ') unless auths.empty?
 
     parent_collections.each do |pc| # iterate until we find editors
       s = pc.editors_string
@@ -479,30 +479,8 @@ class Collection < ApplicationRecord
     save!
   end
 
-  # pos is effective 1-based position in the list, not the seqno (which is not necessarily contiguous!)
-  def insert_item_at(item, pos)
-    Collection.transaction do
-      new_seqno = if pos <= 1
-                    1
-                  elsif pos > collection_items.size
-                    collection_items.last.seqno + 1
-                  else
-                    collection_items[pos - 1].seqno
-                  end
-
-      collection_items.where('seqno >= ?', new_seqno).order(:seqno).each do |coli|
-        coli.increment!(:seqno)
-      end
-
-      @ci = collection_item_from_anything(item)
-      @ci.seqno = new_seqno
-      @ci.save!
-    end
-    @ci.id
-  end
-
   def parent_collections
-    parent_collection_items.preload(:collection).map(&:collection)
+    parent_collection_items.map(&:collection)
   end
 
   # update status of ALL manifestations included in this collection, including in nested collections

@@ -101,10 +101,11 @@ gem 'rswag-ui'
 # gem 'rdf-vocab' # for SKOS predefined vocab
 # gem 'sparql-client'#, '~> 2.0.1'
 
-  gem "sentry-ruby"
-  gem "sentry-rails"
+gem 'sentry-rails'
+gem 'sentry-ruby'
 group :production do
   gem 'dalli'
+  gem 'evil-seed', require: false # for seeding large databases without timeouts
   gem 'newrelic_rpm' # performance monitoring
   gem 'puma-daemon', require: false
 end
@@ -112,37 +113,39 @@ end
 group :test do
   gem 'faker', '~> 2.19.0'
   gem 'rails-controller-testing', '~> 1.0.5'
+  gem 'rspec-sqlimit' # to limit number of SQL queries in tests https://github.com/nepalez/rspec-sqlimit
   gem 'simplecov', require: false
   gem 'turn', '0.8.2', require: false
 end
 
 group :development do
+  gem 'active_record_query_trace'
+  gem 'bcrypt_pbkdf'
+  gem 'bullet' # for suggestions to add/remove eager loading
   gem 'capistrano', '~> 3.11', require: false
   gem 'capistrano3-puma'
   gem 'capistrano-rails', '~> 1.4', require: false
   gem 'capistrano-rvm'
-  gem 'derailed_benchmarks'
-  gem 'listen'
-  gem 'rvm1-capistrano3', require: false
-  gem 'web-console'
-  # gem 'bullet' # for suggestions to add/remove eager loading
-  gem 'active_record_query_trace'
-  gem 'bcrypt_pbkdf'
   gem 'debug'
+  gem 'derailed_benchmarks'
   gem 'ed25519'
   gem 'haml_lint', '~> 0.57.0', require: false
   gem 'immigrant'
+  gem 'listen'
   gem 'pronto'
   gem 'pronto-brakeman', require: false
   gem 'pronto-haml', require: false
   gem 'pronto-rubocop', require: false
+  gem 'rails-erd' # for making ER diagrams
   gem 'rubocop', '1.79.1', require: false
   gem 'rubocop-factory_bot', require: false
   gem 'rubocop-rails', require: false
   gem 'rubocop-rspec', require: false
   gem 'ruby-lsp-rspec', require: false
   gem 'ruby-prof' # for profiling
+  gem 'rvm1-capistrano3', require: false
   gem 'stackprof'
+  gem 'web-console'
 end
 
 group :test, :development do
