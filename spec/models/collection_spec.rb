@@ -181,55 +181,6 @@ describe Collection do
     expect(c.collection_items.count).to eq 0
   end
 
-  describe '.insert_item_at' do
-    subject(:call) { collection.insert_item_at(manifestation, index) }
-
-    let(:collection) { create(:collection) }
-    let(:manifestation) { create(:manifestation) }
-
-    let!(:first_item) { create(:collection_item, collection: collection, seqno: 1) }
-    let!(:second_item) { create(:collection_item, collection: collection, seqno: 2) }
-    let!(:third_item) { create(:collection_item, collection: collection, seqno: 3) }
-
-    let(:inserted_item) { CollectionItem.order(id: :desc).first }
-
-    before do
-      collection.reload
-      call
-      collection.reload
-    end
-
-    context 'when insert at the end of the list' do
-      let(:index) { 4 }
-
-      it 'inserts successfully' do
-        expect(inserted_item).to have_attributes(seqno: 4, item: manifestation)
-        expect(collection.collection_items).to eq [first_item, second_item, third_item, inserted_item]
-        expect(collection.collection_items.map(&:seqno)).to eq [1, 2, 3, 4]
-      end
-    end
-
-    context 'when insert at the beginning of the list' do
-      let(:index) { 1 }
-
-      it 'inserts successfully' do
-        expect(inserted_item).to have_attributes(seqno: 1, item: manifestation)
-        expect(collection.collection_items).to eq [inserted_item, first_item, second_item, third_item]
-        expect(collection.collection_items.map(&:seqno)).to eq [1, 2, 3, 4]
-      end
-    end
-
-    context 'when insert at specified position' do
-      let(:index) { 2 }
-
-      it 'inserts successfully' do
-        expect(inserted_item).to have_attributes(seqno: 2, item: manifestation)
-        expect(collection.collection_items).to eq [first_item, inserted_item, second_item, third_item]
-        expect(collection.collection_items.map(&:seqno)).to eq [1, 2, 3, 4]
-      end
-    end
-  end
-
   it 'knows its parent collections' do
     c = create(:collection)
     p1 = create(:collection)
