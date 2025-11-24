@@ -14,6 +14,7 @@
 
     var collectionContainers = Array.from(document.querySelectorAll('.collection.connectable'));
     if (collectionContainers.length === 0) {
+      // This is expected when there are no collection containers on the page
       return null;
     }
 
@@ -49,11 +50,13 @@
       var srcCollIdMatch = source.id.match(/_coll_(\d+)$/);
       
       if (!itemIdMatch || !destCollIdMatch || !srcCollIdMatch) {
-        console.error('Invalid element IDs during drag operation. Expected format: nonce_collitem_ID and nonce_coll_ID', 
+        console.error('Drag operation failed: Invalid element IDs. Expected format: nonce_collitem_ID and nonce_coll_ID', 
                       'Element:', el.id, 'Target:', target.id, 'Source:', source.id);
+        alert('Drag operation failed due to invalid element structure. Please refresh the page and try again.');
         if ($mask.length > 0) {
           $mask.hide();
         }
+        location.reload();
         return;
       }
       

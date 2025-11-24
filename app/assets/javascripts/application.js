@@ -8,6 +8,7 @@
 //= require rails-ujs
 //= require jquery-ui
 //= require dragula.min
+//= require collection_dragula
 //= require jquery.slick
 //= require jquery.mark.min
 //= require jquery.caret
