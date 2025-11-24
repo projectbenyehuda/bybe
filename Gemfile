@@ -137,7 +137,6 @@ group :development do
   gem 'pronto-haml', require: false
   gem 'pronto-rubocop', require: false
   gem 'rails-erd' # for making ER diagrams
-  gem 'rails-footnotes'
   gem 'rubocop', '1.79.1', require: false
   gem 'rubocop-factory_bot', require: false
   gem 'rubocop-rails', require: false
