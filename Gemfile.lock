@@ -134,6 +134,9 @@ GEM
     brakeman (7.1.0)
       racc
     builder (3.3.0)
+    bullet (8.1.0)
+      activesupport (>= 3.0.0)
+      uniform_notifier (~> 1.11)
     capistrano (3.19.2)
       airbrussh (>= 1.0.0)
       i18n
@@ -242,6 +245,8 @@ GEM
     erubi (1.13.1)
     et-orbi (1.2.11)
       tzinfo
+    evil-seed (0.7.0)
+      activerecord (>= 5.0)
     execjs (2.10.0)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
@@ -631,6 +636,10 @@ GEM
       pkg-config (~> 1.4)
     rmultimarkdown (6.4.0.4)
       bundler
+    rspec (3.13.2)
+      rspec-core (~> 3.13.0)
+      rspec-expectations (~> 3.13.0)
+      rspec-mocks (~> 3.13.0)
     rspec-core (3.13.4)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.5)
@@ -647,6 +656,9 @@ GEM
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
+    rspec-sqlimit (1.0.0)
+      activerecord (>= 4.2.0)
+      rspec (~> 3.0)
     rspec-support (3.13.4)
     rswag-api (2.16.0)
       activesupport (>= 5.2, < 8.1)
@@ -790,6 +802,7 @@ GEM
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
+    uniform_notifier (1.18.0)
     uri (1.0.3)
     useragent (0.16.11)
     version_gem (1.1.8)
@@ -832,6 +845,7 @@ DEPENDENCIES
   blazer
   bootstrap4-datetime-picker-rails
   brakeman
+  bullet
   capistrano (~> 3.11)
   capistrano-rails (~> 1.4)
   capistrano-rvm
@@ -848,6 +862,7 @@ DEPENDENCIES
   docx
   dotenv (~> 3.1.2)
   ed25519
+  evil-seed
   execjs
   factory_bot_rails (~> 6.2.0)
   faker (~> 2.19.0)
@@ -907,6 +922,7 @@ DEPENDENCIES
   rmagick
   rmultimarkdown
   rspec-rails
+  rspec-sqlimit
   rswag-api
   rswag-ui
   rubocop (= 1.79.1)
