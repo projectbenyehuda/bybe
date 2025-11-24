@@ -19,10 +19,7 @@ class CollectionsController < ApplicationController
   def show
     data = FetchCollection.call(@collection)
 
-    if data.all_manifestations.empty?
-      flash[:error] = t(:no_such_item)
-      redirect_to '/'
-    elsif data.all_manifestations.size == 1
+    if data.all_manifestations.size == 1
       redirect_to manifestation_path(data.all_manifestations.first)
     end
 
