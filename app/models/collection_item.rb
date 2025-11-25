@@ -131,40 +131,46 @@ class CollectionItem < ApplicationRecord
     return []
   end
 
-  def next_sibling
-    CollectionItem.where(collection: collection).where('seqno > ?', seqno).order(:seqno).first
-  end
-
-  def prev_sibling
-    CollectionItem.where(collection: collection).where('seqno < ?', seqno).order(:seqno).last
-  end
-
   # returns the next sibling that wraps an item, skipping placeholders. and returning count of skipped items
   def next_sibling_item
+    items = collection.collection_items.sort_by(&:seqno)
+
+    index = items.find_index(self)
+    return nil if index == items.length - 1
+
     skipped = 0
-    nxt = self
-    loop do
-      nxt = nxt.next_sibling
-      return nil if nxt.nil?
+    [index + 1, items.length - 1].each do |i|
+      ci = items[i]
+      if ci.item_id.nil?
+        skipped += 1
+        next
+      end
 
-      return { item: nxt.item, skipped: skipped } unless nxt.item.nil? # placeholders are not items
-
-      skipped += 1
+      return { item: ci.item, skipped: skipped }
     end
+
+    return nil
   end
 
   # returns the previous sibling that wraps an item, skipping placeholders. and returning count of skipped items
   def prev_sibling_item
+    items = collection.collection_items.sort_by(&:seqno)
+
+    index = items.find_index(self)
+    return nil if index == 0
+
     skipped = 0
-    prv = self
-    loop do
-      prv = prv.prev_sibling
-      return nil if prv.nil?
+    [index - 1, 0].each do |i|
+      ci = items[i]
+      if ci.item_id.nil?
+        skipped += 1
+        next
+      end
 
-      return { item: prv.item, skipped: skipped } unless prv.item.nil? # placeholders are not items
-
-      skipped += 1
+      return { item: ci.item, skipped: skipped }
     end
+
+    return nil
   end
 
   protected
