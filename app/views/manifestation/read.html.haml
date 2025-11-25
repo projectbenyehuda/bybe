@@ -22,9 +22,11 @@
             = render partial: 'metadata', locals: {tags_etc: true}
           - unless @single_text_volume
             - @containments.each do |ci|
-              - prev = ci.prev_sibling_item
-              - nextsib = ci.next_sibling_item
-              - show_collection_link = !ci.collection.system?
+              :ruby
+                siblings = FindSiblings.call(@m, ci.collection)
+                prev = siblings.previous_sibling
+                nextsib = siblings.next_sibling
+                show_collection_link = !ci.collection.system?
               - if prev.present? || nextsib.present? || show_collection_link
                 .author-works-nav
                   .topNavEntry

@@ -150,16 +150,6 @@ class Manifestation < ApplicationRecord
     )
   end
 
-  # check whether the manifestation is included in a collection of type uncollected
-  def uncollected?
-    return true if collection_items.empty?
-
-    collection_items.each do |ci|
-      return true if ci.collection.collection_type == 'uncollected'
-    end
-    return false
-  end
-
   # async update the uncollected collection this text was still in
   def trigger_uncollected_recalculation
     return if collection_items.empty?
@@ -176,7 +166,7 @@ class Manifestation < ApplicationRecord
   # return containing collections of collection_type volume or periodical_issue
   def volumes
     ret = []
-    containers = collection_items.includes(:collection).map(&:collection)
+    containers = collection_items.map(&:collection)
     containers.each do |c|
       if %w(volume periodical_issue).include?(c.collection_type)
         ret << c

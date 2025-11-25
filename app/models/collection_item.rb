@@ -131,48 +131,6 @@ class CollectionItem < ApplicationRecord
     return []
   end
 
-  # returns the next sibling that wraps an item, skipping placeholders. and returning count of skipped items
-  def next_sibling_item
-    items = collection.collection_items.sort_by(&:seqno)
-
-    index = items.find_index(self)
-    return nil if index == items.length - 1
-
-    skipped = 0
-    [index + 1, items.length - 1].each do |i|
-      ci = items[i]
-      if ci.item_id.nil?
-        skipped += 1
-        next
-      end
-
-      return { item: ci.item, skipped: skipped }
-    end
-
-    return nil
-  end
-
-  # returns the previous sibling that wraps an item, skipping placeholders. and returning count of skipped items
-  def prev_sibling_item
-    items = collection.collection_items.sort_by(&:seqno)
-
-    index = items.find_index(self)
-    return nil if index == 0
-
-    skipped = 0
-    [index - 1, 0].each do |i|
-      ci = items[i]
-      if ci.item_id.nil?
-        skipped += 1
-        next
-      end
-
-      return { item: ci.item, skipped: skipped }
-    end
-
-    return nil
-  end
-
   protected
 
   def ensure_no_cycle
