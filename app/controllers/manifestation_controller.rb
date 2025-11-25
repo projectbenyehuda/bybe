@@ -990,7 +990,7 @@ class ManifestationController < ApplicationController
     end
     @containments = @m.collection_items.preload(collection: :collection_items).to_a
     @volumes = @m.volumes
-    if @volumes.count > 0 && @containments.any? { |ci| ci.collection.uncollected? }
+    if !@volumes.empty? && @containments.any? { |ci| ci.collection.uncollected? }
       # if the text is in a volume, its inclusion in an uncollected collection is stale
       @m.trigger_uncollected_recalculation # async update the uncollected collection this text was still in
       @containments.reject! { |ci| ci.collection.uncollected? }

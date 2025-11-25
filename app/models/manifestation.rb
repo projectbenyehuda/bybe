@@ -166,7 +166,7 @@ class Manifestation < ApplicationRecord
   # return containing collections of collection_type volume or periodical_issue
   def volumes
     ret = []
-    containers = collection_items.includes(:collection).map(&:collection)
+    containers = collection_items.map(&:collection)
     containers.each do |c|
       if %w(volume periodical_issue).include?(c.collection_type)
         ret << c
