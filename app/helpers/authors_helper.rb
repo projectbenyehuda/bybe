@@ -49,4 +49,13 @@ module AuthorsHelper
                  .sort
                  .join(', ')
   end
+
+  def preloaded_author_aboutnesses(author)
+    author.aboutnesses.preload(
+      work: {
+        involved_authorities: :authority,
+        expressions: [:manifestations, { involved_authorities: :authority }]
+      }
+    )
+  end
 end
