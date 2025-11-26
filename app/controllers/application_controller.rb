@@ -330,9 +330,9 @@ class ApplicationController < ActionController::Base
     authors
   end
 
-  def textify_new_pubs(author)
+  def textify_new_pubs(pubs)
     ret = ''
-    author.each do |genre|
+    pubs.each do |genre|
       next unless genre[1].class == Array # skip the :latest key
 
       worksbuf = "<strong>#{helpers.textify_genre(genre[0])}:</strong> "
