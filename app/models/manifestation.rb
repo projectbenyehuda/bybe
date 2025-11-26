@@ -420,19 +420,17 @@ class Manifestation < ApplicationRecord
     end
   end
 
-  def self.newest_works
-    published.with_involved_authorities.order(created_at: :desc).limit(10)
-  end
-
-  def self.popular_works
-    ids = Ahoy::Event.where(name: 'view')
-                     .where(item_type: 'Manifestation')
-                     .where('time > ?', 1.month.ago)
-                     .group(:item_id)
-                     .order(Arel.sql('count(*) desc'))
-                     .limit(10)
-                     .pluck(:item_id)
-    with_involved_authorities.find(ids)
+  def self.get_popular_works
+    Rails.cache.fetch('m_popular_works', expires_in: 24.hours) do
+      ids = Ahoy::Event.where(name: 'view')
+                       .where(item_type: 'Manifestation')
+                       .where('time > ?', 1.month.ago)
+                       .group(:item_id)
+                       .order(Arel.sql('count(*) desc'))
+                       .limit(10)
+                       .pluck(:item_id)
+      find(ids)
+    end
   end
 
   def self.update_suspected_typos_list

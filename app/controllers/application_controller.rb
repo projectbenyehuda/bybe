@@ -101,6 +101,10 @@ class ApplicationController < ActionController::Base
     redirect_to '/', flash: { error: I18n.t(:not_a_crowdsourcer) }
   end
 
+  def popular_works
+    @popular_works = Manifestation.get_popular_works
+  end
+
   def cached_popular_tags
     Rails.cache.fetch('popular_tags', expires_in: 24.hours) do # memoize
       Tagging.group(:tag).order('count_tag_id DESC').count('tag_id')
@@ -111,6 +115,12 @@ class ApplicationController < ActionController::Base
     Rails.cache.fetch('newest_authors', expires_in: 6.hours) do # memoize
       Person.published.has_toc.has_image.left_joins(%i(expressions
                                                        works)).group('people.id').having('COUNT(works.id) > 0 OR COUNT(expressions.id) > 0').order(published_at: :desc).limit(10)
+    end
+  end
+
+  def cached_newest_works
+    Rails.cache.fetch('newest_works', expires_in: 30.minutes) do # memoize
+      Manifestation.published.order(created_at: :desc).limit(10)
     end
   end
 

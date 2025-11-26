@@ -20,17 +20,8 @@
             = "(#{@totals[:works]})"
           .by-card-content-v02.works-in-project-content
             .row.top-works
-              - cache 'top_and_popular_works', expires_in: 24.hours do
-                = render partial: 'works_list',
-                         locals: { id: 'top_works',
-                                   label: t(:most_popular_works_this_month),
-                                   collection: Manifestation.popular_works,
-                                   extra_class: 'works-most-read' }
-                = render partial: 'works_list',
-                         locals: { id: 'new_works',
-                                   label: t(:newest_works),
-                                   collection: Manifestation.newest_works,
-                                   extra_class: 'works-most-new' }
+              = render partial: 'works_list', locals: {cache_key: 'top_works', label: t(:most_popular_works_this_month), collection: @pop_works, extra_class: 'works-most-read'}
+              = render partial: 'works_list', locals: {cache_key: 'new_works', label: t(:newest_works), collection: @newest_works, extra_class: 'works-most-new'}
             .link-to-all-v02
               %a{style: 'font-weight:bold', href: all_works_path}
                 %span= t(:to_all_works)
@@ -81,7 +72,6 @@
                   .new-info-v02= item.pinned ? '7' : ''
                   .new-card-right-v02
                     - if item.itemtype == 'publication'
-                      - next if item.authority_id.nil? # shouldn't happen
                       = link_to authority_path(item.authority_id) do
                         %div
                           %img.new-card-pic-v02{src: item.thumbnail_url, width: '475', height: '686' }
