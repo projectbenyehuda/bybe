@@ -1,5 +1,6 @@
-.col-md-6.col-sm-12.text-height-works-in-project{ class: extra_class, id: id }
-  %p.headline-2-v02= label
-  %ol{ style: 'margin-bottom:0' }
-    - collection.each do |manifestation|
-      %li= link_to lineclamp(manifestation.title_and_authors, 100), manifestation_path(manifestation.id)
+- cache cache_key, expires_in: 24.hours do
+  %div{'class' => "col-md-6 col-sm-12 #{extra_class} text-height-works-in-project", id: cache_key}
+    %p.headline-2-v02= label
+    %ol{style:'margin-bottom:0'}
+      - collection.each do |manifestation|
+        %li= link_to lineclamp(manifestation.title_and_authors, 100), manifestation_path(manifestation.id)
