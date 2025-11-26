@@ -61,47 +61,47 @@
             %p.headline-1-v02{style:'margin-bottom:0px'}
               %a{ href: whatsnew_path}= t(:whatsnew)
             %p{style:'width: 69%;margin-bottom:0px'}= t(:whatsnew_subtitle)
-          .by-card-content-v02
-            .whats-new-content
-              - items = @cached_newsfeed.count
-              - i = 1
-              - @cached_newsfeed.each do |item|
-                - theclass = "new-card-v02 #{(item.double || item.itemtype == 'youtube') ? ' double-height-v02' : ''}"
-                - theclass += ' last-item' if i == items
-                %div{ 'class' => theclass+' clampable'}
-                  .new-info-v02= item.pinned ? '7' : ''
-                  .new-card-right-v02
-                    - if item.itemtype == 'publication'
-                      = link_to authority_path(item.authority_id) do
-                        %div
-                          %img.new-card-pic-v02{src: item.thumbnail_url, width: '475', height: '686' }
-                    - else
-                      %div{ 'class' => "new-card-type-v02 #{(item.double || item.itemtype == 'youtube') ? ' double-height-v02' : ''}"}= newsitem_glyph(item)
-                  .new-card-left-v02
-                    - unless item.url.nil?
-                      %a.headline-2-v02{ href: item.url}
-                        %span.new-headline-v02!= item.title
-                    - else
-                      %p.headline-2-v02
-                        %span.new-headline-v02!= item.title
-                    %p.text-height-new.clampable_body!= item.body
-                    - if item.itemtype == 'youtube'
-                      .new-image-frame-v02
-                        %iframe{frameborder: '0', scrolling: 'no', marginheight: '0', marginwidth: '0', width: '267', height: '150', type: 'text/html', allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture', allowfullscreen:'', src: item.url.sub('watch?v=','embed/')}
-                  - if item.itemtype == 'publication'
-                    .link-to-all-v02.popup_btn.pointer.linkcolor{
-                      style: 'font-weight: bold;display:none;',
-                      data: {
-                        popup_id: 'authorWhatsNewDlg',
-                        popuppath: author_whatsnew_popup_path(item.authority_id)
-                      }
-                    }
-                      = t(:total_x_works, count: item.pub_count)
-                - i += 1
-            .link-to-all-v02
-              %a{ href: whatsnew_path}
-                %b= t(:to_all_whatsnew)
-                %span.left-arrow= '1'
+          /.by-card-content-v02
+          /  .whats-new-content
+          /    - items = @cached_newsfeed.count
+          /    - i = 1
+          /    - @cached_newsfeed.each do |item|
+          /      - theclass = "new-card-v02 #{(item.double || item.itemtype == 'youtube') ? ' double-height-v02' : ''}"
+          /      - theclass += ' last-item' if i == items
+          /      %div{ 'class' => theclass+' clampable'}
+          /        .new-info-v02= item.pinned ? '7' : ''
+          /        .new-card-right-v02
+          /          - if item.itemtype == 'publication'
+          /            = link_to authority_path(item.authority_id) do
+          /              %div
+          /                %img.new-card-pic-v02{src: item.thumbnail_url, width: '475', height: '686' }
+          /          - else
+          /            %div{ 'class' => "new-card-type-v02 #{(item.double || item.itemtype == 'youtube') ? ' double-height-v02' : ''}"}= newsitem_glyph(item)
+          /        .new-card-left-v02
+          /          - unless item.url.nil?
+          /            %a.headline-2-v02{ href: item.url}
+          /              %span.new-headline-v02!= item.title
+          /          - else
+          /            %p.headline-2-v02
+          /              %span.new-headline-v02!= item.title
+          /          %p.text-height-new.clampable_body!= item.body
+          /          - if item.itemtype == 'youtube'
+          /            .new-image-frame-v02
+          /              %iframe{frameborder: '0', scrolling: 'no', marginheight: '0', marginwidth: '0', width: '267', height: '150', type: 'text/html', allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture', allowfullscreen:'', src: item.url.sub('watch?v=','embed/')}
+          /        - if item.itemtype == 'publication'
+          /          .link-to-all-v02.popup_btn.pointer.linkcolor{
+          /            style: 'font-weight: bold;display:none;',
+          /            data: {
+          /              popup_id: 'authorWhatsNewDlg',
+          /              popuppath: author_whatsnew_popup_path(item.authority_id)
+          /            }
+          /          }
+          /            = t(:total_x_works, count: item.pub_count)
+          /      - i += 1
+          /  .link-to-all-v02
+          /    %a{ href: whatsnew_path}
+          /      %b= t(:to_all_whatsnew)
+          /      %span.left-arrow= '1'
       = render partial: 'shared/donation_box'
       -# work spotlight
       = render partial: 'featured_item'
