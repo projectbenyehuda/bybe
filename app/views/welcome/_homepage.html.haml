@@ -81,6 +81,7 @@
                   .new-info-v02= item.pinned ? '7' : ''
                   .new-card-right-v02
                     - if item.itemtype == 'publication'
+                      - next if item.authority_id.nil? # shouldn't happen
                       = link_to authority_path(item.authority_id) do
                         %div
                           %img.new-card-pic-v02{src: item.thumbnail_url, width: '475', height: '686' }
