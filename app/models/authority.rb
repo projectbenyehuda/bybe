@@ -365,7 +365,7 @@ class Authority < ApplicationRecord
                        .order(Arel.sql('count(*) desc'))
                        .limit(10)
                        .pluck(:item_id)
-      find(ids)
+      preload(:person, :corporate_body).find(ids)
     end
   end
 
