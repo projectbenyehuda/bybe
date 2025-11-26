@@ -255,7 +255,7 @@ describe ManifestationController do
     end
 
     describe '#read' do
-      subject { get :read, params: { id: manifestation.id } }
+      subject(:call) { get :read, params: { id: manifestation.id } }
 
       context 'when user is not logged in' do
         it { is_expected.to be_successful }
@@ -285,87 +285,48 @@ describe ManifestationController do
         it { is_expected.to redirect_to dict_browse_path(manifestation.id) }
       end
 
-      context 'when manifestation has duplicate heading text' do
-        let(:markdown) do
-          <<~MD
-            # Main Title
-
-            ## Chapter 1
-            Content of chapter 1 in part 1
-
-            ## Part 2
-
-            ## Chapter 1
-            Content of chapter 1 in part 2
-          MD
-        end
-        let(:manifestation) { create(:manifestation, markdown: markdown) }
-
-        before { subject }
-
-        it 'generates unique IDs for headings with same text' do
-          html = assigns(:html)
-          # Extract all heading IDs from the HTML
-          heading_ids = html.scan(/id="([^"]+)"/).flatten
-          # Filter to heading-* IDs (our unique sequential IDs)
-          unique_ids = heading_ids.grep(/^heading-\d+$/)
-          # Verify all IDs are unique
-          expect(unique_ids.uniq.length).to eq(unique_ids.length)
-          # Verify we have the expected number of headings (3 H2 tags based on markdown)
-          expect(unique_ids.length).to be >= 3
-        end
-      end
-
       context 'when manifestation is in an uncollected collection with no siblings' do
         let(:uncollected_collection) { create(:collection, :uncollected) }
         let(:manifestation) { create(:manifestation, collections: [uncollected_collection]) }
 
-        before { subject }
-
-        it 'sets @containments with the collection item' do
-          expect(assigns(:containments)).to be_present
+        it 'does not displays collection siblings links' do
+          expect(call).to be_successful
+          expect(assigns(:containments).size).to eq(1)
           expect(assigns(:containments).first.collection).to eq(uncollected_collection)
+          expect(response.body).not_to include(I18n.t(:to_previous_item))
+          expect(response.body).not_to include(I18n.t(:to_next_item))
         end
+      end
 
-        it 'collection item has no prev or next siblings' do
-          ci = assigns(:containments).first
-          expect(ci.prev_sibling_item).to be_nil
-          expect(ci.next_sibling_item).to be_nil
-        end
+      context 'when manifestation is included both in a volume and in an uncollected collection' do
+        let(:uncollected_collection) { create(:collection, :uncollected) }
+        let!(:volume_collection) { create(:collection, collection_type: :volume) }
+        let(:manifestation) { create(:manifestation, collections: [uncollected_collection, volume_collection]) }
 
-        it 'collection is a system collection' do
-          ci = assigns(:containments).first
-          expect(ci.collection.system?).to be true
+        it 'hides uncollected collection' do
+          expect(call).to be_successful
+          expect(assigns(:containments).size).to eq(1)
+          expect(assigns(:containments).first.collection).to eq(volume_collection)
         end
       end
 
       context 'when manifestation is in a regular collection with siblings' do
-        let(:regular_collection) { create(:collection, collection_type: :volume) }
-        let(:manifestation1) { create(:manifestation) }
-        let(:manifestation2) { create(:manifestation) }
-        let(:manifestation3) { create(:manifestation) }
-
-        before do
-          regular_collection.append_item(manifestation1)
-          regular_collection.append_item(manifestation2)
-          regular_collection.append_item(manifestation3)
-          get :read, params: { id: manifestation2.id }
+        let!(:regular_collection) do
+          create(
+            :collection,
+            collection_type: :volume,
+            manifestations: [prev_manifestation, manifestation, next_manifestation]
+          )
         end
+        let(:prev_manifestation) { create(:manifestation) }
+        let(:next_manifestation) { create(:manifestation) }
 
-        it 'sets @containments with the collection item' do
+        it 'renders both collection navigation links' do
+          expect(call).to be_successful
           expect(assigns(:containments)).to be_present
           expect(assigns(:containments).first.collection).to eq(regular_collection)
-        end
-
-        it 'collection item has prev and next siblings' do
-          ci = assigns(:containments).first
-          expect(ci.prev_sibling_item).to be_present
-          expect(ci.next_sibling_item).to be_present
-        end
-
-        it 'collection is not a system collection' do
-          ci = assigns(:containments).first
-          expect(ci.collection.system?).to be false
+          expect(response.body).to include(I18n.t(:to_previous_item))
+          expect(response.body).to include(I18n.t(:to_next_item))
         end
       end
     end

@@ -150,16 +150,6 @@ class Manifestation < ApplicationRecord
     )
   end
 
-  # check whether the manifestation is included in a collection of type uncollected
-  def uncollected?
-    return true if collection_items.empty?
-
-    collection_items.each do |ci|
-      return true if ci.collection.collection_type == 'uncollected'
-    end
-    return false
-  end
-
   # async update the uncollected collection this text was still in
   def trigger_uncollected_recalculation
     return if collection_items.empty?
@@ -176,7 +166,7 @@ class Manifestation < ApplicationRecord
   # return containing collections of collection_type volume or periodical_issue
   def volumes
     ret = []
-    containers = collection_items.includes(:collection).map(&:collection)
+    containers = collection_items.map(&:collection)
     containers.each do |c|
       if %w(volume periodical_issue).include?(c.collection_type)
         ret << c
@@ -430,17 +420,19 @@ class Manifestation < ApplicationRecord
     end
   end
 
-  def self.get_popular_works
-    Rails.cache.fetch('m_popular_works', expires_in: 24.hours) do
-      ids = Ahoy::Event.where(name: 'view')
-                       .where(item_type: 'Manifestation')
-                       .where('time > ?', 1.month.ago)
-                       .group(:item_id)
-                       .order(Arel.sql('count(*) desc'))
-                       .limit(10)
-                       .pluck(:item_id)
-      find(ids)
-    end
+  def self.newest_works
+    published.with_involved_authorities.order(created_at: :desc).limit(10)
+  end
+
+  def self.popular_works
+    ids = Ahoy::Event.where(name: 'view')
+                     .where(item_type: 'Manifestation')
+                     .where('time > ?', 1.month.ago)
+                     .group(:item_id)
+                     .order(Arel.sql('count(*) desc'))
+                     .limit(10)
+                     .pluck(:item_id)
+    with_involved_authorities.find(ids)
   end
 
   def self.update_suspected_typos_list

@@ -27,6 +27,16 @@ RSpec.describe 'Admin::Projects', type: :request do
       expect(response.body).to include('Project Alpha')
       expect(response.body).to include('Project Beta')
     end
+
+    it 'renders delete link with correct rails-ujs data attributes' do
+      project = create(:project)
+
+      get admin_projects_path
+      expect(response.body).to include('data-method="delete"')
+      expect(response.body).to include('data-confirm=')
+      expect(response.body).not_to include('data-turbo-method')
+      expect(response.body).not_to include('data-turbo-confirm')
+    end
   end
 
   describe 'GET /admin/projects/:id' do

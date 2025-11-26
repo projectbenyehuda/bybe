@@ -28,5 +28,5 @@
           %td
             = link_to t(:edit), edit_admin_project_path(project)
             = link_to t(:destroy), admin_project_path(project),
-              data: { turbo_method: :delete, turbo_confirm: t(:are_you_sure) }
+              method: :delete, data: { confirm: t(:are_you_sure) }
   != paginate @projects

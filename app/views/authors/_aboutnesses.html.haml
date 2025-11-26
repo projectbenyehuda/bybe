@@ -6,7 +6,7 @@
       %div
         %div
           %ul.ul-inside
-            - author.aboutnesses.each do |ab|
+            - preloaded_author_aboutnesses(author).each do |ab|
               - m = ab.try(:work).try(:expressions).try(:[], 0).try(:manifestations).try(:[], 0) # TODO: handle multiple expressions/manifestations intelligently
               - next if m.nil?
               - if m.published? # Only show published works

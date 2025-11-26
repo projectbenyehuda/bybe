@@ -988,17 +988,14 @@ class ManifestationController < ApplicationController
         @additional_translations << ex unless ex == @e
       end
     end
-    @containments = @m.collection_items
+    @containments = @m.collection_items.preload(collection: :collection_items).to_a
     @volumes = @m.volumes
-    if @volumes.count > 0 && @m.uncollected? # if the text is in a volume, its inclusion in an uncollected collection is stale
-
+    if !@volumes.empty? && @containments.any? { |ci| ci.collection.uncollected? }
+      # if the text is in a volume, its inclusion in an uncollected collection is stale
       @m.trigger_uncollected_recalculation # async update the uncollected collection this text was still in
-      @containments = # and exclude it from display right now
-        @containments.reject do |ci|
-          ci.collection.collection_type == 'uncollected'
-        end
+      @containments.reject! { |ci| ci.collection.uncollected? }
     end
-    @single_text_volume = @containments.count == 1 && !@containments.first.collection.has_multiple_manifestations?
+    @single_text_volume = @containments.size == 1 && !@containments.first.collection.has_multiple_manifestations?
   end
 
   private

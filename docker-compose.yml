@@ -38,6 +38,8 @@ services:
   memcached:
     image: memcached:1.6.17
     restart: unless-stopped
+    ports:
+      - 21211:11211
   redis:
     image: redis:7.2.3
     restart: unless-stopped
