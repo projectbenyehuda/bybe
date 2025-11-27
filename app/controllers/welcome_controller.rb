@@ -23,8 +23,7 @@ class WelcomeController < ApplicationController
     @authors_in_period = cached_authors_in_period
     @works_by_period = cached_works_by_period
     # @whatsnew = whatsnew_anonymous # TODO: custom calculate for logged-in users
-    ## emergency disabling ## @cached_newsfeed = cached_newsfeed # new, heterogeneous newsfeed
-    @cached_newsfeed = []
+    @cached_newsfeed = cached_newsfeed # new, heterogeneous newsfeed
     @featured_content = featured_content
     (@fc_snippet, @fc_rest) = @featured_content.nil? ? ['',''] : snippet(@featured_content.body, 1500) # prepare snippet 
     @fc_snippet = MultiMarkdown.new(@fc_snippet).to_html.force_encoding('UTF-8') unless @fc_snippet.empty?
