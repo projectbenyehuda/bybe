@@ -230,7 +230,7 @@ class Ingestible < ApplicationRecord
   end
 
   def title_line(s)
-    (s =~ /^#\s+/) || (s =~ /^&&&\s+/)
+    (s =~ /^\#{1,6}\s+/) || (s =~ /^&&&\s+/)
   end
 
   # split markdown into sections and populate or update the works_buffer
