@@ -248,7 +248,7 @@ class ApplicationController < ActionController::Base
   def whatsnew_anonymous
     Rails.cache.fetch('whatsnew_anonymous', expires_in: 2.hours) do # memoize
       logger.info('cache miss: calculating whatsnew anonymous')
-      whatsnew_since(1.month.ago)
+      WhatsNewSince.call(1.month.ago)
     end
   end
 
@@ -293,10 +293,10 @@ class ApplicationController < ActionController::Base
   def newsfeed
     unsorted_news_items = NewsItem.last(5) # read at most the last 5 persistent news items (Facebook posts, announcements)
 
-    whatsnew_since(1.month.ago).each do |person, pubs| # add newly-published works
+    WhatsNewSince.call(1.month.ago).each do |person, pubs| # add newly-published works
       unsorted_news_items << NewsItem.from_publications(
         person,
-        textify_new_pubs(pubs),
+        TextifyNewPubs.call(pubs),
         pubs,
         authority_path(person.id),
         person.profile_image.url(:thumb)
@@ -307,54 +307,6 @@ class ApplicationController < ActionController::Base
     end
     # TODO: add latest blog posts
     return unsorted_news_items.sort_by { |item| item.relevance }.reverse # sort by descending relevance
-  end
-
-  def whatsnew_since(timestamp)
-    authors = {}
-    Manifestation.all_published.new_since(timestamp).includes(:expression).each do |m|
-      e = m.expression
-      next if e.nil? # shouldn't happen
-
-      w = e.work
-      authority = e.translation ? m.translators.first : m.authors.first # TODO: more nuance
-      next if authority.nil? # shouldn't happen, but might in a dev. env.
-
-      if authors[authority].nil?
-        authors[authority] = {}
-        authors[authority][:latest] = 0
-      end
-      authors[authority][w.genre] = [] if authors[authority][w.genre].nil?
-      authors[authority][w.genre] << m
-      authors[authority][:latest] = m.updated_at if m.updated_at > authors[authority][:latest]
-    end
-    authors
-  end
-
-  def textify_new_pubs(pubs)
-    ret = ''
-    pubs.each do |genre|
-      next unless genre[1].class == Array # skip the :latest key
-
-      worksbuf = "<strong>#{helpers.textify_genre(genre[0])}:</strong> "
-      first = true
-      genre[1].each do |m|
-        title = m.expression.title
-        if m.expression.translation
-          per = m.expression.work.authors[0] # TODO: add handing for several persons
-          unless per.nil?
-            title += " #{I18n.t(:by)} #{per.name}"
-          end
-        end
-        if first
-          first = false
-        else
-          worksbuf += '; '
-        end
-        worksbuf += "<a href=\"/read/#{m.id}\">#{title}</a>"
-      end
-      ret += worksbuf + '<br />'
-    end
-    return ret
   end
 
   def current_user
