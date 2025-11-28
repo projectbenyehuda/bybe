@@ -5,7 +5,7 @@ class TextifyNewPubs < ApplicationService
   def call(pubs)
     ret = ''
     pubs.each do |genre|
-      next unless genre[1].instance_of?(Array) # skip the :latest key
+      next unless genre[1].is_a?(Array) # skip the :latest key
 
       worksbuf = "<strong>#{textify_genre(genre[0])}:</strong> "
       first = true
