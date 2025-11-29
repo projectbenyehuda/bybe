@@ -294,9 +294,11 @@ class ApplicationController < ActionController::Base
     unsorted_news_items = NewsItem.last(5) # read at most the last 5 persistent news items (Facebook posts, announcements)
 
     WhatsNewSince.call(1.month.ago).each do |person, pubs| # add newly-published works
+      # Extract manifestations from pubs hash (skip :latest key)
+      manifestations = pubs.values.select { |v| v.is_a?(Array) }.flatten
       unsorted_news_items << NewsItem.from_publications(
         person,
-        TextifyNewPubs.call(pubs),
+        TextifyNewPubs.call(manifestations),
         pubs,
         authority_path(person.id),
         person.profile_image.url(:thumb)

@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
-# Service to convert new publications hash to HTML string
+# Service to convert array of manifestations to HTML string grouped by genre
 class TextifyNewPubs < ApplicationService
-  def call(pubs)
-    ret = ''
-    pubs.each do |genre|
-      next unless genre[1].is_a?(Array) # skip the :latest key
+  def call(manifestations)
+    return '' if manifestations.blank?
 
-      worksbuf = "<strong>#{textify_genre(genre[0])}:</strong> "
+    # Group manifestations by genre
+    grouped = manifestations.group_by { |m| m.expression.work.genre }
+
+    ret = ''
+    grouped.each do |genre, works|
+      worksbuf = "<strong>#{textify_genre(genre)}:</strong> "
       first = true
-      genre[1].each do |m|
+      works.each do |m|
         title = m.expression.title
         if m.expression.translation
           per = m.expression.work.authors[0] # TODO: add handing for several persons

@@ -68,19 +68,13 @@ class AuthorsController < ApplicationController
 
   def whatsnew_popup
     pubs = @author.works_since(1.month.ago, 1000)
-    @pubscoll = {}
-    pubs.each do |m|
-      genre = m.expression.work.genre
-      @pubscoll[genre] = [] if @pubscoll[genre].nil?
-      @pubscoll[genre] << m
-    end
-    @pubs = TextifyNewPubs.call(@pubscoll)
+    @pubs = TextifyNewPubs.call(pubs)
     render partial: 'whatsnew_popup'
   end
 
   def latest_popup
     @pubs = Rails.cache.fetch("au_#{@author.id}_latest_popup", expires_in: 12.hours) do
-      pubs = @author.latest_stuff.preload(expression: :work).group_by{ |m| m.expression.work.genre }
+      pubs = @author.latest_stuff.preload(expression: :work)
       TextifyNewPubs.call(pubs)
     end
 
