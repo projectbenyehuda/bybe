@@ -12,61 +12,25 @@ describe TextifyNewPubs do
       it { is_expected.to eq('') }
     end
 
-    context 'when manifestations is nil' do
-      let(:manifestations) { nil }
+    context 'with two genres, four manifestations including a translation' do
+      let(:poetry1) { create(:manifestation, genre: :poetry, orig_lang: 'he', language: 'he') }
+      let(:poetry2) { create(:manifestation, genre: :poetry, orig_lang: 'he', language: 'he') }
+      let(:prose1) { create(:manifestation, genre: :prose, orig_lang: 'he', language: 'he') }
+      let(:translation) { create(:manifestation, genre: :prose, orig_lang: 'en', language: 'he') }
+      let(:manifestations) { [poetry1, poetry2, prose1, translation] }
 
-      it { is_expected.to eq('') }
-    end
+      it 'returns HTML with genre headings, links, and author for translation' do
+        translation_author = translation.expression.work.authors.first
 
-    context 'when manifestations contains items' do
-      let(:manifestation) { create(:manifestation, status: :published, genre: :poetry) }
-      let(:manifestations) { [manifestation] }
+        expected = "<strong>#{I18n.t('genre_values.poetry')}:</strong> " \
+                   "<a href=\"/read/#{poetry1.id}\">#{poetry1.expression.title}</a>; " \
+                   "<a href=\"/read/#{poetry2.id}\">#{poetry2.expression.title}</a><br />" \
+                   "<strong>#{I18n.t('genre_values.prose')}:</strong> " \
+                   "<a href=\"/read/#{prose1.id}\">#{prose1.expression.title}</a>; " \
+                   "<a href=\"/read/#{translation.id}\">" \
+                   "#{translation.expression.title} #{I18n.t(:by)} #{translation_author.name}</a><br />"
 
-      it 'returns HTML string with genre heading' do
-        expect(result).to include('<strong>')
-      end
-
-      it 'includes link to manifestation' do
-        expect(result).to include("/read/#{manifestation.id}")
-      end
-
-      it 'includes manifestation title' do
-        expect(result).to include(manifestation.expression.title)
-      end
-    end
-
-    context 'when manifestations contains multiple items in same genre' do
-      let(:m1) { create(:manifestation, status: :published, genre: :poetry) }
-      let(:m2) { create(:manifestation, status: :published, genre: :poetry) }
-      let(:manifestations) { [m1, m2] }
-
-      it 'separates manifestations with semicolon' do
-        expect(result).to include('; ')
-      end
-
-      it 'groups them under same genre heading' do
-        expect(result.scan('<strong>').count).to eq(1)
-      end
-    end
-
-    context 'when manifestations contains items from different genres' do
-      let(:m1) { create(:manifestation, status: :published, genre: :poetry) }
-      let(:m2) { create(:manifestation, status: :published, genre: :prose) }
-      let(:manifestations) { [m1, m2] }
-
-      it 'creates separate genre headings' do
-        expect(result.scan('<strong>').count).to eq(2)
-      end
-    end
-
-    context 'when manifestations contains translations' do
-      let(:translation) do
-        create(:manifestation, status: :published, genre: :poetry, orig_lang: 'en', language: 'he')
-      end
-      let(:manifestations) { [translation] }
-
-      it 'includes author name for translations' do
-        expect(result).to include(I18n.t(:by))
+        expect(result).to eq(expected)
       end
     end
   end
