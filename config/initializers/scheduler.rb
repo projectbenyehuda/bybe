@@ -11,9 +11,6 @@ scheduler.every '24h' do
   #puts "calculating recommendation counts..."
   #Person.recalc_recommendation_counts
 end
-scheduler.every '36h' do
-  Manifestation.get_popular_works
-end
 scheduler.every '2h' do
   puts "expiring assigned crowdsourcing tasks"
   CrowdController.expire_assigned_tasks
