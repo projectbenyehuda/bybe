@@ -15,7 +15,7 @@ class TextifyNewPubs < ApplicationService
       works.each do |m|
         title = m.expression.title
         if m.expression.translation
-          per = m.expression.work.authors[0] # TODO: add handing for several persons
+          per = m.expression.work.authors[0] # TODO: add handling for several persons
           unless per.nil?
             title += " #{I18n.t(:by)} #{per.name}"
           end
