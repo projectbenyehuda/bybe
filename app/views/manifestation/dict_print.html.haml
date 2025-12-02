@@ -14,7 +14,7 @@
                   .headline-1-v02= @m.title
                   .headline-2-v02
                     - unless @m.authors.nil?
-                      != @m.authors.map { |t| t.name }.join(', ')
+                      = @m.authors.map { |t| t.name }.join(', ')
                     - else
                       = '?'
                 .BYD-rights

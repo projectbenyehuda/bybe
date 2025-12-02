@@ -207,7 +207,7 @@ class ManifestationController < ApplicationController
       @pagetype = :manifestation
       @page_title = "#{@m.title_and_authors} - #{t(:default_page_title)}"
       @entity = @m
-      @print_url = url_for(action: :dict_print, id: @m.id)
+      @print_url = dict_print_path(@m)
       @all_headwords = DictionaryEntry.where(manifestation_id: @m.id)
       unless params[:page].nil? || params[:page].empty?
         params[:to_letter] = nil # if page was specified, forget the to_letter directive
@@ -256,7 +256,7 @@ class ManifestationController < ApplicationController
       @page_title = "#{@entry.defhead} – #{@m.title_and_authors} – #{t(:default_page_title)}"
       @entity = @m
       @e = @m.expression
-      @print_url = url_for(action: :dict_entry_print, id: @m.id, entry: @entry.id)
+      @print_url = dict_entry_print_path(@m, @entry)
       @prev_entries = @entry.get_prev_defs(5)
       @next_entries = @entry.get_next_defs(5)
       @prev_entry = @prev_entries[0] # may be nil if at beginning of dictionary
@@ -310,12 +310,6 @@ class ManifestationController < ApplicationController
     @print = true
     @e = @m.expression
 
-    # Check if manifestation is published or user is an editor
-    unless @m.published? || current_user&.editor?
-      flash.notice = t(:work_not_available)
-      redirect_to '/'
-      return
-    end
 
     if @m.expression.work.genre == 'lexicon'
       # Get all dictionary entries for printing (no pagination)
@@ -330,17 +324,11 @@ class ManifestationController < ApplicationController
     @print = true
     @entry = DictionaryEntry.find(params[:entry])
 
-    if @entry.nil? || @m.nil? || @entry.manifestation_id != @m.id
+    if @entry.manifestation_id != @m.id
       head :not_found
       return
     end
 
-    # Check if manifestation is published or user is an editor
-    unless @m.published? || current_user&.editor?
-      flash.notice = t(:work_not_available)
-      redirect_to '/'
-      return
-    end
 
     @e = @m.expression
     @footer_url = dict_entry_url(@m, @entry)

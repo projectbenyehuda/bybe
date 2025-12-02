@@ -14,7 +14,7 @@
                   .headline-1-v02= @m.title
                   .headline-2-v02
                     - unless @m.authors.nil?
-                      != @m.authors.map { |t| t.name }.join(', ')
+                      = @m.authors.map { |t| t.name }.join(', ')
                     - else
                       = '?'
                 .BYD-rights
@@ -34,7 +34,7 @@
 
 :javascript
   $(document).ready(function() {
-    sefaria.link({whitelistSelector: '.deftext', contentLang: 'hebrew', interfaceLang: 'hebrew'});
+
     $(document).on('keyup',function(evt) {
       if (evt.keyCode == 27) {
         window.location.href = '#{url_for(action: :dict_entry, id: @m.id, entry: @entry.id)}';
