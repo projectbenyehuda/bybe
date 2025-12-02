@@ -456,6 +456,42 @@ describe ManifestationController do
 
         it { is_expected.to redirect_to manifestation_path(manifestation) }
       end
+
+      context 'when manifestation is unpublished' do
+        before do
+          manifestation.update!(status: Manifestation.statuses[:unpublished])
+        end
+
+        context 'when user is not logged in' do
+          it 'redirects to home with notice' do
+            expect(subject).to redirect_to('/')
+            expect(flash[:notice]).to eq(I18n.t(:work_not_available))
+          end
+        end
+
+        context 'when user is logged in but not an editor' do
+          let(:user) { create(:user, editor: false) }
+
+          before do
+            session[:user_id] = user.id
+          end
+
+          it 'redirects to home with notice' do
+            expect(subject).to redirect_to('/')
+            expect(flash[:notice]).to eq(I18n.t(:work_not_available))
+          end
+        end
+
+        context 'when user is an editor' do
+          let(:user) { create(:user, :edit_catalog) }
+
+          before do
+            session[:user_id] = user.id
+          end
+
+          it { is_expected.to be_successful }
+        end
+      end
     end
 
     describe '#dict_entry' do
@@ -471,6 +507,42 @@ describe ManifestationController do
         let(:orig_lang) { 'de' }
 
         it { is_expected.to be_successful }
+      end
+
+      context 'when manifestation is unpublished' do
+        before do
+          manifestation.update!(status: Manifestation.statuses[:unpublished])
+        end
+
+        context 'when user is not logged in' do
+          it 'redirects to home with notice' do
+            expect(subject).to redirect_to('/')
+            expect(flash[:notice]).to eq(I18n.t(:work_not_available))
+          end
+        end
+
+        context 'when user is logged in but not an editor' do
+          let(:user) { create(:user, editor: false) }
+
+          before do
+            session[:user_id] = user.id
+          end
+
+          it 'redirects to home with notice' do
+            expect(subject).to redirect_to('/')
+            expect(flash[:notice]).to eq(I18n.t(:work_not_available))
+          end
+        end
+
+        context 'when user is an editor' do
+          let(:user) { create(:user, :edit_catalog) }
+
+          before do
+            session[:user_id] = user.id
+          end
+
+          it { is_expected.to be_successful }
+        end
       end
     end
 
