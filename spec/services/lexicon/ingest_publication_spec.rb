@@ -18,7 +18,7 @@ describe Lexicon::IngestPublication do
     )
   end
 
-  it 'parses file successfully' do
+  it 'parses file successfully', vcr: { cassette_name: 'lexicon/ingest_publication/02645001' } do
     expect { call }.to change(LexEntry, :count).by(1).and change(LexPublication, :count).by(1)
     expect(file.reload).to be_status_ingested
 
