@@ -15,7 +15,7 @@ class ManifestationController < ApplicationController
   before_action only: %i(all genre period by_tag) do |c|
     c.refuse_unreasonable_page
   end
-  before_action :set_manifestation, only: %i(print read readmode dict_print dict_entry_print)
+  before_action :set_manifestation, only: %i(print read readmode)
 
   autocomplete :manifestation, :title, limit: 20, display_value: :title_and_authors, full: true
 
@@ -207,7 +207,6 @@ class ManifestationController < ApplicationController
       @pagetype = :manifestation
       @page_title = "#{@m.title_and_authors} - #{t(:default_page_title)}"
       @entity = @m
-      @print_url = url_for(action: :dict_print, id: @m.id)
       @all_headwords = DictionaryEntry.where(manifestation_id: @m.id)
       unless params[:page].nil? || params[:page].empty?
         params[:to_letter] = nil # if page was specified, forget the to_letter directive
@@ -256,7 +255,6 @@ class ManifestationController < ApplicationController
       @page_title = "#{@entry.defhead} – #{@m.title_and_authors} – #{t(:default_page_title)}"
       @entity = @m
       @e = @m.expression
-      @print_url = url_for(action: :dict_entry_print, id: @m.id, entry: @entry.id)
       @prev_entries = @entry.get_prev_defs(5)
       @next_entries = @entry.get_next_defs(5)
       @prev_entry = @prev_entries[0] # may be nil if at beginning of dictionary
@@ -304,46 +302,6 @@ class ManifestationController < ApplicationController
 
     @html = MakeHeadingIdsUnique.call(@m.to_html)
     @footer_url = manifestation_url(@m)
-  end
-
-  def dict_print
-    @print = true
-    @e = @m.expression
-
-    # Check if manifestation is published or user is an editor
-    unless @m.published? || current_user&.editor?
-      flash.notice = t(:work_not_available)
-      redirect_to '/'
-      return
-    end
-
-    if @m.expression.work.genre == 'lexicon'
-      # Get all dictionary entries for printing (no pagination)
-      @headwords = DictionaryEntry.where(manifestation_id: @m.id).where.not(defhead: nil).order(sequential_number: :asc)
-      @footer_url = dict_browse_url(@m)
-    else
-      redirect_to action: 'print', id: @m.id
-    end
-  end
-
-  def dict_entry_print
-    @print = true
-    @entry = DictionaryEntry.find(params[:entry])
-
-    if @entry.nil? || @m.nil? || @entry.manifestation_id != @m.id
-      head :not_found
-      return
-    end
-
-    # Check if manifestation is published or user is an editor
-    unless @m.published? || current_user&.editor?
-      flash.notice = t(:work_not_available)
-      redirect_to '/'
-      return
-    end
-
-    @e = @m.expression
-    @footer_url = dict_entry_url(@m, @entry)
   end
 
   def download
