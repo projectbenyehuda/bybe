@@ -7,8 +7,8 @@ class Rack::Attack
   Rack::Attack.blocklist "Block IPs from Environment Variable" do |req|
     BAD_IPS.include?(req.ip) || req.path.index('&gt&gt')
   end
-  # Throttle requests to 5 requests per second per IP
-  throttle('req/ip', limit: 500, period: 3.minutes) do |req|
+  # Throttle requests to 100 requests per 3 minutes per IP
+  throttle('req/ip', limit: 100, period: 3.minutes) do |req|
     req.ip unless req.path.start_with?('/assets')
   end
 end
