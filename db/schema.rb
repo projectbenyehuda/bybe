@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_23_171830) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -63,7 +63,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_23_171830) do
     t.datetime "time", precision: nil
     t.virtual "item_id", type: :integer, as: "json_unquote(json_extract(`properties`,_utf8mb4'$.id'))"
     t.virtual "item_type", type: :string, limit: 50, as: "json_unquote(json_extract(`properties`,_utf8mb4'$.type'))"
-    t.index ["item_id", "item_type", "name"], name: "index_ahoy_events_on_item_id_and_item_type_and_name"
     t.index ["name", "time"], name: "index_ahoy_events_on_name_and_time"
     t.index ["time", "name", "item_type", "item_id"], name: "index_ahoy_events_on_time_and_name_and_item_type_and_item_id"
     t.index ["user_id"], name: "index_ahoy_events_on_user_id"
