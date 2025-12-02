@@ -198,6 +198,7 @@ class ManifestationController < ApplicationController
       @pagetype = :manifestation
       @page_title = "#{@m.title_and_authors} - #{t(:default_page_title)}"
       @entity = @m
+      @print_url = dict_print_path(@m)
       @all_headwords = DictionaryEntry.where(manifestation_id: @m.id)
       unless params[:page].nil? || params[:page].empty?
         params[:to_letter] = nil # if page was specified, forget the to_letter directive
@@ -246,6 +247,7 @@ class ManifestationController < ApplicationController
       @page_title = "#{@entry.defhead} – #{@m.title_and_authors} – #{t(:default_page_title)}"
       @entity = @m
       @e = @m.expression
+      @print_url = dict_entry_print_path(@m, @entry)
       @prev_entries = @entry.get_prev_defs(5)
       @next_entries = @entry.get_next_defs(5)
       @prev_entry = @prev_entries[0] # may be nil if at beginning of dictionary
@@ -293,6 +295,34 @@ class ManifestationController < ApplicationController
 
     @html = MakeHeadingIdsUnique.call(@m.to_html)
     @footer_url = manifestation_url(@m)
+  end
+
+  def dict_print
+    @print = true
+    @e = @m.expression
+
+
+    if @m.expression.work.genre == 'lexicon'
+      # Get all dictionary entries for printing (no pagination)
+      @headwords = DictionaryEntry.where(manifestation_id: @m.id).where.not(defhead: nil).order(sequential_number: :asc)
+      @footer_url = dict_browse_url(@m)
+    else
+      redirect_to action: 'print', id: @m.id
+    end
+  end
+
+  def dict_entry_print
+    @print = true
+    @entry = DictionaryEntry.find(params[:entry])
+
+    if @entry.manifestation_id != @m.id
+      head :not_found
+      return
+    end
+
+
+    @e = @m.expression
+    @footer_url = dict_entry_url(@m, @entry)
   end
 
   def download
