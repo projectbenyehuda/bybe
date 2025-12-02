@@ -15,7 +15,7 @@ class ManifestationController < ApplicationController
   before_action only: %i(all genre period by_tag) do |c|
     c.refuse_unreasonable_page
   end
-  before_action :set_manifestation, only: %i(print read readmode dict_print dict_entry_print)
+  before_action :set_manifestation, only: %i(print read readmode dict dict_print dict_entry_print)
 
   autocomplete :manifestation, :title, limit: 20, display_value: :title_and_authors, full: true
 
@@ -188,15 +188,6 @@ class ManifestationController < ApplicationController
   end
 
   def dict
-    @m = Manifestation.joins(:expression).includes(:expression).find(params[:id])
-
-    # Check if manifestation is published or user is an editor
-    unless @m.published? || current_user&.editor?
-      flash.notice = t(:work_not_available)
-      redirect_to '/'
-      return
-    end
-
     if @m.expression.work.genre == 'lexicon'
       @page = params[:page] || 1
       @page = 1 if ['0', ''].include?(@page) # slider sets page to zero or '', awkwardly
