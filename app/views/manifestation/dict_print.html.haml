@@ -37,10 +37,7 @@
                           %p= t(:skipped_x_entries, x: skipped)
                           - skipped = 0
                         %li
-                          %strong= hw.defhead
-                          %br
-                          != hw.deftext
-                          %br
+                          = hw.defhead
 
 :javascript
   $(document).ready(function() {
