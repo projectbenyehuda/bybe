@@ -6,8 +6,43 @@ Technologies and preferred tools:
 * we use RSpec for testing, not minitest
 * we use Capybara for integration tests of real usage scenarios
 * add tests for every feature you implement or bug you fix, unless the problem was in the tests themselves, in which case fixing the tests is enough
-* Do not push any code to any branch on your own (unless you create your own working branch, which is fine). The outcome of working on an issue should always be a GitHub pull request (PR) in the project's repo at https://github.com/projectbenyehuda/bybe
-* Once a PR has been produced for an issue (a bead), you may close the bead as complete. The PR will be reviewed and possibly merged by a human.
+
+## Git Workflow - CRITICAL FOR AI AGENTS
+
+**NEVER push directly to ANY existing branch** (including master, main, dragula, or any other branch you did not create in the current session).
+
+**ALWAYS follow this workflow:**
+
+1. **Create a new feature/bug branch** from your current branch:
+   ```bash
+   git checkout -b fix/issue-description  # for bugs
+   git checkout -b feature/feature-name   # for features
+   ```
+
+2. **Make your changes, commit them, and push YOUR branch:**
+   ```bash
+   git add <files>
+   bd sync  # sync beads changes
+   git commit -m "Your commit message"
+   bd sync  # sync beads changes again
+   git push -u origin <your-branch-name>
+   ```
+
+3. **Create a Pull Request (PR)** using GitHub CLI:
+   ```bash
+   gh pr create --base <original-branch> --title "Title" --body "Description"
+   ```
+   Example: If you were on `dragula` branch, create PR with `--base dragula`
+
+4. **Close the bead** after PR is created:
+   ```bash
+   bd close <bead-id>
+   bd sync
+   ```
+
+**The outcome of working on ANY issue should ALWAYS be a GitHub pull request (PR), never a direct push to an existing branch.**
+
+Once a PR has been produced for an issue (a bead), you may close the bead as complete. The PR will be reviewed and possibly merged by a human.
 
 ## Issue Tracking with bd (beads)
 
@@ -65,11 +100,16 @@ bd close bd-42 --reason "Completed" --json
 
 1. **Check ready work**: `bd ready` shows unblocked issues
 2. **Claim your task**: `bd update <id> --status in_progress`
-3. **Work on it**: Implement, test, document
-4. **Discover new work?** Create linked issue:
+3. **Create feature branch**: `git checkout -b fix/issue-name` or `feature/issue-name` (NEVER work directly on existing branches!)
+4. **Work on it**: Implement, test, document
+5. **Discover new work?** Create linked issue:
    - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id>`
-5. **Complete**: `bd close <id> --reason "Done"`
-6. **Commit together**: Always commit the `.beads/issues.jsonl` file together with the code changes so issue state stays in sync with code state
+6. **Commit changes**: See "Git Workflow" section above for complete commit/push/PR process
+7. **Create PR**: Always submit work via Pull Request, never push directly
+8. **Complete**: `bd close <id>` after PR is created (not after merge)
+9. **Sync beads**: Run `bd sync` after closing bead
+
+**CRITICAL**: Always follow the Git Workflow section above. Never push to existing branches!
 
 ### Auto-Sync
 
@@ -138,6 +178,14 @@ For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
 
 ### Important Rules
 
+**Git Workflow:**
+- ✅ ALWAYS create a new feature/bug branch before starting work
+- ✅ ALWAYS submit work via Pull Requests
+- ✅ Run `bd sync` before and after commits to keep beads in sync
+- ❌ NEVER push directly to ANY existing branch (master, main, dragula, etc.)
+- ❌ NEVER skip creating a PR - all work must be reviewed
+
+**Task Tracking:**
 - ✅ Use bd for ALL task tracking
 - ✅ Always use `--json` flag for programmatic use
 - ✅ Link discovered work with `discovered-from` dependencies
@@ -151,10 +199,12 @@ For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
 
 
 Important reminders:
+   • NEVER push to existing branches - ALWAYS create feature/bug branch and PR
    • Use bd for ALL task tracking - NO markdown TODO lists
    • Always use --json flag for programmatic bd commands
    • Link discovered work with discovered-from dependencies
    • Check bd ready before asking "what should I work on?"
+   • Run bd sync before and after commits
 
 For more details, see README.md.
 
