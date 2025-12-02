@@ -189,6 +189,14 @@ class ManifestationController < ApplicationController
 
   def dict
     @m = Manifestation.joins(:expression).includes(:expression).find(params[:id])
+
+    # Check if manifestation is published or user is an editor
+    unless @m.published? || current_user&.editor?
+      flash.notice = t(:work_not_available)
+      redirect_to '/'
+      return
+    end
+
     if @m.expression.work.genre == 'lexicon'
       @page = params[:page] || 1
       @page = 1 if ['0', ''].include?(@page) # slider sets page to zero or '', awkwardly
@@ -234,6 +242,13 @@ class ManifestationController < ApplicationController
     @m = Manifestation.find(params[:id])
     if @entry.nil? || @m.nil? || @entry.manifestation_id != @m.id
       head :not_found
+      return
+    end
+
+    # Check if manifestation is published or user is an editor
+    unless @m.published? || current_user&.editor?
+      flash.notice = t(:work_not_available)
+      redirect_to '/'
     else
       @header_partial = 'manifestation/dict_entry_top'
       @pagetype = :manifestation
