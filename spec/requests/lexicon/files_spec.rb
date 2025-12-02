@@ -21,7 +21,7 @@ describe '/lexicon/files' do
   describe 'POST /migrate' do
     subject(:call) { post "/lex/files/#{file.id}/migrate" }
 
-    context 'when person file is provided' do
+    context 'when person file is provided', vcr: { cassette_name: 'lexicon/ingest_person/00002' } do
       let!(:file) do
         create(
           :lex_file,
@@ -40,7 +40,8 @@ describe '/lexicon/files' do
       end
     end
 
-    context 'when publication file is provided' do
+    context 'when publication file is provided',
+            vcr: { cassette_name: 'lexicon/ingest_publication/0264500102645001' } do
       let!(:file) do
         create(
           :lex_file,
