@@ -13,7 +13,8 @@ class LexCitation < ApplicationRecord
        {
          raw: 0, # markup copied from PHP file (need to be parsed and splitted into separate columns)
          approved: 1, # markup parsed and stored in separate columns
-         manual: 2 # created manually (no raw markup existis)
+         manual: 2, # created manually (no raw markup existis)
+         ai_parsed: 3 # parsed using AI service
        }, prefix: true
 
   validates :raw, absence: true, if: :status_manual?
