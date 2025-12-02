@@ -247,9 +247,7 @@ Bybeconv::Application.routes.draw do
   get '/page/:tag' => 'static_pages#view', as: 'static_pages_by_tag', via: [:get]
   get 'read/:id' => 'manifestation#read', as: 'manifestation'
   match 'dict/:id' => 'manifestation#dict', as: 'dict_browse', via: %i(get post)
-  get 'dict/:id/print' => 'manifestation#dict_print', as: 'dict_print'
   get 'dict/:id/:entry' => 'manifestation#dict_entry', as: 'dict_entry'
-  get 'dict/:id/:entry/print' => 'manifestation#dict_entry_print', as: 'dict_entry_print'
   get 'read/:id/read' => 'manifestation#readmode', as: 'manifestation_readmode'
   get 'periods' => 'manifestation#periods', as: 'periods'
   match 'authors', to: 'authors#browse', as: 'authors', via: %i(get post)
