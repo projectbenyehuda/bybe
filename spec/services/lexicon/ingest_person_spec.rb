@@ -5,7 +5,7 @@ require 'rails_helper'
 describe Lexicon::IngestPerson do
   subject(:call) { described_class.call(file) }
 
-  context 'when birthdate only is provided' do
+  context 'when birthdate only is provided', vcr: { cassette_name: 'lexicon/ingest_person/00002' } do
     let!(:file) do
       create(
         :lex_file,
@@ -33,7 +33,7 @@ describe Lexicon::IngestPerson do
     end
   end
 
-  context 'when both birthdate and deathdate provided' do
+  context 'when both birthdate and deathdate provided', vcr: { cassette_name: 'lexicon/ingest_person/00024' } do
     let(:file) do
       create(
         :lex_file,

@@ -74,6 +74,8 @@ PROMPT
           end
 
           result << LexCitation.new(
+            status: :ai_parsed,
+            raw: work['raw'],
             subject: subject,
             title: work['title'],
             from_publication: work['from_publication'],
