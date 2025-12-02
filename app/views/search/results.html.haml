@@ -45,8 +45,7 @@
                   %button.tag.pointer
                     = tag
             - unless result._data.nil? or result._data['highlight'].nil?
-              %br
-              != result._data['highlight']['fulltext'].join("<br />").gsub('<em>','<b>').gsub('</em>','</b>')
+              .snippet!= result._data['highlight']['fulltext'].join("<br />").gsub('<em>','<b>').gsub('</em>','</b>')
           - elsif result.instance_of?(CollectionsIndex)
             %b= textify_collection_type(result.collection_type)
             %br

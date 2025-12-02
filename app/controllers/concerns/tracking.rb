@@ -27,21 +27,19 @@ module Tracking
   def track_view(record)
     return if spider?
 
-    Ahoy::Event.transaction do
-      props = object_properties_for_tracking(record)
-      track_event('view', props)
-      record.increment!(:impressions_count) # we simply increase impressions_count here
+    props = object_properties_for_tracking(record)
+    track_event('view', props)
+    record.increment!(:impressions_count) # we simply increase impressions_count here
 
-      # increment! method does not trigger Chewy index update so we do it explicitly here
-      # for performance purpose we specify only single field to be updated
-      index_class = case record.class.name
-                    when 'Collection' then CollectionsIndex
-                    when 'Manifestation' then ManifestationsIndex
-                    when 'Authority' then AuthoritiesIndex
-                    end
+    # increment! method does not trigger Chewy index update so we do it explicitly here
+    # for performance purpose we specify only single field to be updated
+    index_class = case record.class.name
+                  when 'Collection' then CollectionsIndex
+                  when 'Manifestation' then ManifestationsIndex
+                  when 'Authority' then AuthoritiesIndex
+                  end
 
-      index_class&.send(:import, record, import_fields: [:impressions_count])
-    end
+    index_class&.send(:import, record, import_fields: [:impressions_count])
   end
 
   # Download event should be triggered when we download file associated with object
