@@ -51,7 +51,7 @@
             %a.by-icon-v02.pointer.linkcolor.notyet{href: '#'} !
             .icons-separator-white
             %a.by-icon-v02.pointer.linkcolor.notyet{href: '#'} *
-            %a.by-icon-v02.pointer.linkcolor.notyet.printbutton{href: '#', 'data-toggle' => 'tooltip', 'title' => "#{t(:work_print_tt)}", 'data-selector' => 'true', 'data-placement' => 'top', 'data-toggle' => 'tooltip', 'data-delay' => { "show": 200, "hide": 100 }} 9
+            %a.by-icon-v02.pointer.linkcolor.printbutton{href: '#', 'data-toggle' => 'tooltip', 'title' => "#{t(:work_print_tt)}", 'data-selector' => 'true', 'data-placement' => 'top', 'data-toggle' => 'tooltip', 'data-delay' => { "show": 200, "hide": 100 }} 9
             %a.by-icon-v02.pointer.linkcolor.notyet.download{href: '#', 'data-toggle' => 'modal', 'title' => "#{t(:work_download_tt)}", 'data-selector' => 'true', 'data-placement' => 'top', 'data-toggle' => 'tooltip', 'data-delay' => { "show": 200, "hide": 100 }, 'data-target' => '#downloadDlg'} 3
             %a.by-icon-v02.pointer.linkcolor.notyet{href: '#'} U
         .flexbreak
@@ -92,7 +92,7 @@
                 %a.linkcolor.notyet{href: '#'}
                   %span.by-icon-v02.iconNearText-v02> *
                   = t(:cite)
-                %p.printbutton.linkcolor
+                %p.printbutton.linkcolor.pointer
                   %span.by-icon-v02.iconNearText-v02> 9
                   = t(:print)
                 %p.download.linkcolor
@@ -139,3 +139,10 @@
               = t(:found_br_mistake_html)
             .error-found-icon g
       .col-lg-4{style:'height:min-content'}
+
+:javascript
+  $(document).ready(function(){
+    $('.printbutton').click(function() {
+      window.open("#{@print_url}",'_blank');
+    });
+  });

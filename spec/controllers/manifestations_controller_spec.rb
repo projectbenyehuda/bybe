@@ -1,8 +1,9 @@
 require 'rails_helper'
 
 describe ManifestationController do
-
   describe '#browse' do
+    subject { get :browse, params: browse_params }
+
     before(:all) do
       clean_tables
       Chewy.strategy(:atomic) do
@@ -12,14 +13,13 @@ describe ManifestationController do
 
     let(:browse_params) { {} }
 
-    subject { get :browse, params: browse_params }
-
     context 'when user is not logged in' do
       it { is_expected.to be_successful }
     end
 
     context 'when user is logged in' do
       let!(:user) { create(:user) }
+
       before do
         session[:user_id] = user.id
       end
@@ -64,8 +64,8 @@ describe ManifestationController do
       end
 
       before do
-        expect(SearchManifestations).to receive(:call).
-          with(expected_sort_by, expected_sort_dir, expected_filter).and_call_original
+        expect(SearchManifestations).to receive(:call)
+          .with(expected_sort_by, expected_sort_dir, expected_filter).and_call_original
       end
 
       it { is_expected.to be_successful }
@@ -75,14 +75,18 @@ describe ManifestationController do
         let(:title_filter) { { 'title' => 'Love to Life' } }
 
         context 'when title specified' do
-          let(:browse_params) { { search_input: 'Love to Life', search_type: 'workname', sort_by: 'alphabetical_desc' } }
+          let(:browse_params) do
+            { search_input: 'Love to Life', search_type: 'workname', sort_by: 'alphabetical_desc' }
+          end
           let(:expected_filter) { title_filter }
+
           it { is_expected.to be_successful }
         end
 
         context 'when authorname specified' do
           let(:browse_params) { { authorstr: 'Jack London', search_type: 'authorname', sort_by: 'alphabetical_desc' } }
           let(:expected_filter) { author_filter }
+
           it { is_expected.to be_successful }
         end
 
@@ -99,18 +103,21 @@ describe ManifestationController do
           context 'when search_type is authorname' do
             let(:search_type) { 'authorname' }
             let(:expected_filter) { author_filter }
+
             it { is_expected.to be_successful }
           end
 
           context 'when search_type is workname' do
             let(:search_type) { 'workname' }
             let(:expected_filter) { title_filter }
+
             it { is_expected.to be_successful }
           end
 
           context 'when search_type is empty' do
             let(:search_type) { nil }
             let(:expected_filter) { title_filter }
+
             it { is_expected.to be_successful }
           end
         end
@@ -118,13 +125,15 @@ describe ManifestationController do
 
       describe 'sorting' do
         let(:expected_filter) { {} }
+
         # Simply ensure all sort combinations works
-        %w(alphabetical popularity creation_date publication_date upload_date).each do | column |
+        %w(alphabetical popularity creation_date publication_date upload_date).each do |column|
           %w(asc desc).each do |dir|
             context "when #{dir} sorting by #{column} is requested" do
               let(:expected_sort_by) { column }
               let(:expected_sort_dir) { dir }
               let(:browse_params) { { sort_by: "#{column}_#{dir}" } }
+
               it { is_expected.to be_successful }
             end
           end
@@ -137,6 +146,7 @@ describe ManifestationController do
 
       context 'when page number 0 is requested' do
         let(:page) { 0 }
+
         it 'returns first page' do
           expect(subject).to be_successful
         end
@@ -144,6 +154,7 @@ describe ManifestationController do
 
       context 'when page number is not specified' do
         let(:page) { nil }
+
         it 'returns first page' do
           expect(subject).to be_successful
         end
@@ -156,25 +167,28 @@ describe ManifestationController do
   end
 
   describe '#get_random' do
+    subject { get :get_random, params: { genre: genre } }
+
     before do
       create_list(:manifestation, 5)
     end
 
-    subject { get :get_random, params: { genre: genre } }
-
     context 'when genre specified' do
       let(:genre) { Work.first.genre }
+
       it { is_expected.to be_successful }
     end
 
     context 'when genre is not specified' do
       let(:genre) { nil }
+
       it { is_expected.to be_successful }
     end
   end
 
   describe '#whatsnew' do
-    subject { get :whatsnew, params: { } }
+    subject { get :whatsnew, params: {} }
+
     before do
       create_list(:manifestation, 5, created_at: 7.days.ago)
     end
@@ -183,16 +197,18 @@ describe ManifestationController do
   end
 
   describe '#surprise_work' do
+    subject { get :surprise_work }
+
     before do
       create_list(:manifestation, 3)
     end
-
-    subject { get :surprise_work }
 
     it { is_expected.to be_successful }
   end
 
   describe '#list' do
+    subject { get :list, params: { author: author, title: title } }
+
     let(:user) { create(:user, :edit_catalog) }
     let!(:manifestation) { create(:manifestation, orig_lang: 'ru') }
 
@@ -206,7 +222,6 @@ describe ManifestationController do
       end
     end
 
-    subject { get :list, params: { author: author, title: title } }
     let(:author) { nil }
     let(:title) { nil }
 
@@ -278,6 +293,7 @@ describe ManifestationController do
 
       context 'when genre is lexicon and it has dictionary_entries' do
         let(:genre) { :lexicon }
+
         before do
           create(:dictionary_entry, manifestation: manifestation)
         end
@@ -369,15 +385,18 @@ describe ManifestationController do
 
         context 'when user is not an editor' do
           let(:editor_flag) { false }
+
           it { is_expected.to redirect_to('/') }
         end
 
         context 'when user is an editor' do
           let(:editor_flag) { true }
+
           it { is_expected.to redirect_to('/') }
 
           context 'when user has edit_catalog bit' do
             let(:user) { create(:user, :edit_catalog) }
+
             it { is_expected.to be_successful }
           end
         end
@@ -442,12 +461,13 @@ describe ManifestationController do
     end
 
     describe '#dict' do
+      subject { get :dict, params: { id: manifestation.id } }
+
       let(:genre) { :lexicon }
+
       before do
         create(:dictionary_entry, manifestation: manifestation)
       end
-
-      subject { get :dict, params: { id: manifestation.id } }
 
       it { is_expected.to be_successful }
 
@@ -495,11 +515,11 @@ describe ManifestationController do
     end
 
     describe '#dict_entry' do
+      subject { get :dict_entry, params: { id: manifestation.id, entry: dictionary_entry.id } }
+
       let(:genre) { :lexicon }
 
       let!(:dictionary_entry) { create(:dictionary_entry, manifestation: manifestation) }
-
-      subject { get :dict_entry, params: { id: manifestation.id, entry: dictionary_entry.id } }
 
       it { is_expected.to be_successful }
 
@@ -546,15 +566,87 @@ describe ManifestationController do
       end
     end
 
+    describe '#dict_print' do
+      subject { get :dict_print, params: { id: manifestation.id } }
+
+      let(:genre) { :lexicon }
+
+      it { is_expected.to be_successful }
+
+      context 'when manifestation is unpublished' do
+        before do
+          manifestation.update!(status: Manifestation.statuses[:unpublished])
+        end
+
+        context 'when user is not logged in' do
+          it 'redirects to home with notice' do
+            expect(subject).to redirect_to('/')
+            expect(flash[:notice]).to eq(I18n.t(:work_not_available))
+          end
+        end
+
+        context 'when user is an editor' do
+          let(:user) { create(:user, :edit_catalog) }
+
+          before do
+            session[:user_id] = user.id
+          end
+
+          it { is_expected.to be_successful }
+        end
+      end
+
+      context 'when genre is not a lexicon' do
+        let(:genre) { :poetry }
+
+        it { is_expected.to redirect_to(action: :print, id: manifestation.id) }
+      end
+    end
+
+    describe '#dict_entry_print' do
+      subject { get :dict_entry_print, params: { id: manifestation.id, entry: dictionary_entry.id } }
+
+      let(:genre) { :lexicon }
+
+      let!(:dictionary_entry) { create(:dictionary_entry, manifestation: manifestation) }
+
+      it { is_expected.to be_successful }
+
+      context 'when manifestation is unpublished' do
+        before do
+          manifestation.update!(status: Manifestation.statuses[:unpublished])
+        end
+
+        context 'when user is not logged in' do
+          it 'redirects to home with notice' do
+            expect(subject).to redirect_to('/')
+            expect(flash[:notice]).to eq(I18n.t(:work_not_available))
+          end
+        end
+
+        context 'when user is an editor' do
+          let(:user) { create(:user, :edit_catalog) }
+
+          before do
+            session[:user_id] = user.id
+          end
+
+          it { is_expected.to be_successful }
+        end
+      end
+    end
+
     describe '#set_bookmark' do
-      let!(:base_user) { create :base_user, session_id: session.id.private_id }
-      let(:manifestation) { create(:manifestation) }
       subject { post :set_bookmark, params: { id: manifestation.id, bookmark_path: 'NEW_P' }, format: :js }
+
+      let!(:base_user) { create(:base_user, session_id: session.id.private_id) }
+      let(:manifestation) { create(:manifestation) }
 
       context 'when user already have bookmark in this text' do
         let!(:bookmark) { create(:bookmark, base_user: base_user, manifestation: manifestation) }
+
         it 'updates record with new bookmark value' do
-          expect { subject }.to_not change { Bookmark.count }
+          expect { subject }.not_to(change { Bookmark.count })
           expect(response).to be_successful
           bookmark.reload
           expect(bookmark).to have_attributes(bookmark_p: 'NEW_P', manifestation: manifestation, base_user: base_user)
@@ -572,14 +664,15 @@ describe ManifestationController do
     end
 
     describe '#remove_bookmark' do
-      let(:base_user) { create :base_user, session_id: session.id.private_id }
+      subject { post :remove_bookmark, params: { id: manifestation.id }, format: :js }
+
+      let(:base_user) { create(:base_user, session_id: session.id.private_id) }
       let(:manifestation) { create(:manifestation) }
       let(:other_manifestation) { create(:manifestation) }
       let(:other_base_user) { create(:base_user, session_id: '12345') }
       let!(:bookmark) { create(:bookmark, base_user: base_user, manifestation: manifestation) }
       let!(:other_bookmark) { create(:bookmark, base_user: base_user, manifestation: other_manifestation) }
       let!(:other_base_user_bookmark) { create(:bookmark, base_user: other_base_user, manifestation: manifestation) }
-      subject { post :remove_bookmark, params: { id: manifestation.id }, format: :js }
 
       it 'deletes bookmark of current user from given text' do
         expect { subject }.to change { Bookmark.count }.by(-1)
@@ -589,9 +682,10 @@ describe ManifestationController do
     end
 
     describe '#like' do
+      subject { post :like, params: { id: manifestation.id } }
+
       let(:user) { create(:user) }
       let(:manifestation) { create(:manifestation) }
-      subject { post :like, params: { id: manifestation.id } }
 
       context 'when user is not logged in' do
         it 'returns ok status' do
@@ -599,7 +693,7 @@ describe ManifestationController do
         end
 
         it 'does not add user to likers' do
-          expect { subject }.not_to change { manifestation.likers.count }
+          expect { subject }.not_to(change { manifestation.likers.count })
         end
       end
 
@@ -622,16 +716,17 @@ describe ManifestationController do
           end
 
           it 'does not add user to likers again' do
-            expect { subject }.not_to change { manifestation.likers.count }
+            expect { subject }.not_to(change { manifestation.likers.count })
           end
         end
       end
     end
 
     describe '#unlike' do
+      subject { post :unlike, params: { id: manifestation.id } }
+
       let(:user) { create(:user) }
       let(:manifestation) { create(:manifestation) }
-      subject { post :unlike, params: { id: manifestation.id } }
 
       context 'when user is not logged in' do
         it 'returns ok status' do
@@ -660,7 +755,7 @@ describe ManifestationController do
 
         context 'when user has not liked the manifestation' do
           it 'does not change likers count' do
-            expect { subject }.not_to change { manifestation.likers.count }
+            expect { subject }.not_to(change { manifestation.likers.count })
           end
         end
       end
@@ -670,7 +765,7 @@ describe ManifestationController do
       subject(:request) { post :chomp_period, params: { id: manifestation.id } }
 
       context 'when title ends with dot' do
-        let(:title) { 'Trailing dot.'}
+        let(:title) { 'Trailing dot.' }
 
         it 'removes trailing dot' do
           expect(request).to be_successful
@@ -680,7 +775,7 @@ describe ManifestationController do
       end
 
       context 'when title does not ends with dot' do
-        let(:title) { 'No trailing dot'}
+        let(:title) { 'No trailing dot' }
 
         it 'does not changes title' do
           expect(request).to be_successful
@@ -691,6 +786,8 @@ describe ManifestationController do
     end
 
     describe '#add_aboutness' do
+      subject { get :add_aboutnesses, params: { id: manifestation.id } }
+
       include_context 'when editor logged in'
 
       let(:user) { create(:user, :edit_catalog) }
@@ -702,13 +799,11 @@ describe ManifestationController do
         create(:aboutness, aboutable: create(:manifestation).expression.work, work_id: manifestation.expression.work.id)
       end
 
-      subject { get :add_aboutnesses, params: { id: manifestation.id } }
-
       it { is_expected.to be_successful }
     end
 
     describe '#workshow' do
-      subject { get :workshow, params: { id: manifestation.expression.work.id} }
+      subject { get :workshow, params: { id: manifestation.expression.work.id } }
 
       it { is_expected.to redirect_to manifestation_path(manifestation) }
     end
