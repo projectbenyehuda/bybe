@@ -460,7 +460,8 @@ class HtmlFileController < ApplicationController
         if nikkud
           # make full-nikkud lines PRE
           # Only add > if line doesn't already start with > (prevent > appearing mid-line after joining)
-          unless (lines[i] =~ /\[\^\d+/) || (lines[i] =~ /^\s*>/)
+          # Also skip lines that are markdown headings (##, ###, etc.) or section markers (&&&)
+          unless (lines[i] =~ /\[\^\d+/) || title_line(lines[i]) || (lines[i] =~ /^\s*>/)
             lines[i] = '> ' + lines[i]
           end
           prev_nikkud = true
@@ -487,6 +488,10 @@ class HtmlFileController < ApplicationController
     new_buffer.gsub!('> <br />', '<br />') # remove PRE from line-break, which confuses the markdown processor
     new_buffer.gsub!('</div>', "</div>\n") # add newlines after divs
     return new_buffer
+  end
+
+  def title_line(s)
+    (s =~ /^\#{1,6}\s+/) || (s =~ /^&&&\s+/)
   end
 
   def render_from_markdown(htmlfile)

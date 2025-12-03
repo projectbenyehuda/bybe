@@ -51,4 +51,47 @@ describe HtmlFileController do
       it { is_expected.to be_successful }
     end
   end
+
+  describe '#new_postprocess' do
+    context 'when processing markdown headings with nikkud' do
+      it 'does not add > to ## heading lines with nikkud' do
+        input = "## כּוֹתֶרֶת מִשְׁנָה".dup
+        result = controller.send(:new_postprocess, input)
+
+        expect(result).not_to start_with('>')
+        expect(result).to include('## כּוֹתֶרֶת מִשְׁנָה')
+      end
+
+      it 'does not add > to ### heading lines with nikkud' do
+        input = "### פֶּרֶק שְׁלִישִׁי".dup
+        result = controller.send(:new_postprocess, input)
+
+        expect(result).not_to start_with('>')
+        expect(result).to include('### פֶּרֶק שְׁלִישִׁי')
+      end
+
+      it 'does not add > to #### heading lines with nikkud' do
+        input = "#### סָעִיף רְבִיעִי".dup
+        result = controller.send(:new_postprocess, input)
+
+        expect(result).not_to start_with('>')
+        expect(result).to include('#### סָעִיף רְבִיעִי')
+      end
+
+      it 'does not add > to &&& section markers with nikkud' do
+        input = "&&& שֵׁם הַיְּצִירָה".dup
+        result = controller.send(:new_postprocess, input)
+
+        expect(result).not_to start_with('>')
+        expect(result).to include('&&& שֵׁם הַיְּצִירָה')
+      end
+
+      it 'still adds > to regular nikkud text lines' do
+        input = "שָׁלוֹם עֲלֵיכֶם חֲבֵרִים".dup
+        result = controller.send(:new_postprocess, input)
+
+        expect(result.strip).to start_with('>')
+      end
+    end
+  end
 end
