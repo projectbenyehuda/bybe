@@ -14,10 +14,8 @@ class WelcomeController < ApplicationController
     }
     @pop_authors = popular_authors
     @pop_authors_this_month = @pop_authors # Temporary hack! TODO: stop cheating and actually count by month
-    @pop_works = popular_works
     # @newest_authors = cached_newest_authors # deprecated because we stopped producing portraits
     @random_authors = Authority.published.has_image.order(Arel.sql('RAND()')).limit(10)
-    @newest_works = cached_newest_works
     @surprise_author = RandomAuthor.call
     @surprise_work = randomize_works(1)[0]
     @authors_in_genre = cached_authors_in_genre
@@ -25,8 +23,6 @@ class WelcomeController < ApplicationController
     @authors_in_period = cached_authors_in_period
     @works_by_period = cached_works_by_period
     # @whatsnew = whatsnew_anonymous # TODO: custom calculate for logged-in users
-    ## emergency disabling ## @cached_newsfeed = cached_newsfeed # new, heterogeneous newsfeed
-    @cached_newsfeed = []
     @featured_content = featured_content
     (@fc_snippet, @fc_rest) = @featured_content.nil? ? ['',''] : snippet(@featured_content.body, 1500) # prepare snippet 
     @fc_snippet = MultiMarkdown.new(@fc_snippet).to_html.force_encoding('UTF-8') unless @fc_snippet.empty?
