@@ -45,7 +45,6 @@ Bybeconv::Application.routes.draw do
       resources :citations, shallow: true, except: %i(show) do
         member do
           post :approve
-          post :parse_again
         end
       end
     end
