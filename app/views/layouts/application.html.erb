@@ -249,7 +249,23 @@
     var h = $('#header').height();
     $('.top-element').css('margin-top',h+25);
     <% unless @scrollspy_target.nil? %>
+    // Initialize scrollspy with current header height as offset
     $('body').scrollspy({ target: "#<%= @scrollspy_target %>", offset: $('#header').height() });
+
+    // Update scrollspy offset when header transitions between tall and short states
+    var headerHasScrolledClass = $('#header').hasClass('scrolled');
+    $(window).on('scroll', function() {
+      var nowHasScrolledClass = $('#header').hasClass('scrolled');
+      if (nowHasScrolledClass !== headerHasScrolledClass) {
+        headerHasScrolledClass = nowHasScrolledClass;
+        // Header height changed - update scrollspy offset and refresh
+        var scrollspyInstance = $('body').data('bs.scrollspy');
+        if (scrollspyInstance) {
+          scrollspyInstance.options.offset = $('#header').height();
+          $('body').scrollspy('refresh');
+        }
+      }
+    });
     <% end %>
     if($('#dismiss_sitenotice').length > 0) {
       $('#dismiss_sitenotice').click(function(){

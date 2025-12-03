@@ -158,7 +158,7 @@ group :test, :development do
   gem 'spring-commands-rspec'
 
   gem 'capybara' # for integration tests
-  gem 'webdrivers' # For system tests with a browser driver like Chrome/Firefox
+  gem 'selenium-webdriver' # For system tests with a browser driver like Chrome/Firefox
 end
 
 gem 'sidekiq', '~> 7.2'
