@@ -3,7 +3,7 @@
 module Lexicon
   # Controller to work with Lexicon Citations
   class CitationsController < ApplicationController
-    before_action :set_citation, only: %i(edit update destroy approve parse_again)
+    before_action :set_citation, only: %i(edit update destroy approve)
     before_action :set_entry, only: %i(new create index)
 
     layout false
@@ -38,15 +38,6 @@ module Lexicon
 
     def approve
       @citation.status_approved!
-    end
-
-    def parse_again
-      c = Lexicon::ParseCitation.call(Nokogiri.HTML4("<li>#{@citation.raw}</li>"), nil)
-      @citation.authors = c.authors
-      @citation.title = c.title
-      @citation.from_publication = c.from_publication
-      @citation.pages = c.pages
-      @citation.item = c.item
     end
 
     private
