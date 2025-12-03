@@ -8,7 +8,7 @@ module Lexicon
   languages are possible. Each record represents single work (e.g. book, or article) about a person, or one of this
   person's works.
 
-  Usually bibliography is represented as set of <ul> tags, with optional short header before each. Header represents
+  Usually bibliography is represented as a set of <ul> tags, with optional short header before each. Header represents
   subject, and <li> elements inside <ul> represents individual work about this subject.
 
   You need to parse it and turn into an JSON object with a single key `result` with a value of array of JSON objects 
