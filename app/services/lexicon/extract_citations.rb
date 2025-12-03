@@ -23,7 +23,7 @@ module Lexicon
 
       return [] if citations_node&.name != 'font'
 
-      result = ParseCitations.call(citations_node.inner_html)
+      result = Lexicon::ParseCitations.call(citations_node.inner_html)
       # remove header and citations node to simplify further processing
       header.remove
       citations_node.remove
@@ -45,19 +45,6 @@ module Lexicon
       end
 
       header
-    end
-
-    # it always starts with the author (not the LexPerson, the author of the text *about* this LexPerson), then the name
-    # of the article/text, then the publication it was published in, then date and page number.
-    def parse_citations(list, subject)
-      result = []
-      list.element_children.each do |li|
-        next unless li.name == 'li'
-
-        result << ParseCitation.call(li, subject)
-      end
-
-      result
     end
   end
 end

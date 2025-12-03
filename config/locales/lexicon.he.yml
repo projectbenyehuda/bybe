@@ -43,7 +43,6 @@ he:
         add_citation: Add citation
       edit:
         approve: Approve Citation
-        parse_again: Reparse HTML
     files:
       index:
         title: רשימת הקבצים
