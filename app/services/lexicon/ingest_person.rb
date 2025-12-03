@@ -4,7 +4,7 @@ module Lexicon
   # Service to ingest Lexicon Person from php file
   class IngestPerson < IngestBase
     def create_lex_item(html_doc)
-      citations = ExtractCitations.call(html_doc)
+      citations = Lexicon::ExtractCitations.call(html_doc)
 
       buf = html_doc.to_html
 
