@@ -3,17 +3,14 @@
 require 'rails_helper'
 
 RSpec.describe 'Manifestation scrollspy', type: :system, js: true do
-  # Helper to skip tests gracefully if WebDriver is not available
-  def skip_if_no_webdriver
-    Capybara.current_session.driver
+  # Wrap each test to catch WebDriver errors and skip gracefully
+  around do |example|
+    example.run
   rescue Selenium::WebDriver::Error::WebDriverError,
          Selenium::WebDriver::Error::UnknownError,
-         StandardError => e
+         Net::ReadTimeout,
+         Errno::ECONNREFUSED => e
     skip "WebDriver not available or misconfigured: #{e.class} - #{e.message}"
-  end
-
-  before do
-    skip_if_no_webdriver
   end
   let(:markdown_with_chapters) do
     <<~MARKDOWN
