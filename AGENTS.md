@@ -330,5 +330,4 @@ Important reminders:
    • Check bd ready before asking "what should I work on?"
    • Run bd sync before and after commits
 
-For more details, see README.md.
-
+For more details, see README.md in the project home directory.
