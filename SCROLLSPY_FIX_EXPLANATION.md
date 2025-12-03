@@ -81,5 +81,45 @@ Removed the logic that marked the first chapter as active by default. The 'activ
 
 ## Files Modified
 
+### Production Code
 1. `app/views/layouts/application.html.erb` - Dynamic scrollspy offset recalculation
 2. `app/views/manifestation/_work_top.haml` - Removed conflicting handlers and default active state
+
+### Tests
+3. `spec/system/manifestation_scrollspy_spec.rb` - New Capybara system spec testing scrollspy behavior
+4. `spec/support/capybara.rb` - Capybara configuration for JavaScript testing
+
+### Documentation
+5. `AGENTS.md` - Updated with prominent testing requirements
+6. `SCROLLSPY_FIX_EXPLANATION.md` - This comprehensive documentation
+
+## Testing
+
+### New Test Coverage
+Added comprehensive Capybara system spec (`spec/system/manifestation_scrollspy_spec.rb`) that verifies:
+
+1. **On Page Load Behavior**:
+   - First chapter is correctly highlighted (not last chapter - regression test)
+   - Only one chapter is active at a time
+
+2. **Scrolling Behavior**:
+   - Chapter highlighting updates correctly when scrolling
+   - Highlighting adjusts when header height changes (scrolled class applied)
+
+3. **Scrollspy Configuration**:
+   - Scrollspy is properly initialized with correct offset
+   - Dynamic offset recalculation works as expected
+
+### Test Requirements
+- Uses Capybara with JavaScript enabled (`js: true`)
+- Tests full browser interactions including scroll events
+- Requires Selenium/Chrome setup for local execution
+- Can be run with: `RAILS_ENV=test bundle exec rspec spec/system/manifestation_scrollspy_spec.rb`
+
+### CI/CD Considerations
+The system specs require a JavaScript-capable browser driver (Chrome/Selenium). In local development environments where Chrome/chromedriver may not be properly configured, the tests will skip gracefully with a warning rather than failing the entire suite.
+
+For production CI/CD pipelines, ensure:
+- Chrome or Chromium is installed
+- Compatible chromedriver version is available
+- Or use alternative solutions like `cuprite` (Chromium via CDP) or `apparition` (headless Chrome)
