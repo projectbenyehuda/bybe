@@ -53,7 +53,7 @@
 
         .by-card-v02.proofable{ data: { item_id: @m.id, item_type: @m.class.name } }
           .work-area
-            .work-content{"data-spy" => 'scroll', "data-target" => '#chapternav'}
+            .work-content
               -# TODO: more nuanced rendering here
               - if @m.as_prose?
                 #actualtext.maintext-prose-body.search-margin.textcard
