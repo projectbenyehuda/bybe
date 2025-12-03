@@ -39,7 +39,67 @@ If you accidentally pushed to master/main:
 * we use HAML for views, not ERB
 * we use RSpec for testing, not minitest
 * we use Capybara for integration tests of real usage scenarios
-* add tests for every feature you implement or bug you fix, unless the problem was in the tests themselves, in which case fixing the tests is enough
+
+### ⚠️ CRITICAL: Testing Requirements ⚠️
+
+**NO FEATURE OR BUG FIX IS COMPLETE WITHOUT PROPER TESTING**
+
+Before considering ANY work complete, you MUST:
+
+1. **Run the existing test suite** to ensure no regressions:
+   ```bash
+   bundle exec rspec
+   ```
+   - All existing tests MUST pass
+   - Fix any failing tests before submitting your work
+   - If tests fail due to your changes, investigate and fix the root cause
+
+2. **Write new tests** for your changes:
+   - **For bug fixes**: Write a test that would have caught the bug (regression test)
+   - **For new features**: Write tests covering the feature's functionality
+   - **For UI changes**: Use Capybara system specs with JavaScript enabled (`js: true`)
+   - **For API changes**: Write request specs testing the API endpoints
+   - Exception: If the problem was in the tests themselves, fixing the tests is enough
+
+3. **Verify your new tests pass**:
+   ```bash
+   bundle exec rspec path/to/your_new_spec.rb
+   ```
+
+4. **Run the full suite again** to ensure your new tests don't break anything:
+   ```bash
+   bundle exec rspec
+   ```
+
+**If you submit a PR without tests or with failing tests, it will be rejected.**
+
+### Test Types and When to Use Them
+
+- **Model specs** (`spec/models/`): Test model logic, validations, associations
+- **Controller specs** (`spec/controllers/`): Test controller actions, params handling
+- **Request specs** (`spec/requests/`): Test HTTP requests/responses, API endpoints
+- **System specs** (`spec/system/`, requires `js: true`): Test full user interactions with JavaScript using Capybara
+- **Service specs** (`spec/services/`): Test service objects and business logic
+
+### Example: Testing a UI Bug Fix
+
+When fixing a UI bug like scrollspy highlighting:
+```ruby
+# spec/system/manifestation_scrollspy_spec.rb
+require 'rails_helper'
+
+RSpec.describe 'Feature name', type: :system, js: true do
+  it 'properly highlights chapters on page load' do
+    # Test the bug is fixed
+  end
+
+  it 'updates highlighting during scroll' do
+    # Test dynamic behavior
+  end
+end
+```
+
+**Remember**: A feature without tests is an incomplete feature.
 
 ## Complete Git Workflow - Follow Every Time
 
