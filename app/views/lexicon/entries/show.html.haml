@@ -4,3 +4,7 @@
     = render partial: 'show_person', locals: { lex_person: lex_item }
   - elsif lex_item.is_a?(LexPublication)
     = render partial: 'show_publication', locals: { lex_publication: lex_item }
+
+= link_to t(:edit), edit_lexicon_entry_path(@lex_entry)
+\|
+= link_to t(:back), lexicon_entries_path
