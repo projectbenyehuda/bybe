@@ -49,6 +49,3 @@
                 = render partial: 'shared/latest_works_by_author', locals: { author: lex_person.authority }
           .by-card-v02.left-side-card-v02
             = render partial: 'authors/aboutnesses', locals: { author: lex_person.authority }
-= link_to 'Edit', edit_lexicon_person_path(lex_person)
-\|
-= link_to 'Back', lexicon_people_path
