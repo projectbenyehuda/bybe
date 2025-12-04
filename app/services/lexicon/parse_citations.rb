@@ -69,7 +69,10 @@ PROMPT
       json_response['result'].each do |subject_works|
         subject = subject_works['subject']
         subject_works['works'].each do |work|
-          if work['authors'].size > 1
+          authors = work['authors']
+
+          if authors.size > 1
+            # Do we have such cases?
             raise 'Multiple authors not supported yet'
           end
 
@@ -82,7 +85,7 @@ PROMPT
             pages: work['pages'],
             link: work['link'],
             notes: work['notes'],
-            authors: work['authors'] = work['authors'].first['name']
+            authors: (authors.first['name'] if authors.any?)
           )
         end
       end
