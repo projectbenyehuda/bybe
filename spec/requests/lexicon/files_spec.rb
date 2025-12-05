@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'sidekiq/testing'
 
 describe '/lexicon/files' do
   describe '#index' do
@@ -21,6 +22,9 @@ describe '/lexicon/files' do
   describe 'POST /migrate' do
     subject(:call) { post "/lex/files/#{file.id}/migrate" }
 
+    before { Sidekiq::Testing.fake! }
+    after { Sidekiq::Worker.clear_all }
+
     context 'when person file is provided', vcr: { cassette_name: 'lexicon/ingest_person/00002' } do
       let!(:file) do
         create(
@@ -34,29 +38,12 @@ describe '/lexicon/files' do
         )
       end
 
-      it 'creates new LexEntry and LexPerson' do
-        expect { call }.to change(LexPerson, :count).by(1).and change(LexEntry, :count).by(1)
-        expect(call).to redirect_to lexicon_entry_path(LexEntry.last)
-      end
-    end
-
-    context 'when publication file is provided',
-            vcr: { cassette_name: 'lexicon/ingest_publication/0264500102645001' } do
-      let!(:file) do
-        create(
-          :lex_file,
-          :publication,
-          entrytype: :text,
-          status: :classified,
-          title: 'Gabriella Avigur',
-          fname: '/02645001.php',
-          full_path: Rails.root.join('spec/data/lexicon/02645001.php')
-        )
-      end
-
-      it 'creates new LexEntry and LexPublication' do
-        expect { call }.to change(LexPublication, :count).by(1).and change(LexEntry, :count).by(1)
-        expect(call).to redirect_to lexicon_entry_path(LexEntry.last)
+      it 'add ingestion job to queue and sets entry status to `migrating`' do
+        expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+        expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
+        expect(call).to redirect_to lexicon_files_path
+        expect(flash.notice).to eq(I18n.t('lexicon.files.migrate.success'))
+        expect(file.lex_entry.reload.status).to eq('migrating')
       end
     end
   end
