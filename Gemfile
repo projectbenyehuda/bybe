@@ -33,8 +33,8 @@ gem 'rack-cors', require: 'rack/cors'
 
 gem 'aws-sdk-s3' # for Active Storage
 gem 'diffy'
-gem "ruby_llm", "~> 1.9"
 gem 'faraday-retry' # for retrying failed HTTP requests
+gem 'ruby_llm', '~> 1.9'
 
 gem 'simple_form', '~> 5.3.0'
 
@@ -55,7 +55,7 @@ gem 'client_side_validations'
 
 gem 'execjs'
 gem 'htmlentities'
-gem 'kaminari'
+gem 'kaminari', git: 'https://github.com/kaminari/kaminari'
 gem 'mini_racer'
 gem 'nokogiri'
 
@@ -166,4 +166,4 @@ group :test, :development do
   gem 'selenium-webdriver' # For system tests with a browser driver like Chrome/Firefox
 end
 
-gem 'sidekiq', '~> 7.2'
+gem 'sidekiq'
