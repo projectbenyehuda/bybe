@@ -10,7 +10,7 @@ module Lexicon
     # GET /lex_publications/new
     def new
       @lex_publication = LexPublication.new
-      @lex_publication.build_entry(status: :manual)
+      @lex_publication.build_entry(status: :draft)
     end
 
     # GET /lex_publications/1/edit
@@ -19,7 +19,7 @@ module Lexicon
     # POST /lex_publications or /lex_publications.json
     def create
       @lex_publication = LexPublication.new(lex_publication_params)
-      @lex_publication.entry.status = :manual
+      @lex_publication.entry.status = :draft
 
       if @lex_publication.save
         flash.notice = t('.success')
