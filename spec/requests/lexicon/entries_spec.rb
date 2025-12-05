@@ -18,7 +18,7 @@ describe '/lexicon/entries' do
     subject { get "/lex/entries/#{entry.id}/edit" }
 
     context 'when entry is a Person' do
-      let(:entry) { create(:lex_entry, :person, status: :migrated) }
+      let(:entry) { create(:lex_entry, :person) }
       let(:authority) { create(:authority) }
 
       it { is_expected.to eq(200) }
@@ -35,7 +35,7 @@ describe '/lexicon/entries' do
     subject { get "/lex/entries/#{entry.id}" }
 
     context 'when entry is a Person' do
-      let(:entry) { create(:lex_entry, :person, status: :migrated) }
+      let(:entry) { create(:lex_entry, :person) }
       let(:authority) { create(:authority) }
 
       it { is_expected.to eq(200) }
@@ -60,7 +60,7 @@ describe '/lexicon/entries' do
     subject(:call) { delete "/lex/entries/#{entry.id}" }
 
     context 'when entry is a Person' do
-      let!(:entry) { create(:lex_entry, :person, status: :migrated) }
+      let!(:entry) { create(:lex_entry, :person) }
 
       it 'destroys the requested LexEntry and LexPerson' do
         expect { call }.to change(LexPerson, :count).by(-1).and change(LexEntry, :count).by(-1)

@@ -15,20 +15,26 @@ module Lexicon
         @lex_files = @lex_files.where(entrytype: @entrytype)
       end
 
-      @lex_files = @lex_files.order(:fname).page(params[:page])
+      @lex_files = @lex_files.preload(:lex_entry)
+                             .order(:fname)
+                             .page(params[:page])
     end
 
     def migrate
-      LexEntry.transaction do
-        lex_entry =  if @lex_file.entrytype_person?
-                       IngestPerson.call(@lex_file)
-                     elsif @lex_file.entrytype_text?
-                       IngestPublication.call(@lex_file)
-                     else
-                       raise "unsupported entrytype: #{@lex_file.entrytype}"
-                     end
-        redirect_to lexicon_entry_path(lex_entry), notice: t('.success')
+      if @lex_file.error_message.present?
+        @lex_file.update!(error_message: nil)
       end
+
+      lex_entry = @lex_file.lex_entry
+      lex_item = lex_entry.lex_item
+      lex_entry.lex_item = nil
+      lex_entry.status_migrating!
+
+      # Cleaning up any existing LexItem before re-ingesting
+      lex_item.destroy! if lex_item.present?
+      Lexicon::IngestFile.perform_async(@lex_file.id)
+
+      redirect_to lexicon_files_path, notice: t('.success')
     end
 
     private
