@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 describe '/lexicon/people' do
-  let(:lex_person) { create(:lex_entry, :person, status: :migrated).lex_item }
+  let(:lex_person) { create(:lex_entry, :person).lex_item }
   let(:authority) { create(:authority) }
 
   let(:valid_person_attributes) do
@@ -37,7 +37,7 @@ describe '/lexicon/people' do
         lex_person = LexPerson.order(id: :desc).first
         expect(call).to eq(200)
         expect(lex_person).to have_attributes(valid_person_attributes)
-        expect(lex_person.entry).to have_attributes(title: 'Test (test)', status: 'manual', sort_title: 'Test test')
+        expect(lex_person.entry).to have_attributes(title: 'Test (test)', sort_title: 'Test test')
         expect(flash.notice).to eq(I18n.t('lexicon.people.create.success'))
       end
     end
@@ -64,7 +64,7 @@ describe '/lexicon/people' do
     it 'updates the record' do
       expect(call).to eq(200)
       expect(lex_person.reload).to have_attributes(valid_person_attributes)
-      expect(lex_person.entry).to have_attributes(title: 'Test (test)', status: 'migrated', sort_title: 'Test test')
+      expect(lex_person.entry).to have_attributes(title: 'Test (test)', sort_title: 'Test test')
     end
   end
 end

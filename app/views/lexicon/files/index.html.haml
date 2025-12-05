@@ -11,6 +11,7 @@
 
     %table.table
       %tr
+        %th= LexFile.human_attribute_name(:error_message)
         %th= LexFile.human_attribute_name(:fname)
         %th= t(:title)
         %th= t(:status)
@@ -18,12 +19,13 @@
         %th= t(:actions)
       - @lex_files.each do |lf|
         %tr
+          %td= lf.error_message
           %td= lf.fname.sub('.php', '').sub('/', '')
-          %td= lf.title
-          %td= t(lf.status)
+          %td= lf.lex_entry.title
+          %td #{t(lf.status)} / #{lf&.lex_entry&.status}
           %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
           %td
-            - if lf.lex_entry.present?
+            - if lf.lex_entry.lex_item.present?
               = link_to t(:show), lexicon_entry_path(lf.lex_entry)
             - else
               = link_to t('lexicon.files.migrate.title'), migrate_lexicon_file_path(lf), method: :post

@@ -47,7 +47,7 @@ en:
       index:
         title: List of files
       migrate:
-        success: Migrated successfully
+        success: Migration queued
         title: Analyze
     header:
       title: Lexicon of New Hebrew Literature

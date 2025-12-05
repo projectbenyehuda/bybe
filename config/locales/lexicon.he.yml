@@ -47,7 +47,7 @@ he:
       index:
         title: רשימת הקבצים
       migrate:
-        success: הוסב בהצלחה
+        success: Migration queued
         title: Analyze
     header:
       title: לקסיקון הספרות העברית החדשה
