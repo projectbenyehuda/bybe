@@ -33,8 +33,8 @@ gem 'rack-cors', require: 'rack/cors'
 
 gem 'aws-sdk-s3' # for Active Storage
 gem 'diffy'
-gem "ruby_llm", "~> 1.9"
 gem 'faraday-retry' # for retrying failed HTTP requests
+gem 'ruby_llm', '~> 1.9'
 
 gem 'simple_form', '~> 5.3.0'
 
@@ -55,11 +55,13 @@ gem 'client_side_validations'
 
 gem 'execjs'
 gem 'htmlentities'
-gem 'kaminari'
+gem 'kaminari', git: 'https://github.com/kaminari/kaminari'
 gem 'mini_racer'
 gem 'nokogiri'
 
-gem 'rmultimarkdown' # new wrapper over Fletcher Penney's MultiMarkDown 6 (MMD 6)
+# new wrapper over Fletcher Penney's MultiMarkDown 6 (MMD 6)
+# Forked to fix compatibility issue with Debian Trixie
+gem 'rmultimarkdown', git: 'https://github.com/damisul/multi_markdown'
 gem 'yt' # for polling YouTube for new videos
 
 gem 'gared', '>= 0.1.2' # https://gitlab.com/abartov/gared # for scraping bibliographic data from Hebrew sources
@@ -164,4 +166,4 @@ group :test, :development do
   gem 'webdrivers' # For system tests with a browser driver like Chrome/Firefox
 end
 
-gem 'sidekiq', '~> 7.2'
+gem 'sidekiq'

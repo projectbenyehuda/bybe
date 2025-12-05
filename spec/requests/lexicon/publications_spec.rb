@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 describe '/lexicon/publications' do
-  let(:lex_publication) { create(:lex_entry, :publication, status: :migrated).lex_item }
+  let(:lex_publication) { create(:lex_entry, :publication).lex_item }
 
   let(:valid_publication_attributes) { attributes_for(:lex_publication).except('created_at', 'updated_at', 'id') }
 
@@ -36,7 +36,7 @@ describe '/lexicon/publications' do
         expect(lex_publication).to have_attributes(valid_publication_attributes)
         expect(lex_publication.entry).to have_attributes(
           title: 'Test (test)',
-          status: 'manual',
+          status: 'draft',
           sort_title: 'Test test'
         )
         expect(flash.notice).to eq(I18n.t('lexicon.publications.create.success'))
@@ -67,8 +67,10 @@ describe '/lexicon/publications' do
     it 'updates the record' do
       expect(call).to eq(200)
       expect(lex_publication.reload).to have_attributes(valid_publication_attributes)
-      expect(lex_publication.entry).to have_attributes(title: 'Test (test)', status: 'migrated',
-                                                       sort_title: 'Test test')
+      expect(lex_publication.entry).to have_attributes(
+        title: 'Test (test)',
+        sort_title: 'Test test'
+      )
     end
   end
 end

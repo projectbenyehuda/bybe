@@ -92,6 +92,7 @@ en:
         pages: Pages
         raw: RAW citation markup from legacy website
       lex_file:
+        error_message: Error message
         fname: File name
         entrytypes:
           unknown: Unknown

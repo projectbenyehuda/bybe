@@ -1,28 +1,33 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :lex_file do
+  factory :lex_file, traits: %i(person) do
     status { 'classified' }
     comments { Faker::Lorem.sentence }
 
-    trait :person do
-      fname { "/#{format('%05d', Faker::Number.between(from: 1, to: 99_999))}.php" }
-      title { Faker::Name.name }
+    transient do
+      entry_status { 'draft' }
 
-      entrytype { 'person' }
-      lex_entry do
-        status&.to_s == 'ingested' ? create(:lex_entry, :person, status: :migrated) : nil
+      title do
+        case entrytype
+        when 'person' then Faker::Name.name
+        when 'text' then Faker::Book.title
+        end
       end
     end
 
+    trait :person do
+      fname { "#{format('%05d', Faker::Number.between(from: 1, to: 99_999))}.php" }
+
+      entrytype { 'person' }
+      lex_entry { create(:lex_entry, :person, status: entry_status, title: title) }
+    end
+
     trait :publication do
-      fname { "/#{format('%08d', Faker::Number.between(from: 1, to: 99_999_999))}.php" }
-      title { Faker::Book.title }
+      fname { "#{format('%08d', Faker::Number.between(from: 1, to: 99_999_999))}.php" }
 
       entrytype { 'text' }
-      lex_entry do
-        status&.to_s == 'ingested' ? create(:lex_entry, :publication, status: :migrated) : nil
-      end
+      lex_entry { create(:lex_entry, :publication, status: entry_status, title: title) }
     end
   end
 end
