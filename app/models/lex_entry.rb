@@ -9,11 +9,13 @@ class LexEntry < ApplicationRecord
   belongs_to :lex_item, polymorphic: true, optional: true, dependent: :destroy
 
   enum :status, {
-    raw: 0,       # not done migrating
-    migrated: 1,  # should no longer be served from static PHP
-    manual: 2,
-    deprecated: 3
-  }
+    draft: 0,       # entry created but not ready for public access
+    published: 1,   # entry approved for public access
+    deprecated: 2,  # entry deprecated (maybe superseded by another entry)
+    raw: 101,       # migration not done
+    migrating: 102, # async migration in progress
+    error: 103      # error during migration
+  }, prefix: true
 
   has_many_attached :attachments # attachments referenced by link or image on the entry page
   has_many :legacy_links, class_name: 'LexLegacyLink', dependent: :destroy, inverse_of: :lex_entry
