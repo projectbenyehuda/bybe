@@ -31,8 +31,17 @@ RSpec.describe ConvertZip64ToZip do
 
     context 'when file is a ZIP64 archive' do
       before do
-        # Create a file with ZIP64 signature
-        File.binwrite(file_path, [0x50, 0x4B, 0x06, 0x06].pack('C*') + ("\x00" * 100))
+        # Create a ZIP64 DOCX file with zip64="true" in [Content_Types].xml
+        Zip::File.open(file_path, create: true) do |zipfile|
+          content_types_xml = <<~XML
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types" zip64="true">
+              <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+              <Default Extension="xml" ContentType="application/xml"/>
+            </Types>
+          XML
+          zipfile.get_output_stream('[Content_Types].xml') { |f| f.write content_types_xml }
+        end
 
         # Mock the conversion process
         allow_any_instance_of(described_class).to receive(:convert_to_regular_zip)
@@ -53,8 +62,16 @@ RSpec.describe ConvertZip64ToZip do
 
     context 'when conversion fails' do
       before do
-        # Create a file with ZIP64 signature
-        File.binwrite(file_path, [0x50, 0x4B, 0x06, 0x06].pack('C*') + ("\x00" * 100))
+        # Create a ZIP64 DOCX file
+        Zip::File.open(file_path, create: true) do |zipfile|
+          content_types_xml = <<~XML
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types" zip64="true">
+              <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+            </Types>
+          XML
+          zipfile.get_output_stream('[Content_Types].xml') { |f| f.write content_types_xml }
+        end
 
         # Mock conversion failure
         allow_any_instance_of(described_class).to receive(:convert_to_regular_zip)
@@ -76,9 +93,19 @@ RSpec.describe ConvertZip64ToZip do
   end
 
   describe '#zip64?' do
-    context 'with ZIP64 end of central directory locator signature' do
+    context 'with ZIP64 DOCX (has zip64="true" in [Content_Types].xml)' do
       before do
-        File.binwrite(file_path, ("\x00" * 100) + [0x50, 0x4B, 0x06, 0x07].pack('C*') + ("\x00" * 16))
+        Zip::File.open(file_path, create: true) do |zipfile|
+          # Create a [Content_Types].xml with zip64="true"
+          content_types_xml = <<~XML
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types" zip64="true">
+              <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+              <Default Extension="xml" ContentType="application/xml"/>
+            </Types>
+          XML
+          zipfile.get_output_stream('[Content_Types].xml') { |f| f.write content_types_xml }
+        end
       end
 
       it 'returns true' do
@@ -86,17 +113,27 @@ RSpec.describe ConvertZip64ToZip do
       end
     end
 
-    context 'with ZIP64 end of central directory signature in content' do
+    context 'with regular DOCX (no zip64 attribute in [Content_Types].xml)' do
       before do
-        File.binwrite(file_path, [0x50, 0x4B, 0x06, 0x06].pack('C*') + ("\x00" * 100))
+        Zip::File.open(file_path, create: true) do |zipfile|
+          # Create a [Content_Types].xml without zip64="true"
+          content_types_xml = <<~XML
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+              <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+              <Default Extension="xml" ContentType="application/xml"/>
+            </Types>
+          XML
+          zipfile.get_output_stream('[Content_Types].xml') { |f| f.write content_types_xml }
+        end
       end
 
-      it 'returns true' do
-        expect(service.send(:zip64?, file_path)).to be true
+      it 'returns false' do
+        expect(service.send(:zip64?, file_path)).to be false
       end
     end
 
-    context 'with regular ZIP file' do
+    context 'with ZIP file missing [Content_Types].xml' do
       before do
         Zip::File.open(file_path, create: true) do |zipfile|
           zipfile.get_output_stream('test.txt') { |f| f.write 'test content' }

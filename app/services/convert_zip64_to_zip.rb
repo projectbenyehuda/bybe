@@ -18,20 +18,19 @@ class ConvertZip64ToZip < ApplicationService
   private
 
   # Check if a file is a ZIP64 archive
-  # ZIP64 format uses specific signatures that we can detect
+  # For DOCX files, we check the [Content_Types].xml file for zip64="true" attribute
   def zip64?(file_path)
-    File.binread(file_path).tap do |content|
-      # ZIP64 end of central directory signature bytes: 50 4B 06 06
-      # ZIP64 end of central directory locator signature bytes: 50 4B 06 07
-      # Using byte arrays for more reliable detection
-      zip64_eocd_sig = [0x50, 0x4B, 0x06, 0x06].pack('C*')
-      zip64_eocd_locator_sig = [0x50, 0x4B, 0x06, 0x07].pack('C*')
+    Zip::File.open(file_path) do |zip_file|
+      # Look for [Content_Types].xml entry
+      content_types_entry = zip_file.find_entry('[Content_Types].xml')
+      return false unless content_types_entry
 
-      # Check for either signature in the file
-      return true if content.include?(zip64_eocd_sig) || content.include?(zip64_eocd_locator_sig)
+      # Read the XML content
+      xml_content = content_types_entry.get_input_stream.read
+
+      # Check for zip64="true" attribute
+      return xml_content.include?('zip64="true"')
     end
-
-    false
   rescue StandardError => e
     Rails.logger.warn("Error checking for ZIP64: #{e.message}")
     false
