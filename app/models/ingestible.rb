@@ -154,6 +154,10 @@ class Ingestible < ApplicationRecord
       tmpfile.write(bin)
       tmpfile.flush
       tmpfilename = tmpfile.path
+
+      # Convert ZIP64 to regular ZIP if necessary (some tools like Pandoc don't support ZIP64)
+      tmpfilename = ConvertZip64ToZip.call(tmpfilename)
+
       # preserve linebreaks to post-process after Pandoc!
       doc = Docx::Document.open(tmpfilename)
       doc.paragraphs.each do |p|
