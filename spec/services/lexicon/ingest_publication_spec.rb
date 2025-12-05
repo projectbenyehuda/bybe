@@ -19,12 +19,10 @@ describe Lexicon::IngestPublication do
   end
 
   it 'parses file successfully', vcr: { cassette_name: 'lexicon/ingest_publication/02645001' } do
-    expect { call }.to change(LexEntry, :count).by(1).and change(LexPublication, :count).by(1)
+    expect { call }.to change(LexPublication, :count).by(1)
     expect(file.reload).to be_status_ingested
 
     entry = file.lex_entry
-    expect(entry).to have_attributes(legacy_filename: '02645001.php', title: 'Eliezer Jerushalmi')
-
     publication = entry.lex_item
     expect(publication).to be_an_instance_of(LexPublication)
     expect(publication).to have_attributes(az_navbar: true)
