@@ -71,7 +71,7 @@ def die(msg)
 end
 
 def validate_title(title, fname)
-  if title.blank?
+  if title.blank? || title == '־'
     @outbuf += "\nCan't find title in #{fname}!\n"
     title = '???'
   elsif !title.any_hebrew?
@@ -92,7 +92,13 @@ def process_legacy_lexicon_entry(fname)
     should_process = true if lf.status_unclassified?
     if lf.updated_at < File.mtime(fname)
       should_process = true
-      lf.status_changed_after_ingestion!
+      item = lf.entry&.item
+      if item.present?
+        item.destroy!
+        lf.entry.item = nil
+        lf.entry.status_raw!
+      end
+      lf.item = nil
       @changed += 1
     end
   end
@@ -113,18 +119,36 @@ def process_legacy_lexicon_entry(fname)
 
   title = Lexicon::ExtractTitle.call(fname)
   title = validate_title(title, fname)
+
+  status = entrytype == 'unknown' ? :unclassified : :classified
   if lf.nil?
+    lex_entry = LexEntry.create!(
+      title: title,
+      status: :raw
+    )
+
     LexFile.create!(
       fname: filepart,
       full_path: fname,
-      status: entrytype == 'unknown' ? :unclassified : :classified,
-      title: title,
-      entrytype: entrytype
+      status: status,
+      entrytype: entrytype,
+      lex_entry: lex_entry
     )
+
     @new += 1
   else
-    lf.update!(entrytype: entrytype, title: title)
+    lf.update!(entrytype: entrytype, status: status)
+    lex_entry = lf.lex_entry
+    lex_item = lex_entry.lex_item
+    # destroying item to be recreated during ingestion
+    if lex_item.present?
+      lex_entry.lex_item = nil
+      lex_entry.title = title
+      lex_entry.status_raw!
+      lex_item.destroy!
+    end
   end
+
   case entrytype
   when 'bib'
     @bibs << title
@@ -134,4 +158,13 @@ def process_legacy_lexicon_entry(fname)
     @people << title
   end
   print entrytype[0]
+end
+
+task wipe_lexicon: :environment do
+  puts 'Wiping Lexicon...'
+  # We need to destroy entries one by one to trigger ActiveStorage cleanup
+  LexEntry.find_each(&:destroy!)
+
+  LexFile.delete_all
+  puts 'Done.'
 end
