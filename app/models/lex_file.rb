@@ -6,9 +6,7 @@ class LexFile < ApplicationRecord
        {
          unclassified: 0,
          classified: 1,
-         ingested: 2,
-         approved: 3,
-         changed_after_ingestion: 4
+         ingested: 2
        },
        prefix: true
 
@@ -22,7 +20,7 @@ class LexFile < ApplicationRecord
        },
        prefix: true
 
-  belongs_to :lex_entry, optional: true
+  belongs_to :lex_entry
 
   validates :entrytype, :status, presence: true
 end

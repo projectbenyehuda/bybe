@@ -33,8 +33,8 @@ gem 'rack-cors', require: 'rack/cors'
 
 gem 'aws-sdk-s3' # for Active Storage
 gem 'diffy'
-gem "ruby_llm", "~> 1.9"
 gem 'faraday-retry' # for retrying failed HTTP requests
+gem 'ruby_llm', '~> 1.9'
 
 gem 'simple_form', '~> 5.3.0'
 
