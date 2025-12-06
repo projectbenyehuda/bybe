@@ -23,13 +23,7 @@ class ConvertZip64ToZip < ApplicationService
     Zip::File.open(file_path) do |zip_file|
       # Look for [Content_Types].xml entry
       content_types_entry = zip_file.find_entry('[Content_Types].xml')
-      return false unless content_types_entry
-
-      # Read the XML content
-      xml_content = content_types_entry.get_input_stream.read
-
-      # Check for zip64="true" attribute
-      return xml_content.include?('zip64="true"')
+      return content_types_entry.present?
     end
   rescue StandardError => e
     Rails.logger.warn("Error checking for ZIP64: #{e.message}")
