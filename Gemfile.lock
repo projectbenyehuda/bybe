@@ -206,9 +206,9 @@ GEM
     diff-lcs (1.6.2)
     diffy (3.4.4)
     docile (1.4.1)
-    docx (0.10.0)
+    docx (0.9.1)
       nokogiri (~> 1.13, >= 1.13.0)
-      rubyzip (>= 2.0, < 4)
+      rubyzip (~> 2.0)
     domain_name (0.6.20240107)
     dotenv (3.1.8)
     drb (2.2.3)
@@ -269,9 +269,9 @@ GEM
       nokogiri (> 1.8)
       rest-client (~> 2)
       watir (~> 6)
-    gepub (2.0.1)
+    gepub (1.0.17)
       nokogiri (>= 1.8.2, < 2.0)
-      rubyzip (>= 3.0, < 3.3)
+      rubyzip (> 1.1.1, < 2.4)
     get_process_mem (1.0.0)
       bigdecimal (>= 2.0)
       ffi (~> 1.0)
@@ -709,7 +709,7 @@ GEM
       ffi (~> 1.12)
       logger
     ruby2_keywords (0.0.5)
-    rubyzip (3.2.2)
+    rubyzip (2.3.2)
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
     rugged (1.9.0)
@@ -856,7 +856,7 @@ DEPENDENCIES
   debug
   derailed_benchmarks
   diffy
-  docx
+  docx (~> 0.9.1)
   dotenv (~> 3.1.2)
   ed25519
   evil-seed

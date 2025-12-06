@@ -155,9 +155,6 @@ class Ingestible < ApplicationRecord
       tmpfile.flush
       tmpfilename = tmpfile.path
 
-      # Convert ZIP64 to regular ZIP if necessary (some tools like Pandoc don't support ZIP64)
-      tmpfilename = ConvertZip64ToZip.call(tmpfilename)
-
       # preserve linebreaks to post-process after Pandoc!
       doc = Docx::Document.open(tmpfilename)
       doc.paragraphs.each do |p|
@@ -168,6 +165,7 @@ class Ingestible < ApplicationRecord
       # limit memory use in production; otherwise severe server hangs possible
       mem_limit = Rails.env.development? ? '' : ' -M2200m '
       markdown = `pandoc +RTS #{mem_limit} -RTS -f docx -t markdown_mmd #{tmpfile_pp.path} 2>&1`
+      #      markdown = `pandoc +RTS #{mem_limit} -RTS -f docx -t markdown_mmd #{tmpfile.path} 2>&1`
       raise 'Heap exhausted' if markdown =~ /pandoc: Heap exhausted/
 
       self.markdown_updated_at = Time.zone.now
@@ -250,7 +248,7 @@ class Ingestible < ApplicationRecord
 
       lines = section.lines
       title = lines.first
-      title.strip! if title.present?
+      title.presence&.strip!
       content = lines[1].nil? ? [] : lines[1..].map(&:strip)
       buf << { title: title, content: content.present? ? content.join("\n") : '' } if title.present?
     end
