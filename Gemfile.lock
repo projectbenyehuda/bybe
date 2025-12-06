@@ -892,6 +892,7 @@ DEPENDENCIES
   execjs
   factory_bot_rails (~> 6.2.0)
   faker (~> 2.19.0)
+  faraday-retry
   gared (>= 0.1.2)
   gepub
   grape (~> 2.4.0)
