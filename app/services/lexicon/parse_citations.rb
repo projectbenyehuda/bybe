@@ -9,9 +9,9 @@ module Lexicon
   person's works.
 
   Usually bibliography is represented as a set of <ul> tags, with optional short header before each. Header represents
-  subject, and <li> elements inside <ul> represents individual work about this subject.
+  subject, and <li> elements inside <ul> represent individual works about this subject.
 
-  You need to parse it and turn into an JSON object with a single key `result` with a value of array of JSON objects 
+  You need to parse it and turn into a JSON object with a single key `result` with a value of array of JSON objects 
   representing works grouped by subjects:
   ```
   { 
@@ -23,17 +23,17 @@ module Lexicon
   }
   ```
 
-  Each element in array of works is a JSON object representing single bibliography record with following structure:
+  Each element in the array of works is a JSON object representing a single bibliography record with the following structure:
   - authors - array of Authors who authored work. Author can be represented as text entry, or as a link to page about
-    this author. So author record contains two string attributes: name (mandatory) and link (optional)
+    this author. So an author record contains two string attributes: name (mandatory) and link (optional)
   - title - title of work (e.g. title of article) - mandatory
   - from_publication - name of publication where work was published (e.g. name of collection of articles, name of the
     journal where article was published, etc). You should include there additional information helping to identify
     publication, like year and number of issue for journal article, volume number for multivolume collection, etc.
   - pages - string representing page, or pages interval, e.g. "7", "5-12"
-  - link - (optional) sometimes html will contain a link to actual work or article.
+  - link - (optional) sometimes the HTML will contain a link to the actual work or article.
   - notes - (optional) some additional notes, not fitting into other fields (like 'First published at...')
-  - raw - HTML markup representing content of <li> tag representing this work (without wrapping <li>, </li> tags)
+  - raw - HTML markup representing content of <li> tag representing this work (without the wrapping <li>, </li> tags)
 
   Example of work JSON:
   ```
@@ -62,7 +62,7 @@ PROMPT
       chat = RubyLLM.chat(model: 'gpt-4.1-mini')
       chat.with_instructions(SYSTEM_PROMPT).with_params(response_format: { type: :json_object })
 
-      response = chat.ask(html.squish)
+      response = call_with_retry { chat.ask(html.squish) }
       result = []
 
       json_response = JSON.parse(response.content)
@@ -90,6 +90,26 @@ PROMPT
         end
       end
       result
+    end
+
+    private
+
+    def call_with_retry(max_retries: 3, &block)
+      retries = 0
+      begin
+        yield
+      rescue Faraday::SSLError, Faraday::ConnectionFailed, Faraday::TimeoutError, Errno::ECONNRESET => e
+        retries += 1
+        if retries < max_retries
+          wait_time = 2**retries # exponential backoff: 2s, 4s, 8s
+          Rails.logger.warn("LLM API call failed (attempt #{retries}/#{max_retries}): #{e.class} - #{e.message}. Retrying in #{wait_time}s...")
+          sleep(wait_time)
+          retry
+        else
+          Rails.logger.error("LLM API call failed after #{max_retries} attempts: #{e.class} - #{e.message}")
+          raise
+        end
+      end
     end
   end
 end
