@@ -43,20 +43,20 @@ RSpec.describe ConvertZip64ToZip do
           zipfile.get_output_stream('[Content_Types].xml') { |f| f.write content_types_xml }
         end
 
-        # Mock the conversion process
+        # Mock the conversion process to return the same path (file is overwritten)
         allow_any_instance_of(described_class).to receive(:convert_to_regular_zip)
           .with(file_path)
-          .and_return('/tmp/converted.zip')
+          .and_return(file_path)
       end
 
       it 'calls convert_to_regular_zip' do
-        expect_any_instance_of(described_class).to receive(:convert_to_regular_zip).with(file_path).and_return('/tmp/converted.zip')
+        expect_any_instance_of(described_class).to receive(:convert_to_regular_zip).with(file_path).and_return(file_path)
         described_class.call(file_path)
       end
 
-      it 'returns the converted file path' do
+      it 'returns the original file path (file is overwritten)' do
         result = described_class.call(file_path)
-        expect(result).to eq('/tmp/converted.zip')
+        expect(result).to eq(file_path)
       end
     end
 

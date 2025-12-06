@@ -23,7 +23,13 @@ class ConvertZip64ToZip < ApplicationService
     Zip::File.open(file_path) do |zip_file|
       # Look for [Content_Types].xml entry
       content_types_entry = zip_file.find_entry('[Content_Types].xml')
-      return content_types_entry.present?
+      return false unless content_types_entry
+
+      # Read the XML content
+      xml_content = content_types_entry.get_input_stream.read
+
+      # Check for zip64="true" attribute
+      return xml_content.include?('zip64="true"')
     end
   rescue StandardError => e
     Rails.logger.warn("Error checking for ZIP64: #{e.message}")
@@ -31,6 +37,7 @@ class ConvertZip64ToZip < ApplicationService
   end
 
   # Convert ZIP64 archive to regular ZIP
+  # Overwrites the original file with the converted version
   def convert_to_regular_zip(file_path)
     # Create a temporary directory for extraction
     Dir.mktmpdir do |extract_dir|
@@ -40,11 +47,13 @@ class ConvertZip64ToZip < ApplicationService
       end
 
       # Create a new temporary file for the repacked ZIP
-      output_file = Tempfile.new(['converted_', File.extname(file_path)], encoding: 'ascii-8bit')
-      output_file.close
+      temp_output = Tempfile.new(['converted_', File.extname(file_path)], encoding: 'ascii-8bit')
+      temp_output_path = temp_output.path
+      temp_output.close
+      temp_output.unlink # Delete it so we can create the ZIP file at this path
 
       # Repack as regular ZIP using rubyzip
-      Zip::File.open(output_file.path, create: true) do |zipfile|
+      Zip::File.open(temp_output_path, create: true) do |zipfile|
         # Add all extracted files to the new ZIP
         Dir.glob("#{extract_dir}/**/*", File::FNM_DOTMATCH).each do |file|
           next if File.directory?(file)
@@ -58,8 +67,11 @@ class ConvertZip64ToZip < ApplicationService
         end
       end
 
-      Rails.logger.info("ZIP64 converted to regular ZIP: #{output_file.path}")
-      output_file.path
+      # Replace the original file with the converted version
+      FileUtils.mv(temp_output_path, file_path)
+
+      Rails.logger.info("ZIP64 converted to regular ZIP, overwrote: #{file_path}")
+      file_path
     end
   rescue StandardError => e
     Rails.logger.error("Failed to convert ZIP64 to ZIP: #{e.message}")
