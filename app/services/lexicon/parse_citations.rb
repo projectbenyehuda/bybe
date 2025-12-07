@@ -11,10 +11,10 @@ module Lexicon
   Usually bibliography is represented as a set of <ul> tags, with optional short header before each. Header represents
   subject, and <li> elements inside <ul> represent individual works about this subject.
 
-  You need to parse it and turn into a JSON object with a single key `result` with a value of array of JSON objects 
+  You need to parse it and turn into a JSON object with a single key `result` with a value of array of JSON objects#{' '}
   representing works grouped by subjects:
   ```
-  { 
+  {#{' '}
     result: [
       { subject: 'Subject 1', works: [ <ARRAY of Works 1> ] },
       { subject: 'Subject 2', works: [ <ARRAY of Works 2> ] },
@@ -78,13 +78,13 @@ PROMPT
 
           result << LexCitation.new(
             status: :ai_parsed,
-            raw: work['raw'],
-            subject: subject,
-            title: work['title'],
-            from_publication: work['from_publication'],
-            pages: work['pages'],
+            raw: sanitize_smart_quotes(work['raw']),
+            subject: sanitize_smart_quotes(subject),
+            title: sanitize_smart_quotes(work['title']),
+            from_publication: sanitize_smart_quotes(work['from_publication']),
+            pages: sanitize_smart_quotes(work['pages']),
             link: work['link'],
-            notes: work['notes'],
+            notes: sanitize_smart_quotes(work['notes']),
             authors: (authors.first['name'] if authors.any?)
           )
         end
@@ -93,6 +93,12 @@ PROMPT
     end
 
     private
+
+    def sanitize_smart_quotes(text)
+      return nil if text.nil?
+
+      text.gsub(/[“”״]/, '"').gsub(/[‘’]/, "'")
+    end
 
     def call_with_retry(max_retries: 3, &block)
       retries = 0
