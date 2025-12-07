@@ -426,6 +426,21 @@ class Authority < ApplicationRecord
     person.present? ? person.gender_letter : 'ו'
   end
 
+  # Returns an array of sorted names for efficient comparison
+  # Each name has its words sorted alphabetically, then the array itself is sorted
+  # Example: ["James Smith", "Robert Ames"] => ["James Smith", "Ames Robert"]
+  def sorted_comparison_names
+    names = [name]
+    names += other_designation.split(';').map(&:strip) if other_designation.present?
+
+    # Sort words within each name alphabetically
+    sorted_names = names.map do |n|
+      n.split(/\s+/).sort.join(' ')
+    end
+
+    sorted_names.sort
+  end
+
   # set all person's works to status published
   # be cautious about publishing joint works, because the *other* author(s) or translators may yet be unpublished!
   def publish!
