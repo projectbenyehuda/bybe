@@ -6,7 +6,7 @@ module LexiconHelper
     if lex_citation.status_raw?
       raw lex_citation.raw
     else
-      raw "#{lex_citation.authors} #{lex_citation.title} #{lex_citation.pages}"
+      raw "<b>#{lex_citation.authors}</b>, #{lex_citation.title}, <u>#{lex_citation.from_publication}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
     end
   end
 end
