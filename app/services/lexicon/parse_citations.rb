@@ -76,6 +76,9 @@ PROMPT
             raise 'Multiple authors not supported yet'
           end
 
+          author_name = authors.first['name'] if authors.any?
+          lex_person = find_or_create_lex_person_by_author_name(author_name) if author_name
+
           result << LexCitation.new(
             status: :ai_parsed,
             raw: sanitize_smart_quotes(work['raw']),
@@ -85,7 +88,8 @@ PROMPT
             pages: sanitize_smart_quotes(work['pages']),
             link: work['link'],
             notes: sanitize_smart_quotes(work['notes']),
-            authors: (authors.first['name'] if authors.any?)
+            authors: author_name,
+            lex_person: lex_person
           )
         end
       end
@@ -93,6 +97,37 @@ PROMPT
     end
 
     private
+
+    def find_or_create_lex_person_by_author_name(author_name)
+      return nil if author_name.blank?
+
+      # transpose name parts if in "Last, First" format
+      if author_name.include?(',') && author_name.index(',') < author_name.length - 2
+        parts = author_name.split(',', 2).map(&:strip)
+        author_name = "#{parts[1]} #{parts[0]}"
+      end
+      # Find authorities where name matches or other_designation contains the name
+      # Note: other_designation can contain multiple names separated by semicolons
+      matching_authorities = Authority.published.where(
+        'name = ? OR other_designation LIKE ? OR other_designation LIKE ? OR other_designation = ?',
+        author_name,
+        "#{author_name};%", # name at start
+        "%; #{author_name};%", # name in middle
+        author_name # exact match if other_designation has single name
+      ).limit(2) # We only need to know if there's 1 or more than 1
+
+      # Additional filtering: check if author_name is actually one of the semicolon-separated values
+      exact_matches = matching_authorities.select do |authority|
+        authority.name == author_name ||
+          authority.other_designation&.split(';')&.map(&:strip)&.include?(author_name)
+      end
+
+      # Only link if exactly one authority matches
+      return nil unless exact_matches.size == 1
+
+      authority_id = exact_matches.first.id
+      LexPerson.find_or_create_by_authority_id(authority_id)
+    end
 
     def sanitize_smart_quotes(text)
       return nil if text.nil?
