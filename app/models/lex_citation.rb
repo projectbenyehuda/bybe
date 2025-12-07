@@ -7,6 +7,7 @@
 class LexCitation < ApplicationRecord
   belongs_to :item, polymorphic: true # item this citation is about
   belongs_to :manifestation, optional: true # manifestation representing this citation (if present in BYP)
+  belongs_to :lex_person, optional: true # linked lexicon person if author name matches
 
   # This status column is temporary and should be removed in the future after migration from PHP will be completed
   enum :status,
