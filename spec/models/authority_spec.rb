@@ -570,6 +570,58 @@ describe Authority do
           authority.reload
           expect(authority).to receive(:update_other_designation)
           authority.update!(name: 'שם חדש')
+    describe '.sorted_comparison_names' do
+      context 'when authority has only a name' do
+        let(:authority) { create(:authority, name: 'James Smith', other_designation: nil) }
+
+        it 'returns array with sorted name' do
+          expect(authority.sorted_comparison_names).to eq(['James Smith'])
+        end
+      end
+
+      context 'when name has multiple words' do
+        let(:authority) { create(:authority, name: 'Robert Ames', other_designation: nil) }
+
+        it 'sorts words alphabetically within the name' do
+          expect(authority.sorted_comparison_names).to eq(['Ames Robert'])
+        end
+      end
+
+      context 'when name has three words' do
+        let(:authority) { create(:authority, name: 'James Clark Maxwell', other_designation: nil) }
+
+        it 'sorts all words alphabetically' do
+          expect(authority.sorted_comparison_names).to eq(['Clark James Maxwell'])
+        end
+      end
+
+      context 'when authority has alternate names in other_designation' do
+        let(:authority) do
+          create(:authority, name: 'James Smith', other_designation: 'Robert Ames; John Doe')
+        end
+
+        it 'returns sorted array of all sorted names' do
+          result = authority.sorted_comparison_names
+          expect(result).to eq(['Ames Robert', 'Doe John', 'James Smith'])
+        end
+      end
+
+      context 'when other_designation has names with extra spaces' do
+        let(:authority) do
+          create(:authority, name: 'Alice Brown', other_designation: ' Robert Green  ; Mary White ')
+        end
+
+        it 'handles spaces correctly' do
+          result = authority.sorted_comparison_names
+          expect(result).to eq(['Alice Brown', 'Green Robert', 'Mary White'])
+        end
+      end
+
+      context 'when other_designation is empty string' do
+        let(:authority) { create(:authority, name: 'John Doe', other_designation: '') }
+
+        it 'returns only the main name sorted' do
+          expect(authority.sorted_comparison_names).to eq(['Doe John'])
         end
       end
     end
