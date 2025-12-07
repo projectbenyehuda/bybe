@@ -14,4 +14,11 @@ class LexPerson < ApplicationRecord
   def intellectual_property
     copyrighted? ? 'copyrighted' : 'public_domain'
   end
+
+  def self.find_or_create_by_authority_id(aid)
+    lex_person = LexPerson.find_by(authority_id: aid)
+    return lex_person if lex_person
+
+    LexPerson.create!(authority_id: aid) # TODO: figure out if it makes sense to import life years or other data from Authority
+  end
 end
