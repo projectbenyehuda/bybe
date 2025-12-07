@@ -6,7 +6,14 @@ module LexiconHelper
     if lex_citation.status_raw?
       raw lex_citation.raw
     else
-      raw "<b>#{lex_citation.authors}</b>, #{lex_citation.title}, <u>#{lex_citation.from_publication}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
+      # link to Authority if lex_person is linked
+
+      author_bit = "<b>#{if lex_citation.lex_person.present?
+                           link_to(lex_citation.authors, authority_path(lex_citation.lex_person.authority))
+                         else
+                           lex_citation.authors
+                         end}</b>"
+      raw "#{author_bit}, #{lex_citation.title}, <u>#{lex_citation.from_publication}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
     end
   end
 end
