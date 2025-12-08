@@ -23,15 +23,16 @@ Bybeconv::Application.routes.draw do
   namespace :lexicon, path: :lex do # use path 'lex' to avoid conflict with old Lexicon hosted on benyehuda.org/lexicon
     root to: 'entries#index'
 
-    resources :people, only: %i(edit update new create)
-    resources :publications, only: %i(edit update new create)
-    resources :entries, except: %i(update new create) do
-      resources :attachments, only: %i(index create destroy)
+    resources :people, only: %i(edit update new create) do
       resources :citations, shallow: true, except: %i(show) do
         member do
           post :approve
         end
       end
+    end
+    resources :publications, only: %i(edit update new create)
+    resources :entries, except: %i(update new create) do
+      resources :attachments, only: %i(index create destroy)
     end
     resources :files, only: :index do
       member do

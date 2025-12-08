@@ -8,8 +8,8 @@ module LexiconHelper
     else
       # link to Authority if lex_person is linked
 
-      author_bit = "<b>#{if lex_citation.lex_person.present?
-                           link_to(lex_citation.authors, authority_path(lex_citation.lex_person.authority))
+      author_bit = "<b>#{if lex_citation.person.present?
+                           link_to(lex_citation.authors, lexicon_person_path(lex_citation.person))
                          else
                            lex_citation.authors
                          end}</b>"

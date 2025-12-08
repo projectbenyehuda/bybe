@@ -624,7 +624,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.integer "status", null: false
     t.text "notes"
     t.string "subject"
-    t.bigint "lex_person_id"
+    t.bigint "lex_person_id", null: false
     t.index ["authors"], name: "index_lex_citations_on_authors"
     t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
@@ -836,7 +836,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name"
     t.text "description"
     t.date "start_date"
