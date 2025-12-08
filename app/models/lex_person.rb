@@ -3,8 +3,8 @@
 # Person from Lexicon
 class LexPerson < ApplicationRecord
   include LifePeriod
-  include Lexicon::WithCitations
 
+  has_many :citations, inverse_of: :person, class_name: 'LexCitation', dependent: :destroy
   has_one :entry, as: :lex_item, class_name: 'LexEntry', dependent: :destroy
   has_many :lex_links, as: :item, dependent: :destroy
   belongs_to :authority, optional: true # link to an Authority record representing this person in BYP
