@@ -1,4 +1,4 @@
-- path = @citation.new_record? ? lexicon_entry_citations_path : lexicon_citation_path(@citation)
+- path = @citation.new_record? ? lexicon_person_citations_path(@person) : lexicon_citation_path(@citation)
 = simple_form_for(@citation, url: path, remote: true) do |f|
   = f.error_notification
   = f.input :status do
