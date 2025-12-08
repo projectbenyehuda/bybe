@@ -4,32 +4,32 @@ module Lexicon
   # Controller to work with Lexicon Citations
   class CitationsController < ApplicationController
     before_action :set_citation, only: %i(edit update destroy approve)
-    before_action :set_entry, only: %i(new create index)
+    before_action :set_person, only: %i(new create index)
 
     layout false
 
     def index
-      @lex_citations = @entry.lex_item.citations
+      @lex_citations = @person.citations
     end
 
     def new
-      @citation = @entry.lex_item.citations.build(status: :manual)
+      @citation = @person.citations.build(status: :manual)
     end
 
     def create
-      @citation = @entry.lex_item.citations.build(lex_citation_params.merge(status: :manual))
+      @citation = @person.citations.build(lex_citation_params.merge(status: :manual))
 
-      unless @citation.save
-        render :new, status: :unprocessable_content
-      end
+      return if @citation.save
+
+      render :new, status: :unprocessable_content
     end
 
     def edit; end
 
     def update
-      unless @citation.update(lex_citation_params)
-        render :edit, status: :unprocessable_content
-      end
+      return if @citation.update(lex_citation_params)
+
+      render :edit, status: :unprocessable_content
     end
 
     def destroy
@@ -42,14 +42,14 @@ module Lexicon
 
     private
 
-    def set_entry
-      @entry = LexEntry.find(params[:entry_id])
+    def set_person
+      @person = LexPerson.find(params[:person_id])
     end
 
     # Use callbacks to share common setup or constraints between actions.
     def set_citation
       @citation = LexCitation.find(params[:id])
-      @entry = @citation.item.entry
+      @person = @citation.person
     end
 
     # Only allow a list of trusted parameters through.
