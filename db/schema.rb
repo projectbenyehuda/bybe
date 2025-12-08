@@ -632,7 +632,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.integer "status", null: false
     t.text "notes"
     t.string "subject"
-    t.bigint "lex_person_id"
+    t.bigint "lex_person_id", null: false
     t.index ["authors"], name: "index_lex_citations_on_authors"
     t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
