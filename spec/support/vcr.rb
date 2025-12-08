@@ -7,7 +7,10 @@ VCR.configure do |config|
   config.ignore_localhost = true
   config.configure_rspec_metadata!
   config.hook_into :webmock
-  %w(DEEPSEEK_API_KEY OPENAI_API_KEY).each do |placeholder|
+
+  # The config below ensures we do not accidentally commit sensitive data like API keys in VCR cassettes.
+  # Ensure all ENV variables that contain sensitive data are added to the array below.
+  %w(OPENAI_API_KEY).each do |placeholder|
     config.filter_sensitive_data(placeholder) { ENV.fetch(placeholder) }
   end
 end
