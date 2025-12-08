@@ -77,7 +77,6 @@ PROMPT
           end
 
           author_name = authors.first['name'] if authors.any?
-          lex_person = find_or_create_lex_person_by_author_name(author_name) if author_name
 
           result << LexCitation.new(
             status: :ai_parsed,
@@ -88,8 +87,7 @@ PROMPT
             pages: sanitize_smart_quotes(work['pages']),
             link: work['link'],
             notes: sanitize_smart_quotes(work['notes']),
-            authors: author_name,
-            lex_person: lex_person
+            authors: author_name
           )
         end
       end
@@ -135,7 +133,7 @@ PROMPT
       text.gsub(/[“”״]/, '"').gsub(/[‘’]/, "'")
     end
 
-    def call_with_retry(max_retries: 3, &block)
+    def call_with_retry(max_retries: 3)
       retries = 0
       begin
         yield
