@@ -248,114 +248,11 @@ class ApplicationController < ActionController::Base
   def whatsnew_anonymous
     Rails.cache.fetch('whatsnew_anonymous', expires_in: 2.hours) do # memoize
       logger.info('cache miss: calculating whatsnew anonymous')
-      whatsnew_since(1.month.ago)
+      WhatsNewSince.call(1.month.ago)
     end
-  end
-
-  def cached_newsfeed
-    Rails.cache.fetch('cached_newsfeed', expires_in: 1.hour) do # memoize
-      newsfeed
-    end
-  end
-
-  def cached_youtube_videos
-    Rails.cache.fetch('cached_youtube', expires_in: 24.hours) do # memoize
-      # return latest_youtube_videos # commented out due to quote problem, and caching failure yet TBD
-      []
-    end
-  end
-
-  def latest_youtube_videos
-    ret = []
-    begin
-      channel = Yt::Channel.new id: Rails.configuration.constants['youtube_channel_id']
-      vids = channel.videos
-      max = vids.count > 5 ? 5 : vids.count
-      i = 0
-      vids.each  do |v|
-        break if i >= max
-
-        ret << [v.title, v.description, v.id, v.thumbnail_url, v.published_at]
-        i += 1
-      end
-    rescue StandardError
-      puts 'No network?'
-    end
-    return ret
-  end
-
-  def youtube_url_from_id(id)
-    return 'https://www.youtube.com/watch?v=' + id
   end
 
   public # temp
-
-  def newsfeed
-    unsorted_news_items = NewsItem.last(5) # read at most the last 5 persistent news items (Facebook posts, announcements)
-
-    whatsnew_since(1.month.ago).each do |person, pubs| # add newly-published works
-      unsorted_news_items << NewsItem.from_publications(
-        person,
-        textify_new_pubs(pubs),
-        pubs,
-        authority_path(person.id),
-        person.profile_image.url(:thumb)
-      )
-    end
-    cached_youtube_videos.each do |title, desc, id, thumbnail_url, relevance| # add latest videos
-      unsorted_news_items << NewsItem.from_youtube(title, desc, youtube_url_from_id(id), thumbnail_url, relevance)
-    end
-    # TODO: add latest blog posts
-    return unsorted_news_items.sort_by { |item| item.relevance }.reverse # sort by descending relevance
-  end
-
-  def whatsnew_since(timestamp)
-    authors = {}
-    Manifestation.all_published.new_since(timestamp).includes(:expression).each do |m|
-      e = m.expression
-      next if e.nil? # shouldn't happen
-
-      w = e.work
-      authority = e.translation ? m.translators.first : m.authors.first # TODO: more nuance
-      next if authority.nil? # shouldn't happen, but might in a dev. env.
-
-      if authors[authority].nil?
-        authors[authority] = {}
-        authors[authority][:latest] = 0
-      end
-      authors[authority][w.genre] = [] if authors[authority][w.genre].nil?
-      authors[authority][w.genre] << m
-      authors[authority][:latest] = m.updated_at if m.updated_at > authors[authority][:latest]
-    end
-    authors
-  end
-
-  def textify_new_pubs(author)
-    ret = ''
-    author.each do |genre|
-      next unless genre[1].class == Array # skip the :latest key
-
-      worksbuf = "<strong>#{helpers.textify_genre(genre[0])}:</strong> "
-      first = true
-      genre[1].each do |m|
-        title = m.expression.title
-        if m.expression.translation
-          per = m.expression.work.authors[0] # TODO: add handing for several persons
-          unless per.nil?
-            title += " #{I18n.t(:by)} #{per.name}"
-          end
-        end
-        if first
-          first = false
-        else
-          worksbuf += '; '
-        end
-        worksbuf += "<a href=\"/read/#{m.id}\">#{title}</a>"
-      end
-      ret += worksbuf + '<br />'
-    end
-    return ret
-  end
 
   def current_user
     @current_user ||= User.find(session[:user_id]) if session[:user_id]

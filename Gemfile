@@ -65,7 +65,7 @@ gem 'hebrew', '>= 0.2.1' # https://github.com/abartov/hebrew
 # gem 'goldiloader'
 gem 'haml'
 # gem 'zoom', '~>0.4.1', :git => 'https://github.com/bricestacey/ruby-zoom.git' # for Z39.50 queries to libraries
-gem 'docx' # for pre-processing DOCX files to preserve stanzas
+gem 'docx', '~> 0.9.1' # for pre-processing DOCX files to preserve stanzas. Version locked until they fix https://github.com/ruby-docx/docx/issues/168
 gem 'gepub' # for generating EPUBs
 gem 'haml-rails'
 gem 'pandoc-ruby' # for converting to DOCX
@@ -157,7 +157,7 @@ group :test, :development do
   gem 'spring-commands-rspec'
 
   gem 'capybara' # for integration tests
-  gem 'webdrivers' # For system tests with a browser driver like Chrome/Firefox
+  gem 'selenium-webdriver' # For system tests with a browser driver like Chrome/Firefox
 end
 
 gem 'sidekiq', '~> 7.2'

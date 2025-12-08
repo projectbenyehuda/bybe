@@ -1,2 +1,5 @@
 app/assets/* linguist-vendored
 app/Ruth.Design/* linguist-vendored
+
+# Use bd merge for beads JSONL files
+.beads/issues.jsonl merge=beads

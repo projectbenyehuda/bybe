@@ -93,10 +93,12 @@ class SearchManifestations < ApplicationService
     range_expr = {}
     year = range_param['from']
     # Greater than or equal to first day of from-year
-    range_expr['gte'] = Time.new(year, 1, 1, 0, 0, 0) if year.present?
+    # Use Time.new to match the system's local timezone, which is how timestamps are typically created
+    # This ensures consistency with records created via Time.parse or default Rails timestamps
+    range_expr['gte'] = Time.new(year, 1, 1, 0, 0, 0).iso8601 if year.present?
     year = range_param['to']
-    range_expr['lt'] = Time.new(year + 1, 1, 1, 0, 0, 0) if year.present?
     # Less than first day of year next to to-year
+    range_expr['lt'] = Time.new(year + 1, 1, 1, 0, 0, 0).iso8601 if year.present?
     unless range_expr.empty?
       list << { range: { field => range_expr } }
     end

@@ -109,15 +109,13 @@
           .side-menu-headline= t(:chapters_list)
           %nav.navbar#chapternav
             %ul.nav.navbar-nav.navbar-expand.flex-column.by-card-v02#chapter-nav{style:'width: unset', 'aria-orientation' => 'vertical'}
-              - first = true
               -# %li.nav-item
               -#   %a.nav-link.nav-link-arrows
               -#     .side-menu-arrow (
               - @chapters.each do |ch|
                 %li.nav-item
-                  %a{'class' => 'nav-link nav-chapter-name nav-link-chapter pointer linkcolor '+(first ? ' active' : ''), href: "#ch#{ch[1]}", id: "nl#{ch[1]}", 'data-asaf' => "ch#{ch[1]}",'data-toggle' => 'tooltip', 'title' => ch[0], 'data-placement' => 'top', 'data-delay' => { "show": 500, "hide": 100 }}
+                  %a{'class' => 'nav-link nav-chapter-name nav-link-chapter pointer linkcolor', href: "#ch#{ch[1]}", id: "nl#{ch[1]}", 'data-asaf' => "ch#{ch[1]}",'data-toggle' => 'tooltip', 'title' => ch[0], 'data-placement' => 'top', 'data-delay' => { "show": 500, "hide": 100 }}
                     != ch[0]
-                - first = false
               -# %li.nav-item
               -#   %a.nav-link.nav-link-arrows
               -#     .side-menu-arrow )
@@ -145,12 +143,6 @@
   };
   $(document).ready(function(){
     var bookmark = "#{raw @bookmark}";
-    $(window).scroll(function() {
-      var scroll = $(window).scrollTop();
-      if(scroll <= 200) {
-        $('.nav-link').first().addClass('active');
-      }
-    });
     /*$('.nav-link').click(function(e) { 
       e.preventDefault();
       $(this).tooltip('hide');
