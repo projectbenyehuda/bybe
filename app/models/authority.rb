@@ -244,6 +244,38 @@ class Authority < ApplicationRecord
                                                   .sort
   end
 
+  # Returns a hash of genre => manifestation count for each genre where the authority
+  # has been involved in at least one manifestation (in any role).
+  # Only counts published manifestations.
+  # Example: { 'poetry' => 5, 'prose' => 3, 'memoir' => 1 }
+  def genre_stats
+    # Get work IDs and expression IDs where authority is involved (in any role)
+    items = involved_authorities.pluck(:item_type, :item_id)
+
+    work_ids = items.select { |type, _| type == 'Work' }.map(&:last).compact.uniq
+    expression_ids = items.select { |type, _| type == 'Expression' }.map(&:last).compact.uniq
+
+    # Return empty hash if authority has no involvements
+    return {} if work_ids.empty? && expression_ids.empty?
+
+    # Count published manifestations by genre
+    # Use [0] as placeholder when array is empty to avoid SQL syntax errors
+    Manifestation
+      .all_published
+      .joins(expression: :work)
+      .where('works.id IN (?) OR expressions.id IN (?)',
+             work_ids.presence || [0],
+             expression_ids.presence || [0])
+      .group('works.genre')
+      .count
+  end
+
+  def cached_genre_stats
+    Rails.cache.fetch("au_#{id}_genre_stats", expires_in: 24.hours) do
+      genre_stats
+    end
+  end
+
   def original_works
     published_manifestations(:author)
   end
@@ -278,6 +310,12 @@ class Authority < ApplicationRecord
 
   def invalidate_cached_works_count!
     Rails.cache.delete("au_#{id}_work_count")
+  end
+
+  def cached_collections_count
+    Rails.cache.fetch("au_#{id}_collections_count", expires_in: 12.hours) do
+      collections.count
+    end
   end
 
   def any_bibs?
