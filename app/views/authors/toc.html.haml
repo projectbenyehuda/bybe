@@ -57,16 +57,6 @@
                     .by-icon-v02.iconNearText-v02>= glyph_for_genre(genre)
                     = "#{textify_genre(genre)} (#{count})"
 
-              -#%div{:style => "margin-top: 12px;"}
-              -#  %a{:href => "#"}
-              -#    %span.by-icon-v02.iconNearText-v02> W
-              -#    לינק
-              -#    לוידאו רלוונטי
-              -#%div{:style => "margin-top: 12px;"}
-              -#  %a{:href => "#"}
-              -#    %span.by-icon-v02.iconNearText-v02> +
-              -#    לינק
-              -#    לאתר רלוונטי
               - unless @author.blog_category_url.nil? or @author.blog_category_url.empty?
                 .metadata-link
                   %a{:href => @author.blog_category_url, target: '_blank'}
@@ -102,6 +92,18 @@
                   %input#select-all{type: 'checkbox', style:'display:none'}
               %button.btn-small-outline-v02#multiselect_btn{title: t(:worklist_multi_tt)}
                 .by-icon-v02.purple-v02 \
+          .by-card-v02.sticky-fold
+            -# TODO: implement these buttons
+            %button.by-button-v02#max_collapse{href: "#"}= t(:collapse_all_sections)
+            %button.by-button-v02.by-button-secondary-v02#expand-all{href: "#"}= t(:expand_all_sections)
+            %p
+              = t(:sort_by)
+              = select_tag :sort_by, options_for_select([[t(:collections_and_pubdates_asc), 'colls'], [t(:collections_abc),'colls_abc'], [t(:alefbet_asc), 'title'], [t(:popularity_desc), 'popularity_desc'], [t(:popularity_asc), 'popularity_asc'], [t(:pubdate_asc), 'pubdate_asc'], [t(:pubdate_desc), 'pubdate_desc'], [t(:creation_date_asc), 'creation_date_asc'], [t(:creation_date_desc), 'creation_date_desc'], [t(:uploaddate_asc), 'upload_date_asc'], [t(:uploaddate_desc), 'upload_date_desc']  ], params[:sort_by])
+            .sorting_caveat{ style: 'display:none' }
+              %p
+                %b= t(:sorting_caveat_title)
+              %p= t(:sorting_caveat)
+
           -# table of contents
           .toc#maintext
             .add-to-anthology{style:'display:none'}
@@ -117,7 +119,8 @@
                   .credits
                     != @credits
             - else
-              = render partial: 'generated_toc'
+              .author-works
+                = render partial: 'generated_toc'
     .col-12.col-lg-4
       .row
         %a{name: 'curated_g', 'class' => 'g_anch'}

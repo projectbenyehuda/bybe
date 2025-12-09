@@ -2794,3 +2794,8 @@ en:
   you_can: You Can
   you_can_create_lists: You Can Create Lists
   youtube_url: Youtube Url
+  one_work: one work
+  to_lexicon_entry_on_x: To lexicon entry on %{x} in the New Hebrew Literature Lexicon
+  total_collections_including_author: Total collections involving author
+  collapse_all_sections: Collapse all sections
+  expand_all_sections: Expand all sections
