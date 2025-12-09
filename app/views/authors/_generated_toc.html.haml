@@ -5,13 +5,6 @@
     %span.hidden{id: "genre_#{genre}"}
       = check_box_tag "genre_#{genre}", 1, true, class: 'genre_checkbox'
       = label_tag "genre_#{genre}", textify_genre(genre)
-%p
-  = t(:sort_by)
-  = select_tag :sort_by, options_for_select([[t(:collections_and_pubdates_asc), 'colls'], [t(:collections_abc),'colls_abc'], [t(:alefbet_asc), 'title'], [t(:popularity_desc), 'popularity_desc'], [t(:popularity_asc), 'popularity_asc'], [t(:pubdate_asc), 'pubdate_asc'], [t(:pubdate_desc), 'pubdate_desc'], [t(:creation_date_asc), 'creation_date_asc'], [t(:creation_date_desc), 'creation_date_desc'], [t(:uploaddate_asc), 'upload_date_asc'], [t(:uploaddate_desc), 'upload_date_desc']  ], params[:sort_by])
-.sorting_caveat{ style: 'display:none' }
-  %p
-    %b= t(:sorting_caveat_title)
-  %p= t(:sorting_caveat)
 .mainlist#browse_mainlist
   = cache_unless current_user&.editor?, @author, expires_in: 12.hours do
     - top_nodes = GenerateTocTree.call(@author)
