@@ -3156,8 +3156,10 @@ en:
   no_diff_available: No diff available
   back_to_work: Back to Work
   version_restore_failed: Failed to restore version
-  work: Work
-  author: Author
+  to_lexicon_entry_on_x: To lexicon entry on %{x} in the New Hebrew Literature Lexicon
+  total_collections_including_author: Total collections involving author
+  collapse_all_sections: Collapse all sections
+  expand_all_sections: Expand all sections
   legacy_urls:
     index:
       title: Legacy URL Mappings
