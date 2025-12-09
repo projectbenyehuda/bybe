@@ -281,7 +281,7 @@ p {
 	}
 	.index-part-of-pby img {
     margin: 3px 3px;
-    width: 38px;
+    width: 34px;
     height: 11px;
 }
 		.lexicon-author-details .headline-1-v02{
@@ -303,6 +303,9 @@ p {
 			
 #text-volunteers-mobile .credits{
   column-count: 1;
+}
+	.sticky-fold{
+	top: 117px;
 }
 }
 
