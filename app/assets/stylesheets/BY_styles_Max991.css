@@ -4,6 +4,9 @@
 
 .scrolled .logoBY-scroll-mobile-v02{
 		position: absolute;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 		right: 60px;
 	}
 .scrolled .logoBY-scroll-mobile-v02 img{
@@ -165,6 +168,10 @@
     word-break: break-all;
     border-radius: 12px;
 	padding: 0 4px;
+	justify-content: center;
+ }
+	.statistics-box-v02 > *:not(:first-child){
+		display: none;
  }
 	
 	.statistics-v02{
@@ -363,6 +370,9 @@
 	#chapternav{
 		display: none;
 	}
+	#chapternav_2{
+		display: none;
+	}
 
 	.work-page-top-author{
 		display: block;
@@ -530,6 +540,9 @@
 }
 .scrolled-logoBY-v02{
 	content: url("/assets/BYP_logo_scroll_white.svg");
+}
+.scrolled-logoLex-v02{
+  display: none;
 }
 #text-volunteers-desktop{
   display:none;
@@ -836,6 +849,10 @@
 }
 #sort_by_dd{
 	display: none;
+}
+#current_sort_by{
+	display: block;
+	padding: 0 4px;
 }
 .side-sort{
 	display:none;
@@ -1156,6 +1173,16 @@
 		display: flex;
 		min-width: 80px;
 	}
+	.scrolled 	.lexicon-logo-area{
+		display: none;
+	}
+	.scrolled .lexicon-logo-mobile{
+		display:block;
+		width: 28px;
+		height: 28px;
+		border: 1px solid #fff;
+		border-radius: 50%;
+	}
 	.donation-background-image {
     background-image: none;
 }
@@ -1171,6 +1198,64 @@
 .donation-bottom-baner .by-card-content-v02{
 		width: 90%;
 	text-align: center;
+}
+.header-logos{
+		gap: 0px;
+}
+.header-logos .lexicon-logo{
+		width: 48px;
+		height: 48px;
+	}
+.scrolled .statistics-col .lexicon-header-he-content{
+	display: none;
+}	
+.sticky-fold{
+	top: 120px;
+}
+.editorial-nav{
+	display: block;
+}
+.side-nav-in-page .horizontal-collapse-expand{
+	display: block;
+}
+.book-nav-full{
+	display: none;
+}
+.book-nav-thin{
+	display: block;
+}
+.book-nav-thin .horizontal-collapse-expand {
+    display: flex;
+    height: 34px;
+    width: 34px;
+    align-items: center;
+    justify-content: center;
+}
+.book-nav-thin .horizontal-collapse-expand::after{
+	content: "?";
+}
+.author-side-menu-area {
+    -ms-flex: 0 0 50px;
+    flex: 0 0 50px;
+    padding-right: 15px;
+    padding-left: 0;
+}
+.author-side-nav-col{
+	width: 34px;
+}
+.book-nav-thin .side-nav-in-page{
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	align-content: center;
+}
+.nav-books:active, .nav-books.selected{
+	color: var(--white);
+	background-color: var(--pink-100);
+}
+	.nav-books.lexicon-background-color:active, .nav-books.lexicon-background-color.selected{
+	color: var(--white);
+	background-color: #7B1935;
 	}
 }
 
