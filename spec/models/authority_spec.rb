@@ -197,6 +197,98 @@ describe Authority do
       it { is_expected.to eq %w(article memoir poetry) }
     end
 
+    describe '.genre_stats' do
+      subject(:result) { authority.genre_stats }
+
+      let!(:poetry_as_author) { create(:manifestation, author: authority, genre: :poetry) }
+      let!(:poetry_as_author2) { create(:manifestation, author: authority, genre: :poetry) }
+      let!(:memoir_as_translator) { create(:manifestation, orig_lang: 'ru', translator: authority, genre: :memoir) }
+      let!(:article_as_translator) { create(:manifestation, orig_lang: 'en', translator: authority, genre: :article) }
+      let!(:fables_as_illustrator) { create(:manifestation, illustrator: authority, genre: :fables) }
+      let!(:prose_as_editor) { create(:manifestation, editor: authority, genre: :prose) }
+      let!(:unpublished) { create(:manifestation, author: authority, genre: :drama, status: :unpublished) }
+
+      before do
+        create_list(:manifestation, 3) # unrelated manifestations
+      end
+
+      it 'returns hash with genre counts for all roles, excluding unpublished works' do
+        expect(result).to eq({
+                               'poetry' => 2,
+                               'memoir' => 1,
+                               'article' => 1,
+                               'fables' => 1,
+                               'prose' => 1
+                             })
+      end
+
+      it 'does not include genres with zero manifestations' do
+        expect(result.keys).not_to include('drama', 'letters', 'reference', 'lexicon')
+      end
+
+      context 'when authority has no manifestations' do
+        let(:authority_without_works) { create(:authority) }
+
+        it 'returns empty hash' do
+          expect(authority_without_works.genre_stats).to eq({})
+        end
+      end
+
+      context 'when authority has multiple roles in same manifestation' do
+        let!(:multi_role) { create(:manifestation, author: authority, illustrator: authority, genre: :letters) }
+
+        it 'counts the manifestation only once per genre' do
+          expect(result['letters']).to eq(1)
+        end
+      end
+
+      context 'when all manifestations are unpublished' do
+        before do
+          Manifestation.where(id: [poetry_as_author, poetry_as_author2, memoir_as_translator,
+                                   article_as_translator, fables_as_illustrator, prose_as_editor].map(&:id))
+                      .update_all(status: Manifestation.statuses[:unpublished])
+        end
+
+        it 'returns empty hash' do
+          expect(result).to eq({})
+        end
+      end
+    end
+
+    describe '.cached_genre_stats' do
+      subject(:cached_result) { authority.cached_genre_stats }
+
+      let!(:poetry_as_author) { create(:manifestation, author: authority, genre: :poetry) }
+      let!(:memoir_as_translator) { create(:manifestation, orig_lang: 'ru', translator: authority, genre: :memoir) }
+
+      before do
+        Rails.cache.clear
+      end
+
+      it 'returns the same result as genre_stats' do
+        expect(cached_result).to eq(authority.genre_stats)
+      end
+
+      it 'caches the result across multiple calls' do
+        expected_result = { 'poetry' => 1, 'memoir' => 1 }
+
+        # First call should compute and cache the result
+        first_result = authority.cached_genre_stats
+        expect(first_result).to eq(expected_result)
+
+        # Second call should return the same cached result
+        second_result = authority.cached_genre_stats
+        expect(second_result).to eq(first_result)
+        expect(second_result).to eq(expected_result)
+      end
+
+      it 'uses the correct cache key' do
+        cache_key = "au_#{authority.id}_genre_stats"
+        expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 24.hours).and_call_original
+        authority.cached_genre_stats
+      end
+    end
+
     describe '.most_read' do
       subject { authority.most_read(limit).pluck(:id) }
 
@@ -315,6 +407,40 @@ describe Authority do
       end
 
       it { is_expected.to eq 3 }
+    end
+
+    describe '.cached_collections_count' do
+      subject { authority.cached_collections_count }
+
+      before do
+        Rails.cache.clear
+
+        # Create collections where authority is involved in various roles
+        collection1 = create(:collection)
+        collection2 = create(:collection)
+        collection3 = create(:collection)
+
+        # Add authority to collections through involved_authorities
+        create(:involved_authority, authority: authority, item: collection1, role: :author)
+        create(:involved_authority, authority: authority, item: collection2, role: :editor)
+        create(:involved_authority, authority: authority, item: collection3, role: :translator)
+
+        # Create a collection without this authority (should not be counted)
+        create(:collection)
+      end
+
+      it { is_expected.to eq 3 }
+
+      it 'caches the result' do
+        # First call
+        first_result = authority.cached_collections_count
+        expect(first_result).to eq 3
+
+        # Second call should return cached result
+        expect(Rails.cache).to receive(:fetch).with("au_#{authority.id}_collections_count", expires_in: 12.hours).and_call_original
+        second_result = authority.cached_collections_count
+        expect(second_result).to eq first_result
+      end
     end
 
     describe '.all_works_by_title' do
