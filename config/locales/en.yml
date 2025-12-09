@@ -321,3 +321,8 @@ en:
   kwic_sort_frequency: Frequency
   kwic_being_generated: The concordance is being generated. Please check back in 5-10 minutes.
   error_generating_concordance: An error occurred while generating the concordance. Please try again later.
+  one_work: one work
+  to_lexicon_entry_on_x: To lexicon entry on %{x} in the New Hebrew Literature Lexicon
+  total_collections_including_author: Total collections involving author
+  collapse_all_sections: Collapse all sections
+  expand_all_sections: Expand all sections

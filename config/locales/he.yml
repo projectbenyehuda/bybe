@@ -1786,3 +1786,7 @@ he:
     default_external_link_hint: קישור זה יתווסף אוטומטית כקישור מסוג 'דף באתר ההוצאה' לכל אוסף ויצירה המקושרים למיזם זה
     default_link_description_hint: תיאור הקישור שיוצג לקוראים
   one_work: יצירה אחת
+  to_lexicon_entry_on_x: לערך על אודות %{x} בלקסיקון הספרות העברית החדשה
+  total_collections_including_author: כותרים במאגר
+  collapse_all_sections: צמצם הכל
+  expand_all_sections: הרחב הכל
