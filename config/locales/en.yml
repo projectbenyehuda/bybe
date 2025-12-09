@@ -423,3 +423,8 @@ en:
   whatsnew_in_periodicals: What's new in periodicals?
   periodical_genres: Genres in periodicals
   and_n_more: and %{n} more
+  one_work: one work
+  to_lexicon_entry_on_x: To lexicon entry on %{x} in the New Hebrew Literature Lexicon
+  total_collections_including_author: Total collections involving author
+  collapse_all_sections: Collapse all sections
+  expand_all_sections: Expand all sections
