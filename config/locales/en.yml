@@ -2930,3 +2930,8 @@ en:
           other: "Displaying <b>all %{count}</b> %{entry_name}"
       more_pages:
         display_entries: "Displaying %{entry_name} <b>%{first}&nbsp;-&nbsp;%{last}</b> of <b>%{total}</b> in total"
+  one_work: one work
+  to_lexicon_entry_on_x: To lexicon entry on %{x} in the New Hebrew Literature Lexicon
+  total_collections_including_author: Total collections involving author
+  collapse_all_sections: Collapse all sections
+  expand_all_sections: Expand all sections

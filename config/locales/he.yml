@@ -2154,3 +2154,7 @@ he:
           other: "מוצגים <b>כל %{count}</b> %{entry_name}"
       more_pages:
         display_entries: "מוצגים %{entry_name} <b>%{first}&nbsp;-&nbsp;%{last}</b> מתוך <b>%{total}</b> סה\"כ"
+  to_lexicon_entry_on_x: לערך על אודות %{x} בלקסיקון הספרות העברית החדשה
+  total_collections_including_author: כותרים במאגר
+  collapse_all_sections: צמצם הכל
+  expand_all_sections: הרחב הכל
