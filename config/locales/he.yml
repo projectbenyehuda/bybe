@@ -1812,3 +1812,7 @@ he:
   pby_publications: פרסומי פרויקט בן־יהודה
   public_anthologies: מקראות פומביות מאת משתמשי הפרויקט
   x_public_anthologies: "%{x} מקראות פומביות"
+  to_lexicon_entry_on_x: לערך על אודות %{x} בלקסיקון הספרות העברית החדשה
+  total_collections_including_author: כותרים במאגר
+  collapse_all_sections: צמצם הכל
+  expand_all_sections: הרחב הכל
