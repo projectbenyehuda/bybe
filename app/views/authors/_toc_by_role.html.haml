@@ -2,9 +2,7 @@
   top_level_by_role = top_nodes.select { |node| node.visible?(role, authority_id) }
                                .sort_by { |node| [node.collection.uncollected? ? 1 : 0, node.collection.normalized_pub_year.present? ? node.collection.normalized_pub_year : node.collection.created_at.year] }
 - if top_level_by_role.present?
-  .by-card-v02{id: 'works-'+role.to_s, role: 'tabpanel'}
-    .by-card-header-v02
-      %span.headline-1-v02= title
-    .by-card-content-v02.mainlist{:style => "padding-top: 12px;"}
-      %ul.toclist
-        = render partial: 'authors/toc_node', collection: top_level_by_role, locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce, uncollected: false, full_toc: false }
+  %div{id: 'works-'+role.to_s, role: 'tabpanel'}
+    .headline-books= title
+    %ul.toclist{role: 'tree'}
+      = render partial: 'authors/toc_node', collection: top_level_by_role, locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce, uncollected: false, full_toc: false }
