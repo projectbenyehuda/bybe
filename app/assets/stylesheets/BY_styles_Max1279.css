@@ -1,7 +1,7 @@
 /* CSS Document */
 
 
-@media only screen and (max-width: 1279px) {
+@media only screen and (max-width: 1379px) {
 
   #header-general {
     width: 100%; }
@@ -17,8 +17,10 @@
   #content {
     width: 100%;
 	}
+}
 
 
+@media only screen and (max-width: 1279px) {
 .rm-control-panel{
 	left: 30px;
 }
@@ -38,16 +40,40 @@
 .select-all-with-buttons .headline-4-v02{
 	line-height: 22px;
 }
+.logoBY-v02 {
+    max-width: 250px;
+    padding-right: 0px;
+	padding-top: 6px;
+}
+.header-logos .lexicon-logo{
+	width: 56px;
+	height: 56px;
+}
+.statistics-v02{
+		width: auto;
+	}
+}
+
+@media only screen and (max-width: 1236px){
+	.statistics-box-v02{
+	width: auto;
+	padding-left: 4px;
+	padding-right: 4px;
+}
+.header-logos{
+		gap: 4px;
+}
+.header-search-area{
+	width: auto;
+}
 
 }
-@media only screen and (max-width: 1120px) {
+
+@media only screen and (max-width: 1220px) {
 	.topMenuItem-v02 {
   margin-left: 1px;
   margin-right: 1px;
 }
-	.by-nav-item-v02{
-		font-size: 14px;
-	}
 	a .genre-nav{
 	margin-top: 5px;
 	margin-bottom: 5px;
