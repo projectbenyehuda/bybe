@@ -6,7 +6,7 @@
   .row
     .col-12.col-lg-8
       .logo-for-print
-        %img.logoBY-v02{src: "/assets/logo-byp-mobile.svg", alt:""}
+        %img.logoBY-v02{src: "/assets/logo-byp-mobile.svg", alt: t(:logo)}
       .row
         .col.side-menu-area
         .col
@@ -20,6 +20,10 @@
                   = @author.name
                 - if @author.person.present?
                   .author-page-top-years!= "(#{@author.person.life_years})"
+                  .metadata-link
+                    %a{href: '#'}
+                      %span.by-icon-v02.small-icon> P
+                      = t(@author.person.period)
             .by-card-content-v02{class: @unpublished ? 'unpublished' : ''}
               - if @unpublished
                 .unpublished_badge= t(:unpublished)
@@ -30,9 +34,29 @@
                     %span{:style => "font-weight: bold"}= @author.wikipedia_url =~ /wikipedia\.org/ ? t(:rest_in_wikipedia) : t(:rest_of_work)
                     %span.left-arrow 1
               %br
-                .metadata
-                  %b= t(:works_in_the_project)+': '
-                  = "#{@author.cached_works_count} #{t(:works)}"
+              .metadata
+                = render partial: 'shared/intellectual_property', locals: {intellectual_property: @author.intellectual_property}
+
+              .author-in-collection
+                %div
+                  .metadata
+                    %span{:style => "font-weight:bold"}= t(:total_collections_including_author)+':'
+                    %a{:href => "#"}= @author.cached_collections_count
+                  .metadata
+                    %span{:style => "font-weight:bold"}= t(:works_in_the_project)+': '
+                    = "#{@author.cached_works_count} #{t(:works)}"
+                - if @author.lexicon_entry.present?
+                  %a.author-in-lexicon{href: "#lexicon_entry"}
+                    = t(:to_lexicon_entry_on_x, x: @author.name)
+                    .lexicon-logo
+              .author-works-by-type
+                - @author.cached_genre_stats.each do |pair|
+                  - genre = pair[0]
+                  - count = pair[1]
+                  .author-works-type
+                    .by-icon-v02.iconNearText-v02>= glyph_for_genre(genre)
+                    = "#{textify_genre(genre)} (#{count})"
+
               -#%div{:style => "margin-top: 12px;"}
               -#  %a{:href => "#"}
               -#    %span.by-icon-v02.iconNearText-v02> W
