@@ -532,4 +532,15 @@ padding-top: 6px;
   padding: 10px 15px 10px 10px;
 }
 	
+.header-logos .lexicon-logo{
+	width: 40px;
+	height: 40px;
+}
+.scrolled .donation-btn-v02{
+		display: none;
+	}
+.scrolled .donation-icon-only{
+		display: block;
+	min-width: 28px;
+}
 }
