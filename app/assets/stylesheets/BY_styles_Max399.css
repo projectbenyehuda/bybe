@@ -522,18 +522,14 @@ width: calc(100% - 75px);
 	.money-donation-text {
     width: 102px;
 }
+	.header-logos .lexicon-logo{
+	width: 32px;
+	height: 32px;
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
 
 	
-}
-@media only screen and (max-width: 359px){
-	.scrolled .donation-btn-v02{
-		display: none;
-	}
-	.scrolled .donation-icon-only{
-		display: block;
-	}
-}
-@media only screen and (max-width: 319px){
 	.logoBY-v02 {
     max-width: 120px;
     max-height: 43px;
@@ -541,7 +537,7 @@ width: calc(100% - 75px);
     padding-top: 3px;
 }
 	.scrolled .logoBY-scroll-mobile-v02 {
-    right: 12px;
+    right: 48px;
 }
 	.scrolled .logoBY-scroll-mobile-v02 img{
     max-height: 18px;
@@ -552,4 +548,7 @@ width: calc(100% - 75px);
 		padding-left: 0;
 		padding-right: 0;
 	}
+.sticky-fold{
+	top: 110px;
+}
 }
