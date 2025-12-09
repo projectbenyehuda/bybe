@@ -2398,3 +2398,7 @@ he:
     target_type_hint: "סוג מודל היעד, לדוגמה Manifestation, Authority, FeaturedContent"
     target_id_hint: "מזהה המספרי של רשומת היעד"
     description_hint: "הערה אופציונלית המתארת את המיפוי"
+  to_lexicon_entry_on_x: לערך על אודות %{x} בלקסיקון הספרות העברית החדשה
+  total_collections_including_author: כותרים במאגר
+  collapse_all_sections: צמצם הכל
+  expand_all_sections: הרחב הכל
