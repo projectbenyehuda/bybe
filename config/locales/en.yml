@@ -3002,3 +3002,8 @@ en:
   version_restore_failed: Failed to restore version
   work: Work
   author: Author
+  one_work: one work
+  to_lexicon_entry_on_x: To lexicon entry on %{x} in the New Hebrew Literature Lexicon
+  total_collections_including_author: Total collections involving author
+  collapse_all_sections: Collapse all sections
+  expand_all_sections: Expand all sections

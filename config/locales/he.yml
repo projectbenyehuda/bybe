@@ -2228,3 +2228,7 @@ he:
   version_restore_failed: שגיאה בשחזור הגרסה
   work: יצירה
   author: יוצר
+  to_lexicon_entry_on_x: לערך על אודות %{x} בלקסיקון הספרות העברית החדשה
+  total_collections_including_author: כותרים במאגר
+  collapse_all_sections: צמצם הכל
+  expand_all_sections: הרחב הכל
