@@ -30,7 +30,17 @@ he:
   rename_this_anthology: שינוי שם מקראה זו
   merge_rename: אישור התגית בשם אחר
   authors_select_filter: סינון לפי יוצר - בחירה מרובה
+  authorities_select_filter: סינון לפי רשות - בחירה מרובה
   add_authors_to_filter: הוספת היוצרים שנבחרו לסינון
+  add_authorities_to_filter: הוספת הרשויות שנבחרו לסינון
+  collection_title_search: חיפוש לפי שם אוסף
+  x_collections_plain: "%{x} אוספים"
+  collections_sort_tt: מיון אוספים
+  toggle_filters_tt: הצגה/הסתרה של אפשרויות סינון
+  volume: כותר
+  periodical: כתב עת
+  series: סדרה
+  collection_type: סוג אוסף
   back_to_bib_workshop: חזרה לסדנה הביבליוגרפית
   works_already_online: "יצירות שכבר מצויות במאגר בשם דומה:"
   no_source_edition: אין פרטי מהדורה
@@ -44,6 +54,9 @@ he:
   what_to_search_for: מה לחפש...
   author_names: שם(ות) יוצר(ים)
   works_list: רשימת יצירות
+  collections_list: רשימת אוספים
+  welcome_to_collections_browsing: ברוכים הבאים לדפדוף באוספים
+  collections_browsing_intro_html: כאן תוכלו לחפש ולעיין באוספים שונים של ספרות עברית - כרכים, עיתונים, סדרות ועוד
   month_year: חודש/שנה
   year: שנה
   reset_multiselect: איפוס בחירה
@@ -760,6 +773,7 @@ he:
   filter_langs: סנן שפות זרות
   please_note: נא לשים לב
   up_to_10_authors: ניתן לבחור רק עד 10 יוצרים
+  up_to_10_authorities: ניתן לבחור רק עד 10 רשויות
   current_editing_files: עריכות טכניות נוכחיות
   explain_up_to_10: ניתן לסנן את רשימת היצירות לפי מספר יוצרים בו זמנית על-ידי בחירתם מהרשימה. הסינון מוגבל לעד 10 יוצרים בו זמנית.
   entries: ערכים
