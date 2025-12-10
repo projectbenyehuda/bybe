@@ -2,6 +2,6 @@
 
 class AddLegacyFilenameToLexEntries < ActiveRecord::Migration[8.0]
   def change
-    add_column :lex_entries, :legacy_filename, :string
+    add_column :lex_entries, :legacy_filename, :string, if_not_exists: true
   end
 end
