@@ -88,15 +88,27 @@ describe ManifestationController do
         end
 
         context 'when fulltext search specified' do
-          let(:browse_params) { { search_input: 'quick brown fox', search_type: 'fulltext', sort_by: 'alphabetical_desc' } }
+          let(:browse_params) { { fulltext_input: 'quick brown fox', sort_by: 'alphabetical_desc' } }
           let(:expected_filter) { fulltext_filter }
           it { is_expected.to be_successful }
         end
 
-        context 'when both authorname and title/fulltext specified' do
+        context 'when fulltext combined with title search' do
+          let(:browse_params) { { search_input: 'Love to Life', search_type: 'workname', fulltext_input: 'quick brown fox', sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { title_filter.merge(fulltext_filter) }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when fulltext combined with author search' do
+          let(:browse_params) { { authorstr: 'Jack London', search_type: 'authorname', fulltext_input: 'quick brown fox', sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { author_filter.merge(fulltext_filter) }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when both authorname and title specified' do
           let(:browse_params) do
             {
-              search_input: search_input,
+              search_input: 'Love to Life',
               authorstr: 'Jack London',
               search_type: search_type,
               sort_by: 'alphabetical_desc'
@@ -105,28 +117,18 @@ describe ManifestationController do
 
           context 'when search_type is authorname' do
             let(:search_type) { 'authorname' }
-            let(:search_input) { 'Love to Life' }
             let(:expected_filter) { author_filter }
             it { is_expected.to be_successful }
           end
 
           context 'when search_type is workname' do
             let(:search_type) { 'workname' }
-            let(:search_input) { 'Love to Life' }
             let(:expected_filter) { title_filter }
-            it { is_expected.to be_successful }
-          end
-
-          context 'when search_type is fulltext' do
-            let(:search_type) { 'fulltext' }
-            let(:search_input) { 'quick brown fox' }
-            let(:expected_filter) { fulltext_filter }
             it { is_expected.to be_successful }
           end
 
           context 'when search_type is empty' do
             let(:search_type) { nil }
-            let(:search_input) { 'Love to Life' }
             let(:expected_filter) { title_filter }
             it { is_expected.to be_successful }
           end
