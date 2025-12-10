@@ -17,3 +17,4 @@
 {"id":"bybe-5bq","ts":"2025-12-10T17:52:50.64689305Z","by":"asaf","reason":"cleanup"}
 {"id":"bybe-3tc","ts":"2025-12-10T17:52:50.651992834Z","by":"asaf","reason":"cleanup"}
 {"id":"bybe-2xv","ts":"2025-12-10T17:52:50.657083928Z","by":"asaf","reason":"cleanup"}
+{"id":"by-qhv","ts":"2025-12-10T17:54:51.5452612Z","by":"git-history-backfill","reason":"recovered from git history (pruned from manifest)"}
