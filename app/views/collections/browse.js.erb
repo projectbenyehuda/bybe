@@ -1,0 +1,4 @@
+$('#thelist').html("<%= j(render partial: 'browse_list') %>");
+$('#sort_filter_panel').html("<%= j(render partial: 'browse_filters') %>");
+$('#authoritiesDlg').html("<%= j(render partial: 'authorities_select', locals: {authorities: @authorities, list: @authorities_list}) %>");
+stopModal('spinnerdiv');

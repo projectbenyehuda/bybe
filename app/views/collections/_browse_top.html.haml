@@ -1,0 +1,28 @@
+/ Browse collections top header
+#header-author.container-fluid
+  = render partial: 'shared/breadcrumbs'
+  .top-space
+  .texts-list-top
+    .texts-list-top-info-card
+      .headline-1-v02= @collections_list_title
+      .author-sort-area#sort_filter_toggle{title: t(:toggle_filters_tt)}
+        .author-page-top-sort-desktop
+          = t(:filter_state)
+          .toggle-background-no
+            .toggle-button-no{style:"display:#{ @filters.empty? ? 'show' : 'none'}"}
+            .toggle-button-yes{style:"display:#{ @filters.empty? ? 'none' : 'show'}"}
+        .author-page-top-sort-mobile
+          %button.btn-small-outline-v02.btn-text-v02{:href => "#"}= t(:sort_and_filter)
+:javascript
+  $(document).ready(function(){
+    $('#sort_filter_toggle').click(function() {
+      $('#sort_filter_panel').toggle();
+      if (isMobile()) {
+        $('#thelist').toggle();
+      } else {
+        $('#browse_intro').toggle();
+        $('.toggle-button-no').toggle();
+        $('.toggle-button-yes').toggle();
+      }
+    });
+  });
