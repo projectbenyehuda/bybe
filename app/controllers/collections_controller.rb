@@ -245,7 +245,7 @@ class CollectionsController < ApplicationController
       description: params[:description],
       status: :approved
     )
-    
+
     respond_to do |format|
       format.js
     end
@@ -260,10 +260,10 @@ class CollectionsController < ApplicationController
     @collection = Collection.find(params[:collection_id])
     @link = @collection.external_links.find(params[:link_id])
     @link.destroy!
-    
+
     head :ok
   rescue StandardError => e
-    render plain: e.message, status: :unprocessable_entity
+    render plain: e.message, status: :unprocessable_content
   end
 
   # Display KWIC concordance browser for a collection
@@ -478,7 +478,7 @@ class CollectionsController < ApplicationController
       ret['authority_ids'] = authority_ids
       @authorities = authority_ids
       @authorities_names = params['authorities_names']
-      @filters << [I18n.t(:authorities_xx, xx: @authorities_names), 'authorities', :authoritylist]
+      @filters << [I18n.t(:authors_xx, xx: @authorities_names.sub(/;\s+$/, '')), 'authorities', :authoritylist]
     end
 
     # title search
