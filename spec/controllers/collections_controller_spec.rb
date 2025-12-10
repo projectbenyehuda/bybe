@@ -359,11 +359,22 @@ describe CollectionsController do
   end
 
   describe '#browse' do
+    after do
+      Chewy.massacre
+    end
+
+    let!(:volume_1) { create(:collection, title: 'Alpha Volume', collection_type: :volume, sort_title: 'alpha volume') }
+    let!(:volume_2) { create(:collection, title: 'Beta Volume', collection_type: :volume, sort_title: 'beta volume') }
+    let!(:periodical) { create(:collection, title: 'Gamma Periodical', collection_type: :periodical, sort_title: 'gamma periodical') }
+    let!(:series) { create(:collection, title: 'Delta Series', collection_type: :series, sort_title: 'delta series') }
+
     before do
-      # Create some test collections
-      create(:collection, title: 'Test Volume', collection_type: :volume)
-      create(:collection, title: 'Test Periodical', collection_type: :periodical)
-      create(:collection, title: 'Test Series', collection_type: :series)
+      Chewy.strategy(:atomic) do
+        volume_1
+        volume_2
+        periodical
+        series
+      end
     end
 
     context 'when requesting HTML' do
@@ -376,6 +387,12 @@ describe CollectionsController do
       it 'assigns collections list title' do
         get :browse
         expect(assigns(:collections_list_title)).to be_present
+      end
+
+      it 'assigns collections variable with results' do
+        get :browse
+        expect(assigns(:collections)).to be_present
+        expect(assigns(:collections).count).to eq(4)
       end
     end
 
@@ -391,11 +408,19 @@ describe CollectionsController do
       it 'filters by collection type' do
         get :browse, params: { ckb_collection_types: ['volume'] }
         expect(response).to be_successful
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id)
       end
 
       it 'filters by title search' do
-        get :browse, params: { search_input: 'Test' }
+        get :browse, params: { search_input: 'Alpha' }
         expect(response).to be_successful
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id)
+      end
+
+      it 'filters by multiple collection types' do
+        get :browse, params: { ckb_collection_types: ['volume', 'series'] }
+        expect(response).to be_successful
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id, series.id)
       end
     end
 
@@ -403,16 +428,37 @@ describe CollectionsController do
       it 'sorts alphabetically by default' do
         get :browse
         expect(assigns(:sort_by)).to eq('alphabetical')
+        expect(assigns(:collections).map(&:id)).to eq([volume_1.id, volume_2.id, series.id, periodical.id])
       end
 
       it 'sorts by popularity when requested' do
+        volume_1.update!(impressions_count: 100)
+        series.update!(impressions_count: 50)
+        periodical.update!(impressions_count: 75)
+        volume_2.update!(impressions_count: 25)
+
+        Chewy.strategy(:atomic) do
+          CollectionsIndex.import([volume_1, volume_2, periodical, series])
+        end
+
         get :browse, params: { sort_by: 'popularity_desc' }
         expect(assigns(:sort_by)).to eq('popularity')
+        expect(assigns(:collections).map(&:id)).to eq([volume_1.id, periodical.id, series.id, volume_2.id])
       end
 
       it 'sorts by publication date when requested' do
+        volume_1.update!(normalized_pub_year: 2000)
+        volume_2.update!(normalized_pub_year: 1990)
+        periodical.update!(normalized_pub_year: 1980)
+        series.update!(normalized_pub_year: 2010)
+
+        Chewy.strategy(:atomic) do
+          CollectionsIndex.import([volume_1, volume_2, periodical, series])
+        end
+
         get :browse, params: { sort_by: 'publication_date_asc' }
         expect(assigns(:sort_by)).to eq('publication_date')
+        expect(assigns(:collections).map(&:id)).to eq([periodical.id, volume_2.id, volume_1.id, series.id])
       end
     end
 
@@ -420,6 +466,14 @@ describe CollectionsController do
       it 'returns bad request for invalid to_letter parameter' do
         get :browse, params: { to_letter: 'invalid' }
         expect(response).to have_http_status(:bad_request)
+      end
+    end
+
+    context 'with combined filters' do
+      it 'applies multiple filters together' do
+        get :browse, params: { ckb_collection_types: ['volume'], search_input: 'Alpha' }
+        expect(response).to be_successful
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id)
       end
     end
   end
