@@ -1,6 +1,6 @@
 class CreatePendingNotifications < ActiveRecord::Migration[8.0]
   def change
-    create_table :pending_notifications do |t|
+    create_table :pending_notifications, if_not_exists: true do |t|
       t.string :recipient_email, null: false
       t.string :notification_type, null: false
       t.text :notification_data
