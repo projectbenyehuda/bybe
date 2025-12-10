@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'pandoc-ruby' # for generic DOCX-to-HTML conversions
+require 'set'
 
 # Ingestible is a set of text being prepared for inclusion into a main database
 class Ingestible < ApplicationRecord
@@ -22,6 +23,7 @@ class Ingestible < ApplicationRecord
   validates :locked_at, presence: true, if: -> { locked_by_user.present? }
   validates :locked_at, absence: true, unless: -> { locked_by_user.present? }
   validate :volume_decision
+  validate :check_duplicate_volume, if: :creating_new_volume?
   #  validates :scenario, presence: true
   #  validates :scenario, inclusion: { in: scenarios.keys }
 
@@ -45,6 +47,62 @@ class Ingestible < ApplicationRecord
 
     errors.add(:volume_id,
                'must be present if no_volume is false')
+  end
+
+  def creating_new_volume?
+    return false if no_volume
+    return false if volume_id.present? # Using existing volume
+    return false if prospective_volume_id.present? && prospective_volume_id[0] != 'P' # Loading existing collection
+    return true if prospective_volume_title.present? # Creating from scratch
+    return true if prospective_volume_id.present? && prospective_volume_id[0] == 'P' # Creating from Publication
+
+    false
+  end
+
+  def check_duplicate_volume
+    # Parse collection authorities for comparison
+    col_auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
+
+    # Determine what we're checking against
+    if prospective_volume_id.present? && prospective_volume_id[0] == 'P'
+      # Creating from Publication - check if volume for this publication already exists
+      publication = Publication.find_by(id: prospective_volume_id[1..])
+      return if publication.nil? # Invalid publication ID, let other validations handle it
+
+      existing_volume = Collection.find_by(publication: publication)
+      if existing_volume && authorities_match?(existing_volume.involved_authorities, col_auths)
+        errors.add(:prospective_volume_id, 'A volume for this publication with these authorities already exists')
+        return
+      end
+    else
+      # Creating from scratch - check by title
+      return if prospective_volume_title.blank?
+
+      existing_volumes = Collection.where(collection_type: 'volume', title: prospective_volume_title)
+      existing_volumes.each do |volume|
+        if authorities_match?(volume.involved_authorities, col_auths)
+          errors.add(:prospective_volume_title, 'A volume with this title and authorities already exists')
+          return
+        end
+      end
+    end
+
+    # Check for other Ingestibles with same prospective volume
+    other_ingestibles = Ingestible.where(status: [:draft, :awaiting_authorities])
+                                   .where.not(id: id) # Exclude current ingestible
+
+    if prospective_volume_id.present? && prospective_volume_id[0] == 'P'
+      other_ingestibles = other_ingestibles.where(prospective_volume_id: prospective_volume_id)
+    else
+      other_ingestibles = other_ingestibles.where(prospective_volume_title: prospective_volume_title)
+    end
+
+    other_ingestibles.each do |ingestible|
+      if authorities_match_json?(ingestible.collection_authorities, collection_authorities)
+        errors.add(:base, 'Another ingestible is already proposing to create this volume')
+        return
+      end
+    end
   end
 
   def encode_toc(lines)
@@ -405,5 +463,29 @@ class Ingestible < ApplicationRecord
     end
 
     result
+  end
+
+  # Check if a collection's involved_authorities match the provided JSON authorities
+  def authorities_match?(involved_authorities, json_authorities)
+    # Convert involved_authorities to comparable format (set of [authority_id, role] pairs)
+    ia_set = involved_authorities.map { |ia| [ia.authority_id, ia.role] }.to_set
+
+    # Convert JSON authorities to comparable format
+    json_set = json_authorities.map { |a| [a['authority_id'], a['role']] }.to_set
+
+    ia_set == json_set
+  end
+
+  # Check if two JSON authority strings match
+  def authorities_match_json?(json_authorities1, json_authorities2)
+    # Handle blank cases
+    return true if json_authorities1.blank? && json_authorities2.blank?
+    return false if json_authorities1.blank? || json_authorities2.blank?
+
+    # Parse and compare
+    auths1 = JSON.parse(json_authorities1).map { |a| [a['authority_id'], a['role']] }.to_set
+    auths2 = JSON.parse(json_authorities2).map { |a| [a['authority_id'], a['role']] }.to_set
+
+    auths1 == auths2
   end
 end
