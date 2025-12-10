@@ -866,7 +866,7 @@ class ManifestationController < ApplicationController
       @filters << [I18n.t(:authors_xx, xx: @authors_names), 'authors', :authorlist]
     end
 
-    # in browse UI we can either use search by author name or by title, but not together
+    # in browse UI we can search by author name or by title
     @search_type = params['search_type'] || 'authorname'
     if @search_type == 'authorname'
       @authorstr = params['authorstr']
@@ -882,6 +882,13 @@ class ManifestationController < ApplicationController
         ret['title'] = @search_input
         @filters << [I18n.t(:title_x, x: @search_input), :search_input, :text]
       end
+    end
+
+    # fulltext search is a separate filter
+    @fulltext_input = params['fulltext_input']
+    if @fulltext_input.present?
+      ret['fulltext'] = @fulltext_input
+      @filters << [I18n.t(:text_contains_x, x: @fulltext_input), :fulltext_input, :text]
     end
 
     return ret

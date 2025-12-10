@@ -13,4 +13,7 @@ class CollectionsIndex < Chewy::Index
     c.involved_authorities.preload(:authority).map { |ia| ia.authority.name }.join(', ')
   }
   field :impressions_count, type: :integer
+  # field :any_public_manifestations, type: :boolean, value: lambda { |c|
+  #   c.flatten_items.any? { |ci| ci.item_type == 'Manifestation' && ci.item.present? && ci.item.public? }
+  # }
 end
