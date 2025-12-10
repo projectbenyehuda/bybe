@@ -1,6 +1,6 @@
 class CreateLexCitations < ActiveRecord::Migration[5.2]
   def change
-    create_table :lex_citations do |t|
+    create_table :lex_citations, if_not_exists: true do |t|
       t.string :title
       t.string :from_publication
       t.string :authors
@@ -11,7 +11,7 @@ class CreateLexCitations < ActiveRecord::Migration[5.2]
 
       t.timestamps
     end
-    add_index :lex_citations, :title
-    add_index :lex_citations, :authors
+    add_index :lex_citations, :title, if_not_exists: true
+    add_index :lex_citations, :authors, if_not_exists: true
   end
 end
