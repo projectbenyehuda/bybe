@@ -1,0 +1,38 @@
+-# Browse collections
+#content.container-fluid
+  .row.list-all-texts
+    .col-sm-12.col-md-4
+      .by-card-v02#browse_intro
+        .work-area
+          .work-content
+            .headline-1-v02= t(:welcome_to_collections_browsing)
+            %p!= t(:collections_browsing_intro_html)
+          .work-side-color
+            .work-genre.prose-side-icon
+      .by-card-v02.text-sorting#sort_filter_panel
+        = render partial: 'browse_filters'
+    .col-sm-12.col-md-8
+      .by-card-v02#thelist
+        = render partial: 'browse_list'
+
+#authoritiesDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
+  = render partial: 'authorities_select', locals: {authorities: @authorities, list: @authorities_list}
+
+:javascript
+  $(function() {
+    $('#browse_intro').toggle(#{@filters.empty?} && !isMobile());
+    $('#sort_filter_panel').toggle(#{@filters.present?} && !isMobile());
+  });
+
+  function submit_filters() {
+    window.history.pushState($('#collections_filters').serialize(), null, '/collections');
+    startModal('spinnerdiv');
+    $('#collections_filters').submit();
+  }
+
+  function resetPagination() {
+    $('#collections_filters #page').val('1');
+    $('#collections_filters #to_letter').val('');
+    $('#collections_filters #search_after_value').val('');
+    $('#collections_filters #search_after_id').val('');
+  }
