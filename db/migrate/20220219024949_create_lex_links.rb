@@ -1,6 +1,6 @@
 class CreateLexLinks < ActiveRecord::Migration[5.2]
   def change
-    create_table :lex_links do |t|
+    create_table :lex_links, if_not_exists: true do |t|
       t.string :url
       t.string :description
       t.integer :status
