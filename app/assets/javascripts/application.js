@@ -7,6 +7,9 @@
 //= require jquery
 //= require rails-ujs
 //= require jquery-ui
+//= require jquery-ui/widgets/dialog
+//= require jquery-ui/widgets/tabs
+//= require jquery-ui/widgets/sortable
 //= require jquery.slick
 //= require jquery.mark.min
 //= require jquery.caret
