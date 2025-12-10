@@ -43,6 +43,7 @@ class Authority < ApplicationRecord
   belongs_to :person, optional: true
   belongs_to :corporate_body, optional: true
   belongs_to :uncollected_works_collection, class_name: 'Collection', optional: true
+  belongs_to :lexicon_entry, class_name: 'LexEntry', optional: true
 
   attr_readonly :person, :corporate_body # Should not be modified after creation
 
@@ -113,12 +114,12 @@ class Authority < ApplicationRecord
     # Find all manifestations related to this authority through involved_authorities
     # This includes both work-level (authors) and expression-level (translators) authorities
     manifestation_ids = Manifestation
-                         .joins("INNER JOIN expressions ON manifestations.expression_id = expressions.id")
-                         .joins("LEFT JOIN involved_authorities work_ias ON work_ias.item_id = expressions.work_id AND work_ias.item_type = 'Work'")
-                         .joins("LEFT JOIN involved_authorities expr_ias ON expr_ias.item_id = expressions.id AND expr_ias.item_type = 'Expression'")
-                         .where("work_ias.authority_id = ? OR expr_ias.authority_id = ?", id, id)
-                         .distinct
-                         .pluck(:id)
+                        .joins('INNER JOIN expressions ON manifestations.expression_id = expressions.id')
+                        .joins("LEFT JOIN involved_authorities work_ias ON work_ias.item_id = expressions.work_id AND work_ias.item_type = 'Work'")
+                        .joins("LEFT JOIN involved_authorities expr_ias ON expr_ias.item_id = expressions.id AND expr_ias.item_type = 'Expression'")
+                        .where('work_ias.authority_id = ? OR expr_ias.authority_id = ?', id, id)
+                        .distinct
+                        .pluck(:id)
 
     # Enqueue background job to update responsibility statements in bulk
     UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
