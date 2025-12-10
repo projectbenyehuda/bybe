@@ -73,6 +73,7 @@ describe ManifestationController do
       describe 'search queries' do
         let(:author_filter) { { 'author' => 'Jack London' } }
         let(:title_filter) { { 'title' => 'Love to Life' } }
+        let(:fulltext_filter) { { 'fulltext' => 'quick brown fox' } }
 
         context 'when title specified' do
           let(:browse_params) { { search_input: 'Love to Life', search_type: 'workname', sort_by: 'alphabetical_desc' } }
@@ -83,6 +84,24 @@ describe ManifestationController do
         context 'when authorname specified' do
           let(:browse_params) { { authorstr: 'Jack London', search_type: 'authorname', sort_by: 'alphabetical_desc' } }
           let(:expected_filter) { author_filter }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when fulltext search specified' do
+          let(:browse_params) { { fulltext_input: 'quick brown fox', sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { fulltext_filter }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when fulltext combined with title search' do
+          let(:browse_params) { { search_input: 'Love to Life', search_type: 'workname', fulltext_input: 'quick brown fox', sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { title_filter.merge(fulltext_filter) }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when fulltext combined with author search' do
+          let(:browse_params) { { authorstr: 'Jack London', search_type: 'authorname', fulltext_input: 'quick brown fox', sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { author_filter.merge(fulltext_filter) }
           it { is_expected.to be_successful }
         end
 
