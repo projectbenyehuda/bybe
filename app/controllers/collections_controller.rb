@@ -546,12 +546,13 @@ class CollectionsController < ApplicationController
     }
 
     collection = collection.aggregations(standard_aggregations)
+    aggs = collection.aggs || {} # Access aggs to trigger the query, fallback to empty hash
 
-    @collection_type_facet = buckets_to_totals_hash(collection.aggs['collection_types']['buckets'])
+    @collection_type_facet = buckets_to_totals_hash(aggs.dig('collection_types', 'buckets') || [])
 
     # Preparing list of authorities to show in multiselect modal on collections browse page
     if collection.filter.present?
-      authority_ids = collection.aggs['authority_ids']['buckets'].pluck('key')
+      authority_ids = aggs.dig('authority_ids', 'buckets')&.pluck('key') || []
       @authorities_list = Authority.where(id: authority_ids)
     else
       @authorities_list = Authority.all
