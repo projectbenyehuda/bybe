@@ -2,12 +2,12 @@
 
 class CreateLexLegacyLinks < ActiveRecord::Migration[8.0]
   def change
-    create_table :lex_legacy_links do |t|
+    create_table :lex_legacy_links, if_not_exists: true do |t|
       t.string :old_path, null: false
       t.string :new_path, null: false
       t.references :lex_entry, null: false, foreign_key: true, index: true
     end
 
-    add_index :lex_legacy_links, [:old_path], unique: true
+    add_index :lex_legacy_links, [:old_path], unique: true, if_not_exists: true
   end
 end
