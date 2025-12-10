@@ -62,13 +62,22 @@ module CollectionsHelper
 
   # Format involved authorities for display (first 3 with roles)
   def format_collection_authorities(collection)
-    authorities = collection.involved_authorities.preload(:authority).first(3)
-    return '' if authorities.empty?
+    # Handle both Chewy documents and ActiveRecord models
+    if collection.respond_to?(:involved_authorities_string)
+      # Chewy document - use pre-computed string
+      collection.involved_authorities_string
+    elsif collection.respond_to?(:involved_authorities)
+      # ActiveRecord model - load from associations
+      authorities = collection.involved_authorities.preload(:authority).first(3)
+      return '' if authorities.empty?
 
-    formatted = authorities.map do |ia|
-      "#{ia.authority.name} (#{t(ia.role)})"
+      formatted = authorities.map do |ia|
+        "#{ia.authority.name} (#{t(ia.role)})"
+      end
+      formatted.join(', ')
+    else
+      ''
     end
-    formatted.join(', ')
   end
 
   # Converts absolute URLs pointing to the provided base_url into relative paths.
