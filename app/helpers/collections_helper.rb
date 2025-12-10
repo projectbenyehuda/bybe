@@ -19,6 +19,58 @@ module CollectionsHelper
     end
   end
 
+  # Browse page decorators - show different metadata based on sort type
+  def browse_collection_decorator_by_sort_type(sort_type)
+    case sort_type
+    when /publ/
+      method(:browse_collection_pub_date)
+    when /popular/
+      method(:browse_collection_popularity)
+    else
+      method(:browse_collection_type)
+    end
+  end
+
+  def browse_collection_pub_date(collection)
+    pub_year = collection.normalized_pub_year || collection.inception_year
+    return " (#{pub_year || t(:unknown)})"
+  end
+
+  def browse_collection_popularity(collection)
+    return " (#{collection.impressions_count} #{t(:views)})"
+  end
+
+  def browse_collection_type(collection)
+    return " • #{t(collection.collection_type)}"
+  end
+
+  # Returns icon/badge for collection type
+  def collection_type_icon(collection_type)
+    case collection_type
+    when 'volume'
+      content_tag(:span, '📚', class: 'collection-type-icon', title: t(:volume))
+    when 'periodical'
+      content_tag(:span, '📰', class: 'collection-type-icon', title: t(:periodical))
+    when 'series'
+      content_tag(:span, '📑', class: 'collection-type-icon', title: t(:series))
+    when 'other'
+      content_tag(:span, '📁', class: 'collection-type-icon', title: t(:other))
+    else
+      ''
+    end
+  end
+
+  # Format involved authorities for display (first 3 with roles)
+  def format_collection_authorities(collection)
+    authorities = collection.involved_authorities.preload(:authority).first(3)
+    return '' if authorities.empty?
+
+    formatted = authorities.map do |ia|
+      "#{ia.authority.name} (#{t(ia.role)})"
+    end
+    formatted.join(', ')
+  end
+
   # Converts absolute URLs pointing to the provided base_url into relative paths.
   # Preserves query strings and fragments.
   #
