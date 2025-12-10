@@ -6,8 +6,9 @@ class CollectionsController < ApplicationController
   include Tracking
   include BybeUtils
   include KwicConcordanceConcern
+  include FilteringAndPaginationConcern
 
-  before_action :require_editor, except: %i(show download print kwic kwic_download)
+  before_action :require_editor, except: %i(browse show download print kwic kwic_download)
   before_action :set_collection, only: %i(show update destroy)
 
   # GET /collections/1 or /collections/1.json
@@ -32,6 +33,21 @@ class CollectionsController < ApplicationController
     prep_for_show
     track_view(@collection)
     prep_user_content(:collection) # user anthologies, bookmarks
+  end
+
+  # GET /collections - Browse all collections with filters
+  def browse
+    @pagetype = :collections
+    @collections_list_title = t(:collections_list) unless @collections_list_title.present?
+    if valid_query?
+      es_prep_collection
+      @maxdate = Time.zone.today.strftime('%Y')
+      @header_partial = 'collections/browse_top'
+
+      render :browse
+    else
+      head :bad_request
+    end
   end
 
   # GET /collections/1/periodical_issues
@@ -383,6 +399,123 @@ class CollectionsController < ApplicationController
               disposition: 'attachment'
   end
 
+  def es_prep_collection
+    @sort_dir = 'default'
+    if params[:sort_by].present?
+      @sort = params[:sort_by].dup
+      @sort_by = params[:sort_by].sub(/_(a|de)sc$/, '')
+      @sort_dir = ::Regexp.last_match(0)[1..-1] unless ::Regexp.last_match(0).nil?
+    else
+      # use alphabetical sorting by default
+      @sort = 'alphabetical_asc'
+      @sort_by = 'alphabetical'
+      @sort_dir = 'asc'
+    end
+
+    filter = build_es_filter_from_filters
+
+    # This param means that we're getting previous page
+    # so we should revert sort ordering while quering ElasticSearch index
+    @reverse = params[:reverse] == 'true'
+    sort_dir_to_use = if @reverse
+                        @sort_dir == 'asc' ? 'desc' : 'asc'
+                      else
+                        @sort_dir
+                      end
+
+    @collection = SearchCollections.call(@sort_by, sort_dir_to_use, filter)
+
+    # Adding filtering by first letter
+    @to_letter = params['to_letter']
+    if @to_letter.present?
+      @collection = @collection.filter({ prefix: { sort_title: @to_letter } })
+      @filters << [I18n.t(:title_starts_with_x, x: @to_letter), :to_letter, :text]
+    end
+
+    @collections = paginate(@collection)
+  end
+
+  def build_es_filter_from_filters
+    ret = {}
+    @filters = []
+
+    # collection types
+    @collection_types = params['ckb_collection_types'] unless @collection_types.present?
+    if @collection_types.present?
+      ret['collection_types'] = @collection_types
+      @filters += @collection_types.map { |x| [I18n.t(x), "collection_type_#{x}", :checkbox] }
+    end
+
+    # tags by tag_id
+    tag_ids_array = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
+    if tag_ids_array.present?
+      tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
+      ret['tags'] = tag_data.map(&:last)
+      @filters += tag_data.map { |x| [x.last, "tag_#{x.first}", :checkbox] }
+      @tag_ids = tag_ids_array.join(',') # Keep as comma-separated string for the form
+    end
+
+    # publication date range
+    @fromdate = params['fromdate'].to_i if params['fromdate'].present?
+    @todate = params['todate'].to_i if params['todate'].present?
+    range_expr = {}
+
+    if @fromdate.present?
+      range_expr['from'] = @fromdate
+      @filters << ["#{I18n.t(:publication_date)} #{I18n.t(:fromdate)}: #{@fromdate}", :fromdate, :text]
+    end
+
+    if @todate.present?
+      range_expr['to'] = @todate
+      @filters << ["#{I18n.t(:publication_date)} #{I18n.t(:todate)}: #{@todate}", :todate, :text]
+    end
+
+    ret['publication_date_between'] = range_expr unless range_expr.empty?
+
+    # authority ids - multi-select authorities
+    if params['authorities'].present?
+      authority_ids = params['authorities'].split(',').map(&:to_i)
+      ret['authority_ids'] = authority_ids
+      @authorities = authority_ids
+      @authorities_names = params['authorities_names']
+      @filters << [I18n.t(:authorities_xx, xx: @authorities_names), 'authorities', :authoritylist]
+    end
+
+    # title search
+    @search_input = params['search_input']
+    if @search_input.present?
+      ret['title'] = @search_input
+      @filters << [I18n.t(:title_x, x: @search_input), :search_input, :text]
+    end
+
+    return ret
+  end
+
+  def prepare_totals(collection)
+    standard_aggregations = {
+      collection_types: { terms: { field: 'collection_type' } },
+      # We may need to increase `size` threshold in future if number of authorities exceeds 2000
+      authority_ids: { terms: { field: 'involved_authority_ids', size: 2000 } }
+    }
+
+    collection = collection.aggregations(standard_aggregations)
+
+    @collection_type_facet = buckets_to_totals_hash(collection.aggs['collection_types']['buckets'])
+
+    # Preparing list of authorities to show in multiselect modal on collections browse page
+    if collection.filter.present?
+      authority_ids = collection.aggs['authority_ids']['buckets'].pluck('key')
+      @authorities_list = Authority.where(id: authority_ids)
+    else
+      @authorities_list = Authority.all
+    end
+    @authorities_list = @authorities_list.select(:id, :name).sort_by(&:name)
+  end
+
+  def get_sort_column(sort_by)
+    SearchCollections::SORTING_PROPERTIES[sort_by][:column]
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -434,6 +567,10 @@ class CollectionsController < ApplicationController
   end
 
   protected
+
+  def valid_query?
+    return true unless params[:to_letter].present? && (params[:to_letter].any_hebrew? == false)
+  end
 
   def downloadable_html(h)
     title, ias, html, = h

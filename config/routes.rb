@@ -280,6 +280,7 @@ Bybeconv::Application.routes.draw do
   match 'authors', to: 'authors#browse', as: 'authors', via: %i(get post)
   match 'works', to: 'manifestation#browse', as: 'works', via: %i(get post)
   match 'works/all', to: 'manifestation#all', as: 'all_works', via: %i(get post)
+  match 'collections', to: 'collections#browse', as: 'collections_browse', via: %i(get post)
   match 'manifestation/genre' => 'manifestation#genre', as: 'genre', via: %i(get post)
   match 'period/:period' => 'manifestation#period', as: 'period', via: %i(get post)
   match 'translations' => 'manifestation#translations', as: 'translations', via: %i(get post)

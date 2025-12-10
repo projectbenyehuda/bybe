@@ -357,4 +357,70 @@ describe CollectionsController do
       expect(response).to have_http_status(:unprocessable_entity)
     end
   end
+
+  describe '#browse' do
+    before do
+      # Create some test collections
+      create(:collection, title: 'Test Volume', collection_type: :volume)
+      create(:collection, title: 'Test Periodical', collection_type: :periodical)
+      create(:collection, title: 'Test Series', collection_type: :series)
+    end
+
+    context 'when requesting HTML' do
+      it 'renders the browse template' do
+        get :browse
+        expect(response).to be_successful
+        expect(response).to render_template(:browse)
+      end
+
+      it 'assigns collections list title' do
+        get :browse
+        expect(assigns(:collections_list_title)).to be_present
+      end
+    end
+
+    context 'when requesting JS (AJAX)' do
+      it 'renders the JS template' do
+        get :browse, format: :js, xhr: true
+        expect(response).to be_successful
+        expect(response.content_type).to include('text/javascript')
+      end
+    end
+
+    context 'with filters' do
+      it 'filters by collection type' do
+        get :browse, params: { ckb_collection_types: ['volume'] }
+        expect(response).to be_successful
+      end
+
+      it 'filters by title search' do
+        get :browse, params: { search_input: 'Test' }
+        expect(response).to be_successful
+      end
+    end
+
+    context 'with sorting' do
+      it 'sorts alphabetically by default' do
+        get :browse
+        expect(assigns(:sort_by)).to eq('alphabetical')
+      end
+
+      it 'sorts by popularity when requested' do
+        get :browse, params: { sort_by: 'popularity_desc' }
+        expect(assigns(:sort_by)).to eq('popularity')
+      end
+
+      it 'sorts by publication date when requested' do
+        get :browse, params: { sort_by: 'publication_date_asc' }
+        expect(assigns(:sort_by)).to eq('publication_date')
+      end
+    end
+
+    context 'with invalid query' do
+      it 'returns bad request for invalid to_letter parameter' do
+        get :browse, params: { to_letter: 'invalid' }
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+  end
 end
