@@ -73,6 +73,7 @@ describe ManifestationController do
       describe 'search queries' do
         let(:author_filter) { { 'author' => 'Jack London' } }
         let(:title_filter) { { 'title' => 'Love to Life' } }
+        let(:fulltext_filter) { { 'fulltext' => 'quick brown fox' } }
 
         context 'when title specified' do
           let(:browse_params) { { search_input: 'Love to Life', search_type: 'workname', sort_by: 'alphabetical_desc' } }
@@ -86,10 +87,16 @@ describe ManifestationController do
           it { is_expected.to be_successful }
         end
 
-        context 'when both authorname and title specified' do
+        context 'when fulltext search specified' do
+          let(:browse_params) { { search_input: 'quick brown fox', search_type: 'fulltext', sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { fulltext_filter }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when both authorname and title/fulltext specified' do
           let(:browse_params) do
             {
-              search_input: 'Love to Life',
+              search_input: search_input,
               authorstr: 'Jack London',
               search_type: search_type,
               sort_by: 'alphabetical_desc'
@@ -98,18 +105,28 @@ describe ManifestationController do
 
           context 'when search_type is authorname' do
             let(:search_type) { 'authorname' }
+            let(:search_input) { 'Love to Life' }
             let(:expected_filter) { author_filter }
             it { is_expected.to be_successful }
           end
 
           context 'when search_type is workname' do
             let(:search_type) { 'workname' }
+            let(:search_input) { 'Love to Life' }
             let(:expected_filter) { title_filter }
+            it { is_expected.to be_successful }
+          end
+
+          context 'when search_type is fulltext' do
+            let(:search_type) { 'fulltext' }
+            let(:search_input) { 'quick brown fox' }
+            let(:expected_filter) { fulltext_filter }
             it { is_expected.to be_successful }
           end
 
           context 'when search_type is empty' do
             let(:search_type) { nil }
+            let(:search_input) { 'Love to Life' }
             let(:expected_filter) { title_filter }
             it { is_expected.to be_successful }
           end
