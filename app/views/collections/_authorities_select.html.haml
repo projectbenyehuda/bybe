@@ -1,0 +1,61 @@
+.modal-dialog
+  .modal-content
+    = form_tag('', id: 'authorities_filter_form') do
+      .flex-popup
+        .modal-header
+          .popup-top
+            %button.btn-small-outline-v02{'data-dismiss'=>'modal'}
+              .btn-text-v02
+                %span.right-arrow 2
+                %span= t(:back)
+            .modal-title.headline-2-v02= t(:authorities_select_filter)
+
+        .modal-body
+          .by-popup-v02#authorities-multi-select-popup
+            .by-card-header-v02.desktop-only
+              %span.headline-1-v02= t(:authorities_select_filter)
+              %p= t(:explain_up_to_10)
+            %a.popup-x-v02.linkcolor.pointer{'data-dismiss'=>'modal'} -
+            .by-card-content-v02.limited-height-popup-content-v02
+              .authorities-names-area
+                - list.each_slice(3) do |slice|
+                  .row
+                    - slice.each do |au|
+                      - attrs = {name: "ckb_authorities[]", type: "checkbox", id: "auth_#{au.id}", value: au.id}
+                      - attrs.merge!({checked: 'checked'}) if authorities.present? && authorities.include?(au.id)
+                      .col
+                        %input{attrs}/
+                        %label= au.name
+            .bottom-left-buttons
+              %button.by-button-v02#adding-authorities-btn.by-button-v02{:href => "#"}= t(:add_authorities_to_filter)
+              %button.by-button-v02.btn-secondary-v02.desktop-only{'data-dismiss'=>'modal'}
+                %span.right-side-icon -
+                %span.linkcolor.pointer{style: "font-weight: bold"}= t(:back)
+:javascript
+  $(document).ready(function() {
+    $('input[name="ckb_authorities[]"]').change(function() {
+      if($('input[name="ckb_authorities[]"]:checked').length > 10) {
+        $(this).prop('checked', false);
+        alert("#{t(:up_to_10_authorities)}");
+      }
+    });
+    $('#adding-authorities-btn').click(function(e) {
+      e.preventDefault();
+      names = ''
+      $('input[name="ckb_authorities[]"]').each(function(li){
+        if($(this).prop('checked')) {
+          names += $(this).next().text()+'; ';
+        }
+      });
+      $('#authorities_names').val(names);
+      arr = $('input[name="ckb_authorities[]"]').serializeArray();
+      ids = ''
+      $.each(arr, function(i, field){
+        ids += field['value'].toString()+',';
+      });
+      $('#authority_ids').val(ids);
+      $("#authoritiesDlg").modal("hide");
+      submit_filters();
+      return false;
+    });
+  });

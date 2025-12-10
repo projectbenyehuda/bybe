@@ -1,0 +1,152 @@
+%link{ rel:'stylesheet', href:'https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css'}
+%script{ src: 'https://use.fontawesome.com/3f861a49f5.js'}
+
+- form_id = 'collections_filters'
+= form_tag(collections_browse_path, remote: true, method: :post, id: form_id, autocomplete: :off) do
+  = hidden_field_tag(:sort_by, @sort)
+  .by-card-content-v02#filters_panel
+    .headline-2-v02= t(:filter_by)
+    %span.reset.linkcolor.pointer= t(:reset_filter)
+
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfcoltitle', title: t(:name) } do
+      = text_field_tag :search_input, @search_input,
+                       id: :search_input,
+                       class: %w(field-v02 field-without-label),
+                       placeholder: t(:collection_title_search)
+
+    - labels = Collection.collection_types.keys.index_with { |type| t(type) }
+    - icons = {
+        'volume' => '📚',
+        'periodical' => '📰',
+        'series' => '📑',
+        'other' => '📁'
+      }
+    = render partial: 'shared/filters/checkbox_group',
+             locals: { group_name: :collection_type,
+                       title: t(:collection_type),
+                       field_name: :ckb_collection_types,
+                       all_values: %w(volume periodical series other),
+                       labels: labels,
+                       selected_values: @collection_types,
+                       facet: @collection_type_facet,
+                       icons: icons }
+
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfauthorities', title: t(:involved_authorities) } do
+      .multi-name-sort.desktop-only.pointer
+        %span.linkcolor.pointer{ data: { toggle: :modal, target: '#authoritiesDlg' } }= t(:multiselect)
+      = hidden_field_tag(:authorities, @authorities, id: 'authority_ids')
+      = hidden_field_tag(:authorities_names, @authorities_names, id: 'authorities_names')
+
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collftags', title: t(:tags) } do
+      = autocomplete_field_tag :tagstr, '', autocomplete_tag_name_path,
+                               id_element: '#tag_id',
+                               class: 'field-v02 field-without-label author-name-field',
+                               id: 'tags',
+                               placeholder: t(:tag)
+      = hidden_field_tag :tag_ids, @tag_ids, id: 'tag_ids'
+
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfdate', title: t(:publication_date) } do
+      .dates-range
+        %input.datepicker.datetimepicker-input.field-v02.field-without-label.range-date-field#fromdate{
+          placeholder: t(:year),
+          name: :fromdate,
+          data: { toggle: :datetimepicker, target: '#fromdate' }
+        }/
+        .date-range-to= t(:until)
+        %input.datepicker.datetimepicker-input.field-v02.field-without-label.range-date-field#todate{
+          placeholder: t(:year),
+          style: 'float: left;',
+          name: :todate,
+          data: { toggle: :datetimepicker, target: '#todate' }
+        }/
+
+    = hidden_field_tag(:search_after_value, '')
+    = hidden_field_tag(:search_after_id, '')
+    = hidden_field_tag(:page, '1')
+    = hidden_field_tag(:reverse, 'false')
+    = hidden_field_tag(:to_letter, @to_letter)
+    .mobile-only
+      .bottom-button-area
+        %button.by-button-v02#apply_mobile_filters{ type: :submit }= t(:apply_mobile_filters)
+
+:javascript
+  $(document).ready(function() {
+    $('#sort_by_dd').val("#{@sort}");
+
+    var submit_timeout = null;
+    $('#tags').on('railsAutocomplete.select', function(event, data){
+      event.preventDefault();
+      tag_id = data.item.tag_id.toString();
+      $('#tag_ids').val( $('#tag_ids').val() == '' ? tag_id : $('#tag_ids').val()+','+tag_id);
+      $('#tags').val(''); // Clear the autocomplete field to allow adding more tags
+      submit_filters();
+    });
+
+    $('#collections_filters').on('change', function(e){
+      if(e.target.id == 'tags') {
+        return;
+      }
+
+      if(!isMobile()) {
+        // On Desktop we automatically submit form after some values were changed by user
+        if(submit_timeout != null){
+          window.clearTimeout(submit_timeout);
+        }
+        resetPagination();
+        submit_timeout = window.setTimeout(submit_filters, 300);
+      }
+    });
+
+    $('.reset').click(function(){
+      $('#collections_filters').find(':input').each(function() {
+        switch(this.type) {
+            case 'password':
+            case 'select-multiple':
+            case 'select-one':
+            case 'text':
+            case 'textarea':
+                $(this).val('');
+                break;
+            case 'checkbox':
+            case 'radio':
+                this.checked = false;
+        }
+      });
+
+      $('#authority_ids').val('');
+      $('#tag_ids').val('');
+      $('#authorities_names').val('');
+      resetPagination();
+      submit_filters();
+    });
+
+    $('.datepicker').datetimepicker({
+      viewMode: 'years',
+      rtl: true,
+      format: 'YYYY',
+      locale: 'he',
+      maxDate: '#{@maxdate}',
+      useCurrent: false,
+      widgetPositioning: {horizontal: 'right', vertical: 'auto'},
+      icons: {
+        previous: 'fa fa-chevron-right',
+        next: 'fa fa-chevron-left',
+      }
+    }).on('hide.datetimepicker', function(e){
+      window.setTimeout(submit_filters, 2000);
+    });
+
+    if("#{@fromdate}" != "") {
+      $('#fromdate').val("#{@fromdate}");
+    }
+    if("#{@todate}" != "") {
+      $('#todate').val("#{@todate}");
+    }
+
+    $('#apply_mobile_filters').click(function() {
+      resetPagination();
+      $('#sort_filter_panel').hide();
+      $('#thelist').show();
+      $('html').scrollTop($('#thelist').offset().top);
+    });
+  });
