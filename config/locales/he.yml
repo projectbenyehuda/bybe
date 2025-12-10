@@ -40,6 +40,7 @@ he:
   filters_loading: טוען את המסננים...
   loading: התוכן נטען...
   work_title: שם יצירה
+  text_content: תוכן הטקסט
   what_to_search_for: מה לחפש...
   author_names: שם(ות) יוצר(ים)
   works_list: רשימת יצירות
@@ -699,6 +700,7 @@ he:
   title: כותרת
   title_x: "כותרת: %{x}"
   author_x: "יוצר: %{x}"
+  text_contains_x: "טקסט מכיל: %{x}"
   authors_xx: "יוצרים: %{xx}"
   name_starts_with_x: "שם מתחיל באות '%{x}'"
   title_starts_with_x: "כותרת מתחילה באות '%{x}'"

@@ -10,6 +10,7 @@
     = render layout: 'shared/collapsible_block', locals: { container_name: 'collfauthor', title: t(:name) } do
       .search-mobile-switch
         %button.search-mobile-option.opt_workname= t(:work_title)
+        %button.search-mobile-option.opt_fulltext= t(:text_content)
         %button.search-mobile-option.opt_authorname= t(:author_name)
       %break
       = text_field_tag :search_input, @search_input,
@@ -120,14 +121,13 @@
   function toggleSearchType(type) {
     $('#search_type').val(type);
     const author = (type == 'authorname');
+    const fulltext = (type == 'fulltext');
+    const workname = (type == 'workname');
 
-    if (author) {
-      $('.opt_authorname').addClass('active');
-      $('.opt_workname').removeClass('active');
-    } else {
-      $('.opt_authorname').removeClass('active');
-      $('.opt_workname').addClass('active');
-    }
+    $('.opt_authorname').toggleClass('active', author);
+    $('.opt_fulltext').toggleClass('active', fulltext);
+    $('.opt_workname').toggleClass('active', workname);
+
     if (!isMobile()) {
       $('.multi-name-sort').toggle(author);
     }
@@ -155,6 +155,11 @@
     $('.opt_workname').click(function(e){
       e.preventDefault();
       toggleSearchType('workname');
+    });
+
+    $('.opt_fulltext').click(function(e){
+      e.preventDefault();
+      toggleSearchType('fulltext');
     });
 
     var submit_timeout = null;
