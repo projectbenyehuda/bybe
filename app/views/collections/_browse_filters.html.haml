@@ -27,7 +27,7 @@
                        facet: @collection_type_facet,
                        icons: icons }
 
-    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfauthorities', title: t(:involved_authorities) } do
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfauthorities', title: t(:by_involved_authorities) } do
       .multi-name-sort.desktop-only.pointer
         %span.linkcolor.pointer{ data: { toggle: :modal, target: '#authoritiesDlg' } }= t(:multiselect)
       = hidden_field_tag(:authorities, @authorities, id: 'authority_ids')
