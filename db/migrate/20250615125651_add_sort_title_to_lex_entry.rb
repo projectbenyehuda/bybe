@@ -2,7 +2,7 @@
 
 class AddSortTitleToLexEntry < ActiveRecord::Migration[6.1]
   def change
-    add_column :lex_entries, :sort_title, :string
-    add_index :lex_entries, :sort_title
+    add_column :lex_entries, :sort_title, :string, if_not_exists: true
+    add_index :lex_entries, :sort_title, if_not_exists: true
   end
 end

@@ -1,6 +1,6 @@
 class CreateLexIssues < ActiveRecord::Migration[5.2]
   def change
-    create_table :lex_issues do |t|
+    create_table :lex_issues, if_not_exists: true do |t|
       t.string :subtitle
       t.string :volume
       t.string :issue
@@ -10,7 +10,7 @@ class CreateLexIssues < ActiveRecord::Migration[5.2]
 
       t.timestamps
     end
-    add_index :lex_issues, :subtitle
-    add_index :lex_issues, :seq_num
+    add_index :lex_issues, :subtitle, if_not_exists: true
+    add_index :lex_issues, :seq_num, if_not_exists: true
   end
 end

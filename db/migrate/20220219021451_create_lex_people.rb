@@ -1,6 +1,6 @@
 class CreateLexPeople < ActiveRecord::Migration[5.2]
   def change
-    create_table :lex_people do |t|
+    create_table :lex_people, if_not_exists: true do |t|
       t.string :aliases
       t.boolean :copyrighted
       t.string :birthdate
@@ -11,9 +11,9 @@ class CreateLexPeople < ActiveRecord::Migration[5.2]
 
       t.timestamps
     end
-    add_index :lex_people, :aliases
-    add_index :lex_people, :copyrighted
-    add_index :lex_people, :birthdate
-    add_index :lex_people, :deathdate
+    add_index :lex_people, :aliases, if_not_exists: true
+    add_index :lex_people, :copyrighted, if_not_exists: true
+    add_index :lex_people, :birthdate, if_not_exists: true
+    add_index :lex_people, :deathdate, if_not_exists: true
   end
 end
