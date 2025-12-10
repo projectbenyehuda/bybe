@@ -2,6 +2,6 @@
 
 class AddCollectionAuthoritiesToIngestibles < ActiveRecord::Migration[8.0]
   def change
-    add_column :ingestibles, :collection_authorities, :text
+    add_column :ingestibles, :collection_authorities, :text, if_not_exists: true
   end
 end

@@ -1,5 +1,5 @@
 class AddLexItemToLexEntry < ActiveRecord::Migration[5.2]
   def change
-    add_reference :lex_entries, :lex_item, polymorphic: true, index: {:unique=>true}
+    add_reference :lex_entries, :lex_item, polymorphic: true, index: {:unique=>true}, if_not_exists: true
   end
 end
