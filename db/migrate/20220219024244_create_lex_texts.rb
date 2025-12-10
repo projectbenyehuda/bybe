@@ -1,6 +1,6 @@
 class CreateLexTexts < ActiveRecord::Migration[5.2]
   def change
-    create_table :lex_texts do |t|
+    create_table :lex_texts, if_not_exists: true do |t|
       t.string :title
       t.string :authors
       t.string :pages
@@ -10,6 +10,6 @@ class CreateLexTexts < ActiveRecord::Migration[5.2]
 
       t.timestamps
     end
-    add_index :lex_texts, :title
+    add_index :lex_texts, :title, if_not_exists: true
   end
 end
