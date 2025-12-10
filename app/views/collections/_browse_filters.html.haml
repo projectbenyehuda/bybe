@@ -14,18 +14,14 @@
                        class: %w(field-v02 field-without-label),
                        placeholder: t(:collection_title_search)
 
-    - labels = Collection.collection_types.keys.index_with { |type| t(type) }
-    - icons = {
-        'volume' => '📚',
-        'periodical' => '📰',
-        'series' => '📑',
-        'other' => '📁'
-      }
+    - collection_types_to_show = %w(volume periodical series other)
+    - labels = collection_types_to_show.index_with { |type| t(type) }
+    - icons = { 'volume' => '📚', 'periodical' => '📰', 'series' => '📑', 'other' => '📁' }
     = render partial: 'shared/filters/checkbox_group',
              locals: { group_name: :collection_type,
                        title: t(:collection_type),
                        field_name: :ckb_collection_types,
-                       all_values: %w(volume periodical series other),
+                       all_values: collection_types_to_show,
                        labels: labels,
                        selected_values: @collection_types,
                        facet: @collection_type_facet,
