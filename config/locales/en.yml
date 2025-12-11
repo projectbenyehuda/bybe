@@ -255,9 +255,9 @@ en:
       awaiting_authorities: Awaiting Creation of Missed Authorities
     errors:
       invalid_collection_authorities_json: contains invalid JSON
-      duplicate_volume_for_publication: A volume for this publication with these authorities already exists
-      duplicate_volume_by_title: A volume with this title and authorities already exists
-      another_ingestible_proposing_volume: Another ingestible is already proposing to create this volume
+      duplicate_volume_for_publication: A volume for this publication with these authorities already exists in the database
+      duplicate_volume_by_title: A volume with this title and authorities already exists in the database
+      another_ingestible_proposing_volume: Another pending ingestible is already proposing to create this volume
       invalid_json_in_collection_authorities: Invalid JSON in collection authorities
     collection_level_authorities: Collection-level Involved Authorities
     collection_authorities_help: "These authorities will be linked to the Collection itself, separate from the individual works. When collection authorities are set and default authorities haven't been explicitly set, the collection authorities will also become the defaults."
