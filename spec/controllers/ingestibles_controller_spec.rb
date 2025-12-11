@@ -47,6 +47,32 @@ describe IngestiblesController do
         expect(call).to render_template(:new)
       end
     end
+
+    context 'with duplicate volume params' do
+      let(:authority) { create(:authority) }
+      let(:publication) { create(:publication, authority: authority) }
+      let!(:existing_volume) do
+        # Create an existing volume for this publication with this authority
+        collection = create(:collection, collection_type: 'volume', publication: publication, title: 'Existing Volume')
+        collection.involved_authorities.create!(authority: authority, role: :author)
+        collection
+      end
+      let(:ingestible_params) do
+        # User tries to create another volume for the same publication
+        # update_authorities_and_metadata_from_volume will populate collection_authorities
+        # with the publication's authority (author role by default)
+        attributes_for(:ingestible,
+                       no_volume: false,
+                       prospective_volume_id: "P#{publication.id}",
+                       prospective_volume_title: nil) # Will use publication title
+      end
+
+      it 'does not crash and re-renders new page with validation error' do
+        expect { call }.to not_change(Ingestible, :count)
+        expect(call).to render_template(:new)
+        expect(assigns(:ingestible).errors[:prospective_volume_id]).to include('A volume for this publication with these authorities already exists')
+      end
+    end
   end
 
   describe 'Member Actions' do

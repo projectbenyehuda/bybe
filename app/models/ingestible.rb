@@ -53,6 +53,8 @@ class Ingestible < ApplicationRecord
     return false if no_volume
     return false if volume_id.present? # Using existing volume
     return false if prospective_volume_id.present? && prospective_volume_id[0] != 'P' # Loading existing collection
+    # Don't validate during or after ingestion - only during draft/awaiting_authorities
+    return false if ingested? || failed?
     return true if prospective_volume_title.present? # Creating from scratch
     return true if prospective_volume_id.present? && prospective_volume_id[0] == 'P' # Creating from Publication
 
@@ -187,7 +189,9 @@ class Ingestible < ApplicationRecord
     self.collection_authorities = aus.to_json
     # Mirror to default authorities if they haven't been manually changed
     mirror_collection_to_default_authorities if should_mirror_authorities?
-    save!
+    # Only save if record is already persisted (exists in database)
+    # For new records, let the controller's save handle validation
+    save! if persisted?
   end
 
   # Check if we should mirror collection authorities to default authorities
