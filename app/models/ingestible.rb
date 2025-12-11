@@ -67,7 +67,7 @@ class Ingestible < ApplicationRecord
       col_auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
     rescue JSON::ParserError => e
       Rails.logger.error("Invalid JSON in collection_authorities for ingestible #{id}: #{e.message}")
-      errors.add(:collection_authorities, 'contains invalid JSON')
+      errors.add(:collection_authorities, I18n.t('ingestible.errors.invalid_collection_authorities_json'))
       return
     end
 
@@ -79,7 +79,7 @@ class Ingestible < ApplicationRecord
 
       existing_volume = Collection.find_by(publication: publication)
       if existing_volume && authorities_match?(existing_volume.involved_authorities, col_auths)
-        errors.add(:prospective_volume_id, 'A volume for this publication with these authorities already exists')
+        errors.add(:prospective_volume_id, I18n.t('ingestible.errors.duplicate_volume_for_publication'))
         return
       end
     else
@@ -89,7 +89,7 @@ class Ingestible < ApplicationRecord
       existing_volumes = Collection.where(collection_type: 'volume', title: prospective_volume_title)
       existing_volumes.each do |volume|
         if authorities_match?(volume.involved_authorities, col_auths)
-          errors.add(:prospective_volume_title, 'A volume with this title and authorities already exists')
+          errors.add(:prospective_volume_title, I18n.t('ingestible.errors.duplicate_volume_by_title'))
           return
         end
       end
@@ -107,7 +107,7 @@ class Ingestible < ApplicationRecord
 
     other_ingestibles.each do |ingestible|
       if authorities_match_json?(ingestible.collection_authorities, collection_authorities)
-        errors.add(:base, 'Another ingestible is already proposing to create this volume')
+        errors.add(:base, I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
         return
       end
     end

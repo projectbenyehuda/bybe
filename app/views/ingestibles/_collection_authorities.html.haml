@@ -9,7 +9,8 @@
         = render partial: 'ingestible_collection_authorities/authority', collection: JSON.parse(authorities), locals: {editable: true}
       - rescue JSON::ParserError => e
         %li.text-danger
-          Invalid JSON in collection authorities: #{e.message}
+          = t('ingestible.errors.invalid_json_in_collection_authorities')
+          = ": #{e.message}"
   = t(:add_via_autocomplete)
   = autocomplete_field_tag 'add_collection_authority', '', autocomplete_authority_name_and_aliases_path,
                           id_element: '#collection_authority_id', class: 'add_collection_authority'
