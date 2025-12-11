@@ -7,7 +7,6 @@ RSpec.describe 'Ingestible duplicate volume validation', type: :system do
   end
 
   before do
-    driven_by(:rack_test)
 
     # Create an existing ingestible proposing to create a volume from this publication
     create(:ingestible,
