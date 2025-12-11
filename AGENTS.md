@@ -39,6 +39,7 @@ If you accidentally pushed to master/main:
 * we use HAML for views, not ERB
 * we use RSpec for testing, not minitest
 * we use Capybara for integration tests of real usage scenarios
+* we use Rails I18n for all user-visible messages and UI labels. If you add a new message, make sure to create appropriatee entries in both config/locales/he.yml and config/locales/en.yml
 
 ### ⚠️ CRITICAL: Testing Requirements ⚠️
 
