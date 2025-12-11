@@ -23,7 +23,7 @@ class Ingestible < ApplicationRecord
   validates :locked_at, presence: true, if: -> { locked_by_user.present? }
   validates :locked_at, absence: true, unless: -> { locked_by_user.present? }
   validate :volume_decision
-  validate :check_duplicate_volume, if: :creating_new_volume?
+  validate :check_duplicate_volume, if: :should_check_duplicate_volume?
   #  validates :scenario, presence: true
   #  validates :scenario, inclusion: { in: scenarios.keys }
 
@@ -59,6 +59,33 @@ class Ingestible < ApplicationRecord
     return true if prospective_volume_id.present? && prospective_volume_id[0] == 'P' # Creating from Publication
 
     false
+  end
+
+  def should_check_duplicate_volume?
+    # Only check for duplicates if we're creating a new volume
+    return false unless creating_new_volume?
+
+    # Parse authorities to check if any are present
+    begin
+      auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
+      has_authorities = auths.present?
+
+      # For updates: validate if authorities are present AND relevant fields changed
+      if persisted?
+        relevant_fields_changed = collection_authorities_changed? ||
+                                  prospective_volume_title_changed? ||
+                                  prospective_volume_id_changed?
+        return has_authorities && relevant_fields_changed
+      end
+
+      # For new records: only validate if authorities are specified
+      # This allows creating an ingestible with a volume title but no authorities,
+      # deferring the duplicate check until authorities are added
+      return has_authorities
+    rescue JSON::ParserError
+      # If JSON is invalid, let the other validation handle it
+      return false
+    end
   end
 
   def check_duplicate_volume
