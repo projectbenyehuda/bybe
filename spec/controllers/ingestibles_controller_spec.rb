@@ -70,7 +70,7 @@ describe IngestiblesController do
       it 'does not crash and re-renders new page with validation error' do
         expect { call }.to not_change(Ingestible, :count)
         expect(call).to render_template(:new)
-        expect(assigns(:ingestible).errors[:prospective_volume_id]).to include('A volume for this publication with these authorities already exists')
+        expect(assigns(:ingestible).errors[:prospective_volume_id]).to include(I18n.t('ingestible.errors.duplicate_volume_for_publication'))
       end
     end
   end
