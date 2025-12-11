@@ -53,9 +53,9 @@ he:
   what_to_search_for: מה לחפש...
   author_names: שם(ות) יוצר(ים)
   works_list: רשימת יצירות
-  collections_list: רשימת אוספים
-  welcome_to_collections_browsing: ברוכים הבאים לדפדוף באוספים
-  collections_browsing_intro_html: כאן תוכלו לחפש ולעיין באוספים שונים של ספרות עברית - כרכים, עיתונים, סדרות ועוד
+  collections_list: רשימת כותרים
+  welcome_to_collections_browsing: ברוכים הבאים לדפדוף בכותרים
+  collections_browsing_intro_html: כאן תוכלו לחפש ולעיין בכותרים ובכתבי עת שונים
   month_year: חודש/שנה
   year: שנה
   reset_multiselect: איפוס בחירה
@@ -864,7 +864,7 @@ he:
   works: יצירות
   expressions: ביטויים
   manifestations: מימושים
-  collections: אוספים
+  collections: כותרים
   dictionary_entries: ערכים מילוניים
   volumes: כותרים
   works_en: works
@@ -1805,3 +1805,6 @@ he:
   collapse_all_sections: צמצם הכל
   expand_all_sections: הרחב הכל
   by_involved_authorities: לפי אישים מעורבים
+  works_and_volumes: כותרים ויצירות
+  list_all_collections: רשימת כל הכותרים
+  x_volumes_and: "%{x} כותרים ו־"
