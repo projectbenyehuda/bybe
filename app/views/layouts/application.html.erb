@@ -73,6 +73,12 @@
               <div class="statistics-box-v02">
                 <div class="statistics-v02">
                   <div class="stat-big-v02">
+                    <%= link_to(Collection.cached_volume_and_issue_count.to_s, collections_path) %>
+                  </div>
+                  <div class="stat-small-v02"><%= t(:volumes) %></div>
+                </div>
+                <div class="statistics-v02">
+                  <div class="stat-big-v02">
                     <%= link_to(Manifestation.cached_count.to_s, all_works_path) %>
                   </div>
                   <div class="stat-small-v02"><%= t(:works) %></div>
@@ -109,6 +115,12 @@
                     <%= link_to(Manifestation.cached_count.to_s, all_works_path) %>
                   </div>
                   <div class="stat-small-v02"><%= t(:works_en) %></div>
+                </div>
+                <div class="statistics-v02">
+                  <div class="stat-big-v02">
+                    <%= link_to(Collection.cached_volume_and_issue_count.to_s, collections_path) %>
+                  </div>
+                  <div class="stat-small-v02"><%= t(:volumes) %></div>
                 </div>
               </div>
             <% end %>
