@@ -79,6 +79,12 @@ class Collection < ApplicationRecord
   validates :title, presence: true
   validates :suppress_download_and_print, inclusion: { in: [true, false] }
 
+  def self.cached_volume_and_issue_count
+    Rails.cache.fetch('volume_and_issue_count', expires_in: 24.hours) do
+      Collection.where(collection_type: %i(volume periodical_issue)).count
+    end
+  end
+
   # Checks if collection is a system-managed collection. We cannot change type of system collection (maybe some
   # other limitations will be added in future)
   def system?

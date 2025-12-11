@@ -18,7 +18,7 @@
               %a{href: authors_path}
                 %span.by-icon-v02 T
                 = t(:list_all_authors)
-        - works_total = "#{Manifestation.cached_count} #{t(:works_in_the_project)}"
+        - works_total = "#{t(:x_volumes_and, x: Collection.cached_volume_and_issue_count)}#{Manifestation.cached_count} #{t(:works_in_the_project)}"
         %li.topMenuItem-v02
           .by-dropdown-v02.dropdown#ddworks
             %a.by-nav-item-v02#nav-works{'data-toggle' =>'dropdown', 'data-boundary' => 'viewport', tabindex: '2'}= t(:works_and_volumes)
@@ -33,6 +33,9 @@
               %a.dropdown-item{href: all_works_path}
                 %span.by-icon-v02 T
                 = t(:list_all_works)
+              %a.dropdown-item{href: collections_path}
+                %span.by-icon-v02 L
+                = t(:list_all_collections)
         - combined_totals = authors_total+", "+works_total
         %li.topMenuItem-v02
           .by-dropdown-v02.dropdown#ddgenres
