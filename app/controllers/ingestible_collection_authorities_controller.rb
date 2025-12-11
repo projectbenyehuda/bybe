@@ -30,7 +30,13 @@ class IngestibleCollectionAuthoritiesController < ApplicationController
     @ingestible.collection_authorities = @authorities.to_json
     # Mirror to default authorities if appropriate
     @ingestible.mirror_collection_to_default_authorities if @ingestible.should_mirror_authorities?
-    @ingestible.save!
+
+    unless @ingestible.save
+      # Validation failed - return error to be displayed via JavaScript
+      @error_message = @ingestible.errors.full_messages.join('; ')
+      render :create_error, status: :unprocessable_content
+      return
+    end
   end
 
   # responds with js callback
@@ -39,7 +45,13 @@ class IngestibleCollectionAuthoritiesController < ApplicationController
     @ingestible.collection_authorities = @authorities.to_json
     # Mirror to default authorities if appropriate
     @ingestible.mirror_collection_to_default_authorities if @ingestible.should_mirror_authorities?
-    @ingestible.save!
+
+    unless @ingestible.save
+      @error_message = @ingestible.errors.full_messages.join('; ')
+      render :destroy_error, status: :unprocessable_content
+      return
+    end
+
     @li_id = "#coll_ia#{params[:id]}"
   end
 
@@ -62,7 +74,12 @@ class IngestibleCollectionAuthoritiesController < ApplicationController
     @ingestible.collection_authorities = @authorities.to_json
     # Mirror to default authorities if appropriate
     @ingestible.mirror_collection_to_default_authorities if @ingestible.should_mirror_authorities?
-    @ingestible.save!
+
+    unless @ingestible.save
+      @error_message = @ingestible.errors.full_messages.join('; ')
+      render :replace_error, status: :unprocessable_content
+      return
+    end
   end
 
   private

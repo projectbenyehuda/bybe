@@ -70,33 +70,20 @@ class Ingestible < ApplicationRecord
       auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
       has_authorities = auths.present?
 
-      # DEBUG logging
-      Rails.logger.debug "=== should_check_duplicate_volume? DEBUG ==="
-      Rails.logger.debug "  collection_authorities: '#{collection_authorities}'"
-      Rails.logger.debug "  collection_authorities.present?: #{collection_authorities.present?}"
-      Rails.logger.debug "  auths (parsed): #{auths.inspect}"
-      Rails.logger.debug "  has_authorities: #{has_authorities}"
-      Rails.logger.debug "  persisted?: #{persisted?}"
-
       # For updates: validate if authorities are present AND relevant fields changed
       if persisted?
         relevant_fields_changed = collection_authorities_changed? ||
                                   prospective_volume_title_changed? ||
                                   prospective_volume_id_changed?
-        Rails.logger.debug "  relevant_fields_changed: #{relevant_fields_changed}"
-        result = has_authorities && relevant_fields_changed
-        Rails.logger.debug "  RESULT (update): #{result}"
-        return result
+        return has_authorities && relevant_fields_changed
       end
 
       # For new records: only validate if authorities are specified
       # This allows creating an ingestible with a volume title but no authorities,
       # deferring the duplicate check until authorities are added
-      Rails.logger.debug "  RESULT (new): #{has_authorities}"
       return has_authorities
     rescue JSON::ParserError
       # If JSON is invalid, let the other validation handle it
-      Rails.logger.debug "  RESULT (JSON error): false"
       return false
     end
   end
