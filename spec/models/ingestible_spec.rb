@@ -257,7 +257,7 @@ describe Ingestible do
                              prospective_volume_title: 'Test Volume',
                              collection_authorities: collection_auths_json)
           expect(ingestible).not_to be_valid
-          expect(ingestible.errors[:prospective_volume_title]).to include('A volume with this title and authorities already exists')
+          expect(ingestible.errors[:prospective_volume_title]).to include(I18n.t('ingestible.errors.duplicate_volume_by_title'))
         end
 
         it 'allows volume with same title but different authorities' do
@@ -300,7 +300,7 @@ describe Ingestible do
                                     prospective_volume_title: 'New Volume',
                                     collection_authorities: collection_auths_json)
           expect(second_ingestible).not_to be_valid
-          expect(second_ingestible.errors[:base]).to include('Another ingestible is already proposing to create this volume')
+          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
         end
 
         it 'prevents duplicate when another awaiting_authorities ingestible proposes same volume' do
@@ -317,7 +317,7 @@ describe Ingestible do
                                     prospective_volume_title: 'New Volume',
                                     collection_authorities: collection_auths_json)
           expect(second_ingestible).not_to be_valid
-          expect(second_ingestible.errors[:base]).to include('Another ingestible is already proposing to create this volume')
+          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
         end
 
         it 'allows duplicate when other ingestible is already ingested' do
@@ -360,7 +360,7 @@ describe Ingestible do
                              prospective_volume_id: "P#{publication.id}",
                              collection_authorities: collection_auths_json)
           expect(ingestible).not_to be_valid
-          expect(ingestible.errors[:prospective_volume_id]).to include('A volume for this publication with these authorities already exists')
+          expect(ingestible.errors[:prospective_volume_id]).to include(I18n.t('ingestible.errors.duplicate_volume_for_publication'))
         end
 
         it 'allows volume for same publication but different authorities' do
@@ -390,7 +390,7 @@ describe Ingestible do
                                     prospective_volume_id: "P#{publication.id}",
                                     collection_authorities: collection_auths_json)
           expect(second_ingestible).not_to be_valid
-          expect(second_ingestible.errors[:base]).to include('Another ingestible is already proposing to create this volume')
+          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
         end
       end
 

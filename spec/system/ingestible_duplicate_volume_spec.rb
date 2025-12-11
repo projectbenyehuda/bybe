@@ -39,7 +39,7 @@ RSpec.describe 'Ingestible duplicate volume validation', type: :system do
     expect(page).not_to have_content('500')
 
     # Should show the validation error message
-    expect(page).to have_content('Another ingestible is already proposing to create this volume')
+    expect(page).to have_content(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
 
     # Should still be on the form page
     expect(page).to have_field('ingestible_title')
@@ -60,6 +60,6 @@ RSpec.describe 'Ingestible duplicate volume validation', type: :system do
     expect(page).not_to have_content('500')
 
     # Should show error message for malformed JSON in the view
-    expect(page).to have_content('Invalid JSON in collection authorities')
+    expect(page).to have_content(I18n.t('ingestible.errors.invalid_json_in_collection_authorities'))
   end
 end
