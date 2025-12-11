@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'pandoc-ruby' # for generic DOCX-to-HTML conversions
+require 'set'
 
 # Ingestible is a set of text being prepared for inclusion into a main database
 class Ingestible < ApplicationRecord
@@ -22,6 +23,7 @@ class Ingestible < ApplicationRecord
   validates :locked_at, presence: true, if: -> { locked_by_user.present? }
   validates :locked_at, absence: true, unless: -> { locked_by_user.present? }
   validate :volume_decision
+  validate :check_duplicate_volume, if: :should_check_duplicate_volume?
   #  validates :scenario, presence: true
   #  validates :scenario, inclusion: { in: scenarios.keys }
 
@@ -45,6 +47,97 @@ class Ingestible < ApplicationRecord
 
     errors.add(:volume_id,
                'must be present if no_volume is false')
+  end
+
+  def creating_new_volume?
+    return false if no_volume
+    return false if volume_id.present? # Using existing volume
+    return false if prospective_volume_id.present? && prospective_volume_id[0] != 'P' # Loading existing collection
+    # Don't validate during or after ingestion - only during draft/awaiting_authorities
+    return false if ingested? || failed?
+    return true if prospective_volume_title.present? # Creating from scratch
+    return true if prospective_volume_id.present? && prospective_volume_id[0] == 'P' # Creating from Publication
+
+    false
+  end
+
+  def should_check_duplicate_volume?
+    # Only check for duplicates if we're creating a new volume
+    return false unless creating_new_volume?
+
+    # Parse authorities to check if any are present
+    begin
+      auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
+      has_authorities = auths.present?
+
+      # For updates: validate if authorities are present AND relevant fields changed
+      if persisted?
+        relevant_fields_changed = collection_authorities_changed? ||
+                                  prospective_volume_title_changed? ||
+                                  prospective_volume_id_changed?
+        return has_authorities && relevant_fields_changed
+      end
+
+      # For new records: only validate if authorities are specified
+      # This allows creating an ingestible with a volume title but no authorities,
+      # deferring the duplicate check until authorities are added
+      return has_authorities
+    rescue JSON::ParserError
+      # If JSON is invalid, let the other validation handle it
+      return false
+    end
+  end
+
+  def check_duplicate_volume
+    # Parse collection authorities for comparison
+    begin
+      col_auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
+    rescue JSON::ParserError => e
+      Rails.logger.error("Invalid JSON in collection_authorities for ingestible #{id}: #{e.message}")
+      errors.add(:collection_authorities, I18n.t('ingestible.errors.invalid_collection_authorities_json'))
+      return
+    end
+
+    # Determine what we're checking against
+    if prospective_volume_id.present? && prospective_volume_id[0] == 'P'
+      # Creating from Publication - check if volume for this publication already exists
+      publication = Publication.find_by(id: prospective_volume_id[1..])
+      return if publication.nil? # Invalid publication ID, let other validations handle it
+
+      existing_volume = Collection.find_by(publication: publication)
+      if existing_volume && authorities_match?(existing_volume.involved_authorities, col_auths)
+        errors.add(:prospective_volume_id, I18n.t('ingestible.errors.duplicate_volume_for_publication'))
+        return
+      end
+    else
+      # Creating from scratch - check by title
+      return if prospective_volume_title.blank?
+
+      existing_volumes = Collection.where(collection_type: 'volume', title: prospective_volume_title)
+      existing_volumes.each do |volume|
+        if authorities_match?(volume.involved_authorities, col_auths)
+          errors.add(:prospective_volume_title, I18n.t('ingestible.errors.duplicate_volume_by_title'))
+          return
+        end
+      end
+    end
+
+    # Check for other Ingestibles with same prospective volume
+    other_ingestibles = Ingestible.where(status: [:draft, :awaiting_authorities])
+                                   .where.not(id: id) # Exclude current ingestible
+
+    if prospective_volume_id.present? && prospective_volume_id[0] == 'P'
+      other_ingestibles = other_ingestibles.where(prospective_volume_id: prospective_volume_id)
+    else
+      other_ingestibles = other_ingestibles.where(prospective_volume_title: prospective_volume_title)
+    end
+
+    other_ingestibles.each do |ingestible|
+      if authorities_match_json?(ingestible.collection_authorities, collection_authorities)
+        errors.add(:base, I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
+        return
+      end
+    end
   end
 
   def encode_toc(lines)
@@ -129,7 +222,9 @@ class Ingestible < ApplicationRecord
     self.collection_authorities = aus.to_json
     # Mirror to default authorities if they haven't been manually changed
     mirror_collection_to_default_authorities if should_mirror_authorities?
-    save!
+    # Only save if record is already persisted (exists in database)
+    # For new records, let the controller's save handle validation
+    save! if persisted?
   end
 
   # Check if we should mirror collection authorities to default authorities
@@ -405,5 +500,34 @@ class Ingestible < ApplicationRecord
     end
 
     result
+  end
+
+  # Check if a collection's involved_authorities match the provided JSON authorities
+  def authorities_match?(involved_authorities, json_authorities)
+    # Convert involved_authorities to comparable format (set of [authority_id, role] pairs)
+    ia_set = involved_authorities.map { |ia| [ia.authority_id, ia.role] }.to_set
+
+    # Convert JSON authorities to comparable format
+    json_set = json_authorities.map { |a| [a['authority_id'], a['role']] }.to_set
+
+    ia_set == json_set
+  end
+
+  # Check if two JSON authority strings match
+  def authorities_match_json?(json_authorities1, json_authorities2)
+    # Handle blank cases
+    return true if json_authorities1.blank? && json_authorities2.blank?
+    return false if json_authorities1.blank? || json_authorities2.blank?
+
+    # Parse and compare
+    begin
+      auths1 = JSON.parse(json_authorities1).map { |a| [a['authority_id'], a['role']] }.to_set
+      auths2 = JSON.parse(json_authorities2).map { |a| [a['authority_id'], a['role']] }.to_set
+
+      auths1 == auths2
+    rescue JSON::ParserError => e
+      Rails.logger.error("Invalid JSON in authorities comparison: #{e.message}")
+      false # If JSON is invalid, consider them as not matching
+    end
   end
 end

@@ -203,4 +203,215 @@ describe Ingestible do
       expect(ingestible.project.default_link_description).to eq('Test Link')
     end
   end
+
+  describe 'duplicate volume prevention' do
+    let(:authority1) { create(:authority) }
+    let(:authority2) { create(:authority) }
+    let(:collection_auths_json) do
+      [{ seqno: 1, authority_id: authority1.id, authority_name: authority1.name, role: 'author' }].to_json
+    end
+    let(:different_collection_auths_json) do
+      [{ seqno: 1, authority_id: authority2.id, authority_name: authority2.name, role: 'author' }].to_json
+    end
+
+    describe '#creating_new_volume?' do
+      it 'returns false when no_volume is true' do
+        ingestible = build(:ingestible, no_volume: true)
+        expect(ingestible.creating_new_volume?).to be false
+      end
+
+      it 'returns false when using existing volume_id' do
+        collection = create(:collection)
+        ingestible = build(:ingestible, volume_id: collection.id)
+        expect(ingestible.creating_new_volume?).to be false
+      end
+
+      it 'returns false when loading existing collection via prospective_volume_id' do
+        collection = create(:collection)
+        ingestible = build(:ingestible, prospective_volume_id: collection.id.to_s)
+        expect(ingestible.creating_new_volume?).to be false
+      end
+
+      it 'returns true when creating from scratch with prospective_volume_title' do
+        ingestible = build(:ingestible, no_volume: false, prospective_volume_title: 'New Volume')
+        expect(ingestible.creating_new_volume?).to be true
+      end
+
+      it 'returns true when creating from Publication' do
+        publication = create(:publication)
+        ingestible = build(:ingestible, no_volume: false, prospective_volume_id: "P#{publication.id}")
+        expect(ingestible.creating_new_volume?).to be true
+      end
+    end
+
+    describe '#check_duplicate_volume' do
+      context 'when creating volume from scratch' do
+        it 'prevents duplicate volume with same title and authorities' do
+          # Create an existing volume
+          collection = create(:collection, collection_type: 'volume', title: 'Test Volume')
+          collection.involved_authorities.create!(authority: authority1, role: :author)
+
+          # Try to create ingestible with same volume info
+          ingestible = build(:ingestible,
+                             no_volume: false,
+                             prospective_volume_title: 'Test Volume',
+                             collection_authorities: collection_auths_json)
+          expect(ingestible).not_to be_valid
+          expect(ingestible.errors[:prospective_volume_title]).to include(I18n.t('ingestible.errors.duplicate_volume_by_title'))
+        end
+
+        it 'allows volume with same title but different authorities' do
+          # Create an existing volume
+          collection = create(:collection, collection_type: 'volume', title: 'Test Volume')
+          collection.involved_authorities.create!(authority: authority1, role: :author)
+
+          # Try to create ingestible with same title but different authorities
+          ingestible = build(:ingestible,
+                             no_volume: false,
+                             prospective_volume_title: 'Test Volume',
+                             collection_authorities: different_collection_auths_json)
+          expect(ingestible).to be_valid
+        end
+
+        it 'allows volume with different title but same authorities' do
+          # Create an existing volume
+          collection = create(:collection, collection_type: 'volume', title: 'Test Volume')
+          collection.involved_authorities.create!(authority: authority1, role: :author)
+
+          # Try to create ingestible with different title
+          ingestible = build(:ingestible,
+                             no_volume: false,
+                             prospective_volume_title: 'Different Volume',
+                             collection_authorities: collection_auths_json)
+          expect(ingestible).to be_valid
+        end
+
+        it 'prevents duplicate when another draft ingestible proposes same volume' do
+          # Create first ingestible proposing a volume
+          first_ingestible = create(:ingestible,
+                                    no_volume: false,
+                                    status: :draft,
+                                    prospective_volume_title: 'New Volume',
+                                    collection_authorities: collection_auths_json)
+
+          # Try to create second ingestible with same volume info
+          second_ingestible = build(:ingestible,
+                                    no_volume: false,
+                                    prospective_volume_title: 'New Volume',
+                                    collection_authorities: collection_auths_json)
+          expect(second_ingestible).not_to be_valid
+          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
+        end
+
+        it 'prevents duplicate when another awaiting_authorities ingestible proposes same volume' do
+          # Create first ingestible proposing a volume
+          first_ingestible = create(:ingestible,
+                                    no_volume: false,
+                                    status: :awaiting_authorities,
+                                    prospective_volume_title: 'New Volume',
+                                    collection_authorities: collection_auths_json)
+
+          # Try to create second ingestible with same volume info
+          second_ingestible = build(:ingestible,
+                                    no_volume: false,
+                                    prospective_volume_title: 'New Volume',
+                                    collection_authorities: collection_auths_json)
+          expect(second_ingestible).not_to be_valid
+          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
+        end
+
+        it 'allows duplicate when other ingestible is already ingested' do
+          # Create ingested ingestible
+          first_ingestible = create(:ingestible,
+                                    no_volume: false,
+                                    status: :ingested,
+                                    prospective_volume_title: 'New Volume',
+                                    collection_authorities: collection_auths_json)
+
+          # Should allow second ingestible since first is already ingested
+          second_ingestible = build(:ingestible,
+                                    no_volume: false,
+                                    prospective_volume_title: 'New Volume',
+                                    collection_authorities: collection_auths_json)
+          expect(second_ingestible).to be_valid
+        end
+
+        it 'allows same ingestible to be saved again' do
+          ingestible = create(:ingestible,
+                              no_volume: false,
+                              prospective_volume_title: 'New Volume',
+                              collection_authorities: collection_auths_json)
+          ingestible.markdown = 'Updated content'
+          expect(ingestible).to be_valid
+        end
+      end
+
+      context 'when creating from Publication' do
+        let(:publication) { create(:publication) }
+
+        it 'prevents duplicate volume for same publication and authorities' do
+          # Create an existing volume from publication
+          collection = create(:collection, collection_type: 'volume', publication: publication)
+          collection.involved_authorities.create!(authority: authority1, role: :author)
+
+          # Try to create ingestible for same publication
+          ingestible = build(:ingestible,
+                             no_volume: false,
+                             prospective_volume_id: "P#{publication.id}",
+                             collection_authorities: collection_auths_json)
+          expect(ingestible).not_to be_valid
+          expect(ingestible.errors[:prospective_volume_id]).to include(I18n.t('ingestible.errors.duplicate_volume_for_publication'))
+        end
+
+        it 'allows volume for same publication but different authorities' do
+          # Create an existing volume from publication
+          collection = create(:collection, collection_type: 'volume', publication: publication)
+          collection.involved_authorities.create!(authority: authority1, role: :author)
+
+          # Try to create ingestible with different authorities
+          ingestible = build(:ingestible,
+                             no_volume: false,
+                             prospective_volume_id: "P#{publication.id}",
+                             collection_authorities: different_collection_auths_json)
+          expect(ingestible).to be_valid
+        end
+
+        it 'prevents duplicate when another ingestible proposes same publication volume' do
+          # Create first ingestible proposing a volume from publication
+          first_ingestible = create(:ingestible,
+                                    no_volume: false,
+                                    status: :draft,
+                                    prospective_volume_id: "P#{publication.id}",
+                                    collection_authorities: collection_auths_json)
+
+          # Try to create second ingestible for same publication
+          second_ingestible = build(:ingestible,
+                                    no_volume: false,
+                                    prospective_volume_id: "P#{publication.id}",
+                                    collection_authorities: collection_auths_json)
+          expect(second_ingestible).not_to be_valid
+          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
+        end
+      end
+
+      context 'when not creating a new volume' do
+        it 'does not validate when using existing volume_id' do
+          collection = create(:collection, collection_type: 'volume')
+          ingestible = build(:ingestible, volume_id: collection.id)
+          expect(ingestible).to be_valid
+        end
+
+        it 'does not validate when loading existing collection' do
+          collection = create(:collection)
+          ingestible = build(:ingestible, prospective_volume_id: collection.id.to_s)
+          expect(ingestible).to be_valid
+        end
+
+        it 'does not validate when no_volume is true' do
+          ingestible = build(:ingestible, no_volume: true)
+          expect(ingestible).to be_valid
+        end
+      end
+    end
+  end
 end

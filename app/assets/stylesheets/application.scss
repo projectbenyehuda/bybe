@@ -948,6 +948,10 @@ small p{
 #actualtext .footnote{
 	font-size: 11pt;
 }
+#actualtext .footnotes p {
+	font-size: 11pt;
+	line-height: 13pt;
+}
 .work-content{
   scroll-snap-type: y mandatory;
 }

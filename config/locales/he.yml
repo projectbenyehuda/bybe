@@ -1685,6 +1685,12 @@ he:
       ingested: העלאה הושלמה
       failed: העלאה נכשלה
       awaiting_authorities: בהמתנה ליצירת ישויות אישים חסרות
+    errors:
+      invalid_collection_authorities_json: מכיל JSON לא תקין
+      duplicate_volume_for_publication: כותר עם אישים אלו כבר קיים במאגר עבור פרסום זה
+      duplicate_volume_by_title: כותר עם כותרת ואישים אלו כבר קיים במאגר
+      another_ingestible_proposing_volume: העלאה ממתינה אחרת כבר מציעה ליצור כותר זה
+      invalid_json_in_collection_authorities: JSON לא תקין באישים מקושרים לכותר
     title: כותרת פנימית להעלאה
     new_title: כותרת חדשה ליצירה
     invalid: 'שמירת הקובץ נמנעה בגלל:'
