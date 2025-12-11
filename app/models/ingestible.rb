@@ -63,7 +63,13 @@ class Ingestible < ApplicationRecord
 
   def check_duplicate_volume
     # Parse collection authorities for comparison
-    col_auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
+    begin
+      col_auths = collection_authorities.present? ? JSON.parse(collection_authorities) : []
+    rescue JSON::ParserError => e
+      Rails.logger.error("Invalid JSON in collection_authorities for ingestible #{id}: #{e.message}")
+      errors.add(:collection_authorities, 'contains invalid JSON')
+      return
+    end
 
     # Determine what we're checking against
     if prospective_volume_id.present? && prospective_volume_id[0] == 'P'
@@ -487,9 +493,14 @@ class Ingestible < ApplicationRecord
     return false if json_authorities1.blank? || json_authorities2.blank?
 
     # Parse and compare
-    auths1 = JSON.parse(json_authorities1).map { |a| [a['authority_id'], a['role']] }.to_set
-    auths2 = JSON.parse(json_authorities2).map { |a| [a['authority_id'], a['role']] }.to_set
+    begin
+      auths1 = JSON.parse(json_authorities1).map { |a| [a['authority_id'], a['role']] }.to_set
+      auths2 = JSON.parse(json_authorities2).map { |a| [a['authority_id'], a['role']] }.to_set
 
-    auths1 == auths2
+      auths1 == auths2
+    rescue JSON::ParserError => e
+      Rails.logger.error("Invalid JSON in authorities comparison: #{e.message}")
+      false # If JSON is invalid, consider them as not matching
+    end
   end
 end
