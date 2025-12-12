@@ -13,7 +13,10 @@ module TocTree
       @id ||= "placeholder:#{@collection_item.id}"
     end
 
-    def visible?(role, authority_id)
+    def visible?(role, authority_id, involved_on_collection_level)
+      # Placeholders should only be visible if authority is involved on collection level
+      return false unless involved_on_collection_level
+
       # Placeholder should be visible if authority is involved in parent collection with given role
       @collection_item.collection.involved_authorities.any? do |ia|
         ia.role == role.to_s && ia.authority_id == authority_id
