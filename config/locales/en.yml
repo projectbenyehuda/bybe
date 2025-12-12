@@ -278,6 +278,15 @@ en:
     both_titles_required: Both periodical name and first issue name are required
     creation_failed: Periodical creation failed
     need_to_save: Please save the ingestible after updating the collection
+  toc_by_role:
+    author: Original works
+    translator: Translations
+    editor: Edited works
+    illustrator: Illustrated works
+    photographer: Works with photographs by
+    designer: Works design was done by
+    contributor: Works contributed to
+    other: Other works
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: Public Domain
   viaf_id: ID in VIAF Database
