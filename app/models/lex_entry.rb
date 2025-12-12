@@ -23,4 +23,10 @@ class LexEntry < ApplicationRecord
   validates :title, :sort_title, :status, presence: true
 
   before_validation :update_sort_title!
+
+  def self.cached_count
+    Rails.cache.fetch('lex_entry_count', expires_in: 24.hours) do
+      LexEntry.count
+    end
+  end
 end
