@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 describe GenerateTocTree do
-  subject(:result) { described_class.call(authority) }
+  subject(:result) { described_class.call(authority).top_level_nodes }
 
   let!(:authority) { create(:authority, uncollected_works_collection: uncollected_collection) }
 
