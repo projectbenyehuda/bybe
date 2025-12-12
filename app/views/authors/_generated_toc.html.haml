@@ -7,22 +7,17 @@
       = label_tag "genre_#{genre}", textify_genre(genre)
 .mainlist#browse_mainlist
   = cache_unless current_user&.editor?, @author, expires_in: 12.hours do
-    - top_nodes = GenerateTocTree.call(@author)
-    = render partial: 'authors/toc_by_role',
-              locals: { top_nodes: top_nodes,
-                        title: t(:original_works),
-                        role: :author,
-                        authority_id: @author.id, editable: false, nonce: 'a' }
-    = render partial: 'authors/toc_by_role',
-              locals: { top_nodes: top_nodes,
-                        title: t(:translations),
-                        role: :translator,
-                        authority_id: @author.id, editable: false, nonce: 't' }
-    = render partial: 'authors/toc_by_role',
-              locals: { top_nodes: top_nodes,
-                        title: t(:edited_works, gender_letter: @author.gender_letter),
-                        role: :editor,
-                        authority_id: @author.id, editable: false, nonce: 'e' }
+    :ruby
+    - top_nodes = GenerateTocTree.call(@author).top_level_nodes
+    - InvolvedAuthority.roles.each_key do |role|
+      = render partial: 'authors/toc_by_role',
+               locals: { top_nodes: top_nodes,
+                         title: t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter),
+                         role: role,
+                         authority_id: @author.id,
+                         editable: false,
+                         nonce: role }
+
   .by-card-v02#text-volunteers-desktop
     .by-card-header-v02
       .headline-1-v02= t(:volunteers_who_helped, author: @author.name, gender_letter: @author.gender_letter)
