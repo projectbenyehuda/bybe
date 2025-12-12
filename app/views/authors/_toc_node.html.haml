@@ -57,62 +57,62 @@
     - collection = toc_node.collection
     - type_prefix = collection.collection_type == 'uncollected' ? '' : textify_collection_type(collection.collection_type)
     - uncollected = collection.collection_type == 'uncollected'
-    - is_involved = collection.involved_authorities.any? { |ia| ia.authority_id == authority_id && ia.role == role.to_s }
-    - unless full_toc
-      - full_toc = is_involved # only show full TOC for collections where this particular author is a principal contributor
-    - children = full_toc ? toc_node.sorted_children : toc_node.children_by_role(role, authority_id)
+    - children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
     - children.reject!{ |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.status != 'published' } # don't show deleted or unpublished manifestations in the TOC
     - if !uncollected || children.present?
-      .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
-        %span{style:'font-size:120%;'}
-          - unless uncollected
-            %span.ctitle_only{ style: 'display:none;' }= collection.title
-            %span.ctitle
-              - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
-              - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
-              - if children.present?
-                - unless full_toc
-                  = t(:out_of)
-                = link_to ctitle, collection_path(collection), extra_data
-              - else
-                = ctitle
-            - if current_user && current_user.editor?
-              - if type_prefix.present?
-                = " (#{type_prefix})"
-              != '&nbsp;&nbsp;&nbsp;'
-              = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
-          - else
-            %p{style: 'font-size: 0.8rem; color: #222222;'}= t(:uncollected_works_collection_explanation)
-          - # if the collection's involved authorities number more than one for any given role, return all for that role. Otherwise, return only authorities that aren't the authority_id.
-          - ias = collection.involved_authorities
-          - authorities = {}
-          - ias.each do |ia|
-            - if authorities[ia.role].present?
-              - authorities[ia.role] << ia.authority
+      %li.by-card-v02{"aria-expanede" => "false", :role => "treeitem"}
+        .by-card-content-v02{:style => "padding-top: 12px;"}
+          .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
+            %span{style:'font-size:120%;'}
+              %span.ctitle_only{ style: 'display:none;' }= collection.title
+              %span.ctitle
+                - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
+                - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
+                - if children.present?
+                  - if !involved_on_collection_level
+                    = t(:out_of)
+                  = link_to ctitle, collection_path(collection), extra_data
+                - else
+                  = ctitle
+              - if current_user && current_user.editor?
+                - if type_prefix.present?
+                  = " (#{type_prefix})"
+                != '&nbsp;&nbsp;&nbsp;'
+                = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
+              - if uncollected
+                %p{style: 'font-size: 0.8rem; color: #222222;'}= t(:uncollected_works_collection_explanation)
+              - # if the collection's involved authorities number more than one for any given role, return all for that role. Otherwise, return only authorities that aren't the authority_id.
+              - ias = collection.involved_authorities
+              - authorities = {}
+              - ias.each do |ia|
+                - if authorities[ia.role].present?
+                  - authorities[ia.role] << ia.authority
+                - else
+                  - authorities[ia.role] = [ia.authority]
+              - %w[ author illustrator translator editor photographer designer contributor other ].each do |r|
+                - next unless authorities[r].present?
+                - if authorities[r].size > 1
+                  - authorities[r].each do |authority|
+                    %p= "#{authority.name} (#{textify_role(r, authority.gender)})"
+                - else
+                  - authority = authorities[r].first
+                  - if authority.id == authority_id # if the single authority is the same as the one whose page we are on
+                    - next if r.to_sym == role # this is implicit
+                  %p= "#{authority.name} (#{textify_role(r, authority.gender)})" # author X may have a work in which they are both an author and an illustrator, for example.
+              - if collection.publisher_line.present?
+                %p
+                  - pyear = collection.pub_year.present? ? ", #{collection.pub_year}" : ''
+                  - unless pyear.strip == ', 0' # special case to suppress year of a collection we want to place at the head of the page
+                    = "#{collection.publisher_line}#{pyear}"
+            - if editable && (collection.uncollected? || involved_on_collection_level)
+              -# only show editable collections for collections where this particular author is a principal contributor
+              = render partial: 'shared/manage_collection', locals: { collection: collection, title: collection.title, nonce: nonce }
             - else
-              - authorities[ia.role] = [ia.authority]
-          - %w[ author illustrator translator editor photographer designer contributor other ].each do |r|
-            - next unless authorities[r].present?
-            - if authorities[r].size > 1
-              - authorities[r].each do |authority|
-                %p= "#{authority.name} (#{textify_role(r, authority.gender)})"
-            - else
-              - authority = authorities[r].first
-              - if authority.id == authority_id # if the single authority is the same as the one whose page we are on
-                - next if r.to_sym == role # this is implicit
-              %p= "#{authority.name} (#{textify_role(r, authority.gender)})" # author X may have a work in which they are both an author and an illustrator, for example.
-          - if collection.publisher_line.present?
-            %p
-              - pyear = collection.pub_year.present? ? ", #{collection.pub_year}" : ''
-              - unless pyear.strip == ', 0' # special case to suppress year of a collection we want to place at the head of the page
-                = "#{collection.publisher_line}#{pyear}"
-        - if editable && (collection.collection_type == 'uncollected' || is_involved) # only show editable collections for collections where this particular author is a principal contributor
-          = render partial: 'shared/manage_collection', locals: { collection: collection, title: collection.title, nonce: nonce }
-        - else
-          - unless children.empty?
-            %ul.toclist
-              = render partial: 'authors/toc_node', collection: children,
-                      locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce, uncollected: uncollected, full_toc: full_toc }
+              - unless children.empty?
+                %ul.toclist
+                  = render partial: 'authors/toc_node', collection: children,
+                          locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce,
+                                    uncollected: uncollected, involved_on_collection_level: involved_on_collection_level }
       %br
   - elsif toc_node.is_a?(TocTree::PlaceholderNode)
     -# Placeholder, toc_node should be a String with HTML layout
