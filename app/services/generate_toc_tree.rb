@@ -2,9 +2,9 @@
 
 # Service to generate collections-based TOC tree for a single authority
 class GenerateTocTree < ApplicationService
-  # Node represents a single collection
-
   def call(authority)
+    # NOTE: important thing to remember is that TOC is not a tree strictly speaking, and one work or collection can be
+    # included in multiple parent collections.
     @authority = authority
     @collection_nodes = {}
 
@@ -15,14 +15,15 @@ class GenerateTocTree < ApplicationService
 
     current_level = get_parents(current_level) until current_level.empty?
 
-    top_level_nodes
+    self
   end
 
-  private
-
+  # returns list of
   def top_level_nodes
     @collection_nodes.values.reject(&:has_parents)
   end
+
+  private
 
   # This is a first step of building TOC tree
   # We check all collections where authority is involved on collection level and fetch all their children
@@ -37,11 +38,12 @@ class GenerateTocTree < ApplicationService
   end
 
   # This is a second step of building TOC tree
-  # We check all manifestations whene authority is directly involved, and fetching all their parent collections
+  # We check all manifestations where authority is directly involved, and fetching all their parent collections
   # NOTE: we assume every manifestation must be included at least in one collection (either 'normal' or 'uncollected')
   def fetch_manifestations
-    manifestations = @authority.manifestations(:author, :translator, :editor)
-                               .preload(collection_items: :collection).with_involved_authorities
+    manifestations = @authority.manifestations
+                               .preload(collection_items: :collection)
+                               .with_involved_authorities
 
     manifestations.each do |manifestation|
       manifestation.collection_items.each do |collection_item|
