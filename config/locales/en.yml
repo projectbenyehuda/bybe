@@ -549,6 +549,20 @@ en:
     translator_missing: Ingestible Translator Missing
     volume: Ingestible Volume
     volume_by_author: Ingestible Volume By Author
+  toc_by_role:
+    involved_on_collection_level: Involved on collection level
+    involved_on_work_level: Involved on work level
+    uncollected_works: Uncollected works
+    headers:
+      author: original works
+      translator: translator
+      editor: edited works
+      illustrator: Illustrated works
+      photographer: Works with photographs by
+      designer: Works design was done by
+      contributor: Works contributed to
+      other: Other works
+  # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: Public Domain
   viaf_id: VIAF ID
   text_n_of_m: Text %{n} of %{m}
