@@ -75,21 +75,49 @@ describe AuthorsController do
     describe '#toc' do
       subject(:request) { get :toc, params: { id: author.id } }
 
-      let(:toc) { create(:toc) }
+      context 'when TOC record exists' do
+        # Legacy markdown TOC
+        let(:toc) { create(:toc) }
 
-      before do
-        create_list(:manifestation, 5, author: author, created_at: 3.days.ago)
-        author.toc = toc
-        author.save!
-      end
-
-      it 'renders successfully' do
-        expect(request).to be_successful
-      end
-
-      context 'when fresh work exists' do
         before do
-          create(:manifestation, author: author, created_at: 6.hours.ago)
+          author.toc = toc
+          author.save!
+        end
+
+        it 'renders successfully' do
+          expect(request).to be_successful
+        end
+
+        context 'when fresh work exists' do
+          before do
+            create(:manifestation, author: author, created_at: 6.hours.ago)
+          end
+
+          it 'renders successfully' do
+            expect(request).to be_successful
+          end
+        end
+      end
+
+      context 'when collections-based TOC should be used' do
+        let(:uncollected_collection) { create(:collection, :uncollected) }
+
+        let!(:author) { create(:authority, uncollected_works_collection: uncollected_collection) }
+
+        let(:volume_manifestations) do
+          create_list(:manifestation, 2, author: author, created_at: 3.days.ago)
+        end
+
+        let!(:collection) { create(:collection, manifestations: volume_manifestations, authors: [author]) }
+
+        let(:edited_manifestation) { create(:manifestation, editor: author) }
+
+        let!(:edited_collection) { create(:collection, manifestations: [edited_manifestation]) }
+
+        let(:uncollected_manifestation) { create(:manifestation, orig_lang: 'de', translator: author) }
+
+        before do
+          uncollected_collection.collection_items.create!(item: uncollected_manifestation, seqno: 1)
         end
 
         it 'renders successfully' do
