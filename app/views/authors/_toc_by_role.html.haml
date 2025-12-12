@@ -1,8 +1,31 @@
 :ruby
-  top_level_by_role = top_nodes.select { |node| node.visible?(role, authority_id) }
-                               .sort_by { |node| [node.collection.uncollected? ? 1 : 0, node.collection.normalized_pub_year.present? ? node.collection.normalized_pub_year : node.collection.created_at.year] }
-- if top_level_by_role.present?
-  %div{id: 'works-'+role.to_s, role: 'tabpanel'}
-    .headline-books= title
-    %ul.toclist{role: 'tree'}
-      = render partial: 'authors/toc_node', collection: top_level_by_role, locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce, uncollected: false, full_toc: false }
+  involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
+                                          .sort_by(&:sort_term)
+  involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
+                                    .sort_by(&:sort_term)
+  uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
+  involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+
+- if involved_on_collection_level.present?
+  %div{ id: "works-#{role}-collection-level", role: 'tabpanel' }
+    .headline-books #{title} (#{t('toc_by_role.involved_on_collection_level')})
+    %ul.toclist{ role: 'tree' }
+      = render partial: 'authors/toc_node', collection: involved_on_collection_level,
+               locals: { role: role, authority_id: authority_id, editable: editable,
+                         nonce: nonce, uncollected: false, involved_on_collection_level: true }
+
+- if involved_on_work_level.present?
+  %div{ id: "works-#{role}-work-level", role: 'tabpanel' }
+    .headline-books #{title} (#{t('toc_by_role.involved_on_work_level')})
+    %ul.toclist{ role: 'tree' }
+      = render partial: 'authors/toc_node', collection: involved_on_work_level,
+               locals: { role: role, authority_id: authority_id, editable: editable,
+                         nonce: "#{nonce}-work-level", uncollected: false,
+                         involved_on_collection_level: false }
+- if uncollected_node&.visible?(role, authority_id, false)
+  %div{ id: "works-#{role}-uncollected", role: 'tabpanel' }
+    .headline-books #{title} (#{t('toc_by_role.uncollected_works')})
+    %ul.toclist{ role: 'tree' }
+    = render partial: 'authors/toc_node', collection: uncollected_node.children,
+             locals: { role: role, authority_id: authority_id, editable: editable, nonce: "#{nonce}-uncollected",
+                       uncollected: true, involved_on_collection_level: false }
