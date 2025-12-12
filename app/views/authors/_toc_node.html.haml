@@ -57,10 +57,7 @@
     - collection = toc_node.collection
     - type_prefix = collection.collection_type == 'uncollected' ? '' : textify_collection_type(collection.collection_type)
     - uncollected = collection.collection_type == 'uncollected'
-    - is_involved = collection.involved_authorities.any? { |ia| ia.authority_id == authority_id && ia.role == role.to_s }
-    - unless full_toc
-      - full_toc = is_involved # only show full TOC for collections where this particular author is a principal contributor
-    - children = full_toc ? toc_node.sorted_children : toc_node.children_by_role(role, authority_id)
+    - children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
     - children.reject!{ |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.status != 'published' } # don't show deleted or unpublished manifestations in the TOC
     - if !uncollected || children.present?
       %li.by-card-v02{"aria-expanede" => "false", :role => "treeitem"}
@@ -72,7 +69,7 @@
                 - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
                 - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
                 - if children.present?
-                  - unless full_toc
+                  - if !involved_on_collection_level
                     = t(:out_of)
                   = link_to ctitle, collection_path(collection), extra_data
                 - else
@@ -107,13 +104,15 @@
                   - pyear = collection.pub_year.present? ? ", #{collection.pub_year}" : ''
                   - unless pyear.strip == ', 0' # special case to suppress year of a collection we want to place at the head of the page
                     = "#{collection.publisher_line}#{pyear}"
-            - if editable && (collection.collection_type == 'uncollected' || is_involved) # only show editable collections for collections where this particular author is a principal contributor
+            - if editable && (collection.uncollected? || involved_on_collection_level)
+              -# only show editable collections for collections where this particular author is a principal contributor
               = render partial: 'shared/manage_collection', locals: { collection: collection, title: collection.title, nonce: nonce }
             - else
               - unless children.empty?
                 %ul.toclist
                   = render partial: 'authors/toc_node', collection: children,
-                          locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce, uncollected: uncollected, full_toc: full_toc }
+                          locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce,
+                                    uncollected: uncollected, involved_on_collection_level: involved_on_collection_level }
       %br
   - elsif toc_node.is_a?(TocTree::PlaceholderNode)
     -# Placeholder, toc_node should be a String with HTML layout
