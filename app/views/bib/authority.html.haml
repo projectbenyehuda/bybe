@@ -4,7 +4,7 @@
     = link_to @authority.name, authority_path(@authority.id)
   %br
   -# haml-lint:disable LineLength
-  = link_to t(:search_tasks_system), "https://tasks.benyehuda.org/admin/tasks?utf8=%E2%9C%93&state=&kind=%D7%94%D7%A7%D7%9C%D7%93%D7%94&difficulty=&length=&priority=&query=#{@authority.name}&commit=%D7%A1%D7%99%D7%A0%D7%95%D7%9F"
+  = link_to t(:search_tasks_system), "https://tasks.benyehuda.org/admin/tasks?utf8=%E2%9C%93&state=&kind=%D7%94%D7%A7%D7%9C%D7%93%D7%94&difficulty=&length=&priority=&query=#{@authority.name}&commit=%D7%A1%D7%99%D7%A0%D7%95%D7%9F", target: '_blank'
   -# haml-lint:enable LineLength
   .container-fluid
     .row
