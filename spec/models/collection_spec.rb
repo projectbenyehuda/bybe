@@ -76,6 +76,14 @@ describe Collection do
     expect(described_class.count).to eq 4
   end
 
+  it 'supports volume_series collection type' do
+    c = create(:collection, collection_type: :volume_series)
+    expect(c).to be_valid
+    expect(c.volume_series?).to be true
+    expect(c.periodical?).to be false
+    expect(described_class.by_type(:volume_series)).to eq [c]
+  end
+
   it 'iterates over its collection items and wrapped polymorphic items filtered by polymorphic item type' do
     c = create(:collection)
     m1 = create(:manifestation)
