@@ -316,10 +316,6 @@ class ApplicationController < ActionController::Base
     @cur_anth_id = @anthology.nil? ? 0 : @anthology.id
   end
 
-  def prep_toc_as_collection
-    @top_nodes = GenerateTocTree.call(@author)
-  end
-
   def mention_skipped
     return unless params[:skipped].present?
 
