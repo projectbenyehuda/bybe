@@ -14,7 +14,7 @@ class AuthorsController < ApplicationController
 
   before_action :set_author,
                 only: %i(show edit update destroy toc edit_toc print all_links delete_photo
-                         whatsnew_popup latest_popup publish to_manual_toc volumes new_toc
+                         whatsnew_popup latest_popup publish to_manual_toc volumes
                          kwic kwic_download kwic_context)
   layout 'backend', only: %i(manage_toc)
 
@@ -488,15 +488,6 @@ class AuthorsController < ApplicationController
     end
   end
 
-  def new_toc
-    unless @author.published?
-      flash.alert = I18n.t(:author_not_available)
-      redirect_to '/'
-      return
-    end
-    track_view(@author)
-  end
-
   def all_links
     unless @author.nil?
       @external_links = @author.external_links.status_approved
@@ -544,7 +535,6 @@ class AuthorsController < ApplicationController
     @author = Authority.find(params[:id])
     prep_manage_toc
     prep_toc
-    @top_nodes = GenerateTocTree.call(@author)
     @nonce = 'top'
     @page_title = "#{t(:edit_toc)}: #{@author.name}"
   end
