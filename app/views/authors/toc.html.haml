@@ -68,10 +68,6 @@
                   != '&nbsp;&nbsp;&nbsp;'
                   %span.static-btn
                     %b= link_to t(:edit_metadata), authors_edit_path(id: @author.id)
-                  != '&nbsp;&nbsp;&nbsp;'
-                  %span.static-btn
-                    %b= link_to 'New TOC', authority_new_toc_path(@author)
-
             .select-all-with-buttons{style:'display:none;margin-right:100px;'}
               .number-of-selected-texts{style: 'display:none'}
                 = t(:number_of_selected_texts)
