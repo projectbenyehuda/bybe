@@ -105,6 +105,32 @@ describe CollectionsController do
         end
       end
     end
+
+    context 'when collection is volume_series' do
+      subject! { get :show, params: { id: collection.id } }
+
+      let(:volumes) { create_list(:collection, 3, collection_type: 'volume') }
+      let(:nested_collections) do
+        # item of 'other' type should be ignored
+        volumes + [create(:collection, collection_type: 'other')]
+      end
+
+      let(:collection) do
+        create(
+          :collection,
+          collection_type: 'volume_series',
+          manifestations: create_list(:manifestation, 2),
+          included_collections: nested_collections
+        )
+      end
+
+      it 'marks volume divs as proofable (like periodicals)' do
+        expect(response.body).to have_css('.by-card-v02.proofable', count: 3)
+        collection.collection_items.select { |ci| volumes.include?(ci.item) }.each do |ci|
+          expect(response.body).to have_css(".proofable[data-item-id='#{ci.item_id}'][data-item-type='Collection']")
+        end
+      end
+    end
   end
 
   describe '#show with search query parameter' do

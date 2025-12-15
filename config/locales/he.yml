@@ -1627,6 +1627,7 @@ he:
       periodical: כתב עת
       periodical_issue: גליון
       series: סדרה, מחזור, או שער
+      volume_series: סדרת כרכים
       other: אחר
       uncollected: יצירות שלא כונסו
     up_link:
@@ -1635,6 +1636,7 @@ he:
       periodical: לתצוגת כתב העת
       periodical_issue: לתצוגת הגליון
       series: לתצוגת המחזור/שער כולו
+      volume_series: לתצוגת סדרת הכרכים
   genre_values:
     poetry: שירה
     prose: פרוזה

@@ -55,6 +55,7 @@ class Collection < ApplicationRecord
     periodical: 1,
     periodical_issue: 2,
     series: 3,
+    volume_series: 4,
     other: 5,
     uncollected: 100
   }

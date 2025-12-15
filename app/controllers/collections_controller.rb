@@ -399,9 +399,12 @@ class CollectionsController < ApplicationController
   def prep_for_show
     @htmls = []
     i = 1
-    if @collection.periodical? # we don't want to show an entire periodical's run in a single Web page; instead, we show the complete TOC of all issues
+    if @collection.periodical? || @collection.volume_series? # we don't want to show an entire periodical's or volume series' run in a single Web page; instead, we show the complete TOC of all issues/volumes
       @collection.collection_items.each do |ci|
-        next unless ci.item.present? && ci.item_type == 'Collection' && ci.item.collection_type == 'periodical_issue'
+        next unless ci.item.present? && ci.item_type == 'Collection'
+        # For periodicals, show only periodical_issue items; for volume_series, show only volume items
+        next unless (@collection.periodical? && ci.item.collection_type == 'periodical_issue') ||
+                    (@collection.volume_series? && ci.item.collection_type == 'volume')
 
         html = ci.item.toc_html
         @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false, ci.genre, i, ci]
