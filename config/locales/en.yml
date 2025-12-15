@@ -206,6 +206,7 @@ en:
       periodical: Periodical
       periodical_issue: Periodical Issue
       series: Series
+      volume_series: Volume Series
       other: Other
       uncollected: Uncollected works
     up_link:
@@ -214,6 +215,7 @@ en:
       periodical: to periodical
       periodical_issue: to issue
       series: to whole series
+      volume_series: to volume series
   genre_values:
     poetry: Poetry
     prose: Prose
