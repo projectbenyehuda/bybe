@@ -13,7 +13,6 @@ class CollectionsMigrationController < ApplicationController
     @author = Authority.find(params[:id])
     prep_manage_toc
     prep_toc
-    @top_nodes = GenerateTocTree.call(@author)
     @nonce = 'top'
   end
 
