@@ -1,0 +1,10 @@
+// Place all the styles related to the Collections controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+// Center-align images in collection show view, like in manifestation read view
+.by-card-content-v02.textcard#actualtext img {
+  max-width: 100%;
+  display: block;
+  margin: auto;
+}
