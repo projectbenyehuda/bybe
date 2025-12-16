@@ -63,6 +63,7 @@
                     %span.by-icon-v02> Q
                     = t(:about_author_in_blog, author:@author.name)
               - if current_user && current_user.editor?
+                %br
                 %p{style:'text-align:left'}
                   != '&nbsp;&nbsp;&nbsp;'
                   - unless @author.legacy_toc_id.present? || @author.toc.nil?

@@ -8,7 +8,7 @@
 
 - if involved_on_collection_level.present?
   %div{ id: "works-#{role}-collection-level", role: 'tabpanel' }
-    .headline-books #{title} (#{t('toc_by_role.involved_on_collection_level')})
+    .headline-books #{title} (#{t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)})
     %ul.toclist{ role: 'tree' }
       = render partial: 'authors/toc_node', collection: involved_on_collection_level,
                locals: { role: role, authority_id: authority_id, editable: editable,
