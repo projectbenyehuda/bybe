@@ -200,22 +200,49 @@
 
 :javascript
   // Global function to apply genre filters based on toggle states
-  window.applyGenreFilters = function() {
-    $('.genre-toggle').each(function() {
-      var genreName = $(this).data('genre-name');
-      var isActive = $(this).hasClass('genre-active');
+  // Optimized to cache manifestations per genre to avoid repeated DOM queries
+  window.applyGenreFilters = (function() {
+    var genreManifestationCache = null;
 
-      // Find all manifestations with this genre's icon and show/hide them
-      $('.by-icon-v02[title="' + genreName + '"]').closest('.manifestation-node').each(function() {
-        if (isActive) {
-          $(this).show();
-        } else {
-          $(this).hide();
+    function buildCache() {
+      var cache = {};
+
+      $('.by-icon-v02').each(function() {
+        var genreName = $(this).attr('title');
+        if (!genreName) { return; }
+
+        var $manifestation = $(this).closest('.manifestation-node');
+        if ($manifestation.length === 0) { return; }
+
+        if (!cache[genreName]) {
+          cache[genreName] = [];
+        }
+        cache[genreName].push($manifestation);
+      });
+
+      return cache;
+    }
+
+    return function() {
+      if (!genreManifestationCache) {
+        genreManifestationCache = buildCache();
+      }
+
+      $('.genre-toggle').each(function() {
+        var genreName = $(this).data('genre-name');
+        var isActive = $(this).hasClass('genre-active');
+        var manifestations = genreManifestationCache[genreName] || [];
+
+        for (var i = 0; i < manifestations.length; i++) {
+          if (isActive) {
+            manifestations[i].show();
+          } else {
+            manifestations[i].hide();
+          }
         }
       });
-    });
-  };
-
+    };
+  })();
   $(function() {
     // Genre toggle click handler
     $('.genre-toggle').click(function(e) {
