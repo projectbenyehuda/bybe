@@ -53,7 +53,7 @@
                 - @author.cached_genre_stats.each do |pair|
                   - genre = pair[0]
                   - count = pair[1]
-                  .author-works-type
+                  .author-works-type.genre-toggle.genre-active{data: {genre: genre, genre_name: textify_genre(genre)}}
                     .by-icon-v02.iconNearText-v02>= glyph_for_genre(genre)
                     = "#{textify_genre(genre)} (#{count})"
 
@@ -197,7 +197,31 @@
 = render partial: 'shared/propose_link'
 
 :javascript
+  // Global function to apply genre filters based on toggle states
+  window.applyGenreFilters = function() {
+    $('.genre-toggle').each(function() {
+      var genreName = $(this).data('genre-name');
+      var isActive = $(this).hasClass('genre-active');
+
+      // Find all manifestations with this genre's icon and show/hide them
+      $('.by-icon-v02[title="' + genreName + '"]').closest('.manifestation-node').each(function() {
+        if (isActive) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+    });
+  };
+
   $(function() {
+    // Genre toggle click handler
+    $('.genre-toggle').click(function(e) {
+      e.preventDefault();
+      $(this).toggleClass('genre-active');
+      window.applyGenreFilters();
+    });
+
     $('.all_links_btn').click(function(e){
       e.preventDefault();
       $('#generalDlg').load("#{author_links_popup_path(id: @author.id)}");
