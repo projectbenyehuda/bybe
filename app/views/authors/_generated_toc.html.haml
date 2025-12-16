@@ -59,6 +59,10 @@
       if(this.value == 'colls') {
         $('#browse_mainlist').html(orig_mainlist);
         $('#genre_filtering').hide();
+        // Reapply genre filters after restoring original sort
+        if(typeof window.applyGenreFilters === 'function') {
+          window.applyGenreFilters();
+        }
       } else {
         $('.sorting_caveat').hide();
         $('.metadata-creation-date').hide();
@@ -157,6 +161,10 @@
         }
         $('#browse_mainlist').html('<div class="by-card-v02"><div class="by-card-content-v02" id="sorted_card"></div></div>');
         $('#sorted_card').html(nodes_to_sort.detach());
+      }
+      // Reapply genre filters after sorting
+      if(typeof window.applyGenreFilters === 'function') {
+        window.applyGenreFilters();
       }
     });
     prune_collections();
