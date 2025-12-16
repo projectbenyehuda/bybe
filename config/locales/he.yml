@@ -2077,18 +2077,18 @@ he:
     no_project: ללא מיזם
     project_help: אם ההעלאה משוייכת למיזם, הקישורית לדף ההוצאה המוגדרת במיזם תתווסף אוטומטית לאוסף וליצירות
   toc_by_role:
-    involved_on_collection_level: Involved on collection level
-    involved_on_work_level: Involved on work level
-    uncollected_works: Uncollected works
+    involved_on_collection_level: בכותרים של%{gender_letter}
+    involved_on_work_level: בכותרים אחרים
+    uncollected_works: יצירות נוספות שליקטנו
     headers:
       author: יצירות מקור
       translator: תרגום
       editor: יצירות בעריכת%{gender_letter}
-      illustrator: Illustrated works
-      photographer: Works with photographs by
-      designer: Works design was done by
-      contributor: Works contributed to
-      other: Other works
+      illustrator: איורים
+      photographer: צילומים
+      designer: עיצובים
+      contributor: תרומות נוספות
+      other: יצירות שונות
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: נחלת הכלל
   viaf_id: "מזהה במאגר VIAF‏"
