@@ -53,7 +53,12 @@
                 - @author.cached_genre_stats.each do |pair|
                   - genre = pair[0]
                   - count = pair[1]
-                  .author-works-type.genre-toggle.genre-active{data: {genre: genre, genre_name: textify_genre(genre)}}
+                  .author-works-type.genre-toggle.genre-active{
+                    data: {genre: genre, genre_name: textify_genre(genre)},
+                    tabindex: 0,
+                    role: 'button',
+                    onkeydown: "if (event.key === 'Enter' || event.key === ' ' || event.keyCode === 13 || event.keyCode === 32) { event.preventDefault(); this.click(); }"
+                  }
                     .by-icon-v02.iconNearText-v02>= glyph_for_genre(genre)
                     = "#{textify_genre(genre)} (#{count})"
 
