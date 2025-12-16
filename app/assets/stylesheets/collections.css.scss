@@ -3,8 +3,6 @@
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
 // Center-align images in collection show view, like in manifestation read view
-.by-card-content-v02.textcard#actualtext img {
-  max-width: 100%;
+.textcard#actualtext img {
   display: block;
-  margin: auto;
 }
