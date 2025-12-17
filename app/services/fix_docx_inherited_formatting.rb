@@ -9,25 +9,22 @@ require 'tempfile'
 # pandoc and other converters that don't properly handle style inheritance.
 #
 # Example:
-#   fixer = FixDocxInheritedFormatting.new(docx_binary_content)
-#   fixed_binary = fixer.call
+#   fixed_binary = FixDocxInheritedFormatting.call(docx_binary_content)
 class FixDocxInheritedFormatting < ApplicationService
   WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
 
-  def initialize(docx_binary)
-    @docx_binary = docx_binary
-    @modifications = 0
-  end
-
+  # @param docx_binary [String] Original DOCX file as binary string
   # @return [String] Fixed DOCX file as binary string
-  def call
+  def call(docx_binary)
+    @modifications = 0
+
     # Create temp files for input and output
     input_file = Tempfile.new(['docx_input_', '.docx'], encoding: 'ascii-8bit')
     output_file = Tempfile.new(['docx_output_', '.docx'], encoding: 'ascii-8bit')
 
     begin
       # Write input binary to temp file
-      input_file.write(@docx_binary)
+      input_file.write(docx_binary)
       input_file.flush
       input_file.close
 
