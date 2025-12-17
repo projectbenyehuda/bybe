@@ -296,14 +296,22 @@ en:
     involved_on_work_level: Involved on work level
     uncollected_works: Uncollected works
     headers:
-      author: יצירות מקור
-      translator: תרגום
-      editor: יצירות בעריכת%{gender_letter}
+      author: Authored works
+      translator: Translated works
+      editor: Edited works
       illustrator: Illustrated works
       photographer: Works with photographs by
       designer: Works design was done by
       contributor: Works contributed to
       other: Other works
+    made_by:
+      translator: translated by
+      editor: edited by
+      illustrator: illustrated by
+      photographer: photographs by
+      designer: design by
+      contributor: contributed to by
+      other: by
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: Public Domain
   viaf_id: ID in VIAF Database
