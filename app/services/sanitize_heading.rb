@@ -14,6 +14,7 @@ class SanitizeHeading < ApplicationService
            .then { |s| strip_tags(s) }
            .gsub(/^#+/, '&nbsp;&nbsp;&nbsp;')
            .gsub('\"', '"')
+           .gsub(/\\([\[\]\*\_\{\}\(\)\#\+\-\.\!])/, '\1') # Remove markdown escape backslashes
            .strip
   end
 end
