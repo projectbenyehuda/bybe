@@ -204,49 +204,50 @@
 :javascript
   // Global function to apply genre filters based on toggle states
   // Optimized to cache manifestations per genre to avoid repeated DOM queries
-  window.applyGenreFilters = (function() {
-    var genreManifestationCache = null;
+  $(document).ready(function() {
+    window.applyGenreFilters = (function() {
+      var genreManifestationCache = null;
 
-    function buildCache() {
-      var cache = {};
+      function buildCache() {
+        var cache = {};
 
-      $('.by-icon-v02').each(function() {
-        var genreName = $(this).attr('title');
-        if (!genreName) { return; }
+        $('.by-icon-v02').each(function() {
+          var genreName = $(this).attr('title');
+          if (!genreName) { return; }
 
-        var $manifestation = $(this).closest('.manifestation-node');
-        if ($manifestation.length === 0) { return; }
+          var $manifestation = $(this).closest('.manifestation-node');
+          if ($manifestation.length === 0) { return; }
 
-        if (!cache[genreName]) {
-          cache[genreName] = [];
-        }
-        cache[genreName].push($manifestation);
-      });
+          if (!cache[genreName]) {
+            cache[genreName] = [];
+          }
+          cache[genreName].push($manifestation);
+        });
 
-      return cache;
-    }
-
-    return function() {
-      if (!genreManifestationCache) {
-        genreManifestationCache = buildCache();
+        return cache;
       }
 
-      $('.genre-toggle').each(function() {
-        var genreName = $(this).data('genre-name');
-        var isActive = $(this).hasClass('genre-active');
-        var manifestations = genreManifestationCache[genreName] || [];
-
-        for (var i = 0; i < manifestations.length; i++) {
-          if (isActive) {
-            manifestations[i].show();
-          } else {
-            manifestations[i].hide();
-          }
+      return function() {
+        if (!genreManifestationCache) {
+          genreManifestationCache = buildCache();
         }
-      });
-    };
-  })();
-  $(function() {
+
+        $('.genre-toggle').each(function() {
+          var genreName = $(this).data('genre-name');
+          var isActive = $(this).hasClass('genre-active');
+          var manifestations = genreManifestationCache[genreName] || [];
+
+          for (var i = 0; i < manifestations.length; i++) {
+            if (isActive) {
+              manifestations[i].show();
+            } else {
+              manifestations[i].hide();
+            }
+          }
+        });
+      };
+    })();
+
     // Genre toggle click handler
     $('.genre-toggle').click(function(e) {
       e.preventDefault();
@@ -254,103 +255,103 @@
       window.applyGenreFilters();
     });
 
-    $('.all_links_btn').click(function(e){
-      e.preventDefault();
-      $('#generalDlg').load("#{author_links_popup_path(id: @author.id)}");
-      $('#generalDlg').modal('show');
-    });
-    $('.anthologies_button:not(:has(.must_login))').click(function() {
-      $('#anthologiesDlg').modal({  backdrop: 'static',
-        keyboard: false, show: true});
-    });
-    $.fn.browse_multi_select_toggle = function() {
-      // determine whether to toggle on or off
-      if($('#browse_mainlist').hasClass('multiselect')) {
-        $('#browse_mainlist').removeClass('multiselect');
-        $('#multiselect_btn').removeClass('btn-active');
-        $('#select-all').hide();
-        $('.number-of-selected-texts').hide();
-        $('.add-to-anthology').hide();
-        $('#browse_mainlist input').remove();
-        $('#selected_counter').text('0');
-      } else {
-        // turn on multi-select mode
-        $('#browse_mainlist').addClass('multiselect');
-        $('#multiselect_btn').addClass('btn-active');
-        $('.select-all-with-buttons').show();
-        $('#select-all').show();
-        $('.number-of-selected-texts').show();
+      $('.all_links_btn').click(function(e){
+        e.preventDefault();
+        $('#generalDlg').load("#{author_links_popup_path(id: @author.id)}");
+        $('#generalDlg').modal('show');
+      });
+      $('.anthologies_button:not(:has(.must_login))').click(function() {
+        $('#anthologiesDlg').modal({  backdrop: 'static',
+          keyboard: false, show: true});
+      });
+      $.fn.browse_multi_select_toggle = function() {
+        // determine whether to toggle on or off
+        if($('#browse_mainlist').hasClass('multiselect')) {
+          $('#browse_mainlist').removeClass('multiselect');
+          $('#multiselect_btn').removeClass('btn-active');
+          $('#select-all').hide();
+          $('.number-of-selected-texts').hide();
+          $('.add-to-anthology').hide();
+          $('#browse_mainlist input').remove();
+          $('#selected_counter').text('0');
+        } else {
+          // turn on multi-select mode
+          $('#browse_mainlist').addClass('multiselect');
+          $('#multiselect_btn').addClass('btn-active');
+          $('.select-all-with-buttons').show();
+          $('#select-all').show();
+          $('.number-of-selected-texts').show();
 
-        selectors = ['#browse_mainlist p', '#browse_mainlist h3', '#browse_mainlist h4', '#browse_mainlist h5']
-        selectors.forEach(function(item, index){ 
-          $(item).each(function() {
-            intlink = $(this).find('a[href]');
-            if(intlink.length > 0)
-              if(intlink[0].toString().match(/\/read\/\d+/))
-                  $(this).prepend("<input class=\"multiselect_checkbox\" type=\"checkbox\" />");
+          selectors = ['#browse_mainlist p', '#browse_mainlist h3', '#browse_mainlist h4', '#browse_mainlist h5']
+          selectors.forEach(function(item, index){ 
+            $(item).each(function() {
+              intlink = $(this).find('a[href]');
+              if(intlink.length > 0)
+                if(intlink[0].toString().match(/\/read\/\d+/))
+                    $(this).prepend("<input class=\"multiselect_checkbox\" type=\"checkbox\" />");
+            });
+          })
+
+          $('.multiselect_checkbox').change(function() {
+            if($(this).prop('checked') && $('.add-to-anthology').css('display') == 'none') {
+              $('.add-to-anthology').show();
+              startAnimation('blink 2s ease-in','.add-to-anthology');
+            }
+            $('#selected_counter').text($('.multiselect_checkbox:checked').length);
           });
-        })
-
-        $('.multiselect_checkbox').change(function() {
-          if($(this).prop('checked') && $('.add-to-anthology').css('display') == 'none') {
-            $('.add-to-anthology').show();
-           	startAnimation('blink 2s ease-in','.add-to-anthology');
-          }
-          $('#selected_counter').text($('.multiselect_checkbox:checked').length);
-        });
-      }
-    }
-    $('#initiate-add-tag').click(function(e) {
-      if("#{current_user}" != '') {
-        if($('#accepted_tag_policy').val() != 'false') {
-          $('#generalDlg').load(
-            "#{add_tagging_popup_path(taggable_id: @author.id, taggable_type: @author.class.name)}"
-          );
-          $('#generalDlg').modal('show');
         }
-        else
-          $('#tagPolicyDlg').modal({  backdrop: 'static', keyboard: false, show: true});
-      } else {
-        e.stopPropagation();
-        alert("#{t(:must_login_for_this)}");
-        return;
       }
-    });
+      $('#initiate-add-tag').click(function(e) {
+        if("#{current_user}" != '') {
+          if($('#accepted_tag_policy').val() != 'false') {
+            $('#generalDlg').load(
+              "#{add_tagging_popup_path(taggable_id: @author.id, taggable_type: @author.class.name)}"
+            );
+            $('#generalDlg').modal('show');
+          }
+          else
+            $('#tagPolicyDlg').modal({  backdrop: 'static', keyboard: false, show: true});
+        } else {
+          e.stopPropagation();
+          alert("#{t(:must_login_for_this)}");
+          return;
+        }
+      });
 
-    $('#reset_multiselect').click(function() {
-      $('.mainlist input[type=checkbox]').prop('checked', false);
-      $('#select-all').prop('checked', false);
-      $('#selected_counter').text($('.multiselect_checkbox:checked').length);
-    });
-    $('#multiselect_btn').click(function(){
-      $.fn.browse_multi_select_toggle();
-    });
-    $('#select-all').change(function(){
-      $('.mainlist input[type=checkbox]').prop('checked', $(this).prop('checked'));
-      if($('.add-to-anthology').css('display') == 'none' && $(this).prop('checked')) {
-        $('.add-to-anthology').show();
-        startAnimation('blink 2s ease-in','.add-to-anthology');
-      }
-      $('#selected_counter').text($('.multiselect_checkbox:checked').length);
-    });
-    $('#add-to-anth-btn').click(function() {
-      if(#{@anthology.nil? ? 'true' : 'false'} == true) {
-        alert('create or select an anthology first.');
-      } else {
-        // add to current anth
-        anthology_texts = []
-        $('.multiselect_checkbox:checked').each(function(){
-          hr = $(this).next().attr('href');
-          mid = hr.substring(hr.lastIndexOf('/')+1);
-          anthology_texts.push({manifestation_id: mid, anthology_id: $('#anth_id').val()});
-        });
+      $('#reset_multiselect').click(function() {
+        $('.mainlist input[type=checkbox]').prop('checked', false);
+        $('#select-all').prop('checked', false);
+        $('#selected_counter').text($('.multiselect_checkbox:checked').length);
+      });
+      $('#multiselect_btn').click(function(){
+        $.fn.browse_multi_select_toggle();
+      });
+      $('#select-all').change(function(){
+        $('.mainlist input[type=checkbox]').prop('checked', $(this).prop('checked'));
+        if($('.add-to-anthology').css('display') == 'none' && $(this).prop('checked')) {
+          $('.add-to-anthology').show();
+          startAnimation('blink 2s ease-in','.add-to-anthology');
+        }
+        $('#selected_counter').text($('.multiselect_checkbox:checked').length);
+      });
+      $('#add-to-anth-btn').click(function() {
+        if(#{@anthology.nil? ? 'true' : 'false'} == true) {
+          alert('create or select an anthology first.');
+        } else {
+          // add to current anth
+          anthology_texts = []
+          $('.multiselect_checkbox:checked').each(function(){
+            hr = $(this).next().attr('href');
+            mid = hr.substring(hr.lastIndexOf('/')+1);
+            anthology_texts.push({manifestation_id: mid, anthology_id: $('#anth_id').val()});
+          });
 
-        $.ajax({
-          type: "POST",
-          url: '#{mass_create_anthology_texts_path}',
-          dataType: 'script',
-          data: { anthology_texts }
-        });
-      }
-    });
+          $.ajax({
+            type: "POST",
+            url: '#{mass_create_anthology_texts_path}',
+            dataType: 'script',
+            data: { anthology_texts }
+          });
+        }
+      });
   });
