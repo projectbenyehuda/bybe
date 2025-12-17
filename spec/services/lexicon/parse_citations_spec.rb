@@ -59,7 +59,6 @@ describe Lexicon::ParseCitations do
     let(:expected_attributes_0) do
       {
         subject: 'על "ארה"',
-        authors: 'וויינר, חיים.',
         title: '"ארה"',
         from_publication: "בספרו: פרקי חיים וספרות / ליקט וכינס זאב וויינר (ירושלים : קרית-ספר, תש\"ך 1960)",
         link: nil,
@@ -71,7 +70,6 @@ describe Lexicon::ParseCitations do
     let(:expected_attributes_3) do
       {
         subject: 'על "הדמות הקסומה"',
-        authors: 'ברוידס, אברהם.',
         title: "מאצטבת הספרים: \"הדמות הקסומה\" לשמואל בס.",
         from_publication: 'דבר, כ"ב באב תש"ז, 8 באוגוסט 1947',
         link: 'http://jpress2.tau.ac.il/Repository/getFiles.asp?Style=OliveXLib:LowLevelEntityToSaveGifMSIE_TAUHE&'\
@@ -85,7 +83,11 @@ describe Lexicon::ParseCitations do
       expect(result.size).to eq(4)
       expect(result).to all(be_a(LexCitation))
       expect(result[0]).to have_attributes(expected_attributes_0)
+      expect(result[0].authors.length).to eq(1)
+      expect(result[0].authors.first).to have_attributes(name: 'וויינר, חיים.', link: '00019.php')
       expect(result[3]).to have_attributes(expected_attributes_3)
+      expect(result[3].authors.length).to eq(1)
+      expect(result[3].authors.first).to have_attributes(name: 'ברוידס, אברהם.', link: '01063.php')
     end
   end
 end

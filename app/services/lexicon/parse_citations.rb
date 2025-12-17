@@ -11,10 +11,10 @@ module Lexicon
   Usually bibliography is represented as a set of <ul> tags, with optional short header before each. Header represents
   subject, and <li> elements inside <ul> represent individual works about this subject.
 
-  You need to parse it and turn into a JSON object with a single key `result` with a value of array of JSON objects#{' '}
+  You need to parse it and turn into a JSON object with a single key `result` with a value of array of JSON objects
   representing works grouped by subjects:
   ```
-  {#{' '}
+  {
     result: [
       { subject: 'Subject 1', works: [ <ARRAY of Works 1> ] },
       { subject: 'Subject 2', works: [ <ARRAY of Works 2> ] },
@@ -62,23 +62,14 @@ PROMPT
       chat = RubyLLM.chat(model: 'gpt-4.1-mini')
       chat.with_instructions(SYSTEM_PROMPT).with_params(response_format: { type: :json_object })
 
-      response = call_with_retry { chat.ask(html.squish) }
+      response = chat.ask(html.squish)
       result = []
 
       json_response = JSON.parse(response.content)
       json_response['result'].each do |subject_works|
         subject = subject_works['subject']
         subject_works['works'].each do |work|
-          authors = work['authors']
-
-          if authors.size > 1
-            # Do we have such cases?
-            raise 'Multiple authors not supported yet'
-          end
-
-          author_name = authors.first['name'] if authors.any?
-
-          result << LexCitation.new(
+          citation = LexCitation.new(
             status: :ai_parsed,
             raw: sanitize_smart_quotes(work['raw']),
             subject: sanitize_smart_quotes(subject),
@@ -87,8 +78,13 @@ PROMPT
             pages: sanitize_smart_quotes(work['pages']),
             link: work['link'],
             notes: sanitize_smart_quotes(work['notes']),
-            authors: author_name
           )
+
+          work['authors'].each do |author|
+            citation.authors.build(name: author['name'], link: author['link'])
+          end
+
+          result << citation
         end
       end
       result
@@ -96,59 +92,8 @@ PROMPT
 
     private
 
-    def find_or_create_lex_person_by_author_name(author_name)
-      return nil if author_name.blank?
-
-      # transpose name parts if in "Last, First" format
-      if author_name.include?(',') && author_name.index(',') < author_name.length - 2
-        parts = author_name.split(',', 2).map(&:strip)
-        author_name = "#{parts[1]} #{parts[0]}"
-      end
-      # Find authorities where name matches or other_designation contains the name
-      # Note: other_designation can contain multiple names separated by semicolons
-      matching_authorities = Authority.published.where(
-        'name = ? OR other_designation LIKE ? OR other_designation LIKE ? OR other_designation = ?',
-        author_name,
-        "#{author_name};%", # name at start
-        "%; #{author_name};%", # name in middle
-        author_name # exact match if other_designation has single name
-      ).limit(2) # We only need to know if there's 1 or more than 1
-
-      # Additional filtering: check if author_name is actually one of the semicolon-separated values
-      exact_matches = matching_authorities.select do |authority|
-        authority.name == author_name ||
-          authority.other_designation&.split(';')&.map(&:strip)&.include?(author_name)
-      end
-
-      # Only link if exactly one authority matches
-      return nil unless exact_matches.size == 1
-
-      authority_id = exact_matches.first.id
-      LexPerson.find_or_create_by_authority_id(authority_id)
-    end
-
     def sanitize_smart_quotes(text)
-      return nil if text.nil?
-
-      text.gsub(/[“”״]/, '"').gsub(/[‘’]/, "'")
-    end
-
-    def call_with_retry(max_retries: 3)
-      retries = 0
-      begin
-        yield
-      rescue Faraday::SSLError, Faraday::ConnectionFailed, Faraday::TimeoutError, Errno::ECONNRESET => e
-        retries += 1
-        if retries < max_retries
-          wait_time = 2**retries # exponential backoff: 2s, 4s, 8s
-          Rails.logger.warn("LLM API call failed (attempt #{retries}/#{max_retries}): #{e.class} - #{e.message}. Retrying in #{wait_time}s...")
-          sleep(wait_time)
-          retry
-        else
-          Rails.logger.error("LLM API call failed after #{max_retries} attempts: #{e.class} - #{e.message}")
-          raise
-        end
-      end
+      text&.gsub(/[“”״]/, '"')&.gsub(/[‘’]/, "'")
     end
   end
 end
