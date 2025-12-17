@@ -2124,6 +2124,14 @@ he:
       designer: עיצובים
       contributor: תרומות נוספות
       other: יצירות שונות
+    made_by:
+      translator: בתרגום
+      editor:  בעריכת
+      illustrator: illustrated by
+      photographer: photographs by
+      designer: design by
+      contributor: contributed to by
+      other: by
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: נחלת הכלל
   viaf_id: "מזהה במאגר VIAF‏"
