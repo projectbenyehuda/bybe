@@ -2,9 +2,13 @@
 
 FactoryBot.define do
   factory :lex_citation do
+    transient do
+      authors_count { 1 }
+    end
+
     title { item&.entry&.title || Faker::Book.title }
     from_publication { Faker::Book.title }
-    authors { Faker::Name.name }
+    authors { build_list(:lex_citation_author, authors_count) }
     pages { Random.rand(1..100).to_s }
     link { Faker::Internet.url }
     status { 'manual' }
