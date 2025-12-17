@@ -27,7 +27,7 @@ RSpec.describe FixDocxInheritedFormatting do
     end
 
     it 'preserves DOCX structure' do
-      fixed_binary = service.call
+      fixed_binary = service.call(docx_binary)
 
       Tempfile.create(['test_output_', '.docx'], encoding: 'ascii-8bit') do |tmpfile|
         tmpfile.write(fixed_binary)
@@ -44,7 +44,7 @@ RSpec.describe FixDocxInheritedFormatting do
 
     context 'with bold text in paragraph styles' do
       it 'explicitly applies inherited bold formatting to runs' do
-        fixed_binary = service.call
+        fixed_binary = service.call(docx_binary)
 
         # Verify the fixed file can be converted to markdown with bold preserved
         Tempfile.create(['test_output_', '.docx'], encoding: 'ascii-8bit') do |tmpfile|
@@ -62,7 +62,7 @@ RSpec.describe FixDocxInheritedFormatting do
 
     it 'handles documents without inherited formatting gracefully' do
       # Should not raise errors even if there's nothing to fix
-      expect { service.call }.not_to raise_error
+      expect { service.call(docx_binary) }.not_to raise_error
     end
   end
 end
