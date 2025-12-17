@@ -77,6 +77,12 @@ describe SanitizeHeading do
     it { is_expected.to eq('title (with) {braces}') }
   end
 
+  context 'when heading contains escaped single quotes' do
+    let(:heading) { 'title with \\\'single quotes\\\'' }
+
+    it { is_expected.to eq("title with 'single quotes'") }
+  end
+
   context 'when heading contains multiple escape sequences' do
     let(:heading) { '## title \\[part 1\\] \\*emphasis\\* \"quoted\"[^1]' }
 
