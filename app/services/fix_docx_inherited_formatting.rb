@@ -68,7 +68,7 @@ class FixDocxInheritedFormatting < ApplicationService
       Zip::File.open(output_path, Zip::File::CREATE) do |zipfile|
         Dir.glob(File.join(extract_dir, '**', '*'), File::FNM_DOTMATCH).each do |file|
           next if File.directory?(file)
-          next if File.basename(file) == '.' || File.basename(file) == '..'
+          next if ['.', '..'].include?(File.basename(file))
 
           arcname = file.sub(extract_dir + File::SEPARATOR, '')
           zipfile.add(arcname, file)
@@ -83,8 +83,8 @@ class FixDocxInheritedFormatting < ApplicationService
 
   def fix_document_xml(doc_path, styles_path)
     # Parse XML documents with namespace handling
-    doc = Nokogiri::XML(File.read(doc_path))
-    styles = Nokogiri::XML(File.read(styles_path))
+    doc = Nokogiri::XML(File.read(doc_path, encoding: 'UTF-8'))
+    styles = Nokogiri::XML(File.read(styles_path, encoding: 'UTF-8'))
 
     # Define namespace for XPath queries
     ns = { 'w' => WORD_NS }
@@ -120,7 +120,7 @@ class FixDocxInheritedFormatting < ApplicationService
       i_cs_tag = r_pr.at_xpath('w:iCs', ns)
 
       # If tag exists without val attribute or val != "0", formatting is ON
-      is_on = ->(tag) { tag && (tag['w:val'].nil? || !['0', 'false'].include?(tag['w:val'])) }
+      is_on = ->(tag) { tag && (tag['w:val'].nil? || !%w(0 false).include?(tag['w:val'])) }
 
       style_props[style_id] = {
         bold: is_on.call(b_tag),
@@ -193,11 +193,11 @@ class FixDocxInheritedFormatting < ApplicationService
       @modifications += 1
     end
 
-    if !r_pr.at_xpath('w:iCs', ns) && inherited[:italic_cs]
-      i_cs_node = create_namespaced_node('iCs', run.document)
-      r_pr.prepend_child(i_cs_node)
-      @modifications += 1
-    end
+    return unless !r_pr.at_xpath('w:iCs', ns) && inherited[:italic_cs]
+
+    i_cs_node = create_namespaced_node('iCs', run.document)
+    r_pr.prepend_child(i_cs_node)
+    @modifications += 1
   end
 
   # Helper to create nodes with proper namespace
