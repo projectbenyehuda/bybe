@@ -1,5 +1,5 @@
 - top_nodes = GenerateTocTree.call(@author).top_level_nodes
-- InvolvedAuthority.roles.each_key do |role|
+- InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
   = render partial: 'authors/toc_by_role',
            locals: { top_nodes: top_nodes,
                      title: t("toc_by_role.#{role}", gender_letter: @author.gender_letter),
