@@ -379,4 +379,18 @@
           });
         }
       });
+
+      // Collapse all sections
+      $('#max_collapse').click(function(e) {
+        e.preventDefault();
+        $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideUp();
+        $('#browse_mainlist .by-card-v02[role="treeitem"]').attr('aria-expanded', 'false');
+      });
+
+      // Expand all sections
+      $('#expand-all').click(function(e) {
+        e.preventDefault();
+        $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideDown();
+        $('#browse_mainlist .by-card-v02[role="treeitem"]').attr('aria-expanded', 'true');
+      });
   });
