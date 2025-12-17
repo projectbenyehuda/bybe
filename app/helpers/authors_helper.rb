@@ -38,6 +38,33 @@ module AuthorsHelper
     return ''
   end
 
+  def manifestation_label(manifestation, role, authority_id)
+    label = manifestation.title
+    case role.to_s
+    when 'author'
+      if manifestation.authors.size > 1 || manifestation.authors.pluck(:id) != [authority_id]
+        # when the author is not the only author or not the author in a volume he is generally the author of
+        # (e.g. someone else's preface to this author's book)
+        label += " / #{authorities_string(manifestation, :author)}"
+      end
+      unless manifestation.translators.empty?
+        label += " #{t(:translated_by)} #{authorities_string(manifestation, :translator)}"
+      end
+    when 'translator'
+      label += " / #{authorities_string(manifestation, :author)}"
+      if manifestation.translators.size > 1
+        label += " / #{authorities_string(manifestation, :translator)}"
+      end
+    else # editors, illustrators, etc.
+      label += " / #{manifestation.author_string}"
+      if manifestation.involved_authorities_by_role(role).size > 1
+        label += " #{I18n.t("toc_by_role.made_by.#{role}")} #{authorities_string(manifestation, role)}"
+      end
+    end
+
+    label
+  end
+
   # Returns string, containing comma-separated list of names of authorities linked to given text with given role
   # @param manifestation
   # @param role
