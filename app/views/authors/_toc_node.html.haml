@@ -9,27 +9,8 @@
     %span.sorting-metadata{ 'data-impressions': m.impressions_count, 'data-title': m.sort_title, 'data-pubdate': e.normalized_pub_date.present? ? e.normalized_pub_date.to_date.jd : nil, 'data-creation-date': w.normalized_creation_date.present? ? w.normalized_creation_date.to_date.jd : nil, 'data-upload-date': m.publication_date.to_date.jd }
     %span.by-icon-v02{ title: textify_genre(genre) }>= glyph_for_genre(genre)
     &nbsp;&rlm;
-    :ruby
-      label = m.title
-      case role
-      when :editor
-        label += " / #{m.author_string}"
-      when :translator
-        label += " / #{authorities_string(m, :author)}"
-        if m.translators.size > 1
-          label += " / #{authorities_string(m, :translator)}"
-        end
-      when :author
-        if m.authors.size > 1 || m.authors.pluck(:id) != [authority_id] # when the author is not the only author or not the author in a volume he is generally the author of (e.g. someone else's preface to this author's book)
-          label += " / #{authorities_string(m, :author)}"
-        end
-        if m.translators.size > 0
-          label += " #{t(:translated_by)} #{authorities_string(m, :translator)}"
-        end
-      end
-
     - if m.published?
-      = link_to label, manifestation_path(m)
+      = link_to manifestation_label(m, role, authority_id), manifestation_path(m)
       %span.hidden.metadata-creation-date
         != "&nbsp;&nbsp;&nbsp;"
         - if w.date.present?
@@ -50,7 +31,7 @@
             - edition += ', '+e.date
           = edition
     - else
-      = label
+      = manifestation_label(m, role, authority_id)
     %span.mtitle{ style: 'display:none' }= m.title
   - elsif toc_node.is_a?(TocTree::CollectionNode)
     -# Collection node
