@@ -79,6 +79,44 @@ RSpec.describe 'Manifestation scrollspy', type: :system, js: true do
   end
 
   describe 'chapter navigation highlighting' do
+    context 'chapter titles with escaped characters' do
+      let(:markdown_with_escaped_chars) do
+        <<~MARKDOWN
+          ## Chapter \\[Part 1\\] Introduction
+
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+          ## Chapter \\*Special\\* Section
+
+          Ut enim ad minim veniam, quis nostrud exercitation.
+        MARKDOWN
+      end
+
+      let!(:manifestation_with_escapes) do
+        Chewy.strategy(:atomic) do
+          create(:manifestation, markdown: markdown_with_escaped_chars, status: :published)
+        end
+      end
+
+      before do
+        manifestation_with_escapes.recalc_heading_lines
+        manifestation_with_escapes.save!
+      end
+
+      it 'displays chapter titles without escape backslashes in navigation' do
+        visit manifestation_path(manifestation_with_escapes)
+
+        # Verify chapter titles display without backslashes in sidebar navigation
+        within('#chapternav') do
+          expect(page).to have_content('Chapter [Part 1] Introduction')
+          expect(page).to have_no_content('Chapter \\[Part 1\\] Introduction')
+
+          expect(page).to have_content('Chapter *Special* Section')
+          expect(page).to have_no_content('Chapter \\*Special\\* Section')
+        end
+      end
+    end
+
     context 'chapter navigation structure' do
       it 'renders chapter navigation with correct structure' do
         visit manifestation_path(manifestation)
