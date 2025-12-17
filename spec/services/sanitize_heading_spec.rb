@@ -58,4 +58,40 @@ describe SanitizeHeading do
 
     it { is_expected.to eq('title with spaces') }
   end
+
+  context 'when heading contains escaped square brackets' do
+    let(:heading) { 'title \\[with\\] brackets' }
+
+    it { is_expected.to eq('title [with] brackets') }
+  end
+
+  context 'when heading contains escaped markdown characters' do
+    let(:heading) { 'title \\*with\\* \\#special\\# \\-chars\\-' }
+
+    it { is_expected.to eq('title *with* #special# -chars-') }
+  end
+
+  context 'when heading contains escaped parentheses and braces' do
+    let(:heading) { 'title \\(with\\) \\{braces\\}' }
+
+    it { is_expected.to eq('title (with) {braces}') }
+  end
+
+  context 'when heading contains escaped single quotes' do
+    let(:heading) { 'title with \\\'single quotes\\\'' }
+
+    it { is_expected.to eq("title with 'single quotes'") }
+  end
+
+  context 'when heading contains escaped angled brackets' do
+    let(:heading) { 'title with \\<angled\\> brackets' }
+
+    it { is_expected.to eq('title with &lt;angled&gt; brackets') }
+  end
+
+  context 'when heading contains multiple escape sequences' do
+    let(:heading) { '## title \\[part 1\\] \\*emphasis\\* \"quoted\"[^1]' }
+
+    it { is_expected.to eq('&nbsp;&nbsp;&nbsp; title [part 1] *emphasis* "quoted"') }
+  end
 end
