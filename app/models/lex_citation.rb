@@ -14,6 +14,8 @@ class LexCitation < ApplicationRecord
 
   belongs_to :manifestation, optional: true # manifestation representing this citation (if present in BYP)
 
+  has_many :authors, class_name: 'LexCitationAuthor', inverse_of: :citation, dependent: :destroy
+
   # This status column is temporary and should be removed in the future after migration from PHP will be completed
   enum :status,
        {
@@ -26,5 +28,5 @@ class LexCitation < ApplicationRecord
   validates :raw, absence: true, if: :status_manual?
   validates :raw, presence: true, unless: :status_manual?
 
-  validates :title, :authors, presence: true, if: :status_manual?
+  validates :title, presence: true, if: :status_manual?
 end
