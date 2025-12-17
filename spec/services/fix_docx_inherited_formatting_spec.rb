@@ -4,12 +4,12 @@ require 'rails_helper'
 
 RSpec.describe FixDocxInheritedFormatting do
   describe '#call' do
-    let(:input_file) { Rails.root.join('spec', 'fixtures', 'docx', 'inherited_formatting_test.docx') }
+    let(:input_file) { Rails.root.join('spec/fixtures/docx/inherited_formatting_test.docx') }
     let(:docx_binary) { File.binread(input_file) }
-    let(:service) { described_class.new(docx_binary) }
+    let(:service) { described_class.new }
 
     it 'fixes inherited formatting in DOCX files' do
-      fixed_binary = service.call
+      fixed_binary = service.call(docx_binary)
 
       expect(fixed_binary).to be_present
       expect(fixed_binary).to be_a(String)
