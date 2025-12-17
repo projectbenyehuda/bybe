@@ -11,10 +11,11 @@ class SanitizeHeading < ApplicationService
     # Remove footnotes, strip HTML tags, replace leading hashes with spaces, and clean up quotes
     heading.gsub(/\[\^ftn\d+\]/, '')
            .gsub(/\[\^\d+\]/, '')
+           .gsub(/\\([<>])/) { |match| CGI.escapeHTML(match[1]) } # Unescape and HTML-escape angled brackets
+           .gsub(/\\([\[\]\*\_\{\}\(\)\#\+\-\.\!'])/, '\1') # Remove markdown escape backslashes for other characters
            .then { |s| strip_tags(s) }
            .gsub(/^#+/, '&nbsp;&nbsp;&nbsp;')
            .gsub('\"', '"')
-           .gsub(/\\([\[\]\*\_\{\}\(\)\#\+\-\.\!'])/, '\1') # Remove markdown escape backslashes
            .strip
   end
 end
