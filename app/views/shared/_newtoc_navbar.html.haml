@@ -2,13 +2,6 @@
 - first = true
 %nav.navbar#genrenav
   %ul.nav.navbar-nav.flex-column.by-card-v02#genre-nav{'aria-orientation' => 'vertical'}
-    - genres.each do |g|
-      - if genres_present.include?(g)
-        %li.nav-item
-          %a{'class' => 'nav-link '+(first ? 'active' : ''), id: g+'_button', href: "##{g}_g", 'aria-controls' => "##{g}_g", 'aria-selected' => (first ? 'true' : 'false')}
-            .side-menu-icon= glyph_for_genre(g)
-            .side-menu-name= textify_genre(g)
-        - first = false
     /- if curated_content
     %li.by-side-menu-seperator
     %li.nav-item
@@ -16,18 +9,6 @@
         .side-menu-icon.icon-byadditionals
 :javascript
   $(document).ready(function() {
-    $(window).scroll(function() {
-      var scroll = $(window).scrollTop();
-      if(scroll <= 200) {
-        $('.nav-link').first().addClass('active');
-      }
-    });
-    //$('.nav-item').first().addClass('current-menu-item');
-    // ensure smooth scrollTo behavior
-    //$('.g_anch').css('top', -($('#header').height()+15));
-   //$('.g_anch').css('padding-top', $('#header').height());
-    //$('.g_anch').css('margin-top', -$('#header').height());
-    
     $('.nav-link').click(function(e) {
       e.preventDefault();
       //$('.nav-item').removeClass('current-menu-item');
