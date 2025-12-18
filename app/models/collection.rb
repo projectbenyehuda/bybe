@@ -407,10 +407,25 @@ class Collection < ApplicationRecord
     propagate_count_update_to_parents
   end
 
-  # Propagate count changes up to all parent collections
+  # Propagate count changes up to all parent collections without recursive updates
   def propagate_count_update_to_parents
-    parent_collections.each do |parent|
-      parent.update_manifestations_count!
+    collections_to_update = []
+    visited_ids = []
+    stack = parent_collections.to_a
+
+    until stack.empty?
+      current = stack.pop
+      next if current.nil? || visited_ids.include?(current.id)
+
+      visited_ids << current.id
+      collections_to_update << current
+      current.parent_collections.each do |parent|
+        stack << parent
+      end
+    end
+
+    collections_to_update.each do |collection|
+      collection.recalculate_manifestations_count!
     end
   end
 
