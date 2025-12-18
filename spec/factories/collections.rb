@@ -6,7 +6,7 @@ FactoryBot.define do
     sort_title { title }
     subtitle { Faker::Book.title }
     issn { 'MyString' }
-    collection_type { %w(volume periodical periodical_issue series other).sample }
+    collection_type { %w(volume periodical series other).sample }
 
     # Trait for creating system-managed uncollected collections
     trait :uncollected do
