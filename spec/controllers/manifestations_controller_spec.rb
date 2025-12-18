@@ -70,6 +70,40 @@ describe ManifestationController do
 
       it { is_expected.to be_successful }
 
+      describe 'collection type filtering' do
+        context 'when only in_volume is selected' do
+          let(:browse_params) { { ckb_collection_types: %w(in_volume), sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { { 'collection_types' => %w(in_volume) } }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when only in_periodical is selected' do
+          let(:browse_params) { { ckb_collection_types: %w(in_periodical), sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { { 'collection_types' => %w(in_periodical) } }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when only uncollected is selected' do
+          let(:browse_params) { { ckb_collection_types: %w(uncollected), sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { { 'collection_types' => %w(uncollected) } }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when in_volume and in_periodical are selected' do
+          let(:browse_params) { { ckb_collection_types: %w(in_volume in_periodical), sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { { 'collection_types' => %w(in_volume in_periodical) } }
+          it { is_expected.to be_successful }
+        end
+
+        context 'when all three collection types are selected' do
+          let(:browse_params) { { ckb_collection_types: %w(in_volume in_periodical uncollected), sort_by: 'alphabetical_desc' } }
+          let(:expected_filter) { {} }
+          it 'does not filter by collection types (shows all)' do
+            expect(subject).to be_successful
+          end
+        end
+      end
+
       describe 'search queries' do
         let(:author_filter) { { 'author' => 'Jack London' } }
         let(:title_filter) { { 'title' => 'Love to Life' } }
