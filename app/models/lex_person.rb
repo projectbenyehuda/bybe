@@ -4,6 +4,8 @@
 class LexPerson < ApplicationRecord
   include LifePeriod
 
+  enum :gender, { male: 0, female: 1, other: 2, unknown: 3 }
+
   has_many :citations, inverse_of: :person, class_name: 'LexCitation', dependent: :destroy
   has_one :entry, as: :lex_item, class_name: 'LexEntry', dependent: :destroy
   has_many :lex_links, as: :item, dependent: :destroy
@@ -13,6 +15,10 @@ class LexPerson < ApplicationRecord
 
   def intellectual_property
     copyrighted? ? 'copyrighted' : 'public_domain'
+  end
+
+  def gender_letter
+    return gender == 'female' ? 'ה' : 'ו'
   end
 
   def self.find_or_create_by_authority_id(aid)
