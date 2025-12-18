@@ -6,11 +6,30 @@ class AddManifestationsCountToCollections < ActiveRecord::Migration[8.0]
     add_column :collections, :manifestations_count, :integer, default: 0, null: false
 
     # Backfill existing collections with correct counts
-    # We'll populate this after implementing the calculation method
     Collection.reset_column_information
-    Collection.find_each do |collection|
-      count = calculate_manifestations_count(collection)
-      collection.update_column(:manifestations_count, count)
+
+    total = Collection.count
+    processed = 0
+    start_time = Time.current
+
+    say_with_time "Backfilling manifestations_count for #{total} collections" do
+      Collection.find_each do |collection|
+        count = calculate_manifestations_count(collection)
+        collection.update_column(:manifestations_count, count)
+
+        processed += 1
+        if processed % 250 == 0
+          elapsed = Time.current - start_time
+          rate = processed / elapsed
+          remaining = total - processed
+          eta = remaining / rate
+
+          say "  Processed #{processed}/#{total} collections (#{(processed.to_f / total * 100).round(1)}%) - " \
+              "#{rate.round(1)}/sec - ETA: #{eta.round(0)}s", true
+        end
+      end
+
+      processed # return count for say_with_time
     end
   end
 
