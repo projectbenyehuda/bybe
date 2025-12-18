@@ -168,17 +168,12 @@ class CollectionItem < ApplicationRecord
   end
 
   def affects_manifestation_count?
-    # For new records
-    if new_record?
-      return item_type.in?(['Manifestation', 'Collection'])
-    end
-
     # For destroyed records, check if it was a Manifestation or Collection
     if destroyed?
       return item_type.in?(['Manifestation', 'Collection'])
     end
 
-    # For updates, check both current and previous types
+    # For creates and updates, check both current and previous types
     current_affects = item_type.in?(['Manifestation', 'Collection'])
     previous_type = item_type_before_last_save || item_type
     previous_affects = previous_type.in?(['Manifestation', 'Collection'])
