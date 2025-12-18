@@ -14,7 +14,10 @@
           .by-card-v02.work-info-card
             %img.about-work-card-bookmark-fold-v02{alt: "", src: "/assets/creator-bookmark-back2.png"}/
             .about-work-author-card-v02
-              %img.about-work-author-pic-v02{alt: @authority_for_image.name, src: @authority_for_image.profile_image.url(:thumb)}/
+              - if @collection.periodical? && @collection.logo_image.present?
+                %img.about-work-author-pic-v02{alt: @collection.title, src: url_for(@collection.logo_image)}/
+              - else
+                %img.about-work-author-pic-v02{alt: @authority_for_image.name, src: @authority_for_image.profile_image.url(:thumb)}/
             .by-card-content-v02
               .work-title.name-under-btn
                 .headline-1-v02
