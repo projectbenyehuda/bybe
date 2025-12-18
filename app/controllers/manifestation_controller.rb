@@ -260,6 +260,7 @@ class ManifestationController < ApplicationController
   end
 
   def read
+    @noindex = true
     if @m.expression.work.genre == 'lexicon' && DictionaryEntry.exists?(manifestation: @m)
       redirect_to action: 'dict', id: @m.id
     else
