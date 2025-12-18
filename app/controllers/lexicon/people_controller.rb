@@ -47,6 +47,7 @@ module Lexicon
           :aliases,
           :authority_id,
           :copyrighted,
+          :gender,
           :birthdate,
           :deathdate,
           :bio,
