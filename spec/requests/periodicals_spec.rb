@@ -3,9 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe 'Periodicals', type: :request do
-  describe 'GET /index' do
+  describe 'GET /' do
     it 'returns http success' do
-      get '/periodicals/index'
+      get '/periodicals'
       expect(response).to have_http_status(:success)
     end
   end
