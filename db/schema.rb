@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_18_000416) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -675,7 +675,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.index ["relevance"], name: "index_news_items_on_relevance"
   end
 
-  create_table "pending_notifications", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "pending_notifications", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "recipient_email", null: false
     t.string "notification_type", null: false
     t.text "notification_data"
@@ -699,7 +699,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "name"
     t.text "description"
     t.date "start_date"
@@ -826,8 +826,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_27_185956) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.string "taggable_type"
+    t.index ["approved_by", "status"], name: "index_taggings_on_approved_by_and_status"
     t.index ["approved_by"], name: "taggings_approved_by_fk"
+    t.index ["status", "created_at"], name: "index_taggings_on_status_and_created_at"
+    t.index ["status"], name: "index_taggings_on_status"
+    t.index ["suggested_by", "status", "created_at"], name: "index_taggings_on_suggested_by_status_created_at"
     t.index ["suggested_by"], name: "taggings_suggested_by_fk"
+    t.index ["tag_id", "status"], name: "index_taggings_on_tag_id_and_status"
+    t.index ["tag_id", "taggable_id", "taggable_type"], name: "index_taggings_on_tag_and_taggable"
     t.index ["tag_id"], name: "taggings_tag_id_fk"
     t.index ["taggable_id", "taggable_type"], name: "index_taggings_on_taggable_id_and_taggable_type"
   end
