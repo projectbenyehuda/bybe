@@ -22,7 +22,7 @@
                   .author-page-top-years!= "(#{@author.person.life_years})"
                   .metadata-link
                     %a{href: '#'}
-                      %span.by-icon-v02.small-icon> P
+                      %span.metadata-link-icon> P
                       = t(@author.person.period)
             .by-card-content-v02{class: @unpublished ? 'unpublished' : ''}
               - if @unpublished
