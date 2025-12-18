@@ -103,7 +103,8 @@ he:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה
         bio: תקציר ביוגרפי
-        books: ספרים
+        works: ספרים
+        about: על המחבר%{gender_suffix} ויצירת%{gender_letter}
       lex_publication:
         toc: תוכן עניינים
         az_navbar: להציג סרגל א–ב?
