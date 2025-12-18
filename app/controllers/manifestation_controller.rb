@@ -915,7 +915,9 @@ class ManifestationController < ApplicationController
       author_genders: { terms: { field: 'author_gender' } },
       translator_genders: { terms: { field: 'translator_gender' } },
       # We may need to increase `size` threshold in future if number of authors exceeds 2000
-      author_ids: { terms: { field: 'author_ids', size: 2000 } }
+      author_ids: { terms: { field: 'author_ids', size: 2000 } },
+      in_volume: { terms: { field: 'in_volume' } },
+      in_periodical: { terms: { field: 'in_periodical' } }
     }
 
     collection = collection.aggregations(standard_aggregations)
@@ -928,6 +930,17 @@ class ManifestationController < ApplicationController
 
     @language_facet = buckets_to_totals_hash(collection.aggs['languages']['buckets'])
     @language_facet[:xlat] = @language_facet.except('he').values.sum
+
+    # Build collection type facet from in_volume and in_periodical aggregations
+    in_volume_aggs = buckets_to_totals_hash(collection.aggs['in_volume']['buckets'])
+    in_periodical_aggs = buckets_to_totals_hash(collection.aggs['in_periodical']['buckets'])
+
+    @collection_type_facet = {
+      'in_volume' => in_volume_aggs[true] || 0,
+      'in_periodical' => in_periodical_aggs[true] || 0,
+      'uncollected' => in_volume_aggs[false] && in_periodical_aggs[false] ?
+        [in_volume_aggs[false], in_periodical_aggs[false]].min : 0
+    }
 
     # Preparing list of authors to show in multiselect modal on works browse page
     if collection.filter.present?
