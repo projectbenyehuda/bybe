@@ -26,6 +26,6 @@
   %div{ id: "works-#{role}-uncollected", role: 'tabpanel' }
     .headline-books #{title} (#{t('toc_by_role.uncollected_works')})
     %ul.toclist{ role: 'tree' }
-    = render partial: 'authors/toc_node', collection: [uncollected_node],
-             locals: { role: role, authority_id: authority_id, editable: editable, nonce: "#{nonce}-uncollected",
-                       uncollected: false, involved_on_collection_level: false }
+      = render partial: 'authors/toc_node', collection: [uncollected_node],
+               locals: { role: role, authority_id: authority_id, editable: editable, nonce: "#{nonce}-uncollected",
+                         uncollected: false, involved_on_collection_level: false }
