@@ -9,7 +9,7 @@ module Lexicon
 
     # GET /lex_entries or /lex_entries.json
     def index
-      @lex_entries = LexEntry.all.page(params[:page])
+      @lex_entries = LexEntry.where.not(lex_item: nil).page(params[:page])
     end
 
     def show; end
