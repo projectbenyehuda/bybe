@@ -27,7 +27,7 @@
           %ul
             - lex_person.works.split("\n").each do |book|
               %li!= MarkdownToHtml.call(book)
-        = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:about) } do
+        = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
           - lex_person.citations.group_by(&:subject).each do |subject, list|
             %h4= subject
             %ul
