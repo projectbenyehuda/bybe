@@ -18,7 +18,7 @@ class LexPerson < ApplicationRecord
   end
 
   def gender_letter
-    return gender == 'female' ? 'ה' : 'ו'
+    female? ? 'ה' : 'ו'
   end
 
   def self.find_or_create_by_authority_id(aid)
