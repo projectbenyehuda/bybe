@@ -115,14 +115,7 @@
 
     - collection_types = %w(in_volume in_periodical uncollected)
     - collection_type_labels = collection_types.index_with { |type| t("collection_type_#{type}") }
-    = render partial: 'shared/filters/checkbox_group',
-             locals: { group_name: :collection_types,
-                       title: t(:containing_collection_type),
-                       field_name: :ckb_collection_types,
-                       all_values: collection_types,
-                       labels: collection_type_labels,
-                       selected_values: @collection_types,
-                       default_checked: true }
+    = render partial: 'shared/filters/checkbox_group', locals: { group_name: :collection_types, title: t(:containing_collection_type), field_name: :ckb_collection_types, all_values: collection_types, labels: collection_type_labels, selected_values: @collection_types, facet: @collection_type_facet, default_checked: true }
 
     = hidden_field_tag(:search_after_value, '')
     = hidden_field_tag(:search_after_id, '')
