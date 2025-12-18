@@ -569,10 +569,10 @@ describe CollectionsController do
       Chewy.massacre
     end
 
-    let!(:volume_1) { create(:collection, title: 'Alpha Volume', collection_type: :volume, sort_title: 'alpha volume') }
-    let!(:volume_2) { create(:collection, title: 'Beta Volume', collection_type: :volume, sort_title: 'beta volume') }
-    let!(:periodical) { create(:collection, title: 'Gamma Periodical', collection_type: :periodical, sort_title: 'gamma periodical') }
-    let!(:series) { create(:collection, title: 'Delta Series', collection_type: :series, sort_title: 'delta series') }
+    let(:volume_1) { create(:collection, title: 'Alpha Volume', collection_type: :volume, sort_title: 'alpha volume') }
+    let(:volume_2) { create(:collection, title: 'Beta Volume', collection_type: :volume, sort_title: 'beta volume') }
+    let(:periodical) { create(:collection, title: 'Gamma Periodical', collection_type: :periodical, sort_title: 'gamma periodical') }
+    let(:series) { create(:collection, title: 'Delta Series', collection_type: :series, sort_title: 'delta series') }
 
     before do
       Chewy.strategy(:atomic) do
