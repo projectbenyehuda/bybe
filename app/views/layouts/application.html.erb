@@ -41,6 +41,9 @@
   <% else %>
     <meta property="og:image" content="<%= @og_image %>">
   <% end %>
+  <% if @print || @readmode %>
+    <meta name="robots" content="noindex">
+  <% end %>
   <%= csrf_meta_tags %>
   <%= Sentry.get_trace_propagation_meta.html_safe %>
   </head>
