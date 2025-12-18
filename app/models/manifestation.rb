@@ -178,6 +178,54 @@ class Manifestation < ApplicationRecord
     return ret.flatten
   end
 
+  # Check if manifestation is contained in any collection of type 'volume',
+  # directly or through any parent collection in the tree
+  def in_volume?
+    collection_items.each do |ci|
+      next if ci.collection.nil?
+
+      # Check current collection and traverse up parent tree
+      stack = [ci.collection]
+      visited = Set.new
+
+      while stack.any?
+        current = stack.pop
+        next if current.nil? || visited.include?(current.id)
+
+        visited.add(current.id)
+        return true if current.volume?
+
+        # Add parent collections to stack
+        current.parent_collections.each { |pc| stack << pc }
+      end
+    end
+    false
+  end
+
+  # Check if manifestation is contained in any collection of type 'periodical_issue',
+  # directly or through any parent collection in the tree
+  def in_periodical?
+    collection_items.each do |ci|
+      next if ci.collection.nil?
+
+      # Check current collection and traverse up parent tree
+      stack = [ci.collection]
+      visited = Set.new
+
+      while stack.any?
+        current = stack.pop
+        next if current.nil? || visited.include?(current.id)
+
+        visited.add(current.id)
+        return true if current.periodical_issue?
+
+        # Add parent collections to stack
+        current.parent_collections.each { |pc| stack << pc }
+      end
+    end
+    false
+  end
+
   # return publisher_site link from this manifestation or from any containing collection
   def publisher_link
     link = external_links.detect(&:linktype_publisher_site?)

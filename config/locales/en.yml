@@ -235,6 +235,10 @@ en:
     permission_for_all: permission for all
     permission_for_selected: permission for selected
     unknown: unknown
+  collection_type_in_volume: In a volume
+  collection_type_in_periodical: In a periodical
+  collection_type_uncollected: Uncollected
+  containing_collection_type: Containing collection type
   involved_authority:
     role:
       author: Author
