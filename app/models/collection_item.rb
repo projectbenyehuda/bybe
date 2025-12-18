@@ -8,6 +8,11 @@ class CollectionItem < ApplicationRecord
   validates :seqno, presence: true
   validate :ensure_no_cycle
 
+  # Update manifestations count when collection items are added, removed, or changed
+  after_create :update_collection_manifestations_count
+  after_destroy :update_collection_manifestations_count
+  after_update :update_collection_manifestations_count, if: :item_changed?
+
   def title
     if item.nil?
       return alt_title if alt_title.present?
@@ -147,5 +152,41 @@ class CollectionItem < ApplicationRecord
     return collection.parent_collection_items.preload(:collection).any? do |ci|
       ci.given_parent?(parent_collection)
     end
+  end
+
+  def update_collection_manifestations_count
+    return unless collection.present?
+
+    # Skip if collection has disabled automatic updates (for bulk operations)
+    return if collection.skip_manifestations_count_update
+
+    # Only update if this change could affect manifestation counts
+    # (i.e., the item is a Manifestation or Collection, or was one before the change)
+    return unless affects_manifestation_count?
+
+    collection.update_manifestations_count!
+  end
+
+  def affects_manifestation_count?
+    # For new records
+    if new_record?
+      return item_type.in?(['Manifestation', 'Collection'])
+    end
+
+    # For destroyed records, check if it was a Manifestation or Collection
+    if destroyed?
+      return item_type.in?(['Manifestation', 'Collection'])
+    end
+
+    # For updates, check both current and previous types
+    current_affects = item_type.in?(['Manifestation', 'Collection'])
+    previous_type = item_type_before_last_save || item_type
+    previous_affects = previous_type.in?(['Manifestation', 'Collection'])
+
+    current_affects || previous_affects
+  end
+
+  def item_changed?
+    saved_change_to_item_id? || saved_change_to_item_type?
   end
 end
