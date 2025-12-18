@@ -31,7 +31,7 @@ describe CollectionsController do
     end
 
     context 'when collection is not periodical' do
-      let(:collection_type) { (Collection.collection_types.keys - ['periodical'] - Collection::SYSTEM_TYPES).sample }
+      let(:collection_type) { (Collection.collection_types.keys - %w(periodical volume_series) - Collection::SYSTEM_TYPES).sample }
 
       context 'when collection contains several manifestations' do
         let(:collection) do
@@ -273,6 +273,7 @@ describe CollectionsController do
         expect(response).to be_successful
       end
     end
+
     describe '#create_periodical_with_issue' do
       subject(:call) do
         post :create_periodical_with_issue, params: params_hash
@@ -380,7 +381,7 @@ describe CollectionsController do
         link_id: 999_999
       }
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 end

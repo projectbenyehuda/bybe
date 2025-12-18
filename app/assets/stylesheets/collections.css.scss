@@ -5,4 +5,7 @@
 // Center-align images in collection show view, like in manifestation read view
 .textcard#actualtext img {
   display: block;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }

@@ -243,6 +243,18 @@ class Ingestible < ApplicationRecord
     return unless docx.attached?
 
     bin = docx.download # grab the docx binary
+
+    # Fix inherited formatting (bold/italic from paragraph styles) before pandoc conversion
+    # This ensures pandoc can see formatting that's defined in styles but not directly on runs
+    begin
+      bin = FixDocxInheritedFormatting.call(bin)
+    rescue StandardError => e
+      Rails.logger.error(
+        "FixDocxInheritedFormatting failed for Ingestible##{id}: #{e.class}: #{e.message}"
+      )
+      # Proceed with the original binary if the formatting fixer fails
+    end
+
     tmpfile = Tempfile.new(['docx2mmd__', '.docx'], encoding: 'ascii-8bit')
     tmpfile_pp = Tempfile.new(['docx2mmd__pp_', '.docx'], encoding: 'ascii-8bit')
     begin
