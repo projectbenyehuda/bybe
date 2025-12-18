@@ -639,6 +639,90 @@ describe SearchManifestations do
         end
       end
     end
+
+    describe 'by collection_types' do
+      let(:filter) { { 'collection_types' => collection_types } }
+      let(:volume) { create(:collection, collection_type: 'volume') }
+      let(:periodical_issue) { create(:collection, collection_type: 'periodical_issue') }
+      let(:in_volume_1) { create(:manifestation, collections: [volume]) }
+      let(:in_volume_2) { create(:manifestation, collections: [volume]) }
+      let(:in_periodical_1) { create(:manifestation, collections: [periodical_issue]) }
+      let(:in_periodical_2) { create(:manifestation, collections: [periodical_issue]) }
+      let(:uncollected_1) { create(:manifestation, collections: []) }
+      let(:uncollected_2) { create(:manifestation, collections: []) }
+
+      before do
+        Chewy.strategy(:atomic) do
+          in_volume_1
+          in_volume_2
+          in_periodical_1
+          in_periodical_2
+          uncollected_1
+          uncollected_2
+        end
+      end
+
+      context 'when filtering by in_volume only' do
+        let(:collection_types) { %w(in_volume) }
+
+        it 'returns all manifestations that are in volumes' do
+          expect(result_ids).to contain_exactly(in_volume_1.id, in_volume_2.id)
+        end
+      end
+
+      context 'when filtering by in_periodical only' do
+        let(:collection_types) { %w(in_periodical) }
+
+        it 'returns all manifestations that are in periodicals' do
+          expect(result_ids).to contain_exactly(in_periodical_1.id, in_periodical_2.id)
+        end
+      end
+
+      context 'when filtering by uncollected only' do
+        let(:collection_types) { %w(uncollected) }
+
+        it 'returns all manifestations that are not in any collection' do
+          expect(result_ids).to contain_exactly(uncollected_1.id, uncollected_2.id)
+        end
+      end
+
+      context 'when filtering by in_volume and in_periodical' do
+        let(:collection_types) { %w(in_volume in_periodical) }
+
+        it 'returns all manifestations that are either in volumes or periodicals' do
+          expect(result_ids).to contain_exactly(in_volume_1.id, in_volume_2.id,
+                                                in_periodical_1.id, in_periodical_2.id)
+        end
+      end
+
+      context 'when filtering by in_volume and uncollected' do
+        let(:collection_types) { %w(in_volume uncollected) }
+
+        it 'returns manifestations that are either in volumes or uncollected' do
+          expect(result_ids).to contain_exactly(in_volume_1.id, in_volume_2.id,
+                                                uncollected_1.id, uncollected_2.id)
+        end
+      end
+
+      context 'when filtering by in_periodical and uncollected' do
+        let(:collection_types) { %w(in_periodical uncollected) }
+
+        it 'returns manifestations that are either in periodicals or uncollected' do
+          expect(result_ids).to contain_exactly(in_periodical_1.id, in_periodical_2.id,
+                                                uncollected_1.id, uncollected_2.id)
+        end
+      end
+
+      context 'when filtering by all three collection types' do
+        let(:collection_types) { %w(in_volume in_periodical uncollected) }
+
+        it 'returns all manifestations regardless of collection status' do
+          expect(result_ids).to contain_exactly(in_volume_1.id, in_volume_2.id,
+                                                in_periodical_1.id, in_periodical_2.id,
+                                                uncollected_1.id, uncollected_2.id)
+        end
+      end
+    end
   end
 
   describe 'sorting' do
