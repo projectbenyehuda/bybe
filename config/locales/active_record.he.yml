@@ -113,6 +113,7 @@ he:
         bio: תקציר ביוגרפי
         works: ספרים
         about: על המחבר%{gender_suffix} ויצירת%{gender_letter}
+        links: קישוריוֹת
       lex_publication:
         toc: תוכן עניינים
         az_navbar: להציג סרגל א–ב?
