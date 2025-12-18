@@ -834,6 +834,18 @@ class ManifestationController < ApplicationController
       @filters += @languages.map { |x| ["#{I18n.t(:orig_lang)}: #{helpers.textify_lang(x)}", "lang_#{x}", :checkbox] }
     end
 
+    # collection types (in_volume, in_periodical, uncollected)
+    @collection_types = params['ckb_collection_types']
+    if @collection_types.present?
+      # Only apply filter if not all three are selected (which would mean "show everything")
+      unless @collection_types.sort == %w(in_periodical in_volume uncollected).sort
+        ret['collection_types'] = @collection_types
+        @filters += @collection_types.map do |x|
+          [I18n.t("collection_type_#{x}"), "collection_type_#{x}", :checkbox]
+        end
+      end
+    end
+
     # dates
     @fromdate = params['fromdate'].to_i if params['fromdate'].present?
     @todate = params['todate'].to_i if params['todate'].present?

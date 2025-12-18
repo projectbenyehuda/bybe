@@ -42,6 +42,34 @@ class SearchManifestations < ApplicationService
       filter << { terms: { tags: tags } }
     end
 
+    # collection types filter
+    collection_types = filters['collection_types']
+    if collection_types.present?
+      # Build filter based on selected collection types
+      if collection_types.include?('uncollected') && collection_types.length == 1
+        # Only uncollected: both in_volume and in_periodical must be false
+        filter << { bool: { must: [
+          { term: { in_volume: false } },
+          { term: { in_periodical: false } }
+        ] } }
+      else
+        # Build OR conditions for selected types
+        should_clauses = []
+        should_clauses << { term: { in_volume: true } } if collection_types.include?('in_volume')
+        should_clauses << { term: { in_periodical: true } } if collection_types.include?('in_periodical')
+
+        if collection_types.include?('uncollected')
+          # Uncollected: both in_volume and in_periodical are false
+          should_clauses << { bool: { must: [
+            { term: { in_volume: false } },
+            { term: { in_periodical: false } }
+          ] } }
+        end
+
+        filter << { bool: { should: should_clauses, minimum_should_match: 1 } }
+      end
+    end
+
     add_date_range(filter, :pby_publication_date, filters['uploaded_between'])
     add_date_range(filter, :creation_date, filters['created_between'])
     add_date_range(filter, :orig_publication_date, filters['published_between'])

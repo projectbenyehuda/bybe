@@ -1661,7 +1661,11 @@ he:
     permission_for_all: כלל היצירה מוגש ברשות
     permission_for_selected: יצירות מסוימות מונגשות ברשות
     unknown: לא ידוע
-    
+  collection_type_in_volume: בכרך
+  collection_type_in_periodical: בכתב עת
+  collection_type_uncollected: לא באוסף
+  containing_collection_type: סוג אוסף מכיל
+
   involved_authority:
     role:
       author: יוצר
