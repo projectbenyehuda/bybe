@@ -33,7 +33,8 @@ class Collection < ApplicationRecord
   #  has_many :likings, as: :likeable, dependent: :destroy
   #  has_many :likers, through: :likings, class_name: 'User'
 
-  has_one_attached :logo_image
+  has_one_attached :logo_image # for periodicals
+  has_one_attached :cover_image # for periodical_issue or volumes
 
   # convenience methods
   has_many :manifestation_items, through: :collection_items, source: :item, source_type: 'Manifestation'
