@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_08_184504) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_18_013453) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -705,6 +705,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_08_184504) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "authority_id"
+    t.integer "gender", default: 0
     t.index ["aliases"], name: "index_lex_people_on_aliases"
     t.index ["authority_id"], name: "index_lex_people_on_authority_id"
     t.index ["birthdate"], name: "index_lex_people_on_birthdate"
@@ -962,8 +963,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_08_184504) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.string "taggable_type"
+    t.index ["approved_by", "status"], name: "index_taggings_on_approved_by_and_status"
     t.index ["approved_by"], name: "taggings_approved_by_fk"
+    t.index ["status", "created_at"], name: "index_taggings_on_status_and_created_at"
+    t.index ["status"], name: "index_taggings_on_status"
+    t.index ["suggested_by", "status", "created_at"], name: "index_taggings_on_suggested_by_status_created_at"
     t.index ["suggested_by"], name: "taggings_suggested_by_fk"
+    t.index ["tag_id", "status"], name: "index_taggings_on_tag_id_and_status"
+    t.index ["tag_id", "taggable_id", "taggable_type"], name: "index_taggings_on_tag_and_taggable"
     t.index ["tag_id"], name: "taggings_tag_id_fk"
     t.index ["taggable_id", "taggable_type"], name: "index_taggings_on_taggable_id_and_taggable_type"
   end
