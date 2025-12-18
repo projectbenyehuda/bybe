@@ -26,13 +26,13 @@ RSpec.describe 'Noindex meta tags', type: :request do
   end
 
   describe 'read pages' do
-    it 'includes noindex meta tag on manifestation read page' do
+    it 'does not include noindex meta tag on manifestation read page (/read/:id)' do
       get manifestation_path(manifestation)
       expect(response).to have_http_status(:success)
-      expect(response.body).to include('<meta name="robots" content="noindex">')
+      expect(response.body).not_to include('<meta name="robots" content="noindex">')
     end
 
-    it 'includes noindex meta tag on manifestation readmode page' do
+    it 'includes noindex meta tag on manifestation readmode page (/read/:id/read)' do
       get manifestation_readmode_path(manifestation)
       expect(response).to have_http_status(:success)
       expect(response.body).to include('<meta name="robots" content="noindex">')
