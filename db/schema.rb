@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_18_000416) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_18_055035) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -308,6 +308,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_000416) do
     t.string "alternate_titles", limit: 1024
     t.boolean "suppress_download_and_print", default: false, null: false
     t.integer "impressions_count", default: 0
+    t.integer "manifestations_count", default: 0, null: false
     t.index ["inception_year"], name: "index_collections_on_inception_year"
     t.index ["publication_id"], name: "index_collections_on_publication_id"
     t.index ["sort_title"], name: "index_collections_on_sort_title"

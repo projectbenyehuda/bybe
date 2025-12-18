@@ -381,6 +381,40 @@ class Collection < ApplicationRecord
     return ret.presence || I18n.t(:nil)
   end
 
+  # Flag to temporarily skip manifestations_count updates (for bulk operations)
+  attr_accessor :skip_manifestations_count_update
+
+  # Recalculate manifestations_count from scratch by traversing the entire tree
+  def recalculate_manifestations_count!
+    count = 0
+    stack = collection_items.to_a
+
+    while stack.any?
+      current_item = stack.pop
+      if current_item.item_type == 'Manifestation' && current_item.item.present?
+        count += 1
+      elsif current_item.item_type == 'Collection' && current_item.item.present?
+        stack.concat(current_item.item.collection_items.to_a)
+      end
+    end
+
+    update_column(:manifestations_count, count)
+    count
+  end
+
+  # Update manifestations_count and propagate up the parent tree
+  def update_manifestations_count!
+    recalculate_manifestations_count!
+    propagate_count_update_to_parents
+  end
+
+  # Propagate count changes up to all parent collections
+  def propagate_count_update_to_parents
+    parent_collections.each do |parent|
+      parent.update_manifestations_count!
+    end
+  end
+
   def before_destroy
     collection_items.each do |ci|
       ci.destroy!
