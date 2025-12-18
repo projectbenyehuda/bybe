@@ -485,7 +485,9 @@ class CollectionsController < ApplicationController
       ret['authority_ids'] = authority_ids
       @authorities = authority_ids
       @authorities_names = params['authorities_names']
-      @filters << [I18n.t(:authors_xx, xx: @authorities_names.sub(/;\s+$/, '')), 'authorities', :authoritylist]
+      # Strip trailing semicolon and whitespace from authority names, handling nil case
+      authorities_display = @authorities_names.to_s.sub(/;\s+$/, '')
+      @filters << [I18n.t(:authors_xx, xx: authorities_display), 'authorities', :authoritylist]
     end
 
     # title search
