@@ -9,7 +9,7 @@
       #authors-in-project.by-card-v02
         .by-card-header-v02
           %span.headline-1-v02
-            = t(:periodicals)
+            = t(:periodicals_label)
             = "(#{@periodicals_count})"
         .by-card-content-v02
           %div
@@ -24,51 +24,13 @@
                     .slide
                       %a{ href: authority_path(periodical) }
                         .author-card-v02
-                          %img.author-pic-v02{src: periodical.logo_image.url(:thumb), alt: periodical.title }/
+                          %img.author-pic-v02{src: periodical.logo_image.present? ? url_for(periodical.logo_image) : '', alt: periodical.title }/
                           .author-name-area
-                            .author-name-v02= t('.x_issues', count: periodical.collection_items.count)
-                            .author-name-v02= t('.x_texts', count: periodical.cached_manifestations_count)
-              .carousel-arrow-left-v02{id: "leftarrow#{id_frag}"}
+                            .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
+                            .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
+              .carousel-arrow-left-v02{id: "leftarrow"}
                 = 1
 
-            .carousel-arrow-right-v02
-              %a{:href => "#"} 2
-            .carousel-demo
-              .author-card-v02{:style => ""}
-                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Zmanim.jpg"}/
-                .author-name-area
-                  .author-name-v02 126 חוברות
-                  .author-name-v02 1589 יצירות
-                .author-info-v02
-                  %a{:href => "#"} M
-              .author-card-v02{:style => ""}
-                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Tarbitz.jpg"}/
-                .author-name-area
-                  .author-name-v02 126 חוברות
-                  .author-name-v02 1589 יצירות
-                .author-info-v02
-                  %a{:href => "#"} M
-              .author-card-v02{:style => ""}
-                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Iyun.jpg"}/
-                .author-name-area
-                  .author-name-v02 126 חוברות
-                  .author-name-v02 1589 יצירות
-                .author-info-v02
-                  %a{:href => "#"} M
-              .author-card-v02{:style => ""}
-                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Ho!.jpg"}/
-                .author-name-area
-                  .author-name-v02 20 חוברות
-                  .author-name-v02 239 יצירות
-                .author-info-v02
-                  %a{:href => "#"} M
-              .author-card-v02{:style => ""}
-                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Zmanim.jpg"}/
-                .author-name-area
-                .author-info-v02
-                  %a{:href => "#"} M
-            .carousel-arrow-left-v02
-              %a{:href => "#"} 1
           .link-to-all-v02
             %a{:href => "#"}
               %span{:style => "font-weight: bold;"} לכל כתבי העת בפרויקט
@@ -330,3 +292,66 @@
             .button-to-full-v02
               %button.by-button-v02 להמלצה המלאה
               %button.by-button-v02{:href => "#"} לדף כתב העת
+:javascript
+  $(document).ready(function() {
+    // Carousel functionality
+    var scroller = $('#scroller');
+
+    $('#scroller').slick({
+      infinite: false,
+      slidesToShow: 5,
+      placeholders: false,
+      slidesToScroll: 1,
+      arrows: true,
+      rtl: true,
+      outerEdgeLimit: true,
+      nextArrow: "#leftarrow",
+      prevArrow: "#rightarrow",
+      //variableWidth: true,
+      // appendArrows: '#scroller_container',
+      responsive: [{
+        breakpoint: 1700,
+        settings: {
+          slidesToShow: 4,
+          //infinite: true
+        }
+      },{
+        breakpoint: 1340,
+        settings: {
+          slidesToShow: 3,
+          //infinite: true
+        }
+      },{
+        breakpoint: 990,
+        settings: {
+          slidesToShow: 5,
+          //infinite: true
+        }
+      },{
+        breakpoint: 815,
+        settings: {
+          slidesToShow: 4,
+          //infinite: true
+        }
+      },{
+        breakpoint: 670,
+        settings: {
+          slidesToShow: 3,
+          //infinite: true
+        }
+      }, {
+        breakpoint: 638,
+        settings: {
+          slidesToShow: 4,
+          //infinite: true
+        }
+      }, {
+        breakpoint: 520,
+        settings: {
+          slidesToShow: 3,
+          //dots: true
+        }
+      }]
+    });
+
+  });

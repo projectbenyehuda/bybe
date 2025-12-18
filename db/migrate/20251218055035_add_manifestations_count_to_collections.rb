@@ -3,7 +3,7 @@
 # Add manifestations_count counter cache to collections table
 class AddManifestationsCountToCollections < ActiveRecord::Migration[8.0]
   def up
-    add_column :collections, :manifestations_count, :integer, default: 0, null: false
+    add_column :collections, :manifestations_count, :integer, default: 0, null: false, if_not_exists: true
 
     # Backfill existing collections with correct counts
     Collection.reset_column_information

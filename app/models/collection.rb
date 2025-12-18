@@ -33,8 +33,7 @@ class Collection < ApplicationRecord
   #  has_many :likings, as: :likeable, dependent: :destroy
   #  has_many :likers, through: :likings, class_name: 'User'
 
-  has_attached_file :logo_image, styles: { full: '720x1040', medium: '360x520', thumb: '180x260', tiny: '90x120' },
-                                 default_url: '/assets/:style/collection_logo_placeholder.png'
+  has_one_attached :logo_image
 
   # convenience methods
   has_many :manifestation_items, through: :collection_items, source: :item, source_type: 'Manifestation'
