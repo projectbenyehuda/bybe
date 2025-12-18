@@ -70,7 +70,7 @@
                   - authorities[ia.role] << ia.authority
                 - else
                   - authorities[ia.role] = [ia.authority]
-              - %w[ author illustrator translator editor photographer designer contributor other ].each do |r|
+              - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |r|
                 - next unless authorities[r].present?
                 - if authorities[r].size > 1
                   - authorities[r].each do |authority|
