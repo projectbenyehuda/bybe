@@ -79,11 +79,7 @@ mise.toml
 
 # beads issue tracking
 
-.beads/beads.db
-.beads/beads.db-*
-.beads/bd.sock
-.beads/bd.pipe
-.beads/.exclusive-lock
+.beads/
 .git/beads-worktrees/
 
 
