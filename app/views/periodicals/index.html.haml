@@ -12,8 +12,8 @@
             = t(:periodicals_label)
             = "(#{@periodicals_count})"
         .by-card-content-v02
-          %div
-            %p{:style => "font-weight: bold"} הנקראים/ות ביותר
+          -#%div
+          -#  %p{:style => "font-weight: bold"} הנקראים/ות ביותר
           %div
             #scroller_container
               .carousel-arrow-right-v02{id: "rightarrow"}
@@ -22,7 +22,7 @@
                 .scroller{id: "scroller"}
                   - @periodicals.each do |periodical|
                     .slide
-                      %a{ href: authority_path(periodical) }
+                      %a{ href: collection_path(periodical) }
                         .author-card-v02
                           %img.author-pic-v02{src: periodical.logo_image.present? ? url_for(periodical.logo_image) : '', alt: periodical.title }/
                           .author-name-area
@@ -31,10 +31,10 @@
               .carousel-arrow-left-v02{id: "leftarrow"}
                 = 1
 
-          .link-to-all-v02
-            %a{:href => "#"}
-              %span{:style => "font-weight: bold;"} לכל כתבי העת בפרויקט
-              %span.left-arrow 1
+          -#.link-to-all-v02
+          -#  %a{:href => "#"}
+          -#    %span{:style => "font-weight: bold;"} לכל כתבי העת בפרויקט
+          -#    %span.left-arrow 1
       #works-in-project.by-card-v02
         .by-card-header-v02
           %span.headline-1-v02
