@@ -31,7 +31,7 @@ describe CollectionsController do
     end
 
     context 'when collection is not periodical' do
-      let(:collection_type) { (Collection.collection_types.keys - ['periodical'] - Collection::SYSTEM_TYPES).sample }
+      let(:collection_type) { (Collection.collection_types.keys - %w(periodical volume_series) - Collection::SYSTEM_TYPES).sample }
 
       context 'when collection contains several manifestations' do
         let(:collection) do
