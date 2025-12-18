@@ -74,6 +74,9 @@ c
 m
 v
 
+elastic_start.sh
+mise.toml
+
 # beads issue tracking
 
 .beads/beads.db
