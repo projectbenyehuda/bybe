@@ -1619,6 +1619,10 @@ he:
     create:
       ziburit_failed: לא השתכנענו שאינך רובוט.
       email_missing: נא לציין כתובת דואל, כדי שנוכל להשיב לך.
+  periodicals:
+    index:
+      x_issues: "%{x} גליונות"
+      x_texts: "%{x} יצירות"
   manifestation:
   collection:
     type:
@@ -1796,3 +1800,4 @@ he:
     default_external_link_hint: קישור זה יתווסף אוטומטית כקישור מסוג 'דף באתר ההוצאה' לכל אוסף ויצירה המקושרים למיזם זה
     default_link_description_hint: תיאור הקישור שיוצג לקוראים
   one_work: יצירה אחת
+  periodicals: כתבי עת

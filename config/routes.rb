@@ -1,6 +1,8 @@
 include BybeUtils
 
 Bybeconv::Application.routes.draw do
+  get 'periodicals', to: 'periodicals#index', as: 'periodicals_index'
+  get 'periodicals/show'
   get 'collections_migration/index'
   get 'collections_migration/person'
   post 'collections_migration/migrate'

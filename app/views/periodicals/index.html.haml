@@ -1,0 +1,332 @@
+#content.container-fluid.gateway-small-genre.periodicals
+  .row
+    .by-card-v02.gateway-header
+      .by-card-content-v02
+        %p.headline-1-v02 שער לכתבי עת
+        %p.gateway-title-secondary-text עמוד זה מהווה שער ליצירות שפורסמו בכתבי עת לאורך השנים. ניתן לעיין לפי כתב העת, היצירות, או לפי הסוגה הרלוונטית.
+  .row
+    .col-12.col-lg-8
+      #authors-in-project.by-card-v02
+        .by-card-header-v02
+          %span.headline-1-v02
+            = t(:periodicals)
+            = "(#{@periodicals_count})"
+        .by-card-content-v02
+          %div
+            %p{:style => "font-weight: bold"} הנקראים/ות ביותר
+          %div
+            #scroller_container
+              .carousel-arrow-right-v02{id: "rightarrow"}
+                = 2
+              .carousel-demo
+                .scroller{id: "scroller"}
+                  - @periodicals.each do |periodical|
+                    .slide
+                      %a{ href: authority_path(periodical) }
+                        .author-card-v02
+                          %img.author-pic-v02{src: periodical.logo_image.url(:thumb), alt: periodical.title }/
+                          .author-name-area
+                            .author-name-v02= t('.x_issues', count: periodical.collection_items.count)
+                            .author-name-v02= t('.x_texts', count: periodical.cached_manifestations_count)
+              .carousel-arrow-left-v02{id: "leftarrow#{id_frag}"}
+                = 1
+
+            .carousel-arrow-right-v02
+              %a{:href => "#"} 2
+            .carousel-demo
+              .author-card-v02{:style => ""}
+                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Zmanim.jpg"}/
+                .author-name-area
+                  .author-name-v02 126 חוברות
+                  .author-name-v02 1589 יצירות
+                .author-info-v02
+                  %a{:href => "#"} M
+              .author-card-v02{:style => ""}
+                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Tarbitz.jpg"}/
+                .author-name-area
+                  .author-name-v02 126 חוברות
+                  .author-name-v02 1589 יצירות
+                .author-info-v02
+                  %a{:href => "#"} M
+              .author-card-v02{:style => ""}
+                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Iyun.jpg"}/
+                .author-name-area
+                  .author-name-v02 126 חוברות
+                  .author-name-v02 1589 יצירות
+                .author-info-v02
+                  %a{:href => "#"} M
+              .author-card-v02{:style => ""}
+                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Ho!.jpg"}/
+                .author-name-area
+                  .author-name-v02 20 חוברות
+                  .author-name-v02 239 יצירות
+                .author-info-v02
+                  %a{:href => "#"} M
+              .author-card-v02{:style => ""}
+                %img.author-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Zmanim.jpg"}/
+                .author-name-area
+                .author-info-v02
+                  %a{:href => "#"} M
+            .carousel-arrow-left-v02
+              %a{:href => "#"} 1
+          .link-to-all-v02
+            %a{:href => "#"}
+              %span{:style => "font-weight: bold;"} לכל כתבי העת בפרויקט
+              %span.left-arrow 1
+      #works-in-project.by-card-v02
+        .by-card-header-v02
+          %span.headline-1-v02
+            %a{:href => "#"} יצירות מכתבי עת שהועלו למאגר
+          %span.date-range (421)
+        .by-card-content-v02.works-in-project-content
+          .row.top-works
+            .col-sm-12.works-most-read.text-height-works-in-project
+              %p.headline-2-v02 היצירות הנקראות ביותר החודש
+              %ol{:style => "margin-bottom: 0;"}
+                %li
+                  %a{:href => "#"} אלקראן (הקוראן)/ לא ידוע/ה / יואל יוסף ריבלין
+                %li
+                  %a{:href => "#"} והיו הנעליים מאושרות / שושנה שרירא
+                %li
+                  %a{:href => "#"}
+                    החטא ועונשו / פ. מ. דוסטויבסקי
+                    \/ יוסף חיים ברנר
+                %li
+                  %a{:href => "#"} אדרת אליהו / אברהם שמואל שטיין
+                %li
+                  %a{:href => "#"}
+                    תולדות החינוך בישראל בדורות האחרונים / צ.
+                    שרפשטיין
+                %li
+                  %a{:href => "#"} ״אחד העם״ והעם / שמריהו לוין
+                %li
+                  %a{:href => "#"} שלמה מולכו / אהרון אברהם קבק
+                %li
+                  %a{:href => "#"} ירושלים של תמול / דוד בן יהושע ילין
+                %li
+                  %a{:href => "#"} תל אביב זכרונות 1919-1939 / יבנאל מטלון
+                %li
+                  %a{:href => "#"} [כזוג טורפים תועי-ליל ומוכי-צמא] / יעקב שטיינברג
+          .link-to-all-v02
+            %a{:href => "#"}
+              %span{:style => "font-weight: bold"} לכל היצירות מכתבי עת
+              %span.left-arrow 1
+    .col-12.col-lg-4
+      .by-card-v02.whats-new-v02
+        #whats-new-bg
+          .by-side-card-header-v02
+            %p.headline-1-v02{:style => "margin-bottom: 0"}
+              %a{:href => "#"} מה חדש בכתבי עת?
+          .by-card-content-v02
+            .whats-new-content
+              .new-card-v02
+                .new-info-v02 !
+                .new-card-left-v02
+                  %p.text-height-new
+                    אנו בתהליך העלאת יצירות רבות שפורסמו בעיתון ״דבר״ במחצית השניה של המאה העשרים אנו בתהליך העלאת יצירות רבות שפורסמו בעיתון ״דבר״ במחצית השניה של המאה העשרים אנו בתהליך העלאת יצירות רבות שפורסמו בעיתון ״דבר״ במחצית השניה של המאה העשרים
+                .link-to-all-v02{:style => "font-weight: bold;"}
+                  %a{:href => "#"} התנדבו לעזור
+              .new-card-v02
+                .new-info-v02 !
+                %a{:href => "#"}
+                  .new-card-right-v02
+                    %img.new-card-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Zmanim.jpg"}/
+                .new-card-left-v02
+                  %a{:href => "#"}
+                    %p.headline-2-v02
+                      %span.new-headline-v02 יצירות חדשות
+                  %p.text-height-new
+                    שירה:
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} מחר
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} מחר
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} מחר
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} מחר
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    %a{:href => "#"} פרידת אליהו
+                .link-to-all-v02{:style => "font-weight: bold;"}
+                  %a{:href => "#"}
+                    סך הכל
+                    %span 12
+                    יצירות
+              .new-card-v02
+                .new-info-v02 !
+                %a{:href => "#"}
+                  .new-card-right-v02
+                    %img.new-card-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Ho!.jpg"}/
+                .new-card-left-v02
+                  %a{:href => "#"}
+                    %p.headline-2-v02
+                      %span.new-headline-v02 יצירות חדשות
+                  %p.text-height-new
+                    שירה:
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} מחר
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} מחר
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} מחר
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} פרידת אליהו
+                    = succeed ";" do
+                      %a{:href => "#"} מחר
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} כתם אדום
+                    = succeed ";" do
+                      %a{:href => "#"} שומר מה מליל
+                    = succeed ";" do
+                      %a{:href => "#"} שירת ההולך
+                    %a{:href => "#"} פרידת אליהו
+                .link-to-all-v02{:style => "font-weight: bold;"}
+                  %a{:href => "#"}
+                    סך הכל
+                    %span 12
+                    יצירות
+            .link-to-all-v02
+              %a{:href => "#"}
+                %span{:style => "font-weight: bold"} לכל מה שחדש
+                %span.left-arrow 1
+      .by-card-v02.flash-work-v02
+        .flash-bg-v02
+          .by-side-card-header-v02
+            %p.headline-1-v02 זוית אישית על כתב עת
+          .by-card-content-v02
+            %p.headline-3-v02
+              %a{:href => "#"} איך התחלתי לקרוא שירה עברית בעקבות גילוי כתב העת ״הו!״
+            %p
+              מאת
+              %a{:href => "#"} ישראל ישראלי
+            .flash-text-container
+              .text-height-flash-work
+                %p
+                  כל פרק ופרק על השלילה בארץ, הוא בית משיר-שבח לחיוב שבה: בעצם העובדה שנדפס ופורסם.  כי מה הן כל התופעות השליליות יחד כנגד החיוב הגדול ביותר בעולם:
+                  חופש לכתוב בלי מועקת המצפון ולהדפיס בלי מועקת המצפן.האי, מה טוב לבקר את החברה והמדינה, את ראשי-המדברים וראשי המפטפטים בלי ראש למיניהם!  הדם שהפך בעט לדיו, הופך בדפוס ליין טוב.  לחיים!" -- קישון "אני מקדיש את ספרי לאשתי – למען כל פרק ופרק על השלילה בארץ, הוא בית משיר-שבח לחיוב שבה: בעצם העובדה שנדפס ופורסם.כי מה הן כל התופעות השליליות יחד כנגד החיוב הגדול ביותר בעולם: חופש לכתוב בלי מועקת המצפון ולהדפיס בלי מועקת המצפן.  האי, מה טוב לבקר את החברה והמדינה, את ראשי-המדברים וראשי המפטפטים בלי ראש למיניהם!  הדם שהפך בעט לדיו, הופך בדפוס ליין טוב.  לחיים!" -- קישון "אני מקדיש את ספרי לאשתי – כל פרק ופרק על השלילה בארץ, הוא בית משיר-שבח לחיוב שבה: בעצם העובדה שנדפס ופורסם.  כי מה הן כל התופעות השליליות יחד כנגד החיוב הגדול ביותר בעולם: חופש לכתוב בלי מועקת המצפון ולהדפיס בלי מועקת המצפן.  האי, מה טוב לבקר את החברה והמדינה, את ראשי-המדברים וראשי המפטפטים בלי ראש למיניהם!קישון "אני מקדיש את ספרי לאשתי – כל פרק ופרק על השלילה בארץ, הוא בית משיר-שבח לחיוב שבה: בעצם העובדה שנדפס ופורסם.  כי מה הן כל התופעות השליליות יחד כנגד החיוב הגדול ביותר בעולם: חופש לכתוב בלי מועקת המצפון ולהדפיס בלי מועקת המצפן.
+            .button-to-full-v02
+              %button.by-button-v02 להמלצה המלאה
+              %button.by-button-v02{:href => "#"} לדף כתב העת
