@@ -301,7 +301,6 @@ class ManifestationController < ApplicationController
     @print = true
     @e = @m.expression
 
-
     if @m.expression.work.genre == 'lexicon'
       # Get all dictionary entries for printing (no pagination)
       @headwords = DictionaryEntry.where(manifestation_id: @m.id).where.not(defhead: nil).order(sequential_number: :asc)
@@ -319,7 +318,6 @@ class ManifestationController < ApplicationController
       head :not_found
       return
     end
-
 
     @e = @m.expression
     @footer_url = dict_entry_url(@m, @entry)
@@ -836,13 +834,11 @@ class ManifestationController < ApplicationController
 
     # collection types (in_volume, in_periodical, uncollected)
     @collection_types = params['ckb_collection_types']
-    if @collection_types.present?
-      # Only apply filter if not all three are selected (which would mean "show everything")
-      unless @collection_types.sort == %w(in_periodical in_volume uncollected).sort
-        ret['collection_types'] = @collection_types
-        @filters += @collection_types.map do |x|
-          [I18n.t("collection_type_#{x}"), "collection_type_#{x}", :checkbox]
-        end
+    # Only apply filter if not all three are selected (which would mean "show everything")
+    if @collection_types.present? && !(@collection_types.sort == %w(in_periodical in_volume uncollected).sort)
+      ret['collection_types'] = @collection_types
+      @filters += @collection_types.map do |x|
+        [I18n.t("collection_type_#{x}"), "collection_type_#{x}", :checkbox]
       end
     end
 
@@ -936,10 +932,13 @@ class ManifestationController < ApplicationController
     in_periodical_aggs = buckets_to_totals_hash(collection.aggs['in_periodical']['buckets'])
 
     @collection_type_facet = {
-      'in_volume' => in_volume_aggs[true] || 0,
-      'in_periodical' => in_periodical_aggs[true] || 0,
-      'uncollected' => in_volume_aggs[false] && in_periodical_aggs[false] ?
-        [in_volume_aggs[false], in_periodical_aggs[false]].min : 0
+      'in_volume' => in_volume_aggs[1] || 0,
+      'in_periodical' => in_periodical_aggs[1] || 0,
+      'uncollected' => if in_volume_aggs[0] && in_periodical_aggs[0]
+                         [in_volume_aggs[0], in_periodical_aggs[0]].min
+                       else
+                         0
+                       end
     }
 
     # Preparing list of authors to show in multiselect modal on works browse page
