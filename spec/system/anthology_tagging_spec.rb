@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe 'Anthology tagging', type: :system, js: true do
+  before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
   let(:user) { create(:user) }
   let(:anthology) { create(:anthology, access: :pub) }
   let!(:approved_tag) { create(:tag, status: :approved, name: 'Fiction') }
