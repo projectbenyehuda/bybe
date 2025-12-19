@@ -39,36 +39,15 @@
         .by-card-header-v02
           %span.headline-1-v02
             %a{:href => "#"} יצירות מכתבי עת שהועלו למאגר
-          %span.date-range (421)
+          %span.date-range= "(#{@periodicals_text_count})"
         .by-card-content-v02.works-in-project-content
           .row.top-works
             .col-sm-12.works-most-read.text-height-works-in-project
               %p.headline-2-v02 היצירות הנקראות ביותר החודש
               %ol{:style => "margin-bottom: 0;"}
-                %li
-                  %a{:href => "#"} אלקראן (הקוראן)/ לא ידוע/ה / יואל יוסף ריבלין
-                %li
-                  %a{:href => "#"} והיו הנעליים מאושרות / שושנה שרירא
-                %li
-                  %a{:href => "#"}
-                    החטא ועונשו / פ. מ. דוסטויבסקי
-                    \/ יוסף חיים ברנר
-                %li
-                  %a{:href => "#"} אדרת אליהו / אברהם שמואל שטיין
-                %li
-                  %a{:href => "#"}
-                    תולדות החינוך בישראל בדורות האחרונים / צ.
-                    שרפשטיין
-                %li
-                  %a{:href => "#"} ״אחד העם״ והעם / שמריהו לוין
-                %li
-                  %a{:href => "#"} שלמה מולכו / אהרון אברהם קבק
-                %li
-                  %a{:href => "#"} ירושלים של תמול / דוד בן יהושע ילין
-                %li
-                  %a{:href => "#"} תל אביב זכרונות 1919-1939 / יבנאל מטלון
-                %li
-                  %a{:href => "#"} [כזוג טורפים תועי-ליל ומוכי-צמא] / יעקב שטיינברג
+                - @popular_works.each do |work|
+                  %li
+                    %a{:href => manifestation_path(work.id)}= work.title_and_authors
           .link-to-all-v02
             %a{:href => "#"}
               %span{:style => "font-weight: bold"} לכל היצירות מכתבי עת
