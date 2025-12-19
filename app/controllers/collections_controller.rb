@@ -7,7 +7,7 @@ class CollectionsController < ApplicationController
   include BybeUtils
   include KwicConcordanceConcern
 
-  before_action :require_editor, except: %i(show download print kwic kwic_download)
+  before_action :require_editor, except: %i(show download print kwic kwic_download pby_volumes)
   before_action :set_collection, only: %i(show update destroy)
 
   # GET /collections/1 or /collections/1.json
@@ -32,6 +32,13 @@ class CollectionsController < ApplicationController
     prep_for_show
     track_view(@collection)
     prep_user_content(:collection) # user anthologies, bookmarks
+  end
+
+  # GET /pby_volumes
+  def pby_volumes
+    @pby_volumes = Collection.pby_volumes.order(:title)
+    @pby_volumes_count = @pby_volumes.count
+    @page_title = "#{t(:pby_volumes)} - #{t(:default_page_title)}"
   end
 
   # GET /collections/1/periodical_issues

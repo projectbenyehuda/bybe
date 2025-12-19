@@ -1,0 +1,24 @@
+#content.container-fluid.pby-volumes
+  .row
+    .by-card-v02.gateway-header
+      .by-card-content-v02
+        %p.headline-1-v02= t(:pby_volumes)
+        %p.gateway-title-secondary-text= t(:pby_volumes_description)
+  .row
+    .col-12
+      #pby-volumes-list.by-card-v02
+        .by-card-header-v02
+          %span.headline-1-v02
+            = t(:pby_volumes)
+            = "(#{@pby_volumes_count})"
+        .by-card-content-v02
+          %ul.list-unstyled
+            - @pby_volumes.each do |volume|
+              %li.mb-3
+                %h3
+                  = link_to volume.title, collection_path(volume)
+                - if volume.subtitle.present?
+                  %p.text-muted= volume.subtitle
+  .row
+    .col-12
+      = link_to t(:back_to_homepage), root_path, class: 'btn btn-small-outline-v02 btn-text-v02 mt-4'
