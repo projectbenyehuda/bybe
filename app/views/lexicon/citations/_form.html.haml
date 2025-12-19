@@ -11,7 +11,19 @@
   = f.input :subject
   = f.input :title
   = f.input :from_publication
-  = f.input :authors
   = f.input :pages
   = f.input :link
   = f.submit t(:save)
+%hr
+
+%h4= LexCitation.human_attribute_name(:authors)
+#authors-list.border.rounded.p-2
+  - if @citation.new_record?
+    %span.text-secondary= t('.save_before_adding_authors')
+
+- unless @citation.new_record?
+  :javascript
+    function reloadAuthors() {
+      $('#authors-list').load(`/lex/citations/#{@citation.id}/authors`);
+    }
+    reloadAuthors();
