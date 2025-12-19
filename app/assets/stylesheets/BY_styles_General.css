@@ -10,7 +10,6 @@
   --pink-30: #CAAFC1;
   --pink-10: #d9cdd5;
   --grey-100: #242424;
-  --grey-100: #242424;
 	--grey-30: #bfbfbf;
 	--grey-60: #6E6E6E;
   --white: #ffffff;
@@ -73,6 +72,7 @@ p {
   font-weight: bold;
 }
 
+.by-dropdown-content-v02
 ol li{
   margin-bottom: 6px;
 }
@@ -436,6 +436,18 @@ a.by-icon-v02:hover{
   text-decoration: none;
 }
 
+.by-icon-v03{
+	font-family: ben-yehuda-2;
+  font-size: 18px; 
+	line-height: 18px;
+  border-radius: 3px;
+	vertical-align: text-top;
+}
+a.by-icon-v03:hover{
+  background-color: #d9cdd5;
+  color: #2b0d22;
+  text-decoration: none;
+}
 .by-icon-header-v02{
   font-family: ben-yehuda;
   font-size: 24px;
@@ -601,7 +613,6 @@ a .by-genre-name-v02:hover{
 .by-dropdown-content-v02 {
   display: none;
   position: absolute;
-  left: 0;
   background-color: #ffffff;
   text-overflow: clip;
   white-space: nowrap;
@@ -619,7 +630,10 @@ a .by-genre-name-v02:hover{
   background-color: #d9cdd5;
   padding: 6px 15px;
   font-size: 15px;
-  font-weight: bold;}
+  font-weight: bold;
+	display: flex;
+	gap: 12px;
+}
 
 .by-dropdown-content-v02 a {
     padding: 6px 15px;
@@ -1844,7 +1858,7 @@ ul #menuMobile {
 	margin-right: 4px;
 }
 .scrolled .logoBY-scroll-mobile-v02 img{
-    max-height: 46px;
+    max-height: 32px;
 }
 
 
@@ -1874,6 +1888,9 @@ ul #menuMobile {
   z-index:5;
 }
 .author-page-top-info-card{
+	display: flex;
+	flex-direction: row;
+	gap: 4px;
   width: 100%;
   padding: 10px 15px;
   border-radius: 3px;
@@ -2648,15 +2665,6 @@ a .author-name-area:hover{
 	float:left;
 }
 #chapternav{
-	padding-right: 0;
-}
-#chapternav_2{
-	padding-right: 0;
-}
-#chapternav_2{
-	padding-right: 0;
-}
-#chapternav_2{
 	padding-right: 0;
 }
 #chapternav_2{
@@ -5216,7 +5224,6 @@ position: absolute;
 }
 .summary-read-more{
   float: left;
-  margin-top: 2px;
   font-size: 11pt;
   line-height: 13pt;
   margin-top: -15px;
@@ -5235,6 +5242,7 @@ position: absolute;
 }
 .author-top-second-line{
 	display: flex;
+	flex: 1;
     align-items: center;
 	justify-content: space-between;
 	
@@ -6521,6 +6529,12 @@ a .new-headline-v02:hover{
     flex-direction: column;
     align-items: center;
 }
+.lexicon-header-he-content .lex-headline{
+	font-size: 12pt;
+	line-height: 14pt;
+	color: black;
+	margin-bottom: 0;
+}
 .lexicon-homepage .lexicon-header-he .headline-1-v02{
 	font-size: 24pt;
 	margin-left: 0;
@@ -6536,7 +6550,7 @@ a .new-headline-v02:hover{
 	margin: 2px;
 	width: 32px;
 	height: 14px;
-	opacity: .3;
+	opacity: .5;
 	object-fit: fill;
 }
 .authors-list-content .work-content{
@@ -7682,7 +7696,7 @@ p.by-genre-name-v02.headline-2-v02 {
 	column-gap: 20px;
 	row-gap: 12px;
 	flex-wrap:wrap;
-	margin-top: 18px;
+	margin-top: 15px;
 }
 .author-works-type{
 	display: flex;
@@ -7842,7 +7856,7 @@ ul.books{
 
 .sticky-fold{
 	position: sticky;
-	top: 162px;
+	top: 138px;
 	z-index:10;
 	margin-top: 12px;
 	display: flex;
@@ -7884,4 +7898,29 @@ ul.books{
 	transform: rotate(180deg); 
 	margin-bottom: 0;
 	margin-left: 0;
+}
+a.lexicon-background-color:hover{
+	background-color: #efbfb7;
+}
+	#sort-btn{
+		display: none;
+	}
+#menu-authors .lexicon-logo{
+	width: 18px;
+	height: 18px;
+}
+.author-page-top-info-card .headline-1-v02{
+	margin-bottom: 0;
+}
+.author-content{
+	width: calc(100% - 230px);
+	padding-left: 0;
+	padding-right: 0;
+}
+.author-works-details {
+	padding-top: 0;
+	margin-right: 175px;
+}
+.sticky-fold-stuck{
+	border: 2px solid var(--pink-100);
 }
