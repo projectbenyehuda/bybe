@@ -10,8 +10,8 @@
           = t(:filter_state)
           -#%a.help{:href => "#"} [?]
           .toggle-background-no
-            .toggle-button-no{style:"display:#{ @filters.empty? ? 'show' : 'none'}"}
-            .toggle-button-yes{style:"display:#{ @filters.empty? ? 'none' : 'show'}"}
+            .toggle-button-no{style:"display:#{ @filters.empty? ? 'block' : 'none'}"}
+            .toggle-button-yes{style:"display:#{ @filters.empty? ? 'none' : 'block'}"}
         .author-page-top-sort-mobile
           %button.btn-small-outline-v02.btn-text-v02{:href => "#"}= t(:sort_and_filter)
       .number-of-selected-texts{style: 'display:none'}
