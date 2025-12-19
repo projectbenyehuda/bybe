@@ -2,50 +2,49 @@
 #content.container-fluid
   .row.anthology-page-content
     .col-12.col-lg-8
-      .col-12
-        .logo-for-print
-          %img.logoBY-v02{:alt => "", :src => "/assets/logo-byp-mobile.svg"}/
-        .row
-          .col.work-side-menu-area
-          .col.near-side-menu
-            .by-card-v02
-              .by-card-header-v02
-                .headline-1-v02= t(:table_of_contents)
-              .by-card-content-v02
-                - @htmls.each do |title, html, is_curated, genre, i|
-                  %p
-                    %a{href: "#title#{i}"}= title
-                    - if is_curated
-                      %span= ' ('+t(:curated_text)+')'
-                      %span.by-icon-v02 _
-                %br
-                .headline-3-v02= t(:from_pby_and_available_at)+": #{request.base_url+anthology_path(@anthology.id)}"
-            #actualtext
-              - first = true
+      .logo-for-print
+        %img.logoBY-v02{:alt => "", :src => "/assets/logo-byp-mobile.svg"}/
+      .row
+        .col.work-side-menu-area
+        .col.near-side-menu
+          .by-card-v02
+            .by-card-header-v02
+              .headline-1-v02= t(:table_of_contents)
+            .by-card-content-v02
               - @htmls.each do |title, html, is_curated, genre, i|
-                %div{id: 'title'+i.to_s}
-                %a{name: 'title'+i.to_s}
-                - unless first
-                  %div{style:'height:20px'}
-                  %br
-                  %br
+                %p
+                  %a{href: "#title#{i}"}= title
+                  - if is_curated
+                    %span= ' ('+t(:curated_text)+')'
+                    %span.by-icon-v02 _
+              %br
+              .headline-3-v02= t(:from_pby_and_available_at)+": #{request.base_url+anthology_path(@anthology.id)}"
+          #actualtext
+            - first = true
+            - @htmls.each do |title, html, is_curated, genre, i|
+              %div{id: 'title'+i.to_s}
+              %a{name: 'title'+i.to_s}
+              - unless first
+                %div{style:'height:20px'}
                 %br
-                .anthology-separator
                 %br
-                - unless first
-                  %div{style:'height:20px'}
-                  %br
-                  %br
-                - first = false
-                .by-card-v02
-                  .by-card-header-v02
-                    .headline-1-v02= title
-                  .work-area
-                    %div{class: is_curated ? 'anthology-self-content' : 'anthology-by-content'}
-                      != html
-                    - unless is_curated
-                      .work-side-color
-                        %div{'class' => "work-genre", style: "background-image: url(\"/assets/work_side_icons_#{genre}.svg\");"}
+              %br
+              .anthology-separator
+              %br
+              - unless first
+                %div{style:'height:20px'}
+                %br
+                %br
+              - first = false
+              .by-card-v02
+                .by-card-header-v02
+                  .headline-1-v02= title
+                .work-area
+                  %div{class: is_curated ? 'anthology-self-content' : 'anthology-by-content'}
+                    != sanitize(html)
+                  - unless is_curated
+                    .work-side-color
+                      %div{'class' => "work-genre", style: "background-image: url(\"/assets/work_side_icons_#{genre}.svg\");"}
 
     .col-12.col-lg-4
       .row
