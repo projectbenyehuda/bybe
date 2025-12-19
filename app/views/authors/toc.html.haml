@@ -79,8 +79,6 @@
                     %span.static-btn
                       %b= link_to t(:edit_toc), authors_edit_toc_path(@author)
                   - else
-                    %b{ style: 'font-size: 1rem'}= t(:this_author_has_a_generated_toc)
-                    != "&nbsp;&nbsp;&nbsp;"
                     %b= link_to t(:manage_toc_link), authors_manage_toc_path(@author)
                     -#%b= link_to t(:convert_to_manual_toc), authors_to_manual_toc_path(@author)
                     != "&nbsp;&nbsp;&nbsp;"
