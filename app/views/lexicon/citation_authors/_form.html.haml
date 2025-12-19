@@ -1,0 +1,12 @@
+=simple_form_for author, url: lexicon_citation_authors_path(citation), remote: true do |f|
+  .row
+    = f.hidden_field :lex_person_id
+    .col-sm-6
+      = f.input :name,
+                label: false,
+                id_element: '#lex_citation_author_lex_person_id',
+                placeholder: LexCitationAuthor.human_attribute_name(:name),
+                url: autocomplete_lexicon_people_path,
+                as: :autocomplete
+    .col-sm-2
+      = f.submit t('.add_author')

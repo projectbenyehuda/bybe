@@ -25,7 +25,7 @@ describe '/lexicon/citations' do
     subject(:call) { post "/lex/people/#{person.id}/citations", params: { lex_citation: citation_params }, xhr: true }
 
     context 'when valid params' do
-      let(:citation_params) { attributes_for(:lex_citation) }
+      let(:citation_params) { attributes_for(:lex_citation).except(:authors) }
 
       it 'creates new record' do
         expect { call }.to change { person.citations.count }.by(1)
@@ -57,7 +57,7 @@ describe '/lexicon/citations' do
     subject(:call) { patch "/lex/citations/#{citation.id}", params: { lex_citation: citation_params }, xhr: true }
 
     context 'when valid params' do
-      let(:citation_params) { attributes_for(:lex_citation) }
+      let(:citation_params) { attributes_for(:lex_citation).except(:authors) }
 
       it 'updates record' do
         expect(call).to eq(200)

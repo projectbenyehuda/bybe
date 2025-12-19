@@ -9,7 +9,7 @@ module Lexicon
     layout false
 
     def index
-      @lex_citations = @person.citations
+      @lex_citations = @person.citations.preload(authors: { person: :entry })
     end
 
     def new
@@ -54,7 +54,7 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_citation_params
-      params.expect(lex_citation: %i(title from_publication authors pages link manifestation_id subject))
+      params.expect(lex_citation: %i(title from_publication pages link manifestation_id subject))
     end
   end
 end
