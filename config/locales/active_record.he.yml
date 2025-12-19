@@ -18,8 +18,11 @@ he:
       collection_item: פריט באוסף
       corporate_body: גוף/מוסד
       featured_content: תוכן מערכת
+      lex_citation: Citation of Lexicon Entry
+      lex_citation_author: Citation Author
       lex_entry: ערך בלקסיקון
       lex_person: אדם בלקסיקון
+      lex_publication: Lexicon Publication
       person: אדם
     errors:
       messages:
@@ -76,7 +79,6 @@ he:
         external_link: קישורית חיצונית
         manifestation: יצירה מקושרת
         authority: יוצר/ת מקושר/ת
-
       person:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה
@@ -99,6 +101,11 @@ he:
           draft: טיוטה בעבודה
           ingested: נקלטה בקטלוג
           failed: ההעלאה נכשלה
+      lex_citation:
+        from_publication: From Publication
+        authors: Authors
+        pages: Pages
+        raw: RAW citation markup from legacy website
       lex_file:
         error_message: Error message
         fname: שם קובץ
