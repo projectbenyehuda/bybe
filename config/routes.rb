@@ -298,7 +298,7 @@ Bybeconv::Application.routes.draw do
   resources :api_keys, except: :show
   get 'taggings/render_tags', as: 'render_tags'
   get 'tag_suggest' => 'taggings#suggest', as: 'tag_suggest'
-  match 'tags' => 'taggings#list_tags', via: %i(get post)
+  match 'tags' => 'taggings#browse', via: %i(get post), as: 'tags_browse'
   get 'tags/listall' => 'taggings#listall_tags', as: 'tags_listall'
   resources :taggings
   resources :aboutnesses
