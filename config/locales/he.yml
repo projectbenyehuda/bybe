@@ -1359,6 +1359,7 @@ he:
   uncollected_works_collection_title: יצירות שלא כונסו
   uncollected_works_collection_explanation: יצירות אלו לוקטו ממקורות שונים שאינם מופיעים במאגר בשלמותם, כגון כתבי עת, עיתונות, או עזבונות.
   permalink: קישורית קבועה
+  permalink_copied: הקישורית הועתקה ללוח!
 
   notifications:
     proof_fixed:

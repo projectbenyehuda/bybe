@@ -72,6 +72,7 @@ en:
   perform_add: Add
   not_an_editor: This page is only available for editors
   permalink: Permanent link
+  permalink_copied: Link copied to clipboard!
   admin:
     featured_contents:
       index:
