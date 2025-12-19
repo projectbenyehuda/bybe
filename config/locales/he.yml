@@ -855,6 +855,7 @@ he:
   collections: אוספים
   dictionary_entries: ערכים מילוניים
   volumes: כותרים
+  x_volumes: "%{x} כותרים"
   works_en: works
   to_tagging_instructions: להנחיות התיוג
   dictionary_entries_en: dictionary entries
@@ -1807,3 +1808,6 @@ he:
   periodicals_label: כתבי עת
   works_and_volumes: כותרים ויצירות
   genres_and_types: סוגות וסוגים
+  pby_publications: פרסומי פרויקט בן־יהודה
+  public_anthologies: מקראות פומביות מאת משתמשי הפרויקט
+  x_public_anthologies: "%{x} מקראות פומביות"
