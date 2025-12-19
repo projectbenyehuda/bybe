@@ -2,7 +2,7 @@
 %script{ src: 'https://use.fontawesome.com/3f861a49f5.js'}
 
 - form_id = 'works_filters'
-= form_tag(works_path, remote: true, method: :post, id: form_id, autocomplete: :off) do
+= form_tag(works_path, remote: true, method: :get, id: form_id, autocomplete: :off) do
   = hidden_field_tag(:sort_by, @sort)
   .by-card-content-v02#filters_panel
     .headline-2-v02= t(:filter_by)

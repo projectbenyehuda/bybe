@@ -254,8 +254,8 @@ Bybeconv::Application.routes.draw do
   get 'read/:id/read' => 'manifestation#readmode', as: 'manifestation_readmode'
   get 'periods' => 'manifestation#periods', as: 'periods'
   match 'authors', to: 'authors#browse', as: 'authors', via: %i(get post)
-  match 'works', to: 'manifestation#browse', as: 'works', via: %i(get post)
-  match 'works/all', to: 'manifestation#all', as: 'all_works', via: %i(get post)
+  get 'works', to: 'manifestation#browse', as: 'works'
+  get 'works/all', to: 'manifestation#all', as: 'all_works'
   match 'manifestation/genre' => 'manifestation#genre', as: 'genre', via: %i(get post)
   match 'period/:period' => 'manifestation#period', as: 'period', via: %i(get post)
   match 'translations' => 'manifestation#translations', as: 'translations', via: %i(get post)
