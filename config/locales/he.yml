@@ -1841,5 +1841,7 @@ he:
   works_and_volumes: כותרים ויצירות
   genres_and_types: סוגות וסוגים
   pby_publications: פרסומי פרויקט בן־יהודה
+  pby_volumes: כותרי פרויקט בן־יהודה
+  pby_volumes_description: כותרים שהופקו או כונסו על ידי פרויקט בן־יהודה
   public_anthologies: מקראות פומביות מאת משתמשי הפרויקט
   x_public_anthologies: "%{x} מקראות פומביות"
