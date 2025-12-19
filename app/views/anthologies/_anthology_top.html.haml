@@ -8,14 +8,14 @@
         .headline-1-v02= @anthology.title
         .headline-3-v02
           = t(:edited_by)+': '
-          %span= @anthology.user.name
+          %span= @anthology&.user&.name
       .row
         .col-12
           .work-and-author-names-desktop
             .headline-1-v02= @anthology.title
             .headline-3-v02
               = t(:edited_by)+': '
-              %span= @anthology.user.name
+              %span= @anthology&.user&.name
           .field-v02.work-chapters-dropdown-field-desktop#chapter_dropdown
             = t(:jump_to)
             %span.dropdown-arrow )
