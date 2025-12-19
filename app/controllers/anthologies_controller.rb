@@ -94,6 +94,7 @@ class AnthologiesController < ApplicationController
         format.html do
           @header_partial = 'anthology_top'
           @scrollspy_target = 'chapternav'
+          @taggings = @anthology.taggings
           prep_for_show
           @print_url = url_for(action: :print, id: @anthology.id)
           track_view(@anthology)
