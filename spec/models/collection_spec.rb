@@ -76,6 +76,30 @@ describe Collection do
     expect(described_class.count).to eq 4
   end
 
+  it 'can query for pby volumes' do
+    # Create PBY authority with ID 3358
+    pby = Authority.create!(id: 3358, name: 'Project Ben-Yehuda', status: :published,
+                            intellectual_property: :public_domain, person: create(:person))
+    other_auth = create(:authority)
+
+    # Create volumes
+    v1 = create(:collection, collection_type: :volume)
+    v2 = create(:collection, collection_type: :volume)
+    v3 = create(:collection, collection_type: :volume)
+
+    # Create non-volume collection
+    periodical = create(:collection, collection_type: :periodical)
+
+    # Associate authorities with collections
+    create(:involved_authority, item: v1, authority: pby)
+    create(:involved_authority, item: v2, authority: pby)
+    create(:involved_authority, item: v3, authority: other_auth)
+    create(:involved_authority, item: periodical, authority: pby)
+
+    # Should only return volumes with PBY authority (ID 3358)
+    expect(described_class.pby_volumes).to contain_exactly(v1, v2)
+  end
+
   it 'supports volume_series collection type' do
     c = create(:collection, collection_type: :volume_series)
     expect(c).to be_valid
