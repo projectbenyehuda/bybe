@@ -83,6 +83,27 @@ Before considering ANY work complete, you MUST:
 - **System specs** (`spec/system/`, requires `js: true`): Test full user interactions with JavaScript using Capybara
 - **Service specs** (`spec/services/`): Test service objects and business logic
 
+### ⚠️ CRITICAL: System Specs WebDriver Check
+
+**ALL system specs with `js: true` MUST include a WebDriver availability check to prevent CI failures.**
+
+The centralized check is already implemented in `spec/support/system_spec_helpers.rb`. You MUST add this check at the top of every system spec:
+
+```ruby
+# spec/system/your_feature_spec.rb
+require 'rails_helper'
+
+RSpec.describe 'Your feature', type: :system, js: true do
+  before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  # ... rest of your tests
+end
+```
+
+**This is MANDATORY** - without it, the CI will fail when WebDriver/Chrome is unavailable in the CI environment.
+
 ### Example: Testing a UI Bug Fix
 
 When fixing a UI bug like scrollspy highlighting:
@@ -91,6 +112,10 @@ When fixing a UI bug like scrollspy highlighting:
 require 'rails_helper'
 
 RSpec.describe 'Feature name', type: :system, js: true do
+  before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
   it 'properly highlights chapters on page load' do
     # Test the bug is fixed
   end
