@@ -904,6 +904,37 @@ he:
   anthology_explanation: היא גרסה מתקדמת של רשימת קריאה ומיועדת בעיקר לשיתוף עם הקוראים שלכם כדי שיוכלו לצרוך את הטקסטים הכלולים בה. היא מאפשרת סידור פנימי מדויק של כל יצירה ויצירה לפי רצונכם וכן הוספת קטעי טקסט מעשירים שנכתבו על ידכם - כגון עמוד שער, הערות, דגשים וכו׳.
   create_new_list_or_anthology: יצירת רשימת קריאה / מקראה חדשה
   anthology_name: שם המקראה
+  anthologies_list: רשימת מקראות
+  welcome_to_anthologies_browsing: ברוכים הבאים לרשימת המקראות הציבוריות
+  anthologies_browsing_intro_paging: ברשימת המקראות בקריטריונים שבחרת ישנן %{total} תוצאות. בגלל אורכה, הרשימה מתחלקת לעמודי משנה. ניתן לדפדף ברשימה באמצעות הבקרים הנמצאים מעל ומתחת לרשימה.
+  anthologies_browsing_intro_html: "<p>הרשימה מכילה מקראות ציבוריות שנוצרו על-ידי משתמשי הפרויקט. ניתן להפעיל פעולות סינון המאפשרות צמצום הרשימה על-ידי חיפוש לפי שם המקראה, יוצר כלול, יצירה כלולה, או שם בעל המקראה.</p><p><b>  להפעלת אפשרויות סינון יש ללחוץ על המתג בפס העליון.</b></p>"
+  anthology_title: שם המקראה
+  anthology_title_placeholder: חיפוש לפי שם מקראה
+  included_author: יוצר כלול
+  author_name_placeholder: חיפוש לפי שם יוצר
+  included_work: יצירה כלולה
+  work_title_placeholder: חיפוש לפי שם יצירה
+  anthology_owner: בעל המקראה
+  owner_name_placeholder: חיפוש לפי שם בעל המקראה
+  anthologies_found:
+    one: נמצאה מקראה אחת
+    other: נמצאו %{count} מקראות
+  anthology_sort_tt: מיון המקראות
+  creation_date: תאריך יצירה
+  created_date_asc: תאריך יצירה - מהישן לחדש
+  created_date_desc: תאריך יצירה - מהחדש לישן
+  texts: טקסטים
+  one_text: טקסט אחד
+  empty_anthology: ריקה
+  anthology_by_owner: "נוצרה על-ידי: %{owner}"
+  no_anthologies_found: לא נמצאו מקראות התואמות את הקריטריונים
+  title_filter_label: "שם: %{title}"
+  author_filter_label: "יוצר: %{author}"
+  manifestation_filter_label: "יצירה: %{title}"
+  owner_filter_label: "בעל: %{owner}"
+  page_of_pages: עמוד %{page} מתוך %{total}
+  previous_page: עמוד קודם
+  next_page: עמוד הבא
   sort_title: שם לצורך מיון
   subtitle: כותרת משנה
   manage_people: ניהול אישים
