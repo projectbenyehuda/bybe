@@ -27,12 +27,20 @@ Bybeconv::Application.routes.draw do
     root to: 'entries#index'
 
     resources :people, only: %i(edit update new create) do
+      collection do
+        get :autocomplete
+      end
       resources :citations, shallow: true, except: %i(show) do
         member do
           post :approve
         end
+
+        resources :authors, controller: 'citation_authors', only: %i(index create)
       end
     end
+
+    resources :citation_authors, only: %i(update destroy)
+
     resources :publications, only: %i(edit update new create)
     resources :entries, except: %i(update new create) do
       resources :attachments, only: %i(index create destroy)

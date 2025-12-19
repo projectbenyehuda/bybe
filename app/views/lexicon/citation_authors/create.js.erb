@@ -1,0 +1,9 @@
+<% unless @author.new_record? %>
+<%# save succeed %>
+reloadAuthors();
+<% else %>
+<%# save failed %>
+$('#new-author-form').html(
+  '<%= j render(partial: "lexicon/citation_authors/form", locals: { citation: @citation, author: @author }) %>'
+);
+<% end %>

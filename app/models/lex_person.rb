@@ -4,6 +4,8 @@
 class LexPerson < ApplicationRecord
   include LifePeriod
 
+  update_index('lex_people_autocomplete') { self }
+
   enum :gender, { male: 0, female: 1, other: 2, unknown: 3 }
 
   has_many :citations, inverse_of: :person, class_name: 'LexCitation', dependent: :destroy
