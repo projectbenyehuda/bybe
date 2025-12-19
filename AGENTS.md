@@ -51,7 +51,7 @@ Before considering ANY work complete, you MUST:
    ```bash
    bundle exec rspec
    ```
-   - Allow up to 12 minutes for the suite. It includes browser tests and Elasticsearch tests, which take longer.
+   - Allow up to 15 minutes for the suite. It includes browser tests and Elasticsearch tests, which take longer.
    - All existing tests MUST pass
    - Fix any failing tests before submitting your work
    - If tests fail due to your changes, investigate and fix the root cause
