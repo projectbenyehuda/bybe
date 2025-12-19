@@ -36,7 +36,7 @@
         - combined_totals = authors_total+", "+works_total
         %li.topMenuItem-v02
           .by-dropdown-v02.dropdown#ddgenres
-            %a.by-nav-item-v02#nav-genres{'data-toggle' =>'dropdown', 'data-boundary' => 'viewport', tabindex: '3'}= t(:genres)
+            %a.by-nav-item-v02#nav-genres{'data-toggle' =>'dropdown', 'data-boundary' => 'viewport', tabindex: '3'}= t(:genres_and_types)
             .by-dropdown-content-v02.dropdown-menu.dropdown-menu-right#menu-genres
               .by-dropdown-header-v02= combined_totals
               - Work::GENRES.each do |g|
