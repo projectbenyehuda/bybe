@@ -71,7 +71,13 @@ class AnthologiesController < ApplicationController
     # Pagination
     @page = (params[:page] || 1).to_i
     @per_page = 50
-    @total = @anthologies.count
+
+    # Cache the count query for performance (especially with joins)
+    cache_key_filters = params.slice(:title_filter, :author_filter, :manifestation_filter, :owner_filter, :sort_by).to_unsafe_h
+    @total = Rails.cache.fetch(['anthologies_browse_total', cache_key_filters], expires_in: 5.minutes) do
+      @anthologies.distinct.count(:id)
+    end
+
     @total_pages = (@total / @per_page.to_f).ceil
     @anthologies = @anthologies.offset((@page - 1) * @per_page).limit(@per_page)
 
