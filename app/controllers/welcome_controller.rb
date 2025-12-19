@@ -34,11 +34,7 @@ class WelcomeController < ApplicationController
       Collection.pby_volumes.count
     end
     @pby_works_count = Rails.cache.fetch('pby_works_count', expires_in: 60.minutes) do
-      0
-      # Manifestation.joins(collection_items: :collection)
-      #             .where(collections: { collection_type: 'volume', is_pby: true })
-      #             .distinct
-      #             .count
+      Collection.pby_volumes.map(&:manifestations_count).sum
     end
     @public_anthologies_count = Rails.cache.fetch('public_anthologies_count', expires_in: 60.minutes) do
       Anthology.public_anthology.count
