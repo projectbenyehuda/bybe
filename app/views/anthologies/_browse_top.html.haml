@@ -9,8 +9,8 @@
           .author-page-top-sort-desktop
             = t(:filter_state)
             .toggle-background-no
-              .toggle-button-no
-              .toggle-button-yes{ style: "display:#{@filters.empty? ? 'none' : 'show'}" }
+              .toggle-button-no{ style: "display:#{@filters.empty? ? 'block' : 'none'}" }
+              .toggle-button-yes{ style: "display:#{@filters.empty? ? 'none' : 'block'}" }
           .author-page-top-sort-mobile
             %button.btn-small-outline-v02.btn-text-v02{:href => "#"} סינון
         .author-page-top-icons-desktop
