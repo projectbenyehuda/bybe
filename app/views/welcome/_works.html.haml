@@ -35,7 +35,7 @@
               %p.by-genre-details-v02= @periodicals_count.to_s+' '+t(:periodicals_label)
               %p.by-genre-details-v02= @periodicals_text_count.to_s+' '+t(:works)
         .col-md-3.col-4
-          %a{:href => "#"}
+          %a{href: pby_volumes_path}
             .genre-nav
               %p.by-genre-icon-v03 J
               %p.by-genre-name-v02.headline-2-v02= t(:pby_publications)

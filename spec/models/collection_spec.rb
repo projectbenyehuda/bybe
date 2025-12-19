@@ -96,7 +96,7 @@ describe Collection do
     create(:involved_authority, item: v3, authority: other_auth)
     create(:involved_authority, item: periodical, authority: pby)
 
-    # Should only return volumes with PBY authority
+    # Should only return volumes with PBY authority (ID 3358)
     expect(described_class.pby_volumes).to contain_exactly(v1, v2)
   end
 
