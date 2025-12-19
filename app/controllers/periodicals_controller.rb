@@ -3,7 +3,7 @@
 class PeriodicalsController < ApplicationController
   def index
     @periodicals = Collection.includes(:collection_items).where(collection_type: 'periodical').order(:title) # TODO: what order would make sense?
-    @periodicals_count = Rails.cache.fetch('periodicals_count', expires_in: 15.minutes) do
+    @periodicals_count = Rails.cache.fetch('periodicals_count', expires_in: 60.minutes) do
       Collection.where(collection_type: 'periodical').count
     end
     @popular_works = ManifestationsIndex.query(match: { in_periodical: true })
