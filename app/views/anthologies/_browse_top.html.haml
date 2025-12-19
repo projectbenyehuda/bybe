@@ -1,0 +1,53 @@
+#header-anthology.container-fluid
+  .top-space
+  = render partial: 'shared/breadcrumbs'
+  .texts-list-top
+    .texts-list-top-info-card
+      .flex-container
+        .headline-1-v02= @anthologies_list_title
+        .author-sort-area#sort_filter_toggle
+          .author-page-top-sort-desktop
+            = t(:filter_state)
+            .toggle-background-no
+              .toggle-button-no
+              .toggle-button-yes{ style: "display:#{@filters.empty? ? 'none' : 'show'}" }
+          .author-page-top-sort-mobile
+            %button.btn-small-outline-v02.btn-text-v02{:href => "#"} סינון
+        .author-page-top-icons-desktop
+          .top-left-icons-group
+            %a.by-icon-v02.notyet{:href => "#"} 9
+            %a.by-icon-v02.notyet{:href => "#"} 3
+        .author-page-top-icons-mobile
+          .top-left-icons-group
+            #moreMobile-anthology.by-dropdown-v02
+              %span#nav-more-icon
+                %a{:href => "#"}
+                  %span.by-icon-v02 Y
+              #menu-more-mobile.by-dropdown-content-v02{:style => "left: 0; margin-top: 4px"}
+                %a{:href => "#"}
+                  %span.by-icon-v02> 3
+                  = t(:download)
+                %a{:href => "#"}
+                  %span.by-icon-v02> 9
+                  = t(:print)
+    .row.error-found-row
+      .col-4
+      .col-8.error-found-col
+        %button.error-found-btn.notyet
+          .error-found
+            .error-found-text= t(:found_br_mistake_html)
+            .error-found-icon g
+
+:javascript
+  $(document).ready(function(){
+    $('#sort_filter_toggle').click(function() {
+      $('#sort_filter_panel').toggle();
+      if (isMobile()) {
+        $('#thelist').toggle();
+      } else {
+        $('#browse_intro').toggle();
+        $('.toggle-button-no').toggle();
+        $('.toggle-button-yes').toggle();
+      }
+    });
+  });
