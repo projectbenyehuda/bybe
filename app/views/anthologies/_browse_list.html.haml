@@ -47,7 +47,7 @@
           %li
             = link_to anthology.title, anthology_path(anthology.id)
             %span{style: 'font-size: 80%'}
-              - text_count = anthology.texts.count
+              - text_count = anthology.texts.size
               - if text_count > 1
                 = "(#{text_count} #{t(:texts)})"
               - elsif text_count == 1

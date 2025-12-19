@@ -2,28 +2,6 @@
 
 require 'rails_helper'
 
-# Check if WebDriver is available before loading the suite
-def webdriver_available?
-  return @webdriver_available if defined?(@webdriver_available)
-
-  @webdriver_available = begin
-    # Try to access the WebDriver to see if it's configured
-    driver = Capybara.current_session.driver
-    if driver.respond_to?(:browser)
-      driver.browser
-      true
-    else
-      true  # Non-Selenium driver, assume it works
-    end
-  rescue Selenium::WebDriver::Error::WebDriverError,
-         Selenium::WebDriver::Error::UnknownError,
-         Net::ReadTimeout,
-         Errno::ECONNREFUSED,
-         StandardError
-    false
-  end
-end
-
 RSpec.describe 'Anthology browse page', type: :system, js: true do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
@@ -111,8 +89,9 @@ RSpec.describe 'Anthology browse page', type: :system, js: true do
       # Use the Hebrew or English option text
       select_option = find('#sort_by_select option[value="alphabetical_desc"]')
       select_option.select_option
-      sleep 0.5
 
+      # Wait for the list to update with the sorted results
+      expect(page).to have_selector('.mainlist li a', text: 'ZZZ Anthology')
       anthology_titles = all('.mainlist li a').map(&:text)
       expect(anthology_titles.first).to eq('ZZZ Anthology')
     end
@@ -140,9 +119,8 @@ RSpec.describe 'Anthology browse page', type: :system, js: true do
       # Find and click the next page link
       next_link = find('.pagination-link', match: :first)
       next_link.click
-      sleep 0.5
 
-      # Check for page 2 in Hebrew or English
+      # Wait for page 2 content to appear (Hebrew or English)
       expect(page).to have_content(/עמוד 2|Page 2/)
     end
   end
