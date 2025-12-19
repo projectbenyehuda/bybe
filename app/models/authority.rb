@@ -6,6 +6,7 @@ class Authority < ApplicationRecord
 
   # NOTE: Wikidata URIs are case-sensitive
   WIKIDATA_URI_PATTERN = %r{\Ahttps://wikidata.org/wiki/Q[0-9]+\z}
+  PBY_AUTHORITY_ID = 3358
 
   update_index('authorities') { self } # update AuthoritiesIndex when entity is updated
   update_index('authorities_autocomplete') { self }
