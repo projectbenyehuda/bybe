@@ -1,0 +1,78 @@
+- form_id = 'anthologies_filters'
+= form_tag(anthologies_browse_path, remote: true, method: :post, id: form_id, autocomplete: :off) do
+  = hidden_field_tag(:sort_by, @sort)
+  .by-card-content-v02#filters_panel
+    .headline-2-v02= t(:filter_by)
+    %span.reset.linkcolor.pointer= t(:reset_filter)
+
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfanthologytitle', title: t(:anthology_title) } do
+      %input.field-v02.field-without-label#title_filter{
+        name: 'title_filter', placeholder: t(:anthology_title_placeholder), type: :text, value: @title_filter
+      }
+
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfauthor', title: t(:included_author) } do
+      %input.field-v02.field-without-label#author_filter{
+        name: 'author_filter', placeholder: t(:author_name_placeholder), type: :text, value: @author_filter
+      }
+
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfmanifestation', title: t(:included_work) } do
+      %input.field-v02.field-without-label#manifestation_filter{
+        name: 'manifestation_filter', placeholder: t(:work_title_placeholder), type: :text, value: @manifestation_filter
+      }
+
+    = render layout: 'shared/collapsible_block', locals: { container_name: 'collfowner', title: t(:anthology_owner) } do
+      %input.field-v02.field-without-label#owner_filter{
+        name: 'owner_filter', placeholder: t(:owner_name_placeholder), type: :text, value: @owner_filter
+      }
+
+    = hidden_field_tag(:page, 1)
+    .mobile-only
+      .bottom-button-area
+        %button.by-button-v02#apply_mobile_filters{ type: :submit }= t(:apply_mobile_filters)
+
+:javascript
+  $(document).ready(function() {
+    $('#sort_by_select').val("#{@sort}");
+
+    if (!isMobile()) {
+      // On Desktop we automatically submit form after some values were changed by user
+      var submit_timeout = null;
+      $('##{form_id}').change(function() {
+          if(submit_timeout != null){
+            window.clearTimeout(submit_timeout);
+          }
+          resetPagination();
+          submit_timeout = window.setTimeout(submit_filters, 300);
+      });
+    }
+
+    $('.reset').click(function(){
+      $('#anthologies_filters').find(':input').each(function() {
+        switch(this.type) {
+            case 'password':
+            case 'select-multiple':
+            case 'select-one':
+            case 'text':
+            case 'textarea':
+                $(this).val('');
+                break;
+            case 'checkbox':
+            case 'radio':
+                this.checked = false;
+        }
+      });
+      resetPagination();
+      submit_filters();
+    });
+
+    $('#apply_mobile_filters').click(function() {
+      resetPagination();
+      $('#sort_filter_panel').hide();
+      $('#thelist').show();
+      $('html').scrollTop($('#thelist').offset().top);
+    });
+  });
+
+  function resetPagination() {
+    $('#anthologies_filters input[name=page]').val(1);
+  }

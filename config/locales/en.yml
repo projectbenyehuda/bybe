@@ -72,6 +72,35 @@ en:
   perform_add: Add
   not_an_editor: This page is only available for editors
   permalink: Permanent link
+  anthologies_list: List of Anthologies
+  welcome_to_anthologies_browsing: Welcome to the public anthologies list
+  anthologies_browsing_intro_paging: The anthologies list matching your criteria contains %{total} results. Due to its length, the list is divided into sub-pages. You can browse the list using the controls above and below it.
+  anthologies_browsing_intro_html: "<p>The list contains public anthologies created by Project users. You can use filtering options to narrow down the list by searching for anthology title, included author, included work, or anthology owner name.</p><p><b>To enable advanced filtering options, click the toggle in the top bar.</b></p>"
+  anthology_title: Anthology Title
+  anthology_title_placeholder: Search by anthology title
+  included_author: Included Author
+  author_name_placeholder: Search by author name
+  included_work: Included Work
+  work_title_placeholder: Search by work title
+  anthology_owner: Anthology Owner
+  owner_name_placeholder: Search by owner name
+  anthologies_found:
+    one: Found one anthology
+    other: Found %{count} anthologies
+  anthology_sort_tt: Sort anthologies
+  creation_date: Creation Date
+  texts: texts
+  one_text: one text
+  empty_anthology: empty
+  anthology_by_owner: "Created by: %{owner}"
+  no_anthologies_found: No anthologies found matching the criteria
+  title_filter_label: "Title: %{title}"
+  author_filter_label: "Author: %{author}"
+  manifestation_filter_label: "Work: %{title}"
+  owner_filter_label: "Owner: %{owner}"
+  page_of_pages: Page %{page} of %{total}
+  previous_page: Previous page
+  next_page: Next page
   permalink_copied: Link copied to clipboard!
   admin:
     featured_contents:
