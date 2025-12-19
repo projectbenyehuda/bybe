@@ -25,6 +25,7 @@
               %p.by-genre-name-v02.headline-2-v02= t(:translations)
               %p.by-genre-details-v02 #{Authority.no_toc.count} #{t(:authors)}
               %p.by-genre-details-v02= Manifestation.cached_translated_count.to_s+' '+t(:works)
+      .by-card-content-seapartor
       .row
         .col-md-3.col-4
           %a{href: periodicals_index_path}
