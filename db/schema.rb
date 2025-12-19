@@ -610,10 +610,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_200936) do
     t.integer "manifestation_id"
   end
 
+  create_table "lex_citation_authors", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "lex_citation_id", null: false
+    t.string "name"
+    t.string "link"
+    t.bigint "lex_person_id"
+    t.index ["lex_citation_id"], name: "index_lex_citation_authors_on_lex_citation_id"
+    t.index ["lex_person_id"], name: "index_lex_citation_authors_on_lex_person_id"
+  end
+
   create_table "lex_citations", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "title"
     t.string "from_publication"
-    t.string "authors"
     t.string "pages"
     t.string "link"
     t.string "item_type"
@@ -626,7 +636,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_200936) do
     t.text "notes"
     t.string "subject"
     t.bigint "lex_person_id", null: false
-    t.index ["authors"], name: "index_lex_citations_on_authors"
     t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
@@ -641,7 +650,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_200936) do
     t.string "lex_item_type"
     t.bigint "lex_item_id"
     t.string "sort_title"
-    t.string "legacy_filename"
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"
@@ -651,13 +659,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_200936) do
   create_table "lex_files", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "fname"
     t.integer "status"
-    t.string "title"
     t.integer "entrytype"
     t.text "comments"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.bigint "lex_entry_id"
+    t.bigint "lex_entry_id", null: false
     t.string "full_path"
+    t.text "error_message"
     t.index ["entrytype"], name: "index_lex_files_on_entrytype"
     t.index ["fname"], name: "index_lex_files_on_fname", unique: true
     t.index ["lex_entry_id"], name: "index_lex_files_on_lex_entry_id", unique: true
@@ -707,6 +715,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_200936) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "authority_id"
+    t.integer "gender", default: 0
     t.index ["aliases"], name: "index_lex_people_on_aliases"
     t.index ["authority_id"], name: "index_lex_people_on_authority_id"
     t.index ["birthdate"], name: "index_lex_people_on_birthdate"
@@ -1138,6 +1147,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_200936) do
   add_foreign_key "ingestibles", "users", column: "last_editor_id"
   add_foreign_key "ingestibles", "users", column: "locked_by_user_id"
   add_foreign_key "involved_authorities", "authorities"
+  add_foreign_key "lex_citation_authors", "lex_citations"
+  add_foreign_key "lex_citation_authors", "lex_people"
   add_foreign_key "lex_citations", "lex_people"
   add_foreign_key "lex_citations", "manifestations"
   add_foreign_key "lex_files", "lex_entries"

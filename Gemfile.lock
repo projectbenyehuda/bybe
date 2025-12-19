@@ -846,10 +846,6 @@ GEM
       activemodel (>= 6.0.0)
       bindex (>= 0.4.0)
       railties (>= 6.0.0)
-    webdrivers (5.2.0)
-      nokogiri (~> 1.6)
-      rubyzip (>= 1.3.0)
-      selenium-webdriver (~> 4.0)
     webmock (3.26.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -895,7 +891,7 @@ DEPENDENCIES
   debug
   derailed_benchmarks
   diffy
-  docx
+  docx (~> 0.9.1)
   dotenv (~> 3.1.2)
   ed25519
   evil-seed
@@ -971,6 +967,7 @@ DEPENDENCIES
   rufus-scheduler
   rvm1-capistrano3
   sass-rails (~> 6.0.0)
+  selenium-webdriver
   sentry-rails
   sentry-ruby
   sidekiq
@@ -985,7 +982,6 @@ DEPENDENCIES
   uglifier
   vcr
   web-console
-  webdrivers
   webmock
   yt
 
