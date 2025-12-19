@@ -5,6 +5,7 @@ class Collection < ApplicationRecord
   include TrackingEvents
 
   SYSTEM_TYPES = %w(uncollected).freeze
+  PBY_AUTHORITY_ID = 3358 # Project Ben-Yehuda authority ID
 
   include RecordWithInvolvedAuthorities
 
@@ -70,9 +71,11 @@ class Collection < ApplicationRecord
   scope :by_authority, lambda { |authority|
                          joins(:involved_authorities).where(involved_authorities: { authority: authority })
                        }
+  # Returns all volumes associated with Project Ben-Yehuda (authority ID 3358)
   scope :pby_volumes, lambda {
                         joins(:involved_authorities)
-                          .where(collection_type: 'volume', involved_authorities: { authority_id: 3358 })
+                          .where(collection_type: 'volume', involved_authorities: { authority_id: PBY_AUTHORITY_ID })
+                          .distinct
                       }
 
   validates :title, presence: true

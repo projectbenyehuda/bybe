@@ -141,7 +141,7 @@ describe CollectionsController do
   end
 
   describe '#pby_volumes' do
-    let(:authority) { create(:authority, id: 3358) }
+    let(:authority) { create(:authority, id: Collection::PBY_AUTHORITY_ID) }
     let!(:pby_volume1) do
       create(:collection, collection_type: 'volume', title: 'Volume 1').tap do |vol|
         vol.involved_authorities.create!(authority: authority, role: 'editor')
