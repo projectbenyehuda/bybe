@@ -2,3 +2,6 @@
  * =require fonts
  *= require jquery-ui
  */
+
+// We need this to make rails-autocomplete working in Bootstrap modals
+.ui-autocomplete { z-index:2000; }
