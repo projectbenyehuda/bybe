@@ -31,7 +31,7 @@ class WelcomeController < ApplicationController
       ManifestationsIndex.query(match: { in_periodical: true }).count
     end
     @pby_volumes_count = Rails.cache.fetch('pby_volumes_count', expires_in: 60.minutes) do
-      0 # Collection.where(collection_type: 'volume', is_pby: true).count
+      Collection.pby_volumes.count
     end
     @pby_works_count = Rails.cache.fetch('pby_works_count', expires_in: 60.minutes) do
       0

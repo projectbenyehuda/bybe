@@ -70,6 +70,10 @@ class Collection < ApplicationRecord
   scope :by_authority, lambda { |authority|
                          joins(:involved_authorities).where(involved_authorities: { authority: authority })
                        }
+  scope :pby_volumes, lambda {
+                        joins(:involved_authorities)
+                          .where(collection_type: 'volume', involved_authorities: { authority_id: 3358 })
+                      }
 
   validates :title, presence: true
   validates :suppress_download_and_print, inclusion: { in: [true, false] }
