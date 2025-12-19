@@ -77,8 +77,8 @@ describe Collection do
   end
 
   it 'can query for pby volumes' do
-    # Create PBY authority with ID 3358
-    pby = Authority.create!(id: 3358, name: 'Project Ben-Yehuda', status: :published,
+    # Create PBY authority with ID from constant
+    pby = Authority.create!(id: Authority::PBY_AUTHORITY_ID, name: 'Project Ben-Yehuda', status: :published,
                             intellectual_property: :public_domain, person: create(:person))
     other_auth = create(:authority)
 
@@ -96,7 +96,7 @@ describe Collection do
     create(:involved_authority, item: v3, authority: other_auth)
     create(:involved_authority, item: periodical, authority: pby)
 
-    # Should only return volumes with PBY authority (ID 3358)
+    # Should only return volumes with PBY authority
     expect(described_class.pby_volumes).to contain_exactly(v1, v2)
   end
 
