@@ -359,3 +359,5 @@ en:
   error_generating_concordance: An error occurred while generating the concordance. Please try again later.
   pby_volumes: Project Ben-Yehuda Volumes
   pby_volumes_description: Volumes published by Project Ben-Yehuda
+  x_volumes: "%{x} volumes"
+  x_works: "(%{x} works)"

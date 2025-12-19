@@ -36,8 +36,8 @@ class CollectionsController < ApplicationController
 
   # GET /pby_volumes
   def pby_volumes
-    @pby_volumes = Collection.pby_volumes.order(:title)
-    @pby_volumes_count = @pby_volumes.count
+    @pby_volumes = Collection.pby_volumes.order(:title).load
+    @pby_volumes_count = @pby_volumes.size
     @page_title = "#{t(:pby_volumes)} - #{t(:default_page_title)}"
   end
 
