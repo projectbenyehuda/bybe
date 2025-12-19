@@ -622,6 +622,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_08_221804) do
     t.string "name"
     t.string "link"
     t.bigint "lex_person_id"
+    t.index ["lex_citation_id", "lex_person_id"], name: "idx_on_lex_citation_id_lex_person_id_df9730c730", unique: true
     t.index ["lex_citation_id"], name: "index_lex_citation_authors_on_lex_citation_id"
     t.index ["lex_person_id"], name: "index_lex_citation_authors_on_lex_person_id"
   end
