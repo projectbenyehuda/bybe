@@ -1,0 +1,11 @@
+%ul
+  - @citation.authors.preload(person: :entry).sort_by(&:display_name).each do |author|
+    %li
+      != render_citation_author(author)
+      = link_to t(:delete),
+                lexicon_citation_author_path(author),
+                method: :delete,
+                data: { confirm: t(:are_you_sure) },
+                remote: true
+#new-author-form
+  = render partial: 'form', locals: { citation: @citation, author: @citation.authors.build }
