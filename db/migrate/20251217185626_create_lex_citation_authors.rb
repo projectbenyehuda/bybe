@@ -15,6 +15,8 @@ class CreateLexCitationAuthors < ActiveRecord::Migration[8.0]
       select id, authors, created_at from lex_citations where authors is not null  
     SQL
 
+    add_index :lex_citation_authors, [:lex_citation_id, :lex_person_id], unique: true
+
     remove_column :lex_citations, :authors, :string
   end
 end
