@@ -73,6 +73,7 @@ class Collection < ApplicationRecord
   scope :pby_volumes, lambda {
                         joins(:involved_authorities)
                           .where(collection_type: 'volume', involved_authorities: { authority_id: 3358 })
+                          .distinct
                       }
 
   validates :title, presence: true
