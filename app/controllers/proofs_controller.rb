@@ -53,7 +53,7 @@ class ProofsController < ApplicationController
                 # about same work could be processed together
                 Proof.where.not(status: :spam).order(:item_type, :item_id)
               else
-                Proof.where(status: @status).order(updated_at: :desc)
+                Proof.where(status: @status).order(updated_at: :asc)
               end
 
     if @search_query.present?
