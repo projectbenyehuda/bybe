@@ -12,6 +12,8 @@ class AnthologiesController < ApplicationController
   def browse
     @page_title = "#{t(:anthologies_list)} – #{t(:project_ben_yehuda)}"
     @pagetype = :anthologies
+    @header_partial = 'anthologies/browse_top'
+    @anthologies_list_title = t(:anthologies_list)
 
     # Start with public anthologies only
     @anthologies = Anthology.public_anthology.includes(:user, texts: { manifestation: { expression: { work: { involved_authorities: :authority } } } })
