@@ -19,6 +19,7 @@ en:
       corporate_body: Corporate Body
       featured_content: Featured Content
       lex_citation: Citation of Lexicon Entry
+      lex_citation_author: Citation Author
       lex_entry: Lexicon Entry
       lex_person: Lexicon Person
       lex_publication: Lexicon Publication
@@ -69,7 +70,7 @@ en:
           volume_series: Volume Series
           other: Other
           uncollected: Uncollected Works
-        credits: Credits
+        credits: Manual credits
       collection_item:
         item_type: Item Type
       corporate_body:
@@ -89,22 +90,20 @@ en:
         birthdate: Birthdate
         deathdate: Deathdate
         gender: Gender
-      collection:
-        credits: Manual credits
-        ingestible:
-          defaults: fields for all works
-          title: Title to upload
-          scenario: Type of upload
-          status: Status
-          metadata: Metadata
-          comments: Comments
-          markdown: Markdown
-          volume_id: Title
-          statuses:
-            awaiting_authorities: Waiting to create personalities
-            draft: Draft at work
-            ingested: Recorded in the catalogue
-            failed: Upload failed
+      ingestible:
+        defaults: fields for all works
+        title: Title to upload
+        scenario: Type of upload
+        status: Status
+        metadata: Metadata
+        comments: Comments
+        markdown: Markdown
+        volume_id: Title
+        statuses:
+          awaiting_authorities: Waiting to create personalities
+          draft: Draft at work
+          ingested: Recorded in the catalogue
+          failed: Upload failed
       lex_citation:
         from_publication: From Publication
         authors: Authors
