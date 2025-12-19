@@ -1,7 +1,72 @@
 #title1
 #content.container-fluid
   .row.anthology-page-content
-    = render partial: 'anth_body'
+    .col-12.col-lg-8
+      .col-12
+        .logo-for-print
+          %img.logoBY-v02{:alt => "", :src => "/assets/logo-byp-mobile.svg"}/
+        .row
+          .col.work-side-menu-area
+          .col.near-side-menu
+            .by-card-v02
+              .by-card-header-v02
+                .headline-1-v02= t(:table_of_contents)
+              .by-card-content-v02
+                - @htmls.each do |title, html, is_curated, genre, i|
+                  %p
+                    %a{href: "#title#{i}"}= title
+                    - if is_curated
+                      %span= ' ('+t(:curated_text)+')'
+                      %span.by-icon-v02 _
+                %br
+                .headline-3-v02= t(:from_pby_and_available_at)+": #{request.base_url+anthology_path(@anthology.id)}"
+            #actualtext
+              - first = true
+              - @htmls.each do |title, html, is_curated, genre, i|
+                %div{id: 'title'+i.to_s}
+                %a{name: 'title'+i.to_s}
+                - unless first
+                  %div{style:'height:20px'}
+                  %br
+                  %br
+                %br
+                .anthology-separator
+                %br
+                - unless first
+                  %div{style:'height:20px'}
+                  %br
+                  %br
+                - first = false
+                .by-card-v02
+                  .by-card-header-v02
+                    .headline-1-v02= title
+                  .work-area
+                    %div{class: is_curated ? 'anthology-self-content' : 'anthology-by-content'}
+                      != html
+                    - unless is_curated
+                      .work-side-color
+                        %div{'class' => "work-genre", style: "background-image: url(\"/assets/work_side_icons_#{genre}.svg\");"}
+
+    .col-12.col-lg-4
+      .row
+        .col
+          -# Tags
+          .by-card-v02.left-side-card-v02
+            .by-card-header-left-v02
+              %span.headline-1-v02= t(:tags)
+              .new-tag-teaser= t(:excited_new)
+              .new-tag-teaser-text= t(:new_tag_teaser)
+            .by-card-content-v02.card-with-bottom-links
+              .inline-block#taggings
+                = render partial: 'shared/taggings', locals: {taggings: @taggings, taggable: @anthology}
+              - unless current_user.nil? || current_user.blocked?
+                = hidden_field_tag :accepted_tag_policy, @bu.present? ? @bu.get_preference(:accepted_tag_policy) : 'false', id: 'accepted_tag_policy'
+              #add-tag.card-bottom
+                .link-to-all-v02
+                  %button.by-button-v02.must-login#initiate-add-tag
+                    .metadata-link-icon.small-icon.pointer &amp;
+                    %div= t(:suggest_new_tag)
+
 .modal#chapterDlg{role: 'dialog', tabindex: '-1'}
   .modal-dialog.modal-dialog-centered{role: 'document'}
     .modal-content
@@ -29,5 +94,19 @@
     });
     $('#downloadAnthologyDlg').on('shown.bs.modal', function () {
       $('.download_submitter').removeAttr('disabled');
+    });
+    $('#initiate-add-tag').click(function(e) {
+      if("#{current_user}" != '') {
+        if($('#accepted_tag_policy').val() != 'false') {
+          $('#generalDlg').load("#{ add_tagging_popup_path(taggable_id: @anthology.id, taggable_type: 'Anthology') }");
+          $('#generalDlg').modal('show');
+        }
+        else
+          $('#tagPolicyDlg').modal({  backdrop: 'static', keyboard: false, show: true});
+      } else {
+        e.stopPropagation();
+        alert("#{t(:must_login_for_this)}");
+        return;
+      }
     });
   });

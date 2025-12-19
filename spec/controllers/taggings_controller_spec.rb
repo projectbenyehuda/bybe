@@ -19,6 +19,12 @@ describe TaggingsController do
 
       it { is_expected.to be_successful }
     end
+
+    context 'when Anthology' do
+      let(:taggable) { create(:anthology, access: :pub) }
+
+      it { is_expected.to be_successful }
+    end
   end
 
   describe '#suggested' do
