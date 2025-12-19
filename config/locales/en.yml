@@ -52,6 +52,9 @@ en:
   feature_on: Featuring Periods
   unknown: Unknown
   sort_by: Sort by
+  alphabetical: Alphabetical
+  by_popularity: By popularity
+  tags_list: Tags
   uncollected_works_collection_title: Uncollected works
   add: Add
   filter: Filter

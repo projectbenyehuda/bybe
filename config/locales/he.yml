@@ -1281,6 +1281,8 @@ he:
   popular_tags: נפוצות
   taggings_count: כמות פריטים מתויגים
   tag_list: רשימת תגיות
+  tags_list: תגיות
+  by_popularity: לפי פופולריות
   tag_page: דף תגית
   tag_not_found: אין תגית כזו!
   authors_tagged_with_this: יוצרים/ות שתויגו "%{tag}"
