@@ -82,11 +82,6 @@ class AnthologiesController < ApplicationController
 
     @total_pages = (@total / @per_page.to_f).ceil
     @anthologies = @anthologies.offset((@page - 1) * @per_page).limit(@per_page)
-
-    respond_to do |format|
-      format.html
-      format.js
-    end
   end
 
   # GET /anthologies/1

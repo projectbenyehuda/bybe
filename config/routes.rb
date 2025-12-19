@@ -94,7 +94,7 @@ Bybeconv::Application.routes.draw do
     get 'confirm_destroy'
   end
 
-  match 'anthologies/browse', to: 'anthologies#browse', as: 'anthologies_browse', via: %i(get post)
+  get 'anthologies/browse', to: 'anthologies#browse', as: 'anthologies_browse'
   resources :anthologies
   match 'anthologies/print/:id' => 'anthologies#print', as: 'anthology_print', via: %i(get post)
   match 'anthologies/download/:id' => 'anthologies#download', as: 'anthology_download', via: %i(get post)
