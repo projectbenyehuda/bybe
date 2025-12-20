@@ -15,6 +15,11 @@ class Tagging < ApplicationRecord
 
   scope :by_suggester, ->(user) { where(suggested_by: user.id) }
 
+  # Update approved_taggings_count counter cache
+  after_create_commit :handle_create_counter_cache
+  after_update_commit :handle_update_counter_cache
+  after_destroy_commit :handle_destroy_counter_cache
+
   update_index(->(tagging) { tagging.taggable.class.to_s == 'Person' ? 'people' : 'manifestations'}) {taggable} # change in tags should be reflected in search indexes
 
   def approve!(approver)
@@ -31,5 +36,33 @@ class Tagging < ApplicationRecord
 
   def escalate!(escalator)
     self.update(approved_by: escalator.id, status: 'escalated')
+  end
+
+  private
+
+  def handle_create_counter_cache
+    # When creating a new tagging, increment if it's approved
+    Tag.increment_counter(:approved_taggings_count, tag_id) if approved?
+  end
+
+  def handle_update_counter_cache
+    # When updating, check if status changed to/from approved
+    return unless saved_change_to_status?
+
+    was_approved = status_before_last_save == 'approved'
+    is_approved = approved?
+
+    if was_approved && !is_approved
+      # Changed from approved to something else - decrement
+      Tag.decrement_counter(:approved_taggings_count, tag_id)
+    elsif !was_approved && is_approved
+      # Changed to approved from something else - increment
+      Tag.increment_counter(:approved_taggings_count, tag_id)
+    end
+  end
+
+  def handle_destroy_counter_cache
+    # When destroying a tagging, decrement if it was approved
+    Tag.decrement_counter(:approved_taggings_count, tag_id) if approved?
   end
 end

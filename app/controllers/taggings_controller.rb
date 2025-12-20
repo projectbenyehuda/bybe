@@ -68,7 +68,7 @@ class TaggingsController < ApplicationController
     @tags = Tag.approved
     @tags = case @sort
             when 'popularity'
-              @tags.order(taggings_count: :desc, name: :asc)
+              @tags.order(approved_taggings_count: :desc, name: :asc)
             else # 'alphabetical'
               @tags.order(name: :asc)
             end

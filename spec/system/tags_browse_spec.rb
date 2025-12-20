@@ -7,18 +7,13 @@ RSpec.describe 'Tags browse view', type: :system, js: true do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
 
-  let!(:tag1) { create(:tag, name: 'Fiction', status: :approved, taggings_count: 5) }
-  let!(:tag2) { create(:tag, name: 'Poetry', status: :approved, taggings_count: 10) }
-  let!(:tag3) { create(:tag, name: 'Drama', status: :approved, taggings_count: 3) }
+  let!(:tag1) { create(:tag, name: 'Fiction', status: :approved) }
+  let!(:tag2) { create(:tag, name: 'Poetry', status: :approved) }
+  let!(:tag3) { create(:tag, name: 'Drama', status: :approved) }
   let!(:pending_tag) { create(:tag, name: 'Pending Tag', status: :pending) }
 
-  # Create some approved taggings for the tags
-  let!(:manifestation1) { create(:manifestation) }
-  let!(:manifestation2) { create(:manifestation) }
-  let!(:manifestation3) { create(:manifestation) }
-
   before do
-    # Create approved taggings to match the counts
+    # Create approved taggings to set the counter cache values
     5.times { create(:tagging, tag: tag1, status: :approved, taggable: create(:manifestation)) }
     10.times { create(:tagging, tag: tag2, status: :approved, taggable: create(:manifestation)) }
     3.times { create(:tagging, tag: tag3, status: :approved, taggable: create(:manifestation)) }
