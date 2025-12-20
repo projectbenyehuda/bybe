@@ -42,12 +42,14 @@ class Tagging < ApplicationRecord
 
   def handle_create_counter_cache
     # When creating a new tagging, increment if it's approved
-    Tag.increment_counter(:approved_taggings_count, tag_id) if approved?
+    return unless tag_id.present? && approved?
+
+    Tag.increment_counter(:approved_taggings_count, tag_id)
   end
 
   def handle_update_counter_cache
     # When updating, check if status changed to/from approved
-    return unless saved_change_to_status?
+    return unless tag_id.present? && saved_change_to_status?
 
     was_approved = status_before_last_save == 'approved'
     is_approved = approved?
@@ -63,6 +65,8 @@ class Tagging < ApplicationRecord
 
   def handle_destroy_counter_cache
     # When destroying a tagging, decrement if it was approved
-    Tag.decrement_counter(:approved_taggings_count, tag_id) if approved?
+    return unless tag_id.present? && approved?
+
+    Tag.decrement_counter(:approved_taggings_count, tag_id)
   end
 end
