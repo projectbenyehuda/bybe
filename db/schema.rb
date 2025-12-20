@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_18_200936) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_20_002047) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -848,6 +848,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_200936) do
     t.integer "approver_id"
     t.integer "taggings_count"
     t.string "wikidata_qid"
+    t.integer "approved_taggings_count", default: 0, null: false
     t.index ["approver_id"], name: "index_tags_on_approver_id"
     t.index ["created_by"], name: "tags_created_by_fk"
     t.index ["status", "name"], name: "index_tags_on_status_and_name", unique: true

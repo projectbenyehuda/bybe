@@ -21,7 +21,7 @@
               %li
                 = link_to tag.name, tag_path(tag.id)
                 %span.text-muted{style: 'font-size: 80%'}
-                  = "(#{tag.taggings_count})"
+                  = "(#{tag.approved_taggings_count})"
 
 :javascript
   $(document).ready(function() {
