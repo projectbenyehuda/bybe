@@ -22,6 +22,8 @@
                 = link_to tag.name, tag_path(tag.id)
                 %span.text-muted{style: 'font-size: 80%'}
                   = "(#{tag.approved_taggings_count})"
+        .pagination-container{style: 'margin-top: 20px;'}
+          != paginate @tags
 
 :javascript
   $(document).ready(function() {
@@ -29,6 +31,7 @@
       const sortBy = $('#sort_by_select option:selected').val();
       const url = new URL(window.location);
       url.searchParams.set('sort_by', sortBy);
+      url.searchParams.delete('page'); // Reset to page 1 when sort changes
       window.location = url.toString();
     });
   });

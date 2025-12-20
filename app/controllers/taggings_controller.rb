@@ -65,15 +65,16 @@ class TaggingsController < ApplicationController
     @page_title = "#{t(:tags_list)} – #{t(:project_ben_yehuda)}"
     @sort = params[:sort_by] || 'alphabetical'
 
-    @tags = Tag.approved
-    @tags = case @sort
-            when 'popularity'
-              @tags.order(approved_taggings_count: :desc, name: :asc)
-            else # 'alphabetical'
-              @tags.order(name: :asc)
-            end
+    tags_query = Tag.approved
+    tags_query = case @sort
+                 when 'popularity'
+                   tags_query.order(approved_taggings_count: :desc, name: :asc)
+                 else # 'alphabetical'
+                   tags_query.order(name: :asc)
+                 end
 
-    @total = @tags.count
+    @total = tags_query.count
+    @tags = tags_query.page(params[:page])
   end
 
   def list_tags # for backend
