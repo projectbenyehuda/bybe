@@ -925,26 +925,34 @@ class AdminController < ApplicationController
 
   def update_tag
     require_editor('moderate_tags')
-    @tag = Tag.find(params[:id])
+    unless params[:id].present?
+      flash[:error] = t(:no_such_item)
+      redirect_to tag_moderation_path
+      return
+    end
+
+    @tag = Tag.find_by(id: params[:id])
+    unless @tag
+      flash[:error] = t(:no_such_item)
+      redirect_to tag_moderation_path
+      return
+    end
+
     if session[:tagging_lock]
-      if @tag.present?
-        # Update tag name if changed
-        if params[:tag_name].present? && params[:tag_name] != @tag.name
-          @tag.update(name: params[:tag_name])
-          # Update the first TagName as well (the preferred name)
-          first_tag_name = @tag.tag_names.first
-          first_tag_name.update(name: params[:tag_name]) if first_tag_name
-        end
-
-        # Update status if changed
-        if params[:status].present? && params[:status] != @tag.status
-          @tag.update(status: params[:status])
-        end
-
-        flash[:notice] = t(:tag_updated)
-      else
-        flash[:error] = t(:no_such_item)
+      # Update tag name if changed
+      if params[:tag_name].present? && params[:tag_name] != @tag.name
+        @tag.update(name: params[:tag_name])
+        # Update the first TagName as well (the preferred name)
+        first_tag_name = @tag.tag_names.first
+        first_tag_name.update(name: params[:tag_name]) if first_tag_name
       end
+
+      # Update status if changed
+      if params[:status].present? && params[:status] != @tag.status
+        @tag.update(status: params[:status])
+      end
+
+      flash[:notice] = t(:tag_updated)
     else
       flash[:error] = t(:tagging_system_locked)
     end
@@ -953,9 +961,21 @@ class AdminController < ApplicationController
 
   def add_tag_name
     require_editor('moderate_tags')
-    @tag = Tag.find(params[:id])
+    unless params[:id].present?
+      flash[:error] = t(:no_such_item)
+      redirect_to tag_moderation_path
+      return
+    end
+
+    @tag = Tag.find_by(id: params[:id])
+    unless @tag
+      flash[:error] = t(:no_such_item)
+      redirect_to tag_moderation_path
+      return
+    end
+
     if session[:tagging_lock]
-      if @tag.present? && params[:tag_name].present?
+      if params[:tag_name].present?
         # Check if tag name already exists
         existing_tag_name = TagName.find_by(name: params[:tag_name])
         if existing_tag_name
