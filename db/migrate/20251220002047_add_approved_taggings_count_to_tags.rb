@@ -6,7 +6,8 @@ class AddApprovedTaggingsCountToTags < ActiveRecord::Migration[8.0]
 
     # Backfill the counter cache with correct values
     Tag.find_each do |tag|
-      Tag.reset_counters(tag.id, :approved_taggings)
+      approved_count = tag.taggings.where(status: Tagging.statuses[:approved]).count
+      tag.update_column(:approved_taggings_count, approved_count)
     end
   end
 
