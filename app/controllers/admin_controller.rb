@@ -912,6 +912,45 @@ class AdminController < ApplicationController
     redirect_to url_for(action: :tag_moderation)
   end
 
+  def edit_tag
+    require_editor('moderate_tags')
+    @tag = Tag.find(params[:id])
+    unless @tag
+      flash[:error] = t(:no_such_item)
+      redirect_to url_for(action: :tag_moderation)
+      return
+    end
+    @tag_names = @tag.tag_names.order(:name)
+  end
+
+  def update_tag
+    require_editor('moderate_tags')
+    if session[:tagging_lock]
+      @tag = Tag.find(params[:id])
+      if @tag.present?
+        # Update tag name if changed
+        if params[:tag_name].present? && params[:tag_name] != @tag.name
+          @tag.update(name: params[:tag_name])
+          # Update the first TagName as well (the preferred name)
+          first_tag_name = @tag.tag_names.first
+          first_tag_name.update(name: params[:tag_name]) if first_tag_name
+        end
+
+        # Update status if changed
+        if params[:status].present? && params[:status] != @tag.status
+          @tag.update(status: params[:status])
+        end
+
+        flash[:notice] = t(:tag_updated)
+      else
+        flash[:error] = t(:no_such_item)
+      end
+    else
+      flash[:error] = t(:tagging_system_locked)
+    end
+    redirect_to edit_tag_path(@tag)
+  end
+
   def merge_tagging
     require_editor('moderate_tags')
     if session[:tagging_lock]

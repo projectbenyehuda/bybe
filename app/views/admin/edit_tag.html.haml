@@ -1,0 +1,52 @@
+.tagging-management-area.tags-content
+  #edit-tag.by-card-v02
+    .by-card-header-v02
+      .headline-1-v02{style: @tag.escalated? ? 'background-color: #f7a7a7' : ''}
+        = "#{t(:edit_tag)}: #{@tag.name}"
+    .by-card-content-v02
+      = form_with url: update_tag_path(@tag), method: :post, local: true do |f|
+        .form-group
+          %label.headline-3-v02= t(:tag_name)
+          = f.text_field :tag_name, value: @tag.name, class: 'form-control', style: 'width: 300px; margin-bottom: 15px;'
+
+        .form-group
+          %label.headline-3-v02= t(:status)
+          = f.select :status, options_for_select(Tag.statuses.keys.map { |k| [t("tag_status_#{k}"), k] }, @tag.status), {}, class: 'form-control', style: 'width: 200px; margin-bottom: 15px;'
+
+        .headline-3-v02= t(:tag_names_aliases)
+        %ul
+          - @tag_names.each do |tag_name|
+            %li= tag_name.name
+
+        %hr{style: 'margin: 20px 0;'}
+
+        .tag-actions-buttons-group{style: 'display: flex; gap: 10px; margin-top: 20px;'}
+          = f.submit t(:save_changes), class: 'by-button-v02'
+
+          .by-button-secondary-v02.pointer.pad10rl.merge-btn{'data-tag-id': @tag.id}
+            .by2-icon{style: 'display: inline; margin-left: 7px;'}> Q
+            = t(:merge_tag)
+
+          = link_to t(:back_to_moderation), tag_moderation_path, class: 'by-button-secondary-v02 pad10rl'
+
+:javascript
+  $(document).ready(function() {
+    $('.merge-btn').click(function() {
+      var tagId = $(this).data('tag-id');
+      $.ajax({
+        url: '/admin/merge_tag/' + tagId,
+        type: 'GET',
+        success: function(data) {
+          var dialog = $('<div>').html(data);
+          dialog.dialog({
+            modal: true,
+            width: 600,
+            title: '#{t(:merge_tag)}',
+            close: function() {
+              $(this).remove();
+            }
+          });
+        }
+      });
+    });
+  });

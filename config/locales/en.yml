@@ -55,6 +55,17 @@ en:
   alphabetical: Alphabetical
   by_popularity: By popularity
   tags_list: Tags
+  edit_tag: Edit Tag
+  this_tag_is_already_approved: This tag is already approved
+  tag_name: Tag Name
+  tag_names_aliases: Alternative Names (TagNames)
+  save_changes: Save Changes
+  tag_updated: Tag updated successfully
+  back_to_moderation: Back to Tag Moderation
+  tag_status_pending: Pending
+  tag_status_approved: Approved
+  tag_status_rejected: Rejected
+  tag_status_escalated: Escalated for Review
   uncollected_works_collection_title: Uncollected works
   add: Add
   filter: Filter

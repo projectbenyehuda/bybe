@@ -822,6 +822,17 @@ he:
   taggings_will_be_merged: גם התיוגים המקושרים לתגית יועברו לתגית היעד, ללא שינוי במצב אישורם.
   no_more_to_review: "אין פריטים נוספים לבדוק! :)"
   tag_approved: התגית אושרה!
+  edit_tag: עריכת תגית
+  this_tag_is_already_approved: תגית זו כבר אושרה
+  tag_name: שם התגית
+  tag_names_aliases: שמות חלופיים (TagNames)
+  save_changes: שמירת שינויים
+  tag_updated: התגית עודכנה בהצלחה
+  back_to_moderation: חזרה למסך ניהול תגיות
+  tag_status_pending: ממתין
+  tag_status_approved: מאושר
+  tag_status_rejected: נדחה
+  tag_status_escalated: הועבר לבדיקה נוספת
   approve: אישור
   reject: דחייה
   another_feature: הצגת זרקור נוסף
