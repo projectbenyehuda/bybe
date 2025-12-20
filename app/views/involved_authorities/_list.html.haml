@@ -1,20 +1,17 @@
-- if item.involved_authorities.any?
+- if item.involved_authorities.any? || edit
   %h3= t(:associated_persons)
-  - list_id = "involved_authorities_#{item.class.name}_#{item.id}"
-  %ul{ id: list_id }
-    = render partial: 'involved_authorities/list_items', locals: { item: item, edit: edit }
-  - if edit
-    :ruby
-      prefix = "new_involved_authority_#{item.class.name}_#{item.id}"
-      roles = case item.class.name
-      when 'Work' then InvolvedAuthority::WORK_ROLES
-      when 'Expression' then InvolvedAuthority::EXPRESSION_ROLES
-      else InvolvedAuthority.roles.keys
-      end
-    %br
+- list_id = "involved_authorities_#{item.class.name}_#{item.id}"
+%ul{ id: list_id }
+  = render partial: 'involved_authorities/list_items', locals: { item: item, edit: edit }
 - if edit
-  - unless item.involved_authorities.any?
-    %h3= t(:associated_persons)
+  :ruby
+    prefix = "new_involved_authority_#{item.class.name}_#{item.id}"
+    roles = case item.class.name
+    when 'Work' then InvolvedAuthority::WORK_ROLES
+    when 'Expression' then InvolvedAuthority::EXPRESSION_ROLES
+    else InvolvedAuthority.roles.keys
+    end
+  %br
   = t(:add)
   = autocomplete_field_tag "#{prefix}_autocomplete", '', autocomplete_authority_name_and_aliases_path,
                           id_element: "##{prefix}_authority_id", style: 'background-color:white;'
