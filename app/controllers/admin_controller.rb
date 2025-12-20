@@ -16,7 +16,7 @@ class AdminController < ApplicationController
   autocomplete :publication, :title
 
   layout false, only: %i(merge_tag merge_tagging confirm_with_comment) # popups
-  layout 'backend', only: %i(tag_moderation tag_review tagging_review) # eventually change to except: [<popups>]
+  layout 'backend', only: %i(tag_moderation tag_review tagging_review edit_tag) # eventually change to except: [<popups>]
 
   def index
     return unless current_user && current_user.editor?
@@ -938,24 +938,20 @@ class AdminController < ApplicationController
       return
     end
 
-    if session[:tagging_lock]
-      # Update tag name if changed
-      if params[:tag_name].present? && params[:tag_name] != @tag.name
-        @tag.update(name: params[:tag_name])
-        # Update the first TagName as well (the preferred name)
-        first_tag_name = @tag.tag_names.first
-        first_tag_name.update(name: params[:tag_name]) if first_tag_name
-      end
-
-      # Update status if changed
-      if params[:status].present? && params[:status] != @tag.status
-        @tag.update(status: params[:status])
-      end
-
-      flash[:notice] = t(:tag_updated)
-    else
-      flash[:error] = t(:tagging_system_locked)
+    # Update tag name if changed
+    if params[:tag_name].present? && params[:tag_name] != @tag.name
+      @tag.update(name: params[:tag_name])
+      # Update the first TagName as well (the preferred name)
+      first_tag_name = @tag.tag_names.first
+      first_tag_name.update(name: params[:tag_name]) if first_tag_name
     end
+
+    # Update status if changed
+    if params[:status].present? && params[:status] != @tag.status
+      @tag.update(status: params[:status])
+    end
+
+    flash[:notice] = t(:tag_updated)
     redirect_to edit_tag_path(@tag)
   end
 
@@ -974,45 +970,36 @@ class AdminController < ApplicationController
       return
     end
 
-    if session[:tagging_lock]
-      if params[:tag_name].present?
-        # Check if tag name already exists
-        existing_tag_name = TagName.find_by(name: params[:tag_name])
-        if existing_tag_name
-          flash[:error] = t(:tag_name_already_exists)
-        else
-          @tag.tag_names.create(name: params[:tag_name])
-          flash[:notice] = t(:tag_name_added)
-        end
+    if params[:tag_name].present?
+      # Check if tag name already exists
+      existing_tag_name = TagName.find_by(name: params[:tag_name])
+      if existing_tag_name
+        flash[:error] = t(:tag_name_already_exists)
       else
-        flash[:error] = t(:no_such_item)
+        @tag.tag_names.create(name: params[:tag_name])
+        flash[:notice] = t(:tag_name_added)
       end
     else
-      flash[:error] = t(:tagging_system_locked)
+      flash[:error] = t(:no_such_item)
     end
     redirect_to edit_tag_path(@tag)
   end
 
   def remove_tag_name
     require_editor('moderate_tags')
-    if session[:tagging_lock]
-      tag_name = TagName.find(params[:id])
-      if tag_name.present?
-        # Don't allow removing the first/primary TagName
-        tag = tag_name.tag
-        if tag.tag_names.count <= 1
-          flash[:error] = t(:cannot_remove_last_tag_name)
-        else
-          tag_name.destroy
-          flash[:notice] = t(:tag_name_removed)
-        end
-        redirect_to edit_tag_path(tag)
+    tag_name = TagName.find(params[:id])
+    if tag_name.present?
+      # Don't allow removing the last TagName
+      tag = tag_name.tag
+      if tag.tag_names.count <= 1
+        flash[:error] = t(:cannot_remove_last_tag_name)
       else
-        flash[:error] = t(:no_such_item)
-        redirect_to tag_moderation_path
+        tag_name.destroy
+        flash[:notice] = t(:tag_name_removed)
       end
+      redirect_to edit_tag_path(tag)
     else
-      flash[:error] = t(:tagging_system_locked)
+      flash[:error] = t(:no_such_item)
       redirect_to tag_moderation_path
     end
   end

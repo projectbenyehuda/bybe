@@ -19,6 +19,40 @@ module TestHelpers
     allow_any_instance_of(ApplicationController).to receive(:require_editor).and_return(true)
     user
   end
+
+  # Creates an editor user with moderate_tags privileges for testing
+  def create_moderator
+    @moderator ||= begin
+      user = create(:user, editor: true)
+      # Grant moderate_tags editor bits
+      ListItem.create!(listkey: 'moderate_tags', item: user)
+      ListItem.create!(listkey: 'editors', item: user)
+      user
+    end
+  end
+
+  # Login helper for tag moderation specs
+  def login_as_moderator
+    user = create_moderator
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    allow_any_instance_of(ApplicationController).to receive(:require_editor).and_return(true)
+    # Store user for mock_tagging_lock to use
+    @current_test_user = user
+    user
+  end
+
+  # Mock the tagging lock for system specs
+  def mock_tagging_lock
+    # Create actual lock file with current user's ID
+    # This allows the real obtain_tagging_lock method to work properly
+    user = @current_test_user || create(:user, editor: true)
+    File.write('/tmp/tagging.lock', "#{user.id}")
+  end
+
+  # Clean up tagging lock file after spec
+  def cleanup_tagging_lock
+    File.delete('/tmp/tagging.lock') if File.exist?('/tmp/tagging.lock')
+  end
 end
 
 RSpec.configure do |config|

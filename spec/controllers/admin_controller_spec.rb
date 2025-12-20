@@ -691,10 +691,6 @@ describe AdminController do
     let(:tag) { create(:tag, status: :approved, name: 'Test Tag') }
     let!(:tag_name2) { create(:tag_name, tag: tag, name: 'Alternative Name') }
 
-    before do
-      session[:tagging_lock] = Time.zone.now
-    end
-
     describe '#edit_tag' do
       subject(:call) { get :edit_tag, params: { id: tag.id } }
 
@@ -738,14 +734,6 @@ describe AdminController do
         end
       end
 
-      context 'when tagging system is locked by another user' do
-        before { session[:tagging_lock] = nil }
-
-        it 'does not update and shows error' do
-          expect { call }.not_to change { tag.reload.name }
-          expect(flash[:error]).to eq(I18n.t(:tagging_system_locked))
-        end
-      end
     end
 
     describe '#add_tag_name' do
@@ -771,14 +759,6 @@ describe AdminController do
         end
       end
 
-      context 'when tagging system is locked' do
-        before { session[:tagging_lock] = nil }
-
-        it 'does not add alias' do
-          expect { call }.not_to change { tag.tag_names.count }
-          expect(flash[:error]).to eq(I18n.t(:tagging_system_locked))
-        end
-      end
     end
 
     describe '#remove_tag_name' do
@@ -802,14 +782,6 @@ describe AdminController do
         end
       end
 
-      context 'when tagging system is locked' do
-        before { session[:tagging_lock] = nil }
-
-        it 'does not remove alias' do
-          expect { call }.not_to change { tag.tag_names.count }
-          expect(flash[:error]).to eq(I18n.t(:tagging_system_locked))
-        end
-      end
     end
   end
 end
