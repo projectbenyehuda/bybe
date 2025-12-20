@@ -925,8 +925,8 @@ class AdminController < ApplicationController
 
   def update_tag
     require_editor('moderate_tags')
+    @tag = Tag.find(params[:id])
     if session[:tagging_lock]
-      @tag = Tag.find(params[:id])
       if @tag.present?
         # Update tag name if changed
         if params[:tag_name].present? && params[:tag_name] != @tag.name
@@ -949,6 +949,52 @@ class AdminController < ApplicationController
       flash[:error] = t(:tagging_system_locked)
     end
     redirect_to edit_tag_path(@tag)
+  end
+
+  def add_tag_name
+    require_editor('moderate_tags')
+    @tag = Tag.find(params[:id])
+    if session[:tagging_lock]
+      if @tag.present? && params[:tag_name].present?
+        # Check if tag name already exists
+        existing_tag_name = TagName.find_by(name: params[:tag_name])
+        if existing_tag_name
+          flash[:error] = t(:tag_name_already_exists)
+        else
+          @tag.tag_names.create(name: params[:tag_name])
+          flash[:notice] = t(:tag_name_added)
+        end
+      else
+        flash[:error] = t(:no_such_item)
+      end
+    else
+      flash[:error] = t(:tagging_system_locked)
+    end
+    redirect_to edit_tag_path(@tag)
+  end
+
+  def remove_tag_name
+    require_editor('moderate_tags')
+    if session[:tagging_lock]
+      tag_name = TagName.find(params[:id])
+      if tag_name.present?
+        # Don't allow removing the first/primary TagName
+        tag = tag_name.tag
+        if tag.tag_names.count <= 1
+          flash[:error] = t(:cannot_remove_last_tag_name)
+        else
+          tag_name.destroy
+          flash[:notice] = t(:tag_name_removed)
+        end
+        redirect_to edit_tag_path(tag)
+      else
+        flash[:error] = t(:no_such_item)
+        redirect_to tag_moderation_path
+      end
+    else
+      flash[:error] = t(:tagging_system_locked)
+      redirect_to tag_moderation_path
+    end
   end
 
   def merge_tagging
