@@ -3,7 +3,10 @@
     .row
       .by-card-v02.gateway-header
         .by-card-content-v02
-          %p.headline-1-v02= "#{@tag.name} - #{t(:tag_page)}"
+          %p.headline-1-v02
+            = "#{@tag.name} - #{t(:tag_page)}"
+            - if current_user&.editor? && current_user.has_bit?('moderate_tags')
+              = link_to t(:edit), edit_tag_path(@tag), class: 'by-button-secondary-v02 pad10rl', style: 'margin-right: 10px; font-size: 75%;'
           %a{href: search_by_tag_path(@tag.id)}
             = t(:search_by_tag)
             %span.left-arrow 1

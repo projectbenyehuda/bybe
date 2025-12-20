@@ -162,6 +162,8 @@ Bybeconv::Application.routes.draw do
   post 'admin/escalate_tagging/:id' => 'admin#escalate_tagging', as: 'escalate_tagging'
   get 'admin/merge_tag/:id' => 'admin#merge_tag', as: 'merge_tag'
   post 'admin/merge_tag' => 'admin#do_merge_tag', as: 'do_merge_tag'
+  get 'admin/edit_tag/:id' => 'admin#edit_tag', as: 'edit_tag'
+  post 'admin/update_tag/:id' => 'admin#update_tag', as: 'update_tag'
   get 'admin/merge_tagging/:id' => 'admin#merge_tagging', as: 'merge_tagging'
   post 'admin/merge_tagging' => 'admin#do_merge_tagging', as: 'do_merge_tagging'
   post 'admin/warn_user/:id' => 'admin#warn_user', as: 'warn_user'
