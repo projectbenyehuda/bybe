@@ -16,7 +16,15 @@
         .headline-3-v02= t(:tag_names_aliases)
         %ul
           - @tag_names.each do |tag_name|
-            %li= tag_name.name
+            %li{style: 'margin-bottom: 10px;'}
+              = tag_name.name
+              - if @tag_names.count > 1
+                = button_to t(:remove), remove_tag_name_path(tag_name), method: :delete, class: 'by-button-secondary-v02 pad10rl', style: 'margin-right: 10px; font-size: 75%; display: inline;', data: { confirm: t(:confirm_remove_tag_name) }
+
+        .headline-3-v02{style: 'margin-top: 20px;'}= t(:add_tag_name_alias)
+        = form_with url: add_tag_name_path(@tag), method: :post, local: true, style: 'margin-bottom: 20px;' do |f|
+          = f.text_field :tag_name, placeholder: t(:new_tag_name_placeholder), class: 'form-control', style: 'width: 300px; display: inline-block; margin-left: 10px;'
+          = f.submit t(:add), class: 'by-button-secondary-v02 pad10rl', style: 'margin-right: 10px;'
 
         %hr{style: 'margin: 20px 0;'}
 

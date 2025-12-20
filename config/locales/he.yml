@@ -800,6 +800,7 @@ he:
   reject_and_next: דחייה ומעבר לפריט הבא
   approve_and_review_taggings: אישור ועיון בתיוגים
   merge_with_this_tag: מיזוג עם תגית זו
+  merge_tag: מיזוג תגית
   merge_tag_title: מיזוג עם תווית קיימת
   merge_tagging_title: העברת תיוג מוצג לתגית קיימת
   merge_tagging_preview_html: "התיוג <b>יאושר</b> ויועבר מהתגית \"%{tag}\" (שלה יש כרגע %{src_tag_taggings_count} תיוגים, כולל מוצעים, לתגית שתבחר/י:"
@@ -833,6 +834,14 @@ he:
   tag_status_approved: מאושר
   tag_status_rejected: נדחה
   tag_status_escalated: הועבר לבדיקה נוספת
+  tag_name_added: שם חלופי נוסף בהצלחה
+  tag_name_removed: שם חלופי הוסר
+  tag_name_already_exists: שם זה כבר קיים במערכת
+  cannot_remove_last_tag_name: לא ניתן להסיר את השם האחרון של התגית
+  confirm_remove_tag_name: האם אתה בטוח שברצונך להסיר שם חלופי זה?
+  add_tag_name_alias: הוספת שם חלופי
+  new_tag_name_placeholder: שם חלופי חדש
+  remove: הסרה
   approve: אישור
   reject: דחייה
   another_feature: הצגת זרקור נוסף

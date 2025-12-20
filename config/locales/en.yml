@@ -66,6 +66,15 @@ en:
   tag_status_approved: Approved
   tag_status_rejected: Rejected
   tag_status_escalated: Escalated for Review
+  tag_name_added: Alternative name added successfully
+  tag_name_removed: Alternative name removed
+  tag_name_already_exists: This name already exists in the system
+  cannot_remove_last_tag_name: Cannot remove the last name of the tag
+  confirm_remove_tag_name: Are you sure you want to remove this alternative name?
+  add_tag_name_alias: Add Alternative Name
+  new_tag_name_placeholder: New alternative name
+  remove: Remove
+  merge_tag: Merge Tag
   uncollected_works_collection_title: Uncollected works
   add: Add
   filter: Filter
