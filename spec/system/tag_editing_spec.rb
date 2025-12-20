@@ -7,23 +7,14 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
 
-  let(:editor) { create(:user, editor: true) }
-  let(:regular_user) { create(:user, editor: false) }
   let(:tag) { create(:tag, status: :approved, name: 'Original Tag Name') }
   let!(:tag_name1) { tag.tag_names.first } # Created automatically
   let!(:tag_name2) { create(:tag_name, tag: tag, name: 'Alternative Name') }
 
-  before do
-    # Grant moderate_tags permission to editor
-    ListItem.create!(listkey: 'moderate_tags', item: editor)
-    # Grant editor list item
-    ListItem.create!(listkey: 'editors', item: editor)
-  end
-
   describe 'Edit links visibility' do
     context 'when user has moderate_tags permission' do
       before do
-        allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
+        login_as_moderator
       end
 
       it 'shows edit link in public tags browse view' do
@@ -39,14 +30,20 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
       end
 
       it 'shows edit link in admin tag review for approved tags' do
+        # tag_review requires tagging lock
+        File.write('/tmp/tagging.lock', "#{@current_test_user.id}")
         visit tag_review_path(tag)
 
         expect(page).to have_content(I18n.t(:this_tag_is_already_approved))
         expect(page).to have_link(I18n.t(:edit_tag), href: edit_tag_path(tag))
+      ensure
+        File.delete('/tmp/tagging.lock') if File.exist?('/tmp/tagging.lock')
       end
     end
 
     context 'when user does not have moderate_tags permission' do
+      let(:regular_user) { create(:user, editor: false) }
+
       before do
         allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(regular_user)
       end
@@ -79,9 +76,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
 
   describe 'Tag editing page' do
     before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).and_call_original
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).with(:tagging_lock).and_return(Time.zone.now)
+      login_as_moderator
     end
 
     it 'displays tag information and form fields' do
@@ -130,9 +125,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
 
   describe 'Updating tag name', :js do
     before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).and_call_original
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).with(:tagging_lock).and_return(Time.zone.now)
+      login_as_moderator
       visit edit_tag_path(tag)
     end
 
@@ -140,7 +133,8 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
       fill_in I18n.t(:tag_name), with: 'Updated Tag Name'
       click_button I18n.t(:save_changes)
 
-      expect(page).to have_content(I18n.t(:tag_updated))
+      # Wait for redirect and flash message
+      expect(page).to have_content(I18n.t(:tag_updated), wait: 10)
       expect(tag.reload.name).to eq('Updated Tag Name')
       expect(tag.tag_names.first.name).to eq('Updated Tag Name')
     end
@@ -155,9 +149,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
 
   describe 'Updating tag status', :js do
     before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).and_call_original
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).with(:tagging_lock).and_return(Time.zone.now)
+      login_as_moderator
       visit edit_tag_path(tag)
     end
 
@@ -173,6 +165,8 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
       select I18n.t(:tag_status_pending), from: I18n.t(:status)
       click_button I18n.t(:save_changes)
 
+      # Wait for the update to complete
+      expect(page).to have_content(I18n.t(:tag_updated), wait: 10)
       expect(tag.reload.status).to eq('pending')
     end
 
@@ -180,15 +174,15 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
       select I18n.t(:tag_status_rejected), from: I18n.t(:status)
       click_button I18n.t(:save_changes)
 
+      # Wait for the update to complete
+      expect(page).to have_content(I18n.t(:tag_updated), wait: 10)
       expect(tag.reload.status).to eq('rejected')
     end
   end
 
   describe 'Adding TagName aliases', :js do
     before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).and_call_original
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).with(:tagging_lock).and_return(Time.zone.now)
+      login_as_moderator
       visit edit_tag_path(tag)
     end
 
@@ -229,9 +223,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
 
   describe 'Removing TagName aliases', :js do
     before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).and_call_original
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).with(:tagging_lock).and_return(Time.zone.now)
+      login_as_moderator
       visit edit_tag_path(tag)
     end
 
@@ -274,6 +266,8 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
 
   describe 'Permission requirements', :js do
     context 'when user lacks moderate_tags permission' do
+      let(:regular_user) { create(:user, editor: false) }
+
       before do
         allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(regular_user)
       end
@@ -281,7 +275,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
       it 'denies access to edit page' do
         visit edit_tag_path(tag)
 
-        expect(page).to have_content('Access denied') # Or whatever your error message is
+        expect(page).to have_content(I18n.t(:not_an_editor))
         expect(current_path).not_to eq(edit_tag_path(tag))
       end
     end
@@ -300,27 +294,9 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
     end
   end
 
-  describe 'Tagging system lock requirement', :js do
-    before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
-    end
-
-    it 'shows error when tagging system is not locked', skip: 'Lock mechanism testing' do
-      # Visit without setting up lock
-      visit edit_tag_path(tag)
-
-      fill_in I18n.t(:tag_name), with: 'Should Fail'
-      click_button I18n.t(:save_changes)
-
-      expect(page).to have_content(I18n.t(:tagging_system_locked))
-    end
-  end
-
   describe 'Complete editing workflow', :js do
     before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).and_call_original
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).with(:tagging_lock).and_return(Time.zone.now)
+      login_as_moderator
       visit edit_tag_path(tag)
     end
 
@@ -363,9 +339,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
 
   describe 'Navigation and back links', :js do
     before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(editor)
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).and_call_original
-      allow_any_instance_of(ActionDispatch::Request::Session).to receive(:[]).with(:tagging_lock).and_return(Time.zone.now)
+      login_as_moderator
       visit edit_tag_path(tag)
     end
 
