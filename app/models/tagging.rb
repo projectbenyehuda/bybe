@@ -48,18 +48,38 @@ class Tagging < ApplicationRecord
   end
 
   def handle_update_counter_cache
-    # When updating, check if status changed to/from approved
-    return unless tag_id.present? && saved_change_to_status?
+    # When updating, check if status and/or tag changed
+    return unless saved_change_to_status? || saved_change_to_tag_id?
 
-    was_approved = status_before_last_save == 'approved'
-    is_approved = approved?
+    old_approved =
+      if saved_change_to_status?
+        status_before_last_save == 'approved'
+      else
+        approved?
+      end
+    new_approved = approved?
 
-    if was_approved && !is_approved
-      # Changed from approved to something else - decrement
-      Tag.decrement_counter(:approved_taggings_count, tag_id)
-    elsif !was_approved && is_approved
-      # Changed to approved from something else - increment
-      Tag.increment_counter(:approved_taggings_count, tag_id)
+    if saved_change_to_tag_id?
+      previous_tag_id, current_tag_id = saved_change_to_tag_id
+
+      # Adjust old tag's counter based on previous approval state
+      if previous_tag_id.present? && old_approved
+        Tag.decrement_counter(:approved_taggings_count, previous_tag_id)
+      end
+
+      # Adjust new tag's counter based on new approval state
+      if current_tag_id.present? && new_approved
+        Tag.increment_counter(:approved_taggings_count, current_tag_id)
+      end
+    elsif tag_id.present? && saved_change_to_status?
+      # Tag stayed the same; only status changed
+      if old_approved && !new_approved
+        # Changed from approved to something else - decrement
+        Tag.decrement_counter(:approved_taggings_count, tag_id)
+      elsif !old_approved && new_approved
+        # Changed to approved from something else - increment
+        Tag.increment_counter(:approved_taggings_count, tag_id)
+      end
     end
   end
 
