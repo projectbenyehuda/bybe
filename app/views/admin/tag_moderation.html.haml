@@ -40,19 +40,19 @@
               %td.pending-taggings.pointer.linkcolor{'data-tagid': tag.id, style: extra_style}
                 = tag.taggings_count
               %td.wait-time{style: extra_style}= distance_of_time_in_words(tag.created_at, Date.today)
-              - if tag.creator.warned?
+              - if tag&.creator&.warned?
                 %td.in-td.red{style: extra_style}
                   %a{href: "#"}
                     %span.by2-icon> P
-                    = tag.creator.name
+                    = tag&.creator&.name
               - else
                 %td{style: extra_style}
-                  %a{href: "#"}= tag.creator.name
-              - tag_count = Tag.by_user(tag.creator).count
+                  %a{href: "#"}= tag&.creator&.name
+              - tag_count = tag.creator.present? ? Tag.by_user(tag&.creator).count : t(:not_available)
               %td{style: extra_style}
                 %a{href: "#"}= tag_count
               - additional_class = ''
-              - acceptance_rate = tag.creator.tag_acceptance_rate
+              - acceptance_rate = tag&.creator&.tag_acceptance_rate
               - if acceptance_rate && tag_count > 3 && acceptance_rate < 25
                 - additional_class = 'low-approval-rate'
               - elsif acceptance_rate && tag_count > 3 && acceptance_rate > 75
@@ -133,25 +133,25 @@
                 = link_to taggable_title, tagging_review_path(tagging.id)
                 /= " – "
                 /= link_to t(:to_the_item), taggable_url, target: "_blank"
-              - tagging_count =   tagging.suggester.taggings.count
+              - tagging_count =   tagging&.suggester&.taggings&.count
               %td.tags-for-labels{style: extra_style}
                 = tagging.tag.name
                 %span
                   %a.tags-number{href: "#"}
                     = tagging.tag.approved? ? tagging.tag.taggings_count : t(:new)
               %td.wait-time{style: extra_style}= distance_of_time_in_words(tagging.created_at, Date.today)
-              - if tagging.suggester.warned?
+              - if tagging&.suggester&.warned?
                 %td.in-td.red{style: extra_style}
                   %a{href: "#"}
                     %span.by2-icon> P
-                    = tagging.suggester.name
+                    = tagging&.suggester&.name
               - else
                 %td{style: extra_style}
-                  %a{href: "#"}= tagging.suggester.name
+                  %a{href: "#"}= tagging&.suggester&.name
               %td{style: extra_style}
                 = tagging_count
               - additional_class = ''
-              - acceptance_rate = tagging.suggester.tagging_acceptance_rate
+              - acceptance_rate = tagging&.suggester&.tagging_acceptance_rate
               - if acceptance_rate && tagging_count > 3 && acceptance_rate < 25
                 - additional_class = 'low-approval-rate'
               - elsif acceptance_rate && tagging_count > 3 && acceptance_rate > 75
