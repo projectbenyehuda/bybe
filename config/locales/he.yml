@@ -1862,6 +1862,7 @@ he:
     default_link_description_hint: תיאור הקישור שיוצג לקוראים
   one_work: יצירה אחת
   periodicals_label: כתבי עת
+  periodicals_description: בעמוד זה יצירות שפורסמו בכתבי עת. ניתן לעיין לפי כתב העת, היצירות הנקראות, היצירות החדשות (במאגרנו), או לפי סוגה.
   works_and_volumes: כותרים ויצירות
   genres_and_types: סוגות וסוגים
   pby_publications: פרסומי פרויקט בן־יהודה
@@ -1870,3 +1871,4 @@ he:
   public_anthologies: מקראות פומביות מאת משתמשי הפרויקט
   x_public_anthologies: "%{x} מקראות פומביות"
   not_available: לא זמין
+  to_all_periodicals: לכל כתבי העת במאגר

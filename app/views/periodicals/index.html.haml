@@ -2,11 +2,11 @@
   .row
     .by-card-v02.gateway-header
       .by-card-content-v02
-        %p.headline-1-v02 שער לכתבי עת
-        %p.gateway-title-secondary-text עמוד זה מהווה שער ליצירות שפורסמו בכתבי עת לאורך השנים. ניתן לעיין לפי כתב העת, היצירות, או לפי הסוגה הרלוונטית.
+        %p.headline-1-v02= t(:periodicals_label)
+        %p.gateway-title-secondary-text= t(:periodicals_description)
   .row
     .col-12.col-lg-8
-      #authors-in-project.by-card-v02
+      #authors-in-project.by-card-v02{style: 'height: auto;'}
         .by-card-header-v02
           %span.headline-1-v02
             = t(:periodicals_label)
@@ -14,27 +14,21 @@
         .by-card-content-v02
           -#%div
           -#  %p{:style => "font-weight: bold"} הנקראים/ות ביותר
-          %div
-            #scroller_container
-              .carousel-arrow-right-v02{id: "rightarrow"}
-                = 2
-              .carousel-demo
-                .scroller{id: "scroller"}
-                  - @periodicals.each do |periodical|
-                    .slide
-                      %a{ href: collection_path(periodical) }
-                        .author-card-v02
-                          %img.author-pic-v02{src: periodical.logo_image.present? ? url_for(periodical.logo_image) : '', alt: periodical.title }/
-                          .author-name-area
-                            .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
-                            .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
-              .carousel-arrow-left-v02{id: "leftarrow"}
-                = 1
-
-          -#.link-to-all-v02
-          -#  %a{:href => "#"}
-          -#    %span{:style => "font-weight: bold;"} לכל כתבי העת בפרויקט
-          -#    %span.left-arrow 1
+          %div{style: 'display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 15px;'}
+            - i = 0
+            - @periodicals.each do |periodical|
+              .slide{ style: i >= 5 ? 'display: none;' : '' }
+                %a{ href: collection_path(periodical) }
+                  .author-card-v02{style: 'margin-left: 0; margin-right: 0;'}
+                    %img.author-pic-v02{src: periodical.logo_image.present? ? url_for(periodical.logo_image) : '', alt: periodical.title }/
+                    .author-name-area
+                      .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
+                      .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
+              - i += 1
+          .link-to-all-v02.pointer
+            %a#periodicals-view-all{:href => "#"}
+              %span{:style => "font-weight: bold;"}= t(:to_all_periodicals)
+              %span.left-arrow 1
       #works-in-project.by-card-v02
         .by-card-header-v02
           %span.headline-1-v02
@@ -273,64 +267,9 @@
               %button.by-button-v02{:href => "#"} לדף כתב העת
 :javascript
   $(document).ready(function() {
-    // Carousel functionality
-    var scroller = $('#scroller');
-
-    $('#scroller').slick({
-      infinite: false,
-      slidesToShow: 5,
-      placeholders: false,
-      slidesToScroll: 1,
-      arrows: true,
-      rtl: true,
-      outerEdgeLimit: true,
-      nextArrow: "#leftarrow",
-      prevArrow: "#rightarrow",
-      //variableWidth: true,
-      // appendArrows: '#scroller_container',
-      responsive: [{
-        breakpoint: 1700,
-        settings: {
-          slidesToShow: 4,
-          //infinite: true
-        }
-      },{
-        breakpoint: 1340,
-        settings: {
-          slidesToShow: 3,
-          //infinite: true
-        }
-      },{
-        breakpoint: 990,
-        settings: {
-          slidesToShow: 5,
-          //infinite: true
-        }
-      },{
-        breakpoint: 815,
-        settings: {
-          slidesToShow: 4,
-          //infinite: true
-        }
-      },{
-        breakpoint: 670,
-        settings: {
-          slidesToShow: 3,
-          //infinite: true
-        }
-      }, {
-        breakpoint: 638,
-        settings: {
-          slidesToShow: 4,
-          //infinite: true
-        }
-      }, {
-        breakpoint: 520,
-        settings: {
-          slidesToShow: 3,
-          //dots: true
-        }
-      }]
+    $('#periodicals-view-all').click(function(e) {
+      e.preventDefault();
+      $('.slide').css('display', 'flex');
+      $(this).css('display', 'none');
     });
-
   });

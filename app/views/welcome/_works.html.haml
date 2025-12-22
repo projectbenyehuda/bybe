@@ -27,21 +27,21 @@
               %p.by-genre-details-v02= Manifestation.cached_translated_count.to_s+' '+t(:works)
       .by-card-content-seapartor
       .row
-        .col-md-3.col-4
+        .col-md-4.col-4
           %a{href: periodicals_index_path}
             .genre-nav
               %p.by-genre-icon-v03 H
               %p.by-genre-name-v02.headline-2-v02= t(:periodicals_label)
               %p.by-genre-details-v02= @periodicals_count.to_s+' '+t(:periodicals_label)
               %p.by-genre-details-v02= @periodicals_text_count.to_s+' '+t(:works)
-        .col-md-3.col-4
+        .col-md-4.col-4
           %a{href: pby_volumes_path}
             .genre-nav
               %p.by-genre-icon-v03 J
               %p.by-genre-name-v02.headline-2-v02= t(:pby_publications)
               %p.by-genre-details-v02= t(:x_volumes, x: @pby_volumes_count)
               %p.by-genre-details-v02= t(:x_works, x: @pby_works_count)
-        #matrix-wide.col-md-3.col-4{:style => "margin-left: auto; margin-right:auto"}
+        #matrix-wide.col-md-4.col-4
           %a{href: anthologies_browse_path}
             .genre-nav
               %p.by-genre-icon-v02 G
