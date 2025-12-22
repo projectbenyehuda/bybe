@@ -46,14 +46,10 @@ RSpec.describe 'Collection image alignment', type: :system, js: true do
 
   let!(:collection) do
     Chewy.strategy(:atomic) do
-      col = create(:collection, authors: [author])
-      # Create a collection item with both markdown content and a title
-      create(:collection_item,
-             collection: col,
-             markdown: html_with_image,
-             alt_title: 'Test Collection Content',
-             seqno: 1)
-      col
+      # Use factory transient attributes to avoid creating the collection twice
+      create(:collection,
+             authors: [author],
+             markdown_placeholders: [html_with_image])
     end
   end
 
