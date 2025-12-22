@@ -28,6 +28,8 @@
         - unless @show_all
           .pagination-container{style: 'margin-top: 20px;'}
             != paginate @tags
+        - if current_user&.editor? && current_user.has_bit?('moderate_tags')
+          = link_to t(:edit), edit_tag_path(tag), class: 'by-button-secondary-v02 pad10rl', style: 'margin-right: 10px; font-size: 75%;'
 
 :javascript
   $(document).ready(function() {

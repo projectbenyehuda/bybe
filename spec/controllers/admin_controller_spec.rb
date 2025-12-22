@@ -684,4 +684,104 @@ describe AdminController do
       expect(assigns(:total)).to eq(1)
     end
   end
+
+  describe 'Tag editing functionality' do
+    include_context 'when editor logged in', 'moderate_tags'
+
+    let(:tag) { create(:tag, status: :approved, name: 'Test Tag') }
+    let!(:tag_name2) { create(:tag_name, tag: tag, name: 'Alternative Name') }
+
+    describe '#edit_tag' do
+      subject(:call) { get :edit_tag, params: { id: tag.id } }
+
+      context 'when user has moderate_tags permission' do
+        it 'renders the edit page' do
+          expect(call).to be_successful
+          expect(assigns(:tag)).to eq(tag)
+          expect(assigns(:tag_names).count).to eq(2)
+          expect(assigns(:tag_names).pluck(:name)).to contain_exactly('Test Tag', 'Alternative Name')
+        end
+      end
+
+      context 'when tag does not exist' do
+        it 'redirects with error' do
+          expect { get :edit_tag, params: { id: 99999 } }.to raise_error(ActiveRecord::RecordNotFound)
+        end
+      end
+    end
+
+    describe '#update_tag' do
+      subject(:call) { post :update_tag, params: { id: tag.id, tag_name: new_name, status: new_status } }
+
+      let(:new_name) { 'Updated Tag Name' }
+      let(:new_status) { 'pending' }
+
+      context 'when updating tag name' do
+        it 'updates the tag and its first TagName' do
+          expect { call }.to change { tag.reload.name }.to(new_name)
+          expect(tag.tag_names.first.name).to eq(new_name)
+          expect(flash[:notice]).to eq(I18n.t(:tag_updated))
+        end
+      end
+
+      context 'when updating status' do
+        let(:new_name) { tag.name }
+        let(:new_status) { 'escalated' }
+
+        it 'updates the tag status' do
+          expect { call }.to change { tag.reload.status }.to('escalated')
+          expect(flash[:notice]).to eq(I18n.t(:tag_updated))
+        end
+      end
+
+    end
+
+    describe '#add_tag_name' do
+      subject(:call) { post :add_tag_name, params: { id: tag.id, tag_name: new_alias } }
+
+      let(:new_alias) { 'New Alias' }
+
+      context 'when adding a new unique alias' do
+        it 'creates a new TagName' do
+          expect { call }.to change { tag.tag_names.count }.by(1)
+          expect(tag.tag_names.pluck(:name)).to include(new_alias)
+          expect(flash[:notice]).to eq(I18n.t(:tag_name_added))
+        end
+      end
+
+      context 'when alias already exists' do
+        let(:existing_tag_name) { create(:tag_name, name: 'Existing Name') }
+        let(:new_alias) { existing_tag_name.name }
+
+        it 'does not create duplicate and shows error' do
+          expect { call }.not_to change { tag.tag_names.count }
+          expect(flash[:error]).to eq(I18n.t(:tag_name_already_exists))
+        end
+      end
+
+    end
+
+    describe '#remove_tag_name' do
+      subject(:call) { delete :remove_tag_name, params: { id: tag_name2.id } }
+
+      context 'when removing a non-primary TagName' do
+        it 'removes the TagName' do
+          expect { call }.to change { tag.tag_names.count }.by(-1)
+          expect { tag_name2.reload }.to raise_error(ActiveRecord::RecordNotFound)
+          expect(flash[:notice]).to eq(I18n.t(:tag_name_removed))
+        end
+      end
+
+      context 'when trying to remove the last TagName' do
+        before { tag_name2.destroy }
+
+        it 'does not remove and shows error' do
+          delete :remove_tag_name, params: { id: tag.tag_names.first.id }
+          expect(tag.tag_names.count).to eq(1)
+          expect(flash[:error]).to eq(I18n.t(:cannot_remove_last_tag_name))
+        end
+      end
+
+    end
+  end
 end
