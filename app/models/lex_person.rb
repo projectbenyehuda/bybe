@@ -10,7 +10,7 @@ class LexPerson < ApplicationRecord
 
   has_many :citations, inverse_of: :person, class_name: 'LexCitation', dependent: :destroy
   has_one :entry, as: :lex_item, class_name: 'LexEntry', dependent: :destroy
-  has_many :lex_links, as: :item, dependent: :destroy
+  has_many :links, as: :item, dependent: :destroy, class_name: 'LexLink', inverse_of: :item
   has_many :citation_authors, class_name: 'LexCitationAuthor', dependent: :nullify
 
   belongs_to :authority, optional: true # link to an Authority record representing this person in BYP
