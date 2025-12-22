@@ -837,6 +837,7 @@ he:
   tag_name_added: שם חלופי נוסף בהצלחה
   tag_name_removed: שם חלופי הוסר
   tag_name_already_exists: שם זה כבר קיים במערכת
+  tag_name_cannot_be_blank: שם התגית לא יכול להיות ריק
   cannot_remove_last_tag_name: לא ניתן להסיר את השם האחרון של התגית
   confirm_remove_tag_name: האם אתה בטוח שברצונך להסיר שם חלופי זה?
   add_tag_name_alias: הוספת שם חלופי
