@@ -18,6 +18,7 @@
         %th= t(:entrytype)
         %th= t(:actions)
       - @lex_files.each do |lf|
+        - lex_entry = lf.lex_entry
         %tr
           %td= lf.error_message
           %td= lf.fname.sub('.php', '').sub('/', '')
@@ -25,9 +26,9 @@
           %td #{t(lf.status)} / #{lf&.lex_entry&.status}
           %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
           %td
-            - if lf.lex_entry.lex_item.present?
-              = link_to t(:show), lexicon_entry_path(lf.lex_entry)
-            - else
+            - if lex_entry.lex_item.present?
+              = link_to t(:show), lexicon_entry_path(lex_entry)
+            - elsif lex_entry.lex_item.nil? || lex_entry.status_error?
               = link_to t('lexicon.files.migrate.title'), migrate_lexicon_file_path(lf), method: :post
   = paginate @lex_files
 :javascript
