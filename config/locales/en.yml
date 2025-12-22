@@ -69,6 +69,7 @@ en:
   tag_name_added: Alternative name added successfully
   tag_name_removed: Alternative name removed
   tag_name_already_exists: This name already exists in the system
+  tag_name_cannot_be_blank: Tag name cannot be blank
   cannot_remove_last_tag_name: Cannot remove the last name of the tag
   confirm_remove_tag_name: Are you sure you want to remove this alternative name?
   add_tag_name_alias: Add Alternative Name
