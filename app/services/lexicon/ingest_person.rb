@@ -56,7 +56,7 @@ module Lexicon
       end.map do |linkstring|
         next unless linkstring =~ %r{(.*?)<a .*? href="(.*?)".*?>(.*?)</a>(.*)}m
 
-        person.lex_links.create!(
+        person.links.create!(
           url: ::Regexp.last_match(2),
           description: "#{html2txt(::Regexp.last_match(1))} #{html2txt(::Regexp.last_match(3))} " \
                        "#{html2txt(::Regexp.last_match(4))}"
