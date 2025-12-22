@@ -34,8 +34,7 @@
               - list.each do |c|
                 - cit_text = render_citation(c)
                 %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
-        = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:links) } do
-          %h3 TBD
+        = render partial: 'links', locals: { links: lex_person.links }
 
   .col-12.col-lg-4
     .row
