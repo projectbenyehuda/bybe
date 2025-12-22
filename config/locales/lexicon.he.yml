@@ -38,11 +38,16 @@ he:
         size: Size
         preview: Preview
         copy_link: Copy link to clipboard
+    citation_authors:
+      form:
+        add_author: Add author
     citations:
       index:
         add_citation: Add citation
       edit:
         approve: Approve Citation
+      form:
+        save_before_adding_authors: Please save the citation before adding authors
     files:
       index:
         title: רשימת הקבצים
