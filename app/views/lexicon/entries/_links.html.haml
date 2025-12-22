@@ -1,0 +1,5 @@
+- if links.present?
+  = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:links) } do
+    %ul
+      - links.each do |link|
+        %li= link_to link.description, link.url, target: '_blank', rel: :noopener
