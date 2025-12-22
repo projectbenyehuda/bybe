@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'rails_helper'
 
 describe '/lexicon/citation_authors' do
@@ -6,13 +7,13 @@ describe '/lexicon/citation_authors' do
   let!(:citation) { create(:lex_citation, person: person) }
   let(:author) { citation.authors.first }
 
+  let(:invalid_attrs) { { name: '' } }
+
   describe 'GET /lexicon/citations/:citation_id/authors' do
     subject { get "/lex/citations/#{citation.id}/authors" }
 
     it { is_expected.to eq(200) }
   end
-
-  let(:invalid_attrs) { { name: '' } }
 
   describe 'POST /lexicon/citations/:citation_id/authors' do
     subject(:call) { post "/lex/citations/#{citation.id}/authors", params: { lex_citation_author: attrs }, xhr: true }
@@ -40,16 +41,16 @@ describe '/lexicon/citation_authors' do
 
         author = LexCitationAuthor.order(id: :desc).first
         expect(author.name).to be_nil
-        expect(author.lex_person).to eq(author_person)
+        expect(author.person).to eq(author_person)
         expect(author.citation).to eq(citation)
       end
     end
 
     context 'with invalid params' do
-      let(:attrs) { { name: nil} }
+      let(:attrs) { { name: nil } }
 
       it 'fails with Unprocessable Cotnent status' do
-        expect { call }.not_to change { LexCitationAuthor.count }
+        expect { call }.not_to(change { LexCitationAuthor.count })
         expect(response).to have_http_status(:unprocessable_content)
       end
     end
