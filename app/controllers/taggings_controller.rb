@@ -64,6 +64,7 @@ class TaggingsController < ApplicationController
   def browse # public tags listing
     @page_title = "#{t(:tags_list)} – #{t(:project_ben_yehuda)}"
     @sort = params[:sort_by] || 'alphabetical'
+    @show_all = params[:show_all] == 'true'
 
     tags_query = Tag.approved
     tags_query = case @sort
@@ -74,7 +75,7 @@ class TaggingsController < ApplicationController
                  end
 
     @total = tags_query.count
-    @tags = tags_query.page(params[:page])
+    @tags = @show_all ? tags_query : tags_query.page(params[:page])
   end
 
   def list_tags # for backend

@@ -75,4 +75,50 @@ RSpec.describe 'Tags browse view', :js, type: :system do
       end
     end
   end
+
+  describe 'show all functionality', :js do
+    before do
+      # Create enough tags to trigger pagination (Kaminari default is 25 per page)
+      30.times do |i|
+        create(:tag, name: "Tag#{i.to_s.rjust(3, '0')}", status: :approved)
+      end
+      visit tags_browse_path
+    end
+
+    it 'shows pagination by default when there are many tags' do
+      expect(page).to have_css('.pagination-container')
+    end
+
+    it 'hides pagination when "show all" is checked' do
+      check 'show_all_checkbox'
+      sleep 1 # Wait for page reload
+
+      expect(page).not_to have_css('.pagination-container')
+    end
+
+    it 'displays all tags when "show all" is checked' do
+      check 'show_all_checkbox'
+      sleep 1 # Wait for page reload
+
+      # Should show all 33 tags (3 from setup + 30 created in before block)
+      within('#tags_mainlist ol') do
+        expect(page.all('li').count).to eq(33)
+      end
+    end
+
+    it 'maintains the checkbox state when navigating with show_all param' do
+      visit tags_browse_path(show_all: 'true')
+
+      expect(page).to have_checked_field('show_all_checkbox')
+      expect(page).not_to have_css('.pagination-container')
+    end
+
+    it 'shows pagination again when "show all" is unchecked' do
+      visit tags_browse_path(show_all: 'true')
+      uncheck 'show_all_checkbox'
+      sleep 1 # Wait for page reload
+
+      expect(page).to have_css('.pagination-container')
+    end
+  end
 end
