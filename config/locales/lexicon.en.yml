@@ -22,6 +22,7 @@ en:
         properties: Properties
         attachments: Attachments
         citations: Citations
+        links: Links
       index:
         add_person: Add Person
         add_publication: Add Publication
@@ -48,6 +49,10 @@ en:
         approve: Approve Citation
       form:
         save_before_adding_authors: Please save the citation before adding authors
+    links:
+      index:
+        add_link: Add link
+        no_links: No links yet
     files:
       index:
         title: List of files
