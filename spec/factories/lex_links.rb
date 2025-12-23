@@ -2,9 +2,9 @@
 
 FactoryBot.define do
   factory :lex_link do
-    url { 'MyString' }
-    description { 'MyString' }
-    status { '' }
-    item { nil }
+    url { Faker::Internet.url }
+    description { Faker::Lorem.sentence }
+    status { nil }
+    item factory: :lex_person
   end
 end
