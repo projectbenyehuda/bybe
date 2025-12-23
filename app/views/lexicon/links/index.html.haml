@@ -1,10 +1,10 @@
-%a.btn.btn-primary.add-link= t('.add_link')
+%a.btn.btn-primary.add-link{ data: { new_link_path: new_lexicon_person_link_path(@person) } }= t('.add_link')
 - if @lex_links.present?
   %ul
     - @lex_links.each do |link|
       %li
         = link_to link.description.presence || link.url, link.url, target: '_blank', rel: :noopener
-        = link_to t(:edit), nil, class: 'edit-link', data: { id: link.id }
+        = link_to t(:edit), nil, class: 'edit-link', data: { edit_path: edit_lexicon_link_path(link) }
         = link_to t(:delete),
                   lexicon_link_path(link),
                   remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-link'
@@ -14,9 +14,10 @@
 :javascript
   $('.edit-link').click(function(e) {
     e.preventDefault();
-    const linkId = $(this).data('id');
-    openModal(`/lex/links/${linkId}/edit`);
+    const editPath = $(this).data('edit-path');
+    openModal(editPath);
   });
   $('a.add-link').click(function() {
-    openModal('/lex/people/#{@person.id}/links/new');
+    const newLinkPath = $(this).data('new-link-path');
+    openModal(newLinkPath);
   });
