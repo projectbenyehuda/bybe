@@ -45,206 +45,88 @@
               %span{:style => "font-weight: bold"}= t(:see_all_works_from_periodicals) 
               %span.left-arrow 1
     .col-12.col-lg-4
-      .by-card-v02.whats-new-v02
+      .by-card-v02.whats-new-v02{style: 'height: auto;'}
         #whats-new-bg
           .by-side-card-header-v02
-            %p.headline-1-v02{:style => "margin-bottom: 0"}
-              %a{:href => "#"} מה חדש בכתבי עת?
+            %p.headline-1-v02{:style => "margin-bottom: 0"}= t(:whatsnew_in_periodicals)
           .by-card-content-v02
-            .whats-new-content
+            - if @periodicals_whatsnew.present? && @periodicals_whatsnew.any?
+              .whats-new-content
+                - sorted_authors = @periodicals_whatsnew.keys.sort_by{|x| x.sort_name}
+                - max_visible = 3
+                - visible_authors = sorted_authors.take(max_visible)
+                - has_more = sorted_authors.size > max_visible
+                - visible_authors.each do |author|
+                  - works = @periodicals_whatsnew[author]
+                  .new-card-v02
+                    .new-card-right-v02
+                      %img.new-card-pic-v02{alt: author.name, src: author.profile_image.url(:tiny)}
+                    .new-card-left-v02
+                      %p.headline-2-v02
+                        = link_to author.name, authority_path(author)
+                      - works.each do |genre|
+                        - next if genre[0] == :latest
+                        %p.text-height-new
+                          %b= textify_genre(genre[0]) + ': '
+                          - worksbuf = genre[1].map do |m|
+                            - periodical_issue = m.volumes.find(&:periodical_issue?)
+                            - work_link = link_to(m.expression.title + (m.expression.translation ? ' / '+m.authors_string : ''), url_for(controller: :manifestation, action: :read, id: m.id))
+                            - if periodical_issue
+                              - work_link + ' (' + link_to(periodical_issue.title, collection_path(periodical_issue)) + ')'
+                            - else
+                              - work_link
+                          - worksbuf = worksbuf.join('; ')
+                          != worksbuf
+              - if has_more
+                .link-to-all-v02
+                  %a.pointer{'data-toggle' => 'modal', 'data-target' => '#periodicalsWhatsnewDlg'}
+                    %span{:style => "font-weight: bold"}= t(:see_all_new_periodicals)
+                    %span.left-arrow 1
+            - else
               .new-card-v02
-                .new-info-v02 !
                 .new-card-left-v02
                   %p.text-height-new
-                    אנו בתהליך העלאת יצירות רבות שפורסמו בעיתון ״דבר״ במחצית השניה של המאה העשרים אנו בתהליך העלאת יצירות רבות שפורסמו בעיתון ״דבר״ במחצית השניה של המאה העשרים אנו בתהליך העלאת יצירות רבות שפורסמו בעיתון ״דבר״ במחצית השניה של המאה העשרים
-                .link-to-all-v02{:style => "font-weight: bold;"}
-                  %a{:href => "#"} התנדבו לעזור
-              .new-card-v02
-                .new-info-v02 !
-                %a{:href => "#"}
-                  .new-card-right-v02
-                    %img.new-card-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Zmanim.jpg"}/
-                .new-card-left-v02
-                  %a{:href => "#"}
-                    %p.headline-2-v02
-                      %span.new-headline-v02 יצירות חדשות
-                  %p.text-height-new
-                    שירה:
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} מחר
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} מחר
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} מחר
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} מחר
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    %a{:href => "#"} פרידת אליהו
-                .link-to-all-v02{:style => "font-weight: bold;"}
-                  %a{:href => "#"}
-                    סך הכל
-                    %span 12
-                    יצירות
-              .new-card-v02
-                .new-info-v02 !
-                %a{:href => "#"}
-                  .new-card-right-v02
-                    %img.new-card-pic-v02{:alt => "", :src => "assets/periodicals logos/periodical_logo_Ho!.jpg"}/
-                .new-card-left-v02
-                  %a{:href => "#"}
-                    %p.headline-2-v02
-                      %span.new-headline-v02 יצירות חדשות
-                  %p.text-height-new
-                    שירה:
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} מחר
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} מחר
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} מחר
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} פרידת אליהו
-                    = succeed ";" do
-                      %a{:href => "#"} מחר
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} כתם אדום
-                    = succeed ";" do
-                      %a{:href => "#"} שומר מה מליל
-                    = succeed ";" do
-                      %a{:href => "#"} שירת ההולך
-                    %a{:href => "#"} פרידת אליהו
-                .link-to-all-v02{:style => "font-weight: bold;"}
-                  %a{:href => "#"}
-                    סך הכל
-                    %span 12
-                    יצירות
-            .link-to-all-v02
-              %a{:href => "#"}
-                %span{:style => "font-weight: bold"} לכל מה שחדש
-                %span.left-arrow 1
+                    = t(:no_new_periodicals_content)
+      #periodicalsWhatsnewDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
+        .modal-dialog.modal-lg
+          .modal-content
+            .modal-body
+              .by-popup-v02
+                .by-card-header-v02.desktop-only
+                  %p.headline-1-v02= t(:new_works_in_periodicals)
+                  %a.popup-x-v02.linkcolor.pointer{'data-dismiss'=>'modal'} -
+                .popup-top.mobile-only
+                  .row{style: 'padding:15px;margin: 0'}
+                    .col-4{style: 'padding: 0;'}
+                      %button.btn-small-outline-v02{'data-dismiss' => 'modal'}
+                        .btn-text-v02
+                          %span.right-arrow 2
+                          %span= t(:back)
+                    .col-4{style: 'padding: 0;'}
+                      .modal-title.headline-2-v02{style: 'text-align: center;margin: 0; padding-top: 3px;'}= t(:new_works_in_periodicals)
+                    .col-4
+                .by-card-content-v02{style: 'max-height: 70vh; overflow-y: auto;'}
+                  - if @periodicals_whatsnew.present? && @periodicals_whatsnew.any?
+                    - @periodicals_whatsnew.keys.sort_by{|x| x.sort_name}.each do |author|
+                      - works = @periodicals_whatsnew[author]
+                      .by-card-v02
+                        .by-card-header-v02
+                          %p.headline-3-v02
+                            = link_to author.name, authority_path(author)
+                        .by-card-content-v02
+                          - works.each do |genre|
+                            - next if genre[0] == :latest
+                            %p
+                              %b= textify_genre(genre[0]) + ': '
+                              - worksbuf = genre[1].map do |m|
+                                - periodical_issue = m.volumes.find(&:periodical_issue?)
+                                - work_link = link_to(m.expression.title + (m.expression.translation ? ' / '+m.authors_string : ''), url_for(controller: :manifestation, action: :read, id: m.id))
+                                - if periodical_issue
+                                  - work_link + ' (' + link_to(periodical_issue.title, collection_path(periodical_issue)) + ')'
+                                - else
+                                  - work_link
+                              - worksbuf = worksbuf.join('; ')
+                              != worksbuf
       - if @random_periodical.present?
         .by-card-v02.flash-work-v02
           .flash-bg-v02
