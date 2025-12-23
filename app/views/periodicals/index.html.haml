@@ -68,15 +68,7 @@
                         - next if genre[0] == :latest
                         %p.text-height-new
                           %b= textify_genre(genre[0]) + ': '
-                          - worksbuf = genre[1].map do |m|
-                            - periodical_issue = m.volumes.find(&:periodical_issue?)
-                            - work_link = link_to(m.expression.title + (m.expression.translation ? ' / '+m.authors_string : ''), url_for(controller: :manifestation, action: :read, id: m.id))
-                            - if periodical_issue
-                              - work_link + ' (' + link_to(periodical_issue.title, collection_path(periodical_issue)) + ')'
-                            - else
-                              - work_link
-                          - worksbuf = worksbuf.join('; ')
-                          != worksbuf
+                          != format_periodical_works(genre[1])
               - if has_more
                 .link-to-all-v02
                   %a.pointer{'data-toggle' => 'modal', 'data-target' => '#periodicalsWhatsnewDlg'}
@@ -118,15 +110,7 @@
                             - next if genre[0] == :latest
                             %p
                               %b= textify_genre(genre[0]) + ': '
-                              - worksbuf = genre[1].map do |m|
-                                - periodical_issue = m.volumes.find(&:periodical_issue?)
-                                - work_link = link_to(m.expression.title + (m.expression.translation ? ' / '+m.authors_string : ''), url_for(controller: :manifestation, action: :read, id: m.id))
-                                - if periodical_issue
-                                  - work_link + ' (' + link_to(periodical_issue.title, collection_path(periodical_issue)) + ')'
-                                - else
-                                  - work_link
-                              - worksbuf = worksbuf.join('; ')
-                              != worksbuf
+                              != format_periodical_works(genre[1])
       - if @random_periodical.present?
         .by-card-v02.flash-work-v02
           .flash-bg-v02
