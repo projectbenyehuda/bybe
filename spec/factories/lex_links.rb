@@ -5,6 +5,6 @@ FactoryBot.define do
     url { Faker::Internet.url }
     description { Faker::Lorem.sentence }
     status { nil }
-    association :item, factory: :lex_person
+    item factory: :lex_person
   end
 end
