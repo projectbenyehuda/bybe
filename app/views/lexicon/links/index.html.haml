@@ -1,0 +1,22 @@
+%a.btn.btn-primary.add-link= t('.add_link')
+- if @lex_links.present?
+  %ul
+    - @lex_links.each do |link|
+      %li
+        = link_to link.description.presence || link.url, link.url, target: '_blank', rel: :noopener
+        = link_to t(:edit), nil, class: 'edit-link', data: { id: link.id }
+        = link_to t(:delete),
+                  lexicon_link_path(link),
+                  remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-link'
+- else
+  %p.text-muted= t('.no_links')
+
+:javascript
+  $('.edit-link').click(function(e) {
+    e.preventDefault();
+    const linkId = $(this).data('id');
+    openModal(`/lex/links/${linkId}/edit`);
+  });
+  $('a.add-link').click(function() {
+    openModal('/lex/people/#{@person.id}/links/new');
+  });
