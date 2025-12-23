@@ -12,8 +12,6 @@
             = t(:periodicals_label)
             = "(#{@periodicals_count})"
         .by-card-content-v02
-          -#%div
-          -#  %p{:style => "font-weight: bold"} הנקראים/ות ביותר
           %div{style: 'display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 15px;'}
             - i = 0
             - @periodicals.each do |periodical|
@@ -37,14 +35,14 @@
         .by-card-content-v02.works-in-project-content
           .row.top-works
             .col-sm-12.works-most-read.text-height-works-in-project
-              %p.headline-2-v02 היצירות הנקראות ביותר החודש
+              %p.headline-2-v02= t(:most_popular_works_this_month)
               %ol{:style => "margin-bottom: 0;"}
                 - @popular_works.each do |work|
                   %li
                     %a{:href => manifestation_path(work.id)}= work.title_and_authors
           .link-to-all-v02
-            %a{:href => "#"}
-              %span{:style => "font-weight: bold"} לכל היצירות מכתבי עת
+            %a{:href => works_path(ckb_collection_types: ['in_periodical'])}
+              %span{:style => "font-weight: bold"}= t(:see_all_works_from_periodicals) 
               %span.left-arrow 1
     .col-12.col-lg-4
       .by-card-v02.whats-new-v02
@@ -247,24 +245,25 @@
               %a{:href => "#"}
                 %span{:style => "font-weight: bold"} לכל מה שחדש
                 %span.left-arrow 1
-      .by-card-v02.flash-work-v02
-        .flash-bg-v02
-          .by-side-card-header-v02
-            %p.headline-1-v02 זוית אישית על כתב עת
-          .by-card-content-v02
-            %p.headline-3-v02
-              %a{:href => "#"} איך התחלתי לקרוא שירה עברית בעקבות גילוי כתב העת ״הו!״
-            %p
-              מאת
-              %a{:href => "#"} ישראל ישראלי
-            .flash-text-container
-              .text-height-flash-work
+      - if @random_periodical.present?
+        .by-card-v02.flash-work-v02
+          .flash-bg-v02
+            -# TODO: show the periodical's cover image somewhere if available
+            .by-side-card-header-v02
+              %p.headline-1-v02= t(:spotlight_on_periodical)
+            .by-card-content-v02
+              %p.headline-3-v02
+                %a{href: collection_path(@random_periodical)}= @random_periodical.title
+              - if @random_periodical.editors.any?
                 %p
-                  כל פרק ופרק על השלילה בארץ, הוא בית משיר-שבח לחיוב שבה: בעצם העובדה שנדפס ופורסם.  כי מה הן כל התופעות השליליות יחד כנגד החיוב הגדול ביותר בעולם:
-                  חופש לכתוב בלי מועקת המצפון ולהדפיס בלי מועקת המצפן.האי, מה טוב לבקר את החברה והמדינה, את ראשי-המדברים וראשי המפטפטים בלי ראש למיניהם!  הדם שהפך בעט לדיו, הופך בדפוס ליין טוב.  לחיים!" -- קישון "אני מקדיש את ספרי לאשתי – למען כל פרק ופרק על השלילה בארץ, הוא בית משיר-שבח לחיוב שבה: בעצם העובדה שנדפס ופורסם.כי מה הן כל התופעות השליליות יחד כנגד החיוב הגדול ביותר בעולם: חופש לכתוב בלי מועקת המצפון ולהדפיס בלי מועקת המצפן.  האי, מה טוב לבקר את החברה והמדינה, את ראשי-המדברים וראשי המפטפטים בלי ראש למיניהם!  הדם שהפך בעט לדיו, הופך בדפוס ליין טוב.  לחיים!" -- קישון "אני מקדיש את ספרי לאשתי – כל פרק ופרק על השלילה בארץ, הוא בית משיר-שבח לחיוב שבה: בעצם העובדה שנדפס ופורסם.  כי מה הן כל התופעות השליליות יחד כנגד החיוב הגדול ביותר בעולם: חופש לכתוב בלי מועקת המצפון ולהדפיס בלי מועקת המצפן.  האי, מה טוב לבקר את החברה והמדינה, את ראשי-המדברים וראשי המפטפטים בלי ראש למיניהם!קישון "אני מקדיש את ספרי לאשתי – כל פרק ופרק על השלילה בארץ, הוא בית משיר-שבח לחיוב שבה: בעצם העובדה שנדפס ופורסם.  כי מה הן כל התופעות השליליות יחד כנגד החיוב הגדול ביותר בעולם: חופש לכתוב בלי מועקת המצפון ולהדפיס בלי מועקת המצפן.
-            .button-to-full-v02
-              %button.by-button-v02 להמלצה המלאה
-              %button.by-button-v02{:href => "#"} לדף כתב העת
+                  = t(:edited_by)
+                  = @random_periodical.editors.map(&:name).join(', ')
+              .flash-text-container
+                .text-height-flash-work
+                  = @random_periodical.description
+              .button-to-full-v02
+                %a{ href: collection_path(@random_periodical) }
+                  %button.by-button-v02= t(:to_periodical)
 :javascript
   $(document).ready(function() {
     $('#periodicals-view-all').click(function(e) {

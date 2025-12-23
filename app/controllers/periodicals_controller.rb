@@ -13,6 +13,7 @@ class PeriodicalsController < ApplicationController
     @periodicals_text_count = Rails.cache.fetch('periodicals_text_count', expires_in: 15.minutes) do
       ManifestationsIndex.query(match: { in_periodical: true }).count
     end
+    @random_periodical = @periodicals.sample # pick a random periodical to feature out of the already-fetched @periodicals
   end
 
   def show; end
