@@ -6,7 +6,9 @@ class PeriodicalsWhatsNewSince < ApplicationService
     authors = {}
     # Get all published manifestations that are new since the timestamp
     # and are contained in periodicals (have periodical_issue in parent chain)
-    Manifestation.all_published.new_since(timestamp).includes(:expression, collection_items: :collection).find_each do |m|
+    Manifestation.all_published.new_since(timestamp)
+                 .includes({ expression: { work: { involved_authorities: :authority } } }, collection_items: :collection)
+                 .find_each do |m|
       # Skip if not in a periodical
       next unless m.in_periodical?
 
@@ -14,6 +16,8 @@ class PeriodicalsWhatsNewSince < ApplicationService
       next if e.nil?
 
       w = e.work
+      next if w.nil?
+
       authority = e.translation ? m.translators.first : m.authors.first
       next if authority.nil?
 

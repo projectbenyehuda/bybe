@@ -25,7 +25,7 @@ RSpec.describe 'Periodicals whatsnew panel', type: :system, js: true do
         expect(page).to have_content(author.name)
         expect(page).to have_content(work.expression.title)
         # The see-all link should not be visible when there's no overflow
-        expect(page).not_to have_css('#periodicals-see-all-link[style*="display: block"]', visible: true)
+        expect(page).not_to have_css('.link-to-all-v02', visible: true)
       end
     end
   end
