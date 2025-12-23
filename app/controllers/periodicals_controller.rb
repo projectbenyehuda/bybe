@@ -14,6 +14,9 @@ class PeriodicalsController < ApplicationController
       ManifestationsIndex.query(match: { in_periodical: true }).count
     end
     @random_periodical = @periodicals.sample # pick a random periodical to feature out of the already-fetched @periodicals
+    @periodicals_whatsnew = Rails.cache.fetch('periodicals_whatsnew', expires_in: 2.hours) do
+      PeriodicalsWhatsNewSince.call(1.month.ago)
+    end
   end
 
   def show; end

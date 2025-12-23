@@ -386,3 +386,8 @@ en:
   pby_volumes_description: Volumes published by Project Ben-Yehuda
   x_volumes: "%{x} volumes"
   x_works: "(%{x} works)"
+  no_new_periodicals_content: No new works from periodicals in the last month
+  see_all_new_periodicals: See all new works in periodicals
+  new_works_in_periodicals: New works in periodicals
+  whatsnew_in_periodicals: What's new in periodicals?
+  and_n_more: and %{n} more
