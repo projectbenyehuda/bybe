@@ -61,6 +61,71 @@ describe Manifestation do
     end
   end
 
+  describe '.cached_periodical_work_counts_by_genre' do
+    subject { described_class.cached_periodical_work_counts_by_genre }
+
+    let!(:periodical_issue) { create(:collection, collection_type: :periodical_issue) }
+    let!(:regular_collection) { create(:collection, collection_type: :volume) }
+
+    before do
+      # Create manifestations in periodicals
+      3.times do
+        manifestation = create(:manifestation, genre: :article)
+        create(:collection_item, collection: periodical_issue, item: manifestation)
+      end
+
+      2.times do
+        manifestation = create(:manifestation, genre: :prose)
+        create(:collection_item, collection: periodical_issue, item: manifestation)
+      end
+
+      # Create manifestations NOT in periodicals
+      create_list(:manifestation, 4, genre: :article)
+      create_list(:manifestation, 5, genre: :prose)
+
+      # Create manifestations in regular (non-periodical) collections
+      manifestation = create(:manifestation, genre: :poetry)
+      create(:collection_item, collection: regular_collection, item: manifestation)
+
+      # Reindex to update in_periodical field in Elasticsearch
+      ManifestationsIndex.reset!
+    end
+
+    let(:expected_result) do
+      {
+        'article' => 3,
+        'drama' => 0,
+        'fables' => 0,
+        'letters' => 0,
+        'lexicon' => 0,
+        'memoir' => 0,
+        'poetry' => 0,
+        'prose' => 2,
+        'reference' => 0
+      }
+    end
+
+    it 'only counts manifestations in periodical_issue collections' do
+      expect(subject).to eq expected_result
+    end
+
+    context 'when unpublished works in periodicals exist' do
+      before do
+        2.times do
+          manifestation = create(:manifestation, genre: :article, status: :unpublished)
+          create(:collection_item, collection: periodical_issue, item: manifestation)
+        end
+
+        # Reindex after adding unpublished works
+        ManifestationsIndex.reset!
+      end
+
+      it 'does not count unpublished works' do
+        expect(subject).to eq expected_result
+      end
+    end
+  end
+
   describe '.manual_delete' do
     subject(:manual_delete) { manifestation.manual_delete }
 
