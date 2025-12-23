@@ -30,7 +30,7 @@
       #works-in-project.by-card-v02
         .by-card-header-v02
           %span.headline-1-v02
-            %a{:href => "#"} יצירות מכתבי עת שהועלו למאגר
+            %a{href: works_path(ckb_collection_types: ['in_periodical'])}= t(:works_from_periodicals)
           %span.date-range= "(#{@periodicals_text_count})"
         .by-card-content-v02.works-in-project-content
           .row.top-works
