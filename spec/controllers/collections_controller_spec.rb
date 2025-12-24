@@ -258,6 +258,22 @@ describe CollectionsController do
           expect(call).to have_http_status(:unprocessable_content)
         end
       end
+
+      context 'when updating description' do
+        let(:title) { Faker::Book.title }
+        let(:collection_params) do
+          {
+            title: title,
+            description: 'This is a test description for the collection'
+          }
+        end
+
+        it 'updates the description field' do
+          expect(call).to redirect_to collection
+          collection.reload
+          expect(collection.description).to eq 'This is a test description for the collection'
+        end
+      end
     end
 
     describe '#destroy' do
