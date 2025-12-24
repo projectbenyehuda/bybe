@@ -93,6 +93,7 @@ he:
           other: אחר
           uncollected: יצירות לא באוסף
         credits: קרדיטים ידניים
+        collection_type: סוג אוסף
       collection_item:
         item_type: סוג פריט
       ingestible:
