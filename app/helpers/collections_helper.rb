@@ -41,20 +41,20 @@ module CollectionsHelper
   end
 
   def browse_collection_type(collection)
-    return " • #{t(collection.collection_type)}"
+    return " • #{textify_collection_type(collection.collection_type)}"
   end
 
   # Returns icon/badge for collection type
   def collection_type_icon(collection_type)
     case collection_type
     when 'volume'
-      content_tag(:span, '📚', class: 'collection-type-icon', title: t(:volume))
+      content_tag(:span, '📚', class: 'collection-type-icon', title: textify_collection_type(:volume))
     when 'periodical'
-      content_tag(:span, '📰', class: 'collection-type-icon', title: t(:periodical))
+      content_tag(:span, '📰', class: 'collection-type-icon', title: textify_collection_type(:periodical))
     when 'series'
-      content_tag(:span, '📑', class: 'collection-type-icon', title: t(:series))
+      content_tag(:span, '📑', class: 'collection-type-icon', title: textify_collection_type(:series))
     when 'other'
-      content_tag(:span, '📁', class: 'collection-type-icon', title: t(:other))
+      content_tag(:span, '📁', class: 'collection-type-icon', title: textify_collection_type(:other))
     else
       ''
     end
