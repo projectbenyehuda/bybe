@@ -131,6 +131,51 @@ describe Authority do
 
         it { is_expected.to be false }
       end
+
+      context 'when input is a plain number' do
+        let(:value) { '123' }
+
+        it 'transforms it into a canonical Wikidata URL' do
+          expect(result).to be_truthy
+          expect(authority.wikidata_uri).to eq 'https://wikidata.org/wiki/Q123'
+        end
+      end
+
+      context 'when input is a plain number with whitespace' do
+        let(:value) { '  456  ' }
+
+        it 'transforms it into a canonical Wikidata URL' do
+          expect(result).to be_truthy
+          expect(authority.wikidata_uri).to eq 'https://wikidata.org/wiki/Q456'
+        end
+      end
+
+      context 'when input is Q-prefixed (uppercase)' do
+        let(:value) { 'Q789' }
+
+        it 'transforms it into a canonical Wikidata URL' do
+          expect(result).to be_truthy
+          expect(authority.wikidata_uri).to eq 'https://wikidata.org/wiki/Q789'
+        end
+      end
+
+      context 'when input is Q-prefixed (lowercase)' do
+        let(:value) { 'q321' }
+
+        it 'transforms it into a canonical Wikidata URL with uppercase Q' do
+          expect(result).to be_truthy
+          expect(authority.wikidata_uri).to eq 'https://wikidata.org/wiki/Q321'
+        end
+      end
+
+      context 'when input is Q-prefixed with whitespace' do
+        let(:value) { '  Q654  ' }
+
+        it 'transforms it into a canonical Wikidata URL' do
+          expect(result).to be_truthy
+          expect(authority.wikidata_uri).to eq 'https://wikidata.org/wiki/Q654'
+        end
+      end
     end
   end
 
