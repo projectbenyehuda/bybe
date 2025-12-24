@@ -34,16 +34,37 @@
           %span.date-range= "(#{@periodicals_text_count})"
         .by-card-content-v02.works-in-project-content
           .row.top-works
-            .col-sm-12.works-most-read.text-height-works-in-project
+            .col-sm-6.works-most-new.text-height-works-in-project
               %p.headline-2-v02= t(:most_popular_works_this_month)
               %ol{:style => "margin-bottom: 0;"}
                 - @popular_works.each do |work|
+                  %li
+                    %a{:href => manifestation_path(work.id)}= work.title_and_authors
+            .col-sm-6.works-most-new.text-height-works-in-project
+              %p.headline-2-v02= t(:newest_works)
+              %ol{:style => "margin-bottom: 0;"}
+                - @newest_works.each do |work|
                   %li
                     %a{:href => manifestation_path(work.id)}= work.title_and_authors
           .link-to-all-v02
             %a{:href => works_path(ckb_collection_types: ['in_periodical'])}
               %span{:style => "font-weight: bold"}= t(:see_all_works_from_periodicals) 
               %span.left-arrow 1
+      .by-card-v02#genre
+        .by-card-header-v02
+          %span.headline-1-v02= t(:periodical_genres)
+        .by-card-content-v02
+          .row
+            - get_genres.each do |genre|
+              - next if @periodical_works_by_genre[genre] == 0
+              .col-md-3.col-4
+                %a{href: works_path(ckb_genres: [genre], ckb_collection_types: ['in_periodical'])}
+                  .genre-nav
+                    %p.by-genre-icon-v02= glyph_for_genre(genre)
+                    %p.by-genre-name-v02.headline-2-v02= textify_genre(genre)
+                    %p.by-genre-details-v02= @periodical_authors_in_genre[genre].to_s+' '+t(:authors)
+                    %p.by-genre-details-v02= @periodical_works_by_genre[genre].to_s+' '+t(:works)
+
     .col-12.col-lg-4
       .by-card-v02.whats-new-v02{style: 'height: auto;'}
         #whats-new-bg
@@ -118,7 +139,7 @@
             .by-side-card-header-v02
               %p.headline-1-v02= t(:spotlight_on_periodical)
             .by-card-content-v02
-              %p.headline-3-v02
+              .headline-3-v02
                 %a{href: collection_path(@random_periodical)}= @random_periodical.title
               - if @random_periodical.editors.any?
                 %p

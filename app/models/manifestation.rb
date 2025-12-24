@@ -456,6 +456,23 @@ class Manifestation < ApplicationRecord
     end
   end
 
+  def self.cached_periodical_work_counts_by_genre
+    Rails.cache.fetch('m_periodical_count_by_genre', expires_in: 24.hours) do
+      # Use ManifestationsIndex to find all manifestations in periodicals
+      # This matches the behavior of the search/browse filters which use the same index
+      periodical_ids = ManifestationsIndex.query(match: { in_periodical: true })
+                                          .pluck(:id)
+
+      counts = Manifestation.published
+                            .where(id: periodical_ids)
+                            .joins(expression: :work)
+                            .group('works.genre')
+                            .count
+
+      Work::GENRES.index_with { |g| counts[g] || 0 }
+    end
+  end
+
   def self.cached_translated_count
     Rails.cache.fetch('m_xlat_count', expires_in: 24.hours) do
       Manifestation.all_published.translations.count
