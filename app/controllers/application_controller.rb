@@ -158,6 +158,26 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def cached_periodical_authors_in_genre
+    Rails.cache.fetch('au_periodical_by_genre', expires_in: 24.hours) do
+      # Use ManifestationsIndex to find all manifestations in periodicals
+      # This matches the behavior of the search/browse filters which use the same index
+      periodical_ids = ManifestationsIndex.query(match: { in_periodical: true })
+                                          .pluck(:id)
+
+      # Count authors who have works with manifestations in periodicals
+      totals = Work.joins(expressions: :manifestations)
+                   .where(manifestations: { id: periodical_ids, status: Manifestation.statuses[:published] })
+                   .joins(involved_authorities: :authority)
+                   .merge(InvolvedAuthority.role_author)
+                   .group('works.genre')
+                   .distinct
+                   .count('authorities.id')
+                   .to_h
+      get_genres.index_with { |genre| totals[genre] || 0 }
+    end
+  end
+
   def cached_authors_in_period
     Rails.cache.fetch('au_by_period', expires_in: 24.hours) do # memoize
       ret = {}
