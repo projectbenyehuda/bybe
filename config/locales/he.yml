@@ -37,10 +37,6 @@ he:
   x_collections_plain: "%{x} אוספים"
   collections_sort_tt: מיון אוספים
   toggle_filters_tt: הצגה/הסתרה של אפשרויות סינון
-  volume: כותר
-  periodical: כתב עת
-  series: סדרה
-  collection_type: סוג אוסף
   back_to_bib_workshop: חזרה לסדנה הביבליוגרפית
   works_already_online: "יצירות שכבר מצויות במאגר בשם דומה:"
   no_source_edition: אין פרטי מהדורה
