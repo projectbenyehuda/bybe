@@ -495,16 +495,13 @@ describe CollectionsController do
   end
 
   describe '#browse' do
-    after do
-      Chewy.massacre
-    end
-
     let(:volume_1) { create(:collection, title: 'Alpha Volume', collection_type: :volume, sort_title: 'alpha volume') }
     let(:volume_2) { create(:collection, title: 'Beta Volume', collection_type: :volume, sort_title: 'beta volume') }
     let(:periodical) { create(:collection, title: 'Gamma Periodical', collection_type: :periodical, sort_title: 'gamma periodical') }
     let(:series) { create(:collection, title: 'Delta Series', collection_type: :series, sort_title: 'delta series') }
 
     before do
+      Chewy.massacre
       Chewy.strategy(:atomic) do
         volume_1
         volume_2
@@ -513,22 +510,17 @@ describe CollectionsController do
       end
     end
 
+    after do
+      Chewy.massacre
+    end
+
     context 'when requesting HTML' do
       it 'renders the browse template' do
         get :browse
         expect(response).to be_successful
         expect(response).to render_template(:browse)
-      end
-
-      it 'assigns collections list title' do
-        get :browse
-        expect(assigns(:collections_list_title)).to be_present
-      end
-
-      it 'assigns collections variable with results' do
-        get :browse
-        expect(assigns(:collections)).to be_present
         expect(assigns(:collections).count).to eq(4)
+        expect(assigns(:collections_list_title)).to be_present
       end
     end
 
@@ -568,13 +560,11 @@ describe CollectionsController do
       end
 
       it 'sorts by popularity when requested' do
-        volume_1.update!(impressions_count: 100)
-        series.update!(impressions_count: 50)
-        periodical.update!(impressions_count: 75)
-        volume_2.update!(impressions_count: 25)
-
         Chewy.strategy(:atomic) do
-          CollectionsIndex.import([volume_1, volume_2, periodical, series])
+          volume_1.update!(impressions_count: 100)
+          series.update!(impressions_count: 50)
+          periodical.update!(impressions_count: 75)
+          volume_2.update!(impressions_count: 25)
         end
 
         get :browse, params: { sort_by: 'popularity_desc' }
@@ -583,13 +573,11 @@ describe CollectionsController do
       end
 
       it 'sorts by publication date when requested' do
-        volume_1.update!(normalized_pub_year: 2000)
-        volume_2.update!(normalized_pub_year: 1990)
-        periodical.update!(normalized_pub_year: 1980)
-        series.update!(normalized_pub_year: 2010)
-
         Chewy.strategy(:atomic) do
-          CollectionsIndex.import([volume_1, volume_2, periodical, series])
+          volume_1.update!(normalized_pub_year: 2000)
+          volume_2.update!(normalized_pub_year: 1990)
+          periodical.update!(normalized_pub_year: 1980)
+          series.update!(normalized_pub_year: 2010)
         end
 
         get :browse, params: { sort_by: 'publication_date_asc' }
