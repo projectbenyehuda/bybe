@@ -178,6 +178,54 @@ class Manifestation < ApplicationRecord
     return ret.flatten
   end
 
+  # Check if manifestation is contained in any collection of type 'volume',
+  # directly or through any parent collection in the tree
+  def in_volume?
+    collection_items.each do |ci|
+      next if ci.collection.nil?
+
+      # Check current collection and traverse up parent tree
+      stack = [ci.collection]
+      visited = Set.new
+
+      while stack.any?
+        current = stack.pop
+        next if current.nil? || visited.include?(current.id)
+
+        visited.add(current.id)
+        return true if current.volume?
+
+        # Add parent collections to stack
+        current.parent_collections.each { |pc| stack << pc }
+      end
+    end
+    false
+  end
+
+  # Check if manifestation is contained in any collection of type 'periodical_issue',
+  # directly or through any parent collection in the tree
+  def in_periodical?
+    collection_items.each do |ci|
+      next if ci.collection.nil?
+
+      # Check current collection and traverse up parent tree
+      stack = [ci.collection]
+      visited = Set.new
+
+      while stack.any?
+        current = stack.pop
+        next if current.nil? || visited.include?(current.id)
+
+        visited.add(current.id)
+        return true if current.periodical_issue?
+
+        # Add parent collections to stack
+        current.parent_collections.each { |pc| stack << pc }
+      end
+    end
+    false
+  end
+
   # return publisher_site link from this manifestation or from any containing collection
   def publisher_link
     link = external_links.detect(&:linktype_publisher_site?)
@@ -404,6 +452,23 @@ class Manifestation < ApplicationRecord
   def self.cached_work_counts_by_genre
     Rails.cache.fetch('m_count_by_genre', expires_in: 24.hours) do
       counts = Manifestation.published.joins(expression: :work).group(work: :genre).count
+      Work::GENRES.index_with { |g| counts[g] || 0 }
+    end
+  end
+
+  def self.cached_periodical_work_counts_by_genre
+    Rails.cache.fetch('m_periodical_count_by_genre', expires_in: 24.hours) do
+      # Use ManifestationsIndex to find all manifestations in periodicals
+      # This matches the behavior of the search/browse filters which use the same index
+      periodical_ids = ManifestationsIndex.query(match: { in_periodical: true })
+                                          .pluck(:id)
+
+      counts = Manifestation.published
+                            .where(id: periodical_ids)
+                            .joins(expression: :work)
+                            .group('works.genre')
+                            .count
+
       Work::GENRES.index_with { |g| counts[g] || 0 }
     end
   end

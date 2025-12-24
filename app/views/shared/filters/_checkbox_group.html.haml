@@ -1,13 +1,5 @@
 - icons ||= {}
 - labels ||= all_values.index_with { |val| t(val) }
 
-= render layout: 'shared/collapsible_block',
-         locals: { container_name: "collf#{group_name}", title: title, content_class: 'nested-list' } do
-  = render partial: 'shared/filters/checkboxes',
-           locals: { group_name: group_name,
-                     field_name: field_name,
-                     all_values: all_values,
-                     labels: labels,
-                     selected_values: selected_values,
-                     facet: facet,
-                     icons: icons }
+= render layout: 'shared/collapsible_block', locals: { container_name: "collf#{group_name}", title: title, content_class: 'nested-list' } do
+  = render partial: 'shared/filters/checkboxes', locals: { group_name: group_name, field_name: field_name, all_values: all_values, labels: labels, selected_values: selected_values, facet: facet, icons: icons }

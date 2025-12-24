@@ -16,7 +16,7 @@ class AdminController < ApplicationController
   autocomplete :publication, :title
 
   layout false, only: %i(merge_tag merge_tagging confirm_with_comment) # popups
-  layout 'backend', only: %i(tag_moderation tag_review tagging_review) # eventually change to except: [<popups>]
+  layout 'backend', only: %i(tag_moderation tag_review tagging_review edit_tag) # eventually change to except: [<popups>]
 
   def index
     return unless current_user && current_user.editor?
@@ -910,6 +910,109 @@ class AdminController < ApplicationController
       flash[:error] = t(:tagging_system_locked)
     end
     redirect_to url_for(action: :tag_moderation)
+  end
+
+  def edit_tag
+    require_editor('moderate_tags')
+    @tag = Tag.find(params[:id]) # Raises ActiveRecord::RecordNotFound if not found
+    @tag_names = @tag.tag_names.order(:name)
+  end
+
+  def update_tag
+    require_editor('moderate_tags')
+    unless params[:id].present?
+      flash[:error] = t(:no_such_item)
+      redirect_to tag_moderation_path
+      return
+    end
+
+    @tag = Tag.find_by(id: params[:id])
+    unless @tag
+      flash[:error] = t(:no_such_item)
+      redirect_to tag_moderation_path
+      return
+    end
+
+    update_successful = true
+    primary_tag_name = nil
+
+    # Update tag name if changed
+    if params[:tag_name].present? && params[:tag_name] != @tag.name
+      update_successful &&= @tag.update(name: params[:tag_name])
+      # Update the primary TagName as well (the preferred name)
+      # Use .order(:id) to ensure we get the first-created TagName
+      primary_tag_name = @tag.tag_names.order(:id).first
+      if primary_tag_name
+        update_successful &&= primary_tag_name.update(name: params[:tag_name])
+      end
+    end
+
+    # Update status if changed
+    if params[:status].present? && params[:status] != @tag.status
+      update_successful &&= @tag.update(status: params[:status])
+    end
+
+    if update_successful
+      flash[:notice] = t(:tag_updated)
+      redirect_to edit_tag_path(@tag)
+    else
+      # Collect validation errors from Tag and primary TagName (if present)
+      error_messages = @tag.errors.full_messages
+      if primary_tag_name && primary_tag_name.errors.any?
+        error_messages.concat(primary_tag_name.errors.full_messages)
+      end
+      flash.now[:error] = error_messages.uniq.to_sentence
+      @tag_names = @tag.tag_names.order(:name)
+      render :edit_tag
+    end
+  end
+
+  def add_tag_name
+    require_editor('moderate_tags')
+    unless params[:id].present?
+      flash[:error] = t(:no_such_item)
+      redirect_to tag_moderation_path
+      return
+    end
+
+    @tag = Tag.find_by(id: params[:id])
+    unless @tag
+      flash[:error] = t(:no_such_item)
+      redirect_to tag_moderation_path
+      return
+    end
+
+    if params[:tag_name].present?
+      # Check if tag name already exists
+      existing_tag_name = TagName.find_by(name: params[:tag_name])
+      if existing_tag_name
+        flash[:error] = t(:tag_name_already_exists)
+      else
+        tag_name = @tag.tag_names.build(name: params[:tag_name])
+        if tag_name.save
+          flash[:notice] = t(:tag_name_added)
+        else
+          flash[:error] = tag_name.errors.full_messages.to_sentence
+        end
+      end
+    else
+      flash[:error] = t(:tag_name_cannot_be_blank)
+    end
+    redirect_to edit_tag_path(@tag)
+  end
+
+  def remove_tag_name
+    require_editor('moderate_tags')
+    tag_name = TagName.find(params[:id]) # Raises ActiveRecord::RecordNotFound if not found
+    # Don't allow removing the last TagName
+    tag = tag_name.tag
+    if tag.tag_names.count <= 1
+      flash[:error] = t(:cannot_remove_last_tag_name)
+    else
+      tag_name.destroy
+      flash[:notice] = t(:tag_name_removed)
+    end
+    redirect_to edit_tag_path(tag)
   end
 
   def merge_tagging

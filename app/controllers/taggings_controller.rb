@@ -1,6 +1,6 @@
 # handle everything related to Tags and Taggings
 class TaggingsController < ApplicationController
-  before_action :require_user, except: %i(tag_portal tag_by_name) # for now, we don't allow anonymous taggings
+  before_action :require_user, except: %i(browse tag_portal tag_by_name) # for now, we don't allow anonymous taggings
   before_action :require_editor, only: [:rename_tag]
   layout false, only: %i(render_tags suggest add_tagging_popup listall_tags pending_taggings_popup)
 
@@ -59,6 +59,23 @@ class TaggingsController < ApplicationController
     @taggable_id = tagging.taggable_id
     @taggable_type = tagging.taggable_type
     tagging.destroy
+  end
+
+  def browse # public tags listing
+    @page_title = "#{t(:tags_list)} – #{t(:project_ben_yehuda)}"
+    @sort = params[:sort_by] || 'alphabetical'
+    @show_all = params[:show_all] == 'true'
+
+    tags_query = Tag.approved
+    tags_query = case @sort
+                 when 'popularity'
+                   tags_query.order(approved_taggings_count: :desc, name: :asc)
+                 else # 'alphabetical'
+                   tags_query.order(name: :asc)
+                 end
+
+    @total = tags_query.count
+    @tags = @show_all ? tags_query : tags_query.page(params[:page])
   end
 
   def list_tags # for backend

@@ -8,6 +8,82 @@ class AnthologiesController < ApplicationController
     @anthologies = Anthology.pub.page(params[:page])
   end
 
+  # GET/POST /anthologies/browse
+  def browse
+    @page_title = "#{t(:anthologies_list)} – #{t(:project_ben_yehuda)}"
+    @pagetype = :anthologies
+    @header_partial = 'anthologies/browse_top'
+    @anthologies_list_title = t(:anthologies_list)
+
+    # Start with public anthologies only
+    @anthologies = Anthology.public_anthology.includes(:user, texts: { manifestation: { expression: { work: { involved_authorities: :authority } } } })
+
+    # Apply filters
+    @filters = []
+
+    # Filter by title
+    if params[:title_filter].present?
+      @title_filter = params[:title_filter]
+      @anthologies = @anthologies.where("anthologies.title LIKE ?", "%#{@title_filter}%")
+      @filters << [t(:title_filter_label, title: @title_filter), 'title_filter', 'text']
+    end
+
+    # Filter by author name
+    if params[:author_filter].present?
+      @author_filter = params[:author_filter]
+      @anthologies = @anthologies.joins(texts: { manifestation: { expression: { work: { involved_authorities: :authority } } } })
+                                 .where("authorities.name LIKE ?", "%#{@author_filter}%")
+                                 .distinct
+      @filters << [t(:author_filter_label, author: @author_filter), 'author_filter', 'text']
+    end
+
+    # Filter by manifestation title
+    if params[:manifestation_filter].present?
+      @manifestation_filter = params[:manifestation_filter]
+      @anthologies = @anthologies.joins(texts: :manifestation)
+                                 .where("manifestations.title LIKE ?", "%#{@manifestation_filter}%")
+                                 .distinct
+      @filters << [t(:manifestation_filter_label, title: @manifestation_filter), 'manifestation_filter', 'text']
+    end
+
+    # Filter by owner name
+    if params[:owner_filter].present?
+      @owner_filter = params[:owner_filter]
+      @anthologies = @anthologies.joins(:user)
+                                 .where("users.name LIKE ?", "%#{@owner_filter}%")
+                                 .distinct
+      @filters << [t(:owner_filter_label, owner: @owner_filter), 'owner_filter', 'text']
+    end
+
+    # Sorting
+    @sort = params[:sort_by] || 'alphabetical_asc'
+    @anthologies = case @sort
+                   when 'alphabetical_asc'
+                     @anthologies.order('anthologies.title ASC')
+                   when 'alphabetical_desc'
+                     @anthologies.order('anthologies.title DESC')
+                   when 'created_date_asc'
+                     @anthologies.order('anthologies.created_at ASC')
+                   when 'created_date_desc'
+                     @anthologies.order('anthologies.created_at DESC')
+                   else
+                     @anthologies.order('anthologies.title ASC')
+                   end
+
+    # Pagination
+    @page = (params[:page] || 1).to_i
+    @per_page = 50
+
+    # Cache the count query for performance (especially with joins)
+    cache_key_filters = params.slice(:title_filter, :author_filter, :manifestation_filter, :owner_filter, :sort_by).to_unsafe_h
+    @total = Rails.cache.fetch(['anthologies_browse_total', cache_key_filters], expires_in: 5.minutes) do
+      @anthologies.distinct.count(:id)
+    end
+
+    @total_pages = (@total / @per_page.to_f).ceil
+    @anthologies = @anthologies.offset((@page - 1) * @per_page).limit(@per_page)
+  end
+
   # GET /anthologies/1
   def show
     @cur_anth_id = @anthology.nil? ? 0 : @anthology.id
@@ -18,6 +94,7 @@ class AnthologiesController < ApplicationController
         format.html do
           @header_partial = 'anthology_top'
           @scrollspy_target = 'chapternav'
+          @taggings = @anthology.taggings
           prep_for_show
           @print_url = url_for(action: :print, id: @anthology.id)
           track_view(@anthology)

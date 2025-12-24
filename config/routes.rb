@@ -1,6 +1,9 @@
 include BybeUtils
 
 Bybeconv::Application.routes.draw do
+  get 'periodicals', to: 'periodicals#index', as: 'periodicals_index'
+  get 'periodicals/show'
+  get 'pby_volumes', to: 'collections#pby_volumes', as: 'pby_volumes'
   get 'collections_migration/index'
   get 'collections_migration/person'
   post 'collections_migration/migrate'
@@ -92,6 +95,7 @@ Bybeconv::Application.routes.draw do
     get 'confirm_destroy'
   end
 
+  get 'anthologies/browse', to: 'anthologies#browse', as: 'anthologies_browse'
   resources :anthologies
   match 'anthologies/print/:id' => 'anthologies#print', as: 'anthology_print', via: %i(get post)
   match 'anthologies/download/:id' => 'anthologies#download', as: 'anthology_download', via: %i(get post)
@@ -158,6 +162,10 @@ Bybeconv::Application.routes.draw do
   post 'admin/escalate_tagging/:id' => 'admin#escalate_tagging', as: 'escalate_tagging'
   get 'admin/merge_tag/:id' => 'admin#merge_tag', as: 'merge_tag'
   post 'admin/merge_tag' => 'admin#do_merge_tag', as: 'do_merge_tag'
+  get 'admin/edit_tag/:id' => 'admin#edit_tag', as: 'edit_tag'
+  post 'admin/update_tag/:id' => 'admin#update_tag', as: 'update_tag'
+  post 'admin/add_tag_name/:id' => 'admin#add_tag_name', as: 'add_tag_name'
+  delete 'admin/remove_tag_name/:id' => 'admin#remove_tag_name', as: 'remove_tag_name'
   get 'admin/merge_tagging/:id' => 'admin#merge_tagging', as: 'merge_tagging'
   post 'admin/merge_tagging' => 'admin#do_merge_tagging', as: 'do_merge_tagging'
   post 'admin/warn_user/:id' => 'admin#warn_user', as: 'warn_user'
@@ -252,8 +260,8 @@ Bybeconv::Application.routes.draw do
   get 'read/:id/read' => 'manifestation#readmode', as: 'manifestation_readmode'
   get 'periods' => 'manifestation#periods', as: 'periods'
   match 'authors', to: 'authors#browse', as: 'authors', via: %i(get post)
-  match 'works', to: 'manifestation#browse', as: 'works', via: %i(get post)
-  match 'works/all', to: 'manifestation#all', as: 'all_works', via: %i(get post)
+  get 'works', to: 'manifestation#browse', as: 'works'
+  get 'works/all', to: 'manifestation#all', as: 'all_works'
   match 'manifestation/genre' => 'manifestation#genre', as: 'genre', via: %i(get post)
   match 'period/:period' => 'manifestation#period', as: 'period', via: %i(get post)
   match 'translations' => 'manifestation#translations', as: 'translations', via: %i(get post)
@@ -294,7 +302,7 @@ Bybeconv::Application.routes.draw do
   resources :api_keys, except: :show
   get 'taggings/render_tags', as: 'render_tags'
   get 'tag_suggest' => 'taggings#suggest', as: 'tag_suggest'
-  match 'tags' => 'taggings#list_tags', via: %i(get post)
+  match 'tags' => 'taggings#browse', via: %i(get post), as: 'tags_browse'
   get 'tags/listall' => 'taggings#listall_tags', as: 'tags_listall'
   resources :taggings
   resources :aboutnesses

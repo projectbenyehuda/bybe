@@ -1,0 +1,55 @@
+-# Browse tags
+.row
+  .col-sm-12.col-md-8.offset-md-2
+    .by-card-v02#tags_list
+      .by-card-header-v02
+        .headline-2-v02
+          = t(:tags_list)
+          %span.text-muted{style: 'font-size: 80%; margin-right: 10px;'}
+            = "(#{@total})"
+      .by-card-content-v02
+        .select-all-with-buttons
+          .headline-4-v02= t(:sort_by)
+          #sort-by
+            #custom-select
+              %select#sort_by_select
+                %option{ value: 'alphabetical', selected: @sort == 'alphabetical' }= t(:alphabetical)
+                %option{ value: 'popularity', selected: @sort == 'popularity' }= t(:by_popularity)
+          %label{style: 'margin-left: 20px; display: inline-flex; align-items: center; cursor: pointer;'}
+            %input#show_all_checkbox{type: 'checkbox', checked: @show_all, style: 'margin-right: 5px;'}
+            = t(:show_all_tags)
+        .mainlist#tags_mainlist
+          %ol
+            - @tags.each do |tag|
+              %li
+                = link_to tag.name, tag_path(tag.id)
+                %span.text-muted{style: 'font-size: 80%'}
+                  = "(#{tag.approved_taggings_count})"
+                - if current_user&.editor? && current_user.has_bit?('moderate_tags')
+                  = link_to t(:edit), edit_tag_path(tag), class: 'by-button-secondary-v02 pad10rl', style: 'margin-right: 10px; font-size: 75%;'
+        - unless @show_all
+          .pagination-container{style: 'margin-top: 20px;'}
+            != paginate @tags
+
+:javascript
+  $(document).ready(function() {
+    $('#sort_by_select').change(function(){
+      const sortBy = $('#sort_by_select option:selected').val();
+      const url = new URL(window.location);
+      url.searchParams.set('sort_by', sortBy);
+      url.searchParams.delete('page'); // Reset to page 1 when sort changes
+      window.location = url.toString();
+    });
+
+    $('#show_all_checkbox').change(function(){
+      const showAll = $(this).is(':checked');
+      const url = new URL(window.location);
+      if (showAll) {
+        url.searchParams.set('show_all', 'true');
+        url.searchParams.delete('page'); // Remove page param when showing all
+      } else {
+        url.searchParams.delete('show_all');
+      }
+      window.location = url.toString();
+    });
+  });

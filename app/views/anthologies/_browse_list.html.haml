@@ -1,0 +1,113 @@
+%div#spinnerdiv{style: 'display: none; top: 50%; left: 50%;'}
+  #floatingCirclesG
+    #frotateG_01.f_circleG
+    #frotateG_02.f_circleG
+    #frotateG_03.f_circleG
+    #frotateG_04.f_circleG
+    #frotateG_05.f_circleG
+    #frotateG_06.f_circleG
+    #frotateG_07.f_circleG
+    #frotateG_08.f_circleG
+
+.by-card-header-v02
+  .headline-2-v02
+    = t(:anthologies_found, count: @total)
+    %a.permalink-btn{href: request.original_url, title: t(:permalink)}
+      = t(:permalink)
+  .filters
+    - @filters.each do |f, id, which|
+      %button.tag
+        = f
+        %span.pointer.tag-x{'data-ele': id, 'data-which' => which}= '-'
+.by-card-content-v02
+  - if @total_pages > 1
+    .pagination-controls
+      - if @page > 1
+        = link_to t(:previous_page), '#', class: 'pagination-link', data: { page: @page - 1 }
+      %span.pagination-info= t(:page_of_pages, page: @page, total: @total_pages)
+      - if @page < @total_pages
+        = link_to t(:next_page), '#', class: 'pagination-link', data: { page: @page + 1 }
+
+  .select-all-with-buttons
+    .headline-4-v02= t(:sort_by)
+    #sort-by
+      #custom-select{ title: t(:anthology_sort_tt) }
+        %select#sort_by_select
+          %optgroup{ label: t(:alefbet) }
+            %option{ value: 'alphabetical_asc', selected: @sort == 'alphabetical_asc' }= t(:alefbet_asc)
+            %option{ value: 'alphabetical_desc', selected: @sort == 'alphabetical_desc' }= t(:alefbet_desc)
+          %optgroup{ label: t(:creation_date) }
+            %option{ value: 'created_date_asc', selected: @sort == 'created_date_asc' }= t(:created_date_asc)
+            %option{ value: 'created_date_desc', selected: @sort == 'created_date_desc' }= t(:created_date_desc)
+
+  .mainlist#browse_mainlist
+    - if @anthologies.any?
+      %ol{ style: "counter-reset:li #{@page > 1 ? (@page - 1) * @per_page : 0}" }
+        - @anthologies.each do |anthology|
+          %li
+            = link_to anthology.title, anthology_path(anthology.id)
+            %span{style: 'font-size: 80%'}
+              - text_count = anthology.texts.size
+              - if text_count > 1
+                = "(#{text_count} #{t(:texts)})"
+              - elsif text_count == 1
+                = "(#{t(:one_text)})"
+              - else
+                = "(#{t(:empty_anthology)})"
+            - if anthology.user
+              .anthology-owner= t(:anthology_by_owner, owner: anthology.user.name)
+    - else
+      .no-results= t(:no_anthologies_found)
+
+  - if @total_pages > 1
+    .pagination-controls
+      - if @page > 1
+        = link_to t(:previous_page), '#', class: 'pagination-link', data: { page: @page - 1 }
+      %span.pagination-info= t(:page_of_pages, page: @page, total: @total_pages)
+      - if @page < @total_pages
+        = link_to t(:next_page), '#', class: 'pagination-link', data: { page: @page + 1 }
+
+:javascript
+  $(document).ready(function() {
+    $('.permalink-btn').click(function(e) {
+      e.preventDefault();
+      const url = $(this).attr('href');
+      const originalText = $(this).text();
+      const $btn = $(this);
+
+      navigator.clipboard.writeText(url).then(function() {
+        $btn.text('#{I18n.t(:permalink_copied)}');
+        setTimeout(function() {
+          $btn.text(originalText);
+        }, 2000);
+      }).catch(function(err) {
+        console.error('Failed to copy: ', err);
+      });
+    });
+
+    $('.tag-x').click(function() {
+      const field = $(this).data('ele');
+      // uncheck/clear the appropriate field
+      if ($(this).attr('data-which') == 'text') {
+        $('#anthologies_filters #' + field).val('');
+      } else {
+        $('#anthologies_filters #' + field).prop("checked", false);
+      }
+
+      $('#anthologies_filters input').attr('disabled', false);
+      submit_filters();
+    });
+
+    $('#sort_by_select').change(function(){
+      $('#anthologies_filters input[name=sort_by]').val($('#sort_by_select option:selected').val());
+      resetPagination();
+      submit_filters();
+    });
+
+    $('.pagination-link').click(function(e) {
+      e.preventDefault();
+      const page = $(this).data('page');
+      $('#anthologies_filters input[name=page]').val(page);
+      submit_filters();
+    });
+  });

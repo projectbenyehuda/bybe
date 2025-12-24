@@ -1,0 +1,22 @@
+-# Browse anthologies
+.row
+  .col-sm-12.col-md-4
+    .by-card-v02.desktop-only#browse_intro{ style: "display:#{@filters.present? ? 'none' : 'block'}" }
+      .work-area
+        .work-content
+          .headline-1-v02= t(:welcome_to_anthologies_browsing)
+          - if @total_pages > 1
+            %p= t(:anthologies_browsing_intro_paging, total: @total)
+          %p!= t(:anthologies_browsing_intro_html)
+        .work-side-color
+          .work-genre.anthology-side-default-picture
+    .by-card-v02#sort_filter_panel{ style: "display:#{@filters.present? ? 'block' : 'none'}" }
+      = render partial: 'browse_filters'
+  .col-sm-12.col-md-8
+    .by-card-v02#thelist
+      = render partial: 'browse_list'
+
+:javascript
+  function submit_filters() {
+    $('#anthologies_filters').submit();
+  }

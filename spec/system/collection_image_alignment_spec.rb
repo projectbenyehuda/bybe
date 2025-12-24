@@ -2,59 +2,48 @@
 
 require 'rails_helper'
 
-# Check if WebDriver is available before loading the suite
-def webdriver_available?
-  return @webdriver_available if defined?(@webdriver_available)
-
-  @webdriver_available = begin
-    # Try to access the WebDriver to see if it's configured
-    driver = Capybara.current_session.driver
-    if driver.respond_to?(:browser)
-      driver.browser
-      true
-    else
-      true  # Non-Selenium driver, assume it works
-    end
-  rescue Selenium::WebDriver::Error::WebDriverError,
-         Selenium::WebDriver::Error::UnknownError,
-         Net::ReadTimeout,
-         Errno::ECONNREFUSED,
-         StandardError
-    false
-  end
-end
-
 RSpec.describe 'Collection image alignment', type: :system, js: true do
+  # Skip if WebDriver not available
   before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+    begin
+      Capybara.current_session.driver.browser if Capybara.current_session.driver.respond_to?(:browser)
+    rescue StandardError
+      skip 'WebDriver not available or misconfigured'
+    end
+  end
+
+  # Use a properly-sized test image (300x200 solid blue PNG) as data URI
+  # This is large enough to meaningfully test alignment and centering
+  let(:test_image_data_uri) do
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAADICAYAAABS39xVAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABpElEQVR4nO3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOBrAx5RAAGFXPj9AAAAAElFTkSuQmCC'
   end
 
   let(:html_with_image) do
     <<~HTML
       <h2>Test Collection Content</h2>
       <p>Here is some text before the image.</p>
-      <img src="https://via.placeholder.com/300x200" alt="Test Image">
+      <img src="#{test_image_data_uri}" alt="Test Image" width="300" height="200">
       <p>Here is some text after the image.</p>
     HTML
   end
 
-  let!(:author) do
-    Chewy.strategy(:atomic) do
-      create(:authority)
-    end
-  end
+  # Create test data - use before block to ensure proper ordering and persistence
+  let!(:author) { create(:authority) }
+  let!(:collection) { create(:collection, authors: [author], collection_type: 'volume') }
 
-  let!(:collection) do
-    Chewy.strategy(:atomic) do
-      col = create(:collection, authors: [author])
-      # Create a collection item with both markdown content and a title
-      create(:collection_item,
-             collection: col,
-             markdown: html_with_image,
-             alt_title: 'Test Collection Content',
-             seqno: 1)
-      col
-    end
+  before do
+    # Create collection item with markdown content containing an image
+    create(:collection_item,
+           collection: collection,
+           markdown: html_with_image,
+           seqno: 1)
+
+    # Verify the item was created
+    collection.reload
+    expect(collection.collection_items.count).to eq(1)
+
+    # Index for search if needed
+    Chewy.strategy(:atomic) { CollectionsIndex.reset! }
   end
 
   after do
@@ -63,35 +52,30 @@ RSpec.describe 'Collection image alignment', type: :system, js: true do
 
   describe 'image centering in collection show view' do
     it 'applies center-alignment styles to images' do
-      # Ensure collection has items before visiting
-      expect(collection.collection_items.count).to be > 0
-
       visit collection_path(collection)
 
-      # Wait for page to load with a more specific selector
+      # Wait for the main content area to be present
       expect(page).to have_css('.by-card-content-v02.textcard#actualtext', wait: 10)
 
-      # Find images within the textcard
-      images = all('.by-card-content-v02.textcard#actualtext img')
+      # Wait for image to be present in the content
+      expect(page).to have_css('.by-card-content-v02.textcard#actualtext img', wait: 5)
 
-      # Verify at least one image is present
-      expect(images.count).to be >= 1
+      # Find the image element
+      within('.by-card-content-v02.textcard#actualtext') do
+        img = find('img')
 
-      # Check that the image has the correct CSS styles for centering
-      images.each do |img|
-        # Verify max-width constraint
+        # Verify max-width constraint (should be 100% to prevent overflow)
         max_width = page.evaluate_script("getComputedStyle(arguments[0]).maxWidth", img.native)
         expect(max_width).to eq('100%')
 
-        # Verify display: block for centering
+        # Verify display: block (required for margin auto to work)
         display = page.evaluate_script("getComputedStyle(arguments[0]).display", img.native)
         expect(display).to eq('block')
 
-        # Verify margin auto is set (browsers may compute auto as 0px, but the important thing
-        # is that left and right margins are equal, indicating centering)
+        # Verify horizontal centering via equal left/right margins
         margin_left = page.evaluate_script("getComputedStyle(arguments[0]).marginLeft", img.native)
         margin_right = page.evaluate_script("getComputedStyle(arguments[0]).marginRight", img.native)
-        expect(margin_left).to eq(margin_right), "Expected equal left and right margins for centering"
+        expect(margin_left).to eq(margin_right), "Image should be centered with equal margins (left: #{margin_left}, right: #{margin_right})"
       end
     end
   end

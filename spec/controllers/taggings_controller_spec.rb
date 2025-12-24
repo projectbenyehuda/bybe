@@ -19,6 +19,12 @@ describe TaggingsController do
 
       it { is_expected.to be_successful }
     end
+
+    context 'when Anthology' do
+      let(:taggable) { create(:anthology, access: :pub) }
+
+      it { is_expected.to be_successful }
+    end
   end
 
   describe '#suggested' do
@@ -52,5 +58,76 @@ describe TaggingsController do
     let!(:manifestation_tagging) { create(:tagging, tag: tag, taggable: manifestation, status: :pending) }
 
     it { is_expected.to be_successful }
+  end
+
+  describe '#browse' do
+    subject { get :browse, params: params }
+
+    let(:params) { {} }
+
+    context 'with no tags' do
+      it { is_expected.to be_successful }
+
+      it 'assigns empty tags' do
+        subject
+        expect(assigns(:tags)).to be_empty
+      end
+    end
+
+    context 'with approved tags' do
+      let!(:tag1) { create(:tag, name: 'Alpha', status: :approved) }
+      let!(:tag2) { create(:tag, name: 'Beta', status: :approved) }
+      let!(:pending_tag) { create(:tag, name: 'Pending', status: :pending) }
+
+      it { is_expected.to be_successful }
+
+      it 'only includes approved tags' do
+        subject
+        expect(assigns(:tags)).to include(tag1, tag2)
+        expect(assigns(:tags)).not_to include(pending_tag)
+      end
+
+      it 'sorts alphabetically by default' do
+        subject
+        expect(assigns(:tags).to_a).to eq([tag1, tag2])
+      end
+
+      context 'when sorting by popularity' do
+        let(:params) { { sort_by: 'popularity' } }
+
+        before do
+          tag1.update!(approved_taggings_count: 5)
+          tag2.update!(approved_taggings_count: 10)
+        end
+
+        it 'sorts by taggings count descending' do
+          subject
+          expect(assigns(:tags).to_a).to eq([tag2, tag1])
+        end
+      end
+
+      context 'with pagination' do
+        before do
+          # Create enough tags to trigger pagination (assuming default is 25 per page)
+          30.times do |i|
+            create(:tag, name: "Tag#{i.to_s.rjust(3, '0')}", status: :approved)
+          end
+        end
+
+        it 'paginates results' do
+          subject
+          expect(assigns(:tags).count).to be <= 25
+        end
+
+        context 'when requesting page 2' do
+          let(:params) { { page: 2 } }
+
+          it 'returns second page of results' do
+            subject
+            expect(assigns(:tags).current_page).to eq(2)
+          end
+        end
+      end
+    end
   end
 end

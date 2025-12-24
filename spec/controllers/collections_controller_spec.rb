@@ -140,6 +140,41 @@ describe CollectionsController do
     end
   end
 
+  describe '#pby_volumes' do
+    let(:authority) { create(:authority, id: Authority::PBY_AUTHORITY_ID) }
+    let!(:pby_volume1) do
+      create(:collection, collection_type: 'volume', title: 'Volume 1').tap do |vol|
+        vol.involved_authorities.create!(authority: authority, role: 'editor')
+      end
+    end
+    let!(:pby_volume2) do
+      create(:collection, collection_type: 'volume', title: 'Volume 2').tap do |vol|
+        vol.involved_authorities.create!(authority: authority, role: 'editor')
+      end
+    end
+    let!(:other_volume) { create(:collection, collection_type: 'volume', title: 'Other Volume') }
+
+    it 'renders successfully' do
+      get :pby_volumes
+      expect(response).to be_successful
+    end
+
+    it 'assigns pby_volumes' do
+      get :pby_volumes
+      expect(assigns(:pby_volumes)).to match_array([pby_volume1, pby_volume2])
+    end
+
+    it 'assigns pby_volumes_count' do
+      get :pby_volumes
+      expect(assigns(:pby_volumes_count)).to eq(2)
+    end
+
+    it 'orders volumes by title' do
+      get :pby_volumes
+      expect(assigns(:pby_volumes).pluck(:title)).to eq(['Volume 1', 'Volume 2'])
+    end
+  end
+
   describe 'editor actions' do
     include_context 'when editor logged in'
 
@@ -221,6 +256,22 @@ describe CollectionsController do
 
         it 'rejects the submission as unprocessable' do
           expect(call).to have_http_status(:unprocessable_content)
+        end
+      end
+
+      context 'when updating description' do
+        let(:title) { Faker::Book.title }
+        let(:collection_params) do
+          {
+            title: title,
+            description: 'This is a test description for the collection'
+          }
+        end
+
+        it 'updates the description field' do
+          expect(call).to redirect_to collection
+          collection.reload
+          expect(collection.description).to eq 'This is a test description for the collection'
         end
       end
     end

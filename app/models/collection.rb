@@ -33,6 +33,9 @@ class Collection < ApplicationRecord
   #  has_many :likings, as: :likeable, dependent: :destroy
   #  has_many :likers, through: :likings, class_name: 'User'
 
+  has_one_attached :logo_image # for periodicals
+  has_one_attached :cover_image # for periodical_issue or volumes
+
   # convenience methods
   has_many :manifestation_items, through: :collection_items, source: :item, source_type: 'Manifestation'
   has_many :person_items, through: :collection_items, source: :item, source_type: 'Person'
@@ -67,6 +70,11 @@ class Collection < ApplicationRecord
   scope :by_authority, lambda { |authority|
                          joins(:involved_authorities).where(involved_authorities: { authority: authority })
                        }
+  scope :pby_volumes, lambda {
+                        joins(:involved_authorities)
+                          .where(collection_type: 'volume', involved_authorities: { authority_id: Authority::PBY_AUTHORITY_ID })
+                          .distinct
+                      }
 
   validates :title, presence: true
   validates :suppress_download_and_print, inclusion: { in: [true, false] }
@@ -376,6 +384,55 @@ class Collection < ApplicationRecord
     ret = authors.map(&:name).join(', ')
 
     return ret.presence || I18n.t(:nil)
+  end
+
+  # Flag to temporarily skip manifestations_count updates (for bulk operations)
+  attr_accessor :skip_manifestations_count_update
+
+  # Recalculate manifestations_count from scratch by traversing the entire tree
+  def recalculate_manifestations_count!
+    count = 0
+    stack = collection_items.to_a
+
+    while stack.any?
+      current_item = stack.pop
+      if current_item.item_type == 'Manifestation' && current_item.item.present?
+        count += 1
+      elsif current_item.item_type == 'Collection' && current_item.item.present?
+        stack.concat(current_item.item.collection_items.to_a)
+      end
+    end
+
+    update_column(:manifestations_count, count)
+    count
+  end
+
+  # Update manifestations_count and propagate up the parent tree
+  def update_manifestations_count!
+    recalculate_manifestations_count!
+    propagate_count_update_to_parents
+  end
+
+  # Propagate count changes up to all parent collections without recursive updates
+  def propagate_count_update_to_parents
+    collections_to_update = []
+    visited_ids = []
+    stack = parent_collections.to_a
+
+    until stack.empty?
+      current = stack.pop
+      next if current.nil? || visited_ids.include?(current.id)
+
+      visited_ids << current.id
+      collections_to_update << current
+      current.parent_collections.each do |parent|
+        stack << parent
+      end
+    end
+
+    collections_to_update.each do |collection|
+      collection.recalculate_manifestations_count!
+    end
   end
 
   def before_destroy

@@ -22,6 +22,9 @@ def clean_tables
   Expression.destroy_all
   Work.destroy_all
 
+  CollectionItem.delete_all
+  Collection.delete_all
+
   Publication.destroy_all
   Holding.destroy_all
   BibSource.destroy_all

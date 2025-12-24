@@ -76,6 +76,30 @@ describe Collection do
     expect(described_class.count).to eq 4
   end
 
+  it 'can query for pby volumes' do
+    # Create PBY authority with ID from constant
+    pby = Authority.create!(id: Authority::PBY_AUTHORITY_ID, name: 'Project Ben-Yehuda', status: :published,
+                            intellectual_property: :public_domain, person: create(:person))
+    other_auth = create(:authority)
+
+    # Create volumes
+    v1 = create(:collection, collection_type: :volume)
+    v2 = create(:collection, collection_type: :volume)
+    v3 = create(:collection, collection_type: :volume)
+
+    # Create non-volume collection
+    periodical = create(:collection, collection_type: :periodical)
+
+    # Associate authorities with collections
+    create(:involved_authority, item: v1, authority: pby)
+    create(:involved_authority, item: v2, authority: pby)
+    create(:involved_authority, item: v3, authority: other_auth)
+    create(:involved_authority, item: periodical, authority: pby)
+
+    # Should only return volumes with PBY authority (ID 3358)
+    expect(described_class.pby_volumes).to contain_exactly(v1, v2)
+  end
+
   it 'supports volume_series collection type' do
     c = create(:collection, collection_type: :volume_series)
     expect(c).to be_valid
@@ -314,6 +338,289 @@ describe Collection do
       create(:external_link, linkable: collection, linktype: :publisher_site)
 
       expect { collection.destroy! }.to change(ExternalLink, :count).by(-1)
+    end
+  end
+
+  describe 'manifestations_count counter cache' do
+    let(:collection) { create(:collection) }
+
+    context 'basic counting' do
+      it 'starts with zero count' do
+        expect(collection.manifestations_count).to eq 0
+      end
+
+      it 'counts a single manifestation' do
+        m1 = create(:manifestation)
+        create(:collection_item, collection: collection, item: m1, seqno: 1)
+        collection.reload
+        expect(collection.manifestations_count).to eq 1
+      end
+
+      it 'counts multiple manifestations' do
+        m1 = create(:manifestation)
+        m2 = create(:manifestation)
+        m3 = create(:manifestation)
+        create(:collection_item, collection: collection, item: m1, seqno: 1)
+        create(:collection_item, collection: collection, item: m2, seqno: 2)
+        create(:collection_item, collection: collection, item: m3, seqno: 3)
+        collection.reload
+        expect(collection.manifestations_count).to eq 3
+      end
+
+      it 'does not count non-manifestation items' do
+        m1 = create(:manifestation)
+        p1 = create(:person)
+        create(:collection_item, collection: collection, item: m1, seqno: 1)
+        create(:collection_item, collection: collection, item: p1, seqno: 2)
+        collection.reload
+        expect(collection.manifestations_count).to eq 1
+      end
+
+      it 'does not count placeholder items' do
+        m1 = create(:manifestation)
+        create(:collection_item, collection: collection, item: m1, seqno: 1)
+        create(:collection_item, collection: collection, item: nil, alt_title: 'Placeholder', seqno: 2)
+        collection.reload
+        expect(collection.manifestations_count).to eq 1
+      end
+    end
+
+    context 'nested collections' do
+      it 'counts manifestations in nested collections' do
+        m1 = create(:manifestation)
+        m2 = create(:manifestation)
+        nested_collection = create(:collection)
+
+        create(:collection_item, collection: nested_collection, item: m1, seqno: 1)
+        create(:collection_item, collection: nested_collection, item: m2, seqno: 2)
+        create(:collection_item, collection: collection, item: nested_collection, seqno: 1)
+
+        collection.reload
+        expect(collection.manifestations_count).to eq 2
+      end
+
+      it 'counts manifestations from both direct items and nested collections' do
+        m1 = create(:manifestation)
+        m2 = create(:manifestation)
+        m3 = create(:manifestation)
+        nested_collection = create(:collection)
+
+        create(:collection_item, collection: collection, item: m1, seqno: 1)
+        create(:collection_item, collection: nested_collection, item: m2, seqno: 1)
+        create(:collection_item, collection: nested_collection, item: m3, seqno: 2)
+        create(:collection_item, collection: collection, item: nested_collection, seqno: 2)
+
+        collection.reload
+        expect(collection.manifestations_count).to eq 3
+      end
+
+      it 'handles deeply nested collections (3 levels)' do
+        m1 = create(:manifestation)
+        m2 = create(:manifestation)
+        m3 = create(:manifestation)
+
+        level3_collection = create(:collection)
+        level2_collection = create(:collection)
+
+        create(:collection_item, collection: level3_collection, item: m1, seqno: 1)
+        create(:collection_item, collection: level2_collection, item: m2, seqno: 1)
+        create(:collection_item, collection: level2_collection, item: level3_collection, seqno: 2)
+        create(:collection_item, collection: collection, item: m3, seqno: 1)
+        create(:collection_item, collection: collection, item: level2_collection, seqno: 2)
+
+        collection.reload
+        expect(collection.manifestations_count).to eq 3
+      end
+
+      it 'handles multiple nested collections at the same level' do
+        m1 = create(:manifestation)
+        m2 = create(:manifestation)
+        m3 = create(:manifestation)
+
+        nested1 = create(:collection)
+        nested2 = create(:collection)
+
+        create(:collection_item, collection: nested1, item: m1, seqno: 1)
+        create(:collection_item, collection: nested2, item: m2, seqno: 1)
+        create(:collection_item, collection: nested2, item: m3, seqno: 2)
+        create(:collection_item, collection: collection, item: nested1, seqno: 1)
+        create(:collection_item, collection: collection, item: nested2, seqno: 2)
+
+        collection.reload
+        expect(collection.manifestations_count).to eq 3
+      end
+    end
+
+    context 'automatic updates on item changes' do
+      it 'increments count when a manifestation is added' do
+        expect(collection.manifestations_count).to eq 0
+
+        m1 = create(:manifestation)
+        create(:collection_item, collection: collection, item: m1, seqno: 1)
+
+        collection.reload
+        expect(collection.manifestations_count).to eq 1
+      end
+
+      it 'decrements count when a manifestation is removed' do
+        m1 = create(:manifestation)
+        ci = create(:collection_item, collection: collection, item: m1, seqno: 1)
+        collection.reload
+        expect(collection.manifestations_count).to eq 1
+
+        ci.destroy!
+        collection.reload
+        expect(collection.manifestations_count).to eq 0
+      end
+
+      it 'updates count when collection item type changes' do
+        m1 = create(:manifestation)
+        p1 = create(:person)
+        ci = create(:collection_item, collection: collection, item: m1, seqno: 1)
+        collection.reload
+        expect(collection.manifestations_count).to eq 1
+
+        ci.update!(item: p1)
+        collection.reload
+        expect(collection.manifestations_count).to eq 0
+      end
+    end
+
+    context 'propagation to parent collections' do
+      it 'updates parent collection when nested collection changes' do
+        parent = create(:collection)
+        nested = create(:collection)
+        create(:collection_item, collection: parent, item: nested, seqno: 1)
+
+        parent.reload
+        nested.reload
+        expect(parent.manifestations_count).to eq 0
+        expect(nested.manifestations_count).to eq 0
+
+        m1 = create(:manifestation)
+        create(:collection_item, collection: nested, item: m1, seqno: 1)
+
+        parent.reload
+        nested.reload
+        expect(nested.manifestations_count).to eq 1
+        expect(parent.manifestations_count).to eq 1
+      end
+
+      it 'propagates changes through multiple levels' do
+        grandparent = create(:collection)
+        parent = create(:collection)
+        child = create(:collection)
+
+        create(:collection_item, collection: grandparent, item: parent, seqno: 1)
+        create(:collection_item, collection: parent, item: child, seqno: 1)
+
+        m1 = create(:manifestation)
+        create(:collection_item, collection: child, item: m1, seqno: 1)
+
+        grandparent.reload
+        parent.reload
+        child.reload
+
+        expect(child.manifestations_count).to eq 1
+        expect(parent.manifestations_count).to eq 1
+        expect(grandparent.manifestations_count).to eq 1
+      end
+
+      it 'updates all parent collections when item is removed from nested collection' do
+        grandparent = create(:collection)
+        parent = create(:collection)
+        child = create(:collection)
+
+        create(:collection_item, collection: grandparent, item: parent, seqno: 1)
+        create(:collection_item, collection: parent, item: child, seqno: 1)
+
+        m1 = create(:manifestation)
+        ci = create(:collection_item, collection: child, item: m1, seqno: 1)
+
+        grandparent.reload
+        parent.reload
+        child.reload
+        expect(child.manifestations_count).to eq 1
+        expect(parent.manifestations_count).to eq 1
+        expect(grandparent.manifestations_count).to eq 1
+
+        ci.destroy!
+
+        grandparent.reload
+        parent.reload
+        child.reload
+        expect(child.manifestations_count).to eq 0
+        expect(parent.manifestations_count).to eq 0
+        expect(grandparent.manifestations_count).to eq 0
+      end
+    end
+
+    context 'manual recalculation' do
+      it 'recalculates count correctly' do
+        m1 = create(:manifestation)
+        m2 = create(:manifestation)
+        create(:collection_item, collection: collection, item: m1, seqno: 1)
+        create(:collection_item, collection: collection, item: m2, seqno: 2)
+
+        # Manually corrupt the count
+        collection.update_column(:manifestations_count, 999)
+        expect(collection.manifestations_count).to eq 999
+
+        # Recalculate
+        collection.recalculate_manifestations_count!
+        expect(collection.manifestations_count).to eq 2
+      end
+
+      it 'recalculates count for nested collections' do
+        m1 = create(:manifestation)
+        m2 = create(:manifestation)
+        nested = create(:collection)
+
+        create(:collection_item, collection: collection, item: m1, seqno: 1)
+        create(:collection_item, collection: nested, item: m2, seqno: 1)
+        create(:collection_item, collection: collection, item: nested, seqno: 2)
+
+        # Manually corrupt the count
+        collection.update_column(:manifestations_count, 999)
+
+        # Recalculate
+        collection.recalculate_manifestations_count!
+        expect(collection.manifestations_count).to eq 2
+      end
+    end
+
+    context 'edge cases' do
+      it 'handles empty nested collections' do
+        empty_nested = create(:collection)
+        create(:collection_item, collection: collection, item: empty_nested, seqno: 1)
+
+        collection.reload
+        expect(collection.manifestations_count).to eq 0
+      end
+
+      it 'handles collection with only non-manifestation items' do
+        p1 = create(:person)
+        p2 = create(:person)
+        create(:collection_item, collection: collection, item: p1, seqno: 1)
+        create(:collection_item, collection: collection, item: p2, seqno: 2)
+
+        collection.reload
+        expect(collection.manifestations_count).to eq 0
+      end
+
+      it 'handles adding and removing nested collections with manifestations' do
+        m1 = create(:manifestation)
+        nested = create(:collection)
+        create(:collection_item, collection: nested, item: m1, seqno: 1)
+
+        ci = create(:collection_item, collection: collection, item: nested, seqno: 1)
+        collection.reload
+        expect(collection.manifestations_count).to eq 1
+
+        ci.destroy!
+        collection.reload
+        expect(collection.manifestations_count).to eq 0
+      end
     end
   end
 end

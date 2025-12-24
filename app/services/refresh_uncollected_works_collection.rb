@@ -17,6 +17,9 @@ class RefreshUncollectedWorksCollection < ApplicationService
       collection.allow_system_type_change!
     end
 
+    # Disable automatic manifestations_count updates during bulk add
+    collection.skip_manifestations_count_update = true
+
     nextseqno = (collection.collection_items.maximum(:seqno) || 0) + 1
 
     # Checking all manifestations given authority is involved into as author or translator
@@ -34,6 +37,10 @@ class RefreshUncollectedWorksCollection < ApplicationService
     end
 
     collection.save! # should save all added items
+
+    # Re-enable automatic updates and manually recalculate the count
+    collection.skip_manifestations_count_update = false
+    collection.recalculate_manifestations_count! if collection.persisted?
 
     if authority.uncollected_works_collection.nil?
       authority.uncollected_works_collection = collection

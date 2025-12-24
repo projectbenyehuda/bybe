@@ -1,11 +1,12 @@
 include BybeUtils
+
 class WelcomeController < ApplicationController
   include Tracking
 
   def index
     @tabclass = set_tab('home')
     @pagetype = :homepage
-    @page_title = t(:default_page_title)+' - '+t(:homepage)
+    @page_title = t(:default_page_title) + ' - ' + t(:homepage)
 
     @totals = {
       works: Manifestation.cached_count,
@@ -22,12 +23,28 @@ class WelcomeController < ApplicationController
     @works_by_genre = Manifestation.cached_work_counts_by_genre
     @authors_in_period = cached_authors_in_period
     @works_by_period = cached_works_by_period
+    @periodicals = Collection.includes(:collection_items).where(collection_type: 'periodical').order(:title) # TODO: what order would make sense?
+    @periodicals_count = Rails.cache.fetch('periodicals_count', expires_in: 60.minutes) do
+      Collection.where(collection_type: 'periodical').count
+    end
+    @periodicals_text_count = Rails.cache.fetch('periodicals_text_count', expires_in: 15.minutes) do
+      ManifestationsIndex.query(match: { in_periodical: true }).count
+    end
+    @pby_volumes_count = Rails.cache.fetch('pby_volumes_count', expires_in: 60.minutes) do
+      Collection.pby_volumes.count
+    end
+    @pby_works_count = Rails.cache.fetch('pby_works_count', expires_in: 60.minutes) do
+      Collection.pby_volumes.map(&:manifestations_count).sum
+    end
+    @public_anthologies_count = Rails.cache.fetch('public_anthologies_count', expires_in: 60.minutes) do
+      Anthology.public_anthology.count
+    end
     # @whatsnew = whatsnew_anonymous # TODO: custom calculate for logged-in users
     @featured_content = featured_content
-    (@fc_snippet, @fc_rest) = @featured_content.nil? ? ['',''] : snippet(@featured_content.body, 1500) # prepare snippet 
+    (@fc_snippet, @fc_rest) = @featured_content.nil? ? ['', ''] : snippet(@featured_content.body, 1500) # prepare snippet
     @fc_snippet = MultiMarkdown.new(@fc_snippet).to_html.force_encoding('UTF-8') unless @fc_snippet.empty?
     @featured_author = featured_author
-    (@fa_snippet, @fa_rest) = @featured_author.nil? ? ['',''] : snippet(@featured_author.body, 1500) # prepare snippet 
+    (@fa_snippet, @fa_rest) = @featured_author.nil? ? ['', ''] : snippet(@featured_author.body, 1500) # prepare snippet
     @fa_snippet = MultiMarkdown.new(@fa_snippet).to_html.force_encoding('UTF-8') unless @fa_snippet.empty?
     @featured_volunteer = featured_volunteer
     # @popups_by_genre = popups_by_genre # cached, if available # used by older version of homepage
@@ -70,9 +87,9 @@ class WelcomeController < ApplicationController
       @errors << t('.email_missing')
     end
 
-    if @errors.empty?
-      Notifications.contact_form_submitted(params.permit(:name, :phone, :email, :topic, :body, :rtopic)).deliver
-    end
+    return unless @errors.empty?
+
+    Notifications.contact_form_submitted(params.permit(:name, :phone, :email, :topic, :body, :rtopic)).deliver
   end
 
   def volunteer
@@ -82,7 +99,8 @@ class WelcomeController < ApplicationController
   end
 
   def submit_volunteer
-    Notifications.volunteer_form_submitted(params.permit(:name, :phone, :email, :typing, :proofing, :scanning, :donation, :other)).deliver
+    Notifications.volunteer_form_submitted(params.permit(:name, :phone, :email, :typing, :proofing, :scanning,
+                                                         :donation, :other)).deliver
     respond_to do |format|
       format.js
     end
@@ -91,26 +109,26 @@ class WelcomeController < ApplicationController
   private
 
   def featured_content
-    Rails.cache.fetch("featured_content", expires_in: 10.minutes) do # memoize
-      FeaturedContentFeature.where("fromdate <= :now AND todate >= :now", now: Date.today).
-        order(Arel.sql('RAND()')).
-        first&.featured_content
+    Rails.cache.fetch('featured_content', expires_in: 10.minutes) do # memoize
+      FeaturedContentFeature.where('fromdate <= :now AND todate >= :now', now: Date.today)
+                            .order(Arel.sql('RAND()'))
+                            .first&.featured_content
     end
   end
 
   def featured_author
-    Rails.cache.fetch("featured_author", expires_in: 1.hours) do # memoize
-      FeaturedAuthorFeature.where("fromdate <= :now AND todate >= :now", now: Date.today).
-        order(Arel.sql('RAND()')).
-        first&.featured_author
+    Rails.cache.fetch('featured_author', expires_in: 1.hour) do # memoize
+      FeaturedAuthorFeature.where('fromdate <= :now AND todate >= :now', now: Date.today)
+                           .order(Arel.sql('RAND()'))
+                           .first&.featured_author
     end
   end
 
   def featured_volunteer
-    Rails.cache.fetch("featured_volunteer", expires_in: 10.hours) do # memoize
-      VolunteerProfileFeature.where("fromdate <= :now AND todate >= :now", now: Date.today).
-        order(Arel.sql('RAND()')).
-        first&.volunteer_profile
+    Rails.cache.fetch('featured_volunteer', expires_in: 10.hours) do # memoize
+      VolunteerProfileFeature.where('fromdate <= :now AND todate >= :now', now: Date.today)
+                             .order(Arel.sql('RAND()'))
+                             .first&.volunteer_profile
     end
   end
 end

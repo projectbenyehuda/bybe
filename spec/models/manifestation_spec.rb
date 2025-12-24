@@ -61,6 +61,71 @@ describe Manifestation do
     end
   end
 
+  describe '.cached_periodical_work_counts_by_genre' do
+    subject { described_class.cached_periodical_work_counts_by_genre }
+
+    let!(:periodical_issue) { create(:collection, collection_type: :periodical_issue) }
+    let!(:regular_collection) { create(:collection, collection_type: :volume) }
+
+    before do
+      # Create manifestations in periodicals
+      3.times do
+        manifestation = create(:manifestation, genre: :article)
+        create(:collection_item, collection: periodical_issue, item: manifestation)
+      end
+
+      2.times do
+        manifestation = create(:manifestation, genre: :prose)
+        create(:collection_item, collection: periodical_issue, item: manifestation)
+      end
+
+      # Create manifestations NOT in periodicals
+      create_list(:manifestation, 4, genre: :article)
+      create_list(:manifestation, 5, genre: :prose)
+
+      # Create manifestations in regular (non-periodical) collections
+      manifestation = create(:manifestation, genre: :poetry)
+      create(:collection_item, collection: regular_collection, item: manifestation)
+
+      # Reindex to update in_periodical field in Elasticsearch
+      ManifestationsIndex.reset!
+    end
+
+    let(:expected_result) do
+      {
+        'article' => 3,
+        'drama' => 0,
+        'fables' => 0,
+        'letters' => 0,
+        'lexicon' => 0,
+        'memoir' => 0,
+        'poetry' => 0,
+        'prose' => 2,
+        'reference' => 0
+      }
+    end
+
+    it 'only counts manifestations in periodical_issue collections' do
+      expect(subject).to eq expected_result
+    end
+
+    context 'when unpublished works in periodicals exist' do
+      before do
+        2.times do
+          manifestation = create(:manifestation, genre: :article, status: :unpublished)
+          create(:collection_item, collection: periodical_issue, item: manifestation)
+        end
+
+        # Reindex after adding unpublished works
+        ManifestationsIndex.reset!
+      end
+
+      it 'does not count unpublished works' do
+        expect(subject).to eq expected_result
+      end
+    end
+  end
+
   describe '.manual_delete' do
     subject(:manual_delete) { manifestation.manual_delete }
 
@@ -562,6 +627,168 @@ describe Manifestation do
 
       it 'returns the first found publisher link' do
         expect(manifestation.publisher_link).to eq link1
+      end
+    end
+  end
+
+  describe '#in_volume?' do
+    let(:manifestation) { create(:manifestation) }
+
+    context 'when manifestation is directly in a volume collection' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+
+      before do
+        create(:collection_item, collection: volume, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns true' do
+        expect(manifestation.in_volume?).to be true
+      end
+    end
+
+    context 'when manifestation is in a sub-collection of a volume' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+      let(:subcollection) { create(:collection, collection_type: :series) }
+
+      before do
+        create(:collection_item, collection: volume, item: subcollection)
+        create(:collection_item, collection: subcollection, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns true' do
+        expect(manifestation.in_volume?).to be true
+      end
+    end
+
+    context 'when manifestation is in a deeply nested collection within a volume' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+      let(:subcollection1) { create(:collection, collection_type: :series) }
+      let(:subcollection2) { create(:collection, collection_type: :other) }
+
+      before do
+        create(:collection_item, collection: volume, item: subcollection1)
+        create(:collection_item, collection: subcollection1, item: subcollection2)
+        create(:collection_item, collection: subcollection2, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns true' do
+        expect(manifestation.in_volume?).to be true
+      end
+    end
+
+    context 'when manifestation is not in any volume collection' do
+      let(:periodical_issue) { create(:collection, collection_type: :periodical_issue) }
+
+      before do
+        create(:collection_item, collection: periodical_issue, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns false' do
+        expect(manifestation.in_volume?).to be false
+      end
+    end
+
+    context 'when manifestation has no collections' do
+      it 'returns false' do
+        expect(manifestation.in_volume?).to be false
+      end
+    end
+  end
+
+  describe '#in_periodical?' do
+    let(:manifestation) { create(:manifestation) }
+
+    context 'when manifestation is directly in a periodical_issue collection' do
+      let(:periodical_issue) { create(:collection, collection_type: :periodical_issue) }
+
+      before do
+        create(:collection_item, collection: periodical_issue, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns true' do
+        expect(manifestation.in_periodical?).to be true
+      end
+    end
+
+    context 'when manifestation is in a sub-collection of a periodical_issue' do
+      let(:periodical_issue) { create(:collection, collection_type: :periodical_issue) }
+      let(:subcollection) { create(:collection, collection_type: :other) }
+
+      before do
+        create(:collection_item, collection: periodical_issue, item: subcollection)
+        create(:collection_item, collection: subcollection, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns true' do
+        expect(manifestation.in_periodical?).to be true
+      end
+    end
+
+    context 'when manifestation is not in any periodical_issue collection' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+
+      before do
+        create(:collection_item, collection: volume, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns false' do
+        expect(manifestation.in_periodical?).to be false
+      end
+    end
+
+    context 'when manifestation has no collections' do
+      it 'returns false' do
+        expect(manifestation.in_periodical?).to be false
+      end
+    end
+  end
+
+  describe '#in_volume? and #in_periodical? together' do
+    let(:manifestation) { create(:manifestation) }
+    let(:volume) { create(:collection, collection_type: :volume) }
+    let(:periodical_issue) { create(:collection, collection_type: :periodical_issue) }
+
+    context 'when manifestation is in both a volume and a periodical_issue' do
+      before do
+        create(:collection_item, collection: volume, item: manifestation)
+        create(:collection_item, collection: periodical_issue, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns true for both' do
+        expect(manifestation.in_volume?).to be true
+        expect(manifestation.in_periodical?).to be true
+      end
+    end
+
+    context 'when manifestation is only in a volume' do
+      before do
+        create(:collection_item, collection: volume, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns true for in_volume? and false for in_periodical?' do
+        expect(manifestation.in_volume?).to be true
+        expect(manifestation.in_periodical?).to be false
+      end
+    end
+
+    context 'when manifestation is only in a periodical_issue' do
+      before do
+        create(:collection_item, collection: periodical_issue, item: manifestation)
+        manifestation.reload
+      end
+
+      it 'returns false for in_volume? and true for in_periodical?' do
+        expect(manifestation.in_volume?).to be false
+        expect(manifestation.in_periodical?).to be true
       end
     end
   end

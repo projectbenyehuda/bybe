@@ -301,7 +301,6 @@ class ManifestationController < ApplicationController
     @print = true
     @e = @m.expression
 
-
     if @m.expression.work.genre == 'lexicon'
       # Get all dictionary entries for printing (no pagination)
       @headwords = DictionaryEntry.where(manifestation_id: @m.id).where.not(defhead: nil).order(sequential_number: :asc)
@@ -319,7 +318,6 @@ class ManifestationController < ApplicationController
       head :not_found
       return
     end
-
 
     @e = @m.expression
     @footer_url = dict_entry_url(@m, @entry)
@@ -834,6 +832,16 @@ class ManifestationController < ApplicationController
       @filters += @languages.map { |x| ["#{I18n.t(:orig_lang)}: #{helpers.textify_lang(x)}", "lang_#{x}", :checkbox] }
     end
 
+    # collection types (in_volume, in_periodical, uncollected)
+    @collection_types = params['ckb_collection_types']
+    # Only apply filter if not all three are selected (which would mean "show everything")
+    if @collection_types.present? && !(@collection_types.sort == %w(in_periodical in_volume uncollected).sort)
+      ret['collection_types'] = @collection_types
+      @filters += @collection_types.map do |x|
+        [I18n.t("collection_type_#{x}"), "collection_type_#{x}", :checkbox]
+      end
+    end
+
     # dates
     @fromdate = params['fromdate'].to_i if params['fromdate'].present?
     @todate = params['todate'].to_i if params['todate'].present?
@@ -903,7 +911,9 @@ class ManifestationController < ApplicationController
       author_genders: { terms: { field: 'author_gender' } },
       translator_genders: { terms: { field: 'translator_gender' } },
       # We may need to increase `size` threshold in future if number of authors exceeds 2000
-      author_ids: { terms: { field: 'author_ids', size: 2000 } }
+      author_ids: { terms: { field: 'author_ids', size: 2000 } },
+      in_volume: { terms: { field: 'in_volume' } },
+      in_periodical: { terms: { field: 'in_periodical' } }
     }
 
     collection = collection.aggregations(standard_aggregations)
@@ -916,6 +926,20 @@ class ManifestationController < ApplicationController
 
     @language_facet = buckets_to_totals_hash(collection.aggs['languages']['buckets'])
     @language_facet[:xlat] = @language_facet.except('he').values.sum
+
+    # Build collection type facet from in_volume and in_periodical aggregations
+    in_volume_aggs = buckets_to_totals_hash(collection.aggs['in_volume']['buckets'])
+    in_periodical_aggs = buckets_to_totals_hash(collection.aggs['in_periodical']['buckets'])
+
+    @collection_type_facet = {
+      'in_volume' => in_volume_aggs[1] || 0,
+      'in_periodical' => in_periodical_aggs[1] || 0,
+      'uncollected' => if in_volume_aggs[0] && in_periodical_aggs[0]
+                         [in_volume_aggs[0], in_periodical_aggs[0]].min
+                       else
+                         0
+                       end
+    }
 
     # Preparing list of authors to show in multiselect modal on works browse page
     if collection.filter.present?

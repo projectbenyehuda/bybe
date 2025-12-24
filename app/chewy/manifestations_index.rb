@@ -33,6 +33,8 @@ class ManifestationsIndex < Chewy::Index
   field :creation_date, type: 'date', value: ->(manifestation) {normalize_date(manifestation.expression.work.date)}
   field :publication_place
   field :publisher
+  field :in_volume, type: 'boolean', value: ->(manifestation) { manifestation.in_volume? }
+  field :in_periodical, type: 'boolean', value: ->(manifestation) { manifestation.in_periodical? }
 
   # TODO: in future: collections/readers; users; recommendations; curated/featured content
 end

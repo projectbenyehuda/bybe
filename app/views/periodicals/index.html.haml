@@ -1,0 +1,161 @@
+#content.container-fluid.gateway-small-genre.periodicals
+  .row
+    .by-card-v02.gateway-header
+      .by-card-content-v02
+        %p.headline-1-v02= t(:periodicals_label)
+        %p.gateway-title-secondary-text= t(:periodicals_description)
+  .row
+    .col-12.col-lg-8
+      #authors-in-project.by-card-v02{style: 'height: auto;'}
+        .by-card-header-v02
+          %span.headline-1-v02
+            = t(:periodicals_label)
+            = "(#{@periodicals_count})"
+        .by-card-content-v02
+          %div{style: 'display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 15px;'}
+            - i = 0
+            - @periodicals.each do |periodical|
+              .slide{ style: i >= 5 ? 'display: none;' : '' }
+                %a{ href: collection_path(periodical) }
+                  .author-card-v02{style: 'margin-left: 0; margin-right: 0;'}
+                    %img.author-pic-v02{src: periodical.logo_image.present? ? url_for(periodical.logo_image) : '', alt: periodical.title }/
+                    .author-name-area
+                      .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
+                      .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
+              - i += 1
+          .link-to-all-v02.pointer
+            %a#periodicals-view-all{:href => "#"}
+              %span{:style => "font-weight: bold;"}= t(:to_all_periodicals)
+              %span.left-arrow 1
+      #works-in-project.by-card-v02
+        .by-card-header-v02
+          %span.headline-1-v02
+            %a{href: works_path(ckb_collection_types: ['in_periodical'])}= t(:works_from_periodicals)
+          %span.date-range= "(#{@periodicals_text_count})"
+        .by-card-content-v02.works-in-project-content
+          .row.top-works
+            .col-sm-6.works-most-new.text-height-works-in-project
+              %p.headline-2-v02= t(:most_popular_works_this_month)
+              %ol{:style => "margin-bottom: 0;"}
+                - @popular_works.each do |work|
+                  %li
+                    %a{:href => manifestation_path(work.id)}= work.title_and_authors
+            .col-sm-6.works-most-new.text-height-works-in-project
+              %p.headline-2-v02= t(:newest_works)
+              %ol{:style => "margin-bottom: 0;"}
+                - @newest_works.each do |work|
+                  %li
+                    %a{:href => manifestation_path(work.id)}= work.title_and_authors
+          .link-to-all-v02
+            %a{:href => works_path(ckb_collection_types: ['in_periodical'])}
+              %span{:style => "font-weight: bold"}= t(:see_all_works_from_periodicals) 
+              %span.left-arrow 1
+      .by-card-v02#genre
+        .by-card-header-v02
+          %span.headline-1-v02= t(:periodical_genres)
+        .by-card-content-v02
+          .row
+            - get_genres.each do |genre|
+              - next if @periodical_works_by_genre[genre] == 0
+              .col-md-3.col-4
+                %a{href: works_path(ckb_genres: [genre], ckb_collection_types: ['in_periodical'])}
+                  .genre-nav
+                    %p.by-genre-icon-v02= glyph_for_genre(genre)
+                    %p.by-genre-name-v02.headline-2-v02= textify_genre(genre)
+                    %p.by-genre-details-v02= @periodical_authors_in_genre[genre].to_s+' '+t(:authors)
+                    %p.by-genre-details-v02= @periodical_works_by_genre[genre].to_s+' '+t(:works)
+
+    .col-12.col-lg-4
+      .by-card-v02.whats-new-v02{style: 'height: auto;'}
+        #whats-new-bg
+          .by-side-card-header-v02
+            %p.headline-1-v02{:style => "margin-bottom: 0"}= t(:whatsnew_in_periodicals)
+          .by-card-content-v02
+            - if @periodicals_whatsnew.present? && @periodicals_whatsnew.any?
+              .whats-new-content
+                - sorted_authors = @periodicals_whatsnew.keys.sort_by{|x| x.sort_name}
+                - max_visible = 3
+                - visible_authors = sorted_authors.take(max_visible)
+                - has_more = sorted_authors.size > max_visible
+                - visible_authors.each do |author|
+                  - works = @periodicals_whatsnew[author]
+                  .new-card-v02
+                    .new-card-right-v02
+                      %img.new-card-pic-v02{alt: author.name, src: author.profile_image.url(:tiny)}
+                    .new-card-left-v02
+                      %p.headline-2-v02
+                        = link_to author.name, authority_path(author)
+                      - works.each do |genre|
+                        - next if genre[0] == :latest
+                        %p.text-height-new
+                          %b= textify_genre(genre[0]) + ': '
+                          != format_periodical_works(genre[1])
+              - if has_more
+                .link-to-all-v02
+                  %a.pointer{'data-toggle' => 'modal', 'data-target' => '#periodicalsWhatsnewDlg'}
+                    %span{:style => "font-weight: bold"}= t(:see_all_new_periodicals)
+                    %span.left-arrow 1
+            - else
+              .new-card-v02
+                .new-card-left-v02
+                  %p.text-height-new
+                    = t(:no_new_periodicals_content)
+      #periodicalsWhatsnewDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
+        .modal-dialog.modal-lg
+          .modal-content
+            .modal-body
+              .by-popup-v02
+                .by-card-header-v02.desktop-only
+                  %p.headline-1-v02= t(:new_works_in_periodicals)
+                  %a.popup-x-v02.linkcolor.pointer{'data-dismiss'=>'modal'} -
+                .popup-top.mobile-only
+                  .row{style: 'padding:15px;margin: 0'}
+                    .col-4{style: 'padding: 0;'}
+                      %button.btn-small-outline-v02{'data-dismiss' => 'modal'}
+                        .btn-text-v02
+                          %span.right-arrow 2
+                          %span= t(:back)
+                    .col-4{style: 'padding: 0;'}
+                      .modal-title.headline-2-v02{style: 'text-align: center;margin: 0; padding-top: 3px;'}= t(:new_works_in_periodicals)
+                    .col-4
+                .by-card-content-v02{style: 'max-height: 70vh; overflow-y: auto;'}
+                  - if @periodicals_whatsnew.present? && @periodicals_whatsnew.any?
+                    - @periodicals_whatsnew.keys.sort_by{|x| x.sort_name}.each do |author|
+                      - works = @periodicals_whatsnew[author]
+                      .by-card-v02
+                        .by-card-header-v02
+                          %p.headline-3-v02
+                            = link_to author.name, authority_path(author)
+                        .by-card-content-v02
+                          - works.each do |genre|
+                            - next if genre[0] == :latest
+                            %p
+                              %b= textify_genre(genre[0]) + ': '
+                              != format_periodical_works(genre[1])
+      - if @random_periodical.present?
+        .by-card-v02.flash-work-v02
+          .flash-bg-v02
+            -# TODO: show the periodical's cover image somewhere if available
+            .by-side-card-header-v02
+              %p.headline-1-v02= t(:spotlight_on_periodical)
+            .by-card-content-v02
+              .headline-3-v02
+                %a{href: collection_path(@random_periodical)}= @random_periodical.title
+              - if @random_periodical.editors.any?
+                %p
+                  = t(:edited_by)
+                  = @random_periodical.editors.map(&:name).join(', ')
+              .flash-text-container
+                .text-height-flash-work
+                  = @random_periodical.description
+              .button-to-full-v02
+                %a{ href: collection_path(@random_periodical) }
+                  %button.by-button-v02= t(:to_periodical)
+:javascript
+  $(document).ready(function() {
+    $('#periodicals-view-all').click(function(e) {
+      e.preventDefault();
+      $('.slide').css('display', 'flex');
+      $(this).css('display', 'none');
+    });
+  });

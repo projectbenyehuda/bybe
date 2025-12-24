@@ -10,7 +10,10 @@
     #frotateG_08.f_circleG
 
 .by-card-header-v02
-  .headline-2-v02= authors_label_by_gender_filter(@genders, @total)
+  .headline-2-v02
+    = authors_label_by_gender_filter(@genders, @total)
+    %a.permalink-btn{href: request.original_url, title: t(:permalink)}
+      = t(:permalink)
   .filters
     - @filters.each do |f, id, which|
       %button.tag
@@ -52,6 +55,22 @@
   = render partial: 'shared/filters/pagination', locals: { form_id: 'authors_filters', add_js: true }
 :javascript
   $(document).ready(function() {
+    $('.permalink-btn').click(function(e) {
+      e.preventDefault();
+      const url = $(this).attr('href');
+      const originalText = $(this).text();
+      const $btn = $(this);
+
+      navigator.clipboard.writeText(url).then(function() {
+        $btn.text('#{I18n.t(:permalink_copied)}');
+        setTimeout(function() {
+          $btn.text(originalText);
+        }, 2000);
+      }).catch(function(err) {
+        console.error('Failed to copy: ', err);
+      });
+    });
+
     $('.tag-x').click(function() {
       const field = $(this).data('ele');
       // uncheck/clear the appropriate field

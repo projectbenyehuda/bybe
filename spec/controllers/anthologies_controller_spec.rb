@@ -26,6 +26,11 @@ describe AnthologiesController do
         context 'when anthology is public' do
           let(:access) { :pub }
           it { is_expected.to be_successful }
+
+          it 'assigns @taggings' do
+            subject
+            expect(assigns(:taggings)).to eq(anthology.taggings)
+          end
         end
 
         context 'when anthology is unlisted' do

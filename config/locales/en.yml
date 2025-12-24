@@ -48,10 +48,36 @@ en:
   uploaddate_desc: 'Added to site: from new to old'
   no_matches_found: No matches found
   dates: Dates
+  description: Description
   add_feature_date: Add feature date
   feature_on: Featuring Periods
   unknown: Unknown
   sort_by: Sort by
+  alphabetical: Alphabetical
+  by_popularity: By popularity
+  tags_list: Tags
+  show_all_tags: Show all tags
+  edit_tag: Edit Tag
+  this_tag_is_already_approved: This tag is already approved
+  tag_name: Tag Name
+  tag_names_aliases: Alternative Names (TagNames)
+  save_changes: Save Changes
+  tag_updated: Tag updated successfully
+  back_to_moderation: Back to Tag Moderation
+  tag_status_pending: Pending
+  tag_status_approved: Approved
+  tag_status_rejected: Rejected
+  tag_status_escalated: Escalated for Review
+  tag_name_added: Alternative name added successfully
+  tag_name_removed: Alternative name removed
+  tag_name_already_exists: This name already exists in the system
+  tag_name_cannot_be_blank: Tag name cannot be blank
+  cannot_remove_last_tag_name: Cannot remove the last name of the tag
+  confirm_remove_tag_name: Are you sure you want to remove this alternative name?
+  add_tag_name_alias: Add Alternative Name
+  new_tag_name_placeholder: New alternative name
+  remove: Remove
+  merge_tag: Merge Tag
   uncollected_works_collection_title: Uncollected works
   add: Add
   filter: Filter
@@ -72,6 +98,36 @@ en:
   perform_add: Add
   not_an_editor: This page is only available for editors
   permalink: Permanent link
+  anthologies_list: List of Anthologies
+  welcome_to_anthologies_browsing: Welcome to the public anthologies list
+  anthologies_browsing_intro_paging: The anthologies list matching your criteria contains %{total} results. Due to its length, the list is divided into sub-pages. You can browse the list using the controls above and below it.
+  anthologies_browsing_intro_html: "<p>The list contains public anthologies created by Project users. You can use filtering options to narrow down the list by searching for anthology title, included author, included work, or anthology owner name.</p><p><b>To enable advanced filtering options, click the toggle in the top bar.</b></p>"
+  anthology_title: Anthology Title
+  anthology_title_placeholder: Search by anthology title
+  included_author: Included Author
+  author_name_placeholder: Search by author name
+  included_work: Included Work
+  work_title_placeholder: Search by work title
+  anthology_owner: Anthology Owner
+  owner_name_placeholder: Search by owner name
+  anthologies_found:
+    one: Found one anthology
+    other: Found %{count} anthologies
+  anthology_sort_tt: Sort anthologies
+  creation_date: Creation Date
+  texts: texts
+  one_text: one text
+  empty_anthology: empty
+  anthology_by_owner: "Created by: %{owner}"
+  no_anthologies_found: No anthologies found matching the criteria
+  title_filter_label: "Title: %{title}"
+  author_filter_label: "Author: %{author}"
+  manifestation_filter_label: "Work: %{title}"
+  owner_filter_label: "Owner: %{owner}"
+  page_of_pages: Page %{page} of %{total}
+  previous_page: Previous page
+  next_page: Next page
+  permalink_copied: Link copied to clipboard!
   admin:
     featured_contents:
       index:
@@ -235,6 +291,10 @@ en:
     permission_for_all: permission for all
     permission_for_selected: permission for selected
     unknown: unknown
+  collection_type_in_volume: In a volume
+  collection_type_in_periodical: In a periodical
+  collection_type_uncollected: Uncollected
+  containing_collection_type: Containing collection type
   involved_authority:
     role:
       author: Author
@@ -323,3 +383,13 @@ en:
   kwic_sort_frequency: Frequency
   kwic_being_generated: The concordance is being generated. Please check back in 5-10 minutes.
   error_generating_concordance: An error occurred while generating the concordance. Please try again later.
+  pby_volumes: Project Ben-Yehuda Volumes
+  pby_volumes_description: Volumes published by Project Ben-Yehuda
+  x_volumes: "%{x} volumes"
+  x_works: "(%{x} works)"
+  no_new_periodicals_content: No new works from periodicals in the last month
+  see_all_new_periodicals: See all new works in periodicals
+  new_works_in_periodicals: New works in periodicals
+  whatsnew_in_periodicals: What's new in periodicals?
+  periodical_genres: Genres in periodicals
+  and_n_more: and %{n} more

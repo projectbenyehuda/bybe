@@ -6,6 +6,10 @@
     %div
       %div{style: "display:flex"}
         .by-card-content-v02{style: "width: 50%;"}
+          - if @tag.approved?
+            .headline-3-v02
+              = t(:this_tag_is_already_approved)
+              = link_to t(:edit_tag), edit_tag_path(@tag), class: 'by-button-v02 pad10rl', style: 'margin-right: 10px;'
           .headline-2-v02= t(:adjacent_or_similar_tags)
           - @similar_tags.each do |tag|
             .flex-container
