@@ -3,6 +3,7 @@
 # Controller to work with Collections.
 # Most of the actions require editor's permissions
 class CollectionsController < ApplicationController
+  include ApplicationHelper
   include Tracking
   include BybeUtils
   include KwicConcordanceConcern
@@ -490,7 +491,7 @@ class CollectionsController < ApplicationController
     @collection_types = params['ckb_collection_types'] unless @collection_types.present?
     if @collection_types.present?
       ret['collection_types'] = @collection_types
-      @filters += @collection_types.map { |x| [I18n.t(x), "collection_type_#{x}", :checkbox] }
+      @filters += @collection_types.map { |x| [textify_collection_type(x), "collection_type_#{x}", :checkbox] }
     end
 
     # tags by tag_id
