@@ -142,6 +142,12 @@
     .col-12.col-lg-4
       .row
         .col
+          - if @collection.description.present?
+            .by-card-v02.left-side-card-v02
+              .by-card-header-left-v02
+                %span.headline-1-v02= t(:description)
+              .by-card-content-v02.card-with-bottom-links
+                %p.text-height-new= simple_format(@collection.description)
           -# Tags
           .by-card-v02.left-side-card-v02
             .by-card-header-left-v02
