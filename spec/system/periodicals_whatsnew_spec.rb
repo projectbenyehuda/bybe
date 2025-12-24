@@ -3,6 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe 'Periodicals whatsnew panel', type: :system, js: true do
+  before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
   let(:periodical_issue) { create(:collection, collection_type: 'periodical_issue', title: 'Test Periodical Issue') }
 
   before do
