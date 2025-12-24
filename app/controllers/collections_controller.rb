@@ -400,7 +400,7 @@ class CollectionsController < ApplicationController
   # Only allow a list of trusted parameters through.
   def collection_params
     params.require(:collection).permit(:title, :sort_title, :subtitle, :issn, :collection_type, :inception,
-                                       :inception_year, :publisher_line, :pub_year, :publication_id, :toc_id, :toc_strategy, :alternate_titles)
+                                       :inception_year, :publisher_line, :pub_year, :publication_id, :toc_id, :toc_strategy, :alternate_titles, :description)
   end
 
   def prep_for_show

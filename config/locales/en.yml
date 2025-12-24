@@ -48,6 +48,7 @@ en:
   uploaddate_desc: 'Added to site: from new to old'
   no_matches_found: No matches found
   dates: Dates
+  description: Description
   add_feature_date: Add feature date
   feature_on: Featuring Periods
   unknown: Unknown
