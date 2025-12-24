@@ -83,8 +83,24 @@ class Authority < ApplicationRecord
   validates_attachment_content_type :profile_image, content_type: %r{\Aimage/.*\z}
 
   before_validation do
-    # 'Q' in wikidata URI must be uppercase
-    self.wikidata_uri = wikidata_uri.blank? ? nil : wikidata_uri.strip.downcase.gsub('q', 'Q')
+    if wikidata_uri.blank?
+      self.wikidata_uri = nil
+    else
+      uri = wikidata_uri.strip
+
+      # Transform various input formats into canonical Wikidata URL
+      # Accept: plain number (123), Q-prefixed (Q123), or full URL
+      if uri.match?(/\A\d+\z/)
+        # Plain number: "123" → "https://wikidata.org/wiki/Q123"
+        self.wikidata_uri = "https://wikidata.org/wiki/Q#{uri}"
+      elsif uri.match?(/\AQ\d+\z/i)
+        # Q-prefixed: "Q123" or "q123" → "https://wikidata.org/wiki/Q123"
+        self.wikidata_uri = "https://wikidata.org/wiki/#{uri.upcase}"
+      else
+        # URL format: ensure 'Q' is uppercase
+        self.wikidata_uri = uri.downcase.gsub('q', 'Q')
+      end
+    end
   end
 
   after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
