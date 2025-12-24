@@ -15,11 +15,11 @@
                        placeholder: t(:collection_title_search)
 
     - collection_types_to_show = %w(volume periodical series other)
-    - labels = collection_types_to_show.index_with { |type| t(type) }
+    - labels = collection_types_to_show.index_with { |type| textify_collection_type(type) }
     - icons = { 'volume' => '📚', 'periodical' => '📰', 'series' => '📑', 'other' => '📁' }
     = render partial: 'shared/filters/checkbox_group',
              locals: { group_name: :collection_type,
-                       title: t(:collection_type),
+                       title: Collection.human_attribute_name(:collection_type),
                        field_name: :ckb_collection_types,
                        all_values: collection_types_to_show,
                        labels: labels,
