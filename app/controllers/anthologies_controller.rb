@@ -296,8 +296,8 @@ class AnthologiesController < ApplicationController
   end
 
   def check_anthology_edit_permission
-    return true if current_user&.admin?
-    return true if @anthology.user_id == current_user&.id
+    return if current_user&.admin?
+    return if @anthology.user_id == current_user&.id
 
     redirect_to '/', flash: { error: t(:no_permission) }
   end
