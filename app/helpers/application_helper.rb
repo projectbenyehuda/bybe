@@ -227,9 +227,11 @@ module ApplicationHelper
        [[t(:rename_this_anthology), -1], [t(:create_new_anthology), 0]]]
     ]
     anths = []
-    current_user.anthologies.each do |a|
-      anths << [a.title, a.id]
-      @selected_anthology = a.id if @anthology == a
+    if current_user.present?
+      current_user.anthologies.each do |a|
+        anths << [a.title, a.id]
+        @selected_anthology = a.id if @anthology == a
+      end
     end
     ret << [t(:anthologies), anths] unless anths.empty?
     return ret
