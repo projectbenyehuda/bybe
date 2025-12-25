@@ -206,11 +206,11 @@ describe ManifestationHtmlWithChapters do
           <ol>
 
           <li id="fn:1">
-          <span>Footnote 1 <a href="#fnref:1" title="return to body" class="reversefootnote">&#160;&#8617;</a></span>
+          <span>Footnote 1 <a href="#fnref:1" title="return to body" class="reversefootnote">&#160;&#8617;&#xfe0e;</a></span>
           </li>
 
           <li id="fn:2">
-          <span>Footnote 2 <a href="#fnref:2" title="return to body" class="reversefootnote">&#160;&#8617;</a></span>
+          <span>Footnote 2 <a href="#fnref:2" title="return to body" class="reversefootnote">&#160;&#8617;&#xfe0e;</a></span>
           </li>
 
           </ol>

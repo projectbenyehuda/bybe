@@ -57,7 +57,9 @@ gem 'kaminari'
 gem 'mini_racer'
 gem 'nokogiri'
 
-gem 'rmultimarkdown' # new wrapper over Fletcher Penney's MultiMarkDown 6 (MMD 6)
+# new wrapper over Fletcher Penney's MultiMarkDown 6 (MMD 6)
+# Forked to fix compatibility issue with Debian Trixie
+gem 'rmultimarkdown', git: 'https://github.com/damisul/multi_markdown'
 gem 'yt' # for polling YouTube for new videos
 
 gem 'gared', '>= 0.1.2' # https://gitlab.com/abartov/gared # for scraping bibliographic data from Hebrew sources
