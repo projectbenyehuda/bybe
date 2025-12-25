@@ -25,6 +25,12 @@
         name: 'owner_filter', placeholder: t(:owner_name_placeholder), type: :text, value: @owner_filter
       }
 
+    - if current_user&.admin?
+      = render layout: 'shared/collapsible_block', locals: { container_name: 'collfadminshow', title: t(:admin_options) } do
+        .checkbox-option
+          %input#show_all_checkbox{type: 'checkbox', name: 'show_all', value: '1', checked: @show_all}
+          %label{for: 'show_all_checkbox'}= t(:show_all_anthologies_including_private)
+
     = hidden_field_tag(:page, 1)
     .mobile-only
       .bottom-button-area
