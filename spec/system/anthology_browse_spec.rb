@@ -99,9 +99,9 @@ RSpec.describe 'Anthology browse page', type: :system, js: true do
 
   describe 'pagination' do
     before do
-      # Create more than 50 anthologies to trigger pagination
-      60.times do |i|
-        create(:anthology, title: "Anthology #{i}", access: :pub, user: user)
+      # Reduced from 60 to 51 - just need to trigger pagination at 50+ threshold
+      51.times do |i|
+        create(:anthology, title: "Anthology #{i.to_s.rjust(2, '0')}", access: :pub, user: user)
       end
     end
 
@@ -152,9 +152,8 @@ RSpec.describe 'Anthology browse page', type: :system, js: true do
       expect(page).to have_text(/Link copied to clipboard!|הקישורית הועתקה ללוח!/)
 
       # Wait for feedback to disappear and text to return to original
-      sleep 2.5
-      permalink_btn = find('a.permalink-btn')
-      expect(permalink_btn.text).to eq(original_text)
+      # Using Capybara's built-in waiting instead of sleep for better performance
+      expect(page).to have_selector('a.permalink-btn', text: original_text, wait: 3)
     end
   end
 end
