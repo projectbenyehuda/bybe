@@ -6,7 +6,7 @@ class LexEntry < ApplicationRecord
 
   # this can be LexPerson or LexPublication (or...?)
   # TODO: make relation mandatory after all PHP files will be migrated
-  belongs_to :lex_item, polymorphic: true, optional: true, dependent: :destroy
+  belongs_to :lex_item, polymorphic: true, optional: true, dependent: :destroy, inverse_of: :entry
 
   enum :status, {
     draft: 0,       # entry created but not ready for public access
