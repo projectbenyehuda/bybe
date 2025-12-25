@@ -16,6 +16,9 @@
     .by-card-v02#thelist
       = render partial: 'browse_list'
 
+- if current_user&.admin?
+  = render partial: 'admin_edit_modal'
+
 :javascript
   function submit_filters() {
     $('#anthologies_filters').submit();

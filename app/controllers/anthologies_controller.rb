@@ -2,6 +2,7 @@ class AnthologiesController < ApplicationController
   include Tracking
 
   before_action :set_anthology, only: %i(show clone print seq download edit update destroy)
+  before_action :check_anthology_edit_permission, only: %i(edit update destroy)
 
   # GET /anthologies
   def index
@@ -15,8 +16,16 @@ class AnthologiesController < ApplicationController
     @header_partial = 'anthologies/browse_top'
     @anthologies_list_title = t(:anthologies_list)
 
-    # Start with public anthologies only
-    @anthologies = Anthology.public_anthology.includes(:user, texts: { manifestation: { expression: { work: { involved_authorities: :authority } } } })
+    # Load user list for admin owner reassignment
+    @all_users = User.order(:name).pluck(:name, :id) if current_user&.admin?
+
+    # Start with public anthologies, or all anthologies if admin has checked the box
+    @show_all = params[:show_all] == '1' && current_user&.admin?
+    @anthologies = if @show_all
+                     Anthology.includes(:user, texts: { manifestation: { expression: { work: { involved_authorities: :authority } } } })
+                   else
+                     Anthology.public_anthology.includes(:user, texts: { manifestation: { expression: { work: { involved_authorities: :authority } } } })
+                   end
 
     # Apply filters
     @filters = []
@@ -251,6 +260,7 @@ class AnthologiesController < ApplicationController
     @error = false
     respond_to do |format|
       format.js
+      format.json { render json: { success: true, anthology: @anthology }, status: :ok }
       format.html { redirect_to @anthology, notice: 'Anthology was successfully updated.' }
     end
   rescue ActiveRecord::RecordInvalid
@@ -261,7 +271,7 @@ class AnthologiesController < ApplicationController
   # DELETE /anthologies/1
   def destroy
     @anthology.destroy
-    @anthologies = current_user.anthologies
+    @anthologies = current_user&.anthologies || []
     unless @anthologies.empty?
       @anthology = @anthologies.first
       session[:current_anthology_id] = @anthology.id
@@ -272,6 +282,7 @@ class AnthologiesController < ApplicationController
     @cur_anth_id = @anthology.nil? ? 0 : @anthology.id
     respond_to do |format|
       format.js
+      format.json { render json: { success: true }, status: :ok }
       format.html { redirect_to anthologies_url, notice: 'Anthology was successfully destroyed.' }
     end
   end
@@ -285,6 +296,14 @@ class AnthologiesController < ApplicationController
 
   def anthology_params
     params.require(:anthology).permit(:title, :access, :sequence, :user_id)
+  end
+
+  def check_anthology_edit_permission
+    return if current_user&.admin?
+    return if @anthology.user_id == current_user&.id
+
+    redirect_to '/', flash: { error: t('errors.messages.not_authorized',
+                                        default: 'You do not have permission to edit this anthology.') }
   end
 
   def prep_for_show

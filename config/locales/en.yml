@@ -128,6 +128,30 @@ en:
   previous_page: Previous page
   next_page: Next page
   permalink_copied: Link copied to clipboard!
+  admin_edit_anthology: "Admin: Edit Anthology"
+  anthology_title_label: Anthology Title
+  anthology_access_label: Access Level
+  anthology_access_private: "Private (only visible to creator)"
+  anthology_access_unlisted: "Unlisted (accessible via direct link)"
+  anthology_access_public: "Public (visible to all)"
+  anthology_access_priv: Private
+  anthology_owner_label: Current Owner
+  anthology_owner_deleted: "[User account deleted]"
+  anthology_owner_missing_warning: "Warning: The original owner's account no longer exists. Please assign a new owner."
+  anthology_change_owner_label: Change Owner
+  keep_current_owner: "Keep current owner"
+  save_changes: Save Changes
+  danger_zone: Danger Zone
+  delete_anthology_warning: Deleting an anthology will permanently remove it and all its contents.
+  delete_anthology: Delete Anthology
+  confirm_anthology_deletion: Confirm Anthology Deletion
+  anthology_deletion_warning: You are about to permanently delete this anthology
+  anthology_deletion_cannot_undo: This action cannot be undone. All data will be lost.
+  confirm_deletion: Confirm Deletion
+  error_updating_anthology: Error updating anthology. Please try again.
+  error_deleting_anthology: Error deleting anthology. Please try again.
+  admin_options: Admin Options
+  show_all_anthologies_including_private: Show all anthologies (including private and unlisted)
   admin:
     featured_contents:
       index:

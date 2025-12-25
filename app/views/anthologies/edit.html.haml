@@ -1,0 +1,20 @@
+-# Edit anthology page (primarily for admin use)
+.container
+  .row
+    .col-md-8.offset-md-2
+      .by-card-v02
+        .by-card-header-v02
+          .headline-2-v02= t(:admin_edit_anthology)
+        .by-card-content-v02
+          = form_with model: @anthology, local: true do |f|
+            .form-group
+              = f.label :title, t(:anthology_title_label), class: 'headline-4-v02'
+              = f.text_field :title, class: 'field-v02'
+
+            .form-group
+              = f.label :access, t(:anthology_access_label), class: 'headline-4-v02'
+              = f.select :access, [[t(:anthology_access_private), 'priv'], [t(:anthology_access_unlisted), 'unlisted'], [t(:anthology_access_public), 'pub']], {}, class: 'field-v02'
+
+            .bottom-left-buttons
+              = link_to t(:cancel), anthologies_browse_path, class: 'by-button-v02 by-button-secondary-v02'
+              = f.submit t(:save_changes), class: 'by-button-v02'

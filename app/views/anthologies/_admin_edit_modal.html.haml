@@ -1,0 +1,163 @@
+#adminEditAnthologyDlg.modal{role: 'dialog', tabindex: '-1'}
+  .modal-dialog.modal-dialog-centered{role: 'document'}
+    .modal-content
+      .popup-top
+        %button.btn-small-outline-v02{'data-dismiss' => 'modal'}
+          .btn-text-v02
+            %span.right-arrow 2
+            %span= t(:back)
+        .headline-2-v02= t(:admin_edit_anthology)
+      .modal-body
+        .by-popup-v02.narrow-popup
+          %div
+            .card-with-button
+              .headline-4-v02#modal_anthology_title
+              %form#admin_anthology_form
+                .form-group
+                  %label.headline-4-v02= t(:anthology_title_label)
+                  %input.field-v02.field-without-label#modal_title{type: 'text', name: 'title'}
+
+                .form-group
+                  %label.headline-4-v02= t(:anthology_access_label)
+                  %select.field-v02#modal_access{name: 'access'}
+                    %option{value: 'priv'}= t(:anthology_access_private)
+                    %option{value: 'unlisted'}= t(:anthology_access_unlisted)
+                    %option{value: 'pub'}= t(:anthology_access_public)
+
+                .form-group#owner_info_section
+                  %label.headline-4-v02= t(:anthology_owner_label)
+                  %p#modal_current_owner
+                  #owner_missing_warning{style: 'display: none; color: #d9534f; margin-top: 5px;'}
+                    = t(:anthology_owner_missing_warning)
+
+                .form-group
+                  %label.headline-4-v02= t(:anthology_change_owner_label)
+                  %select.field-v02#modal_owner_id{name: 'user_id'}
+                    %option{value: ''}= t(:keep_current_owner)
+                    - if @all_users
+                      - @all_users.each do |user_name, user_id|
+                        %option{value: user_id}= user_name
+
+                .bottom-left-buttons
+                  %button.by-button-v02.by-button-secondary-v02{'data-dismiss'=>'modal', type: 'button'}
+                    %div= t(:cancel)
+                  %button.by-button-v02#save_anthology_btn{type: 'button'}
+                    %div= t(:save_changes)
+
+              .delete-section{style: 'margin-top: 20px; padding-top: 20px; border-top: 1px solid #ccc'}
+                .headline-4-v02= t(:danger_zone)
+                %p= t(:delete_anthology_warning)
+                .bottom-left-buttons
+                  %button.by-button-v02.by-button-danger-v02#delete_anthology_btn{type: 'button'}
+                    %div= t(:delete_anthology)
+
+#confirmDeleteAnthologyDlg.modal{role: 'dialog', tabindex: '-1'}
+  .modal-dialog.modal-dialog-centered{role: 'document'}
+    .modal-content
+      .popup-top
+        %button.btn-small-outline-v02{'data-dismiss' => 'modal'}
+          .btn-text-v02
+            %span.right-arrow 2
+            %span= t(:back)
+        .headline-2-v02= t(:confirm_anthology_deletion)
+      .modal-body
+        .by-popup-v02.narrow-popup
+          %div
+            .card-with-button
+              .flex-container.headline-area-with-large-icon
+                .large-icon-near-headline.icon-bywarning
+                %p.headline-2-v02{style: 'display: inline'}= t(:confirm_anthology_deletion)
+              %p= t(:anthology_deletion_warning)
+              %p.headline-4-v02#delete_modal_anthology_title
+              %p= t(:anthology_deletion_cannot_undo)
+              .bottom-left-buttons
+                %button.by-button-v02.by-button-secondary-v02{'data-dismiss'=>'modal'}
+                  %div= t(:cancel)
+                %button.by-button-v02.by-button-danger-v02#confirm_delete_anthology_btn
+                  %div= t(:confirm_deletion)
+
+:javascript
+  var currentAnthologyId = null;
+
+  function openAdminEditModal(anthologyId, title, access, ownerId, ownerName) {
+    currentAnthologyId = anthologyId;
+    $('#modal_anthology_title').text(title);
+    $('#modal_title').val(title);
+    $('#modal_access').val(access);
+
+    // Show owner information
+    if (ownerName) {
+      $('#modal_current_owner').text(ownerName);
+      $('#owner_missing_warning').hide();
+    } else {
+      $('#modal_current_owner').text('#{I18n.t(:anthology_owner_deleted)}');
+      $('#owner_missing_warning').show();
+    }
+
+    // Reset owner dropdown to default
+    $('#modal_owner_id').val('');
+
+    $('#adminEditAnthologyDlg').modal('show');
+  }
+
+  $(document).ready(function() {
+    $('#save_anthology_btn').click(function() {
+      if (!currentAnthologyId) return;
+
+      const title = $('#modal_title').val();
+      const access = $('#modal_access').val();
+      const newOwnerId = $('#modal_owner_id').val();
+
+      const data = {
+        anthology: {
+          title: title,
+          access: access
+        }
+      };
+
+      // Only include user_id if a new owner was selected
+      if (newOwnerId) {
+        data.anthology.user_id = newOwnerId;
+      }
+
+      $.ajax({
+        type: 'PATCH',
+        url: '/anthologies/' + currentAnthologyId,
+        data: data,
+        dataType: 'json',
+        success: function(response) {
+          $('#adminEditAnthologyDlg').modal('hide');
+          // Reload the page to show updated data
+          submit_filters();
+        },
+        error: function(xhr, status, error) {
+          alert('#{I18n.t(:error_updating_anthology)}');
+        }
+      });
+    });
+
+    $('#delete_anthology_btn').click(function() {
+      const title = $('#modal_title').val();
+      $('#delete_modal_anthology_title').text(title);
+      $('#adminEditAnthologyDlg').modal('hide');
+      $('#confirmDeleteAnthologyDlg').modal('show');
+    });
+
+    $('#confirm_delete_anthology_btn').click(function() {
+      if (!currentAnthologyId) return;
+
+      $.ajax({
+        type: 'DELETE',
+        url: '/anthologies/' + currentAnthologyId,
+        dataType: 'json',
+        success: function(response) {
+          $('#confirmDeleteAnthologyDlg').modal('hide');
+          // Reload the page to show updated list
+          submit_filters();
+        },
+        error: function(xhr, status, error) {
+          alert('#{I18n.t(:error_deleting_anthology)}');
+        }
+      });
+    });
+  });
