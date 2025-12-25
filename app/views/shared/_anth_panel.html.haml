@@ -42,8 +42,8 @@
           #anthology-status{title: t(:anth_access_tt)}
             %span.anthology-status-label= t(:access_control)
             /.anthology-status-desktop
-            - access_options = Anthology.accesses.select { |a| current_user&.admin? || a[0] != 'pub' }
-            = select_tag :access, options_for_select(access_options.map{|a| [t(a[0]), a[0]]}, ((@anthology.nil? || @anthology.access.nil?) ? nil : @anthology.access)), {style:'width:140px'}
+            - access_options = Anthology.accesses.select { |key, _value| current_user&.admin? || key != 'pub' }
+            = select_tag :access, options_for_select(access_options.map{|key, _value| [t(key), key]}, ((@anthology.nil? || @anthology.access.nil?) ? nil : @anthology.access)), {style:'width:140px'}
             .anthology-select-mobile
       .by-card-content-v02
         - unless @anthology.nil?
