@@ -1,6 +1,9 @@
 class UserAnthTitleValidator < ActiveModel::Validator
   def validate(record)
-    records = record.user.anthologies.where(title: record.title)
+    anths = record&.user&.anthologies
+    return if anths.nil?
+
+    records = anths.where(title: record.title)
     unless record.new_record?
       records = records.where.not(id: record.id)
     end

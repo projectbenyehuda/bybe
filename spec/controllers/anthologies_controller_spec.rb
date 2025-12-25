@@ -123,6 +123,12 @@ describe AnthologiesController do
           subject
           expect(assigns(:anthologies).to_a).to eq([public_anthology])
         end
+
+        it 'loads user list for owner reassignment' do
+          subject
+          expect(assigns(:all_users)).to be_present
+          expect(assigns(:all_users)).to be_a(Array)
+        end
       end
 
       context 'with show_all parameter' do
@@ -243,6 +249,40 @@ describe AnthologiesController do
           anthology.reload
           expect(anthology.title).not_to eq(new_title)
           expect(response).to redirect_to('/')
+        end
+      end
+
+      context 'owner reassignment' do
+        let(:user) { admin_user }
+        let(:new_owner) { create(:user) }
+
+        subject do
+          patch :update, params: { id: anthology.id, anthology: { user_id: new_owner.id } }, format: :json
+        end
+
+        it 'allows admin to change anthology owner' do
+          subject
+          anthology.reload
+          expect(anthology.user_id).to eq(new_owner.id)
+        end
+
+        it 'allows admin to reassign anthology from one user to another' do
+          another_user = create(:user)
+          patch :update, params: { id: anthology.id, anthology: { user_id: another_user.id } }, format: :json
+          anthology.reload
+          expect(anthology.user_id).to eq(another_user.id)
+        end
+
+        context 'when user is not an admin' do
+          let(:user) { regular_user }
+
+          it 'prevents owner change' do
+            original_owner_id = anthology.user_id
+            subject
+            anthology.reload
+            expect(anthology.user_id).to eq(original_owner_id)
+            expect(response).to redirect_to('/')
+          end
         end
       end
     end

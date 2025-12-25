@@ -16,6 +16,9 @@ class AnthologiesController < ApplicationController
     @header_partial = 'anthologies/browse_top'
     @anthologies_list_title = t(:anthologies_list)
 
+    # Load user list for admin owner reassignment
+    @all_users = User.order(:name).pluck(:name, :id) if current_user&.admin?
+
     # Start with public anthologies, or all anthologies if admin has checked the box
     @show_all = params[:show_all] == '1' && current_user&.admin?
     @anthologies = if @show_all
