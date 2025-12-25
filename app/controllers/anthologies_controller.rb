@@ -299,7 +299,8 @@ class AnthologiesController < ApplicationController
     return if current_user&.admin?
     return if @anthology.user_id == current_user&.id
 
-    redirect_to '/', flash: { error: t(:no_permission) }
+    redirect_to '/', flash: { error: t('errors.messages.not_authorized',
+                                        default: 'You do not have permission to edit this anthology.') }
   end
 
   def prep_for_show
