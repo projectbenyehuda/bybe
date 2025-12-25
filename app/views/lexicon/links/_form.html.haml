@@ -1,4 +1,4 @@
-- path = @link.new_record? ? lexicon_person_links_path(@person) : lexicon_link_path(@link)
+- path = @link.new_record? ? lexicon_entry_links_path(@entry) : lexicon_link_path(@link)
 = simple_form_for(@link, url: path, remote: true) do |f|
   = f.error_notification
   = f.input :url, type: :url
