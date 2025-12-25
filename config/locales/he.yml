@@ -1003,7 +1003,7 @@ he:
   anth_share_tt: שיתוף המקראה
   anth_access_tt: 'בחירת רמת גישה: מי יכול לגשת למקראה'
   anth_drag_tt: איזור גרירה לשינוי סדר הפריטים במקראה
-  coll_drag_tt: איזור גרירה לשינוי סדר הפריטים באסופה
+  coll_drag_tt: איזור גרירה לשינוי סדר הפריטים באוסף
   anth_add_work_tt: הוספת היצירה שממנה נפתח חלון המקראות
   anth_add_works_tt: הוספת יצירות מעמוד רשימת היצירות
   anth_add_curated_tt: "הוספת טקסט מלווה מטעמך כגון שער, הערות, שיעורי בית, וכו'"
@@ -1415,24 +1415,29 @@ he:
   uncollected_works_collection_explanation: יצירות אלו לוקטו ממקורות שונים שאינם מופיעים במאגר בשלמותם, כגון כתבי עת, עיתונות, או עזבונות.
   permalink: קישורית קבועה
   permalink_copied: הקישורית הועתקה ללוח!
-  admin_edit: עריכת אדמין
-  admin_edit_anthology: 'אדמין: עריכת אסופה'
-  anthology_title_label: שם האסופה
+  admin_edit: עריכת
+  admin_edit_anthology: 'עריכת מקראה'
+  anthology_title_label: שם המקראה
   anthology_access_label: רמת גישה
   anthology_access_private: פרטית (נראית רק ליוצר)
   anthology_access_unlisted: לא רשומה (נגישה דרך קישור ישיר)
   anthology_access_public: ציבורית (גלויה לכולם)
   anthology_access_priv: פרטית
+  anthology_owner_label: הבעלים הנוכחי
+  anthology_owner_deleted: "[חשבון המשתמש נמחק]"
+  anthology_owner_missing_warning: 'אזהרה: חשבון הבעלים המקורי כבר לא קיים. נא להקצות בעלים חדש.'
+  anthology_change_owner_label: שינוי בעלות
+  keep_current_owner: השאר את הבעלים הנוכחי
   save_changes: שמור שינויים
   danger_zone: אזור סכנה
-  delete_anthology_warning: מחיקת אסופה תסיר אותה לצמיתות עם כל התוכן שלה.
-  delete_anthology: מחק אסופה
-  confirm_anthology_deletion: אישור מחיקת אסופה
-  anthology_deletion_warning: אתה עומד למחוק לצמיתות את האסופה הזו
+  delete_anthology_warning: מחיקת מקראה תסיר אותה לצמיתות עם כל התוכן שלה.
+  delete_anthology: מחק מקראה
+  confirm_anthology_deletion: אישור מחיקת מקראה
+  anthology_deletion_warning: אתה עומד למחוק לצמיתות את המקראה הזו
   anthology_deletion_cannot_undo: פעולה זו בלתי הפיכה. כל המידע יאבד.
   confirm_deletion: אשר מחיקה
-  error_updating_anthology: שגיאה בעדכון האסופה. נסה שוב.
-  error_deleting_anthology: שגיאה במחיקת האסופה. נסה שוב.
+  error_updating_anthology: שגיאה בעדכון המקראה. נסה שוב.
+  error_deleting_anthology: שגיאה במחיקת המקראה. נסה שוב.
   admin_options: אפשרויות אדמין
   show_all_anthologies_including_private: הצג את כל האסופות (כולל פרטיות ולא רשומות)
 

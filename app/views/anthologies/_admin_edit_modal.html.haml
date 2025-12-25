@@ -24,6 +24,20 @@
                     %option{value: 'unlisted'}= t(:anthology_access_unlisted)
                     %option{value: 'pub'}= t(:anthology_access_public)
 
+                .form-group#owner_info_section
+                  %label.headline-4-v02= t(:anthology_owner_label)
+                  %p#modal_current_owner
+                  #owner_missing_warning{style: 'display: none; color: #d9534f; margin-top: 5px;'}
+                    = t(:anthology_owner_missing_warning)
+
+                .form-group
+                  %label.headline-4-v02= t(:anthology_change_owner_label)
+                  %select.field-v02#modal_owner_id{name: 'user_id'}
+                    %option{value: ''}= t(:keep_current_owner)
+                    - if @all_users
+                      - @all_users.each do |user_name, user_id|
+                        %option{value: user_id}= user_name
+
                 .bottom-left-buttons
                   %button.by-button-v02.by-button-secondary-v02{'data-dismiss'=>'modal', type: 'button'}
                     %div= t(:cancel)
@@ -65,11 +79,24 @@
 :javascript
   var currentAnthologyId = null;
 
-  function openAdminEditModal(anthologyId, title, access) {
+  function openAdminEditModal(anthologyId, title, access, ownerId, ownerName) {
     currentAnthologyId = anthologyId;
     $('#modal_anthology_title').text(title);
     $('#modal_title').val(title);
     $('#modal_access').val(access);
+
+    // Show owner information
+    if (ownerName) {
+      $('#modal_current_owner').text(ownerName);
+      $('#owner_missing_warning').hide();
+    } else {
+      $('#modal_current_owner').text('#{I18n.t(:anthology_owner_deleted)}');
+      $('#owner_missing_warning').show();
+    }
+
+    // Reset owner dropdown to default
+    $('#modal_owner_id').val('');
+
     $('#adminEditAnthologyDlg').modal('show');
   }
 
@@ -79,16 +106,24 @@
 
       const title = $('#modal_title').val();
       const access = $('#modal_access').val();
+      const newOwnerId = $('#modal_owner_id').val();
+
+      const data = {
+        anthology: {
+          title: title,
+          access: access
+        }
+      };
+
+      // Only include user_id if a new owner was selected
+      if (newOwnerId) {
+        data.anthology.user_id = newOwnerId;
+      }
 
       $.ajax({
         type: 'PATCH',
         url: '/anthologies/' + currentAnthologyId,
-        data: {
-          anthology: {
-            title: title,
-            access: access
-          }
-        },
+        data: data,
         dataType: 'json',
         success: function(response) {
           $('#adminEditAnthologyDlg').modal('hide');
