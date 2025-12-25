@@ -272,8 +272,9 @@ describe AdminController do
 
     include_context 'Admin user logged in'
 
+    # Reduced from 60 to 5 - just need to verify endpoint works, not stress test it
     before do
-      create_list(:manifestation, 60, language: 'ru', orig_lang: 'he')
+      create_list(:manifestation, 5, language: 'ru', orig_lang: 'he')
     end
 
     it { is_expected.to be_successful }
