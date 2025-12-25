@@ -49,7 +49,6 @@ Bybeconv::Application.routes.draw do
 
         resources :authors, controller: 'citation_authors', only: %i(index create)
       end
-      resources :links, shallow: true, except: %i(show)
     end
 
     resources :citation_authors, only: %i(update destroy)
@@ -57,6 +56,7 @@ Bybeconv::Application.routes.draw do
     resources :publications, only: %i(edit update new create)
     resources :entries, except: %i(update new create) do
       resources :attachments, only: %i(index create destroy)
+      resources :links, shallow: true, except: %i(show)
     end
     resources :files, only: :index do
       member do
