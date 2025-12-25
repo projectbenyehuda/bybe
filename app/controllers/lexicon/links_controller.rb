@@ -4,20 +4,20 @@ module Lexicon
   # Controller to work with Lexicon Links
   class LinksController < ApplicationController
     before_action :set_link, only: %i(edit update destroy)
-    before_action :set_person, only: %i(new create index)
+    before_action :set_entry, only: %i(new create index)
 
     layout false
 
     def index
-      @links = @person.links
+      @links = @item.links
     end
 
     def new
-      @link = @person.links.build
+      @link = @item.links.build
     end
 
     def create
-      @link = @person.links.build(lex_link_params)
+      @link = @item.links.build(lex_link_params)
 
       return if @link.save
 
@@ -38,14 +38,16 @@ module Lexicon
 
     private
 
-    def set_person
-      @person = LexPerson.find(params[:person_id])
+    def set_entry
+      @entry = LexEntry.find(params[:entry_id])
+      @item = @entry.lex_item
     end
 
     # Use callbacks to share common setup or constraints between actions.
     def set_link
       @link = LexLink.find(params[:id])
-      @person = @link.item
+      @item = @link.item
+      @entry = @item.entry
     end
 
     # Only allow a list of trusted parameters through.
