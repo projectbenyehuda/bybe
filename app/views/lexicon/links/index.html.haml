@@ -1,4 +1,4 @@
-%a.btn.btn-primary.add-link{ data: { new_link_path: new_lexicon_person_link_path(@person) } }= t('.add_link')
+%a.btn.btn-primary.add-link{ data: { new_link_path: new_lexicon_entry_link_path(@entry) } }= t('.add_link')
 - if @links.present?
   %ul
     - @links.each do |link|
