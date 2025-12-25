@@ -56,6 +56,11 @@
                 = "(#{t(:empty_anthology)})"
             - if anthology.user
               .anthology-owner= t(:anthology_by_owner, owner: anthology.user.name)
+            - if current_user&.admin?
+              %button.btn-small-outline-v02.admin-edit-btn{onclick: "openAdminEditModal(#{anthology.id}, '#{j anthology.title}', '#{anthology.access}'); return false;", style: 'margin-right: 10px;'}
+                .btn-text-v02= t(:admin_edit)
+              - unless anthology.pub?
+                %span.anthology-access-badge{style: 'font-size: 70%; background-color: #f0f0f0; padding: 2px 6px; border-radius: 3px;'}= t("anthology_access_#{anthology.access}")
     - else
       .no-results= t(:no_anthologies_found)
 
