@@ -236,39 +236,44 @@ describe V1::TextsApi do
       end
     end
 
+    # We only test filtering by intellectual property types here in detail, other filters
+    # are tested in SearchManifestations service specs
     context 'when filter by intellectual property types is provided' do
       before do
-        clean_tables
+        Chewy.massacre
         Chewy.strategy(:atomic) do
-          manifestations
+          unknown_manifestation
+          public_domain_manifestation
+          by_permission_manifestation
         end
       end
 
-      # Reduced from 60 to 16 items - enough to test filtering and pagination (25 item page size)
-      let(:manifestations) do
-        result = []
-        (1..16).each do |index|
-          intellectual_property = %w(public_domain by_permission copyrighted unknown)[index % 4]
-          e = create(:expression, intellectual_property: intellectual_property)
-          result << create(:manifestation, impressions_count: index, expression: e)
-        end
-        result
-      end
+      let(:unknown_manifestation) { create(:manifestation, intellectual_property: 'unknown') }
+      let(:public_domain_manifestation) { create(:manifestation, intellectual_property: 'public_domain') }
+      let(:by_permission_manifestation) { create(:manifestation, intellectual_property: 'by_permission') }
 
-      let(:additional_params) do
-        { intellectual_property_types: %w(public_domain unknown), sort_by: :popularity, sort_dir: :asc }
-      end
-
-      it 'returns only copyrighted works' do
-        expect(call).to eq 201
-        expect(total_count).to eq 8
-        expect(data.size).to eq 8
-
-        matched = manifestations.select do |m|
-          m.expression.intellectual_property_public_domain? || m.expression.intellectual_property_unknown?
+      context 'when single value is provided' do
+        let(:additional_params) do
+          { intellectual_property_types: %w(public_domain), sort_by: :popularity, sort_dir: :asc }
         end
 
-        expect(data_ids).to eq matched.sort_by { |rec| [rec.impressions_count, rec.id] }.map(&:id)
+        it 'returns only matching records' do
+          expect(call).to eq 201
+          expect(total_count).to eq 1
+          expect(data_ids).to match_array [public_domain_manifestation.id]
+        end
+      end
+
+      context 'when multiple values are provided' do
+        let(:additional_params) do
+          { intellectual_property_types: %w(unknown by_permission), sort_by: :popularity, sort_dir: :asc }
+        end
+
+        it 'returns only matching records' do
+          expect(call).to eq 201
+          expect(total_count).to eq 2
+          expect(data_ids).to match_array [ unknown_manifestation.id, by_permission_manifestation.id ]
+        end
       end
     end
 
@@ -299,6 +304,8 @@ describe V1::TextsApi do
         records
       end
 
+      # Text API allows filtering by single original_language,
+      # while SearchManifestations service expects array of original_languages
       let(:service_params) do
         result = search_params.except('original_language')
         orig_lang = search_params['original_language']
@@ -343,9 +350,7 @@ describe V1::TextsApi do
       end
     end
 
-    # Pagination tests - share dataset across all tests in this context
     context 'when many pages exists' do
-      # Override parent before block and create our own dataset
       before do
         clean_tables
         Chewy.strategy(:atomic) do
