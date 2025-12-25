@@ -3,26 +3,28 @@
 require 'rails_helper'
 
 describe '/lexicon/links' do
-  let(:person) { create(:lex_entry, :person).lex_item }
+  let(:entry) { create(:lex_entry, :person) }
+  let(:person) { entry.lex_item }
+
 
   let!(:links) { create_list(:lex_link, 3, item: person) }
 
   let(:link) { links.first }
 
-  describe 'GET /lexicon/people/:ID/links' do
-    subject(:call) { get "/lex/people/#{person.id}/links" }
+  describe 'GET /lexicon/entries/:ID/links' do
+    subject(:call) { get "/lex/entries/#{entry.id}/links" }
 
     it { is_expected.to eq(200) }
   end
 
-  describe 'GET /lexicon/people/:ID/links/new' do
-    subject(:call) { get "/lex/people/#{person.id}/links/new" }
+  describe 'GET /lexicon/entries/:ID/links/new' do
+    subject(:call) { get "/lex/entries/#{entry.id}/links/new" }
 
     it { is_expected.to eq(200) }
   end
 
-  describe 'POST /lex/people/:ID/links' do
-    subject(:call) { post "/lex/people/#{person.id}/links", params: { lex_link: link_params }, xhr: true }
+  describe 'POST /lex/entries/:ID/links' do
+    subject(:call) { post "/lex/entries/#{entry.id}/links", params: { lex_link: link_params }, xhr: true }
 
     context 'when valid params' do
       let(:link_params) { attributes_for(:lex_link).except(:item) }
