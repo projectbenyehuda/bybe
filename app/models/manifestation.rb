@@ -429,6 +429,15 @@ class Manifestation < ApplicationRecord
     end
   end
 
+  def self.most_tagged(count)
+    select('manifestations.*')
+      .joins(:taggings)
+      .where(taggings: { status: Tagging.statuses[:approved] })
+      .group('manifestations.id')
+      .order(Arel.sql('COUNT(taggings.id) DESC'))
+      .limit(count)
+  end
+
   def self.cached_popular_works_by_genre
     Rails.cache.fetch('m_pop_by_genre', expires_in: 24.hours) do
       ret = {}
