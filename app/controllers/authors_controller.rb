@@ -132,7 +132,7 @@ class AuthorsController < ApplicationController
     # tags by tag_id
     # Use @tag_ids if already set (from by_tag action), otherwise use params
     tag_ids_source = @tag_ids.present? ? @tag_ids.to_s : params['tag_ids']
-    tag_ids_array = tag_ids_source.split(',').map(&:to_i) unless tag_ids_source.blank?
+    tag_ids_array = tag_ids_source.split(',').map(&:to_i) if tag_ids_source.present?
     if tag_ids_array.present?
       tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
       ret << { terms: { tags: tag_data.map(&:last) } }
