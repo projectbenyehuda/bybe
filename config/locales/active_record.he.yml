@@ -38,6 +38,14 @@ he:
           attributes:
             collection:
               cycle_found: נמצאה מעגליות באוסף!
+        anthology:
+          attributes:
+            title:
+              taken: השם כבר קיים. נא לתת שם אחר.
+        anthology_text:
+          attributes:
+            manifestation:
+              taken: היצירה הנוכחית כבר מופיעה במקראה הזאת.
     attributes:
       authority:
         other_designation: כינויים אחרים

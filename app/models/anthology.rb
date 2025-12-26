@@ -1,18 +1,3 @@
-class UserAnthTitleValidator < ActiveModel::Validator
-  def validate(record)
-    anths = record&.user&.anthologies
-    return if anths.nil?
-
-    records = anths.where(title: record.title)
-    unless record.new_record?
-      records = records.where.not(id: record.id)
-    end
-    return if records.empty?
-
-    record.errors.add(:title, I18n.t(:title_already_exists))
-  end
-end
-
 # Anthology is a User-managed collection of texts. Each user can create own anthologies
 class Anthology < ApplicationRecord
   include TrackingEvents
@@ -23,8 +8,7 @@ class Anthology < ApplicationRecord
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings, class_name: 'Tag'
   enum :access, { priv: 0, unlisted: 1, pub: 2 }
-  validates :title, presence: true
-  validates_with UserAnthTitleValidator
+  validates :title, presence: true, uniqueness: { scope: :user_id }
   scope :publicly_accessible, -> { where(access: %i(unlisted pub)) }
   scope :public_anthology, -> { where(access: :pub) }
 
@@ -40,12 +24,6 @@ class Anthology < ApplicationRecord
       return nil if dl.updated_at < at.manifestation.updated_at
     end
     return dl
-  end
-
-  def has_text?(text_id, anth_text_id = nil)
-    return texts.where(manifestation_id: text_id).present? if anth_text_id.nil?
-
-    return texts.where("manifestation_id = #{text_id} and id <> #{anth_text_id}").present?
   end
 
   def page_count(force_update = false)
