@@ -1,3 +1,26 @@
+GIT
+  remote: https://github.com/damisul/multi_markdown
+  revision: 376b564ffa229261a67adcb29838761ab2c51bce
+  specs:
+    rmultimarkdown (6.7.0.1)
+
+GIT
+  remote: https://github.com/kaminari/kaminari
+  revision: 55d6e40767442d206236d3718c5bdb32d01f2345
+  specs:
+    kaminari (1.2.2)
+      activesupport (>= 4.1.0)
+      kaminari-actionview (= 1.2.2)
+      kaminari-activerecord (= 1.2.2)
+      kaminari-core (= 1.2.2)
+    kaminari-actionview (1.2.2)
+      actionview
+      kaminari-core (= 1.2.2)
+    kaminari-activerecord (1.2.2)
+      activerecord
+      kaminari-core (= 1.2.2)
+    kaminari-core (1.2.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -365,18 +388,6 @@ GEM
     json (2.18.0)
     jwt (3.1.2)
       base64
-    kaminari (1.2.2)
-      activesupport (>= 4.1.0)
-      kaminari-actionview (= 1.2.2)
-      kaminari-activerecord (= 1.2.2)
-      kaminari-core (= 1.2.2)
-    kaminari-actionview (1.2.2)
-      actionview
-      kaminari-core (= 1.2.2)
-    kaminari-activerecord (1.2.2)
-      activerecord
-      kaminari-core (= 1.2.2)
-    kaminari-core (1.2.2)
     kt-paperclip (7.2.2)
       activemodel (>= 4.2.0)
       activesupport (>= 4.2.0)
@@ -907,7 +918,7 @@ DEPENDENCIES
   jquery-rails
   jquery-slick-rails
   jquery-ui-rails
-  kaminari
+  kaminari!
   kt-paperclip
   listen
   marcel (~> 1)
@@ -959,7 +970,7 @@ DEPENDENCIES
   selenium-webdriver
   sentry-rails
   sentry-ruby
-  sidekiq (~> 7.2)
+  sidekiq
   simple_form (~> 5.3.0)
   simplecov
   spring (= 4.2.1)
