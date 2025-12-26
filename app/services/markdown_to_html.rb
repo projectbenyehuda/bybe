@@ -8,7 +8,7 @@ class MarkdownToHtml < ApplicationService
     # remove MMD's automatic figcaptions
     html = MultiMarkdown.new(markdown).to_html.force_encoding('UTF-8')
                         .gsub(%r{<figcaption>.*?</figcaption>}, '')
-                        .gsub('<table>', '<div style="overflow-x:auto;"><table>')
+                        .gsub('<table', '<div style="overflow-x:auto;"><table')
                         .gsub('</table>', '</table></div>')
     html.gsub!(%r{(<li id="fn:\d+"[^>]*>\s*)<p>(.*?)</p>}) do
       # Change first <p> element in footnotes to <span> to prevent line break
