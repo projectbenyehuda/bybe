@@ -141,3 +141,6 @@ en:
         entry_verified: Entry verified successfully
         section_updated: Section updated successfully
         verification_incomplete: Verification incomplete - please verify all components
+      edit:
+        mark_as_verified: Mark this section as verified
+        html_allowed: HTML is allowed

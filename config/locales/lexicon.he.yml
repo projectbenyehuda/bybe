@@ -141,3 +141,6 @@ he:
         entry_verified: הערך אומת בהצלחה
         section_updated: הקטע עודכן בהצלחה
         verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
+      edit:
+        mark_as_verified: סמן קטע זה כמאומת
+        html_allowed: ניתן להשתמש ב-HTML

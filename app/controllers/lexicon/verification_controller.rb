@@ -113,8 +113,26 @@ module Lexicon
       mark_verified = params[:mark_verified] == '1' || params[:mark_verified] == true
       notes = params[:notes] || ''
 
+      success = true
+      errors = []
+
+      # Update entry title if present
+      if params[:entry_title].present?
+        unless @entry.update(title: params[:entry_title])
+          success = false
+          errors += @entry.errors.full_messages
+        end
+      end
+
       # Update the item (LexPerson or LexPublication)
-      if @entry.lex_item.update(item_params)
+      if item_params.present?
+        unless @entry.lex_item.update(item_params)
+          success = false
+          errors += @entry.lex_item.errors.full_messages
+        end
+      end
+
+      if success
         # Update verification checklist if requested
         if mark_verified
           @entry.update_checklist_item(section, true, notes)
@@ -128,7 +146,7 @@ module Lexicon
       else
         render json: {
           success: false,
-          errors: @entry.lex_item.errors.full_messages
+          errors: errors
         }, status: :unprocessable_entity
       end
     end
