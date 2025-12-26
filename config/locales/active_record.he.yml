@@ -132,6 +132,7 @@ he:
         works: ספרים
         about: על המחבר%{gender_suffix} ויצירת%{gender_letter}
         links: קישוריוֹת
+        gender: מגדר
       lex_publication:
         toc: תוכן עניינים
         az_navbar: להציג סרגל א–ב?
