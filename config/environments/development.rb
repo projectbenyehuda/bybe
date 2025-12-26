@@ -92,7 +92,7 @@ Rails.application.configure do
     }
     config.assets.js_compressor = :uglifier
     config.assets.css_compressor = :sass
-    config.assets.compile = true
+    config.assets.compile = false
     config.assets.digest = true
     config.assets.debug = false
 
