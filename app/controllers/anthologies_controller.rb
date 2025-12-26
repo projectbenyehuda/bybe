@@ -227,6 +227,7 @@ class AnthologiesController < ApplicationController
     begin
       if @anthology.save
         @cur_anth_id = @anthology.nil? ? 0 : @anthology.id
+        session[:current_anthology_id] = @anthology.id
         @anthologies = current_user.anthologies
         @new_anth_name = generate_new_anth_name_from_set(@anthologies)
 
