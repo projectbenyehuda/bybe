@@ -77,6 +77,64 @@ describe AnthologiesController do
     end
   end
 
+  describe '#create' do
+    let(:user) { create(:user) }
+    let(:anthology_params) { { title: 'My First Anthology', access: 'priv', user_id: user.id } }
+
+    before do
+      session[:user_id] = user.id
+    end
+
+    context 'when creating an anthology via JS' do
+      subject(:request) { post :create, params: { anthology: anthology_params }, format: :js, xhr: true }
+
+      it 'creates a new anthology' do
+        expect { request }.to change { Anthology.count }.by(1)
+      end
+
+      it 'sets the current_anthology_id session variable' do
+        request
+        new_anthology = Anthology.order(id: :desc).first
+        expect(session[:current_anthology_id]).to eq(new_anthology.id)
+      end
+
+      it 'assigns the new anthology as @anthology' do
+        request
+        expect(assigns(:anthology)).to be_a(Anthology)
+        expect(assigns(:anthology).title).to eq('My First Anthology')
+      end
+    end
+
+    context 'when creating an anthology via HTML' do
+      subject(:request) { post :create, params: { anthology: anthology_params }, format: :html }
+
+      it 'creates a new anthology' do
+        expect { request }.to change { Anthology.count }.by(1)
+      end
+
+      it 'sets the current_anthology_id session variable' do
+        request
+        new_anthology = Anthology.order(id: :desc).first
+        expect(session[:current_anthology_id]).to eq(new_anthology.id)
+      end
+
+      it 'redirects to the new anthology' do
+        request
+        new_anthology = Anthology.order(id: :desc).first
+        expect(response).to redirect_to(new_anthology)
+      end
+    end
+
+    context 'when anthology creation fails' do
+      let(:anthology_params) { { title: '', access: 'priv', user_id: user.id } }
+
+      it 'does not set the current_anthology_id session variable' do
+        post :create, params: { anthology: anthology_params }, format: :js, xhr: true
+        expect(session[:current_anthology_id]).to be_nil
+      end
+    end
+  end
+
   describe '#browse' do
     let(:user) { nil }
     let!(:public_anthology) { create(:anthology, access: :pub, title: 'Public Anthology') }
