@@ -23,11 +23,12 @@
   = render partial: 'shared/filters/pagination', locals: { form_id: 'works_filters', add_js: false }
   %hr
   .select-all-with-buttons.desktop-only
-    .select-text-checkbox-area
-      .select-all-checkbox
-        %input#select-all{type: 'checkbox', style:'display:none'}
-    %button.btn-small-outline-v02#multiselect_btn{title: t(:worklist_multi_tt)}
-      .by-icon-v02.purple-v02 \
+    - if current_user
+      .select-text-checkbox-area
+        .select-all-checkbox
+          %input#select-all{type: 'checkbox', style:'display:none'}
+      %button.btn-small-outline-v02#multiselect_btn{title: t(:worklist_multi_tt)}
+        .by-icon-v02.purple-v02 \
     .headline-4-v02= t(:sort_by)
     #sort-by
       %div
