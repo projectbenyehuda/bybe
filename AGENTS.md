@@ -138,6 +138,34 @@ RSpec.describe 'Feature name', type: :system, js: true do
 end
 ```
 
+### CRITICAL: Capybara Waiting in Tests
+
+**NEVER use `sleep` in Capybara system tests.** Capybara has built-in intelligent waiting.
+
+**DO NOT:**
+```ruby
+click_button 'Save'
+sleep 0.5  # ❌ WRONG - flaky and slow
+expect(page).to have_content('Saved')
+```
+
+**DO:**
+```ruby
+click_button 'Save'
+expect(page).to have_content('Saved')  # ✅ Capybara waits automatically
+
+# For AJAX updates, use element expectations:
+expect(page).to have_css('.progress-bar[aria-valuenow="50"]')  # Waits for change
+expect(page.find('#status')).to have_text('Complete')  # Waits for text
+
+# For custom conditions, use have_xpath/have_css with text/count matchers
+expect(page).to have_css('.item', count: 5)  # Waits for exactly 5 items
+```
+
+Capybara automatically waits (default 2 seconds, configurable) for:
+- `find`, `have_content`, `have_css`, `have_xpath`, `have_text`
+- All matchers and finders
+
 **Remember**: A feature without tests is an incomplete feature.
 
 ## Complete Git Workflow - Follow Every Time
