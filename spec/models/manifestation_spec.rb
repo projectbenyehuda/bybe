@@ -276,6 +276,58 @@ describe Manifestation do
     end
   end
 
+  describe '.most_tagged' do
+    let(:tag1) { create(:tag, status: :approved) }
+    let(:tag2) { create(:tag, status: :approved) }
+    let(:tag3) { create(:tag, status: :approved) }
+
+    let!(:manifestation1) { create(:manifestation) }
+    let!(:manifestation2) { create(:manifestation) }
+    let!(:manifestation3) { create(:manifestation) }
+    let!(:manifestation4) { create(:manifestation) }
+
+    before do
+      # manifestation1: 3 approved taggings
+      create(:tagging, tag: tag1, taggable: manifestation1, status: :approved)
+      create(:tagging, tag: tag2, taggable: manifestation1, status: :approved)
+      create(:tagging, tag: tag3, taggable: manifestation1, status: :approved)
+
+      # manifestation2: 2 approved taggings + 1 pending (should not count)
+      create(:tagging, tag: tag1, taggable: manifestation2, status: :approved)
+      create(:tagging, tag: tag2, taggable: manifestation2, status: :approved)
+      create(:tagging, tag: tag3, taggable: manifestation2, status: :pending)
+
+      # manifestation3: 1 approved tagging
+      create(:tagging, tag: tag1, taggable: manifestation3, status: :approved)
+
+      # manifestation4: no approved taggings (only rejected)
+      create(:tagging, tag: tag1, taggable: manifestation4, status: :rejected)
+    end
+
+    it 'returns manifestations ordered by approved tagging count' do
+      result = described_class.most_tagged(3)
+      expect(result).to eq([manifestation1, manifestation2, manifestation3])
+    end
+
+    it 'respects the count parameter' do
+      result = described_class.most_tagged(2)
+      expect(result.length).to eq(2)
+      expect(result).to eq([manifestation1, manifestation2])
+    end
+
+    it 'only counts approved taggings' do
+      result = described_class.most_tagged(10)
+      expect(result).not_to include(manifestation4)
+    end
+
+    it 'does not count pending taggings' do
+      # manifestation2 has 2 approved + 1 pending, should rank below manifestation1 with 3 approved
+      result = described_class.most_tagged(2)
+      expect(result.first).to eq(manifestation1)
+      expect(result.second).to eq(manifestation2)
+    end
+  end
+
   describe '.approved_tags' do
     subject { manifestation.approved_tags }
 
