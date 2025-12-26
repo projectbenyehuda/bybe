@@ -8,11 +8,11 @@ class CreateLexCitationAuthors < ActiveRecord::Migration[8.0]
       t.string :name
       t.string :link
       t.references :lex_person, foreign_key: true
-    end
+    end if not table_exists?(:lex_citation_authors)
 
     execute <<~SQL
-      insert into lex_citation_authors (lex_citation_id, name, created_at)
-      select id, authors, created_at from lex_citations where authors is not null  
+      insert into lex_citation_authors (lex_citation_id, name, created_at, updated_at )
+      select id, authors, created_at, updated_at from lex_citations where authors is not null  
     SQL
 
     add_index :lex_citation_authors, [:lex_citation_id, :lex_person_id], unique: true
