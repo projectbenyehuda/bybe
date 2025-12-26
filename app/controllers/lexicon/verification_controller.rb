@@ -3,7 +3,7 @@
 module Lexicon
   # Controller for migration verification workbench
   class VerificationController < ApplicationController
-    before_action :set_entry, except: %i[index]
+    before_action :set_entry, except: %i(index)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
@@ -20,9 +20,9 @@ module Lexicon
       @entries = @entries.where(status: params[:status]) if params[:status].present?
 
       # Filter by type if provided
-      if params[:type].present?
-        @entries = @entries.where(lex_item_type: params[:type])
-      end
+      return unless params[:type].present?
+
+      @entries = @entries.where(lex_item_type: params[:type])
     end
 
     # GET /lexicon/verification/:id
@@ -46,21 +46,22 @@ module Lexicon
       if content.present?
         # Rewrite relative URLs to point to /lexicon/ (legacy PHP server)
         # This preserves the original look while fixing 404s in iframe context
-        processed_content = content.gsub(/(<link[^>]*href=["'])(?!http|\/)(.*?\.css["'][^>]*>)/i, '\1/lexicon/\2')
-                                   .gsub(/(<script[^>]*src=["'])(?!http|\/)(.*?\.js["'][^>]*>)/i, '\1/lexicon/\2')
-                                   .gsub(/(<img[^>]*src=["'])(?!http|\/)(.*?["'][^>]*>)/i, '\1/lexicon/\2')
-                                   .gsub(/(<a[^>]*href=["'])(?!http|\/|#)(.*?["'][^>]*>)/i, '\1/lexicon/\2')
+        processed_content = content.gsub(%r{(<link[^>]*href=["'])(?!http|/)(.*?\.css["'][^>]*>)}i, '\1/lexicon/\2')
+                                   .gsub(%r{(<script[^>]*src=["'])(?!http|/)(.*?\.js["'][^>]*>)}i, '\1/lexicon/\2')
+                                   .gsub(%r{(<img[^>]*src=["'])(?!http|/)(.*?["'][^>]*>)}i, '\1/lexicon/\2')
+                                   .gsub(%r{(<a[^>]*href=["'])(?!http|/|#)(.*?["'][^>]*>)}i, '\1/lexicon/\2')
 
         render html: processed_content.html_safe, layout: false
       else
-        render html: '<div style="padding: 20px; text-align: center; color: #999;">⚠️ קובץ מקור לא נמצא (Source file not found)</div>'.html_safe, layout: false
+        render html: '<div style="padding: 20px; text-align: center; color: #999;">⚠️ קובץ מקור לא נמצא (Source file not found)</div>'.html_safe,
+               layout: false
       end
     end
 
     # PATCH /lexicon/verification/:id/update_checklist
     def update_checklist
       path = params[:path] # e.g., "title" or "citations.items.123"
-      verified = params[:verified] == 'true' || params[:verified] == true
+      verified = ['true', true].include?(params[:verified])
       notes = params[:notes] || ''
 
       @entry.update_checklist_item(path, verified, notes)
@@ -133,26 +134,22 @@ module Lexicon
     # PATCH /lexicon/verification/:id/update_section
     def update_section
       section = params[:section]
-      mark_verified = params[:mark_verified] == '1' || params[:mark_verified] == true
+      mark_verified = ['1', true].include?(params[:mark_verified])
       notes = params[:notes] || ''
 
       success = true
       errors = []
 
       # Update entry title if present
-      if params[:entry_title].present?
-        unless @entry.update(title: params[:entry_title])
-          success = false
-          errors += @entry.errors.full_messages
-        end
+      if params[:entry_title].present? && !@entry.update(title: params[:entry_title])
+        success = false
+        errors += @entry.errors.full_messages
       end
 
       # Update the item (LexPerson or LexPublication)
-      if item_params.present?
-        unless @entry.lex_item.update(item_params)
-          success = false
-          errors += @entry.lex_item.errors.full_messages
-        end
+      if item_params.present? && !@entry.lex_item.update(item_params)
+        success = false
+        errors += @entry.lex_item.errors.full_messages
       end
 
       if success
