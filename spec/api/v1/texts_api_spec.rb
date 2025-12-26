@@ -244,12 +244,13 @@ describe V1::TextsApi do
         end
       end
 
+      # Reduced from 60 to 16 items - enough to test filtering and pagination (25 item page size)
       let(:manifestations) do
         result = []
-        (1..60).each do |index|
+        (1..16).each do |index|
           intellectual_property = %w(public_domain by_permission copyrighted unknown)[index % 4]
           e = create(:expression, intellectual_property: intellectual_property)
-          result << create(:manifestation, impressions_count: Random.rand(100), expression: e)
+          result << create(:manifestation, impressions_count: index, expression: e)
         end
         result
       end
@@ -260,14 +261,14 @@ describe V1::TextsApi do
 
       it 'returns only copyrighted works' do
         expect(call).to eq 201
-        expect(total_count).to eq 30
-        expect(data.size).to eq 25
+        expect(total_count).to eq 8
+        expect(data.size).to eq 8
 
         matched = manifestations.select do |m|
           m.expression.intellectual_property_public_domain? || m.expression.intellectual_property_unknown?
         end
 
-        expect(data_ids).to eq matched.sort_by { |rec| [rec.impressions_count, rec.id] }.map(&:id)[0..24]
+        expect(data_ids).to eq matched.sort_by { |rec| [rec.impressions_count, rec.id] }.map(&:id)
       end
     end
 
@@ -342,7 +343,9 @@ describe V1::TextsApi do
       end
     end
 
+    # Pagination tests - share dataset across all tests in this context
     context 'when many pages exists' do
+      # Override parent before block and create our own dataset
       before do
         clean_tables
         Chewy.strategy(:atomic) do

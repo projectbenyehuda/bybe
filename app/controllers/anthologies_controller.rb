@@ -255,6 +255,14 @@ class AnthologiesController < ApplicationController
 
   # PATCH/PUT /anthologies/1
   def update
+    # Prevent non-admin users from setting access to 'pub'
+    if !current_user&.admin? && anthology_params[:access] == 'pub'
+      @anthology.errors.add(:access, I18n.t('errors.messages.not_authorized',
+                                            default: 'You do not have permission to set access to public.'))
+      respond_with_error
+      return
+    end
+
     @anthology.update!(anthology_params)
     @cur_anth_id = @anthology.nil? ? 0 : @anthology.id
     @error = false
