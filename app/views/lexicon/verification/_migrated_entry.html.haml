@@ -1,0 +1,12 @@
+.migrated-card
+  .migrated-header
+    %h4.migrated-title= t('lexicon.verification.migrated.header')
+
+  .migrated-content
+    - if item.is_a?(LexPerson)
+      = render 'lexicon/verification/person_sections', entry: entry, item: item, checklist: checklist
+    - elsif item.is_a?(LexPublication)
+      = render 'lexicon/verification/publication_sections', entry: entry, item: item, checklist: checklist
+    - else
+      .alert.alert-danger
+        Unsupported entry type: #{item.class.name}
