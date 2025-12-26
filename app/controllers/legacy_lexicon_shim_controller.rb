@@ -10,8 +10,22 @@ class LegacyLexiconShimController < ApplicationController
                   end
 
     # Make the request to the legacy lexicon using HTTPS and Net
-    blog_html = Net::HTTP.get(URI(request_url))
-    render html: rewrite_links(blog_html)
+    uri = URI(request_url)
+    response = Net::HTTP.get_response(uri)
+
+    if response.is_a?(Net::HTTPSuccess)
+      body = response.body
+      content_type = response['content-type'] || 'application/octet-stream'
+
+      # Only run HTML rewriting for HTML responses; proxy other assets with correct content-type
+      if content_type.include?('text/html')
+        render html: rewrite_links(body)
+      else
+        send_data body, type: content_type, disposition: 'inline'
+      end
+    else
+      render plain: 'Legacy resource not available', status: response.code.to_i
+    end
   end
 
   private
