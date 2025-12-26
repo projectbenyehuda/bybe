@@ -23,7 +23,7 @@ def webdriver_available?
   end
 end
 
-RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
+RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
@@ -46,7 +46,7 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
 
   let!(:lex_file) do
     # Create a temporary PHP file for testing
-    file_path = Rails.root.join('tmp', 'test_person.php')
+    file_path = Rails.root.join('tmp/test_person.php')
     File.write(file_path, '<html><body><h1>Test Person</h1><p>Test content</p></body></html>')
 
     create(:lex_file,
@@ -101,7 +101,7 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
     it 'allows filtering by status' do
       visit '/lex/verification/queue'
 
-      select 'טיוטה', from: 'status'  # Draft in Hebrew
+      select 'טיוטה', from: 'status' # Draft in Hebrew
       click_button 'Filter'
 
       expect(page).to have_content('Test Person')
@@ -332,7 +332,7 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
 
       # Check all items programmatically for speed
       entry.verification_progress['checklist'].each_key do |key|
-        next if key == 'citations' || key == 'links'  # Skip collections for now
+        next if %w(citations links).include?(key) # Skip collections for now
 
         entry.update_checklist_item(key, true, '')
       end
