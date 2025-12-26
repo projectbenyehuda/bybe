@@ -1,19 +1,7 @@
-class AnthTextValidator < ActiveModel::Validator
-  def validate(record)
-    if record.manifestation_id.nil? # curated texts can always be added
-      return true
-    end
-
-    return unless record.anthology.has_text?(record.manifestation_id, record.id)
-
-    record.errors[:base] << I18n.t(:text_already_in_anthology)
-  end
-end
-
 class AnthologyText < ApplicationRecord
-  validates_with AnthTextValidator
+  validates :manifestation, uniqueness: { scope: :anthology_id, allow_nil: true }
   belongs_to :anthology
-  belongs_to :manifestation
+  belongs_to :manifestation, optional: true
   scope :is_text, -> { where.not(manifestation_id: nil) }
   scope :is_curated, -> { where(manifestation_id: nil) }
 

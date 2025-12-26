@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_26_082214) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -108,6 +108,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "impressions_count", default: 0
+    t.index ["user_id", "title"], name: "index_anthologies_on_user_id_and_title", unique: true
     t.index ["user_id"], name: "index_anthologies_on_user_id"
   end
 
@@ -119,6 +120,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "cached_page_count"
+    t.index ["anthology_id", "manifestation_id"], name: "index_anthology_texts_on_anthology_id_and_manifestation_id", unique: true
     t.index ["anthology_id"], name: "index_anthology_texts_on_anthology_id"
     t.index ["manifestation_id"], name: "index_anthology_texts_on_manifestation_id"
   end

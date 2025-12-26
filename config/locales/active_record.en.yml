@@ -34,6 +34,14 @@ en:
           attributes:
             collection:
               cycle_found: Cycle found
+        anthology:
+          attributes:
+            title:
+              taken: Title already exists. Please choose a different title.
+        anthology_text:
+          attributes:
+            manifestation:
+              taken: Text is already in the anthology
     attributes:
       authority:
         other_designation: Other designation

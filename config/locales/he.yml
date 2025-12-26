@@ -704,8 +704,6 @@ he:
   authors_xx: "יוצרים: %{xx}"
   name_starts_with_x: "שם מתחיל באות '%{x}'"
   title_starts_with_x: "כותרת מתחילה באות '%{x}'"
-  title_already_exists: השם כבר קיים. נא לתת שם אחר.
-  text_already_in_anthology: היצירה הנוכחית כבר מופיעה במקראה הזאת.
   anth_x_works_added: "%{x} יצירות נוספו לסוף המקראה. אפשר לשנות את מיקומן בגרירה."
   anth_x_works_skipped: "%{x} מהיצירות שסימנת לא נוספו למקראה כי הן כבר מופיעות בה."
   editing_or_compilation: עריכה/ההדרה

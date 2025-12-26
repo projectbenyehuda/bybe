@@ -28,7 +28,9 @@ describe Anthology do
           let(:anthology_title) { existing_title }
           it 'generates validation error' do
             expect(result).to be false
-            expect(record.errors[:title]).to eq [I18n.t(:title_already_exists)]
+            expect(record.errors[:title]).to include(
+              I18n.t('activerecord.errors.models.anthology.attributes.title.taken')
+            )
           end
         end
       end
@@ -50,7 +52,9 @@ describe Anthology do
           let(:anthology_title) { existing_title }
           it 'generates validation error' do
             expect(result).to be false
-            expect(record.errors[:title]).to eq [I18n.t(:title_already_exists)]
+            expect(record.errors[:title]).to include(
+              I18n.t('activerecord.errors.models.anthology.attributes.title.taken')
+            )
           end
         end
       end
