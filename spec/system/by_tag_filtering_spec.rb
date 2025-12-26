@@ -92,29 +92,38 @@ RSpec.describe 'By tag filtering', :js, type: :system do
       # Wait for page to load
       expect(page).to have_css('.by-card-v02')
 
-      # Verify filtering is working by checking the result count
-      # Note: Author names may not display in test environment due to Elasticsearch indexing timing
-      # but the filtering itself is working correctly as evidenced by the count
+      # Verify page title and tag name
       expect(page).to have_content(I18n.t(:authors_by_tag))
       expect(page).to have_content(@fiction_tag.name)
 
-      # Check that we have results (at least one author found)
+      # Verify that exactly 1 author is found (Author One is tagged with Fiction)
+      # Note: In test environment, ES may not have author names fully indexed,
+      # but the filtering logic is verified by checking the result count
+      expect(page).to have_content('1 יוצרים ויוצרות') # "1 authors" in Hebrew
+
+      # Verify we have results in the list
       expect(page).to have_css('#thelist')
     end
 
-    it 'shows correct page title with tag name' do
+    it 'shows correct page title with tag name for poetry' do
       visit authors_by_tag_path(@poetry_tag.id)
 
       expect(page).to have_content(I18n.t(:authors_by_tag))
       expect(page).to have_content(@poetry_tag.name)
+
+      # Verify exactly 1 author is found (Author Two is tagged with Poetry)
+      expect(page).to have_content('1 יוצרים ויוצרות')
     end
 
     it 'filters correctly for drama tag' do
       visit authors_by_tag_path(@drama_tag.id)
 
-      # Verify the tag name appears in the title/filter
+      # Verify the tag name appears in the title
       expect(page).to have_content(@drama_tag.name)
       expect(page).to have_content(I18n.t(:authors_by_tag))
+
+      # Verify exactly 1 author is found (Author Three is tagged with Drama)
+      expect(page).to have_content('1 יוצרים ויוצרות')
     end
 
     it 'displays appropriate message when tag is not found' do
