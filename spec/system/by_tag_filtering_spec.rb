@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'By tag filtering', type: :system, js: true do
+RSpec.describe 'By tag filtering', :js, type: :system do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
@@ -79,7 +79,7 @@ RSpec.describe 'By tag filtering', type: :system, js: true do
     end
 
     it 'displays appropriate message when tag is not found' do
-      visit search_by_tag_path(99999) # Non-existent tag ID
+      visit search_by_tag_path(99_999) # Non-existent tag ID
 
       expect(page).to have_content(I18n.t(:no_such_item))
     end
@@ -118,7 +118,7 @@ RSpec.describe 'By tag filtering', type: :system, js: true do
     end
 
     it 'displays appropriate message when tag is not found' do
-      visit authors_by_tag_path(99999) # Non-existent tag ID
+      visit authors_by_tag_path(99_999) # Non-existent tag ID
 
       expect(page).to have_content(I18n.t(:no_such_item))
     end
