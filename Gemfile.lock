@@ -1,3 +1,9 @@
+GIT
+  remote: https://github.com/damisul/multi_markdown
+  revision: 376b564ffa229261a67adcb29838761ab2c51bce
+  specs:
+    rmultimarkdown (6.7.0.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -635,8 +641,6 @@ GEM
     rmagick (6.1.4)
       observer (~> 0.1)
       pkg-config (~> 1.4)
-    rmultimarkdown (6.4.0.4)
-      bundler
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -916,7 +920,7 @@ DEPENDENCIES
   rails-ujs
   responders
   rmagick
-  rmultimarkdown
+  rmultimarkdown!
   rspec-rails
   rspec-sqlimit
   rswag-api

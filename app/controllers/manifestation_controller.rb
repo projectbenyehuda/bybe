@@ -92,7 +92,7 @@ class ManifestationController < ApplicationController
     @page_title = t(:works_by_tag) + ' ' + t(:project_ben_yehuda)
     @pagetype = :works
     @tag_ids = params[:id]
-    tag = Tag.find(params[:id])
+    tag = Tag.find_by(id: params[:id])
     if tag.present?
       @works_list_title = t(:works_by_tag) + ': ' + tag.name
       browse
@@ -789,7 +789,9 @@ class ManifestationController < ApplicationController
     end
 
     # tags by tag_id
-    tag_ids_array = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
+    # Use @tag_ids if already set (from by_tag action), otherwise use params
+    tag_ids_source = @tag_ids.present? ? @tag_ids.to_s : params['tag_ids']
+    tag_ids_array = tag_ids_source.split(',').map(&:to_i) if tag_ids_source.present?
     if tag_ids_array.present?
       tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
       ret['tags'] = tag_data.map(&:last)
