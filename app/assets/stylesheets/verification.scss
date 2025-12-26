@@ -30,7 +30,8 @@
   display: grid;
   grid-template-columns: 280px 1fr 1fr;
   gap: 1.5rem;
-  min-height: calc(100vh - 300px);
+  height: calc(100vh - 300px);
+  max-height: calc(100vh - 300px);
 
   @media (max-width: 1400px) {
     grid-template-columns: 250px 1fr 1fr;
@@ -144,6 +145,7 @@
   border: 1px solid #dee2e6;
   border-radius: 8px;
   overflow: hidden;
+  height: 100%;
 }
 
 .source-card {
@@ -173,7 +175,8 @@
 
   .source-content {
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     .source-iframe {
       width: 100%;
@@ -189,6 +192,7 @@
   border: 1px solid #dee2e6;
   border-radius: 8px;
   overflow: hidden;
+  height: 100%;
 }
 
 .migrated-card {
