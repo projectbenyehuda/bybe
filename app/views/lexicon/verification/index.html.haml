@@ -1,0 +1,51 @@
+%h1= t('lexicon.verification.queue.title')
+
+.filters.mb-3
+  = form_tag lexicon_verification_queue_path, method: :get, class: 'form-inline' do
+    .form-group.me-2
+      = label_tag :status, t('lexicon.verification.queue.columns.status'), class: 'me-1'
+      - status_options = [[t('lexicon.verification.queue.filters.all'), ''], [t('lexicon.verification.queue.filters.draft'), 'draft'], [t('lexicon.verification.queue.filters.verifying'), 'verifying'], [t('lexicon.verification.queue.filters.error'), 'error']]
+      = select_tag :status, options_for_select(status_options, params[:status]), class: 'form-control'
+
+    .form-group.me-2
+      = label_tag :type, t('lexicon.verification.queue.columns.type'), class: 'me-1'
+      - type_options = [[t('lexicon.verification.queue.filters.all'), ''], ['Person', 'LexPerson'], ['Publication', 'LexPublication']]
+      = select_tag :type, options_for_select(type_options, params[:type]), class: 'form-control'
+
+    = submit_tag 'Filter', class: 'btn btn-sm btn-primary'
+
+%table.table.table-striped.verification-queue-table
+  %thead
+    %tr
+      %th= t('lexicon.verification.queue.columns.title')
+      %th= t('lexicon.verification.queue.columns.type')
+      %th= t('lexicon.verification.queue.columns.status')
+      %th= t('lexicon.verification.queue.columns.progress')
+      %th= t('lexicon.verification.queue.columns.last_updated')
+      %th= t('lexicon.verification.queue.columns.actions')
+  %tbody
+    - @entries.each do |entry|
+      %tr{class: "status-#{entry.status}"}
+        %td= entry.title
+        %td= entry.lex_item_type&.demodulize
+        %td
+          %span.badge{class: badge_class_for_status(entry.status)}
+            = entry.status.humanize
+        %td
+          - if entry.status_verifying? || entry.status_verified?
+            - percentage = entry.verification_percentage
+            .progress{style: 'width: 150px; height: 20px;'}
+              .progress-bar{role: 'progressbar', style: "width: #{percentage}%", 'aria-valuenow': percentage, 'aria-valuemin': '0', 'aria-valuemax': '100'}
+                = "#{percentage}%"
+          - else
+            %span.text-muted 0%
+        %td
+          = time_ago_in_words(entry.updated_at)
+          ago
+        %td
+          - if entry.status_verifying?
+            = link_to t('lexicon.verification.queue.actions.continue'), lexicon_verification_path(entry), class: 'btn btn-sm btn-primary'
+          - else
+            = link_to t('lexicon.verification.queue.actions.start'), lexicon_verification_path(entry), class: 'btn btn-sm btn-success'
+
+= paginate @entries

@@ -1,0 +1,505 @@
+// Verification Workbench Styles
+
+.verification-header {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+
+  .title-section {
+    h2 {
+      margin-bottom: 0.5rem;
+      font-size: 1.75rem;
+    }
+  }
+
+  .progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.verification-container {
+  display: grid;
+  grid-template-columns: 280px 1fr 1fr;
+  gap: 1.5rem;
+  min-height: calc(100vh - 300px);
+
+  @media (max-width: 1400px) {
+    grid-template-columns: 250px 1fr 1fr;
+  }
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+
+    .verification-checklist {
+      grid-column: 1 / -1;
+      position: static;
+      max-height: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+}
+
+// Checklist Column
+.verification-checklist {
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  align-self: start;
+}
+
+.checklist-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+
+  .checklist-title {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .checklist-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .checklist-item {
+      margin-bottom: 0.75rem;
+
+      label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+
+        input[type="checkbox"] {
+          margin-top: 0.25rem;
+          cursor: pointer;
+        }
+
+        &:hover {
+          color: #007bff;
+        }
+      }
+
+      .count {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-left: 0.25rem;
+      }
+    }
+
+    .nested-checklist {
+      list-style: none;
+      padding: 0 0 0 1.5rem;
+      margin: 0.5rem 0 0 0;
+
+      .nested-item {
+        margin-bottom: 0.5rem;
+
+        label {
+          font-weight: normal;
+          font-size: 0.9rem;
+          color: #495057;
+        }
+      }
+    }
+  }
+
+  .overall-notes {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+
+    .form-label {
+      margin-bottom: 0.5rem;
+    }
+
+    textarea {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Source Column
+.verification-source {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.source-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .source-header {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .source-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .filename {
+      font-size: 0.85rem;
+      font-family: monospace;
+    }
+  }
+
+  .source-content {
+    flex: 1;
+    overflow: hidden;
+
+    .source-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  }
+}
+
+// Migrated Entry Column
+.verification-migrated {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.migrated-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .migrated-header {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+
+    .migrated-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+  }
+
+  .migrated-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+}
+
+// Verification Sections
+.verification-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: #fff;
+  position: relative;
+  transition: all 0.3s ease;
+
+  &.verified {
+    border-color: #28a745;
+    background: #f0fff4;
+  }
+
+  &.not-verified {
+    border-color: #ffc107;
+    background: #fffbf0;
+  }
+
+  &.highlight-flash {
+    animation: highlight 2s ease;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+
+    h5 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .verification-badge {
+      font-size: 0.85rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 500;
+
+      &.verified {
+        background: #28a745;
+        color: white;
+      }
+
+      &.not-verified {
+        background: #ffc107;
+        color: #333;
+      }
+    }
+  }
+
+  .section-content {
+    margin-bottom: 1rem;
+
+    p {
+      margin-bottom: 0.5rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .text-muted {
+      font-style: italic;
+    }
+  }
+
+  .section-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+// Citation Cards
+.citation-group {
+  .subject-header {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+}
+
+.citation-card, .link-card {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  background: #fff;
+  transition: all 0.2s ease;
+
+  &.verified {
+    border-color: #28a745;
+    background: #f0fff4;
+  }
+
+  &.not-verified {
+    border-color: #ffc107;
+    background: #fffbf0;
+  }
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .citation-content, .link-content {
+    margin-bottom: 0.75rem;
+
+    strong {
+      display: block;
+      color: #212529;
+      margin-bottom: 0.25rem;
+    }
+
+    .text-muted {
+      font-size: 0.9rem;
+    }
+
+    a.citation-link {
+      color: #007bff;
+      text-decoration: none;
+      font-size: 0.9rem;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .citation-actions, .link-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+// Attachment Items
+.attachment-item {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  a {
+    font-weight: 500;
+    color: #007bff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .text-muted {
+    font-size: 0.85rem;
+  }
+}
+
+// Highlight Animation
+@keyframes highlight {
+  0%, 100% {
+    background: inherit;
+  }
+  50% {
+    background: #fff3cd;
+    border-color: #856404;
+  }
+}
+
+// Toast Notification
+.toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #28a745;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 9999;
+  animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
+  font-weight: 500;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+// Verification Queue Table
+.verification-queue-table {
+  .progress {
+    margin: 0;
+  }
+
+  .badge {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  tr.status-draft {
+    background-color: #f8f9fa;
+  }
+
+  tr.status-verifying {
+    background-color: #fff3cd;
+  }
+
+  tr.status-error {
+    background-color: #f8d7da;
+  }
+
+  tr.status-verified {
+    background-color: #d4edda;
+  }
+}
+
+// RTL Support
+[dir="rtl"] {
+  .verification-checklist ul li.nested-item {
+    padding-left: 0;
+    padding-right: 1.5rem;
+  }
+
+  .verification-section .section-header {
+    text-align: right;
+  }
+
+  .citation-card .citation-actions,
+  .link-card .link-actions {
+    flex-direction: row-reverse;
+  }
+
+  .toast-notification {
+    right: auto;
+    left: 2rem;
+    animation: slideInRtl 0.3s ease, slideOutRtl 0.3s ease 2.7s;
+  }
+}
+
+@keyframes slideInRtl {
+  from {
+    transform: translateX(-400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRtl {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-400px);
+    opacity: 0;
+  }
+}

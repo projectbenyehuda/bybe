@@ -72,3 +72,72 @@ en:
         success: Lexicon Publication created
       update:
         success: Lexicon Publication updated
+    verification:
+      queue:
+        title: Migration Verification Queue
+        columns:
+          title: Title
+          type: Type
+          status: Status
+          progress: Progress
+          last_updated: Last Updated
+          actions: Actions
+        actions:
+          start: Start Verification
+          continue: Continue Verification
+        filters:
+          all: All
+          draft: Draft
+          verifying: Verifying
+          error: Error
+      show:
+        title: "Verifying: %{entry_title}"
+        back_to_queue: Back to Queue
+        save_progress: Save Progress
+        mark_verified: Mark as Verified
+        progress: Progress
+      checklist:
+        title: Verification Checklist
+        overall_notes: Overall Notes
+        person:
+          title: Title
+          life_years: Life Years
+          bio: Biography
+          works: Works
+          citations: Citations
+          links: Links
+          attachments: Attachments
+        publication:
+          title: Title
+          description: Description
+          toc: Table of Contents
+          az_navbar: A-Z Navigation
+          links: Links
+          attachments: Attachments
+      source:
+        header: Source File
+        file_not_found: "⚠️ Source file not found"
+      migrated:
+        header: Migrated Entry
+        edit: Edit
+        add_citation: Add Citation
+        add_link: Add Link
+        upload_file: Upload File
+        verified: Verified
+        not_verified: Not Verified
+        mark_verified: Mark as Verified
+      sections:
+        title_and_years: Title and Life Years
+        biography: Biography
+        works_section: Works
+        citations_section: Citations
+        links_section: Links
+        attachments_section: Attachments
+        description_section: Description
+        toc_section: Table of Contents
+        az_navbar_section: A-Z Navigation
+      messages:
+        progress_saved: Progress saved successfully
+        entry_verified: Entry verified successfully
+        section_updated: Section updated successfully
+        verification_incomplete: Verification incomplete - please verify all components

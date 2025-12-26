@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_26_060307) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -652,6 +652,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_235749) do
     t.string "lex_item_type"
     t.bigint "lex_item_id"
     t.string "sort_title"
+    t.json "verification_progress"
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"
