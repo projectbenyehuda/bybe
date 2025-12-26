@@ -78,8 +78,8 @@ RSpec.describe 'Tags browse view', :js, type: :system do
 
   describe 'show all functionality', :js do
     before do
-      # Create enough tags to trigger pagination (Kaminari default is 25 per page)
-      30.times do |i|
+      # Reduced from 30 to 26 - just enough to trigger pagination at 25 per page
+      26.times do |i|
         create(:tag, name: "Tag#{i.to_s.rjust(3, '0')}", status: :approved)
       end
       visit tags_browse_path
@@ -91,18 +91,17 @@ RSpec.describe 'Tags browse view', :js, type: :system do
 
     it 'hides pagination when "show all" is checked' do
       check 'show_all_checkbox'
-      sleep 1 # Wait for page reload
-
-      expect(page).not_to have_css('.pagination-container')
+      # Use Capybara's built-in waiting instead of sleep
+      expect(page).not_to have_css('.pagination-container', wait: 2)
     end
 
     it 'displays all tags when "show all" is checked' do
       check 'show_all_checkbox'
-      sleep 1 # Wait for page reload
 
-      # Should show all 33 tags (3 from setup + 30 created in before block)
-      within('#tags_mainlist ol') do
-        expect(page.all('li').count).to eq(33)
+      # Should show all 29 tags (3 from setup + 26 created in before block)
+      # Use Capybara's built-in waiting
+      within('#tags_mainlist ol', wait: 2) do
+        expect(page.all('li').count).to eq(29)
       end
     end
 
@@ -116,9 +115,8 @@ RSpec.describe 'Tags browse view', :js, type: :system do
     it 'shows pagination again when "show all" is unchecked' do
       visit tags_browse_path(show_all: 'true')
       uncheck 'show_all_checkbox'
-      sleep 1 # Wait for page reload
-
-      expect(page).to have_css('.pagination-container')
+      # Use Capybara's built-in waiting instead of sleep
+      expect(page).to have_css('.pagination-container', wait: 2)
     end
   end
 end

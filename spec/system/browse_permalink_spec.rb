@@ -12,9 +12,10 @@ RSpec.describe 'Browse permalink button', type: :system, js: true do
   end
 
   describe 'authors browse page' do
+    # Reduced from 5 to 3 - just need enough data to render the page
     before do
       Chewy.strategy(:atomic) do
-        create_list(:manifestation, 5)
+        create_list(:manifestation, 3)
       end
     end
 
@@ -44,9 +45,8 @@ RSpec.describe 'Browse permalink button', type: :system, js: true do
       expect(page).to have_text(/Link copied to clipboard!|הקישורית הועתקה ללוח!/)
 
       # Wait for feedback to disappear and text to return to original
-      sleep 2.5
-      permalink_btn = find('a.permalink-btn')
-      expect(permalink_btn.text).to eq(original_text)
+      # Using Capybara's built-in waiting instead of sleep for better performance
+      expect(page).to have_selector('a.permalink-btn', text: original_text, wait: 3)
     end
 
     it 'allows right-click to copy URL' do
@@ -70,15 +70,10 @@ RSpec.describe 'Browse permalink button', type: :system, js: true do
   end
 
   describe 'works browse page' do
-    let!(:work1) do
+    # Consolidate data setup to avoid multiple Chewy.strategy calls
+    before do
       Chewy.strategy(:atomic) do
-        create(:manifestation, status: :published)
-      end
-    end
-
-    let!(:work2) do
-      Chewy.strategy(:atomic) do
-        create(:manifestation, status: :published)
+        create_list(:manifestation, 2, status: :published)
       end
     end
 
@@ -108,9 +103,8 @@ RSpec.describe 'Browse permalink button', type: :system, js: true do
       expect(page).to have_text(/Link copied to clipboard!|הקישורית הועתקה ללוח!/)
 
       # Wait for feedback to disappear and text to return to original
-      sleep 2.5
-      permalink_btn = find('a.permalink-btn')
-      expect(permalink_btn.text).to eq(original_text)
+      # Using Capybara's built-in waiting instead of sleep for better performance
+      expect(page).to have_selector('a.permalink-btn', text: original_text, wait: 3)
     end
 
     it 'allows right-click to copy URL' do
