@@ -43,8 +43,7 @@
 
     .verification-checklist {
       grid-column: 1 / -1;
-      position: static;
-      max-height: none;
+      height: auto;
     }
   }
 
@@ -56,11 +55,8 @@
 
 // Checklist Column
 .verification-checklist {
-  position: sticky;
-  top: 20px;
-  max-height: calc(100vh - 180px);
+  height: 100%;
   overflow-y: auto;
-  align-self: start;
 }
 
 .checklist-card {
