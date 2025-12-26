@@ -1,6 +1,10 @@
 include BybeUtils
 
 Bybeconv::Application.routes.draw do
+  # a shim to handle old lexicon links in development (in production these are handled directly by nginx)
+  match 'lexicon', to: "legacy_lexicon_shim#index", via: :get
+  match 'lexicon/*path', to: "legacy_lexicon_shim#index", via: :get
+
   get 'periodicals', to: 'periodicals#index', as: 'periodicals_index'
   get 'periodicals/show'
   get 'pby_volumes', to: 'collections#pby_volumes', as: 'pby_volumes'

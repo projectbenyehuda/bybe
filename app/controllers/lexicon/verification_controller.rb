@@ -41,7 +41,14 @@ module Lexicon
       content = load_source_php
 
       if content.present?
-        render html: content.html_safe, layout: false
+        # Rewrite relative URLs to point to /lexicon/ (legacy PHP server)
+        # This preserves the original look while fixing 404s in iframe context
+        processed_content = content.gsub(/(<link[^>]*href=["'])(?!http|\/)(.*?\.css["'][^>]*>)/i, '\1/lexicon/\2')
+                                   .gsub(/(<script[^>]*src=["'])(?!http|\/)(.*?\.js["'][^>]*>)/i, '\1/lexicon/\2')
+                                   .gsub(/(<img[^>]*src=["'])(?!http|\/)(.*?["'][^>]*>)/i, '\1/lexicon/\2')
+                                   .gsub(/(<a[^>]*href=["'])(?!http|\/|#)(.*?["'][^>]*>)/i, '\1/lexicon/\2')
+
+        render html: processed_content.html_safe, layout: false
       else
         render html: '<div style="padding: 20px; text-align: center; color: #999;">⚠️ קובץ מקור לא נמצא (Source file not found)</div>'.html_safe, layout: false
       end
