@@ -1,7 +1,7 @@
-/*
- *=require fonts
- *= require jquery-ui
- */
+// SASS imports for lexicon backend
+@import 'fonts';
+@import 'jquery-ui';
+@import 'verification';
 
 // We need this to make rails-autocomplete working in Bootstrap modals
 .ui-autocomplete { z-index:2000; }
