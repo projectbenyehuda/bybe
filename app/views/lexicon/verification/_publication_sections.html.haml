@@ -9,7 +9,7 @@
       %strong= t('lexicon.verification.checklist.publication.title') + ':'
       = entry.title
   .section-actions
-    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'title')}')"}
+    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'title')}', onSectionEditSuccess('section-title'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
 
@@ -25,7 +25,7 @@
     - else
       %p.text-muted (No description)
   .section-actions
-    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'description')}')"}
+    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'description')}', onSectionEditSuccess('section-description'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
 
@@ -41,7 +41,7 @@
     - else
       %p.text-muted (No table of contents)
   .section-actions
-    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'toc')}')"}
+    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'toc')}', onSectionEditSuccess('section-toc'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
 
@@ -57,7 +57,7 @@
     - else
       %p.text-muted (No A-Z navigation)
   .section-actions
-    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'az_navbar')}')"}
+    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'az_navbar')}', onSectionEditSuccess('section-az-navbar'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
 
@@ -79,7 +79,7 @@
               %br
               %span.text-muted= link.description
           .link-actions.mt-2
-            %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_link_path(link)}')"}
+            %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_link_path(link)}', onSectionEditSuccess('section-links'))"}
               ✏️
               = t('lexicon.verification.migrated.edit')
             %button.btn.btn-sm{class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "links.items.#{link.id}"}}
