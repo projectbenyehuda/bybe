@@ -16,7 +16,7 @@
       = item.deathdate
     %p
       %strong= t('activerecord.attributes.lex_person.gender') + ':'
-      = item.gender&.humanize
+      = item.gender ? t(item.gender) : t('unknown')
   .section-actions
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'title')}')"}
       ✏️
@@ -72,6 +72,11 @@
               .citation-content
                 - if citation.title.present?
                   %strong= citation.title
+                - if citation.authors.any?
+                  %br
+                  %span.text-muted
+                    #{citation.authors.count > 1 ? t(:authors) : t(:author)}:
+                    = citation.authors.map(&:display_name).join(', ')
                 - if citation.from_publication.present?
                   %br
                   %span.text-muted

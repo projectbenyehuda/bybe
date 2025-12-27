@@ -6,31 +6,31 @@
       -# Title
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['title']&.dig('verified'), data: {path: 'title', 'section-id': 'section-title'}}
+          %input{type: 'checkbox', checked: checklist['title']&.dig('verified'), disabled: true, data: {path: 'title', 'section-id': 'section-title'}}
           = t('lexicon.verification.checklist.person.title')
 
       -# Life years
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['life_years']&.dig('verified'), data: {path: 'life_years', 'section-id': 'section-life-years'}}
+          %input{type: 'checkbox', checked: checklist['life_years']&.dig('verified'), disabled: true, data: {path: 'life_years', 'section-id': 'section-life-years'}}
           = t('lexicon.verification.checklist.person.life_years')
 
       -# Bio
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['bio']&.dig('verified'), data: {path: 'bio', 'section-id': 'section-bio'}}
+          %input{type: 'checkbox', checked: checklist['bio']&.dig('verified'), disabled: true, data: {path: 'bio', 'section-id': 'section-bio'}}
           = t('lexicon.verification.checklist.person.bio')
 
       -# Works
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['works']&.dig('verified'), data: {path: 'works', 'section-id': 'section-works'}}
+          %input{type: 'checkbox', checked: checklist['works']&.dig('verified'), disabled: true, data: {path: 'works', 'section-id': 'section-works'}}
           = t('lexicon.verification.checklist.person.works')
 
       -# Citations (מראי מקום)
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['citations']&.dig('verified'), data: {path: 'citations', 'section-id': 'section-citations'}}
+          %input{type: 'checkbox', checked: checklist['citations']&.dig('verified'), disabled: true, data: {path: 'citations', 'section-id': 'section-citations'}}
           = t('lexicon.verification.checklist.person.citations')
           - if checklist['citations']&.dig('items')&.any?
             %span.count= "(#{checklist['citations']['items'].count { |_k, v| v['verified'] }}/#{checklist['citations']['items'].size})"
@@ -42,38 +42,38 @@
               - next unless citation
               %li.nested-item
                 %label
-                  %input{type: 'checkbox', checked: citation_check['verified'], data: {path: "citations.items.#{citation_id}", 'section-id': "citation-#{citation_id}"}}
+                  %input{type: 'checkbox', checked: citation_check['verified'], disabled: true, data: {path: "citations.items.#{citation_id}", 'section-id': "citation-#{citation_id}"}}
                   = truncate(citation.title, length: 40)
 
     - elsif item.is_a?(LexPublication)
       -# Title
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['title']&.dig('verified'), data: {path: 'title', 'section-id': 'section-title'}}
+          %input{type: 'checkbox', checked: checklist['title']&.dig('verified'), disabled: true, data: {path: 'title', 'section-id': 'section-title'}}
           = t('lexicon.verification.checklist.publication.title')
 
       -# Description
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['description']&.dig('verified'), data: {path: 'description', 'section-id': 'section-description'}}
+          %input{type: 'checkbox', checked: checklist['description']&.dig('verified'), disabled: true, data: {path: 'description', 'section-id': 'section-description'}}
           = t('lexicon.verification.checklist.publication.description')
 
       -# TOC
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['toc']&.dig('verified'), data: {path: 'toc', 'section-id': 'section-toc'}}
+          %input{type: 'checkbox', checked: checklist['toc']&.dig('verified'), disabled: true, data: {path: 'toc', 'section-id': 'section-toc'}}
           = t('lexicon.verification.checklist.publication.toc')
 
       -# A-Z Navbar
       %li.checklist-item
         %label
-          %input{type: 'checkbox', checked: checklist['az_navbar']&.dig('verified'), data: {path: 'az_navbar', 'section-id': 'section-az-navbar'}}
+          %input{type: 'checkbox', checked: checklist['az_navbar']&.dig('verified'), disabled: true, data: {path: 'az_navbar', 'section-id': 'section-az-navbar'}}
           = t('lexicon.verification.checklist.publication.az_navbar')
 
     -# Links (common to both)
     %li.checklist-item
       %label
-        %input{type: 'checkbox', checked: checklist['links']&.dig('verified'), data: {path: 'links', 'section-id': 'section-links'}}
+        %input{type: 'checkbox', checked: checklist['links']&.dig('verified'), disabled: true, data: {path: 'links', 'section-id': 'section-links'}}
         = t('lexicon.verification.checklist.person.links')
         - if checklist['links']&.dig('items')&.any?
           %span.count= "(#{checklist['links']['items'].count { |_k, v| v['verified'] }}/#{checklist['links']['items'].size})"
@@ -85,13 +85,13 @@
             - next unless link
             %li.nested-item
               %label
-                %input{type: 'checkbox', checked: link_check['verified'], data: {path: "links.items.#{link_id}", 'section-id': "link-#{link_id}"}}
+                %input{type: 'checkbox', checked: link_check['verified'], disabled: true, data: {path: "links.items.#{link_id}", 'section-id': "link-#{link_id}"}}
                 = truncate(link.url, length: 40)
 
     -# Attachments
     %li.checklist-item
       %label
-        %input{type: 'checkbox', checked: checklist['attachments']&.dig('verified'), data: {path: 'attachments', 'section-id': 'section-attachments'}}
+        %input{type: 'checkbox', checked: checklist['attachments']&.dig('verified'), disabled: true, data: {path: 'attachments', 'section-id': 'section-attachments'}}
         = t('lexicon.verification.checklist.person.attachments')
 
   .overall-notes.mt-3
