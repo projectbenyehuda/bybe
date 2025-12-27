@@ -136,12 +136,19 @@ module Lexicon
         # Update verification checklist if requested
         if mark_verified
           @entry.update_checklist_item(section, true, notes)
+
+          # For LexPerson, the 'title' section includes life years (birthdate/deathdate)
+          # so we should mark both checklist items as verified
+          if section == 'title' && @entry.lex_item_type == 'LexPerson'
+            @entry.update_checklist_item('life_years', true, notes)
+          end
         end
 
         render json: {
           success: true,
           message: I18n.t('lexicon.verification.messages.section_updated'),
-          percentage: @entry.verification_percentage
+          percentage: @entry.verification_percentage,
+          complete: @entry.verification_complete?
         }
       else
         render json: {
