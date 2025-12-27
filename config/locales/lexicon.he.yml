@@ -96,6 +96,7 @@ he:
         save_progress: שמור התקדמות
         mark_verified: סמן כמאומת
         progress: התקדמות
+        hide_verified: הסתר פריטים מאומתים
       checklist:
         title: רשימת בדיקה
         overall_notes: הערות כלליות
