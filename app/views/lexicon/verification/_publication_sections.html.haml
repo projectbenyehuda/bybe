@@ -21,7 +21,7 @@
       = checklist['description']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if item.description.present?
-      .description-content= raw item.description
+      .description-content!= MarkdownToHtml.call(item.description)
     - else
       %p.text-muted (No description)
   .section-actions
@@ -37,7 +37,7 @@
       = checklist['toc']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if item.toc.present?
-      .toc-content= raw item.toc
+      .toc-content!= MarkdownToHtml.call(item.toc)
     - else
       %p.text-muted (No table of contents)
   .section-actions
@@ -53,7 +53,7 @@
       = checklist['az_navbar']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if item.az_navbar.present?
-      .az-navbar-content= raw item.az_navbar
+      .az-navbar-content!= MarkdownToHtml.call(item.az_navbar)
     - else
       %p.text-muted (No A-Z navigation)
   .section-actions
