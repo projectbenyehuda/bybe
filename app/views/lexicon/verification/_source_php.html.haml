@@ -2,7 +2,7 @@
   .source-header
     %h4.source-title= t('lexicon.verification.source.header')
     - if entry.lex_file
-      %span.filename.text-muted= entry.lex_file.fname
+      = link_to entry.lex_file.fname, "https://benyehuda.org/lexicon/#{entry.lex_file.fname}", target: '_blank', class: 'filename text-muted'
 
   .source-content
     - if entry.lex_file&.full_path && File.exist?(entry.lex_file.full_path)
