@@ -3,20 +3,34 @@
 module Lexicon
   # Service used to migrate attachments referenced on legacy lexicon pages into Ben Yehuda project
   class MigrateAttachment < ApplicationService
+    LEXICON_FILES_REGEX = %r{\A(?<file_id>\d+)(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png)\z}.freeze
+
     def call(src, lex_entry)
       # removing website prefix if provided (legacy files should use relative paths only but who knows...)
       src = src.gsub(%r{\Ahttp(s)?://benyehuda.org/lexicon/}, '')
 
-      # TODO: we should attach file to proper lex entry, based on folder name
-      return nil unless src.match?(%r{\A\d+(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png)\z})
+      match = src.match(LEXICON_FILES_REGEX)
+      return nil unless match
 
       link = LexLegacyLink.find_by(old_path: src)
 
       if link.nil?
+        # Sometimes pages of publications uses images from people page, and vice versa.
+        # So we try to attach file to the same entry as it was attached in the legacy system
+        # Taking legacy filename from the src path
+        filename = "#{match[:file_id]}.php"
+        begin
+          file = LexFile.find_by!(fname: filename)
+          file_entry = file.lex_entry
+        rescue ActiveRecord::RecordNotFound
+          # if not found using the provided lex_entry
+          file_entry = lex_entry
+        end
+
         full_url = 'https://benyehuda.org/lexicon/' + src
-        attachments = lex_entry.attachments.attach(io: URI.parse(full_url).open, filename: File.basename(src))
+        attachments = file_entry.attachments.attach(io: URI.parse(full_url).open, filename: File.basename(src))
         new_path = Rails.application.routes.url_helpers.rails_blob_path(attachments.last, only_path: true)
-        link = lex_entry.legacy_links.create(old_path: src, new_path: new_path)
+        link = file_entry.legacy_links.create(old_path: src, new_path: new_path)
       end
 
       return link.new_path
