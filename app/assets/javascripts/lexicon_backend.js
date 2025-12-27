@@ -2,6 +2,7 @@
 //= require rails-ujs
 //= require jquery-ui
 //= require autocomplete_init
+//= require verification
 
 $(function() {
     $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
