@@ -16,7 +16,7 @@
 
     .form-group
       = f.label :gender, t('activerecord.attributes.lex_person.gender'), class: 'form-label'
-      = f.select :gender, options_for_select([['זכר', 'Male'], ['נקבה', 'Female'], ['אחר', 'Other']], @item.gender), { include_blank: true }, class: 'form-control'
+      = f.select :gender, options_for_select([[t('male'), 'male'], [t('female'), 'female'], [t('other'), 'other'], [t('unknown'), 'unknown']], @item.gender), { include_blank: true }, class: 'form-control'
 
   .form-check.mt-3
     = check_box_tag :mark_verified, '1', false, class: 'form-check-input'
