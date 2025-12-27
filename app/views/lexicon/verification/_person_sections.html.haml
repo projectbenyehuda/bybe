@@ -30,7 +30,7 @@
       = checklist['bio']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if item.bio.present?
-      .bio-content= raw item.bio
+      .bio-content!= MarkdownToHtml.call(item.bio)
     - else
       %p.text-muted (No biography)
   .section-actions
@@ -46,7 +46,10 @@
       = checklist['works']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if item.works.present?
-      .works-content= raw item.works
+      .works-content
+        %ul
+          - item.works.split("\n").each do |work|
+            %li!= MarkdownToHtml.call(work)
     - else
       %p.text-muted (No works)
   .section-actions
