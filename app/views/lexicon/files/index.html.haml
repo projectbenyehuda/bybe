@@ -26,7 +26,7 @@
           %td #{t(lf.status)} / #{lf&.lex_entry&.status}
           %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
           %td
-            - if lex_entry.lex_item.present?
+            - if lex_entry.lex_item.present? && !lex_entry.status_error?
               = link_to t(:show), lexicon_entry_path(lex_entry)
             - elsif lex_entry.lex_item.nil? || lex_entry.status_error?
               = link_to t('lexicon.files.migrate.title'), migrate_lexicon_file_path(lf), method: :post
