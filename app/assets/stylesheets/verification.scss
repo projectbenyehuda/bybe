@@ -292,6 +292,11 @@
     gap: 0.5rem;
     flex-wrap: wrap;
   }
+
+  // Hide verified items when toggle is active
+  .hidden-verified {
+    display: none !important;
+  }
 }
 
 // Citation Cards
