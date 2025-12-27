@@ -1,0 +1,12 @@
+.source-card
+  .source-header
+    %h4.source-title= t('lexicon.verification.source.header')
+    - if entry.lex_file
+      = link_to entry.lex_file.fname, "https://benyehuda.org/lexicon/#{entry.lex_file.fname}", target: '_blank', class: 'filename text-muted'
+
+  .source-content
+    - if entry.lex_file&.full_path && File.exist?(entry.lex_file.full_path)
+      %iframe.source-iframe{src: lexicon_verification_source_path(entry), style: 'width: 100%; height: calc(100vh - 250px); border: 1px solid #ddd; border-radius: 4px;'}
+    - else
+      .alert.alert-warning
+        = t('lexicon.verification.source.file_not_found')
