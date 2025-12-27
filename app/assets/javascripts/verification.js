@@ -101,6 +101,25 @@ function initVerification() {
             }
         }
     });
+
+    // Handle hide/show verified items toggle
+    $('#hide-verified-toggle').on('change', function() {
+        const hideVerified = $(this).is(':checked');
+
+        if (hideVerified) {
+            // Hide verified sections in the migrated entry view
+            $('.verification-section.verified').addClass('hidden-verified');
+
+            // Hide verified checklist items (both top-level and nested)
+            $('.checklist-items input[type="checkbox"]:checked').closest('li').addClass('hidden-verified');
+
+            // Hide verified citation and link cards
+            $('.citation-card.verified, .link-card.verified').addClass('hidden-verified');
+        } else {
+            // Show all items
+            $('.hidden-verified').removeClass('hidden-verified');
+        }
+    });
 }
 
 function updateChecklistItem(url, path, verified, sectionId, callback) {

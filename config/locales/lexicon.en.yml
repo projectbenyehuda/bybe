@@ -96,6 +96,7 @@ en:
         save_progress: Save Progress
         mark_verified: Mark as Verified
         progress: Progress
+        hide_verified: Hide Verified Items
       checklist:
         title: Verification Checklist
         overall_notes: Overall Notes
