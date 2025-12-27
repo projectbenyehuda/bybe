@@ -67,6 +67,12 @@ function initVerification() {
             } else {
                 card.removeClass('verified').addClass('not-verified');
             }
+
+            // Update the corresponding checklist checkbox
+            const checkbox = $('.checklist-items input[data-path="' + path + '"]');
+            if (checkbox.length > 0) {
+                checkbox.prop('checked', newVerified);
+            }
         });
     });
 
