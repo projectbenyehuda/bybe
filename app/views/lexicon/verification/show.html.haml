@@ -1,0 +1,41 @@
+.verification-header
+  .d-flex.justify-content-between.align-items-center.mb-3
+    .title-section
+      %h2
+        = t('lexicon.verification.show.title', entry_title: @entry.title)
+      = link_to lexicon_verification_queue_path, class: 'btn btn-sm btn-outline-secondary' do
+        ←
+        = t('lexicon.verification.show.back_to_queue')
+    .action-section
+      - percentage = @entry.verification_percentage
+      .progress-indicator.mb-2
+        = t('lexicon.verification.show.progress') + ':'
+        %strong= "#{percentage}%"
+        .progress{style: 'width: 200px; height: 25px;', class: 'ms-2 d-inline-block'}
+          .progress-bar{id: 'main-progress-bar', role: 'progressbar', style: "width: #{percentage}%", 'aria-valuenow': percentage, 'aria-valuemin': '0', 'aria-valuemax': '100'}
+            = "#{percentage}%"
+      .hide-verified-toggle.mb-2
+        .form-check
+          %input.form-check-input{type: 'checkbox', id: 'hide-verified-toggle'}
+          %label.form-check-label{for: 'hide-verified-toggle'}
+            = t('lexicon.verification.show.hide_verified')
+      .actions
+        %button.btn.btn-primary#save-progress-btn
+          = t('lexicon.verification.show.save_progress')
+        - if @entry.verification_complete?
+          = button_to t('lexicon.verification.show.mark_verified'), lexicon_mark_verified_verification_path(@entry), method: :post, class: 'btn btn-success', id: 'mark-verified-btn'
+        - else
+          %button.btn.btn-success{disabled: true, id: 'mark-verified-btn', title: t('lexicon.verification.messages.verification_incomplete')}
+            = t('lexicon.verification.show.mark_verified')
+
+.verification-container{data: {controller: 'verification', 'verification-entry-id': @entry.id, 'verification-update-url': lexicon_update_checklist_verification_path(@entry), 'verification-save-progress-url': lexicon_save_progress_verification_path(@entry)}}
+  .verification-checklist
+    = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item
+
+  .verification-source
+    = render 'lexicon/verification/source_php', entry: @entry
+
+  .verification-migrated
+    = render 'lexicon/verification/migrated_entry', entry: @entry, item: @item, checklist: @checklist
+
+#modal-container
