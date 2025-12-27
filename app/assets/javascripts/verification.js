@@ -206,6 +206,14 @@ function onSectionEditSuccess(sectionId) {
                 checkbox.prop('checked', true);
             }
 
+            // For title section of LexPerson, also update life_years checkbox
+            if (sectionId === 'section-title') {
+                const lifeYearsCheckbox = $('input[data-section-id="section-life-years"]');
+                if (lifeYearsCheckbox.length > 0) {
+                    lifeYearsCheckbox.prop('checked', true);
+                }
+            }
+
             // Show success message
             showToast(data.message || 'נשמר בהצלחה');
 
