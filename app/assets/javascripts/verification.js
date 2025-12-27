@@ -179,6 +179,45 @@ function showToast(message) {
     }, 3000);
 }
 
+// Callback for when a section is edited and saved
+function onSectionEditSuccess(sectionId) {
+    return function(data, status, xhr) {
+        if (data.success) {
+            // Update progress bar if percentage provided
+            if (data.percentage !== undefined) {
+                updateProgressBar(data.percentage);
+                updateMarkVerifiedButton(data.complete);
+            }
+
+            // Update the section's verification badge
+            const section = $('#' + sectionId);
+            if (section.length > 0) {
+                section.removeClass('not-verified').addClass('verified');
+                section.find('.verification-badge')
+                    .removeClass('not-verified')
+                    .addClass('verified')
+                    .text('✓ מאומת');
+            }
+
+            // Update the corresponding checklist checkbox
+            const checkboxPath = sectionId.replace('section-', '');
+            const checkbox = $('input[data-section-id="' + sectionId + '"]');
+            if (checkbox.length > 0) {
+                checkbox.prop('checked', true);
+            }
+
+            // Show success message
+            showToast(data.message || 'נשמר בהצלחה');
+
+            // Reload the page to show updated content
+            // This ensures the section content is refreshed with the new data
+            setTimeout(function() {
+                location.reload();
+            }, 500);
+        }
+    };
+}
+
 // Override modal close callback to reload relevant sections
 function closeModalWithReload(reloadSelector) {
     $('#generalDlg').modal('hide');
