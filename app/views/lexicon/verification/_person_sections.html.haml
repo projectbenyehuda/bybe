@@ -1,0 +1,149 @@
+-# Section 1: Title and Life Years
+.section.verification-section{id: 'section-title', class: checklist['title']&.dig('verified') ? 'verified' : 'not-verified'}
+  .section-header
+    %h5= t('lexicon.verification.sections.title_and_years')
+    .verification-badge{class: checklist['title']&.dig('verified') ? 'verified' : 'not-verified'}
+      = checklist['title']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+  .section-content
+    %p
+      %strong= t('lexicon.verification.checklist.person.title') + ':'
+      = entry.title
+    %p
+      %strong= t('activerecord.attributes.lex_person.birthdate') + ':'
+      = item.birthdate
+    %p
+      %strong= t('activerecord.attributes.lex_person.deathdate') + ':'
+      = item.deathdate
+    %p
+      %strong= t('activerecord.attributes.lex_person.gender') + ':'
+      = item.gender ? t(item.gender) : t('unknown')
+  .section-actions
+    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'title')}')"}
+      ✏️
+      = t('lexicon.verification.migrated.edit')
+
+-# Section 2: Biography
+.section.verification-section{id: 'section-bio', class: checklist['bio']&.dig('verified') ? 'verified' : 'not-verified'}
+  .section-header
+    %h5= t('lexicon.verification.sections.biography')
+    .verification-badge{class: checklist['bio']&.dig('verified') ? 'verified' : 'not-verified'}
+      = checklist['bio']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+  .section-content
+    - if item.bio.present?
+      .bio-content= raw item.bio
+    - else
+      %p.text-muted (No biography)
+  .section-actions
+    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'bio')}')"}
+      ✏️
+      = t('lexicon.verification.migrated.edit')
+
+-# Section 3: Works
+.section.verification-section{id: 'section-works', class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
+  .section-header
+    %h5= t('lexicon.verification.sections.works_section')
+    .verification-badge{class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
+      = checklist['works']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+  .section-content
+    - if item.works.present?
+      .works-content= raw item.works
+    - else
+      %p.text-muted (No works)
+  .section-actions
+    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}')"}
+      ✏️
+      = t('lexicon.verification.migrated.edit')
+
+-# Section 4: Citations (מראי מקום)
+.section.verification-section{id: 'section-citations', class: checklist['citations']&.dig('verified') ? 'verified' : 'not-verified'}
+  .section-header
+    %h5= t('lexicon.verification.sections.citations_section')
+    .verification-badge{class: checklist['citations']&.dig('verified') ? 'verified' : 'not-verified'}
+      - verified_count = checklist['citations']&.dig('items')&.count { |_k, v| v['verified'] } || 0
+      - total_count = checklist['citations']&.dig('items')&.size || 0
+      = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
+  .section-content
+    - if item.citations.any?
+      - item.citations.group_by(&:subject).each do |subject, citations|
+        .citation-group.mb-3
+          %h6.subject-header= subject.present? ? subject : 'General'
+          - citations.each do |citation|
+            .citation-card{id: "citation-#{citation.id}", class: checklist['citations']&.dig('items', citation.id.to_s, 'verified') ? 'verified' : 'not-verified'}
+              .citation-content
+                - if citation.title.present?
+                  %strong= citation.title
+                - if citation.authors.any?
+                  %br
+                  %span.text-muted
+                    #{citation.authors.count > 1 ? t(:authors) : t(:author)}:
+                    = citation.authors.map(&:display_name).join(', ')
+                - if citation.from_publication.present?
+                  %br
+                  %span.text-muted
+                    From:
+                    = citation.from_publication
+                - if citation.pages.present?
+                  %br
+                  %span.text-muted
+                    Pages:
+                    = citation.pages
+                - if citation.link.present?
+                  %br
+                  = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
+              .citation-actions.mt-2
+                %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_citation_path(citation)}')"}
+                  ✏️
+                  = t('lexicon.verification.migrated.edit')
+                %button.btn.btn-sm{class: checklist['citations']&.dig('items', citation.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "citations.items.#{citation.id}"}}
+                  ✓
+                  = t('lexicon.verification.migrated.mark_verified')
+    - else
+      %p.text-muted (No citations)
+  .section-actions
+    = link_to t('lexicon.verification.migrated.add_citation'), new_lexicon_person_citation_path(item), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href);"
+
+-# Section 5: Links
+.section.verification-section{id: 'section-links', class: checklist['links']&.dig('verified') ? 'verified' : 'not-verified'}
+  .section-header
+    %h5= t('lexicon.verification.sections.links_section')
+    .verification-badge{class: checklist['links']&.dig('verified') ? 'verified' : 'not-verified'}
+      - verified_count = checklist['links']&.dig('items')&.count { |_k, v| v['verified'] } || 0
+      - total_count = checklist['links']&.dig('items')&.size || 0
+      = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
+  .section-content
+    - if item.links.any?
+      - item.links.each do |link|
+        .link-card{id: "link-#{link.id}", class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'verified' : 'not-verified'}
+          .link-content
+            = link_to link.url, link.url, target: '_blank'
+            - if link.description.present?
+              %br
+              %span.text-muted= link.description
+          .link-actions.mt-2
+            %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_link_path(link)}')"}
+              ✏️
+              = t('lexicon.verification.migrated.edit')
+            %button.btn.btn-sm{class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "links.items.#{link.id}"}}
+              ✓
+              = t('lexicon.verification.migrated.mark_verified')
+    - else
+      %p.text-muted (No links)
+  .section-actions
+    = link_to t('lexicon.verification.migrated.add_link'), new_lexicon_entry_link_path(entry), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href);"
+
+-# Section 6: Attachments
+.section.verification-section{id: 'section-attachments', class: checklist['attachments']&.dig('verified') ? 'verified' : 'not-verified'}
+  .section-header
+    %h5= t('lexicon.verification.sections.attachments_section')
+    .verification-badge{class: checklist['attachments']&.dig('verified') ? 'verified' : 'not-verified'}
+      = checklist['attachments']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+  .section-content
+    - if entry.attachments.any?
+      - entry.attachments.each do |attachment|
+        .attachment-item
+          = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank'
+          %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
+    - else
+      %p.text-muted (No attachments)
+  .section-actions
+    = link_to t('lexicon.verification.migrated.upload_file'), lexicon_entry_attachments_path(entry), class: 'btn btn-sm btn-success'
