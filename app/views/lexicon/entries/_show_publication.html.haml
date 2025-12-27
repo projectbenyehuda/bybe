@@ -4,5 +4,6 @@
       != MarkdownToHtml.call(lex_publication.description)
     = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:toc) } do
       != MarkdownToHtml.call(lex_publication.toc)
+    = render partial: 'links', locals: { links: lex_publication.links }
   .col-4
     = render partial: 'lexicon/shared/images', locals: { entry: lex_publication.entry }
