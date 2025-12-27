@@ -658,6 +658,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.string "lex_item_type"
     t.bigint "lex_item_id"
     t.string "sort_title"
+    t.json "verification_progress"
+    t.string "english_title"
+    t.json "external_identifiers"
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"
