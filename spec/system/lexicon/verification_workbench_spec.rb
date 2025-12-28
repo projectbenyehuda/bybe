@@ -350,4 +350,85 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
       expect(button).not_to be_disabled
     end
   end
+
+  describe 'Hide/Show Verified Items Toggle', :js do
+    before do
+      # Initialize verification first
+      entry.start_verification!('test@example.com')
+
+      # Mark some items as verified to test the toggle
+      entry.update_checklist_item('title', true, '')
+      entry.update_checklist_item("citations.items.#{citation.id}", true, '')
+      visit "/lex/verification/#{entry.id}"
+    end
+
+    it 'displays the hide verified toggle checkbox' do
+      within('.verification-header') do
+        expect(page).to have_css('#hide-verified-toggle')
+        expect(page).to have_content('הסתר פריטים מאומתים')
+      end
+    end
+
+    it 'hides verified items when toggle is checked' do
+      # Initially, verified items should be visible
+      expect(page).to have_css('#section-title.verified', visible: :visible)
+      expect(page).to have_css('.citation-card.verified', visible: :visible)
+
+      # Check the toggle
+      within('.verification-header') do
+        find('#hide-verified-toggle').click
+      end
+
+      # Wait for the toggle to take effect
+      sleep 0.5
+
+      # Verified items should now be hidden
+      expect(page).to have_css('#section-title.verified.hidden-verified', visible: :hidden)
+      expect(page).to have_css('.citation-card.verified.hidden-verified', visible: :hidden)
+    end
+
+    it 'shows all items when toggle is unchecked' do
+      # Check the toggle first to hide items
+      within('.verification-header') do
+        find('#hide-verified-toggle').click
+      end
+
+      # Wait for the toggle to take effect
+      sleep 0.5
+
+      # Verified items should be hidden
+      expect(page).to have_css('.hidden-verified', visible: :hidden)
+
+      # Uncheck the toggle
+      within('.verification-header') do
+        find('#hide-verified-toggle').click
+      end
+
+      # Wait for the toggle to take effect
+      sleep 0.5
+
+      # All items should be visible again
+      expect(page).not_to have_css('.hidden-verified')
+      expect(page).to have_css('#section-title.verified', visible: :visible)
+      expect(page).to have_css('.citation-card.verified', visible: :visible)
+    end
+
+    it 'hides verified checklist items when toggle is checked' do
+      # Check the toggle
+      within('.verification-header') do
+        find('#hide-verified-toggle').click
+      end
+
+      # Wait for the toggle to take effect
+      sleep 0.5
+
+      # Find the title checklist item (should be checked/verified)
+      within('.verification-checklist') do
+        # The parent li of the checked checkbox should be hidden
+        title_checkbox = find('input[data-path="title"]', visible: :all)
+        title_li = title_checkbox.find(:xpath, 'ancestor::li', visible: :all)
+        expect(title_li[:class]).to include('hidden-verified')
+      end
+    end
+  end
 end
