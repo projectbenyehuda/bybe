@@ -106,7 +106,7 @@ describe CollectionItem do
           # External link should have target="_blank"
           expect(html).to match(%r{<a [^>]*href="https://example.com"[^>]*target="_blank"[^>]*>})
           # Internal link should not
-          expect(html).to match(%r{<a [^>]*href="#anchor"[^>]*>(?!.*target="_blank")})
+          expect(html).to match(%r{<a (?![^>]*target="_blank")[^>]*href="#anchor"[^>]*>})
         end
       end
     end
