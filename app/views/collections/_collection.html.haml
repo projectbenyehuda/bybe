@@ -18,7 +18,7 @@
                 %span{ id: "ci_title_#{ci.id}" }= ci.alt_title
                 %br
                 .editable{ id: "editable_#{ci.id}" }
-                  != ci.to_html
+                  != ci.to_html.to_s.gsub('target="_blank"', 'target="_blank" rel="noopener noreferrer"').html_safe
               - elsif ci.item.nil? # a placeholder (no markdown)
                 .editable{ id: "editable_#{ci.id}", style: 'margin-bottom: 10px;' }
                   - if label_ci_types
