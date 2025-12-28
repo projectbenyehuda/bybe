@@ -379,10 +379,7 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
         find('#hide-verified-toggle').click
       end
 
-      # Wait for the toggle to take effect
-      sleep 0.5
-
-      # Verified items should now be hidden
+      # Verified items should now be hidden (Capybara waits automatically)
       expect(page).to have_css('#section-title.verified.hidden-verified', visible: :hidden)
       expect(page).to have_css('.citation-card.verified.hidden-verified', visible: :hidden)
     end
@@ -393,10 +390,7 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
         find('#hide-verified-toggle').click
       end
 
-      # Wait for the toggle to take effect
-      sleep 0.5
-
-      # Verified items should be hidden
+      # Verified items should be hidden (Capybara waits automatically)
       expect(page).to have_css('.hidden-verified', visible: :hidden)
 
       # Uncheck the toggle
@@ -404,10 +398,7 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
         find('#hide-verified-toggle').click
       end
 
-      # Wait for the toggle to take effect
-      sleep 0.5
-
-      # All items should be visible again
+      # All items should be visible again (Capybara waits automatically)
       expect(page).not_to have_css('.hidden-verified')
       expect(page).to have_css('#section-title.verified', visible: :visible)
       expect(page).to have_css('.citation-card.verified', visible: :visible)
@@ -419,10 +410,8 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
         find('#hide-verified-toggle').click
       end
 
-      # Wait for the toggle to take effect
-      sleep 0.5
-
       # Find the title checklist item (should be checked/verified)
+      # Capybara waits automatically for the DOM changes
       within('.verification-checklist') do
         # The parent li of the checked checkbox should be hidden
         title_checkbox = find('input[data-path="title"]', visible: :all)
