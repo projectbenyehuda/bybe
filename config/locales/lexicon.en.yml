@@ -123,10 +123,13 @@ en:
         edit: Edit
         add_citation: Add Citation
         add_link: Add Link
+        add_publication: Add Publication
         upload_file: Upload File
         verified: Verified
         not_verified: Not Verified
         mark_verified: Mark as Verified
+        works_not_migrated: Works have not been migrated to individual publications yet
+        works_parse_hint: The works are currently stored as text. Contact an administrator to migrate them.
       sections:
         title_and_years: Title and Life Years
         biography: Biography

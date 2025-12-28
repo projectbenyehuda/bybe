@@ -41,6 +41,7 @@ Bybeconv::Application.routes.draw do
 
         resources :authors, controller: 'citation_authors', only: %i(index create)
       end
+      resources :publications, shallow: true, only: %i(new create)
     end
 
     resources :citation_authors, only: %i(update destroy)

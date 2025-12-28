@@ -116,6 +116,7 @@ he:
         links: קישוריוֹת
         gender: מגדר
       lex_publication:
+        description: תיאור
         toc: תוכן עניינים
         az_navbar: להציג סרגל א–ב?
       project:

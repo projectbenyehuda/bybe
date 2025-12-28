@@ -61,15 +61,15 @@ class LexEntry < ApplicationRecord
     verified = 0
 
     # Count top-level items (excluding collections)
-    %w[title life_years bio works description toc az_navbar attachments].each do |key|
+    %w[title life_years bio description toc az_navbar attachments].each do |key|
       next unless checklist[key]
 
       total += 1
       verified += 1 if checklist[key]['verified']
     end
 
-    # Count collection items (citations/מראי מקום, links)
-    %w[citations links].each do |collection|
+    # Count collection items (works/publications, citations/מראי מקום, links)
+    %w[works citations links].each do |collection|
       next unless checklist[collection]&.dig('items')
 
       items = checklist[collection]['items']
@@ -125,7 +125,16 @@ class LexEntry < ApplicationRecord
       checklist['title'] = { 'verified' => false, 'notes' => '' }
       checklist['life_years'] = { 'verified' => false, 'notes' => '' }
       checklist['bio'] = { 'verified' => false, 'notes' => '' }
-      checklist['works'] = { 'verified' => false, 'notes' => '' }
+
+      # Works/Publications (individual items)
+      publication_items = if lex_item&.publications&.any?
+                            lex_item.publications.each_with_object({}) do |pub, hash|
+                              hash[pub.id.to_s] = { 'verified' => false, 'notes' => '' }
+                            end
+                          else
+                            {}
+                          end
+      checklist['works'] = { 'verified' => false, 'items' => publication_items }
 
       # Citations (מראי מקום)
       citation_items = if lex_item&.citations&.any?

@@ -123,10 +123,13 @@ he:
         edit: ערוך
         add_citation: הוסף מראה מקום
         add_link: הוסף קישור
+        add_publication: הוסף יצירה
         upload_file: העלה קובץ
         verified: מאומת
         not_verified: לא אומת
         mark_verified: סמן כמאומת
+        works_not_migrated: היצירות טרם הועברו לרשומות נפרדות
+        works_parse_hint: היצירות כרגע מאוחסנות כטקסט. ניתן לפנות למנהל/ת מערכת כדי להעביר אותן.
       sections:
         title_and_years: כותרת וזמנים
         biography: ביוגרפיה

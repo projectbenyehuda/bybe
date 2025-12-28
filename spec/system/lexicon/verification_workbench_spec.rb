@@ -350,4 +350,99 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
       expect(button).not_to be_disabled
     end
   end
+
+  describe 'Publication Verification' do
+    let!(:publication) do
+      create(:lex_publication, description: 'Test publication description')
+    end
+
+    let!(:publication_entry) do
+      create(:lex_entry,
+             title: 'Test Publication',
+             lex_item: publication,
+             status: :draft)
+    end
+
+    let!(:person_with_pubs) do
+      create(:lex_person,
+             birthdate: '1920',
+             deathdate: '2000',
+             bio: 'Test author bio',
+             works: nil,  # No works text
+             gender: :female)
+    end
+
+    let!(:person_entry_with_pubs) do
+      create(:lex_entry,
+             title: 'Author with Publications',
+             lex_item: person_with_pubs,
+             status: :draft)
+    end
+
+    before do
+      # Associate publications with person
+      person_with_pubs.lex_people_items.create!(item: publication)
+    end
+
+    it 'displays publications as individual cards' do
+      visit "/lex/verification/#{person_entry_with_pubs.id}"
+
+      within('.verification-migrated') do
+        within('#section-works') do
+          expect(page).to have_content('יצירות')
+          expect(page).to have_css('.publication-card')
+          expect(page).to have_content('Test publication description')
+        end
+      end
+    end
+
+    it 'shows publication count in verification badge' do
+      visit "/lex/verification/#{person_entry_with_pubs.id}"
+
+      within('#section-works') do
+        within('.verification-badge') do
+          expect(page).to have_content('0/1')  # 0 verified out of 1 total
+        end
+      end
+    end
+
+    it 'provides edit button for each publication' do
+      visit "/lex/verification/#{person_entry_with_pubs.id}"
+
+      within('#section-works') do
+        expect(page).to have_button('ערוך')
+      end
+    end
+
+    it 'has quick verify button for each publication', :js do
+      visit "/lex/verification/#{person_entry_with_pubs.id}"
+
+      within('#section-works') do
+        within('.publication-card') do
+          verify_button = find('button[data-action="click->verification#quickVerify"]')
+          expect(verify_button).to be_present
+          expect(verify_button.text).to include('סמן כמאומת')
+        end
+      end
+    end
+
+    it 'provides add publication button' do
+      visit "/lex/verification/#{person_entry_with_pubs.id}"
+
+      within('#section-works') do
+        expect(page).to have_link('הוסף יצירה')
+      end
+    end
+
+    it 'tracks publications in checklist' do
+      visit "/lex/verification/#{person_entry_with_pubs.id}"
+
+      person_entry_with_pubs.reload
+      checklist = person_entry_with_pubs.verification_progress['checklist']
+
+      expect(checklist['works']).to be_present
+      expect(checklist['works']['items']).to be_present
+      expect(checklist['works']['items'][publication.id.to_s]).to eq({ 'verified' => false, 'notes' => '' })
+    end
+  end
 end

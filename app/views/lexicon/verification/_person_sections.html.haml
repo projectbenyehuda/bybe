@@ -38,24 +38,40 @@
       ✏️
       = t('lexicon.verification.migrated.edit')
 
--# Section 3: Works
+-# Section 3: Works/Publications
 .section.verification-section{id: 'section-works', class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
     %h5= t('lexicon.verification.sections.works_section')
     .verification-badge{class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
-      = checklist['works']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+      - verified_count = checklist['works']&.dig('items')&.count { |_k, v| v['verified'] } || 0
+      - total_count = checklist['works']&.dig('items')&.size || 0
+      = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
-    - if item.works.present?
-      .works-content
-        %ul
-          - item.works.split("\n").each do |work|
-            %li!= MarkdownToHtml.call(work)
+    - if item.publications.any?
+      - item.publications.each do |publication|
+        .publication-card{id: "publication-#{publication.id}", class: checklist['works']&.dig('items', publication.id.to_s, 'verified') ? 'verified' : 'not-verified'}
+          .publication-content
+            - if publication.entry&.title.present?
+              %strong= publication.entry.title
+              %br
+            - if publication.description.present?
+              != MarkdownToHtml.call(publication.description)
+          .publication-actions.mt-2
+            %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_publication_path(publication)}', onSectionEditSuccess('section-works'))"}
+              ✏️
+              = t('lexicon.verification.migrated.edit')
+            %button.btn.btn-sm{class: checklist['works']&.dig('items', publication.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "works.items.#{publication.id}"}}
+              ✓
+              = t('lexicon.verification.migrated.mark_verified')
+    - elsif item.works.present?
+      .alert.alert-warning
+        %p= t('lexicon.verification.migrated.works_not_migrated')
+        %p.text-muted
+          = t('lexicon.verification.migrated.works_parse_hint')
     - else
       %p.text-muted (No works)
   .section-actions
-    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', onSectionEditSuccess('section-works'))"}
-      ✏️
-      = t('lexicon.verification.migrated.edit')
+    = link_to t('lexicon.verification.migrated.add_publication'), new_lexicon_person_publication_path(item), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href);"
 
 -# Section 4: Citations (מראי מקום)
 .section.verification-section{id: 'section-citations', class: checklist['citations']&.dig('verified') ? 'verified' : 'not-verified'}
