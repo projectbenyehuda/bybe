@@ -108,7 +108,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_082214) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "impressions_count", default: 0
-  t.index ["user_id"], name: "index_anthologies_on_user_id"
+    t.index ["user_id"], name: "index_anthologies_on_user_id"
   end
 
   create_table "anthology_texts", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|

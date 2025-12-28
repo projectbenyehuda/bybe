@@ -18,7 +18,7 @@
                 %span{ id: "ci_title_#{ci.id}" }= ci.alt_title
                 %br
                 .editable{ id: "editable_#{ci.id}" }
-                  != MultiMarkdown.new(ci.markdown).to_html
+                  != ci.to_html
               - elsif ci.item.nil? # a placeholder (no markdown)
                 .editable{ id: "editable_#{ci.id}", style: 'margin-bottom: 10px;' }
                   - if label_ci_types
