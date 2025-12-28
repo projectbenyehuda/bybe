@@ -22,8 +22,6 @@
                          locals: { intellectual_property: lex_person.intellectual_property }
           %p!= MarkdownToHtml.call(lex_person.bio)
         = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
-          -# %h3 שירה מן העזבון
-            %p על פי “ספר סוקולוב”, בעריכת שמעון רבידוביץ, הוצאת ההסתדרות הציונית העולמית ומוסד ביאליק, תש"ג
           %ul
             - lex_person.works.split("\n").each do |book|
               %li!= MarkdownToHtml.call(book)
