@@ -103,7 +103,7 @@ class CollectionItem < ApplicationRecord
     end
     return '' if markdown.blank?
 
-    return MultiMarkdown.new(markdown).to_html
+    return MarkdownToHtml.call(markdown)
   end
 
   # return list of genres in included items
