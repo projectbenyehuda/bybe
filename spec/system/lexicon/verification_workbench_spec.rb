@@ -420,4 +420,89 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
       end
     end
   end
+
+  describe 'Profile Image Selection', :js do
+    before do
+      # Attach some test images to the entry
+      entry.attachments.attach(
+        io: StringIO.new('test image 1'),
+        filename: 'test1.jpg',
+        content_type: 'image/jpeg'
+      )
+      entry.attachments.attach(
+        io: StringIO.new('test image 2'),
+        filename: 'test2.jpg',
+        content_type: 'image/jpeg'
+      )
+      visit "/lex/verification/#{entry.id}"
+    end
+
+    it 'displays "Use as Profile" buttons for each attachment' do
+      within('#section-attachments') do
+        expect(page).to have_button('Use as Profile', count: 2)
+      end
+    end
+
+    it 'sets profile image when button is clicked' do
+      attachment = entry.attachments.first
+
+      within('#section-attachments') do
+        within("#attachment-#{attachment.id}") do
+          click_button 'Use as Profile'
+
+          # Capybara waits automatically for AJAX to complete
+          expect(page).to have_button('✓ Profile Image')
+          expect(page).to have_css('.badge', text: 'Profile Image')
+        end
+      end
+
+      # Verify the database was updated
+      entry.reload
+      expect(entry.profile_image_id).to eq(attachment.id)
+    end
+
+    it 'shows only one profile image at a time' do
+      attachment1 = entry.attachments.first
+      attachment2 = entry.attachments.second
+
+      within('#section-attachments') do
+        # Set first attachment as profile
+        within("#attachment-#{attachment1.id}") do
+          click_button 'Use as Profile'
+          expect(page).to have_button('✓ Profile Image')
+        end
+
+        # Set second attachment as profile
+        within("#attachment-#{attachment2.id}") do
+          click_button 'Use as Profile'
+          expect(page).to have_button('✓ Profile Image')
+        end
+
+        # First attachment should no longer be marked as profile
+        within("#attachment-#{attachment1.id}") do
+          expect(page).to have_button('Use as Profile')
+          expect(page).not_to have_css('.badge', text: 'Profile Image')
+        end
+      end
+
+      # Verify the database has only the second attachment as profile
+      entry.reload
+      expect(entry.profile_image_id).to eq(attachment2.id)
+    end
+
+    it 'displays profile image badge on page load if already set' do
+      attachment = entry.attachments.first
+      entry.update!(profile_image_id: attachment.id)
+
+      visit "/lex/verification/#{entry.id}"
+
+      within('#section-attachments') do
+        within("#attachment-#{attachment.id}") do
+          expect(page).to have_button('✓ Profile Image')
+          expect(page).to have_css('.badge', text: 'Profile Image')
+          expect(page).to have_css('.profile-image-selected')
+        end
+      end
+    end
+  end
 end

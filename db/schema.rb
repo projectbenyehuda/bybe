@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_27_044202) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_29_020255) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -655,7 +655,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_27_044202) do
     t.json "verification_progress"
     t.string "english_title"
     t.json "external_identifiers"
+    t.bigint "profile_image_id"
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
+    t.index ["profile_image_id"], name: "index_lex_entries_on_profile_image_id"
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"
     t.index ["title"], name: "index_lex_entries_on_title"
@@ -1157,6 +1159,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_27_044202) do
   add_foreign_key "lex_citation_authors", "lex_people"
   add_foreign_key "lex_citations", "lex_people"
   add_foreign_key "lex_citations", "manifestations"
+  add_foreign_key "lex_entries", "active_storage_attachments", column: "profile_image_id", on_delete: :nullify
   add_foreign_key "lex_files", "lex_entries"
   add_foreign_key "lex_issues", "lex_publications"
   add_foreign_key "lex_legacy_links", "lex_entries"

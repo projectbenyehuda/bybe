@@ -59,6 +59,7 @@ Bybeconv::Application.routes.draw do
       get ':id/source', to: 'verification#source', as: :verification_source
       patch ':id/update_checklist', to: 'verification#update_checklist', as: :update_checklist_verification
       patch ':id/save_progress', to: 'verification#save_progress', as: :save_progress_verification
+      patch ':id/set_profile_image', to: 'verification#set_profile_image', as: :set_profile_image_verification
       post ':id/mark_verified', to: 'verification#mark_verified', as: :mark_verified_verification
       get ':id/edit_section', to: 'verification#edit_section', as: :edit_section_verification
       patch ':id/update_section', to: 'verification#update_section', as: :update_section_verification
