@@ -276,6 +276,17 @@ RSpec.describe 'Lexicon Verification Workbench', type: :system, js: true do
         end
       end
     end
+
+    it 'has a mark as verified button for attachments section', :js do
+      within('.verification-migrated') do
+        within('#section-attachments') do
+          # Find the quick verify button for the attachments section
+          verify_button = find('button[data-action="click->verification#quickVerify"]')
+          expect(verify_button).to be_present
+          expect(verify_button.text).to include('סמן כמאומת')
+        end
+      end
+    end
   end
 
   describe 'Verification Progress Tracking' do
