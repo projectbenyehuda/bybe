@@ -28,7 +28,7 @@
           %button.btn.btn-success{disabled: true, id: 'mark-verified-btn', title: t('lexicon.verification.messages.verification_incomplete')}
             = t('lexicon.verification.show.mark_verified')
 
-.verification-container{data: {controller: 'verification', 'verification-entry-id': @entry.id, 'verification-update-url': lexicon_update_checklist_verification_path(@entry), 'verification-save-progress-url': lexicon_save_progress_verification_path(@entry), 'verification-set-profile-image-url': lexicon_set_profile_image_verification_path(@entry)}}
+.verification-container{data: {controller: 'verification', 'verification-entry-id': @entry.id, 'verification-update-url': lexicon_update_checklist_verification_path(@entry), 'verification-save-progress-url': lexicon_save_progress_verification_path(@entry), 'verification-set-profile-image-url': lexicon_set_profile_image_verification_path(@entry), 'profile-image-badge-text': t('lexicon.entries.show.profile_image_badge')}}
   .verification-checklist
     = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item
 

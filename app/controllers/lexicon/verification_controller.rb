@@ -93,8 +93,8 @@ module Lexicon
     def set_profile_image
       attachment_id = params[:attachment_id].to_i
 
-      # Verify the attachment belongs to this entry
-      unless @entry.attachments.any? { |a| a.id == attachment_id }
+      # Verify the attachment belongs to this entry using an efficient query
+      unless attachment_id.positive? && @entry.attachments.exists?(id: attachment_id)
         render json: { success: false, error: 'Attachment not found' }, status: :not_found
         return
       end

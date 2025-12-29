@@ -9,7 +9,7 @@
           .lexicon-author-details
             - if @lex_entry.profile_image.present?
               %div
-                %img.lexicon-author-pic{:alt => t('lexicon.entries.show.profile_image_alt'), :src => url_for(@lex_entry.profile_image), :loading => "lazy"}
+                %img.lexicon-author-pic{ alt: t('lexicon.entries.show.profile_image_alt'), src: url_for(@lex_entry.profile_image), loading: "lazy" }
             %div
               .author-name-years
                 .headline-1-v02= @lex_entry.title
