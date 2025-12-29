@@ -24,15 +24,34 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     context 'when setting a valid attachment as profile image' do
       it 'sets the profile_image_id' do
         attachment = entry.attachments.first
+        expect(entry.profile_image_id).to be_nil # Verify starts as nil
 
         patch url, params: { attachment_id: attachment.id }, as: :json
 
         expect(response).to have_http_status(:success)
-        expect(entry.reload.profile_image_id).to eq(attachment.id)
+
+        # Verify database was actually updated
+        entry.reload
+        expect(entry.profile_image_id).to eq(attachment.id)
+        expect(entry.profile_image).to eq(attachment)
 
         json_response = response.parsed_body
         expect(json_response['success']).to be true
         expect(json_response['profile_image_id']).to eq(attachment.id)
+      end
+
+      it 'can change the profile image to a different attachment' do
+        first_attachment = entry.attachments.first
+        second_attachment = entry.attachments.second
+
+        # Set first attachment
+        patch url, params: { attachment_id: first_attachment.id }, as: :json
+        expect(entry.reload.profile_image_id).to eq(first_attachment.id)
+
+        # Change to second attachment
+        patch url, params: { attachment_id: second_attachment.id }, as: :json
+        expect(response).to have_http_status(:success)
+        expect(entry.reload.profile_image_id).to eq(second_attachment.id)
       end
     end
 
