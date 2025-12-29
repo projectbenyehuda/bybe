@@ -76,6 +76,50 @@ function initVerification() {
         });
     });
 
+    // Handle set profile image buttons
+    $('[data-action="click->verification#setProfileImage"]').on('click', function(e) {
+        e.preventDefault();
+        const button = $(this);
+        const attachmentId = button.data('attachment-id');
+        const setProfileImageUrl = container.data('verification-set-profile-image-url');
+
+        $.ajax({
+            url: setProfileImageUrl,
+            type: 'PATCH',
+            dataType: 'json',
+            data: {
+                attachment_id: attachmentId
+            },
+            success: function(data) {
+                // Update all attachment buttons to show as not selected
+                $('[data-action="click->verification#setProfileImage"]').each(function() {
+                    $(this).removeClass('btn-primary').addClass('btn-outline-primary').text('Use as Profile');
+                });
+
+                // Update clicked button to show as selected
+                button.removeClass('btn-outline-primary').addClass('btn-primary').text('✓ Profile Image');
+
+                // Remove all profile-image-selected classes
+                $('.attachment-item').removeClass('profile-image-selected');
+
+                // Add profile-image-selected class to the selected attachment
+                $('#attachment-' + attachmentId).addClass('profile-image-selected');
+
+                // Remove all "Profile Image" badges
+                $('.attachment-info .badge').remove();
+
+                // Add "Profile Image" badge to the selected attachment
+                $('#attachment-' + attachmentId + ' .attachment-info')
+                    .append('<span class="badge bg-primary ms-2">Profile Image</span>');
+
+                showToast('Profile image set successfully');
+            },
+            error: function(xhr) {
+                alert('Error setting profile image: ' + xhr.status);
+            }
+        });
+    });
+
     // Handle checklist label clicks - scroll to section
     $('.checklist-items label').on('click', function(e) {
         // Only scroll if clicked on label text, not checkbox
