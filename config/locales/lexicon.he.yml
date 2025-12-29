@@ -31,6 +31,7 @@ he:
         to_pby_person: לדף היוצר בפרויקט בן־יהודה
         unsupported_entry_type: Unsupported entry type
         profile_image_alt: תמונת פרופיל
+        profile_image_badge: תמונת פרופיל
       show_person:
         pages: p.
     attachments:

@@ -26,7 +26,7 @@ class LexEntry < ApplicationRecord
   def profile_image
     return nil unless profile_image_id
 
-    attachments.find { |attachment| attachment.id == profile_image_id }
+    attachments.find_by(id: profile_image_id)
   end
 
   validates :title, :sort_title, :status, presence: true
