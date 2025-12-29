@@ -159,3 +159,6 @@
       %p.text-muted (No attachments)
   .section-actions
     = link_to t('lexicon.verification.migrated.upload_file'), lexicon_entry_attachments_path(entry), class: 'btn btn-sm btn-success'
+    %button.btn.btn-sm{class: checklist['attachments']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: 'attachments'}}
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
