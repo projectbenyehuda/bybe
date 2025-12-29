@@ -143,13 +143,18 @@
   .section-content
     - if entry.attachments.any?
       - entry.attachments.each do |attachment|
-        .attachment-item
+        .attachment-item{id: "attachment-#{attachment.id}", class: entry.profile_image_id == attachment.id ? 'profile-image-selected' : ''}
           - if attachment.variable?
             .attachment-thumbnail
               = image_tag attachment.variant(resize_to_fill: [150, nil]), class: 'img-thumbnail'
           .attachment-info
             = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank'
             %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
+            - if entry.profile_image_id == attachment.id
+              %span.badge.bg-primary.ms-2 Profile Image
+          .attachment-actions.mt-2
+            %button.btn.btn-sm{class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: {action: 'click->verification#setProfileImage', 'attachment-id': attachment.id}}
+              = entry.profile_image_id == attachment.id ? '✓ Profile Image' : 'Use as Profile'
     - else
       %p.text-muted (No attachments)
   .section-actions
