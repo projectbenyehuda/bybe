@@ -165,12 +165,14 @@ Capybara automatically waits (default 2 seconds, configurable) for:
 
 **ALWAYS follow this workflow for EVERY piece of work:**
 
-1. **FIRST: Check which branch you're on**
+1. **FIRST: Check and record which branch you're on**
    ```bash
    git branch --show-current
    ```
+   - **CRITICAL**: Record this branch name - it will be your PR base branch!
    - If you're on `master`, `main`, or any pre-existing branch, DO NOT commit or push!
    - You MUST create a new branch first (see step 2)
+   - Example: If on `lexicon_new`, your base branch is `lexicon_new` (NOT `master`)
 
 2. **Create a new feature/bug branch** from your current branch:
    ```bash
@@ -179,6 +181,7 @@ Capybara automatically waits (default 2 seconds, configurable) for:
    ```
    - Branch naming: `fix/` for bugs, `feature/` for new features
    - Use descriptive names that indicate what the work is about
+   - Remember: This branch is created FROM the branch you were just on (your base branch)
 
 3. **Make your changes, lint them, and commit to YOUR branch:**
    ```bash
@@ -206,9 +209,11 @@ Capybara automatically waits (default 2 seconds, configurable) for:
 
 5. **Create a Pull Request (PR)** using GitHub CLI:
    ```bash
-   gh pr create --title "Title" --body "Description"
+   gh pr create --base <base-branch> --title "Title" --body "Description"
    ```
-   - Or specify base branch explicitly: `gh pr create --base master --title "..." --body "..."`
+   - **CRITICAL**: Use `--base <base-branch>` where `<base-branch>` is the branch from step 1!
+   - Example: If you were on `lexicon_new` in step 1, use `--base lexicon_new`
+   - **NEVER assume `--base master`** - always use the branch you were on before creating your feature branch
    - Include summary of changes, test plan, and related issue numbers
    - The PR body should explain what changed and why
 
@@ -230,11 +235,12 @@ Before running ANY git command, verify:
 - [ ] Have I run linters on ALL files I changed?
   - [ ] `bundle exec rubocop <changed_ruby_files>` - Fixed ALL issues
   - [ ] `bundle exec haml-lint <changed_haml_files>` - Fixed ALL issues
+- [ ] Have I recorded the base branch (the branch I was on before creating my feature branch)?
 - [ ] Am I on a branch I created in this session? (`git branch --show-current`)
 - [ ] If not, have I created a new feature/fix branch?
 - [ ] Am I about to push to my own branch, not master/main?
 - [ ] Have I run `bd sync` before and after committing?
-- [ ] Will I create a PR after pushing?
+- [ ] Will I create a PR with `--base <recorded-base-branch>` after pushing?
 
 **If any answer is NO, do NOT proceed with git push!**
 
