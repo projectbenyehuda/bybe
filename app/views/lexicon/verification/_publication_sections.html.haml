@@ -100,8 +100,12 @@
     - if entry.attachments.any?
       - entry.attachments.each do |attachment|
         .attachment-item
-          = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank'
-          %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
+          - if attachment.variable?
+            .attachment-thumbnail
+              = image_tag attachment.variant(resize_to_fill: [150, nil]), class: 'img-thumbnail'
+          .attachment-info
+            = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank'
+            %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
     - else
       %p.text-muted (No attachments)
   .section-actions
