@@ -82,6 +82,7 @@ function initVerification() {
         const button = $(this);
         const attachmentId = button.data('attachment-id');
         const setProfileImageUrl = container.data('verification-set-profile-image-url');
+        const profileImageBadgeText = container.data('profile-image-badge-text') || 'Profile Image';
 
         $.ajax({
             url: setProfileImageUrl,
@@ -100,7 +101,7 @@ function initVerification() {
                 });
 
                 // Update clicked button to show as selected
-                button.removeClass('btn-outline-primary').addClass('btn-primary').text('✓ Profile Image');
+                button.removeClass('btn-outline-primary').addClass('btn-primary').text('✓ ' + profileImageBadgeText);
 
                 // Remove all profile-image-selected classes
                 $('.attachment-item').removeClass('profile-image-selected');
@@ -109,16 +110,17 @@ function initVerification() {
                 $('#attachment-' + attachmentId).addClass('profile-image-selected');
 
                 // Remove all "Profile Image" badges
-                $('.attachment-info .badge').remove();
+                $('.attachment-info .profile-image-badge').remove();
 
                 // Add "Profile Image" badge to the selected attachment
                 $('#attachment-' + attachmentId + ' .attachment-info')
-                    .append('<span class="badge bg-primary ms-2">Profile Image</span>');
+                    .append('<span class="badge profile-image-badge bg-primary ms-2">' + profileImageBadgeText + '</span>');
 
                 showToast('Profile image set successfully');
             },
             error: function(xhr) {
-                alert('Error setting profile image: ' + xhr.status);
+                var statusInfo = xhr && xhr.status ? ' (status ' + xhr.status + ')' : '';
+                showToast('Error setting profile image' + statusInfo);
             }
         });
     });

@@ -151,7 +151,7 @@
             = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank'
             %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
             - if entry.profile_image_id == attachment.id
-              %span.badge.bg-primary.ms-2 Profile Image
+              %span.badge.profile-image-badge.bg-primary.ms-2 Profile Image
           .attachment-actions.mt-2
             %button.btn.btn-sm{class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: {action: 'click->verification#setProfileImage', 'attachment-id': attachment.id}}
               = entry.profile_image_id == attachment.id ? '✓ Profile Image' : 'Use as Profile'
