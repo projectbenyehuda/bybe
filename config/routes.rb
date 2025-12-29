@@ -58,6 +58,21 @@ Bybeconv::Application.routes.draw do
       resources :attachments, only: %i(index create destroy)
       resources :links, shallow: true, except: %i(show)
     end
+
+    # Verification workbench
+    get 'verification/queue', to: 'verification#index', as: :verification_queue
+    get 'verification', to: 'verification#index', as: :verification_index
+    scope :verification do
+      get ':id', to: 'verification#show', as: :verification
+      get ':id/source', to: 'verification#source', as: :verification_source
+      patch ':id/update_checklist', to: 'verification#update_checklist', as: :update_checklist_verification
+      patch ':id/save_progress', to: 'verification#save_progress', as: :save_progress_verification
+      patch ':id/set_profile_image', to: 'verification#set_profile_image', as: :set_profile_image_verification
+      post ':id/mark_verified', to: 'verification#mark_verified', as: :mark_verified_verification
+      get ':id/edit_section', to: 'verification#edit_section', as: :edit_section_verification
+      patch ':id/update_section', to: 'verification#update_section', as: :update_section_verification
+    end
+
     resources :files, only: :index do
       member do
         post :migrate
