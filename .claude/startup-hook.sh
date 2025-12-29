@@ -92,13 +92,39 @@ bd close by-6b7 --reason "Created PR #123"
 bd sync
 ```
 
-## See AGENTS.md for Full Details
-
-The complete workflow is documented in `/home/asaf/dev/bybe/AGENTS.md`
-Read it if you need clarification on:
-- Testing requirements
-- Branch naming conventions
-- PR creation guidelines
-- Error recovery procedures
-
 EOF
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 📋 MANDATORY: AGENTS.MD PROJECT REQUIREMENTS
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# ⚠️⚠️⚠️ YOU MUST READ THIS BEFORE STARTING ANY WORK ⚠️⚠️⚠️
+#
+# The following is the COMPLETE contents of AGENTS.md which contains
+# MANDATORY requirements for this project. You are REQUIRED to read and
+# follow ALL rules in this document.
+#
+# DO NOT skip reading this. DO NOT assume you know the rules.
+# ALWAYS consult this file for project-specific requirements.
+# ═══════════════════════════════════════════════════════════════════════════
+
+cat AGENTS.md
+
+cat << 'EOF2'
+
+═══════════════════════════════════════════════════════════════════════════
+END OF AGENTS.MD
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️⚠️⚠️ CRITICAL REMINDERS FROM AGENTS.MD ⚠️⚠️⚠️
+
+1. **NEVER use `sleep` in Capybara tests** - Use Capybara's automatic waiting
+2. **ALWAYS create feature/fix branches** - NEVER push to existing branches
+3. **ALWAYS write tests** for bug fixes and new features
+4. **ALWAYS use HAML** for views, not ERB
+5. **ALWAYS use I18n** for user-visible text (both he.yml and en.yml)
+6. **ALWAYS include WebDriver check** in system specs with js: true
+
+Before starting ANY work, confirm you have read and understood AGENTS.md above.
+
+EOF2
