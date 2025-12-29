@@ -30,7 +30,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         expect(response).to have_http_status(:success)
         expect(entry.reload.profile_image_id).to eq(attachment.id)
 
-        json_response = JSON.parse(response.body)
+        json_response = response.parsed_body
         expect(json_response['success']).to be true
         expect(json_response['profile_image_id']).to eq(attachment.id)
       end
@@ -50,7 +50,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
 
         expect(response).to have_http_status(:not_found)
 
-        json_response = JSON.parse(response.body)
+        json_response = response.parsed_body
         expect(json_response['success']).to be false
         expect(json_response['error']).to eq('Attachment not found')
       end
@@ -58,11 +58,11 @@ RSpec.describe 'Lexicon::Verification', type: :request do
 
     context 'when attachment_id is invalid' do
       it 'returns not found error' do
-        patch url, params: { attachment_id: 99999 }, as: :json
+        patch url, params: { attachment_id: 99_999 }, as: :json
 
         expect(response).to have_http_status(:not_found)
 
-        json_response = JSON.parse(response.body)
+        json_response = response.parsed_body
         expect(json_response['success']).to be false
       end
     end

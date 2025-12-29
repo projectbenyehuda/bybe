@@ -31,6 +31,7 @@ en:
         to_pby_person: To the creator's page on Ben-Yehuda Project
         unsupported_entry_type: Unsupported entry type
         profile_image_alt: Profile image
+        profile_image_badge: Profile Image
       show_person:
         pages: p.
     attachments:
