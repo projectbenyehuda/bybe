@@ -22,6 +22,13 @@ class LexEntry < ApplicationRecord
   has_many_attached :attachments # attachments referenced by link or image on the entry page
   has_many :legacy_links, class_name: 'LexLegacyLink', dependent: :destroy, inverse_of: :lex_entry
 
+  # Returns the attachment selected as the profile image, or nil if none selected
+  def profile_image
+    return nil unless profile_image_id
+
+    attachments.find { |attachment| attachment.id == profile_image_id }
+  end
+
   validates :title, :sort_title, :status, presence: true
 
   before_validation :update_sort_title!
