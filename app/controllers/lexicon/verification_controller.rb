@@ -89,6 +89,26 @@ module Lexicon
       render json: { success: false, error: e.message }, status: :unprocessable_entity
     end
 
+    # PATCH /lexicon/verification/:id/set_profile_image
+    def set_profile_image
+      attachment_id = params[:attachment_id].to_i
+
+      # Verify the attachment belongs to this entry
+      unless @entry.attachments.any? { |a| a.id == attachment_id }
+        render json: { success: false, error: 'Attachment not found' }, status: :not_found
+        return
+      end
+
+      @entry.update!(profile_image_id: attachment_id)
+
+      render json: {
+        success: true,
+        profile_image_id: attachment_id
+      }
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_entity
+    end
+
     # POST /lexicon/verification/:id/mark_verified
     def mark_verified
       @entry.mark_verified!
