@@ -1,6 +1,14 @@
 Important project instructions for AI agents
 ============================================
 
+> **Note**: These instructions have been split into modular files in `.claude/rules/` for automatic loading in Claude Code:
+> - `git-workflow.md` - Git workflow and PR requirements
+> - `testing-requirements.md` - Testing standards and Capybara rules
+> - `beads-tracking.md` - Issue tracking with bd/beads
+> - `project-technologies.md` - HAML, RSpec, I18n requirements
+>
+> This file is kept for reference and other AI tools (GitHub Copilot, etc.)
+
 ## ⚠️ CRITICAL: Git Workflow - READ THIS FIRST ⚠️
 
 ### THE MOST IMPORTANT RULE
