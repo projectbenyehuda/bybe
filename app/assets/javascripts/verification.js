@@ -87,6 +87,9 @@ function initVerification() {
             url: setProfileImageUrl,
             type: 'PATCH',
             dataType: 'json',
+            headers: {
+                'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+            },
             data: {
                 attachment_id: attachmentId
             },

@@ -7,9 +7,9 @@
       .col
         = render layout: 'lexicon/header' do
           .lexicon-author-details
-            -# unless @lex_entry.images.empty?
+            - if @lex_entry.profile_image.present?
               %div
-                %img.lexicon-author-pic{:alt => "", :src => url_for(@lex_entry.images[0])}
+                %img.lexicon-author-pic{:alt => t('lexicon.entries.show.profile_image_alt'), :src => url_for(@lex_entry.profile_image), :loading => "lazy"}
             %div
               .author-name-years
                 .headline-1-v02= @lex_entry.title
