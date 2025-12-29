@@ -108,7 +108,7 @@ EOF
 # ALWAYS consult this file for project-specific requirements.
 # ═══════════════════════════════════════════════════════════════════════════
 
-cat "$(dirname "$0")/../../AGENTS.md"
+cat "$(dirname "$0")/../AGENTS.md"
 
 cat << 'EOF2'
 
