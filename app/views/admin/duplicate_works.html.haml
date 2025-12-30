@@ -47,7 +47,7 @@
                 %td
                   = form_with url: merge_works_path, method: :post, local: false, data: { cluster_id: "cluster-#{author_id}-#{title.parameterize}" } do |f|
                     = f.hidden_field :source_work_id, value: expr.work.id
-                    = f.select :target_work_id, options_for_select(works.reject { |w| w.id == expr.work.id }.map { |w| ["#{t(:work)} #{w.id}", w.id] }), { prompt: t(:select_target_work) }
+                    = f.select :target_work_id, options_for_select(works.reject { |w| w.id == expr.work.id }.map { |w| ["#{t(:work)} #{w.id}", w.id] }), { prompt: t(:select_target_work) }, { required: true }
                     = f.submit t(:merge_into_selected), data: { confirm: t(:confirm_merge_works) }, class: 'btn btn-warning'
 
         %hr{style: 'margin: 20px 0;'}
