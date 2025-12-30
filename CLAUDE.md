@@ -41,6 +41,10 @@ If you accidentally pushed to master/main:
 * we use Capybara for integration tests of real usage scenarios
 * we use Rails I18n for all user-visible messages and UI labels. If you add a new message, make sure to create appropriatee entries in both config/locales/he.yml and config/locales/en.yml
 
+### Project architecture
+
+* READ AI_ARCHITECTURE_PRIMER.md for a primer on how the project is organized, its main models, controllers, and workflows. DO NOT SKIP THIS.
+
 ### ⚠️ CRITICAL: Testing Requirements ⚠️
 
 **NO FEATURE OR BUG FIX IS COMPLETE WITHOUT PROPER TESTING**
