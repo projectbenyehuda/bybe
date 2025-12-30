@@ -8,7 +8,7 @@
     %p= t(:duplicate_works_explanation)
 
     - @duplicate_clusters.each_pair do |(author_id, title), expressions|
-      - author = Authority.find(author_id)
+      - author = expressions.first.work.authors.first
       - works = expressions.map(&:work).uniq
 
       .duplicate-cluster{id: "cluster-#{author_id}-#{title.parameterize}", style: 'margin: 20px 0; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9;'}
