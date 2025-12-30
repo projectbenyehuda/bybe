@@ -94,7 +94,7 @@ Work
   - Formats: pdf/html/docx/epub/mobi/txt/odt/kwic
 
 - **Anthology** (`anthology.rb`): User-curated collection of texts
-  - Access levels: private/unlisted/public
+  - Access levels: priv/unlisted/pub
   - Has many AnthologyText joins, downloadables, taggings
 
 - **Tag/Tagging** (`tag.rb`, `tagging.rb`): Crowdsourced tags
