@@ -668,6 +668,19 @@ he:
   slash_in_titles_report: "דו\"ח כותרות המכילות קו נטוי (/או\\)"
   similar_titles_report: "דו\"ח כותרות דומות ליצירות (שאולי הן פרקים של יצירה אחת שיש לאחד)"
   suspicious_translations_report: "דו\"ח יצירות עם מחבר שווה למתרגם"
+  duplicate_works_report: "דו\"ח יצירות כפולות - תרגומים שונים שצריכים להתמזג תחת יצירה אחת"
+  duplicate_works_explanation: "הדו\"ח הבא מציג ביטויים של מתרגמים שונים עם אותה כותרת, שהיצירות שלהם הן מאותו יוצר. ביטויים אלה הם ככל הנראה תרגומים שונים שצריכים להתמזג תחת רשומת יצירה אחת."
+  no_duplicate_works_found: "לא נמצאו יצירות כפולות"
+  select_target_work: "בחר יצירת יעד"
+  merge_into_selected: "מזג ליצירה הנבחרת"
+  confirm_merge_works: "האם אתה בטוח שברצונך למזג יצירות אלה? פעולה זו לא ניתנת לביטול."
+  works_merged_successfully: "היצירות מוזגו בהצלחה"
+  work_not_found: "יצירה לא נמצאה"
+  merge_failed: "המיזוג נכשל: %{error}"
+  work_id: "מזהה יצירה"
+  translators: "מתרגמים"
+  expression_title: "כותרת הביטוי"
+  aboutnesses: "נושאים (aboutnesses)"
   most_read_authors_of_genre: יוצרי ה%{genre} הנקראים ביותר החודש
   authors_without_works: יוצרים ללא יצירות באתר
   most_read_works_of_genre: יצירות ה%{genre} הנקראות ביותר החודש

@@ -140,6 +140,8 @@ Bybeconv::Application.routes.draw do
   get 'admin/similar_titles'
   get 'admin/periodless'
   get 'admin/suspicious_translations'
+  get 'admin/duplicate_works'
+  post 'admin/merge_works' => 'admin#merge_works', as: 'merge_works'
   get 'admin/mark_similar_as_valid/:id' => 'admin#mark_similar_as_valid', as: 'mark_similar_as_valid'
   get 'admin/mark_slash_title_as_okay/:item_type/:id' => 'admin#mark_slash_title_as_okay',
       as: 'mark_slash_title_as_okay'
