@@ -11,7 +11,7 @@
       - author = Authority.find(author_id)
       - works = expressions.map(&:work).uniq
 
-      .duplicate-cluster{style: 'margin: 20px 0; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9;'}
+      .duplicate-cluster{id: "cluster-#{author_id}-#{title.parameterize}", style: 'margin: 20px 0; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9;'}
         %h4
           = t(:author) + ': '
           = link_to(author.name, authors_show_path(id: author.id))
@@ -29,7 +29,7 @@
 
           %tbody
             - expressions.each do |expr|
-              %tr
+              %tr{id: "work-row-#{expr.work.id}"}
                 %td= expr.work.id
                 %td!= expr.translators.map { |t| link_to(t.name, authors_show_path(id: t.id)) }.join(', ')
                 %td
@@ -45,7 +45,7 @@
                   - else
                     = t(:none)
                 %td
-                  = form_with url: merge_works_path, method: :post do |f|
+                  = form_with url: merge_works_path, method: :post, local: false, data: { cluster_id: "cluster-#{author_id}-#{title.parameterize}" } do |f|
                     = f.hidden_field :source_work_id, value: expr.work.id
                     = f.select :target_work_id, options_for_select(works.reject { |w| w.id == expr.work.id }.map { |w| ["#{t(:work)} #{w.id}", w.id] }), { prompt: t(:select_target_work) }
                     = f.submit t(:merge_into_selected), data: { confirm: t(:confirm_merge_works) }, class: 'btn btn-warning'

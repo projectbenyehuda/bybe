@@ -923,8 +923,30 @@ describe AdminController do
 
     it 'redirects with success message' do
       call
-      expect(response).to redirect_to(action: :duplicate_works)
-      expect(flash[:notice]).to eq(I18n.t(:works_merged_successfully))
+      expect(response).to have_http_status(:redirect)
+      expect(response.location).to include('/admin/duplicate_works')
+    end
+
+    context 'when request format is JS' do
+      subject(:call) do
+        post :merge_works, params: {
+          source_work_id: source_work.id,
+          target_work_id: target_work.id
+        }, format: :js
+      end
+
+      it 'returns success status' do
+        call
+        expect(response).to be_successful
+        expect(assigns(:success)).to be true
+        expect(assigns(:message)).to eq(I18n.t(:works_merged_successfully))
+      end
+
+      it 'merges the works' do
+        call
+        expect { source_work.reload }.to raise_error(ActiveRecord::RecordNotFound)
+        expect(source_expr.reload.work).to eq(target_work)
+      end
     end
 
     context 'when source work does not exist' do
@@ -932,13 +954,29 @@ describe AdminController do
         post :merge_works, params: {
           source_work_id: 99999,
           target_work_id: target_work.id
-        }
+        }, format: :html
       end
 
       it 'redirects with error message' do
         call
-        expect(response).to redirect_to(action: :duplicate_works)
-        expect(flash[:error]).to eq(I18n.t(:work_not_found))
+        expect(response).to have_http_status(:redirect)
+        expect(response.location).to include('/admin/duplicate_works')
+      end
+
+      context 'when request format is JS' do
+        subject(:call) do
+          post :merge_works, params: {
+            source_work_id: 99999,
+            target_work_id: target_work.id
+          }, format: :js
+        end
+
+        it 'returns error status' do
+          call
+          expect(response).to be_successful
+          expect(assigns(:success)).to be false
+          expect(assigns(:message)).to eq(I18n.t(:work_not_found))
+        end
       end
     end
 
@@ -961,8 +999,8 @@ describe AdminController do
 
       it 'redirects with error message' do
         call
-        expect(response).to redirect_to(action: :duplicate_works)
-        expect(flash[:error]).to eq(I18n.t(:work_not_found))
+        expect(response).to have_http_status(:redirect)
+        expect(response.location).to include('/admin/duplicate_works')
       end
     end
   end

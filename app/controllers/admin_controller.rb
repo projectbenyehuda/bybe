@@ -215,39 +215,52 @@ class AdminController < ApplicationController
   end
 
   def merge_works
-    source_work_id = params[:source_work_id]
-    target_work_id = params[:target_work_id]
+    @source_work_id = params[:source_work_id]
+    @target_work_id = params[:target_work_id]
 
-    source_work = Work.find(source_work_id)
-    target_work = Work.find(target_work_id)
+    source_work = Work.find(@source_work_id)
+    target_work = Work.find(@target_work_id)
 
     # Use a transaction to ensure atomicity
     ActiveRecord::Base.transaction do
       # Reassociate expressions from source to target BEFORE destroying
-      source_work.expressions.update_all(work_id: target_work_id)
+      source_work.expressions.update_all(work_id: @target_work_id)
 
       # Reassociate aboutnesses where this work is ABOUT something (topics)
       # These are Aboutness records where work_id = source_work_id
-      Aboutness.where(work_id: source_work_id).update_all(work_id: target_work_id)
+      Aboutness.where(work_id: @source_work_id).update_all(work_id: @target_work_id)
 
       # Reassociate aboutnesses where OTHER works are ABOUT this work
       # These are Aboutness records where aboutable_id = source_work_id and aboutable_type = 'Work'
-      Aboutness.where(aboutable_type: 'Work', aboutable_id: source_work_id)
-              .update_all(aboutable_id: target_work_id)
+      Aboutness.where(aboutable_type: 'Work', aboutable_id: @source_work_id)
+              .update_all(aboutable_id: @target_work_id)
 
       # Reload source work to get updated associations, then destroy
       source_work.reload
       source_work.destroy!
     end
 
-    flash[:notice] = t(:works_merged_successfully)
-    redirect_to action: :duplicate_works
+    @success = true
+    @message = t(:works_merged_successfully)
+
+    respond_to do |format|
+      format.html { redirect_to action: :duplicate_works, notice: @message }
+      format.js
+    end
   rescue ActiveRecord::RecordNotFound
-    flash[:error] = t(:work_not_found)
-    redirect_to action: :duplicate_works
+    @success = false
+    @message = t(:work_not_found)
+    respond_to do |format|
+      format.html { redirect_to action: :duplicate_works, alert: @message }
+      format.js
+    end
   rescue StandardError => e
-    flash[:error] = t(:merge_failed, error: e.message)
-    redirect_to action: :duplicate_works
+    @success = false
+    @message = t(:merge_failed, error: e.message)
+    respond_to do |format|
+      format.html { redirect_to action: :duplicate_works, alert: @message }
+      format.js
+    end
   end
 
   def assign_proofs
