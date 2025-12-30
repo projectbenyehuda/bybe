@@ -1,10 +1,4 @@
 GIT
-  remote: https://github.com/damisul/multi_markdown
-  revision: 376b564ffa229261a67adcb29838761ab2c51bce
-  specs:
-    rmultimarkdown (6.7.0.1)
-
-GIT
   remote: https://github.com/kaminari/kaminari
   revision: 55d6e40767442d206236d3718c5bdb32d01f2345
   specs:
