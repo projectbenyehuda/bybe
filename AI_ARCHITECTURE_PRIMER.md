@@ -102,7 +102,7 @@ Work
   - Polymorphic taggable: Authority, Manifestation, Work, Expression, Anthology, Collection
 
 - **ExternalLink** (`external_link.rb`): Links to external resources
-  - Status: pending/approved/rejected
+  - Status: submitted/approved/rejected
   - Polymorphic linkable: Authority, Manifestation, Collection
 
 ---
