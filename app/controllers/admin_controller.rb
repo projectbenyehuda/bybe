@@ -172,6 +172,84 @@ class AdminController < ApplicationController
     Rails.cache.write('report_suspicious_translations', @total)
   end
 
+  # Find Expressions by different translators with the same title, whose Works are by the same author
+  # These likely represent different translations that should be merged under a single Work record
+  def duplicate_works
+    # Find expressions grouped by work author and expression title
+    # where there are multiple expressions with different translators
+    duplicate_clusters = {}
+
+    # Get all expressions that are translations
+    # We need to include involved_authorities for translators
+    Expression.includes(:work, :involved_authorities, work: [:involved_authorities])
+              .where(translation: true)
+              .find_each do |expr|
+      # Skip if work has no author or expression has no translators
+      next if expr.work.authors.empty? || expr.translators.empty?
+
+      # Create a key from work's first author and expression title
+      key = [expr.work.authors.first.id, expr.title]
+
+      duplicate_clusters[key] ||= []
+      duplicate_clusters[key] << expr
+    end
+
+    # Filter to only include clusters with multiple expressions by different translators
+    @duplicate_clusters = duplicate_clusters.select do |_key, expressions|
+      next false if expressions.length < 2
+
+      # Check that translators are different
+      translator_ids = expressions.flat_map { |e| e.translators.map(&:id) }.uniq
+      translator_ids.length > 1
+    end
+
+    # Sort by author name for consistent display
+    @duplicate_clusters = @duplicate_clusters.sort_by do |key, _expressions|
+      author = Authority.find(key[0])
+      author.name
+    end.to_h
+
+    @total = @duplicate_clusters.keys.length
+    @page_title = t(:duplicate_works_report)
+    Rails.cache.write('report_duplicate_works', @total)
+  end
+
+  def merge_works
+    source_work_id = params[:source_work_id]
+    target_work_id = params[:target_work_id]
+
+    source_work = Work.find(source_work_id)
+    target_work = Work.find(target_work_id)
+
+    # Use a transaction to ensure atomicity
+    ActiveRecord::Base.transaction do
+      # Reassociate expressions from source to target BEFORE destroying
+      source_work.expressions.update_all(work_id: target_work_id)
+
+      # Reassociate aboutnesses where this work is ABOUT something (topics)
+      # These are Aboutness records where work_id = source_work_id
+      Aboutness.where(work_id: source_work_id).update_all(work_id: target_work_id)
+
+      # Reassociate aboutnesses where OTHER works are ABOUT this work
+      # These are Aboutness records where aboutable_id = source_work_id and aboutable_type = 'Work'
+      Aboutness.where(aboutable_type: 'Work', aboutable_id: source_work_id)
+              .update_all(aboutable_id: target_work_id)
+
+      # Reload source work to get updated associations, then destroy
+      source_work.reload
+      source_work.destroy!
+    end
+
+    flash[:notice] = t(:works_merged_successfully)
+    redirect_to action: :duplicate_works
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = t(:work_not_found)
+    redirect_to action: :duplicate_works
+  rescue StandardError => e
+    flash[:error] = t(:merge_failed, error: e.message)
+    redirect_to action: :duplicate_works
+  end
+
   def assign_proofs
     p = Proof.where(status: 'new').order(created_at: :asc).first
     if p.nil?

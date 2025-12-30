@@ -417,3 +417,16 @@ en:
   whatsnew_in_periodicals: What's new in periodicals?
   periodical_genres: Genres in periodicals
   and_n_more: and %{n} more
+  duplicate_works_report: "Duplicate Works Report - Different Translations to be Merged Under a Single Work"
+  duplicate_works_explanation: "The following report shows expressions by different translators with the same title, whose works are by the same author. These expressions are very likely different translations that should be merged under a single Work record."
+  no_duplicate_works_found: "No duplicate works found"
+  select_target_work: "Select target work"
+  merge_into_selected: "Merge into selected"
+  confirm_merge_works: "Are you sure you want to merge these works? This action cannot be undone."
+  works_merged_successfully: "Works merged successfully"
+  work_not_found: "Work not found"
+  merge_failed: "Merge failed: %{error}"
+  work_id: "Work ID"
+  translators: "Translators"
+  expression_title: "Expression Title"
+  aboutnesses: "Aboutnesses"
