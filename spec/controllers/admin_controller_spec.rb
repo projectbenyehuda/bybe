@@ -921,6 +921,23 @@ describe AdminController do
       expect(target_work.reload.topics.count).to eq(2)
     end
 
+    it 'reassociates polymorphic aboutnesses where other works are about the source work' do
+      # Create a work that is ABOUT the source work
+      other_work = create(:work)
+      poly_aboutness = Aboutness.create!(
+        work: other_work,
+        user: user,
+        aboutable: source_work
+      )
+
+      call
+
+      # The aboutness should now point to the target work
+      expect(poly_aboutness.reload.aboutable_id).to eq(target_work.id)
+      expect(poly_aboutness.aboutable_type).to eq('Work')
+      expect(target_work.reload.aboutnesses.count).to eq(1)
+    end
+
     it 'redirects with success message' do
       call
       expect(response).to have_http_status(:redirect)

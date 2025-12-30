@@ -181,9 +181,10 @@ class AdminController < ApplicationController
 
     # Get all expressions that are translations
     # We need to include involved_authorities for translators
+    # Using .each instead of .find_each since we're materializing all results in memory
     Expression.includes(:work, :involved_authorities, work: [:involved_authorities])
               .where(translation: true)
-              .find_each do |expr|
+              .each do |expr|
       # Skip if work has no author or expression has no translators
       next if expr.work.authors.empty? || expr.translators.empty?
 
@@ -204,9 +205,15 @@ class AdminController < ApplicationController
     end
 
     # Sort by author name for consistent display
+    # Cache author names to avoid N+1 queries
+    author_names = {}
+    @duplicate_clusters.each_key do |key|
+      author_id = key[0]
+      author_names[author_id] ||= Authority.find(author_id).name
+    end
+
     @duplicate_clusters = @duplicate_clusters.sort_by do |key, _expressions|
-      author = Authority.find(key[0])
-      author.name
+      author_names[key[0]]
     end.to_h
 
     @total = @duplicate_clusters.keys.length
