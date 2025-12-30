@@ -198,9 +198,9 @@ class AdminController < ApplicationController
     @duplicate_clusters = duplicate_clusters.select do |_key, expressions|
       next false if expressions.length < 2
 
-      # Check that translators are different
-      translator_ids = expressions.flat_map { |e| e.translators.map(&:id) }.uniq
-      translator_ids.length > 1
+      # Check that at least two distinct translator sets exist across expressions
+      translator_sets = expressions.map { |e| e.translators.map(&:id).sort }.uniq
+      translator_sets.length > 1
     end
 
     # Sort by author name for consistent display
