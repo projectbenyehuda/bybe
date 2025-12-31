@@ -453,7 +453,7 @@ class ManifestationController < ApplicationController
     @total = Manifestation.count
     # form input
     session[:mft_q_params] = if params[:commit].present?
-                               params.permit(%i(title author status page)) # make prev. params accessible to view
+                               params.permit(%i(title author status page)).to_h # make prev. params accessible to view
                              else
                                { title: '', author: '', status: '' }
                              end
