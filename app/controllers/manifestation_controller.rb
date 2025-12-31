@@ -466,6 +466,9 @@ class ManifestationController < ApplicationController
     @manifestations = @manifestations.where('cached_people like ?', "%#{params[:author]}%") if params[:author].present?
     @manifestations = @manifestations.where(status: params[:status]) if params[:status].present?
 
+    # Calculate filtered count before pagination
+    @filtered_count = @manifestations.count
+
     # Apply ordering and pagination
     if params[:title].blank? && params[:author].blank? && params[:status].blank?
       @manifestations = @manifestations.page(params[:page]).order('updated_at DESC')

@@ -23,6 +23,8 @@ en:
   unpublished: Unpublished
   nonpd: Not Public Domain
   deprecated: Deprecated
+  filtered_manifestations_count: "Showing: %{count}"
+  total_manifestations_count: "Total in database: %{total}"
   confirm_delete_manifestation: Are you sure you want to delete this manifestation?
   confirm_batch_delete: Are you sure you want to delete %<count>s manifestation(s)?
   confirm_batch_unpublish: Are you sure you want to unpublish %<count>s manifestation(s)?

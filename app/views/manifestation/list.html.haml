@@ -7,7 +7,10 @@
         %p
           %b= link_to t(:upload_file), html_file_new_path
 
-        %p= t(:total_manifestations, :total => @total)
+        %p
+          = t(:filtered_manifestations_count, count: @filtered_count)
+          |
+          = t(:total_manifestations_count, total: @total)
 
         / query interface
         %p
