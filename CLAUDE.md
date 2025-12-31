@@ -336,4 +336,8 @@ Important reminders:
    • Check bd ready before asking "what should I work on?"
    • Run bd sync before and after commits
 
+Addressing PR code review comments:
+
+when asked to address PR code reviews, DO NOT issue 'gh pr view' commands (those have been deprecated since 2024). Instead, use the GitHub CLI API, e.g. gh api repos/projectbenyehuda/bybe/pulls/860/comments
+
 For more details, see README.md in the project home directory.
