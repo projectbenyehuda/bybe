@@ -862,6 +862,7 @@ describe AdminController do
                work: shared_work,
                title: 'Same Title',
                language: 'he',
+               orig_lang: 'en',
                translator: translator1)
       end
 
@@ -870,6 +871,7 @@ describe AdminController do
                work: shared_work,
                title: 'Same Title',
                language: 'he',
+               orig_lang: 'en',
                translator: translator2)
       end
 

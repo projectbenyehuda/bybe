@@ -22,6 +22,12 @@
                                      session[:mft_q_params][:author],
                                      autocomplete_authority_name_and_aliases_path,
                                      data: { noMatchesLabel: t(:no_matches_found) }
+
+            = label_tag(:status_l, t(:status))
+            = select_tag :status,
+                         options_for_select([['', '']] + Manifestation.statuses.keys.map { |s| [t(s), s] },
+                                           session[:mft_q_params][:status]),
+                         include_blank: false
             = submit_tag(t(:filter))
 
         / end query interface
