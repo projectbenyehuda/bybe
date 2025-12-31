@@ -114,6 +114,9 @@
         = link_to t(:suspicious_translations_report), admin_suspicious_translations_path
         = ' ('+Rails.cache.read('report_suspicious_translations').to_s+')'
       %p
+        %b= link_to t(:duplicate_works_report), admin_duplicate_works_path
+        = ' ('+Rails.cache.read('report_duplicate_works').to_s+')'
+      %p
         = link_to t(:missing_genre_report), admin_missing_genres_path
         = ' ('+Rails.cache.read('report_missing_genres').to_s+')'
       %p
