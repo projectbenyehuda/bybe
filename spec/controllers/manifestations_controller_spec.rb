@@ -259,9 +259,10 @@ describe ManifestationController do
       end
     end
 
-    subject { get :list, params: { author: author, title: title } }
+    subject { get :list, params: { author: author, title: title, status: status } }
     let(:author) { nil }
     let(:title) { nil }
+    let(:status) { nil }
 
     it { is_expected.to be_successful }
 
@@ -282,6 +283,29 @@ describe ManifestationController do
       let(:title) { manifestation.title }
 
       it { is_expected.to be_successful }
+    end
+
+    context 'when status is provided' do
+      let(:status) { 'published' }
+
+      it { is_expected.to be_successful }
+
+      it 'filters manifestations by status' do
+        subject
+        expect(assigns(:manifestations).pluck(:status).uniq).to eq(['published'])
+      end
+    end
+
+    context 'when status and title are provided' do
+      let(:status) { 'published' }
+      let(:title) { manifestation.title }
+
+      it { is_expected.to be_successful }
+
+      it 'filters by both status and title' do
+        subject
+        expect(assigns(:manifestations)).to include(manifestation)
+      end
     end
   end
 

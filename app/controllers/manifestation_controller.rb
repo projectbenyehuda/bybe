@@ -453,24 +453,24 @@ class ManifestationController < ApplicationController
     @total = Manifestation.count
     # form input
     session[:mft_q_params] = if params[:commit].present?
-                               params.permit(%i(title author page)) # make prev. params accessible to view
+                               params.permit(%i(title author status page)) # make prev. params accessible to view
                              else
-                               { title: '', author: '' }
+                               { title: '', author: '', status: '' }
                              end
     @urlbase = url_for(action: :show, id: 1)[0..-2]
     # DB
-    if params[:title].blank? && params[:author].blank?
-      @manifestations = Manifestation.includes(expression: :work).page(params[:page]).order('updated_at DESC')
-    elsif params[:author].blank?
-      @manifestations = Manifestation.includes(expression: :work).where('title like ?',
-                                                                        '%' + params[:title] + '%').page(params[:page]).order('sort_title ASC')
-    elsif params[:title].blank?
-      @manifestations = Manifestation.includes(expression: :work).where('cached_people like ?',
-                                                                        "%#{params[:author]}%").page(params[:page]).order('sort_title asc')
-    else # both author and title
-      @manifestations = Manifestation.includes(expression: :work).where(
-        'manifestations.title like ? and manifestations.cached_people like ?', '%' + params[:title] + '%', '%' + params[:author] + '%'
-      ).page(params[:page]).order('sort_title asc')
+    @manifestations = Manifestation.includes(expression: :work)
+
+    # Apply filters
+    @manifestations = @manifestations.where('title like ?', "%#{params[:title]}%") if params[:title].present?
+    @manifestations = @manifestations.where('cached_people like ?', "%#{params[:author]}%") if params[:author].present?
+    @manifestations = @manifestations.where(status: params[:status]) if params[:status].present?
+
+    # Apply ordering and pagination
+    if params[:title].blank? && params[:author].blank? && params[:status].blank?
+      @manifestations = @manifestations.page(params[:page]).order('updated_at DESC')
+    else
+      @manifestations = @manifestations.page(params[:page]).order('sort_title ASC')
     end
   end
 
