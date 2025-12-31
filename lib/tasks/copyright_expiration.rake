@@ -116,6 +116,7 @@ task :copyright_expiration, %i(execute output target_year) => :environment do |_
       if execute_mode
         Chewy.strategy(:atomic) do
           expression.update!(intellectual_property: :public_domain)
+          expression.manifestations.first.update!(status: 'published') unless expression.manifestations.first.published?
         end
         stats[:manifestations_updated] += 1
         output.puts '    ✓ Updated'
@@ -152,8 +153,8 @@ task :copyright_expiration, %i(execute output target_year) => :environment do |_
     output.puts '  rake copyright_expiration[execute]'
     output.puts ''
     output.puts 'To specify a different year:'
-    output.puts "  rake copyright_expiration[,,YYYY]  # dry-run for specific year"
-    output.puts "  rake copyright_expiration[execute,,YYYY]  # execute for specific year"
+    output.puts '  rake copyright_expiration[,,YYYY]  # dry-run for specific year'
+    output.puts '  rake copyright_expiration[execute,,YYYY]  # execute for specific year'
   end
   # end
 end
