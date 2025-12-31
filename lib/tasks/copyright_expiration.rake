@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 
+# uncomment for testing with time travel to the new year
+# require 'active_support/testing/time_helpers'
+# include ActiveSupport::Testing::TimeHelpers
+
 desc 'Transition authorities and manifestations to public domain based on copyright expiration (death + 71 years)'
 task :copyright_expiration, %i(execute output) => :environment do |_task, args|
+  # travel_to(Time.zone.local(2026, 1, 1, 10, 0, 0)) do
+  puts Time.current
   # Default to dry-run mode unless --execute is passed
   execute_mode = args[:execute] == 'execute'
   # Allow output redirection for testing (defaults to $stdout)
@@ -42,29 +48,32 @@ task :copyright_expiration, %i(execute output) => :environment do |_task, args|
     stats[:authorities_checked] += 1
 
     if execute_mode
-      authority.publish! unless authority.published?
+      print "Publishing authority #{authority.name} (ID: #{authority.id})... "
+      Chewy.strategy(:atomic) do
+        authority.publish! unless authority.published?
+      end
       Rails.cache.delete("au_#{authority.id}_work_count")
+      puts 'done.'
     end
 
     # Skip if already public domain
     if authority.intellectual_property_public_domain?
       output.puts "Authority '#{authority.name}' (ID: #{authority.id}) - already public_domain, skipping"
-      next
-    end
-
-    output.puts "Authority '#{authority.name}' (ID: #{authority.id}) - died in #{death_year}"
-    output.puts "  Current status: #{authority.intellectual_property}"
-    output.puts '  Updating to: public_domain'
-
-    if execute_mode
-      Chewy.strategy(:atomic) do
-        authority.update!(intellectual_property: :public_domain)
-      end
-      stats[:authorities_updated] += 1
-      output.puts '  ✓ Updated'
     else
-      stats[:authorities_updated] += 1
-      output.puts '  [DRY-RUN] Would update'
+      output.puts "Authority '#{authority.name}' (ID: #{authority.id}) - died in #{death_year}"
+      output.puts "  Current status: #{authority.intellectual_property}"
+      output.puts '  Updating to: public_domain'
+
+      if execute_mode
+        Chewy.strategy(:atomic) do
+          authority.update!(intellectual_property: :public_domain)
+        end
+        stats[:authorities_updated] += 1
+        output.puts '  ✓ Updated'
+      else
+        stats[:authorities_updated] += 1
+        output.puts '  [DRY-RUN] Would update'
+      end
     end
 
     # Now check manifestations involving this authority
@@ -138,4 +147,5 @@ task :copyright_expiration, %i(execute output) => :environment do |_task, args|
     output.puts 'This was a dry-run. To apply changes, run:'
     output.puts '  rake copyright_expiration[execute]'
   end
+  # end
 end
