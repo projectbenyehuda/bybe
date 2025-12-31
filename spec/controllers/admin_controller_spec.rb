@@ -854,6 +854,32 @@ describe AdminController do
       end
     end
 
+    context 'when expressions have already been merged (same work_id)' do
+      let!(:shared_work) { create(:work, author: author, orig_lang: 'en') }
+
+      let!(:expr1) do
+        create(:expression,
+               work: shared_work,
+               title: 'Same Title',
+               language: 'he',
+               translator: translator1)
+      end
+
+      let!(:expr2) do
+        create(:expression,
+               work: shared_work,
+               title: 'Same Title',
+               language: 'he',
+               translator: translator2)
+      end
+
+      it 'does not include already-merged expressions' do
+        call
+        expect(assigns(:duplicate_clusters).length).to eq(0)
+        expect(Rails.cache).to have_received(:write).with('report_duplicate_works', 0)
+      end
+    end
+
     context 'when there are no duplicate works' do
       before do
         create(:expression, title: 'Unique Title 1', translation: true)
