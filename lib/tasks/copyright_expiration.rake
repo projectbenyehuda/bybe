@@ -5,7 +5,7 @@
 # include ActiveSupport::Testing::TimeHelpers
 
 desc 'Transition authorities and manifestations to public domain based on copyright expiration (death + 71 years)'
-task :copyright_expiration, %i(execute output) => :environment do |_task, args|
+task :copyright_expiration, %i(execute output target_year) => :environment do |_task, args|
   # travel_to(Time.zone.local(2026, 1, 1, 10, 0, 0)) do
   puts Time.current
   # Default to dry-run mode unless --execute is passed
@@ -21,11 +21,15 @@ task :copyright_expiration, %i(execute output) => :environment do |_task, args|
   end
   output.puts ''
 
-  # Calculate the target year (71 years ago from current year)
+  # Use provided target_year or calculate it (71 years ago from current year)
   current_year = Time.zone.today.year
-  target_year = current_year - 71
-
-  output.puts "Processing authorities who died in #{target_year} (#{current_year} - 71 years)..."
+  if args[:target_year].present?
+    target_year = args[:target_year].to_i
+    output.puts "Processing authorities who died in #{target_year} (explicitly specified)..."
+  else
+    target_year = current_year - 71
+    output.puts "Processing authorities who died in #{target_year} (#{current_year} - 71 years)..."
+  end
   output.puts ''
 
   # Statistics
@@ -146,6 +150,10 @@ task :copyright_expiration, %i(execute output) => :environment do |_task, args|
     output.puts ''
     output.puts 'This was a dry-run. To apply changes, run:'
     output.puts '  rake copyright_expiration[execute]'
+    output.puts ''
+    output.puts 'To specify a different year:'
+    output.puts "  rake copyright_expiration[,,YYYY]  # dry-run for specific year"
+    output.puts "  rake copyright_expiration[execute,,YYYY]  # execute for specific year"
   end
   # end
 end
