@@ -172,6 +172,109 @@ class AdminController < ApplicationController
     Rails.cache.write('report_suspicious_translations', @total)
   end
 
+  # Find Expressions by different translators with the same title, whose Works are by the same author
+  # These likely represent different translations that should be merged under a single Work record
+  def duplicate_works
+    # Find expressions grouped by work author and expression title
+    # where there are multiple expressions with different translators
+    duplicate_clusters = {}
+
+    # Get all expressions that are translations
+    # We need to include involved_authorities for translators
+    # Using .each instead of .find_each since we're materializing all results in memory
+    Expression.includes(:work, :involved_authorities, work: [:involved_authorities])
+              .where(translation: true)
+              .each do |expr|
+      # Skip if work has no author or expression has no translators
+      next if expr.work.authors.empty? || expr.translators.empty?
+
+      # Create a key from work's first author and expression title
+      key = [expr.work.authors.first.id, expr.title]
+
+      duplicate_clusters[key] ||= []
+      duplicate_clusters[key] << expr
+    end
+
+    # Filter to only include clusters with multiple expressions by different translators
+    # and DIFFERENT Works (not already merged)
+    @duplicate_clusters = duplicate_clusters.select do |_key, expressions|
+      next false if expressions.length < 2
+
+      # Check that expressions belong to DIFFERENT Works (not already merged)
+      work_ids = expressions.map { |e| e.work_id }.uniq
+      next false if work_ids.length < 2
+
+      # Check that at least two distinct translator sets exist across expressions
+      translator_sets = expressions.map { |e| e.translators.map(&:id).sort }.uniq
+      translator_sets.length > 1
+    end
+
+    # Sort by author name for consistent display
+    # Cache author names to avoid N+1 queries
+    author_names = {}
+    @duplicate_clusters.each_key do |key|
+      author_id = key[0]
+      author_names[author_id] ||= Authority.find(author_id).name
+    end
+
+    @duplicate_clusters = @duplicate_clusters.sort_by do |key, _expressions|
+      author_names[key[0]]
+    end.to_h
+
+    @total = @duplicate_clusters.keys.length
+    @page_title = t(:duplicate_works_report)
+    Rails.cache.write('report_duplicate_works', @total)
+  end
+
+  def merge_works
+    @source_work_id = params[:source_work_id]
+    @target_work_id = params[:target_work_id]
+
+    source_work = Work.find(@source_work_id)
+    target_work = Work.find(@target_work_id)
+
+    # Use a transaction to ensure atomicity
+    ActiveRecord::Base.transaction do
+      # Reassociate expressions from source to target BEFORE destroying
+      source_work.expressions.update_all(work_id: @target_work_id)
+
+      # Reassociate aboutnesses where this work is ABOUT something (topics)
+      # These are Aboutness records where work_id = source_work_id
+      Aboutness.where(work_id: @source_work_id).update_all(work_id: @target_work_id)
+
+      # Reassociate aboutnesses where OTHER works are ABOUT this work
+      # These are Aboutness records where aboutable_id = source_work_id and aboutable_type = 'Work'
+      Aboutness.where(aboutable_type: 'Work', aboutable_id: @source_work_id)
+              .update_all(aboutable_id: @target_work_id)
+
+      # Reload source work to get updated associations, then destroy
+      source_work.reload
+      source_work.destroy!
+    end
+
+    @success = true
+    @message = t(:works_merged_successfully)
+
+    respond_to do |format|
+      format.html { redirect_to action: :duplicate_works, notice: @message }
+      format.js
+    end
+  rescue ActiveRecord::RecordNotFound
+    @success = false
+    @message = t(:work_not_found)
+    respond_to do |format|
+      format.html { redirect_to action: :duplicate_works, alert: @message }
+      format.js
+    end
+  rescue StandardError => e
+    @success = false
+    @message = t(:merge_failed, error: e.message)
+    respond_to do |format|
+      format.html { redirect_to action: :duplicate_works, alert: @message }
+      format.js
+    end
+  end
+
   def assign_proofs
     p = Proof.where(status: 'new').order(created_at: :asc).first
     if p.nil?

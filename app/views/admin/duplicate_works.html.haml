@@ -1,0 +1,53 @@
+.backend
+  %h2= t(:duplicate_works_report)
+  %h3= t(:total)+': '+@total.to_s
+
+  - if @total == 0
+    %p= t(:no_duplicate_works_found)
+  - else
+    %p= t(:duplicate_works_explanation)
+
+    - @duplicate_clusters.each_pair do |(author_id, title), expressions|
+      - author = expressions.first.work.authors.first
+      - works = expressions.map(&:work).uniq
+
+      .duplicate-cluster{id: "cluster-#{author_id}-#{title.parameterize}", style: 'margin: 20px 0; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9;'}
+        %h4
+          = t(:author) + ': '
+          = link_to(author.name, authors_show_path(id: author.id))
+          = ' | ' + t(:title) + ': '
+          %strong= title
+
+        %table{style: 'width: 100%; margin-top: 10px;', cellspacing: 5}
+          %thead
+            %tr
+              %th= t(:work_id)
+              %th= t(:translators)
+              %th= t(:expression_title)
+              %th= t(:aboutnesses)
+              %th= t(:actions)
+
+          %tbody
+            - expressions.each do |expr|
+              %tr{id: "work-row-#{expr.work.id}"}
+                %td= expr.work.id
+                %td!= expr.translators.map { |t| link_to(t.name, authors_show_path(id: t.id)) }.join(', ')
+                %td
+                  - expr.manifestations.each do |m|
+                    = link_to(m.title, manifestation_show_path(m.id))
+                    %br
+                %td
+                  - topics = expr.work.topics
+                  - aboutnesses = expr.work.aboutnesses
+                  - total = topics.count + aboutnesses.count
+                  - if total > 0
+                    = total.to_s + ' ' + t(:aboutnesses)
+                  - else
+                    = t(:none)
+                %td
+                  = form_with url: merge_works_path, method: :post, local: false, data: { cluster_id: "cluster-#{author_id}-#{title.parameterize}" } do |f|
+                    = f.hidden_field :source_work_id, value: expr.work.id
+                    = f.select :target_work_id, options_for_select(works.reject { |w| w.id == expr.work.id }.map { |w| ["#{t(:work)} #{w.id}", w.id] }), { prompt: t(:select_target_work) }, { required: true }
+                    = f.submit t(:merge_into_selected), data: { confirm: t(:confirm_merge_works) }, class: 'btn btn-warning'
+
+        %hr{style: 'margin: 20px 0;'}

@@ -259,9 +259,10 @@ describe ManifestationController do
       end
     end
 
-    subject { get :list, params: { author: author, title: title } }
+    subject { get :list, params: { author: author, title: title, status: status } }
     let(:author) { nil }
     let(:title) { nil }
+    let(:status) { nil }
 
     it { is_expected.to be_successful }
 
@@ -282,6 +283,56 @@ describe ManifestationController do
       let(:title) { manifestation.title }
 
       it { is_expected.to be_successful }
+    end
+
+    context 'when status is provided' do
+      let!(:unpublished_manifestation) { create(:manifestation, status: :unpublished) }
+      let!(:nonpd_manifestation) { create(:manifestation, status: :nonpd) }
+      let!(:deprecated_manifestation) { create(:manifestation, status: :deprecated) }
+      let(:status) { 'published' }
+
+      before do
+        [unpublished_manifestation, nonpd_manifestation, deprecated_manifestation].each do |m|
+          m.recalc_cached_people
+          m.save!
+        end
+      end
+
+      it { is_expected.to be_successful }
+
+      it 'filters manifestations by status' do
+        subject
+        expect(assigns(:manifestations).pluck(:status).uniq).to eq(['published'])
+      end
+
+      it 'excludes manifestations with other statuses' do
+        subject
+        expect(assigns(:manifestations)).not_to include(unpublished_manifestation)
+        expect(assigns(:manifestations)).not_to include(nonpd_manifestation)
+        expect(assigns(:manifestations)).not_to include(deprecated_manifestation)
+      end
+
+      context 'when filtering by unpublished status' do
+        let(:status) { 'unpublished' }
+
+        it 'returns only unpublished manifestations' do
+          subject
+          expect(assigns(:manifestations).pluck(:status).uniq).to eq(['unpublished'])
+          expect(assigns(:manifestations)).to include(unpublished_manifestation)
+        end
+      end
+    end
+
+    context 'when status and title are provided' do
+      let(:status) { 'published' }
+      let(:title) { manifestation.title }
+
+      it { is_expected.to be_successful }
+
+      it 'filters by both status and title' do
+        subject
+        expect(assigns(:manifestations)).to include(manifestation)
+      end
     end
   end
 

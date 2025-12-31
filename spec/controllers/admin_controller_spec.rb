@@ -785,4 +785,268 @@ describe AdminController do
 
     end
   end
+
+  describe '#duplicate_works' do
+    subject(:call) { get :duplicate_works }
+
+    include_context 'when editor logged in'
+
+    let(:author) { create(:authority) }
+    let(:translator1) { create(:authority) }
+    let(:translator2) { create(:authority) }
+    let(:translator3) { create(:authority) }
+
+    before do
+      allow(Rails.cache).to receive(:write)
+    end
+
+    context 'when there are duplicate works' do
+      let!(:expr1) do
+        create(:expression,
+               title: 'Same Title',
+               language: 'he',
+               orig_lang: 'en',
+               author: author,
+               translator: translator1)
+      end
+
+      let!(:expr2) do
+        create(:expression,
+               title: 'Same Title',
+               language: 'he',
+               orig_lang: 'en',
+               author: author,
+               translator: translator2)
+      end
+
+      it 'finds duplicate work clusters' do
+        call
+        expect(assigns(:duplicate_clusters).length).to eq(1)
+        cluster_expressions = assigns(:duplicate_clusters).values.first
+        expect(cluster_expressions).to contain_exactly(expr1, expr2)
+        expect(Rails.cache).to have_received(:write).with('report_duplicate_works', 1)
+      end
+    end
+
+    context 'when expressions have the same translator' do
+      let!(:expr1) do
+        create(:expression,
+               title: 'Same Title',
+               language: 'he',
+               orig_lang: 'en',
+               author: author,
+               translator: translator1)
+      end
+
+      let!(:expr2) do
+        create(:expression,
+               title: 'Same Title',
+               language: 'he',
+               orig_lang: 'en',
+               author: author,
+               translator: translator1)
+      end
+
+      it 'does not include them as duplicates' do
+        call
+        expect(assigns(:duplicate_clusters).length).to eq(0)
+        expect(Rails.cache).to have_received(:write).with('report_duplicate_works', 0)
+      end
+    end
+
+    context 'when expressions have already been merged (same work_id)' do
+      let!(:shared_work) { create(:work, author: author, orig_lang: 'en') }
+
+      let!(:expr1) do
+        create(:expression,
+               work: shared_work,
+               title: 'Same Title',
+               language: 'he',
+               orig_lang: 'en',
+               translator: translator1)
+      end
+
+      let!(:expr2) do
+        create(:expression,
+               work: shared_work,
+               title: 'Same Title',
+               language: 'he',
+               orig_lang: 'en',
+               translator: translator2)
+      end
+
+      it 'does not include already-merged expressions' do
+        call
+        expect(assigns(:duplicate_clusters).length).to eq(0)
+        expect(Rails.cache).to have_received(:write).with('report_duplicate_works', 0)
+      end
+    end
+
+    context 'when there are no duplicate works' do
+      before do
+        create(:expression, title: 'Unique Title 1', translation: true)
+        create(:expression, title: 'Unique Title 2', translation: true)
+      end
+
+      it 'returns empty clusters' do
+        call
+        expect(assigns(:duplicate_clusters)).to be_empty
+        expect(Rails.cache).to have_received(:write).with('report_duplicate_works', 0)
+      end
+    end
+  end
+
+  describe '#merge_works' do
+    include_context 'when editor logged in'
+
+    let(:author) { create(:authority) }
+    let(:translator1) { create(:authority) }
+    let(:translator2) { create(:authority) }
+    let(:user) { create(:user) }
+
+    let!(:source_expr) do
+      create(:expression,
+             title: 'Same Title',
+             language: 'he',
+             orig_lang: 'en',
+             author: author,
+             translator: translator1)
+    end
+
+    let!(:target_expr) do
+      create(:expression,
+             title: 'Same Title',
+             language: 'he',
+             orig_lang: 'en',
+             author: author,
+             translator: translator2)
+    end
+
+    let(:source_work) { source_expr.work }
+    let(:target_work) { target_expr.work }
+
+    let!(:aboutness1) { create(:aboutness, work: source_work, user: user) }
+    let!(:aboutness2) { create(:aboutness, work: source_work, user: user) }
+
+    subject(:call) do
+      post :merge_works, params: {
+        source_work_id: source_work.id,
+        target_work_id: target_work.id
+      }
+    end
+
+    it 'merges the source work into the target work' do
+      call
+      expect { source_work.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      expect(source_expr.reload.work).to eq(target_work)
+      expect(target_work.reload.expressions).to contain_exactly(source_expr, target_expr)
+    end
+
+    it 'reassociates aboutnesses to target work' do
+      call
+      expect(aboutness1.reload.work_id).to eq(target_work.id)
+      expect(aboutness2.reload.work_id).to eq(target_work.id)
+      expect(target_work.reload.topics.count).to eq(2)
+    end
+
+    it 'reassociates polymorphic aboutnesses where other works are about the source work' do
+      # Create a work that is ABOUT the source work
+      other_work = create(:work)
+      poly_aboutness = Aboutness.create!(
+        work: other_work,
+        user: user,
+        aboutable: source_work
+      )
+
+      call
+
+      # The aboutness should now point to the target work
+      expect(poly_aboutness.reload.aboutable_id).to eq(target_work.id)
+      expect(poly_aboutness.aboutable_type).to eq('Work')
+      expect(target_work.reload.aboutnesses.count).to eq(1)
+    end
+
+    it 'redirects with success message' do
+      call
+      expect(response).to have_http_status(:redirect)
+      expect(response.location).to include('/admin/duplicate_works')
+    end
+
+    context 'when request format is JS' do
+      subject(:call) do
+        post :merge_works, params: {
+          source_work_id: source_work.id,
+          target_work_id: target_work.id
+        }, format: :js
+      end
+
+      it 'returns success status' do
+        call
+        expect(response).to be_successful
+        expect(assigns(:success)).to be true
+        expect(assigns(:message)).to eq(I18n.t(:works_merged_successfully))
+      end
+
+      it 'merges the works' do
+        call
+        expect { source_work.reload }.to raise_error(ActiveRecord::RecordNotFound)
+        expect(source_expr.reload.work).to eq(target_work)
+      end
+    end
+
+    context 'when source work does not exist' do
+      subject(:call) do
+        post :merge_works, params: {
+          source_work_id: 99999,
+          target_work_id: target_work.id
+        }, format: :html
+      end
+
+      it 'redirects with error message' do
+        call
+        expect(response).to have_http_status(:redirect)
+        expect(response.location).to include('/admin/duplicate_works')
+      end
+
+      context 'when request format is JS' do
+        subject(:call) do
+          post :merge_works, params: {
+            source_work_id: 99999,
+            target_work_id: target_work.id
+          }, format: :js
+        end
+
+        it 'returns error status' do
+          call
+          expect(response).to be_successful
+          expect(assigns(:success)).to be false
+          expect(assigns(:message)).to eq(I18n.t(:work_not_found))
+        end
+      end
+    end
+
+    context 'when target work does not exist' do
+      let!(:source_only_expr) do
+        create(:expression,
+               title: 'Another Title',
+               language: 'he',
+               orig_lang: 'en',
+               author: author,
+               translator: translator1)
+      end
+
+      subject(:call) do
+        post :merge_works, params: {
+          source_work_id: source_only_expr.work.id,
+          target_work_id: 99999
+        }
+      end
+
+      it 'redirects with error message' do
+        call
+        expect(response).to have_http_status(:redirect)
+        expect(response.location).to include('/admin/duplicate_works')
+      end
+    end
+  end
 end

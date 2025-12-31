@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 desc 'Transition authorities and manifestations to public domain based on copyright expiration (death + 71 years)'
-task :copyright_expiration, %i[execute output] => :environment do |_task, args|
+task :copyright_expiration, %i(execute output) => :environment do |_task, args|
   # Default to dry-run mode unless --execute is passed
   execute_mode = args[:execute] == 'execute'
   # Allow output redirection for testing (defaults to $stdout)
@@ -41,6 +41,11 @@ task :copyright_expiration, %i[execute output] => :environment do |_task, args|
     authority = person.authority
     stats[:authorities_checked] += 1
 
+    if execute_mode
+      authority.publish! unless authority.published?
+      Rails.cache.delete("au_#{authority.id}_work_count")
+    end
+
     # Skip if already public domain
     if authority.intellectual_property_public_domain?
       output.puts "Authority '#{authority.name}' (ID: #{authority.id}) - already public_domain, skipping"
@@ -67,9 +72,6 @@ task :copyright_expiration, %i[execute output] => :environment do |_task, args|
 
     manifestations.each do |manifestation|
       stats[:manifestations_checked] += 1
-
-      # Skip if manifestation is not published
-      next unless manifestation.published?
 
       # Get all involved authorities for this manifestation
       involved_authorities = manifestation.involved_authorities.map(&:authority).uniq
@@ -112,6 +114,8 @@ task :copyright_expiration, %i[execute output] => :environment do |_task, args|
 
     output.puts ''
   end
+  Rails.cache.delete('newest_authors') # force cache refresh
+  Rails.cache.delete('homepage_authors')
 
   # Print summary
   output.puts '=' * 80
