@@ -1,31 +1,34 @@
 <% if @success %>
-  // Get the cluster element from the form's data attribute
-  var form = event.target;
-  var clusterId = form.dataset.clusterId;
-  var cluster = document.getElementById(clusterId);
+  // Find the row that was just merged using the source work ID
+  var sourceRow = document.getElementById('work-row-<%= @source_work_id %>');
 
-  if (cluster) {
-    // Remove the entire cluster
-    cluster.remove();
+  if (sourceRow) {
+    // Find the cluster that contains this row
+    var cluster = sourceRow.closest('.duplicate-cluster');
 
-    // Update the total count
-    var totalElement = document.querySelector('h3');
-    if (totalElement) {
-      var currentTotal = parseInt(totalElement.textContent.match(/\d+/)[0]);
-      var newTotal = currentTotal - 1;
-      totalElement.textContent = totalElement.textContent.replace(/\d+/, newTotal);
+    if (cluster) {
+      // Remove the entire cluster
+      cluster.remove();
 
-      // If no clusters remain, show "no duplicates" message
-      if (newTotal === 0) {
-        var container = document.querySelector('.backend');
-        var noResultsMsg = document.createElement('p');
-        noResultsMsg.textContent = '<%= t(:no_duplicate_works_found) %>';
-        container.appendChild(noResultsMsg);
+      // Update the total count
+      var totalElement = document.querySelector('h3');
+      if (totalElement) {
+        var currentTotal = parseInt(totalElement.textContent.match(/\d+/)[0]);
+        var newTotal = currentTotal - 1;
+        totalElement.textContent = totalElement.textContent.replace(/\d+/, newTotal);
 
-        // Remove the explanation paragraph
-        var explanation = container.querySelector('p');
-        if (explanation && explanation.textContent !== noResultsMsg.textContent) {
-          explanation.remove();
+        // If no clusters remain, show "no duplicates" message
+        if (newTotal === 0) {
+          var container = document.querySelector('.backend');
+          var noResultsMsg = document.createElement('p');
+          noResultsMsg.textContent = '<%= t(:no_duplicate_works_found) %>';
+          container.appendChild(noResultsMsg);
+
+          // Remove the explanation paragraph
+          var explanation = container.querySelector('p');
+          if (explanation && explanation.textContent !== noResultsMsg.textContent) {
+            explanation.remove();
+          }
         }
       }
     }
