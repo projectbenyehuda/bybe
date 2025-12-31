@@ -196,8 +196,13 @@ class AdminController < ApplicationController
     end
 
     # Filter to only include clusters with multiple expressions by different translators
+    # and DIFFERENT Works (not already merged)
     @duplicate_clusters = duplicate_clusters.select do |_key, expressions|
       next false if expressions.length < 2
+
+      # Check that expressions belong to DIFFERENT Works (not already merged)
+      work_ids = expressions.map { |e| e.work_id }.uniq
+      next false if work_ids.length < 2
 
       # Check that at least two distinct translator sets exist across expressions
       translator_sets = expressions.map { |e| e.translators.map(&:id).sort }.uniq
