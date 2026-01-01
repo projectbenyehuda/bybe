@@ -3,6 +3,12 @@ class Rack::Attack
   safelist('allow-localhost') do |req|
     '127.0.0.1' == req.ip || '::1' == req.ip
   end
+
+  # Allow all requests from logged-in users
+  safelist('allow-logged-in-users') do |req|
+    # Check if user is logged in via session
+    req.session['user_id'].present?
+  end
   BAD_IPS = ["84.95.84.30", "147.189.171.165", "20.171.0.0/16"]
   Rack::Attack.blocklist "Block IPs from Environment Variable" do |req|
     BAD_IPS.include?(req.ip) || req.path.index('&gt&gt')
