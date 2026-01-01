@@ -90,6 +90,18 @@ class Collection < ApplicationRecord
     @allow_system_type_change = true
   end
 
+  # Returns objects (via their polymorphic association) that appear in more than one Collection of type 'uncollected'
+  def self.uncollected_more_than_once
+    CollectionItem
+      .joins(:collection)
+      .where(collections: { collection_type: Collection.collection_types[:uncollected] })
+      .where.not(item_type: nil, item_id: nil)  # exclude placeholders
+      .group(:item_type, :item_id)
+      .having('COUNT(*) > 1')
+      .pluck(:item_type, :item_id)
+      .map { |item_type, item_id| item_type.constantize.find(item_id) }
+  end
+
   def collection_items_by_type(item_type)
     collection_items.where(item_type: item_type)
   end

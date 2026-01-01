@@ -623,4 +623,113 @@ describe Collection do
       end
     end
   end
+
+  describe '.uncollected_more_than_once' do
+    it 'returns items that appear in more than one uncollected collection' do
+      # Create uncollected collections (bypass validation using update_column)
+      uncollected1 = create(:collection, collection_type: :other)
+      uncollected1.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      uncollected2 = create(:collection, collection_type: :other)
+      uncollected2.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      # Create manifestations
+      m1 = create(:manifestation)
+      m2 = create(:manifestation)
+      m3 = create(:manifestation)
+
+      # Add m1 to both uncollected collections (should be returned)
+      create(:collection_item, collection: uncollected1, item: m1, seqno: 1)
+      create(:collection_item, collection: uncollected2, item: m1, seqno: 1)
+
+      # Add m2 to only one uncollected collection (should NOT be returned)
+      create(:collection_item, collection: uncollected1, item: m2, seqno: 2)
+
+      # Add m3 to both uncollected collections (should be returned)
+      create(:collection_item, collection: uncollected1, item: m3, seqno: 3)
+      create(:collection_item, collection: uncollected2, item: m3, seqno: 2)
+
+      result = described_class.uncollected_more_than_once
+      expect(result).to contain_exactly(m1, m3)
+    end
+
+    it 'ignores items in non-uncollected collections' do
+      # Create uncollected collections
+      uncollected1 = create(:collection, collection_type: :other)
+      uncollected1.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      uncollected2 = create(:collection, collection_type: :other)
+      uncollected2.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      # Create a regular collection
+      regular = create(:collection, collection_type: :series)
+
+      # Create a manifestation
+      m1 = create(:manifestation)
+
+      # Add m1 to one uncollected and one regular collection
+      # (should NOT be returned - must be in 2+ uncollected)
+      create(:collection_item, collection: uncollected1, item: m1, seqno: 1)
+      create(:collection_item, collection: regular, item: m1, seqno: 1)
+
+      result = described_class.uncollected_more_than_once
+      expect(result).to be_empty
+    end
+
+    it 'excludes placeholder items (nil item_id)' do
+      # Create uncollected collections
+      uncollected1 = create(:collection, collection_type: :other)
+      uncollected1.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      uncollected2 = create(:collection, collection_type: :other)
+      uncollected2.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      # Create placeholder items (item: nil)
+      create(:collection_item, collection: uncollected1, item: nil, alt_title: 'Placeholder 1', seqno: 1)
+      create(:collection_item, collection: uncollected2, item: nil, alt_title: 'Placeholder 2', seqno: 1)
+
+      result = described_class.uncollected_more_than_once
+      expect(result).to be_empty
+    end
+
+    it 'works with different item types (Manifestation, Work, Person)' do
+      # Create uncollected collections
+      uncollected1 = create(:collection, collection_type: :other)
+      uncollected1.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      uncollected2 = create(:collection, collection_type: :other)
+      uncollected2.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      # Create different types of items
+      m1 = create(:manifestation)
+      p1 = create(:person)
+
+      # Add same items to both uncollected collections
+      create(:collection_item, collection: uncollected1, item: m1, seqno: 1)
+      create(:collection_item, collection: uncollected2, item: m1, seqno: 1)
+      create(:collection_item, collection: uncollected1, item: p1, seqno: 2)
+      create(:collection_item, collection: uncollected2, item: p1, seqno: 2)
+
+      result = described_class.uncollected_more_than_once
+      expect(result).to contain_exactly(m1, p1)
+    end
+
+    it 'returns empty array when no items are in multiple uncollected collections' do
+      # Create uncollected collections
+      uncollected1 = create(:collection, collection_type: :other)
+      uncollected1.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      uncollected2 = create(:collection, collection_type: :other)
+      uncollected2.update_column(:collection_type, Collection.collection_types[:uncollected])
+
+      # Create manifestations, each in only one collection
+      m1 = create(:manifestation)
+      m2 = create(:manifestation)
+      create(:collection_item, collection: uncollected1, item: m1, seqno: 1)
+      create(:collection_item, collection: uncollected2, item: m2, seqno: 1)
+
+      result = described_class.uncollected_more_than_once
+      expect(result).to be_empty
+    end
+  end
 end
