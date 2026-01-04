@@ -1,23 +1,43 @@
 - unless pubs.nil?
   - pubs.each do |pub|
-    %tr
-      %td= pub.title
-      %td= pub.author_line
-      %td= pub.publisher_line
-      %td= pub.pub_year
-      %td= pub.language
-      %td= pub.notes.nil? ? '' : pub.notes.sub("\n", "<br />").html_safe
-      /%td= pub.holdings.map{|h| linkify_record(pub.context, h.source_id)}.join(';').html_safe
-      - sid = (pub.source_id.class == Array ? pub.source_id[0] : pub.holdings[0].source_id)
-      %td= linkify_record(pub.context, sid).html_safe
-      %td= pub.holdings[0].location
-      %td= pub.scanned ? link_to(t(:yes), pub.holdings[0].scan_url) : t(:no)
-      %td
-        %button.nuke{onclick: 'this.parentElement.parentElement.remove()'}= t(:remove)
-        %br
-        %button.moveit{onclick: 'moveit(this)'}= t(:add_publication)
-        %br
-        %button.addholding{onclick: 'addholding(this)'}= t(:add_holding)
+    - sid = (pub.source_id.class == Array ? pub.source_id[0] : pub.holdings[0].source_id)
+    .pub-card{data: {title: pub.title, author: pub.author_line, publisher: pub.publisher_line, year: pub.pub_year, language: pub.language, notes: (pub.notes || ''), source: linkify_record(pub.context, sid), location: pub.holdings[0].location, scanned: (pub.scanned ? t(:yes) : t(:no)), scan_url: (pub.scanned ? pub.holdings[0].scan_url : '')}}
+      .pub-header
+        .pub-title= pub.title
+        .pub-actions
+          %button.btn.btn-sm.btn-danger.nuke{onclick: 'this.closest(".pub-card").remove()'}= t(:remove)
+          %button.btn.btn-sm.btn-primary.moveit{onclick: 'moveit(this)'}= t(:add_publication)
+          %button.btn.btn-sm.btn-secondary.addholding{onclick: 'addholding(this)'}= t(:add_holding)
+      .pub-details
+        .pub-field
+          %strong= t(:author) + ':'
+          %span= pub.author_line
+        .pub-field
+          %strong= t(:publisher) + ':'
+          %span= pub.publisher_line
+        .pub-field
+          %strong= t(:year_published) + ':'
+          %span= pub.pub_year
+        .pub-field
+          %strong= t(:language) + ':'
+          %span= pub.language
+        - if pub.notes.present?
+          .pub-field
+            %strong= t(:comments) + ':'
+            %span= pub.notes.sub("\n", "<br />").html_safe
+        .pub-field
+          %strong= t(:record_source) + ':'
+          %span= linkify_record(pub.context, sid).html_safe
+        .pub-field
+          %strong= t(:location) + ':'
+          %span= pub.holdings[0].location
+        .pub-field
+          %strong= t(:is_scanned) + ':'
+          %span
+            - if pub.scanned
+              = link_to(t(:yes), pub.holdings[0].scan_url)
+            - else
+              = t(:no)
 
 :javascript
   $(document).ready(function() {
