@@ -4,7 +4,10 @@
     .row
       .col-md-6
         %h1= t(:bib_workshop)
-        %p= t(:pubs_by_person_instructions_html)
+        %button.btn.btn-sm.btn-info#toggle-help{onclick: '$("#help-text").toggle();', type: 'button'}
+          עזרה
+        #help-text{style: 'display:none; margin-top: 0.5rem;'}
+          %p= t(:pubs_by_person_instructions_html)
       .col-md-6
         %h2= t(:some_authors_to_work_on)
         %p
@@ -12,26 +15,28 @@
             %span.copyme.pointer= p
             = '; '
 
-    .row
-      .col-md-6
-        = render partial: 'find_bibs', locals: {remote: true}
-        %h3#total_pubs= t(:total)
-        #bibs.pubs-container
-          = render partial: 'pubs', locals: {pubs: @pubs}
-      .col-md-6
-        .backend-field
-          = label_tag t(:linked_author)
-          = hidden_field_tag :authority_id
-          = autocomplete_field_tag :authority, '', autocomplete_authority_name_and_aliases_path,
-                                   id_element: '#authority_id', scopes: [:bib_not_done]
-        = link_to t(:new_person), authors_new_path(type: :person)
-        = link_to t(:new_corporate_body), authors_new_path(type: :corporate_body)
-        .card
-          .card-content
-            %h2
-              %a#author_link
-                = t(:pubs_by_author)
-            #pubs.pubs-container
+    .row.bib-work-area
+      .col-md-6.bib-column
+        .bib-column-content
+          = render partial: 'find_bibs', locals: {remote: true}
+          %h3#total_pubs= t(:total)
+          #bibs.pubs-container
+            = render partial: 'pubs', locals: {pubs: @pubs}
+      .col-md-6.bib-column
+        .bib-column-content
+          .backend-field
+            = label_tag t(:linked_author)
+            = hidden_field_tag :authority_id
+            = autocomplete_field_tag :authority, '', autocomplete_authority_name_and_aliases_path,
+                                     id_element: '#authority_id', scopes: [:bib_not_done]
+          = link_to t(:new_person), authors_new_path(type: :person)
+          = link_to t(:new_corporate_body), authors_new_path(type: :corporate_body)
+          .card
+            .card-content
+              %h2
+                %a#author_link
+                  = t(:pubs_by_author)
+              #pubs.pubs-container
     .row
       .col-md-12
         = link_to t(:back_to_bib_workshop), action: :index

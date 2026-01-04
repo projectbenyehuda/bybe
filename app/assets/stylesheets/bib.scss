@@ -11,14 +11,34 @@
   background-color: green !important;
 }
 
+// Work area with fixed height columns
+.bib-work-area {
+  max-height: calc(100vh - 200px);
+  overflow: hidden;
+}
+
+.bib-column {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 200px);
+}
+
+.bib-column-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
 // Flex-based publication cards
 .pubs-container {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: calc(100vh - 250px);
   overflow-y: auto;
-  padding-right: 0.5rem;
+  flex: 1;
+  min-height: 0;
 
   // For table-based content on right side
   table {
