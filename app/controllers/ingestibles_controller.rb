@@ -138,7 +138,7 @@ class IngestiblesController < ApplicationController
   def create
     # TODO: use params to set defaults (callable from the tasks system, which means we can populate the title (=task name), genre, credits)
     @ingestible = Ingestible.new(ingestible_params)
-    @ingestible.credits.gsub!(/\s*;\s*/, "\n") if @ingestible.credits.present?
+    @ingestible.credits.presence&.gsub!(/\s*;\s*/, "\n")
     @ingestible.update_authorities_and_metadata_from_volume(false) if @ingestible.prospective_volume_id.present?
     if params[:ingestible][:originating_task].present?
       existing = Ingestible.where(originating_task: params[:ingestible][:originating_task])
@@ -654,11 +654,11 @@ class IngestiblesController < ApplicationController
 
         unless @ingestible.no_volume
           # finally, add to collection, replacing placeholder if appropriate
-          placeholder = @collection.collection_items.where(alt_title: toc_line[1], item: nil)
+          placeholder = @collection.collection_items.reload.where(alt_title: toc_line[1], item: nil)
           if placeholder.present? # we will replace the placeholder if it exists
             placeholder_seqno = placeholder.first.seqno
             @collection.append_collection_item(CollectionItem.new(item: m, seqno: placeholder_seqno))
-            placeholder.destroy_all if placeholder.present? # delete old placeholder, now replaced by the actual text
+            # placeholder.destroy_all if placeholder.present? # delete old placeholder, now replaced by the actual text
           else
             @collection.append_item(m) # append the new text to the (current) end of the collection if there were no placeholders already
           end
