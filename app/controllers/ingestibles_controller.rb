@@ -655,12 +655,19 @@ class IngestiblesController < ApplicationController
         unless @ingestible.no_volume
           # finally, add to collection, replacing placeholder if appropriate
           placeholder = @collection.collection_items.reload.where(alt_title: toc_line[1], item: nil)
-          if placeholder.present? # we will replace the placeholder if it exists
-            placeholder_seqno = placeholder.first.seqno
-            # Insert the new item just below the placeholder
-            @collection.append_collection_item(CollectionItem.new(item: m, seqno: placeholder_seqno + 1))
-            # Delete the placeholder, which is now replaced by the actual text
-            placeholder.destroy_all
+          if placeholder.present? # we will insert the item just below the placeholder
+            # Use the insertion logic from CollectionItemsController#drag_item
+            items = @collection.collection_items.order(:seqno).to_a
+            placeholder_index = items.index(placeholder.first)
+            # Create new collection item for the manifestation
+            new_item = CollectionItem.new(item: m, collection: @collection, seqno: 0)
+            # Insert just below the placeholder (placeholder_index + 1)
+            items.insert(placeholder_index + 1, new_item)
+            # Resequence all items
+            items.each_with_index do |ci, index|
+              ci.seqno = index + 1
+              ci.save(validate: false)
+            end
           else
             @collection.append_item(m) # append the new text to the (current) end of the collection if there were no placeholders already
           end
