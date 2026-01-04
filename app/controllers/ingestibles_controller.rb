@@ -664,6 +664,7 @@ class IngestiblesController < ApplicationController
               @collection.append_item(m)
             else
               # Create new collection item for the manifestation
+              # seqno will be set during resequencing
               new_item = CollectionItem.new(item: m, collection: @collection, seqno: 0)
               # Insert just below the placeholder (placeholder_index + 1)
               items.insert(placeholder_index + 1, new_item)
