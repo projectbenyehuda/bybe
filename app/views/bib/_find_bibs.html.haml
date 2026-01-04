@@ -5,14 +5,14 @@
   = select_tag :bib_source, options_for_select(@select_options)
   = hidden_field_tag :authority_id, @authority_id || ''
   = submit_tag(t(:search), data: {disable_with: t(:please_wait) })
-%button#clearbibs{onclick: '$("#bibs").find("tr:gt(0)").remove();'}= t(:clear_bibs)
+%button#clearbibs{onclick: '$("#bibs").find(".pub-card").remove();'}= t(:clear_bibs)
 %button#filterlangs= t(:filter_langs)
 
 :javascript
   $(document).ready(function() {
     $('#filterlangs').click(function() {
-      $('#bibs tr').each(function() {
-        lang = $(this).find('td').eq(4).text();
+      $('#bibs .pub-card').each(function() {
+        lang = $(this).data('language');
         if(lang != "" && lang != 'heb') {
           $(this).remove();
         }
