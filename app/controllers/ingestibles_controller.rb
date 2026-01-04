@@ -659,14 +659,21 @@ class IngestiblesController < ApplicationController
             # Use the insertion logic from CollectionItemsController#drag_item
             items = @collection.collection_items.order(:seqno).to_a
             placeholder_index = items.index(placeholder.first)
-            # Create new collection item for the manifestation
-            new_item = CollectionItem.new(item: m, collection: @collection, seqno: 0)
-            # Insert just below the placeholder (placeholder_index + 1)
-            items.insert(placeholder_index + 1, new_item)
-            # Resequence all items
-            items.each_with_index do |ci, index|
-              ci.seqno = index + 1
-              ci.save(validate: false)
+            if placeholder_index.nil?
+              # Placeholder not found in items array, fall back to append
+              @collection.append_item(m)
+            else
+              # Create new collection item for the manifestation
+              new_item = CollectionItem.new(item: m, collection: @collection, seqno: 0)
+              # Insert just below the placeholder (placeholder_index + 1)
+              items.insert(placeholder_index + 1, new_item)
+              # Resequence all items (with optimization from CollectionItemsController#update_seqno)
+              items.each_with_index do |ci, index|
+                next if ci.seqno == index + 1
+
+                ci.seqno = index + 1
+                ci.save(validate: false)
+              end
             end
           else
             @collection.append_item(m) # append the new text to the (current) end of the collection if there were no placeholders already
