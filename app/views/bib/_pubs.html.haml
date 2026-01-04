@@ -9,35 +9,39 @@
           %button.btn.btn-sm.btn-primary.moveit{onclick: 'moveit(this)'}= t(:add_publication)
           %button.btn.btn-sm.btn-secondary.addholding{onclick: 'addholding(this)'}= t(:add_holding)
       .pub-details
-        .pub-field
-          %strong= t(:author) + ':'
-          %span= pub.author_line
-        .pub-field
-          %strong= t(:publisher) + ':'
-          %span= pub.publisher_line
-        .pub-field
-          %strong= t(:year_published) + ':'
-          %span= pub.pub_year
-        .pub-field
-          %strong= t(:language) + ':'
-          %span= pub.language
-        - if pub.notes.present?
+        .pub-field-row
           .pub-field
-            %strong= t(:comments) + ':'
-            %span= pub.notes.sub("\n", "<br />").html_safe
-        .pub-field
-          %strong= t(:record_source) + ':'
-          %span= linkify_record(pub.context, sid).html_safe
-        .pub-field
-          %strong= t(:location) + ':'
-          %span= pub.holdings[0].location
-        .pub-field
-          %strong= t(:is_scanned) + ':'
-          %span
-            - if pub.scanned
-              = link_to(t(:yes), pub.holdings[0].scan_url)
-            - else
-              = t(:no)
+            %strong= t(:author) + ':'
+            %span= pub.author_line
+          .pub-field
+            %strong= t(:publisher) + ':'
+            %span= pub.publisher_line
+        .pub-field-row
+          .pub-field
+            %strong= t(:year_published) + ':'
+            %span= pub.pub_year
+          .pub-field
+            %strong= t(:language) + ':'
+            %span= pub.language
+          .pub-field
+            %strong= t(:is_scanned) + ':'
+            %span
+              - if pub.scanned
+                = link_to(t(:yes), pub.holdings[0].scan_url)
+              - else
+                = t(:no)
+        .pub-field-row
+          .pub-field
+            %strong= t(:record_source) + ':'
+            %span= linkify_record(pub.context, sid).html_safe
+          .pub-field
+            %strong= t(:location) + ':'
+            %span= pub.holdings[0].location
+        - if pub.notes.present?
+          .pub-field-row
+            .pub-field.pub-field-full
+              %strong= t(:comments) + ':'
+              %span= pub.notes.sub("\n", "<br />").html_safe
 
 :javascript
   $(document).ready(function() {
