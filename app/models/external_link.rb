@@ -16,7 +16,8 @@ class ExternalLink < ApplicationRecord
   enum :status, {
     approved: 0,
     submitted: 1,
-    rejected: 2
+    rejected: 2,
+    escalated: 3
   }, prefix: true
 
   def self.sidebar_link_types # excluding the publisher_site link, which is used in the main area for texts published by permission
