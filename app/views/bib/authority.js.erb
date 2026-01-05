@@ -1,9 +1,11 @@
 var markup = "";
+markup += "<table class='table table-sm'><tbody>";
 <% if @pubs.size > 0 %>
   markup += "<%= escape_javascript(render partial: 'publications/pub_th') %>";
 <% end %>
 <% @pubs.each do |pub| %>
   markup += "<%= escape_javascript(render partial: 'publications/pub', locals: { pub: pub, with_person: false, with_actions: :none} ) %>";
 <% end %>
+markup += "</tbody></table>";
 markup += "<%= escape_javascript(render partial: 'shared/note_saving') %>";
-$("#pubs tbody").html(markup);
+$("#pubs").html(markup);

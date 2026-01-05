@@ -95,7 +95,7 @@ class Collection < ApplicationRecord
     CollectionItem
       .joins(:collection)
       .where(collections: { collection_type: Collection.collection_types[:uncollected] })
-      .where.not(item_type: nil, item_id: nil)  # exclude placeholders
+      .where.not(item_type: nil, item_id: nil) # exclude placeholders
       .group(:item_type, :item_id)
       .having('COUNT(*) > 1')
       .pluck(:item_type, :item_id)
@@ -522,9 +522,9 @@ class Collection < ApplicationRecord
     return ci.id
   end
 
-  def append_collection_item(item)
+  def append_collection_item(item, seqno = nil)
     item.collection = self
-    item.seqno = collection_items.maximum(:seqno).to_i + 1
+    item.seqno = seqno || (collection_items.maximum(:seqno).to_i + 1)
     item.save!
   end
 

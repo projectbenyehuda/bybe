@@ -10,3 +10,123 @@
   font-weight: bold;
   background-color: green !important;
 }
+
+// Work area with fixed height columns
+.bib-work-area {
+  max-height: calc(100vh - 200px);
+  overflow: hidden;
+}
+
+.bib-column {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 200px);
+}
+
+.bib-column-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+// Flex-based publication cards
+.pubs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+
+  // For table-based content on right side
+  table {
+    margin-bottom: 0;
+  }
+}
+
+.pub-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.65rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+}
+
+.pub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.pub-title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.3;
+}
+
+.pub-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex-shrink: 0;
+
+  .btn {
+    white-space: nowrap;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.pub-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pub-field-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pub-field {
+  display: flex;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+
+  strong {
+    color: #666;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  span {
+    color: #333;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &.pub-field-full {
+    flex: 1 1 100%;
+  }
+}

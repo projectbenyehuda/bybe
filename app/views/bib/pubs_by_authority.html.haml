@@ -4,7 +4,10 @@
     .row
       .col-md-6
         %h1= t(:bib_workshop)
-        %p= t(:pubs_by_person_instructions_html)
+        %button.btn.btn-sm.btn-info#toggle-help{onclick: '$("#help-text").toggle();', type: 'button'}
+          = t(:help)
+        #help-text{style: 'display:none; margin-top: 0.5rem;'}
+          %p= t(:pubs_by_person_instructions_html)
       .col-md-6
         %h2= t(:some_authors_to_work_on)
         %p
@@ -12,39 +15,28 @@
             %span.copyme.pointer= p
             = '; '
 
-    .row
-      .col-md-6{style: 'overflow-x: auto'}
-        = render partial: 'find_bibs', locals: {remote: true}
-        %h3#total_pubs= t(:total)
-
-        %table#bibs{style: 'overflow-x: auto'}
-          %tr
-            %th= t(:title)
-            %th= t(:author)
-            %th= t(:publisher)
-            %th= t(:year_published)
-            %th= t(:language)
-            %th= t(:comments)
-            %th= t(:record_source)
-            %th= t(:location)
-            %th= t(:is_scanned)
-            %th= t(:actions)
-          = render partial: 'pubs', locals: {pubs: @pubs}
-      .col-md-6{style: 'overflow-x: auto'}
-        .backend-field
-          = label_tag t(:linked_author)
-          = hidden_field_tag :authority_id
-          = autocomplete_field_tag :authority, '', autocomplete_authority_name_and_aliases_path,
-                                   id_element: '#authority_id', scopes: [:bib_not_done]
-        = link_to t(:new_person), authors_new_path(type: :person)
-        = link_to t(:new_corporate_body), authors_new_path(type: :corporate_body)
-        .card
-          .card-content
-            %h2
-              %a#author_link
-                = t(:pubs_by_author)
-            %table#pubs{style: 'overflow-x: auto'}
-              %tbody
+    .row.bib-work-area
+      .col-md-6.bib-column
+        .bib-column-content
+          = render partial: 'find_bibs', locals: {remote: true}
+          %h3#total_pubs= t(:total)
+          #bibs.pubs-container
+            = render partial: 'pubs', locals: {pubs: @pubs}
+      .col-md-6.bib-column
+        .bib-column-content
+          .backend-field
+            = label_tag t(:linked_author)
+            = hidden_field_tag :authority_id
+            = autocomplete_field_tag :authority, '', autocomplete_authority_name_and_aliases_path,
+                                     id_element: '#authority_id', scopes: [:bib_not_done]
+          = link_to t(:new_person), authors_new_path(type: :person)
+          = link_to t(:new_corporate_body), authors_new_path(type: :corporate_body)
+          .card
+            .card-content
+              %h2
+                %a#author_link
+                  = t(:pubs_by_author)
+              #pubs.pubs-container
     .row
       .col-md-12
         = link_to t(:back_to_bib_workshop), action: :index
@@ -54,20 +46,35 @@
     if (authority_id == null || authority_id == "") {
       alert("#{t(:select_person_first)}");
     } else {
-      var row = elem.parentElement.parentElement;
-      var status = (row.children[8].textContent == "#{t(:yes)}" ? "scanned" : "todo");
+      var card = $(elem).closest('.pub-card');
+      var data = card.data();
+      var status = (data.scanned == "#{t(:yes)}" ? "scanned" : "todo");
       elem.disabled = true;
+
+      // Extract source_id from the source link
+      var sourceLink = card.find('.pub-field:contains("#{t(:record_source)}") a');
+      var source_id = sourceLink.length > 0 ? sourceLink.attr('href') : '';
+
       $.ajax({
           type: "POST",
           url: "#{publications_path}",
-          data: { publication: {title: row.children[0].textContent , author_line: row.children[1].textContent, publisher_line: row.children[2].textContent,
-            pub_year: row.children[3].textContent, language: row.children[4].textContent,
-            notes: row.children[5].textContent, bib_source: row.children[6].textContent, source_id: row.children[6].children[0].href, callnum: row.children[7].textContent,
-            authority_id: authority_id, status: status } },
+          data: { publication: {
+            title: data.title,
+            author_line: data.author,
+            publisher_line: data.publisher,
+            pub_year: data.year,
+            language: data.language,
+            notes: data.notes,
+            bib_source: sourceLink.text(),
+            source_id: source_id,
+            callnum: data.location,
+            authority_id: authority_id,
+            status: status
+          }},
           dataType: "script"
         }).done(function(xhr, status) {
           if(status == "success") {
-            row.remove();
+            card.remove();
           } else {
             alert('error');
             elem.disabled = false;
@@ -82,24 +89,38 @@
     } else {
       // gather data
       var pub_row = $(sels)[0]; // target
-      var holding_row = elem.parentElement.parentElement; // source
+      var card = $(elem).closest('.pub-card');
+      var data = card.data();
       elem.disabled = true;
       var status = "todo";
       var scan_url = null;
-      if(holding_row.children[8].textContent == "#{t(:yes)}") {
+
+      // Extract source_id from the source link
+      var sourceLink = card.find('.pub-field:contains("#{t(:record_source)}") a');
+      var source_id = sourceLink.length > 0 ? sourceLink.attr('href') : '';
+
+      if(data.scanned == "#{t(:yes)}") {
         status = "scanned";
-        scan_url = holding_row.children[6].children[0].href;
+        scan_url = data.scan_url;
       }
 
       // submit holding entity
       $.ajax({
         type: "POST",
         url: "#{holdings_path}",
-        data: { source_name: holding_row.children[6].textContent, holding: { publication_id: pub_row.id.replace('pub',''), source_id: holding_row.children[6].children[0].href, status: status, scan_url: scan_url } },
+        data: {
+          source_name: sourceLink.text(),
+          holding: {
+            publication_id: pub_row.id.replace('pub',''),
+            source_id: source_id,
+            status: status,
+            scan_url: scan_url
+          }
+        },
         dataType: "script"
       }).done(function(xhr, status) {
         if(status == "success") {
-          holding_row.remove();
+          card.remove();
           $(sels[0]+" ol").append(new_holding);
         } else {
           alert('error');
