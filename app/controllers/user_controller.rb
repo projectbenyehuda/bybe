@@ -12,41 +12,36 @@ class UserController < ApplicationController
   end
   def make_crowdsourcer
     set_user
-    @q = params[:q]
     @u.crowdsourcer = true
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is now a crowdsourcer."
+    redirect_to url_for(action: :list, q: params[:q], page: params[:page]), notice: "#{@u.name} is now a crowdsourcer."
   end
 
   def make_editor
     set_user
-    @q = params[:q]
     @u.editor = true
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is now an editor."
+    redirect_to url_for(action: :list, q: params[:q], page: params[:page]), notice: "#{@u.name} is now an editor."
   end
 
   def make_admin
     set_user
-    @q = params[:q]
     @u.admin = true
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is now an admin."
+    redirect_to url_for(action: :list, q: params[:q], page: params[:page]), notice: "#{@u.name} is now an admin."
   end
 
   def unmake_editor
     set_user
-    @q = params[:q]
     @u.editor = false
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is no longer an editor."
+    redirect_to url_for(action: :list, q: params[:q], page: params[:page]), notice: "#{@u.name} is no longer an editor."
   end
  def unmake_crowdsourcer
     set_user
-    @q = params[:q]
     @u.crowdsourcer = false
     @u.save!
-    redirect_to url_for(action: :list), notice: "#{@u.name} is no longer a crowdsourcer."
+    redirect_to url_for(action: :list, q: params[:q], page: params[:page]), notice: "#{@u.name} is no longer a crowdsourcer."
   end
 
   def show
@@ -54,7 +49,6 @@ class UserController < ApplicationController
 
   def set_editor_bit
     set_user
-    @q = params[:q]
     if @u.editor? and params[:bit] and (params[:bit].empty? == false) and params[:set_to] and (params[:set_to].empty? == false)
       if params[:set_to].to_i == 1
         action = t(:added_to_group)
@@ -69,7 +63,7 @@ class UserController < ApplicationController
         li.destroy if li
       end
     end
-    redirect_to action: :list, notice: "#{@u.name} #{action} #{t(params[:bit])}"
+    redirect_to url_for(action: :list, q: params[:q], page: params[:page]), notice: "#{@u.name} #{action} #{t(params[:bit])}"
   end
 
   protected
