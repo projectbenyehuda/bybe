@@ -157,7 +157,7 @@
           
           = render partial: 'aboutnesses', cached: true, locals: { author: @author }
           - if @external_links.count > 0
-            - cache "au_#{@author.id}_links", expires_in: 24.hours do
+            - cache "au_#{@author.id}_links", expires_in: 2.hours do
               .by-card-v02.left-side-card-v02
                 .by-card-header-left-v02
                   %span.headline-1-v02= t(:external_links)
