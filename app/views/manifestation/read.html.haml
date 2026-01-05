@@ -156,6 +156,16 @@
                 %li
                   %span
                     = link_to link.description.nil? ? link.url : link.description, link.url, 'target': '_new'
+              - unless current_user
+                .metadata-link.must_login
+                  %a{href: ""}
+                    %span.metadata-link-icon.small-icon= '&'
+                    = t(:suggest_new_links)
+              - else
+                .metadata-link{'data-toggle' => 'modal', 'data-target' => '#proposeLinkDlg', 'data-linkable-type' => 'Manifestation', 'data-linkable-id' => @m.id}
+                  %a{href: ""}
+                    %span.metadata-link-icon.small-icon= '&'
+                    = t(:suggest_new_links)
 - if @m.not_short?
   .row
     .col-12
@@ -192,6 +202,7 @@
 = render partial: 'shared/proof'
 - if current_user
   = render partial: 'shared/anth_stuff'
+= render partial: 'shared/propose_link'
 - if @bookmark != 0 and @jump_to_bookmarks.nil?
   #bookmarkBehaviorDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
     = render partial: 'bookmark_behavior'

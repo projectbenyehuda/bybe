@@ -165,6 +165,29 @@
                     .metadata-link-icon.small-icon.pointer &amp;
                     %div= t(:suggest_new_tag)
 
+          -# External links
+          - if @collection.external_links.present? || current_user
+            .by-card-v02.left-side-card-v02
+              .by-card-header-left-v02
+                %span.headline-1-v02= t(:external_links)
+              .by-card-content-v02.card-with-bottom-links
+                - if @collection.external_links.any?
+                  %ol
+                    - @collection.external_links.each do |link|
+                      %li
+                        = link_to link.description, link.url, target: :_blank
+                        = " (#{t(link.linktype)})"
+                - unless current_user
+                  .metadata-link.must_login
+                    %a{href: ""}
+                      %span.metadata-link-icon.small-icon= '&'
+                      = t(:suggest_new_links)
+                - else
+                  .metadata-link{'data-toggle' => 'modal', 'data-target' => '#proposeLinkDlg', 'data-linkable-type' => 'Collection', 'data-linkable-id' => @collection.id}
+                    %a{href: ""}
+                      %span.metadata-link-icon.small-icon= '&'
+                      = t(:suggest_new_links)
+
           -#.by-card-v02.left-side-card-v02#recs
           -#  - ctype = textify_collection_type(@collection.collection_type)
           -#  .by-card-header-left-v02
@@ -202,6 +225,7 @@
   = render partial: 'shared/download', locals: {entity: @collection}
 
 = render partial: 'shared/proof'
+= render partial: 'shared/propose_link'
 
 :javascript
   $(document).ready(function() {
