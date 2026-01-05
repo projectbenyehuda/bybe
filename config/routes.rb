@@ -71,6 +71,15 @@ Bybeconv::Application.routes.draw do
   post 'collections/create_periodical_with_issue' => 'collections#create_periodical_with_issue',
        as: 'create_periodical_with_issue'
 
+  # External link proposal (works for any linkable type)
+  post 'external_links/propose' => 'external_links#propose', as: 'propose_external_link'
+
+  # External link moderation
+  get 'external_links/moderate' => 'external_links#moderate', as: 'moderate_external_links'
+  post 'external_links/:id/approve' => 'external_links#approve', as: 'approve_external_link'
+  post 'external_links/:id/reject' => 'external_links#reject', as: 'reject_external_link'
+  post 'external_links/:id/escalate' => 'external_links#escalate', as: 'escalate_external_link'
+
   get 'autocomplete_publication_title' => 'admin#autocomplete_publication_title', as: 'autocomplete_publication_title'
   get 'autocomplete_collection_title' => 'admin#autocomplete_collection_title', as: 'autocomplete_collection_title'
   get 'autocomplete_authority_name_and_aliases' => 'admin#autocomplete_authority_name_and_aliases',

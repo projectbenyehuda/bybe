@@ -1,0 +1,35 @@
+.modal#proposeLinkDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
+  = form_tag(propose_external_link_path, remote: true, id: 'propose_link_form') do
+    .flex-popup
+      .popup-top
+        %button.btn-small-outline-v02{ data: { dismiss: :modal } }
+          .btn-text-v02
+            %span.right-arrow 2
+            %span= t('propose_link.cancel_and_back')
+        .headline-2-v02{ style: 'text-align: center;margin: 0; padding-top: 3px;' }
+          = t('propose_link.title')
+      .by-popup-v02
+        .by-card-content-v02
+          .field-label= t('propose_link.url_label')
+          = url_field_tag(:url, '', required: true, class: 'field-v02', placeholder: 'https://...')
+
+          .field-label= t('propose_link.linktype_label')
+          = select_tag(:linktype,
+                       options_for_select(ExternalLink.linktypes.map { |lt| [t(lt[0]), lt[0]] }),
+                       required: true, class: 'field-v02')
+
+          .field-label= t('propose_link.description_label')
+          = text_field_tag(:description, '', required: true, class: 'field-v02',
+                          placeholder: t('propose_link.description_placeholder'))
+
+          = hidden_field_tag(:linkable_type, '', id: :propose_link_linkable_type)
+          = hidden_field_tag(:linkable_id, '', id: :propose_link_linkable_id)
+          = hidden_field_tag(:proposer_email, current_user&.email || '', id: :propose_link_email)
+
+          .field-label= t(:ziburit)
+          = text_field_tag(:ziburit, nil, { required: true, class: 'field-v02' })
+        .bottom-button-area.left-buttons
+          = submit_tag(t('propose_link.submit'), { class: 'by-button-v02' })
+          %button.by-button-v02.btn-secondary-v02.desktop-only{ data: { dismiss: :modal } }
+            %span.right-side-icon= '-'
+            %span{ style: 'font-weight: bold' }= t(:cancel)

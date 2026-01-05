@@ -35,6 +35,9 @@ class AdminController < ApplicationController
       @pending_tags = Tag.where(status: :pending).with_taggings.count
       @pending_taggings = Tagging.where(status: :pending).count
     end
+    if current_user.has_bit?('moderate_links')
+      @pending_links = ExternalLink.where(status: :submitted).count
+    end
     @open_recommendations = LegacyRecommendation.where(status: 'new').count.to_s
     @conv_todo = Manifestation.where(conversion_verified: false, status: Manifestation.statuses[:published]).count
     @manifestation_count = Manifestation.published.count

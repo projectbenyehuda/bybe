@@ -1154,6 +1154,47 @@ he:
   gnazim: 'מכון "גנזים" – אגודת הסופרים'
   source_text: טקסט בשפת המקור
   in_orig_lang: ליצירה בשפת המקור
+  propose_link:
+    title: הצעת קישורית חדשה
+    url_label: כתובת אתר (URL)
+    linktype_label: סוג קישורית
+    description_label: תיאור הקישורית
+    description_placeholder: למשל - 'ערך בויקיפדיה', 'מאמר באתר...'
+    submit: שליחת הצעה
+    cancel_and_back: ביטול וחזרה
+    success: תודה! הצעתך נקלטה ותיבדק על ידי עורכי האתר
+    error: אירעה שגיאה בשליחת ההצעה. אנא נסה/י שוב
+  moderate_links:
+    title: ניהול הצעות קישוריות
+    total_submitted: 'סה"כ הצעות ממתינות: %{count}'
+    dashboard_count: 'הצעות ממתינות: %{count}'
+    submitted_at: תאריך הצעה
+    proposer: מציע/ה
+    linkable: פריט
+    link_type: סוג קישורית
+    url: כתובת
+    description: תיאור
+    actions: פעולות
+    approve: אישור
+    reject: דחייה
+    escalate: העברה לבכיר
+    confirm_approve: האם לאשר קישורית זו?
+    confirm_escalate: האם להעביר קישורית זו לעורך בכיר?
+    rejection_note_prompt: אנא הזן/י הערה למציע/ה (אופציונלי)
+    no_submitted_links: אין הצעות קישוריות ממתינות
+    open_link: פתח קישורית
+  link_proposal_mailer:
+    link_type: 'סוג קישורית:'
+    linked_to: 'קישורית עבור:'
+    approved:
+      subject: הקישורית שהצעת אושרה
+      intro: 'הקישורית שהצעת ("%{description}" - %{url}) אושרה ונוספה לאתר.'
+      thanks: תודה על תרומתך לפרויקט בן־יהודה!
+    rejected:
+      subject: הקישורית שהצעת נדחתה
+      intro: 'הקישורית שהצעת ("%{description}" - %{url}) נבדקה ונדחתה.'
+      moderator_note: 'הערת העורך:'
+      thanks: תודה על עניינך בפרויקט בן־יהודה.
   author_details: פרטי יוצר
   work_entity_details: פרטי ישות יצירה
   work_details: פרטי יצירה

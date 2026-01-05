@@ -1,0 +1,58 @@
+%div.admin_ltr
+  %h1= t('moderate_links.title')
+  %p
+    = t('moderate_links.total_submitted', count: @total_count)
+
+  - if @submitted_links.any?
+    %table.table.table-striped
+      %thead
+        %tr
+          %th= t('moderate_links.submitted_at')
+          %th= t('moderate_links.proposer')
+          %th= t('moderate_links.linkable')
+          %th= t('moderate_links.link_type')
+          %th= t('moderate_links.url')
+          %th= t('moderate_links.description')
+          %th= t('moderate_links.actions')
+      %tbody
+        - @submitted_links.each do |link|
+          %tr{id: "link_#{link.id}"}
+            %td= l(link.created_at, format: :short)
+            %td= link.proposer_email
+            %td
+              - if link.linkable.present?
+                = link.linkable_type
+                = link_to "##{link.linkable_id}", polymorphic_path(link.linkable), target: '_blank'
+            %td= t(link.linktype)
+            %td= link_to t('moderate_links.open_link'), link.url, target: '_blank', class: 'btn btn-sm btn-info'
+            %td= link.description
+            %td
+              = button_to t('moderate_links.approve'), approve_external_link_path(link),
+                          method: :post, remote: true, class: 'btn btn-sm btn-success',
+                          data: { confirm: t('moderate_links.confirm_approve') }
+              = button_to t('moderate_links.reject'), reject_external_link_path(link),
+                          method: :post, remote: true, class: 'btn btn-sm btn-danger reject-link-btn',
+                          data: { link_id: link.id }
+              = button_to t('moderate_links.escalate'), escalate_external_link_path(link),
+                          method: :post, remote: true, class: 'btn btn-sm btn-warning',
+                          data: { confirm: t('moderate_links.confirm_escalate') }
+
+    = paginate @submitted_links
+
+  - else
+    %p= t('moderate_links.no_submitted_links')
+
+:javascript
+  $('.reject-link-btn').click(function(e) {
+    e.preventDefault();
+    var linkId = $(this).data('link-id');
+    var note = prompt('#{I18n.t('moderate_links.rejection_note_prompt')}');
+    if (note !== null) {
+      $.post($(this).closest('form').attr('action'), {
+        note: note,
+        authenticity_token: $('[name="csrf-token"]').attr('content')
+      }, function() {
+        $('#link_' + linkId).fadeOut();
+      });
+    }
+  });

@@ -1,0 +1,23 @@
+%div{align: 'right', dir: 'rtl'}
+  %p= @greeting
+
+  %p= t('link_proposal_mailer.approved.intro', url: @link.url, description: @link.description)
+
+  %p
+    = t('link_proposal_mailer.link_type')
+    = t(@link.linktype)
+
+  %p
+    = t('link_proposal_mailer.linked_to')
+    - if @linkable.respond_to?(:name)
+      = @linkable.name
+    - elsif @linkable.respond_to?(:title)
+      = @linkable.title
+    - else
+      = "#{@link.linkable_type} ##{@link.linkable_id}"
+
+  %p= t('link_proposal_mailer.approved.thanks')
+
+  %hr
+
+  != email_footer_html(@link.proposer_email)

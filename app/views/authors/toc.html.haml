@@ -179,10 +179,16 @@
                           .internal-link-to-all.all_links_btn.pointer.linkcolor
                             %span{:style => "font-weight: bold"}= t(:to_all_x_items, x: links.count)
                             %span.left-arrow 1
-                  .metadata-link.notyet
-                    %a{href: ""}
-                      %span.metadata-link-icon.small-icon= '&'
-                      = t(:suggest_new_links)
+                  - unless current_user
+                    .metadata-link.must_login
+                      %a{href: ""}
+                        %span.metadata-link-icon.small-icon= '&'
+                        = t(:suggest_new_links)
+                  - else
+                    .metadata-link{'data-toggle' => 'modal', 'data-target' => '#proposeLinkDlg', 'data-linkable-type' => 'Authority', 'data-linkable-id' => @author.id}
+                      %a{href: ""}
+                        %span.metadata-link-icon.small-icon= '&'
+                        = t(:suggest_new_links)
 
           .by-card-v02#text-volunteers-mobile
             .by-card-header-v02
@@ -192,6 +198,7 @@
                 != @credits
 - if current_user
   = render partial: 'shared/anth_stuff'
+= render partial: 'shared/propose_link'
 
 :javascript
   $(function() {
@@ -203,6 +210,15 @@
     $('.anthologies_button:not(:has(.must_login))').click(function() {
       $('#anthologiesDlg').modal({  backdrop: 'static',
         keyboard: false, show: true});
+    });
+
+    // Propose link modal handler
+    $('#proposeLinkDlg').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var linkableType = button.closest('[data-linkable-type]').data('linkable-type');
+      var linkableId = button.closest('[data-linkable-id]').data('linkable-id');
+      $('#propose_link_linkable_type').val(linkableType);
+      $('#propose_link_linkable_id').val(linkableId);
     });
     $.fn.browse_multi_select_toggle = function() {
       // determine whether to toggle on or off
