@@ -1,10 +1,11 @@
 class User < ApplicationRecord
   # attr_accessible :email, :name, :oauth_expires_at, :oauth_token, :provider, :uid
-  has_attached_file :avatar, styles: { full: "720x1040", medium: "360x520", thumb: "180x260", tiny: "90x120"}, storage: :s3, s3_credentials: 'config/s3.yml', s3_region: 'us-east-1'
+  has_attached_file :avatar, styles: { full: '720x1040', medium: '360x520', thumb: '180x260', tiny: '90x120' },
+                             storage: :s3, s3_credentials: 'config/s3.yml', s3_region: 'us-east-1'
 
-  validates_attachment_content_type :avatar, content_type: /\Aimage\/.*\z/
+  validates_attachment_content_type :avatar, content_type: %r{\Aimage/.*\z}
   validates :name, :provider, presence: true
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, uniqueness: { case_sensitive: false}, allow_blank: true #, on: :create
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, uniqueness: { case_sensitive: false }, allow_blank: true # , on: :create
 
   has_and_belongs_to_many :liked_works, join_table: :work_likes, class_name: :Manifestation
 
@@ -16,7 +17,9 @@ class User < ApplicationRecord
   # no apparent need to be able to retrieve all recommendations a particular (admin) user has *resolved*.  If one arises, use a separate association on the resolved_by foreign key
 
   # editor bits
-  EDITOR_BITS = ['handle_proofs', 'handle_recommendations', 'curate_featured_content', 'bib_workshop', 'edit_catalog', 'legacy_metadata', 'edit_people', 'conversion_verification', 'edit_sitenotice', 'moderate_tags']
+  EDITOR_BITS = %w(handle_proofs handle_recommendations curate_featured_content bib_workshop edit_catalog
+                   legacy_metadata edit_people conversion_verification edit_sitenotice
+                   moderate_tags moderate_links).freeze
 
   def admin?
     admin
@@ -32,41 +35,44 @@ class User < ApplicationRecord
 
   def has_bit?(bit)
     li = ListItem.where(listkey: bit, item: self).first
-    return (not li.nil?)
+    return !li.nil?
   end
 
   def tag_acceptance_rate
     tags = Tag.where(creator: self)
-    return nil if tags.where(status: [:approved, :rejected]).count == 0
-    (tags.where(status: :approved).count.to_f / tags.where(status: [:approved, :rejected]).count.to_f).round(2)*100
+    return nil if tags.where(status: %i(approved rejected)).count == 0
+
+    (tags.where(status: :approved).count.to_f / tags.where(status: %i(approved rejected)).count.to_f).round(2) * 100
   end
 
   def pending_tags
     Tag.where(creator: self, status: :pending)
   end
 
-  def recent_tags_used(limit=10)
-    Tag.joins(:taggings).where(taggings: {suggester: self}).where.not(taggings: { status: :rejected}).group('tags.id').order('MAX(taggings.created_at) DESC').limit(limit)
+  def recent_tags_used(limit = 10)
+    Tag.joins(:taggings).where(taggings: { suggester: self }).where.not(taggings: { status: :rejected }).group('tags.id').order('MAX(taggings.created_at) DESC').limit(limit)
   end
 
   def cached_popular_tags_used
-    Rails.cache.fetch("u_#{self.id}_pop_tags", expires_in: 6.hours) do
+    Rails.cache.fetch("u_#{id}_pop_tags", expires_in: 6.hours) do
       popular_tags_used
     end
   end
 
-  def popular_tags_used(limit=10)
+  def popular_tags_used(limit = 10)
     Tag.find(popular_tags_used_with_count.keys.first(limit))
   end
 
   def popular_tags_used_with_count
-    Tag.joins(:taggings).where(taggings: {suggester: self}).where.not(taggings: { status: :rejected}).group('tags.id').order('count_all DESC').count
+    Tag.joins(:taggings).where(taggings: { suggester: self }).where.not(taggings: { status: :rejected }).group('tags.id').order('count_all DESC').count
   end
 
   def tagging_acceptance_rate
     taggings = Tagging.where(suggester: self)
-    return nil if taggings.where(status: [:approved, :rejected]).count == 0 
-    (taggings.where(status: :approved).count.to_f / taggings.where(status: [:approved, :rejected]).count.to_f).round(2)*100
+    return nil if taggings.where(status: %i(approved rejected)).count == 0
+
+    (taggings.where(status: :approved).count.to_f / taggings.where(status: %i(approved
+                                                                              rejected)).count.to_f).round(2) * 100
   end
 
   def pending_taggings
@@ -75,11 +81,11 @@ class User < ApplicationRecord
 
   def block!(context, blocker, reason, context_item = nil, expires_at = nil)
     blocker = User.find(blocker) unless blocker.is_a? User
-    self.blocks.create(context: context, blocker: blocker, reason: reason, expires_at: expires_at)
+    blocks.create(context: context, blocker: blocker, reason: reason, expires_at: expires_at)
   end
 
   def unblock!(context)
-    self.blocks.where(context: context).each{|b| b.update!(expires_at: Time.now)}
+    blocks.where(context: context).each { |b| b.update!(expires_at: Time.now) }
   end
 
   def blocked?(context = nil)
@@ -87,18 +93,18 @@ class User < ApplicationRecord
   end
 
   def current_blocks
-    self.blocks.where('expires_at is null OR expires_at > ?', Time.now)
+    blocks.where('expires_at is null OR expires_at > ?', Time.now)
   end
 
   def warned?
-    self.warned_on.present? # TODO: auto-blank (=expire) warnings at some point?
+    warned_on.present? # TODO: auto-blank (=expire) warnings at some point?
   end
 
   def warn!(msg)
-    self.update(warned_on: Time.now)
+    update(warned_on: Time.now)
     Notifications.warn(self, msg).deliver
   end
-  
+
   def self.from_omniauth(auth)
     where(provider: auth.provider, uid: auth.uid).first_or_initialize.tap do |user|
       user.provider = auth.provider

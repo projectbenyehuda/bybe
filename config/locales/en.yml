@@ -438,3 +438,14 @@ en:
   translators: "Translators"
   expression_title: "Expression Title"
   aboutnesses: "Aboutnesses"
+
+  # External link types (enum values for ExternalLink.linktype)
+  wikipedia: Wikipedia Entry
+  blog: Blog Posts and Articles
+  youtube: Videos
+  other: Other
+  publisher_site: Publisher Website
+  dedicated_site: Related Website
+  audio: Audio Files
+  gnazim: Genazim Archives
+  source_text: Source Text
