@@ -26,22 +26,24 @@
           - if u.editor?
             = form_tag 'set_editor_bit' do
               = hidden_field_tag :id, u.id
+              = hidden_field_tag :q, @q
+              = hidden_field_tag :page, params[:page]
               = select_tag :bit, options_for_select(User::EDITOR_BITS.map{|bit| [t(bit), bit]})
               = select_tag :set_to, options_for_select([[t(:activate_bit), 1],[t(:deactivate_bit), 0]])
               = submit_tag t(:submit)
         %td
           - unless u.crowdsourcer?
-            = link_to t(:make_crowdsourcer), user_make_crowdsourcer_path(u)
+            = link_to t(:make_crowdsourcer), user_make_crowdsourcer_path(u, q: @q, page: params[:page])
           - else
-            = link_to t(:unmake_crowdsourcer), user_unmake_crowdsourcer_path(u)
+            = link_to t(:unmake_crowdsourcer), user_unmake_crowdsourcer_path(u, q: @q, page: params[:page])
           = ' | '
           - unless u.editor?
-            = link_to t(:make_editor), user_make_editor_path(u)
+            = link_to t(:make_editor), user_make_editor_path(u, q: @q, page: params[:page])
           - else
-            = link_to t(:unmake_editor), user_unmake_editor_path(u)
+            = link_to t(:unmake_editor), user_unmake_editor_path(u, q: @q, page: params[:page])
           = ' | '
           - unless u.admin?
-            = link_to t(:make_admin), user_make_admin_path(u)
+            = link_to t(:make_admin), user_make_admin_path(u, q: @q, page: params[:page])
 
   != paginate @user_list
 
