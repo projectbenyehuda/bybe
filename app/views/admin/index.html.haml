@@ -54,9 +54,8 @@
           - else
             .red= t(:proof_for_missing_item)
       = button_to t(:assign_proofs), url_for(action: :assign_proofs), {method: :get}
-      - if current_user.admin?
-        %p= link_to 'עיון בהגהות חדשות מן הציבור ('+@open_proofs+')', proofs_path(:status => 'new')
-        %p= link_to 'עיון בהגהות טעונות עיון נוסף ('+@escalated_proofs+')', proofs_path(:status => 'escalated')
+      %p= link_to 'עיון בהגהות חדשות מן הציבור ('+@open_proofs+')', proofs_path(:status => 'new')
+      %p= link_to 'עיון בהגהות טעונות עיון נוסף ('+@escalated_proofs+')', proofs_path(:status => 'escalated')
     - if current_user.has_bit?('moderate_tags')
       %p= link_to t(:moderate_tags), tag_moderation_path
       = t(:pending_tags_and_taggings, pending_tags: @pending_tags, pending_taggings: @pending_taggings)
