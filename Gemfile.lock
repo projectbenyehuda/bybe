@@ -294,7 +294,7 @@ GEM
     grape-swagger-entity (0.6.2)
       grape-entity (~> 1)
       grape-swagger (~> 2)
-    haml (7.0.2)
+    haml (6.3.1)
       temple (>= 0.8.2)
       thor
       tilt
@@ -352,7 +352,7 @@ GEM
       character_set (~> 1.4)
       regexp_parser (~> 2.11)
       regexp_property_values (~> 1.0)
-    json (2.16.0)
+    json (2.18.0)
     jwt (3.1.2)
       base64
     kaminari (1.2.2)
@@ -422,7 +422,7 @@ GEM
       bigdecimal
     net-dns2 (0.8.7)
       packetfu
-    net-http (0.8.0)
+    net-http (0.9.1)
       uri (>= 0.11.1)
     net-imap (0.5.12)
       date
@@ -504,13 +504,14 @@ GEM
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
-    prism (1.6.0)
+    prism (1.7.0)
     project-honeypot2 (0.1.3)
       net-dns2
-    pronto (0.11.4)
+    pronto (0.11.5)
       gitlab (>= 4.4.0, < 5.0)
       httparty (>= 0.13.7, < 1.0)
       octokit (>= 4.7.0, < 11.0)
+      ostruct
       rainbow (>= 2.2, < 4.0)
       rexml (>= 3.2.5, < 4.0)
       rugged (>= 0.23.0, < 2.0)
@@ -530,7 +531,7 @@ GEM
     psych (5.2.6)
       date
       stringio
-    public_suffix (7.0.0)
+    public_suffix (7.0.2)
     puma (7.1.0)
       nio4r (~> 2.0)
     puma-daemon (0.5.0)
@@ -677,9 +678,9 @@ GEM
       rubocop-ast (>= 1.46.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 4.0)
-    rubocop-ast (1.48.0)
+    rubocop-ast (1.49.0)
       parser (>= 3.3.7.2)
-      prism (~> 1.4)
+      prism (~> 1.7)
     rubocop-factory_bot (2.28.0)
       lint_roller (~> 1.1)
       rubocop (~> 1.72, >= 1.72.1)
@@ -801,7 +802,7 @@ GEM
       execjs (>= 0.3.0, < 3)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
-    unicode-emoji (4.1.0)
+    unicode-emoji (4.2.0)
     uniform_notifier (1.18.0)
     uri (1.1.1)
     useragent (0.16.11)
@@ -868,7 +869,7 @@ DEPENDENCIES
   grape-entity (~> 1.0.1)
   grape-swagger (~> 2.1.2)
   grape-swagger-entity (~> 0.6.2)
-  haml
+  haml (< 6.4)
   haml-rails
   haml_lint (~> 0.57.0)
   hebrew (>= 0.2.1)
