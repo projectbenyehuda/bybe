@@ -22,5 +22,12 @@ FactoryBot.define do
     trait :admin do
       admin { true }
     end
+
+    trait :moderate_links do
+      editor { true }
+      after :create do |user|
+        create(:list_item, item: user, listkey: :moderate_links)
+      end
+    end
   end
 end

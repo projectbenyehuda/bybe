@@ -1,4 +1,6 @@
-class LinkProposalMailer < ActionMailer::Base
+class LinkProposalMailer < ApplicationMailer
+  helper NotificationsHelper
+
   default from: "editor@benyehuda.org"
 
   # Send or queue notification based on recipient's email preferences

@@ -2,13 +2,13 @@ require 'rails_helper'
 
 RSpec.describe ExternalLinksController, type: :controller do
   let(:user) { create(:user) }
-  let(:moderator) { create(:user, :editor, editor_bits: ['moderate_links']) }
+  let(:moderator) { create(:user, :moderate_links) }
   let(:authority) { create(:authority) }
   let(:manifestation) { create(:manifestation) }
 
   describe 'POST #propose' do
     context 'when user is logged in' do
-      before { sign_in user }
+      before { session[:user_id] = user.id }
 
       it 'creates a new external link with submitted status' do
         expect {
@@ -18,8 +18,7 @@ RSpec.describe ExternalLinksController, type: :controller do
             description: 'Test link',
             linkable_type: 'Authority',
             linkable_id: authority.id,
-            ziburit: 'Bialik',
-            proposer_email: user.email
+            ziburit: 'Bialik'
           }, xhr: true
         }.to change(ExternalLink, :count).by(1)
 
@@ -46,7 +45,7 @@ RSpec.describe ExternalLinksController, type: :controller do
           }, xhr: true
         }.not_to change(ExternalLink, :count)
 
-        expect(response.body).to include(I18n.t('propose_link.error'))
+        expect(response.body).to include(I18n.t('propose_link.missing_ziburit'))
       end
 
       it 'rejects proposal with missing required fields' do
@@ -108,7 +107,7 @@ RSpec.describe ExternalLinksController, type: :controller do
     end
 
     context 'with moderate_links permission' do
-      before { sign_in moderator }
+      before { session[:user_id] = moderator.id }
 
       it 'displays only submitted links' do
         get :moderate
@@ -128,7 +127,7 @@ RSpec.describe ExternalLinksController, type: :controller do
     end
 
     context 'without moderate_links permission' do
-      before { sign_in user }
+      before { session[:user_id] = user.id }
 
       it 'redirects with error' do
         get :moderate
@@ -139,10 +138,11 @@ RSpec.describe ExternalLinksController, type: :controller do
     end
 
     context 'when not logged in' do
-      it 'redirects to login' do
+      it 'redirects with error' do
         get :moderate
 
-        expect(response).to redirect_to(new_user_session_path)
+        expect(response).to redirect_to(root_path)
+        expect(flash[:error]).to eq(I18n.t(:not_an_editor))
       end
     end
   end
@@ -150,7 +150,7 @@ RSpec.describe ExternalLinksController, type: :controller do
   describe 'POST #approve' do
     let(:link) { create(:external_link, status: :submitted, proposer_email: 'test@example.com') }
 
-    before { sign_in moderator }
+    before { session[:user_id] = moderator.id }
 
     it 'changes link status to approved' do
       post :approve, params: { id: link.id }, xhr: true
@@ -174,7 +174,7 @@ RSpec.describe ExternalLinksController, type: :controller do
   describe 'POST #reject' do
     let(:link) { create(:external_link, status: :submitted, proposer_email: 'test@example.com') }
 
-    before { sign_in moderator }
+    before { session[:user_id] = moderator.id }
 
     it 'changes link status to rejected' do
       post :reject, params: { id: link.id, note: 'Not relevant' }, xhr: true
@@ -200,7 +200,7 @@ RSpec.describe ExternalLinksController, type: :controller do
   describe 'POST #escalate' do
     let(:link) { create(:external_link, status: :submitted) }
 
-    before { sign_in moderator }
+    before { session[:user_id] = moderator.id }
 
     it 'changes link status to escalated' do
       post :escalate, params: { id: link.id }, xhr: true
