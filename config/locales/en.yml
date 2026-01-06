@@ -14,6 +14,8 @@ en:
   save: Save
   ok: OK
   cancel: Cancel
+  unauthorized: You are not authorized to perform this action
+  can_only_cancel_pending_links: You can only cancel pending links
   update: Update
   destroy: Destroy
   delete: Delete
@@ -451,6 +453,7 @@ en:
   source_text: Source Text
   suggest_new_links: Suggest an Additional Link
   no_approved_links_yet: No approved links yet
+  pending_links: Pending Links Awaiting Approval
   propose_link:
     title: Propose a New Link
     url_label: Website URL

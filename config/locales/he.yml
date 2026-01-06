@@ -562,6 +562,8 @@ he:
   ok: אישור
   cancel: ביטול
   close: סגירה
+  unauthorized: אין לך הרשאה לבצע פעולה זו
+  can_only_cancel_pending_links: ניתן לבטל רק קישוריות בהמתנה לאישור
   by: מאת
   x_years_ago: לפני %{years} שנים
   dates: תאריכים

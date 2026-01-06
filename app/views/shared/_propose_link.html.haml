@@ -24,7 +24,6 @@
 
           = hidden_field_tag(:linkable_type, '', id: :propose_link_linkable_type)
           = hidden_field_tag(:linkable_id, '', id: :propose_link_linkable_id)
-          = hidden_field_tag(:proposer_email, current_user&.email || '', id: :propose_link_email)
 
           .field-label= t(:ziburit)
           = text_field_tag(:ziburit, nil, { required: true, class: 'field-v02' })
