@@ -3,11 +3,12 @@ class ExternalLinksController < ApplicationController
   before_action :require_moderator, only: [:moderate, :approve, :reject, :escalate]
 
   def moderate
-    @submitted_links = ExternalLink.where(status: :submitted)
-                                    .includes(:linkable)
-                                    .order(created_at: :desc)
-                                    .page(params[:page]).per(20)
-    @total_count = ExternalLink.where(status: :submitted).count
+    submitted_scope = ExternalLink.where(status: :submitted)
+    @submitted_links = submitted_scope
+                         .includes(:linkable)
+                         .order(created_at: :desc)
+                         .page(params[:page]).per(20)
+    @total_count = submitted_scope.count
     @page_title = t('moderate_links.title')
   end
 
