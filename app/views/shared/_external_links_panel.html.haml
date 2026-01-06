@@ -4,10 +4,10 @@
     = t(:will_open_in_new_tab)
   .by-card-content-v02
     - approved_links = linkable.external_links.where(status: :approved)
-    - if approved_links.count > 0
+    - if approved_links.any?
       - ExternalLink.sidebar_link_types.each do |lt|
         - links = approved_links.where(linktype: lt)
-        - if links.count > 0
+        - if links.any?
           .metadata-link.headline-2-v02
             %span.metadata-link-icon> +
             = t(lt)
@@ -34,10 +34,11 @@
             = t(:pending_links)
           %ul.ul-inside.pending
             - pending_links.each do |link|
-              %li{"data-link-id": link.id}
-                = link.description
-                = ' ('+t(link.linktype)+')'
+              %li.tags.pending{ 'data-link-id': link.id }
                 - if link.proposer_id == current_user.id
+                  .by-icon-v02.pending-tag{title: t(:awaiting_approval)} L
+                  = link.description
+                  = ' (' + t(link.linktype) + ')'
                   = link_to '×', external_link_path(link), remote: true, method: :delete, class: 'link-x', title: t(:cancel)
 
     - unless current_user
