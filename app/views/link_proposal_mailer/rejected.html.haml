@@ -1,0 +1,20 @@
+%div{align: 'right', dir: 'rtl'}
+  %p= @greeting
+
+  %p= t('link_proposal_mailer.rejected.intro', url: @link.url, description: @link.description)
+
+  %p
+    = t('link_proposal_mailer.link_type')
+    = t(@link.linktype)
+
+  - if @moderator_note.present?
+    %p
+      %strong= t('link_proposal_mailer.rejected.moderator_note')
+      %br
+      = @moderator_note
+
+  %p= t('link_proposal_mailer.rejected.thanks')
+
+  %hr
+
+  != email_footer_html(@link.proposer_email)

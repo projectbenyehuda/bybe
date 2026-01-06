@@ -9,18 +9,25 @@ FactoryBot.define do
     trait :edit_catalog do
       editor { true }
       after :create do |user|
-        create(:list_item, item: user, listkey: :edit_catalog)
+        create(:list_item, item: user, listkey: 'edit_catalog')
       end
     end
 
     trait :bib_workshop do
       editor { true }
       after :create do |user|
-        create(:list_item, item: user, listkey: :bib_workshop)
+        create(:list_item, item: user, listkey: 'bib_workshop')
       end
     end
     trait :admin do
       admin { true }
+    end
+
+    trait :moderate_links do
+      editor { true }
+      after :create do |user|
+        create(:list_item, item: user, listkey: 'link_moderation')
+      end
     end
   end
 end

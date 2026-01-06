@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_26_082214) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_06_040250) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -417,7 +417,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_26_082214) do
     t.string "description"
     t.integer "linkable_id", null: false
     t.string "linkable_type", null: false
+    t.integer "proposer_id"
+    t.string "proposer_email"
     t.index ["linkable_type", "linkable_id"], name: "index_external_links_on_linkable_type_and_linkable_id"
+    t.index ["proposer_id"], name: "index_external_links_on_proposer_id"
   end
 
   create_table "featured_author_features", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|

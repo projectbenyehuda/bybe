@@ -97,6 +97,8 @@ he:
   to_all_authors: לרשימת כל היוצרים
   to_all_x_items: לכל %{x} הפריטים
   suggest_new_links: הצעת קישורית נוספת
+  no_approved_links_yet: אין עדיין קישוריות מאושרות
+  pending_links: קישוריות בהמתנה לאישור
   list_all_authors: רשימת כל היוצרים
   to_all_works: לרשימת כל היצירות
   all_authors: כל היוצרים
@@ -560,6 +562,8 @@ he:
   ok: אישור
   cancel: ביטול
   close: סגירה
+  unauthorized: אין לך הרשאה לבצע פעולה זו
+  can_only_cancel_pending_links: ניתן לבטל רק קישוריות בהמתנה לאישור
   by: מאת
   x_years_ago: לפני %{years} שנים
   dates: תאריכים
@@ -800,7 +804,8 @@ he:
   tags: תגיות
   taggings: תיוגים
   tag: תגית
-  moderate_tags: עיון בתיוגים מהציבור
+  moderate_tags: ניטור תיוגים מהציבור
+  link_moderation: ניטור קישוריות מהציבור
   next_milestone: היעד הבא
   my_activity: הפעילות שלי
   similar_to_x: "דומה לפריט: %{x}"
@@ -1147,13 +1152,63 @@ he:
   wikipedia: ערך בויקיפדיה
   publisher_site: דף באתר ההוצאה
   YouTube: צפייה בהקראת היצירה
-  youtube: סירטונים
+  youtube: קטע וידאו
   blog: מאמרים ורשומות בלוג
   dedicated_site: אתרים בנושא
-  audio: קטעי שֶמע
+  audio: קטע שמע
   gnazim: 'מכון "גנזים" – אגודת הסופרים'
   source_text: טקסט בשפת המקור
   in_orig_lang: ליצירה בשפת המקור
+  propose_link:
+    title: הצעת קישורית חדשה
+    url_label: כתובת אתר (URL)
+    linktype_label: סוג קישורית
+    description_label: תיאור הקישורית
+    description_placeholder: למשל - 'ערך בויקיפדיה', 'מאמר באתר...'
+    submit: שליחת הצעה
+    cancel_and_back: ביטול וחזרה
+    success: תודה! הצעתך נקלטה ותיבדק על ידי עורכי האתר
+    error: אירעה שגיאה בשליחת ההצעה
+    missing_url: יש למלא כתובת אתר
+    missing_linktype: יש לבחור סוג קישורית
+    missing_description: יש למלא תיאור הקישורית
+    missing_ziburit: יש למלא את שדה האימות
+  moderate_links:
+    title: ניטור הצעות קישוריות
+    total_submitted: 'סה"כ הצעות ממתינות: %{count}'
+    dashboard_count: 'הצעות ממתינות: %{count}'
+    submitted_at: תאריך הצעה
+    proposer: מציע/ה
+    linkable: פריט
+    link_type: סוג קישורית
+    url: כתובת
+    description: תיאור
+    actions: פעולות
+    approve: אישור
+    reject: דחייה
+    escalate: סימון כצריך עיון נוסף
+    confirm_approve: האם לאשר קישורית זו?
+    confirm_escalate: האם לסמן קישורית זו לעיון נוסף?
+    rejection_note_prompt: הסבר דחייה למציע/ה (אופציונלי)
+    no_submitted_links: אין הצעות קישוריות ממתינות
+    open_link: פתח קישורית
+    track_record: '%{approved}/%{total} אושרו (%{percentage}%)'
+    linkable_types:
+      authority: יוצר/ת
+      manifestation: יצירה
+      collection: אוסף
+  link_proposal_mailer:
+    link_type: 'סוג קישורית:'
+    linked_to: 'קישורית עבור:'
+    approved:
+      subject: הקישורית שהצעת אושרה
+      intro: 'הקישורית שהצעת ("%{description}" - %{url}) אושרה ונוספה לאתר.'
+      thanks: תודה על תרומתך לפרויקט בן־יהודה!
+    rejected:
+      subject: הקישורית שהצעת נדחתה
+      intro: 'הקישורית שהצעת ("%{description}" - %{url}) נבדקה ונדחתה.'
+      moderator_note: 'הערת העורך:'
+      thanks: תודה על עניינך בפרויקט בן־יהודה.
   author_details: פרטי יוצר
   work_entity_details: פרטי ישות יצירה
   work_details: פרטי יצירה

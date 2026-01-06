@@ -57,8 +57,11 @@
       %p= link_to 'עיון בהגהות חדשות מן הציבור ('+@open_proofs+')', proofs_path(:status => 'new')
       %p= link_to 'עיון בהגהות טעונות עיון נוסף ('+@escalated_proofs+')', proofs_path(:status => 'escalated')
     - if current_user.has_bit?('moderate_tags')
-      %p= link_to t(:moderate_tags), tag_moderation_path
-      = t(:pending_tags_and_taggings, pending_tags: @pending_tags, pending_taggings: @pending_taggings)
+      = link_to t(:moderate_tags), tag_moderation_path
+      %p= t(:pending_tags_and_taggings, pending_tags: @pending_tags, pending_taggings: @pending_taggings)
+    - if current_user.has_bit?('link_moderation')
+      = link_to t('moderate_links.title'), moderate_external_links_path
+      %p= t('moderate_links.dashboard_count', count: @pending_links)
     - if current_user.has_bit?('handle_recommendations')
       %p= link_to 'עיון בהמלצות מן הציבור ('+@open_recommendations+')', legacy_recommendation_list_path(:status => 'new')
     - if current_user.has_bit?('edit_sitenotice')

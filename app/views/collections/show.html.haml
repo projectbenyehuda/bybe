@@ -165,6 +165,9 @@
                     .metadata-link-icon.small-icon.pointer &amp;
                     %div= t(:suggest_new_tag)
 
+          -# External links
+          = render partial: 'shared/external_links_panel', locals: { linkable: @collection }
+
           -#.by-card-v02.left-side-card-v02#recs
           -#  - ctype = textify_collection_type(@collection.collection_type)
           -#  .by-card-header-left-v02
@@ -202,6 +205,7 @@
   = render partial: 'shared/download', locals: {entity: @collection}
 
 = render partial: 'shared/proof'
+= render partial: 'shared/propose_link'
 
 :javascript
   $(document).ready(function() {

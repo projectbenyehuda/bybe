@@ -146,16 +146,7 @@
                   %span
                     != tr.translators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
         -# External links
-        - if @m.external_links.to_a.size > 0
-          .by-card-v02.left-side-card-v02
-            .by-card-header-left-v02
-              %span.headline-1-v02= t(:external_links)
-            .by-card-content-v02
-              %ol
-              - @m.external_links.each do |link|
-                %li
-                  %span
-                    = link_to link.description.nil? ? link.url : link.description, link.url, 'target': '_new'
+        = render partial: 'shared/external_links_panel', locals: { linkable: @m }
 - if @m.not_short?
   .row
     .col-12
@@ -192,6 +183,7 @@
 = render partial: 'shared/proof'
 - if current_user
   = render partial: 'shared/anth_stuff'
+= render partial: 'shared/propose_link'
 - if @bookmark != 0 and @jump_to_bookmarks.nil?
   #bookmarkBehaviorDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
     = render partial: 'bookmark_behavior'

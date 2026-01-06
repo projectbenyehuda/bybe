@@ -14,6 +14,8 @@ en:
   save: Save
   ok: OK
   cancel: Cancel
+  unauthorized: You are not authorized to perform this action
+  can_only_cancel_pending_links: You can only cancel pending links
   update: Update
   destroy: Destroy
   delete: Delete
@@ -449,3 +451,56 @@ en:
   audio: Audio Files
   gnazim: Genazim Archives
   source_text: Source Text
+  suggest_new_links: Suggest an Additional Link
+  no_approved_links_yet: No approved links yet
+  pending_links: Pending Links Awaiting Approval
+  propose_link:
+    title: Propose a New Link
+    url_label: Website URL
+    linktype_label: Link Type
+    description_label: Link Description
+    description_placeholder: For example - 'Wikipedia entry', 'Article on...'
+    submit: Submit Proposal
+    cancel_and_back: Cancel and Go Back
+    success: Thank you! Your proposal has been received and will be reviewed by our editors
+    error: An error occurred while submitting your proposal
+    missing_url: Please enter a URL
+    missing_linktype: Please select a link type
+    missing_description: Please enter a description
+    missing_ziburit: Please fill in the verification field
+  moderate_links:
+    title: Moderate Link Proposals
+    total_submitted: 'Total pending proposals: %{count}'
+    dashboard_count: 'Pending proposals: %{count}'
+    submitted_at: Submitted
+    proposer: Proposer
+    linkable: Item
+    link_type: Link Type
+    url: URL
+    description: Description
+    actions: Actions
+    approve: Approve
+    reject: Reject
+    escalate: Escalate
+    confirm_approve: Approve this link proposal?
+    confirm_escalate: Escalate this link proposal to senior editor?
+    rejection_note_prompt: Enter a note for the proposer (optional)
+    no_submitted_links: No pending link proposals
+    open_link: Open Link
+    track_record: '%{approved}/%{total} approved (%{percentage}%)'
+    linkable_types:
+      authority: Author
+      manifestation: Work
+      collection: Collection
+  link_proposal_mailer:
+    link_type: 'Link type:'
+    linked_to: 'Link for:'
+    approved:
+      subject: Your link proposal was approved
+      intro: 'Your proposed link ("%{description}" - %{url}) has been approved and added to the site.'
+      thanks: Thank you for your contribution to Project Ben-Yehuda!
+    rejected:
+      subject: Your link proposal was not approved
+      intro: 'Your proposed link ("%{description}" - %{url}) has been reviewed and was not approved.'
+      moderator_note: "Editor's note:"
+      thanks: Thank you for your interest in Project Ben-Yehuda.
