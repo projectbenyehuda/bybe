@@ -2,7 +2,7 @@
   = form_tag(propose_external_link_path, remote: true, id: 'propose_link_form') do
     .flex-popup
       .popup-top
-        %button.btn-small-outline-v02{ data: { dismiss: :modal } }
+        %button.btn-small-outline-v02{ type: 'button', data: { dismiss: :modal } }
           .btn-text-v02
             %span.right-arrow 2
             %span= t('propose_link.cancel_and_back')
@@ -30,6 +30,17 @@
           = text_field_tag(:ziburit, nil, { required: true, class: 'field-v02' })
         .bottom-button-area.left-buttons
           = submit_tag(t('propose_link.submit'), { class: 'by-button-v02' })
-          %button.by-button-v02.btn-secondary-v02.desktop-only{ data: { dismiss: :modal } }
+          %button.by-button-v02.btn-secondary-v02.desktop-only{ type: 'button', data: { dismiss: :modal } }
             %span.right-side-icon= '-'
             %span{ style: 'font-weight: bold' }= t(:cancel)
+
+:javascript
+  $(document).ready(function() {
+    $('#proposeLinkDlg').on('show.bs.modal', function(e) {
+      var button = $(e.relatedTarget);
+      var linkableType = button.closest('[data-linkable-type]').data('linkable-type');
+      var linkableId = button.closest('[data-linkable-id]').data('linkable-id');
+      $('#propose_link_linkable_type').val(linkableType);
+      $('#propose_link_linkable_id').val(linkableId);
+    });
+  });

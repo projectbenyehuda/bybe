@@ -49,13 +49,23 @@ class ExternalLinksController < ApplicationController
   def propose
     # Spam prevention check - ziburit field should be filled
     if params[:ziburit].blank?
-      render js: "alert('#{I18n.t('propose_link.error')}');"
+      render js: "alert('#{j I18n.t('propose_link.missing_ziburit')}');"
       return
     end
 
     # Validate required fields
-    if params[:url].blank? || params[:linktype].blank? || params[:description].blank?
-      render js: "alert('#{I18n.t('propose_link.error')}');"
+    if params[:url].blank?
+      render js: "alert('#{j I18n.t('propose_link.missing_url')}');"
+      return
+    end
+
+    if params[:linktype].blank?
+      render js: "alert('#{j I18n.t('propose_link.missing_linktype')}');"
+      return
+    end
+
+    if params[:description].blank?
+      render js: "alert('#{j I18n.t('propose_link.missing_description')}');"
       return
     end
 
@@ -68,18 +78,18 @@ class ExternalLinksController < ApplicationController
       linkable_id: params[:linkable_id],
       status: :submitted,
       proposer_id: current_user&.id,
-      proposer_email: current_user&.email
+      proposer_email: params[:proposer_email] || current_user&.email
     )
 
     if @link.save
-
       render js: <<-JS
         $('#proposeLinkDlg').modal('hide');
         $('#propose_link_form')[0].reset();
-        alert('#{I18n.t('propose_link.success')}');
+        alert('#{j I18n.t('propose_link.success')}');
       JS
     else
-      render js: "alert('#{I18n.t('propose_link.error')}');"
+      error_msg = @link.errors.full_messages.join(', ')
+      render js: "alert('#{j I18n.t('propose_link.error')}: ' + '#{j error_msg}');"
     end
   end
 
