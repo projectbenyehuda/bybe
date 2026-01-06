@@ -450,6 +450,7 @@ en:
   gnazim: Genazim Archives
   source_text: Source Text
   suggest_new_links: Suggest an Additional Link
+  no_approved_links_yet: No approved links yet
   propose_link:
     title: Propose a New Link
     url_label: Website URL
