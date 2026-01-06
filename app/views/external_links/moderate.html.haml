@@ -18,13 +18,24 @@
         - @submitted_links.each do |link|
           %tr{id: "link_#{link.id}"}
             %td= l(link.created_at, format: :short)
-            %td= link.proposer_email
+            %td
+              %div= link.proposer_email
+              - if link.proposer_id && @proposer_stats[link.proposer_id]
+                - stats = @proposer_stats[link.proposer_id]
+                - if stats[:total] > 0
+                  %small.text-muted
+                    = t('moderate_links.track_record', approved: stats[:approved], total: stats[:total], percentage: stats[:percentage])
             %td
               - if link.linkable.present?
-                = link.linkable_type
-                = link_to "##{link.linkable_id}", polymorphic_path(link.linkable), target: '_blank'
+                %div
+                  = t("moderate_links.linkable_types.#{link.linkable_type.underscore}")
+                %div
+                  = link_to link.linkable.title, polymorphic_path(link.linkable), target: '_blank'
             %td= t(link.linktype)
-            %td= link_to t('moderate_links.open_link'), link.url, target: '_blank', class: 'btn btn-sm btn-info'
+            %td
+              %div.text-muted{style: 'font-size: 0.85em; margin-bottom: 0.25rem;'}
+                = link.url
+              = link_to t('moderate_links.open_link'), link.url, target: '_blank', class: 'btn btn-sm btn-info'
             %td= link.description
             %td
               = button_to t('moderate_links.approve'), approve_external_link_path(link),

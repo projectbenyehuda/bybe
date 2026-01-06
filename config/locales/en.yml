@@ -487,6 +487,11 @@ en:
     rejection_note_prompt: Enter a note for the proposer (optional)
     no_submitted_links: No pending link proposals
     open_link: Open Link
+    track_record: '%{approved}/%{total} approved (%{percentage}%)'
+    linkable_types:
+      authority: Author
+      manifestation: Work
+      collection: Collection
   link_proposal_mailer:
     link_type: 'Link type:'
     linked_to: 'Link for:'

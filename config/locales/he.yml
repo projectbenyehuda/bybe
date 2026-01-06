@@ -1192,6 +1192,11 @@ he:
     rejection_note_prompt: הסבר דחייה למציע/ה (אופציונלי)
     no_submitted_links: אין הצעות קישוריות ממתינות
     open_link: פתח קישורית
+    track_record: '%{approved}/%{total} אושרו (%{percentage}%)'
+    linkable_types:
+      authority: יוצר/ת
+      manifestation: יצירה
+      collection: אוסף
   link_proposal_mailer:
     link_type: 'סוג קישורית:'
     linked_to: 'קישורית עבור:'
