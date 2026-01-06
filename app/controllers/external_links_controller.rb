@@ -12,6 +12,10 @@ class ExternalLinksController < ApplicationController
                        .page(params[:page]).per(20)
     @total_count = submitted_scope.count
     @page_title = t('moderate_links.title')
+
+    # Preload proposer track records to avoid N+1 queries
+    proposer_ids = @submitted_links.map(&:proposer_id).compact.uniq
+    @proposer_stats = calculate_proposer_stats(proposer_ids)
   end
 
   def approve
@@ -147,5 +151,29 @@ class ExternalLinksController < ApplicationController
 
     flash[:error] = t(:not_an_editor)
     redirect_to root_path
+  end
+
+  # Calculate approval statistics for proposers
+  # Returns a hash: { proposer_id => { total: X, approved: Y, percentage: Z } }
+  def calculate_proposer_stats(proposer_ids)
+    return {} if proposer_ids.empty?
+
+    # Get counts grouped by proposer_id and status
+    stats = ExternalLink.where(proposer_id: proposer_ids)
+                        .group(:proposer_id, :status)
+                        .count
+
+    # Transform into the format we need
+    proposer_ids.each_with_object({}) do |proposer_id, result|
+      approved = stats[[proposer_id, 'approved']] || 0
+      rejected = stats[[proposer_id, 'rejected']] || 0
+      total_decided = approved + rejected
+
+      result[proposer_id] = {
+        total: total_decided,
+        approved: approved,
+        percentage: total_decided > 0 ? (approved.to_f / total_decided * 100).round(1) : nil
+      }
+    end
   end
 end
