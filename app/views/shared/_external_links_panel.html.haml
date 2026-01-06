@@ -39,7 +39,7 @@
                   .by-icon-v02.pending-tag{title: t(:awaiting_approval)} L
                   = link.description
                   = ' (' + t(link.linktype) + ')'
-                  = link_to '×', external_link_path(link), remote: true, method: :delete, class: 'link-x', title: t(:cancel)
+                  = link_to '×', external_link_path(link), class: 'link-x', title: t(:cancel), data: { remote: true, method: :delete }
 
     - unless current_user
       .metadata-link.must_login
