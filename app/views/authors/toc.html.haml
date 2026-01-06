@@ -183,12 +183,12 @@
                   %p= t(:no_approved_links_yet)
                 - unless current_user
                   .metadata-link.must_login
-                    %a{href: ""}
+                    %a{href: "#"}
                       %span.metadata-link-icon.small-icon= '&'
                       = t(:suggest_new_links)
                 - else
                   .metadata-link{'data-toggle' => 'modal', 'data-target' => '#proposeLinkDlg', 'data-linkable-type' => 'Authority', 'data-linkable-id' => @author.id}
-                    %a{href: ""}
+                    %a{href: "#"}
                       %span.metadata-link-icon.small-icon= '&'
                       = t(:suggest_new_links)
 
