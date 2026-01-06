@@ -4,5 +4,6 @@ FactoryBot.define do
     linktype { ExternalLink.linktypes.values.sample }
     status { ExternalLink.statuses.values.sample }
     description { "Description for #{url}" }
+    association :linkable, factory: :authority
   end
 end

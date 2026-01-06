@@ -1,4 +1,6 @@
 class ExternalLinksController < ApplicationController
+  include ActionView::Helpers::JavaScriptHelper
+
   before_action :require_user, only: [:propose]
   before_action :require_moderator, only: [:moderate, :approve, :reject, :escalate]
 
