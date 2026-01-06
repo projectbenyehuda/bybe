@@ -67,7 +67,7 @@ class ExternalLinksController < ApplicationController
       linkable_id: params[:linkable_id],
       status: :submitted,
       proposer_id: current_user&.id,
-      proposer_email: params[:proposer_email] || current_user&.email
+      proposer_email: current_user&.email
     )
 
     if @link.save
