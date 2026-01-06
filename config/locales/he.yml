@@ -98,6 +98,7 @@ he:
   to_all_x_items: לכל %{x} הפריטים
   suggest_new_links: הצעת קישורית נוספת
   no_approved_links_yet: אין עדיין קישוריות מאושרות
+  pending_links: קישוריות בהמתנה לאישור
   list_all_authors: רשימת כל היוצרים
   to_all_works: לרשימת כל היצירות
   all_authors: כל היוצרים
@@ -1170,7 +1171,7 @@ he:
     missing_description: יש למלא תיאור הקישורית
     missing_ziburit: יש למלא את שדה האימות
   moderate_links:
-    title: ניהול הצעות קישוריות
+    title: ניטור הצעות קישוריות
     total_submitted: 'סה"כ הצעות ממתינות: %{count}'
     dashboard_count: 'הצעות ממתינות: %{count}'
     submitted_at: תאריך הצעה
@@ -1182,10 +1183,10 @@ he:
     actions: פעולות
     approve: אישור
     reject: דחייה
-    escalate: העברה לבכיר
+    escalate: סימון כצריך עיון נוסף
     confirm_approve: האם לאשר קישורית זו?
-    confirm_escalate: האם להעביר קישורית זו לעורך בכיר?
-    rejection_note_prompt: אנא הזן/י הערה למציע/ה (אופציונלי)
+    confirm_escalate: האם לסמן קישורית זו לעיון נוסף?
+    rejection_note_prompt: הסבר דחייה למציע/ה (אופציונלי)
     no_submitted_links: אין הצעות קישוריות ממתינות
     open_link: פתח קישורית
   link_proposal_mailer:
