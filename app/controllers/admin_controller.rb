@@ -35,7 +35,7 @@ class AdminController < ApplicationController
       @pending_tags = Tag.where(status: :pending).with_taggings.count
       @pending_taggings = Tagging.where(status: :pending).count
     end
-    if current_user.has_bit?('moderate_links')
+    if current_user.has_bit?('link_moderation')
       @pending_links = ExternalLink.where(status: :submitted).count
     end
     @open_recommendations = LegacyRecommendation.where(status: 'new').count.to_s
@@ -248,7 +248,7 @@ class AdminController < ApplicationController
       # Reassociate aboutnesses where OTHER works are ABOUT this work
       # These are Aboutness records where aboutable_id = source_work_id and aboutable_type = 'Work'
       Aboutness.where(aboutable_type: 'Work', aboutable_id: @source_work_id)
-              .update_all(aboutable_id: @target_work_id)
+               .update_all(aboutable_id: @target_work_id)
 
       # Reload source work to get updated associations, then destroy
       source_work.reload
@@ -476,8 +476,9 @@ class AdminController < ApplicationController
 
     # Step 1: Get all published manifestations within the date range
     manifestations_in_range = Manifestation.published
-                                          .where('created_at >= ? AND created_at <= ?', from_date, to_date)
-                                          .includes(expression: { work: :involved_authorities, involved_authorities: :authority })
+                                           .where('created_at >= ? AND created_at <= ?', from_date, to_date)
+                                           .includes(expression: { work: :involved_authorities,
+                                                                   involved_authorities: :authority })
 
     # Step 2: Extract unique authorities from these manifestations
     authority_ids_in_range = []
@@ -500,7 +501,9 @@ class AdminController < ApplicationController
     end
 
     # Sort by first manifestation date
-    @authorities = authorities_with_first_manifestations.sort_by { |_authority, manifestation| manifestation.created_at }
+    @authorities = authorities_with_first_manifestations.sort_by do |_authority, manifestation|
+      manifestation.created_at
+    end
     @total = @authorities.count
   end
 
@@ -932,9 +935,9 @@ class AdminController < ApplicationController
       @similar_tags = Tag.where(id: stags.map { |x| x[1] })
       calculate_editor_tagging_stats
       @next_tag_id = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
-                                                       @tag.created_at).order(:created_at).limit(1).pluck(:id).first
+                                                                                                @tag.created_at).order(:created_at).limit(1).pluck(:id).first
       @prev_tag_id = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at < ?',
-                                                       @tag.created_at).order('created_at desc').limit(1).pluck(:id).first
+                                                                                                @tag.created_at).order('created_at desc').limit(1).pluck(:id).first
     end
   end
 
@@ -1183,7 +1186,8 @@ class AdminController < ApplicationController
       if t.present?
         t.approve!(current_user)
         Notifications.send_or_queue(:tag_approved, t.creator.email, t) unless t.creator.blocked? # don't send email if user is blocked
-        next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?', t.created_at).order(:created_at).limit(1)
+        next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
+                                                                                                t.created_at).order(:created_at).limit(1)
         if next_items.first.present?
           redirect_to url_for(action: :tag_review, id: next_items.first.id)
         else
@@ -1207,7 +1211,8 @@ class AdminController < ApplicationController
         # if params[:reason].present?
         Notifications.send_or_queue(:tag_rejected, t.creator.email, t, params[:reason]) unless t.creator.blocked? # don't send email if user is already blocked
         # end
-        next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?', t.created_at).order(:created_at).limit(1)
+        next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
+                                                                                                t.created_at).order(:created_at).limit(1)
         if next_items.first.present?
           flash[:notice] = t(:tag_rejected)
           redirect_to url_for(action: :tag_review, id: next_items.first.id)
@@ -1250,7 +1255,7 @@ class AdminController < ApplicationController
         respond_to do |format|
           format.html do
             next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
-                                                           @tag.created_at).order(:created_at).limit(1)
+                                                                                                    @tag.created_at).order(:created_at).limit(1)
             if next_items.first.present?
               flash[:notice] = t(:tag_escalated)
               redirect_to url_for(action: :tag_review, id: next_items.first.id)
@@ -1448,9 +1453,9 @@ class AdminController < ApplicationController
           start_id, end_id = end_id, start_id
         end
         ids.concat((start_id..end_id).to_a)
-      else
+      elsif token =~ /^\d+$/
         # Single ID
-        ids << token.to_i if token =~ /^\d+$/
+        ids << token.to_i
       end
     end
     ids.uniq

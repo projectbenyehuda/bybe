@@ -2,14 +2,14 @@ class ExternalLinksController < ApplicationController
   include ActionView::Helpers::JavaScriptHelper
 
   before_action :require_user, only: [:propose]
-  before_action :require_moderator, only: [:moderate, :approve, :reject, :escalate]
+  before_action :require_moderator, only: %i(moderate approve reject escalate)
 
   def moderate
     submitted_scope = ExternalLink.where(status: :submitted)
     @submitted_links = submitted_scope
-                         .includes(:linkable)
-                         .order(created_at: :desc)
-                         .page(params[:page]).per(20)
+                       .includes(:linkable)
+                       .order(created_at: :desc)
+                       .page(params[:page]).per(20)
     @total_count = submitted_scope.count
     @page_title = t('moderate_links.title')
   end
@@ -137,15 +137,15 @@ class ExternalLinksController < ApplicationController
   private
 
   def require_user
-    unless current_user
-      render js: "alert('#{I18n.t(:must_login_for_this)}');"
-    end
+    return if current_user
+
+    render js: "alert('#{I18n.t(:must_login_for_this)}');"
   end
 
   def require_moderator
-    unless current_user&.has_bit?('moderate_links')
-      flash[:error] = t(:not_an_editor)
-      redirect_to root_path
-    end
+    return if current_user&.has_bit?('link_moderation')
+
+    flash[:error] = t(:not_an_editor)
+    redirect_to root_path
   end
 end
