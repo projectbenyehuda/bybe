@@ -6,6 +6,8 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
 
   before do
     # Log in the user
+    # NOTE: Cookie-based login currently fails in Chrome 143+
+    # TODO: Replace with proper OmniAuth test helper or Devise test helpers
     visit '/'
     page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: user.id }.to_json), domain: '127.0.0.1')
     visit authority_path(authority)
@@ -87,8 +89,8 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
         expect(page).to have_content(I18n.t('wikipedia'))
         # Should show pending icon
         expect(page).to have_selector('.by-icon-v02.pending-tag')
-        # Should have a cancel link
-        expect(page).to have_link('×', href: %r{/external_links/\d+})
+        # Should have a cancel button
+        expect(page).to have_button('×')
       end
 
       # Verify the link was created in the database
@@ -117,9 +119,9 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
       within('#external_links_panel') do
         expect(page).to have_content('Test pending link')
 
-        # Click the cancel link
+        # Click the cancel button (changed from link to button_to for Rails UJS compatibility)
         within("li[data-link-id='#{link.id}']") do
-          click_link '×'
+          click_button '×'
         end
       end
 

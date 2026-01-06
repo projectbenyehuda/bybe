@@ -3995,6 +3995,31 @@ a .by-icon-v02:disabled{
 .tag:hover + .tag-x{
 	color: #660248;
 }
+
+/* Link-x button styling (for delete buttons on pending links) */
+.link-x, button.link-x {
+  /* Remove default button styling */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+
+  /* Make it look like the tag-x link */
+  font-family: ben-yehuda;
+  font-size: 12px;
+  color: #907989;
+  margin-right: 4px;
+  cursor: pointer;
+  display: inline;
+
+  /* Remove focus outline */
+  outline: none;
+}
+
+.link-x:hover, button.link-x:hover {
+  color: #660248;
+}
+
 #sort-by{
 	width: auto;
 }
