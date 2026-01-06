@@ -460,7 +460,11 @@ en:
     submit: Submit Proposal
     cancel_and_back: Cancel and Go Back
     success: Thank you! Your proposal has been received and will be reviewed by our editors
-    error: An error occurred while submitting your proposal. Please try again
+    error: An error occurred while submitting your proposal
+    missing_url: Please enter a URL
+    missing_linktype: Please select a link type
+    missing_description: Please enter a description
+    missing_ziburit: Please fill in the verification field
   moderate_links:
     title: Moderate Link Proposals
     total_submitted: 'Total pending proposals: %{count}'

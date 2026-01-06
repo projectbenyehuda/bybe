@@ -1164,7 +1164,11 @@ he:
     submit: שליחת הצעה
     cancel_and_back: ביטול וחזרה
     success: תודה! הצעתך נקלטה ותיבדק על ידי עורכי האתר
-    error: אירעה שגיאה בשליחת ההצעה. אנא נסה/י שוב
+    error: אירעה שגיאה בשליחת ההצעה
+    missing_url: יש למלא כתובת אתר
+    missing_linktype: יש לבחור סוג קישורית
+    missing_description: יש למלא תיאור הקישורית
+    missing_ziburit: יש למלא את שדה האימות
   moderate_links:
     title: ניהול הצעות קישוריות
     total_submitted: 'סה"כ הצעות ממתינות: %{count}'
