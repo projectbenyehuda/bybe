@@ -804,7 +804,8 @@ he:
   tags: תגיות
   taggings: תיוגים
   tag: תגית
-  moderate_tags: עיון בתיוגים מהציבור
+  moderate_tags: ניטור תיוגים מהציבור
+  link_moderation: ניטור קישוריות מהציבור
   next_milestone: היעד הבא
   my_activity: הפעילות שלי
   similar_to_x: "דומה לפריט: %{x}"
