@@ -66,18 +66,24 @@ class ExternalLinksController < ApplicationController
       return
     end
 
+    link_id = @link.id
     linkable = @link.linkable
     @link.destroy!
 
-    # Render the updated external links panel
-    panel_html = render_to_string(
-      partial: 'shared/external_links_panel',
-      locals: { linkable: linkable },
-      formats: [:html]
-    )
+    # Check if there are any remaining pending links for this user
+    remaining_pending = linkable.external_links.where(status: :submitted).where(proposer_id: current_user.id).any?
 
     respond_to do |format|
-      format.js { render js: "$('#external_links_panel').replaceWith('#{j panel_html}');" }
+      format.js {
+        js_code = "$('li[data-link-id=\"#{link_id}\"]').fadeOut(300, function() { $(this).remove(); });"
+
+        # If no more pending links, remove the pending section header
+        unless remaining_pending
+          js_code += "\n$('#external_links_panel .pending-tag').closest('div').fadeOut(300, function() { $(this).remove(); });"
+        end
+
+        render js: js_code
+      }
     end
   end
 
