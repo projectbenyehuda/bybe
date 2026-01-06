@@ -156,41 +156,7 @@
                     %div= t(:suggest_new_tag)
           
           = render partial: 'aboutnesses', cached: true, locals: { author: @author }
-          - cache "au_#{@author.id}_links", expires_in: 2.hours do
-            .by-card-v02.left-side-card-v02
-              .by-card-header-left-v02
-                %span.headline-1-v02= t(:external_links)
-                = t(:will_open_in_new_tab)
-              .by-card-content-v02
-                - if @external_links.count > 0
-                  - ExternalLink.sidebar_link_types.each do |lt|
-                    - links = @external_links.where(linktype: lt)
-                    - if links.count > 0
-                      .metadata-link.headline-2-v02
-                        %span.metadata-link-icon> +
-                        = t(lt)
-                      %div
-                        %ul.ul-inside
-                          - links.first(5).each do |l|
-                            %li
-                              = link_to l.description, l.url, target: :_blank
-                      - if links.count > 5
-                        .bottom-link-space
-                          .internal-link-to-all.all_links_btn.pointer.linkcolor
-                            %span{:style => "font-weight: bold"}= t(:to_all_x_items, x: links.count)
-                            %span.left-arrow 1
-                - else
-                  %p= t(:no_approved_links_yet)
-                - unless current_user
-                  .metadata-link.must_login
-                    %a{href: "#"}
-                      %span.metadata-link-icon.small-icon= '&'
-                      = t(:suggest_new_links)
-                - else
-                  .metadata-link{'data-toggle' => 'modal', 'data-target' => '#proposeLinkDlg', 'data-linkable-type' => 'Authority', 'data-linkable-id' => @author.id}
-                    %a{href: "#"}
-                      %span.metadata-link-icon.small-icon= '&'
-                      = t(:suggest_new_links)
+          = render partial: 'shared/external_links_panel', locals: { linkable: @author }
 
           .by-card-v02#text-volunteers-mobile
             .by-card-header-v02

@@ -46,6 +46,35 @@ class ExternalLinksController < ApplicationController
     end
   end
 
+  def destroy
+    @link = ExternalLink.find(params[:id])
+
+    # Only allow proposer to delete their own pending proposals
+    if @link.proposer_id != current_user.id
+      render js: "alert('#{j I18n.t(:unauthorized)}');"
+      return
+    end
+
+    if @link.status != 'submitted'
+      render js: "alert('#{j I18n.t(:can_only_cancel_pending_links)}');"
+      return
+    end
+
+    linkable = @link.linkable
+    @link.destroy!
+
+    # Render the updated external links panel
+    panel_html = render_to_string(
+      partial: 'shared/external_links_panel',
+      locals: { linkable: linkable },
+      formats: [:html]
+    )
+
+    respond_to do |format|
+      format.js { render js: "$('#external_links_panel').replaceWith('#{j panel_html}');" }
+    end
+  end
+
   def propose
     # Spam prevention check - ziburit field should be filled
     if params[:ziburit].blank?
@@ -77,15 +106,25 @@ class ExternalLinksController < ApplicationController
       linkable_type: params[:linkable_type],
       linkable_id: params[:linkable_id],
       status: :submitted,
-      proposer_id: current_user&.id,
-      proposer_email: params[:proposer_email] || current_user&.email
+      proposer_id: current_user.id,
+      proposer_email: current_user.email
     )
 
     if @link.save
+      # Get the linkable object to pass to the partial
+      linkable = @link.linkable
+
+      # Render the updated external links panel
+      panel_html = render_to_string(
+        partial: 'shared/external_links_panel',
+        locals: { linkable: linkable },
+        formats: [:html]
+      )
+
       render js: <<-JS
         $('#proposeLinkDlg').modal('hide');
         $('#propose_link_form')[0].reset();
-        alert('#{j I18n.t('propose_link.success')}');
+        $('#external_links_panel').replaceWith('#{j panel_html}');
       JS
     else
       error_msg = @link.errors.full_messages.join(', ')

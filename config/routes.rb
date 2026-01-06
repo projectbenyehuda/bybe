@@ -73,6 +73,7 @@ Bybeconv::Application.routes.draw do
 
   # External link proposal (works for any linkable type)
   post 'external_links/propose' => 'external_links#propose', as: 'propose_external_link'
+  delete 'external_links/:id' => 'external_links#destroy', as: 'external_link'
 
   # External link moderation
   get 'external_links/moderate' => 'external_links#moderate', as: 'moderate_external_links'
