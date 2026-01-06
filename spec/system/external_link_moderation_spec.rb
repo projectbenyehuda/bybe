@@ -31,7 +31,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
   describe 'accessing moderation interface' do
     it 'allows moderators to access the moderation page' do
       # Log in as moderator
-      page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: moderator.id }.to_json), domain: '127.0.0.1')
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
       visit moderate_external_links_path
 
       expect(page).to have_content(I18n.t('moderate_links.title'))
@@ -39,7 +39,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
 
     it 'denies access to regular users' do
       # Log in as regular user
-      page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: regular_user.id }.to_json), domain: '127.0.0.1')
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(regular_user)
       visit moderate_external_links_path
 
       # Should redirect to root with error
@@ -59,7 +59,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
   describe 'viewing submitted links' do
     before do
       # Log in as moderator
-      page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: moderator.id }.to_json), domain: '127.0.0.1')
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
       visit moderate_external_links_path
     end
 
@@ -87,7 +87,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
   describe 'approving a link' do
     before do
       # Log in as moderator
-      page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: moderator.id }.to_json), domain: '127.0.0.1')
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
       visit moderate_external_links_path
     end
 
@@ -117,7 +117,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
   describe 'rejecting a link' do
     before do
       # Log in as moderator
-      page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: moderator.id }.to_json), domain: '127.0.0.1')
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
       visit moderate_external_links_path
     end
 
@@ -170,7 +170,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
   describe 'escalating a link' do
     before do
       # Log in as moderator
-      page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: moderator.id }.to_json), domain: '127.0.0.1')
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
       visit moderate_external_links_path
     end
 
@@ -207,7 +207,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
       end
 
       # Log in as moderator
-      page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: moderator.id }.to_json), domain: '127.0.0.1')
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
       visit moderate_external_links_path
     end
 

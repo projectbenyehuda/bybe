@@ -5,11 +5,8 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
   let(:authority) { create(:authority) }
 
   before do
-    # Log in the user
-    # NOTE: Cookie-based login currently fails in Chrome 143+
-    # TODO: Replace with proper OmniAuth test helper or Devise test helpers
-    visit '/'
-    page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: user.id }.to_json), domain: '127.0.0.1')
+    # Mock current_user for system specs (works with js: true)
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
     visit authority_path(authority)
   end
 
@@ -132,7 +129,7 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
       within('#external_links_panel') do
         expect(page).not_to have_content('Test pending link')
         # If that was the only pending link, the pending section should be gone
-        if user.external_links.where(status: :submitted).count == 0
+        if ExternalLink.where(proposer_id: user.id, status: :submitted).count == 0
           expect(page).not_to have_content(I18n.t(:pending_links))
         end
       end
@@ -191,9 +188,8 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
 
     it 'admin sees all pending links' do
       admin = create(:user, :admin)
-      # Log out and log in as admin
-      page.driver.browser.manage.delete_all_cookies
-      page.driver.browser.manage.add_cookie(name: '_bybe_session', value: Base64.encode64({ user_id: admin.id }.to_json), domain: '127.0.0.1')
+      # Switch to admin user
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(admin)
 
       visit authority_path(authority)
 

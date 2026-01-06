@@ -30,12 +30,7 @@
                 %div
                   = t("moderate_links.linkable_types.#{link.linkable_type.underscore}")
                 %div
-                  - linkable_label = if link.linkable.respond_to?(:title) && link.linkable.title.present?
-                    link.linkable.title
-                  - elsif link.linkable.respond_to?(:name) && link.linkable.name.present?
-                    link.linkable.name
-                  - else
-                    link.linkable.to_s
+                  - linkable_label = (link.linkable.respond_to?(:title) && link.linkable.title.present?) ? link.linkable.title : ((link.linkable.respond_to?(:name) && link.linkable.name.present?) ? link.linkable.name : link.linkable.to_s)
                   = link_to linkable_label, polymorphic_path(link.linkable), target: '_blank'
             %td= t(link.linktype)
             %td
