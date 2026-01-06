@@ -146,26 +146,28 @@
                   %span
                     != tr.translators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
         -# External links
-        - if @m.external_links.to_a.size > 0
-          .by-card-v02.left-side-card-v02
-            .by-card-header-left-v02
-              %span.headline-1-v02= t(:external_links)
-            .by-card-content-v02
+        .by-card-v02.left-side-card-v02
+          .by-card-header-left-v02
+            %span.headline-1-v02= t(:external_links)
+          .by-card-content-v02
+            - if @m.external_links.to_a.size > 0
               %ol
               - @m.external_links.each do |link|
                 %li
                   %span
                     = link_to link.description.nil? ? link.url : link.description, link.url, 'target': '_new'
-              - unless current_user
-                .metadata-link.must_login
-                  %a{href: ""}
-                    %span.metadata-link-icon.small-icon= '&'
-                    = t(:suggest_new_links)
-              - else
-                .metadata-link{'data-toggle' => 'modal', 'data-target' => '#proposeLinkDlg', 'data-linkable-type' => 'Manifestation', 'data-linkable-id' => @m.id}
-                  %a{href: ""}
-                    %span.metadata-link-icon.small-icon= '&'
-                    = t(:suggest_new_links)
+            - else
+              %p= t(:no_approved_links_yet)
+            - unless current_user
+              .metadata-link.must_login
+                %a{href: ""}
+                  %span.metadata-link-icon.small-icon= '&'
+                  = t(:suggest_new_links)
+            - else
+              .metadata-link{'data-toggle' => 'modal', 'data-target' => '#proposeLinkDlg', 'data-linkable-type' => 'Manifestation', 'data-linkable-id' => @m.id}
+                %a{href: ""}
+                  %span.metadata-link-icon.small-icon= '&'
+                  = t(:suggest_new_links)
 - if @m.not_short?
   .row
     .col-12
