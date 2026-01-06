@@ -44,6 +44,7 @@ If you accidentally pushed to master/main:
 ### Project architecture
 
 * READ AI_ARCHITECTURE_PRIMER.md for a primer on how the project is organized, its main models, controllers, and workflows. DO NOT SKIP THIS.
+* READ RAILS_GOTCHAS.md for documented Rails issues and their solutions. This file captures non-obvious problems that cost hours of debugging time. Always check this file when encountering unexplained Rails behavior.
 
 ### ⚠️ CRITICAL: Testing Requirements ⚠️
 

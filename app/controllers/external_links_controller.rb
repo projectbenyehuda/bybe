@@ -57,12 +57,18 @@ class ExternalLinksController < ApplicationController
 
     # Only allow proposer to delete their own pending proposals
     if @link.proposer_id != current_user.id
-      render js: "alert('#{j I18n.t(:unauthorized)}');"
+      respond_to do |format|
+        format.js { render js: "alert('#{j I18n.t(:unauthorized)}');" }
+        format.html { redirect_back fallback_location: root_path, alert: I18n.t(:unauthorized) }
+      end
       return
     end
 
     if @link.status != 'submitted'
-      render js: "alert('#{j I18n.t(:can_only_cancel_pending_links)}');"
+      respond_to do |format|
+        format.js { render js: "alert('#{j I18n.t(:can_only_cancel_pending_links)}');" }
+        format.html { redirect_back fallback_location: root_path, alert: I18n.t(:can_only_cancel_pending_links) }
+      end
       return
     end
 
@@ -84,6 +90,7 @@ class ExternalLinksController < ApplicationController
 
         render js: js_code
       }
+      format.html { redirect_back fallback_location: root_path, notice: I18n.t(:link_cancelled) }
     end
   end
 
