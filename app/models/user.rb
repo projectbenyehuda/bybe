@@ -19,7 +19,7 @@ class User < ApplicationRecord
   # editor bits
   EDITOR_BITS = %w(handle_proofs handle_recommendations curate_featured_content bib_workshop edit_catalog
                    legacy_metadata edit_people conversion_verification edit_sitenotice
-                   moderate_tags moderate_links).freeze
+                   moderate_tags link_moderation).freeze
 
   def admin?
     admin
