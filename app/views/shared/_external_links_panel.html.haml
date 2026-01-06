@@ -35,11 +35,12 @@
           %ul.ul-inside.pending
             - pending_links.each do |link|
               %li.tags.pending{ 'data-link-id': link.id }
-                - if link.proposer_id == current_user.id
+                - if link.proposer_id == current_user.id || current_user.admin?
                   .by-icon-v02.pending-tag{title: t(:awaiting_approval)} L
                   = link.description
                   = ' (' + t(link.linktype) + ')'
-                  = button_to '×', external_link_path(link), method: :delete, remote: true, form: { style: 'display: inline;' }, class: 'link-x', title: t(:cancel)
+                  - if link.proposer_id == current_user.id
+                    = button_to '×', external_link_path(link), method: :delete, remote: true, form: { style: 'display: inline;' }, class: 'link-x', title: t(:cancel)
 
     - unless current_user
       .metadata-link.must_login
