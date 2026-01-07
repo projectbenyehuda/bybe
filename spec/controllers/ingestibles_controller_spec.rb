@@ -537,6 +537,44 @@ describe IngestiblesController do
         expect(manifestation.title).to eq('[Test Work]')
       end
 
+      it 'detects duplicates when ingesting escaped bracket titles matching existing unescaped titles' do
+        # First, create an existing manifestation with unescaped title
+        existing_work = create(:work, title: '[Existing Work]', orig_lang: 'fr', genre: 'prose', author: author)
+        existing_expression = create(:expression, work: existing_work, title: '[Existing Work]', language: 'he',
+                                                  orig_lang: 'fr', translator: translator)
+        existing_manifestation = create(:manifestation, expression: existing_expression, title: '[Existing Work]',
+                                                        author: author, translator: translator, orig_lang: 'fr')
+
+        # Now try to ingest a text with the ESCAPED version of the same title
+        brackets_markdown = "&&& \\[Existing Work\\]\n\nContent with brackets"
+        brackets_toc = " yes || \\[Existing Work\\] || #{[{ seqno: 1, authority_id: author.id, authority_name: author.name,
+                                                            role: 'author' }].to_json} || prose || fr || public_domain"
+        brackets_ingestible = create(:ingestible,
+                                     markdown: brackets_markdown,
+                                     toc_buffer: brackets_toc,
+                                     prospective_volume_id: collection.id.to_s,
+                                     publisher: 'Test Publisher',
+                                     no_volume: false,
+                                     year_published: '2023',
+                                     default_authorities: [{ seqno: 1, authority_id: translator.id,
+                                                             authority_name: translator.name,
+                                                             role: 'translator' }].to_json)
+        brackets_ingestible.update_parsing
+
+        # Ingestion should be blocked due to duplicate detection
+        post :ingest, params: { id: brackets_ingestible.id, confirm_duplicates: '0' }
+
+        expect(response).to redirect_to(review_ingestible_path(brackets_ingestible))
+        expect(flash[:alert]).to eq(I18n.t('ingestibles.ingest.duplicates_found_not_confirmed'))
+
+        # Verify the duplicate was detected
+        potential_duplicates = controller.instance_variable_get(:@potential_duplicates)
+        expect(potential_duplicates).not_to be_empty
+        duplicate = potential_duplicates.find { |d| d[:title] == '[Existing Work]' }
+        expect(duplicate).to be_present
+        expect(duplicate[:manifestation_id]).to eq(existing_manifestation.id)
+      end
+
       it 'updates cached_people field on manifestations after ingestion' do
         post :ingest, params: { id: ingestible.id }
 
