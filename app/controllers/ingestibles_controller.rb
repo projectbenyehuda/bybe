@@ -627,8 +627,9 @@ class IngestiblesController < ApplicationController
 
     Chewy.strategy(:atomic) do
       ActiveRecord::Base.transaction do
+        unescaped_title = unescape_markdown_title(toc_line[1])
         w = Work.new(
-          title: toc_line[1],
+          title: unescaped_title,
           orig_lang: toc_line[4],
           genre: toc_line[3],
           primary: true # TODO: un-hardcode primariness when ingestible TOC editing supports it
@@ -666,7 +667,7 @@ class IngestiblesController < ApplicationController
                                       end
 
         e = w.expressions.build(
-          title: toc_line[1],
+          title: unescaped_title,
           language: 'he',
           period: period, # what to do if corporate body?
           intellectual_property: intellectual_property_value,
@@ -678,7 +679,7 @@ class IngestiblesController < ApplicationController
         responsibility_line = translators.present? ? translator_names.join(', ') : authors.join(', ')
         # the_markdown = @ingestible.markdown.scan(/^&&&\s+#{toc_line[1]}\s*\n(.+?)(?=\n&&&|$)/m).first.first
         m = e.manifestations.build(
-          title: toc_line[1],
+          title: unescaped_title,
           responsibility_statement: responsibility_line,
           conversion_verified: true,
           medium: I18n.t(:etext),
@@ -761,5 +762,12 @@ class IngestiblesController < ApplicationController
   rescue StandardError
     @failures << "#{toc_line[1]} - #{$ERROR_INFO}"
     return I18n.t(:frbrization_error)
+  end
+
+  # Remove markdown escape backslashes from title text
+  # Pandoc escapes special characters when converting DOCX to markdown,
+  # but these backslashes should not be stored in the database
+  def unescape_markdown_title(title)
+    title.gsub(/\\([\[\]\*\_\{\}\(\)\#\+\-\.\!'])/, '\1')
   end
 end
