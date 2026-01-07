@@ -173,17 +173,22 @@
       %label{ style: 'font-size: 1.1em; font-weight: bold;' }
         = check_box_tag 'confirm_duplicates', '1', false, id: 'confirm_duplicates_checkbox'
         = t('.confirm_duplicates_checkbox')
-  - button_text = @authorities_tbd.present? ? t('.pending_ingest') : t('.ingest')
-  - button_params = { confirm_duplicates: (@potential_duplicates.present? ? nil : '1') }
-  - if @potential_duplicates.present?
-    - checkbox_selector = 'confirm_duplicates_checkbox'
-    - input_selector = "input[name=confirm_duplicates]"
-    - alert_message = escape_javascript(t('ingestibles.review.must_confirm_duplicates'))
-    - onsubmit_js = "return document.getElementById('#{checkbox_selector}').checked ? (this.querySelector('#{input_selector}').value = '1', true) : (alert('#{alert_message}'), false)"
-    - button_form = { onsubmit: onsubmit_js }
-  - else
-    - button_form = nil
-  = button_to button_text, ingest_ingestible_path(@ingestible), method: :post, id: 'ingest_button', class: 'btn btn-primary', params: button_params, form: button_form
+  :ruby
+    button_text = @authorities_tbd.present? ? t('.pending_ingest') : t('.ingest')
+    button_params = { confirm_duplicates: (@potential_duplicates.present? ? nil : '1') }
+    if @potential_duplicates.present?
+      checkbox_selector = 'confirm_duplicates_checkbox'
+      input_selector = 'input[name=confirm_duplicates]'
+      alert_message = escape_javascript(t('ingestibles.review.must_confirm_duplicates'))
+      onsubmit_js = "return document.getElementById('#{checkbox_selector}').checked ? " \
+                    "(this.querySelector('#{input_selector}').value = '1', true) : " \
+                    "(alert('#{alert_message}'), false)"
+      button_form = { onsubmit: onsubmit_js }
+    else
+      button_form = nil
+    end
+  = button_to button_text, ingest_ingestible_path(@ingestible), method: :post, id: 'ingest_button',
+              class: 'btn btn-primary', params: button_params, form: button_form
 %br
 = link_to t('.back_to_editing'), edit_ingestible_path(@ingestible), class: 'by-button-v02 btn-secondary-v02'
 = link_to t(:back), ingestibles_path
