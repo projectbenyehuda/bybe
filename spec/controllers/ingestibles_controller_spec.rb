@@ -334,10 +334,6 @@ describe IngestiblesController do
         let!(:existing_expression) { create(:expression, work: existing_work, title: 'Work 1', language: 'he', orig_lang: 'en', translator: translator) }
         let!(:existing_manifestation) { create(:manifestation, expression: existing_expression, title: 'Work 1', author: author1, translator: translator, orig_lang: 'en') }
 
-        before do
-          # Authorities are now properly set via factory parameters - no extra authorities created
-        end
-
         it 'detects potential duplicates with same title and authorities' do
           call
           potential_duplicates = controller.instance_variable_get(:@potential_duplicates)
@@ -609,7 +605,6 @@ describe IngestiblesController do
 
         before do
           ingestible.update_parsing
-          # Authorities are now properly set via factory parameters - no extra authorities created
         end
 
         context 'when confirm_duplicates is not checked' do
