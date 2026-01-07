@@ -8,6 +8,29 @@
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+// Loading badge that appears next to the field
+.autocomplete-loading-badge {
+  display: inline-block;
+  margin-right: 10px; // Space from input field (for RTL)
+  padding: 4px 12px;
+  background-color: #17a2b8; // Info color (teal/cyan)
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 12px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+// Pulse animation for the loading badge
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 // Make autocomplete dropdowns scrollable for ingestibles edit form
 .ingestible-autocomplete-author + ul.ui-autocomplete,
 .ingestible-autocomplete-volume + ul.ui-autocomplete {

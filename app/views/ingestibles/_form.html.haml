@@ -43,7 +43,8 @@
                                      id: 'aterm',
                                      style: 'width:400px;',
                                      id_element: '#authority_id',
-                                     class: 'ingestible-autocomplete-author'
+                                     class: 'ingestible-autocomplete-author',
+                                     data: { loading_text: t(:loading) }
             = hidden_field_tag :authority_id, value: '', id: 'authority_id'
             = f.check_box :no_volume
             = f.label t('ingestible.no_volume')
@@ -56,7 +57,8 @@
             = f.label t('ingestible.any_volume')
             = autocomplete_field_tag :volume, '', autocomplete_collection_full_ingestibles_path,
                                      id: 'cterm', style: 'width:400px;', id_element: '#prospective_volume_id',
-                                     class: 'ingestible-autocomplete-volume'
+                                     class: 'ingestible-autocomplete-volume',
+                                     data: { loading_text: t(:loading) }
             %br
             = t(:or)
             %br
