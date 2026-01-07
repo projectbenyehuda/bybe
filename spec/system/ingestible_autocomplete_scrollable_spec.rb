@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe 'Ingestible autocomplete scrollable', type: :system, js: true do
+RSpec.describe 'Ingestible autocomplete scrollable', :js, :system do
   let!(:authorities) do
     Chewy.strategy(:atomic) do
       # Create more than 10 authorities to test that all are returned
@@ -56,7 +58,11 @@ RSpec.describe 'Ingestible autocomplete scrollable', type: :system, js: true do
       visit new_ingestible_path
 
       # Click to expand volume details if hidden
-      find('#change_volume', visible: false).click rescue nil
+      begin
+        find('#change_volume').click
+      rescue Capybara::ElementNotFound
+        # Volume details already visible
+      end
 
       # The input field should have the correct class
       expect(page).to have_css('#aterm.ingestible-autocomplete-author')
@@ -91,7 +97,11 @@ RSpec.describe 'Ingestible autocomplete scrollable', type: :system, js: true do
       visit new_ingestible_path
 
       # Click to expand volume details if hidden
-      find('#change_volume', visible: false).click rescue nil
+      begin
+        find('#change_volume').click
+      rescue Capybara::ElementNotFound
+        # Volume details already visible
+      end
 
       # The input field should have the correct class
       expect(page).to have_css('#cterm.ingestible-autocomplete-volume')

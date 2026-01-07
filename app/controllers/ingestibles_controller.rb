@@ -294,7 +294,7 @@ class IngestiblesController < ApplicationController
       params[:term],
       AuthoritiesAutocompleteIndex,
       %i(name other_designation),
-      limit: 10000
+      limit: 10_000
     )
 
     render json: json_for_autocomplete(items, :name)
@@ -304,7 +304,7 @@ class IngestiblesController < ApplicationController
   def autocomplete_collection_full
     items = Collection.where('title LIKE ?', "%#{params[:term]}%")
                       .order(:title)
-                      .limit(10000)
+                      .limit(10_000)
 
     render json: items.map { |c| { id: c.id, label: c.title_and_authors, value: c.title } }
   end
