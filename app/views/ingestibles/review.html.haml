@@ -100,6 +100,10 @@
 
   .admin_dashboard_item
     %h2= t('.text_information')
+    - if @potential_duplicates.present?
+      .yellowbg
+        %h3= t('.potential_duplicates_warning')
+        %p= t('.potential_duplicates_explanation')
     %table
       %thead
         %tr
@@ -109,8 +113,19 @@
           %th= t(:orig_lang)
       %tbody
         - @decoded_toc.each do |text|
-          %tr
-            %td= text[1]
+          - is_duplicate = @potential_duplicates.any? { |dup| dup[:title] == text[1] }
+          - row_style = is_duplicate ? 'background-color: #fff3cd;' : ''
+          %tr{style: row_style}
+            %td
+              = text[1]
+              - if is_duplicate
+                %br
+                %span.badge.badge-warning{style: 'background-color: #ffc107; color: #000;'}= t('.duplicate_warning')
+                - duplicate_info = @potential_duplicates.find { |dup| dup[:title] == text[1] }
+                %br
+                %small
+                  = t('.existing_manifestation')
+                  = link_to t('.view_existing'), duplicate_info[:manifestation_url], target: '_blank'
             - if text[0] == 'no'
               %td{colspan: 3, align: 'center'}
                 = t('.placeholder')
@@ -146,7 +161,19 @@
   - if @authorities_tbd.present?
     .yellowbg
       %h3= t('.authorities_tbd')
-  = button_to @authorities_tbd.present? ? t('.pending_ingest') : t('.ingest'), ingest_ingestible_path(@ingestible), method: :post, id: 'ingest_button', class: 'btn btn-primary'
+  - if @potential_duplicates.present?
+    .yellowbg{style: 'padding: 15px; margin: 10px 0;'}
+      %h3= t('.confirm_duplicates_title')
+      %p= t('.confirm_duplicates_explanation')
+      %ul
+        - @potential_duplicates.each do |dup|
+          %li
+            = dup[:title]
+            = link_to t('.view_existing'), dup[:manifestation_url], target: '_blank'
+      %label{style: 'font-size: 1.1em; font-weight: bold;'}
+        = check_box_tag 'confirm_duplicates', '1', false, id: 'confirm_duplicates_checkbox'
+        = t('.confirm_duplicates_checkbox')
+  = button_to @authorities_tbd.present? ? t('.pending_ingest') : t('.ingest'), ingest_ingestible_path(@ingestible), method: :post, id: 'ingest_button', class: 'btn btn-primary', params: { confirm_duplicates: (@potential_duplicates.present? ? nil : '1') }, form: { onsubmit: @potential_duplicates.present? ? "return document.getElementById('confirm_duplicates_checkbox').checked ? (this.querySelector('input[name=confirm_duplicates]').value = '1', true) : (alert('#{I18n.t('ingestibles.review.must_confirm_duplicates')}'), false)" : nil }
 %br
 = link_to t('.back_to_editing'), edit_ingestible_path(@ingestible), class: 'by-button-v02 btn-secondary-v02'
 = link_to t(:back), ingestibles_path

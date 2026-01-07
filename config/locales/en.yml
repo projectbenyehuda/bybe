@@ -202,6 +202,18 @@ en:
       success: Ingestible was successfully updated
     destroy:
       success: Ingestible was successfully destroyed
+    ingest:
+      duplicates_found_not_confirmed: Potential duplicate texts detected. Please review and confirm if you wish to proceed.
+    review:
+      potential_duplicates_warning: Potential Duplicates Detected!
+      potential_duplicates_explanation: Some texts in this ingestion appear to already exist in the system with the same title and involved authorities. Please review carefully.
+      duplicate_warning: DUPLICATE
+      existing_manifestation: 'Already exists in system:'
+      view_existing: View existing
+      confirm_duplicates_title: Confirm Duplicate Ingestion
+      confirm_duplicates_explanation: The following texts appear to be duplicates of existing texts. Please verify that you want to ingest them anyway.
+      confirm_duplicates_checkbox: I confirm that I want to ingest these texts despite the duplication warning
+      must_confirm_duplicates: You must confirm that you want to ingest duplicate texts by checking the confirmation checkbox.
   ingestible_texts:
     edit:
       text_x_of_total: Text %{index} of %{total}
