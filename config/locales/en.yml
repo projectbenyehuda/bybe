@@ -1795,10 +1795,13 @@ en:
   show_less: Show Less
   show_more: Show More
   show_original: Show Original
-  show_only_admins: Show only admins
-  show_only_crowdsourcers: Show only crowdsourcers
-  show_only_editors: Show only editors
   showing: Showing
+  filter_by_privilege: Filter by privilege level
+  all_users: All users
+  editors_only: Editors only
+  admins_only: Admins only
+  crowdsourcers_only: Crowdsourcers only
+  editors_or_admins: Editors or admins
   sign_in: Sign In
   sign_out: Sign Out
   sign_up: Sign Up
