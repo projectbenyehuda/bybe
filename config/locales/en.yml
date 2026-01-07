@@ -1,11 +1,12 @@
+---
 en:
   edit_metadata: Edit metadata
-  name_starts_with_x: "Name starts with: '%{x}'"
-  title_starts_with_x: "Title starts with: '%{x}'"
+  name_starts_with_x: 'Name starts with: ''%{x}'''
+  title_starts_with_x: 'Title starts with: ''%{x}'''
   new_person: New Person
   new_corporate_body: New Corporate Body
-  "yes": "Yes"
-  "no": "No"
+  'yes': 'Yes'
+  'no': 'No'
   are_you_sure: Are you sure?
   none: None
   back: Back
@@ -28,8 +29,8 @@ en:
   nonpd: Not Public Domain
   deprecated: Deprecated
   status: Status
-  filtered_manifestations_count: "Showing: %{count}"
-  total_manifestations_count: "Total in database: %{total}"
+  filtered_manifestations_count: 'Showing: %{count}'
+  total_manifestations_count: 'Total in database: %{total}'
   confirm_delete_manifestation: Are you sure you want to delete this manifestation?
   confirm_batch_delete: Are you sure you want to delete %<count>s manifestation(s)?
   confirm_batch_unpublish: Are you sure you want to unpublish %<count>s manifestation(s)?
@@ -103,16 +104,21 @@ en:
   report_error_tt: To report error select text on the page and then press here
   found_br_mistake_html: I have found<br/>mistake
   collapse_collection: Collapse collection
-  or_search_term: "Or search for an existing work called:"
-  or_search_for_collection: "Or search for collection:"
+  or_search_term: 'Or search for an existing work called:'
+  or_search_for_collection: 'Or search for collection:'
   matches: matches
   perform_add: Add
   not_an_editor: This page is only available for editors
   permalink: Permanent link
   anthologies_list: List of Anthologies
   welcome_to_anthologies_browsing: Welcome to the public anthologies list
-  anthologies_browsing_intro_paging: The anthologies list matching your criteria contains %{total} results. Due to its length, the list is divided into sub-pages. You can browse the list using the controls above and below it.
-  anthologies_browsing_intro_html: "<p>The list contains public anthologies created by Project users. You can use filtering options to narrow down the list by searching for anthology title, included author, included work, or anthology owner name.</p><p><b>To enable advanced filtering options, click the toggle in the top bar.</b></p>"
+  anthologies_browsing_intro_paging: The anthologies list matching your criteria contains
+    %{total} results. Due to its length, the list is divided into sub-pages. You can
+    browse the list using the controls above and below it.
+  anthologies_browsing_intro_html: "<p>The list contains public anthologies created
+    by Project users. You can use filtering options to narrow down the list by searching
+    for anthology title, included author, included work, or anthology owner name.</p><p><b>To
+    enable advanced filtering options, click the toggle in the top bar.</b></p>"
   anthology_title: Anthology Title
   anthology_title_placeholder: Search by anthology title
   included_author: Included Author
@@ -126,34 +132,35 @@ en:
     other: Found %{count} anthologies
   anthology_sort_tt: Sort anthologies
   creation_date: Creation Date
-  texts: texts
+  texts: Texts
   one_text: one text
   empty_anthology: empty
-  anthology_by_owner: "Created by: %{owner}"
+  anthology_by_owner: 'Created by: %{owner}'
   no_anthologies_found: No anthologies found matching the criteria
-  title_filter_label: "Title: %{title}"
-  author_filter_label: "Author: %{author}"
-  manifestation_filter_label: "Work: %{title}"
-  owner_filter_label: "Owner: %{owner}"
+  title_filter_label: 'Title: %{title}'
+  author_filter_label: 'Author: %{author}'
+  manifestation_filter_label: 'Work: %{title}'
+  owner_filter_label: 'Owner: %{owner}'
   page_of_pages: Page %{page} of %{total}
   previous_page: Previous page
   next_page: Next page
   permalink_copied: Link copied to clipboard!
-  admin_edit_anthology: "Admin: Edit Anthology"
+  admin_edit_anthology: 'Admin: Edit Anthology'
   anthology_title_label: Anthology Title
   anthology_access_label: Access Level
-  anthology_access_private: "Private (only visible to creator)"
-  anthology_access_unlisted: "Unlisted (accessible via direct link)"
-  anthology_access_public: "Public (visible to all)"
+  anthology_access_private: Private (only visible to creator)
+  anthology_access_unlisted: Unlisted (accessible via direct link)
+  anthology_access_public: Public (visible to all)
   anthology_access_priv: Private
   anthology_owner_label: Current Owner
   anthology_owner_deleted: "[User account deleted]"
-  anthology_owner_missing_warning: "Warning: The original owner's account no longer exists. Please assign a new owner."
+  anthology_owner_missing_warning: 'Warning: The original owner''s account no longer
+    exists. Please assign a new owner.'
   anthology_change_owner_label: Change Owner
-  keep_current_owner: "Keep current owner"
-  save_changes: Save Changes
+  keep_current_owner: Keep current owner
   danger_zone: Danger Zone
-  delete_anthology_warning: Deleting an anthology will permanently remove it and all its contents.
+  delete_anthology_warning: Deleting an anthology will permanently remove it and all
+    its contents.
   delete_anthology: Delete Anthology
   confirm_anthology_deletion: Confirm Anthology Deletion
   anthology_deletion_warning: You are about to permanently delete this anthology
@@ -162,7 +169,8 @@ en:
   error_updating_anthology: Error updating anthology. Please try again.
   error_deleting_anthology: Error deleting anthology. Please try again.
   admin_options: Admin Options
-  show_all_anthologies_including_private: Show all anthologies (including private and unlisted)
+  show_all_anthologies_including_private: Show all anthologies (including private
+    and unlisted)
   admin:
     featured_contents:
       index:
@@ -174,15 +182,19 @@ en:
         failed: Failed to create feature period, ensure dates are provided
     index:
       takes_long_time: Takes long time
+      batch_operations: Batch Operations
     incongruous_copyright:
       title: Probably incongruous copyright report
       columns:
         db_intellectual_property: Intellectual property in DB
         has_non_public_domain_authority: Has non public domain authority
+    manifestation_batch_tools:
+      enter_manifestation_ids: Please enter *work* IDs (separated by space or newline)
+      fetch: Load Works
+      title: Batch Operations
   ingestibles:
     ingestible_locked: Ingestible locked by user %{user}
     clear_defaults: Clear defaults
-    # _authorities partial
     authorities:
       or_new_person: or type a new authority name
     new:
@@ -198,98 +210,207 @@ en:
       full_markdown: Full Markdown
       toc: TOC
       review: Review
+      problem: Ingestibles Form Problem
     update:
       success: Ingestible was successfully updated
     destroy:
       success: Ingestible was successfully destroyed
+    index:
+      internal_title: Ingestibles Index Internal Title
+      last_editor: Ingestibles Index Last Editor
+      locked_title: Ingestibles Index Locked Title
+      my_title: Ingestibles Index My Title
+      other_title: Ingestibles Index Other Title
+      pending_ingestibles: Ingestibles Index Pending Ingestibles
+      show_all: Ingestibles Index Show All
+      show_uningested_only: Ingestibles Index Show Uningested Only
+      start_new: Ingestibles Index Start New
+    ingest:
+      errors: Ingestibles Ingest Errors
+      failures: Ingestibles Ingest Failures
+      ingestion_now_pending: Ingestibles Ingest Ingestion Now Pending
+      success: Ingestibles Ingest Success
+      duplicates_found_not_confirmed: Potential duplicate texts detected. Please review and confirm if you wish to proceed.
+    replace_with_authority: Ingestibles Replace With Authority
+    review:
+      adding_to_existing_volume: Ingestibles Review Adding To Existing Volume
+      additions: Ingestibles Review Additions
+      affected_authorities: Ingestibles Review Affected Authorities
+      already_in_collection: Ingestibles Review Already In Collection
+      authorities_tbd: Ingestibles Review Authorities Tbd
+      awaiting_authorities: Ingestibles Review Awaiting Authorities
+      awaiting_authorities_resolved: Ingestibles Review Awaiting Authorities Resolved
+      back_to_editing: Ingestibles Review Back To Editing
+      cannot_ingest_with_errors: Ingestibles Review Cannot Ingest With Errors
+      empty_texts: Ingestibles Review Empty Texts
+      errors: Ingestibles Review Errors
+      extraneous_markdown: Ingestibles Review Extraneous Markdown
+      ingest: Ingestibles Review Ingest
+      missing_authority: Ingestibles Review Missing Authority
+      missing_genre: Ingestibles Review Missing Genre
+      missing_in_markdown: Ingestibles Review Missing In Markdown
+      missing_origlang: Ingestibles Review Missing Origlang
+      missing_publisher_info: Ingestibles Review Missing Publisher Info
+      new_volume: Ingestibles Review New Volume
+      new_volume_by_workshop: Ingestibles Review New Volume By Workshop
+      no_volume: Ingestibles Review No Volume
+      pending_ingest: Ingestibles Review Pending Ingest
+      placeholder: Ingestibles Review Placeholder
+      placeholders: Ingestibles Review Placeholders
+      problem_is_not_empty: Ingestibles Review Problem Is Not Empty
+      statistics: Ingestibles Review Statistics
+      text_information: Ingestibles Review Text Information
+      texts: Ingestibles Review Texts
+      title: Ingestibles Review Title
+      to_originating_task: Ingestibles Review To Originating Task
+      volume_information: Ingestibles Review Volume Information
+      potential_duplicates_warning: Potential Duplicates Detected!
+      potential_duplicates_explanation: Some texts in this ingestion appear to already exist in the system with the same title and involved authorities. Please review carefully.
+      duplicate_warning: DUPLICATE
+      existing_manifestation: 'Already exists in system:'
+      view_existing: View existing
+      confirm_duplicates_title: Confirm Duplicate Ingestion
+      confirm_duplicates_explanation: The following texts appear to be duplicates of existing texts. Please verify that you want to ingest them anyway.
+      confirm_duplicates_checkbox: I confirm that I want to ingest these texts despite the duplication warning
+      must_confirm_duplicates: You must confirm that you want to ingest duplicate texts by checking the confirmation checkbox.
+    show:
+      collections: Ingestibles Show Collections
+      created: Ingestibles Show Created
+      ingested_changes: Ingestibles Show Ingested Changes
+      placeholders: Ingestibles Show Placeholders
+      texts: Ingestibles Show Texts
+      title: Ingestibles Show Title
+      undo: Ingestibles Show Undo
+      updated: Ingestibles Show Updated
+    undo:
+      undone: Ingestibles Undo Undone
+    unlock:
+      not_locked_by_you: Ingestibles Unlock Not Locked By You
+      success: Ingestibles Unlock Success
   ingestible_texts:
     edit:
       text_x_of_total: Text %{index} of %{total}
+      next: Ingestible Texts Edit Next
+      not_in_toc: Ingestible Texts Edit Not In Toc
+      previous: Ingestible Texts Edit Previous
   involved_authorities:
     list:
       select_authority: Select authority!
   collections_mailer:
     ordering_fixed:
       subject: Problems with ordering in collections found and fixed
-      intro: "Please check ordering of items in following collections:"
+      intro: 'Please check ordering of items in following collections:'
       n_problems_fixed: "%{n} problems fixed"
   shared:
+    manage_toc:
+      collections_area: Shared Manage Toc Collections Area
+      choose_between_author_pubs: Select from work, related to this author
+      city_and_publisher: City and Publisher
+      make_collection: Create collection from the works below
+      verify_publisher_line: Publication details, correct or remove if incorrect
+      year: Year of Publication
+    editable_collection:
+      confirm_delete_collection: Please confirm deletion of the entire collection
+        and its items! (The works themselves will remain, only their appearance in
+        the collection will be deleted)
+      focus_on_this_collection: Manage this collection
+      insert_all_siblings: Insert all sibling items from this level inward
+    filters:
+      pagination:
+        first_page: To first page
+        next_page: To next page
+        page_x_of_total: Page %{page} of %{total}
+        previous_page: To previous page
+    intellectual_property:
+      about:
+        by_permission: what does by permission mean?
+        copyrighted: what does rights in force mean?
+        orphan: what does orphan works mean?
+        permission_for_all: blanket permission for all works
+        permission_for_selected: permission for specific titles only
+        public_domain: what does public domain mean?
+        unknown: what does unknown rights status mean?
+      popover:
+        by_permission: Although the work is still copyrighted, Project Ben-Yehuda
+          has received *explicit permission to publish* the work in Project Ben-Yehuda's
+          works database, for the general public to read and research. Other uses
+          (such as dramatization, musical composition, or commercial performance)
+          still *require explicit approval* from the rights holders.
+        copyrighted: The copyright is still in force, and there is no permission to
+          make the material accessible or to make any use of it that is not explicitly
+          permitted, except fair use as defined in copyright law.
+        orphan: The copyright is still in force, but the identity of the rights holders
+          is unknown, or there is no way to contact them, and therefore it is permitted
+          to make the works accessible under the conditions defined in the orphan
+          works section of the copyright law.
+        permission_for_all: Project Ben-Yehuda has received blanket permission to
+          publish all works by this author/translator
+        permission_for_selected: Project Ben-Yehuda has received permission to publish
+          only specific works, as detailed individually
+        public_domain: Copyright Law protects against unauthorized use of works for
+          the duration of its validity (in Israel, seventy years from the end of the
+          year of the creator's death). With the expiry of the rights, the creation
+          becomes 'public domain', that is, the property of the public. This means
+          that the work belongs to all of us, and we are all entitled to make any
+          use of it, including commercial use, without the need to ask permission
+          of anyone.
+        unknown: The copyright status of this work is unknown to us. If you have information
+          about it, please contact us.
     latest_works_by_author:
       latest_added_works: latest works published in the project
       to_latest_x_works: to latest %{x} works
-    editable_collection:
-      confirm_delete_collection: Please confirm deletion of the entire collection! (The works themselves will remain, only their appearance in the collection will be deleted)
-      focus_on_this_collection: Focus on this collection
-      insert_all_siblings: Insert all siblings
     manage_collection:
       select_manifestation: Select work
-    manage_toc:
-      choose_between_author_pubs: Select from work, related to this author
-      verify_publisher_line: Publication details, correct or remove if incorrect
-      city_and_publisher: City and Publisher
-      year: Year of Publication
-      make_collection: Create collection from the works below
-    filters:
-      pagination:
-        page_x_of_total: Page %{page} of %{total}
-        next_page: Next page
-        previous_page: Previous page
-        first_page: First page
+    proof:
+      cancel_and_back: Cancel and Go Back
+      copy_text: Copy Below
+      email_just_for_proof: Email address just for an update on this proofreading
+      found_mistake: Found Mistake
+      please_select_something: Excellent, but first, please select the wrong paragraph
+        (or a few lines), so that we know where to correct. After the check, click
+        this button again.
+      proof_your_proofs: Type the proofs down here, or click "Copy Below" to copy
+        the selected text and manually correct it below.
+      report_found_mistake: Report Mistake on Page
+      reset_text: Clear Text
+      select_proper_text: It appears that the selected text does not belong to any
+        work. Please make your selection directly from the work itself.
+      selected_text: Selected Text
+      selection_spans_multiple_texts: The text you selected spans multiple works.
+        Please select text from a single work only.
+      submit: Send Proofreading
+      thanks_html: Thank you so much for taking the trouble to send us a proofreading
+        or comment! We will review it carefully and correct the text if necessary,
+        and will update you as we do so.
+      too_short: At least a sentence or two should be selected, not just the error
+        itself. This helps us locate the wrong place in the text. After the check,
+        click this button again.
     surprise_work:
       explanations:
-        public_domain: not protected by intellectual property laws
         by_permission: there is an explicit permission for publication from the owner
         copyrighted: copyrighted
         orphan: orphan
+        public_domain: not protected by intellectual property laws
         unknown: unknown
-    intellectual_property:
-      about:
-        public_domain: what does it means 'public domain'?
-        by_permission: what does it means 'by permission'?
-        copyrighted: what does it means 'copyrighted'?
-        orphan: what does it means 'orphan'?
-        permission_for_all: what does it means 'permission for all'?
-        permission_for_selected: what does it means 'permission for selected'?
-        unknown: what does it means 'unknown'?
-      popover:
-        public_domain: Copyright Law protects against unauthorized use of works for the duration of its validity (in Israel, seventy years from the end of the year of the creator's death). With the expiry of the rights, the creation becomes 'public domain', that is, the property of the public. This means that the work belongs to all of us, and we are all entitled to make any use of it, including commercial use, without the need to ask permission of anyone.
-        by_permission: Although the work is still copyrighted, the Ben־Yehuda Project has received *explicit permission to publish* The work in the Ben־Yehuda Project database, for the general public to read and research. Other uses (such as play, composition, or commercial performance) still *require express approval* from the rights holders.
-        copyrighted: TBD description for 'copyrighted'
-        orphan: TBD description for 'orphan'
-        permission_for_all: TBD description for 'permission_for_all'
-        permission_for_selected: TBD description for 'permission_for_selected'
-        unknown: TBD description for 'unknown'
-    proof:
-      cancel_and_back: Cancel and Go Back
-      found_mistake: Found Mistake
-      report_found_mistake: Report Mistake on Page
-      selected_text: Selected Text
-      copy_text: Copy Below
-      reset_text: Clear Text
-      proof_your_proofs: Type the proofs down here, or click "Copy Below" to copy the selected text and manually correct it below.
-      email_just_for_proof: Email address just for an update on this proofreading
-      submit: Send Proofreading
-      please_select_something: Excellent, but first, please select the wrong paragraph (or a few lines), so that we know where to correct.  After the check, click this button again.
-      too_short: At least a sentence or two should be selected, not just the error itself. This helps us locate the wrong place in the text. After the check, click this button again.
-      select_proper_text: It appears that the selected text does not belong to any work. Please make your selection directly from the work itself.
-      selection_spans_multiple_texts: The text you selected spans multiple works. Please select text from a single work only.
-      thanks_html: Thank you so much for taking the trouble to send us a proofreading or comment!  We will review it carefully and correct the text if necessary, and will update you as we do so.
   welcome:
     submit_contact:
-      ziburit_failed: Control question failed
       email_missing: Please provide an email address
+      ziburit_failed: Control question failed
   proofs:
     index:
-      title_all: All proofs
-      title_by_status: Proofs in %{status} status
+      search_by_title: Proofs Index Search By Title
+      show_fixed: Proofs Index Show Fixed
+      show_wontfix: Proofs Index Show Wontfix
+      purge_spam: Delete spam proofs
       show_all: Show all proofs
+      show_escalated: Show proofs requiring additional review
       show_open: Show new proofs
-      show_escalated: Show escalated proofs
-      purge_spam: Purge spam!
+      title_all: All Proofs
+      title_by_status: Proofs by %{status} status
     create:
-      ziburit_failed: Control question failed
-      email_missing: Please provide an email address
-  manifestation:
+      email_missing: Please provide an email address so we can respond to you.
+      ziburit_failed: We are not convinced you are not a robot.
+  manifestation: Work
   collection:
     type:
       volume: Volume
@@ -318,13 +439,14 @@ en:
     lexicon: Lexicon
     fables: Fable
     mixed: Mixed
+    translations: Translated Works
   intellectual_property:
-    public_domain: public domain
-    by_permission: by permission
+    by_permission: presented with publication permission
     copyrighted: copyrighted
-    orphan: orphan
-    permission_for_all: permission for all
-    permission_for_selected: permission for selected
+    orphan: orphan works
+    permission_for_all: entire work presented with permission
+    permission_for_selected: certain works accessed with permission
+    public_domain: public domain
     unknown: unknown
   collection_type_in_volume: In a volume
   collection_type_in_periodical: In a periodical
@@ -340,6 +462,15 @@ en:
       designer: Designer
       contributor: Contributor
       other: Other
+    abstract_roles:
+      author: Involved Authority Abstract Roles Author
+      contributor: Involved Authority Abstract Roles Contributor
+      designer: Involved Authority Abstract Roles Designer
+      editor: Involved Authority Abstract Roles Editor
+      illustrator: Involved Authority Abstract Roles Illustrator
+      other: Involved Authority Abstract Roles Other
+      photographer: Involved Authority Abstract Roles Photographer
+      translator: Involved Authority Abstract Roles Translator
   ingestible:
     scenario:
       single: Single piece
@@ -352,22 +483,29 @@ en:
       awaiting_authorities: Awaiting Creation of Missed Authorities
     errors:
       invalid_collection_authorities_json: contains invalid JSON
-      duplicate_volume_for_publication: A volume for this publication with these authorities already exists in the database
-      duplicate_volume_by_title: A volume with this title and authorities already exists in the database
-      another_ingestible_proposing_volume: Another pending ingestible is already proposing to create this volume
+      duplicate_volume_for_publication: A volume for this publication with these authorities
+        already exists in the database
+      duplicate_volume_by_title: A volume with this title and authorities already
+        exists in the database
+      another_ingestible_proposing_volume: Another pending ingestible is already proposing
+        to create this volume
       invalid_json_in_collection_authorities: Invalid JSON in collection authorities
     collection_level_authorities: Collection-level Involved Authorities
-    collection_authorities_help: "These authorities will be linked to the Collection itself, separate from the individual works. When collection authorities are set and default authorities haven't been explicitly set, the collection authorities will also become the defaults."
+    collection_authorities_help: These authorities will be linked to the Collection
+      itself, separate from the individual works. When collection authorities are
+      set and default authorities haven't been explicitly set, the collection authorities
+      will also become the defaults.
     default_authorities_for_texts: Default Involved Authorities for Texts
-    default_authorities_help: "These authorities will be used as defaults for individual texts when no specific authorities are defined in the Table of Contents below."
+    default_authorities_help: These authorities will be used as defaults for individual
+      texts when no specific authorities are defined in the Table of Contents below.
     existing_collection_authorities: Existing Collection Authorities
     no_existing_authorities: No existing authorities in this collection
     new_authority: New
     clear_defaults: Clear Defaults
     pick_periodical: Select Periodical
     pick_issue: Select Issue
-    add_new_issue: (Add New Issue)
-    new_issue_title: 'New Issue Title (e.g. "Chambers 4" or "Issue 56")'
+    add_new_issue: "(Add New Issue)"
+    new_issue_title: New Issue Title (e.g. "Chambers 4" or "Issue 56")
     create_new_periodical: Create New Periodical
     create_new_periodical_button: Create New Periodical
     periodical_title: Periodical Name
@@ -375,49 +513,87 @@ en:
     both_titles_required: Both periodical name and first issue name are required
     creation_failed: Periodical creation failed
     need_to_save: Please save the ingestible after updating the collection
-  # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
+    already_being_ingested: Ingestible Already Being Ingested
+    any_volume: Ingestible Any Volume
+    attach_photos: Ingestible Attach Photos
+    attach_photos_explanation: Ingestible Attach Photos Explanation
+    author_missing: Ingestible Author Missing
+    create_new_volume: Ingestible Create New Volume
+    credits: Ingestible Credits
+    current_file: Ingestible Current File
+    defaults: Ingestible Defaults
+    end_upload_block: Ingestible End Upload Block
+    included_in_upload: Ingestible Included In Upload
+    included_works: Ingestible Included Works
+    invalid: Ingestible Invalid
+    matched_in_markdown: Ingestible Matched In Markdown
+    need_to_save_explanation: Ingestible Need To Save Explanation
+    new_title: Ingestible New Title
+    new_volume: Ingestible New Volume
+    no_project: Ingestible No Project
+    no_volume: Ingestible No Volume
+    no_volume_explanation: Ingestible No Volume Explanation
+    or_replace_file: Ingestible Or Replace File
+    originating_task: Ingestible Originating Task
+    project: Ingestible Project
+    project_help: Ingestible Project Help
+    select_project: Ingestible Select Project
+    start_upload_block: Ingestible Start Upload Block
+    title: Ingestible Title
+    translator_missing: Ingestible Translator Missing
+    volume: Ingestible Volume
+    volume_by_author: Ingestible Volume By Author
   public_domain: Public Domain
-  viaf_id: ID in VIAF Database
+  viaf_id: VIAF ID
   text_n_of_m: Text %{n} of %{m}
   and_n_placeholders: Plus %{n} placeholders
   convert_to_new_method: Convert to new method
-  manage_toc: "Collection-based creator's page management: %{author}"
+  manage_toc: 'Collection-based creator''s page management: %{author}'
   manage_toc_link: Collection-based creator's page management
-  manage_toc_explanation:  On this screen you can edit all the collections in which this creator is involved at the collection level. You can also add a work or collection from the entire database into one of the collections listed here, and also create a whole new collection and link it to this creator. If there has been a hand-created page before, it is shown on the left.
+  manage_toc_explanation: On this screen you can edit all the collections in which
+    this creator is involved at the collection level. You can also add a work or collection
+    from the entire database into one of the collections listed here, and also create
+    a whole new collection and link it to this creator. If there has been a hand-created
+    page before, it is shown on the left.
   show_genres: Filter by genres
   refresh_uncollected_works: Refresh uncollected works
   out_of: out of
   full_display: Full View
   immediate_child_only: Show one level only
-  
-  # Email throttling system
   email_preferences: Email Preferences
   email_frequency_label: Email Notification Frequency
   email_frequency_unlimited: Unlimited (real-time)
-  email_frequency_unlimited_description: Receive notifications immediately as they are sent
+  email_frequency_unlimited_description: Receive notifications immediately as they
+    are sent
   email_frequency_daily: At most once per day
-  email_frequency_daily_description: Receive at most one email per day with a summary of all notifications
+  email_frequency_daily_description: Receive at most one email per day with a summary
+    of all notifications
   email_frequency_weekly: At most once per week
-  email_frequency_weekly_description: Receive at most one email per week with a summary of all notifications
+  email_frequency_weekly_description: Receive at most one email per week with a summary
+    of all notifications
   email_frequency_none: Do not send me any emails
   email_frequency_none_description: Do not receive any emails from the site
   save_preferences: Save Preferences
   preferences_updated: Preferences updated successfully
   invalid_preference: Invalid preference
   manage_email_preferences: Manage Email Preferences
-  email_footer_signup_invitation: If you would like to control the frequency of email notifications, you can sign up for the site and set your preferences.
-  notification_digest_intro: Here is a summary of the notifications we have collected for you
+  email_footer_signup_invitation: If you would like to control the frequency of email
+    notifications, you can sign up for the site and set your preferences.
+  notification_digest_intro: Here is a summary of the notifications we have collected
+    for you
   notification_render_error: Error rendering notification
   dictionary_entries: Dictionary Entries
   works: Works
   volumes: Volumes
   unrecognized_format: Unrecognized file format
   collection_item_operation_error: 'Error occurred: %{error}. Page will be reloaded.'
-  kwic_sort_by: "Sort by:"
+  kwic_sort_by: 'Sort by:'
   kwic_sort_alphabetical: Alphabetical
   kwic_sort_frequency: Frequency
-  kwic_being_generated: The concordance is being generated. Please check back in 5-10 minutes.
-  error_generating_concordance: An error occurred while generating the concordance. Please try again later.
+  kwic_being_generated: The concordance is being generated. Please check back in 5-10
+    minutes.
+  error_generating_concordance: An error occurred while generating the concordance.
+    Please try again later.
   pby_volumes: Project Ben-Yehuda Volumes
   pby_volumes_description: Volumes published by Project Ben-Yehuda
   x_volumes: "%{x} volumes"
@@ -428,21 +604,24 @@ en:
   whatsnew_in_periodicals: What's new in periodicals?
   periodical_genres: Genres in periodicals
   and_n_more: and %{n} more
-  duplicate_works_report: "Duplicate Works Report - Different Translations to be Merged Under a Single Work"
-  duplicate_works_explanation: "The following report shows expressions by different translators with the same title, whose works are by the same author. These expressions are very likely different translations that should be merged under a single Work record."
-  no_duplicate_works_found: "No duplicate works found"
-  select_target_work: "Select target work"
-  merge_into_selected: "Merge into selected"
-  confirm_merge_works: "Are you sure you want to merge these works? This action cannot be undone."
-  works_merged_successfully: "Works merged successfully"
-  work_not_found: "Work not found"
-  merge_failed: "Merge failed: %{error}"
-  work_id: "Work ID"
-  translators: "Translators"
-  expression_title: "Expression Title"
-  aboutnesses: "Aboutnesses"
-
-  # External link types (enum values for ExternalLink.linktype)
+  duplicate_works_report: Duplicate Works Report - Different Translations to be Merged
+    Under a Single Work
+  duplicate_works_explanation: The following report shows expressions by different
+    translators with the same title, whose works are by the same author. These expressions
+    are very likely different translations that should be merged under a single Work
+    record.
+  no_duplicate_works_found: No duplicate works found
+  select_target_work: Select target work
+  merge_into_selected: Merge into selected
+  confirm_merge_works: Are you sure you want to merge these works? This action cannot
+    be undone.
+  works_merged_successfully: Works merged successfully
+  work_not_found: Work Not Found
+  merge_failed: 'Merge failed: %{error}'
+  work_id: Work ID
+  translators: Translators
+  expression_title: Expression Title
+  aboutnesses: Aboutnesses
   wikipedia: Wikipedia Entry
   blog: Blog Posts and Articles
   youtube: Videos
@@ -463,7 +642,8 @@ en:
     description_placeholder: For example - 'Wikipedia entry', 'Article on...'
     submit: Submit Proposal
     cancel_and_back: Cancel and Go Back
-    success: Thank you! Your proposal has been received and will be reviewed by our editors
+    success: Thank you! Your proposal has been received and will be reviewed by our
+      editors
     error: An error occurred while submitting your proposal
     missing_url: Please enter a URL
     missing_linktype: Please select a link type
@@ -488,7 +668,7 @@ en:
     rejection_note_prompt: Enter a note for the proposer (optional)
     no_submitted_links: No pending link proposals
     open_link: Open Link
-    track_record: '%{approved}/%{total} approved (%{percentage}%)'
+    track_record: "%{approved}/%{total} approved (%{percentage}%)"
     linkable_types:
       authority: Author
       manifestation: Work
@@ -498,10 +678,2089 @@ en:
     linked_to: 'Link for:'
     approved:
       subject: Your link proposal was approved
-      intro: 'Your proposed link ("%{description}" - %{url}) has been approved and added to the site.'
+      intro: Your proposed link ("%{description}" - %{url}) has been approved and
+        added to the site.
       thanks: Thank you for your contribution to Project Ben-Yehuda!
     rejected:
       subject: Your link proposal was not approved
-      intro: 'Your proposed link ("%{description}" - %{url}) has been reviewed and was not approved.'
-      moderator_note: "Editor's note:"
+      intro: Your proposed link ("%{description}" - %{url}) has been reviewed and
+        was not approved.
+      moderator_note: 'Editor''s note:'
       thanks: Thank you for your interest in Project Ben-Yehuda.
+  BY blog: Project Ben-Yehuda Blog References
+  TBD: "(Future)"
+  WEM: Bibliographic Entities
+  Wikipedia: Wikipedia Entry
+  YouTube: Watch Performance of the Work
+  a_date: Date
+  about: About the Project | About
+  about_amuta: About the Association for Computerization of Hebrew Literature
+  about_author_in_blog: About %{author} in the Network Journal
+  about_pby_learn_more: Read more about the project and how to help
+  about_pby_text: 'Project Ben-Yehuda is a volunteer initiative creating electronic
+    editions of Hebrew literary treasures. Founded in 1999, the project provides free,
+    ad-free access to works whose rights have expired or for which publication permission
+    has been granted, building a digital library of Hebrew works in all genres: prose,
+    poetry, articles and essays, fables, memoirs and letters, research, translation,
+    and dictionaries.'
+  about_pby_title: What is Project Ben-Yehuda?
+  about_sort_and_filter: What is filtering?
+  about_the_author: About the Author
+  about_the_author_on_the_blog: Blog Posts
+  about_the_project: About Project Ben-Yehuda
+  accept_conversion_and: Accept text conversion and
+  acceptance_rate: Acceptance Rate
+  accepted: Accepted
+  access_control: Access Level
+  actions: Actions
+  activate_bit: Add Role
+  add_aboutnesses: Add Topics to Work
+  add_all_images: Paste All Images
+  add_angled_brackets: Add Poetry Markup to Section
+  add_authors_to_filter: Add Selected Authors to Filter
+  add_bookmark: Add Bookmark
+  add_curated_text: Add Curated Text
+  add_external: Add External Topic to Database
+  add_fresh_works: All Works Not Yet Linked from the Page
+  add_from_browse_view: First select a list of works (by genre, period, or all works)
+    through the main menu, and from the list screen you can add many works at once.
+  add_holding: "+Copy --->"
+  add_image: Add Image
+  add_linked_person: Add Linked Person
+  add_person: Add Person from Database as Topic
+  add_person_in_role: 'Add %{author} in role: '
+  add_publication: "+Item --->"
+  add_recommendation: Add Recommendation
+  add_stanza_break: Add Stanza Break
+  add_tag: Add Tag
+  add_this_work_to_anthology: Add This Work
+  add_url: Add the Link
+  add_via_autocomplete: Add Linked Person/Organization via Autocomplete
+  add_work: Add Work from Database as Topic
+  add_work_link: Add the Work
+  add_works_to_anthology: Add Works from Database
+  added_on: Added on
+  added_to_group: Added to Group
+  additional: Additional
+  additional_actions: Additional Actions...
+  additional_content: 'Additional Content:'
+  additional_items: Additional Items
+  additional_options: Additional Options
+  additional_proof_explanation: 'Here is a note from the editor who handled your proofreading
+    suggestion: "%{explanation}"'
+  additional_tagging_explanation: 'Here is a note from the editor who handled your
+    tagging suggestion: "%{explanation}"'
+  additional_translations: Additional Translations of the Work
+  additional_warning_explanation: 'Here is a note from the editor who identified the
+    issue: "%{msg}"'
+  adjacent_or_similar_tags: Adjacent or Similar Tags
+  adjacent_tags: Adjacent Tags
+  admin_actions: Admin Actions
+  admin_edit: Edit
+  administration: Administration
+  advanced_search: Advanced Search
+  aleph: Aleph System
+  all_authors: All Authors
+  all_recommendations: All Recommendations
+  all_sources: All Sources
+  all_works: All Works
+  allwriters: All Writers
+  already_done: Already Handled
+  already_has_toc: Author Page Already Exists
+  already_in_toc: "' [Already Linked]"
+  alternate_titles: Alternative Titles (can be separated by semicolon and space)
+  analyze: Diagnose
+  analyze_all_unknown: Diagnose All Undiagnosed Files (may take a long time)
+  analyzed: Diagnosed
+  ancient: Ancient Times and Piyyut
+  ancient_greek: Ancient Greek
+  ancient_long: Ancient Times and Piyyut (up to 900 CE)
+  announcement: Announcement
+  another_feature: Show Another Featured Item
+  anth_access_tt: 'Select access level: who can access the anthology'
+  anth_add_curated_tt: Add curated text of your own such as cover, notes, homework,
+    etc.
+  anth_add_work_tt: Add the work from which the anthology window was opened
+  anth_add_works_tt: Add works from the works list page
+  anth_clone_tt: Create a copy of the anthology
+  anth_delete_tt: Delete the anthology
+  anth_download_tt: Download the anthology as an e-book or other file
+  anth_drag_tt: Drag area to reorder items in the anthology
+  anth_fold_tt: Minimize anthology window
+  anth_grows: The anthology is growing!
+  anth_print_tt: Print the anthology
+  anth_share_tt: Share the anthology
+  anth_show_tt: Show the anthology in full
+  anth_text_deletion: Delete Item from Anthology
+  anth_text_deletion_p1: 'This action will irreversibly delete the item:'
+  anth_text_deletion_p3: from the current anthology
+  anth_x_works_added: "%{x} works added to the end of the anthology. You can change
+    their position by dragging."
+  anth_x_works_skipped: "%{x} of the works you selected were not added to the anthology
+    because they already appear in it."
+  anthologies: Anthologies
+  anthology: Anthology
+  anthology_cloned: The anthology was cloned and a personal copy was created at private
+    access level
+  anthology_explanation: is an advanced version of a reading list and is mainly intended
+    for sharing with your readers so they can consume the texts included in it. It
+    allows precise internal arrangement of each work according to your preference
+    and also adding enriching text segments written by you - such as a cover page,
+    notes, highlights, etc.
+  anthology_name: Anthology Name
+  api_description: Organizational affiliation description and main usage purposes
+  api_email: Your Email Address
+  api_key: API Key
+  api_keys_mailer:
+    key_created:
+      subject: Your API Key
+    key_created_to_editor:
+      subject: New API Key Created
+  apply_filters: Apply This Filter!
+  apply_mobile_filters: Apply Selected Filter
+  approve: Approve
+  approve_and_next: Approve and Move to Next Item
+  approve_and_review_taggings: Approve and Review Taggings
+  arabic: Arabic
+  aramaic: Aramaic
+  assign_proofs: Assign More Proofs to Me
+  assignee: Assigned to
+  associate_with_viaf: Link the Folder to This VIAF Record
+  associated_persons: Linked Persons
+  associated_with_viaf: Linked to Record Number %{viaf} in VIAF Database
+  author: Author
+  author_details: Author Details
+  author_download_tt: Download the author's works list as a file
+  author_f: Author (female)
+  author_gender: Author Gender
+  author_liked_tt: I like the author
+  author_list: Authors List
+  author_name: Author Name
+  author_names: Author Name(s)
+  author_not_available: Author page is not available at this time.
+  author_or_translator_gender: Author or Translator Gender
+  author_print_tt: Print the author's works list
+  author_table_of_contents: Author Page
+  author_x: 'Author: %{x}'
+  authority_name: Author Name
+  authority_records_between_dates: Authors by Entity Creation Date
+  authors: Authors
+  authors_browsing_intro_html: "<p>The list contains both Hebrew and foreign authors
+    whose works are available in the project in Hebrew translation. Advanced filtering
+    operations can be activated to narrow the list by simultaneously selecting characteristics:
+    genre, period, gender, and dates.</p><p><b>To activate advanced filtering options,
+    click the toggle in the top bar.</b></p>"
+  authors_browsing_intro_paging: The authors list matching your criteria contains
+    %{total} results. Due to its length, the list is divided into sub-pages containing
+    100 results each. You can browse the list using the controls above and below it,
+    allowing page navigation and locating the first letter of the author's name.
+  authors_by_tag: Authors by Tag
+  authors_in_the_project: Authors in the Database
+  authors_list: Authors List
+  authors_neutral: Authors
+  authors_neutral_en: authors
+  authors_of: Authors of
+  authors_page: Authors Page
+  authors_select_filter: Filter by Author - Multiple Selection
+  authors_tagged_with_this: Authors Tagged "%{tag}"
+  authors_totals_p1: Our database contains %{total} Hebrew authors, of which %{pd}
+    are public domain
+  authors_totals_p2: and %{permission} are copyrighted and presented with permission
+    from rights holders.
+  authors_without_works: Authors Without Works on Site
+  authors_xx: 'Authors: %{xx}'
+  autosuggest_tags: Suggest a Tag for Me
+  available_scans: Available Scans for Upload
+  awaiting_approval: Awaiting Approval
+  awaiting_first: Awaiting First Work Upload
+  back_to_bib_workshop: Back to Bibliographic Workshop
+  back_to_dashboard: To Activity Center
+  back_to_homepage: To Homepage
+  back_to_public_view: Back to Reader View
+  back_to_top: To Top of Page
+  background: Background
+  bad_encoding: Encoding Error
+  basic_details: Basic Details
+  beginning_abc: Initial Selection
+  below_is_your_original_email: Below is the text of the email you sent us at the
+    time, for reference.
+  bib_records: Bibliographic Records
+  bib_scope: Scope Code
+  bib_sources: Bibliographic Sources
+  bib_stats: Known %{pubs} publications and %{holdings} inventory records. Of the
+    publications, %{obtained} acquired and not yet scanned, %{scanned} scanned and
+    not yet uploaded to task system, %{uploaded} uploaded to system, %{irrelevant}
+    marked as irrelevant, %{copyrighted} still copyrighted without publication permission,
+    and of the inventory records, %{missing} are actually missing. The bibliography
+    of %{authors_done} authors is complete, and %{authors_todo} authors remain.
+  bib_vid: VID Code
+  bib_workshop: The Bibliographic Workshop
+  bibliography: Bibliography
+  birth_year: Birth Year
+  blazer_system: Blazer System for Database Querying
+  block_user: Block User
+  blog_url: https://benyehuda.org/blog/
+  body: Body Text
+  bookmark: Bookmark
+  bookmark_found: You left a bookmark in this work. What to do with it?
+  bookmark_mode_begin: Bookmark mode activated. To place the bookmark, click on the
+    paragraph you want to mark.
+  bookmark_placed: Bookmark saved.
+  bookmark_removed: Bookmark removed
+  bookmark_tt: Add bookmark to this text
+  bookshelf: Bookshelves
+  bookshelves: Reading Lists
+  bulgarian: Bulgarian
+  by: By
+  by_abc: In Alphabetical View
+  can_proceed: Can Proceed
+  cancel_focus_on_this_tag: Cancel Focus on This Tag
+  cannot_create_frbr: Cannot create bibliographic entities. Perhaps because no author
+    has been linked yet.
+  cards: Each Paragraph in a Box
+  cards_with_shortcuts: Each Paragraph in a Box with Shortcuts Dropdown
+  careful_with_splits: " Warning! \\n\\nClicking this button again will create entities
+    for all the works split above! \\n\\nCarefully check that the works have been
+    split properly, and that they all have a valid title. If this is not the case,
+    correct the titles or split positions. \\n\\nAlso check that they all belong to
+    the same genre and the same author and translator. If not, split the file *externally*
+    (in Word or something) into uniform units in terms of genre and linked persons.
+    \\n\\nNow that you've read this warning, another click on the button will activate
+    the split and create catalog entities."
+  catalog_dashboard: Works Catalog
+  catalog_title: Project Ben-Yehuda Catalog
+  catalogue: Catalog
+  change_or_merge: Change / Merge
+  chapters_list: 'Chapters List:'
+  chinese: Chinese
+  choose_font_size: What size do you prefer?
+  choose_sharing_medium: Which service to share on?
+  chopN_html: Chop %{n} <b>first</b> lines (warning!)
+  chop_and_update_title: Update title according to first line, and chop it
+  choplastN_html: Chop %{n} <b>last</b> lines (warning!)
+  cite: Citation
+  cite_instructions_html: 'You can copy and paste the citation according to the required
+    format.<br /><br /><b>Note: </b>Project Ben-Yehuda is an internet resource and
+    should be cited accordingly, not according to the printed edition on which we
+    based.<br />'
+  cite_tt: Create academic citation for this edition
+  clear: Clear
+  clear_bibs: Reset Results
+  click_to_select: Click to Select
+  clone_this_anthology: Clone This Anthology
+  close: Close
+  close_and_return_to_page: Close and Return to Page
+  close_highlights: Cancel Result Highlighting
+  coll_drag_tt: Drag area to reorder items in collection
+  collection_circular_reference: Collection linked to itself!
+  collection_item_type: Item Type
+  collections_abc: 'Titles: Alphabetical'
+  collections_and_pubdates_asc: 'Titles and Publication Dates: Oldest to Newest'
+  collections_migration:
+    index:
+      explanation: 'Below is a list of authors by number of works in ascending order,
+        who still have a manual author page:'
+      title: Process of Converting Author Pages to Automatic Pages with Titles
+    migrate:
+      migrated_html: <a href="%{link}" style="color:blue; text-decoration:underline;
+        cursor:pointer;">The new author page has been activated!</a>
+    person:
+      explanation: Next to each title on the existing author page there is a create
+        title button.
+      mark_migrated: Finish conversion and activate new author page for this author
+      title: Author Page Conversion
+  comments: Comments
+  confirm: Confirm!
+  confirm_anth_text_deletion: Confirm Item Deletion from Anthology
+  confirm_approve: Please confirm approval
+  confirm_block: Please confirm blocking
+  confirm_clone: Please confirm anthology cloning
+  confirm_delete_collection_item: Please confirm deletion of item from collection.
+    The item itself (if not a placeholder) will remain in the catalog, just not in
+    this collection.
+  confirm_escalation: Confirm Escalation for Additional Review
+  confirm_hide: Please confirm hiding
+  confirm_merge_tag: Confirm Tag Merge
+  confirm_merge_tagging: Confirm Tagging Transfer
+  confirm_reject: Please confirm rejection
+  confirm_warn: Please confirm warning
+  confirmed: Confirmed
+  confirmed_person_as_author: Author %{author} confirmed as author of this work.
+  confirming: Confirming...
+  contact_body: Message Details
+  contact_body_limit: Up to 300 words
+  contact_email: Email
+  contact_for_volunteering_prefix: 'If you are interested in volunteering, please
+    fill out '
+  contact_form_email_greeting: 'A contact form was received. Here are the details:'
+  contact_form_title: Contact Project Ben-Yehuda
+  contact_instructions: ' Before contacting us, please read the <a href="/page/about">About
+    the Project</a> page which contains a lot of information, questions and answers,
+    perhaps also to your question.'
+  contact_name: Name
+  contact_phone: Phone (optional)
+  contact_send: Send Message
+  contact_thanks_p1: Thank you very much for your message!
+  contact_thanks_p2: We will review it and be in touch soon.
+  contact_topic: Message Topic
+  contact_topic_content: Site Content
+  contact_topic_copyright: Copyright
+  contact_topic_donation: Financial Donation
+  contact_topic_other: Other Topic
+  contact_topic_volunteer: Desire to Volunteer
+  contact_tt: Contact the project team
+  contact_url: "/page/about"
+  contact_us: Contact Us
+  contact_volunteer_form: Volunteer Form
+  content: Content
+  contributor: Contributor (male)
+  contributor_f: Contributor (female)
+  conversion_actions: Conversion Actions
+  conversion_dashboard: Conversion Center
+  conversion_stats_html: Statistics -- %{total_texts} total old files, %{total_known}
+    files diagnosed, %{total_images} with images, %{total_footnotes} with footnotes,
+    %{total_tables} with tables, %{total_nikkud_full} with full vocalization, %{total_nikkud_some}
+    with partial vocalization. <p /> Other states -- %{total_badenc} with encoding
+    error, %{total_fileerr} with other file error, %{total_assigned} files assigned
+    to converters,%{total_parsed} files parsed, %{total_uploaded} files uploaded directly,
+    %{total_superseded} files replaced by direct upload, %{total_accepted} files approved,
+    %{total_published} published in catalog, %{total_manual} files awaiting manual
+    conversion.
+  conversion_verification: Refinement of Works After Conversion
+  conversion_verification_report: Works with Text Not Yet Refined
+  conversion_verified: Text Refined?
+  convert_to_manual_toc: Replace with Manual Author Page
+  converted_output: Automatic conversion result of old file %{fname}
+  convs_processed_so_far: You have processed %{done} works so far. In total, about
+    %{percent_done} of the database is refined.
+  copied_to_clipboard: Copied to Clipboard!
+  copy_description: The anthology, including the selected works and also custom texts
+    (if created), will be copied in its entirety to a new anthology
+  copy_of: 'Copy of '
+  copy_to_clipboard: Copy to Clipboard
+  copyright_status: Copyright Status
+  copyrighted: Still Protected
+  country: Country
+  create_new_anthology: Create New Anthology...
+  create_new_list_or_anthology: Create New Reading List / Anthology
+  create_scanning_task: Create Scanning Task
+  created_date_asc: Creation Date - Oldest to Newest
+  created_date_desc: Creation Date - Newest to Oldest
+  created_frbr: Bibliographic Entities Created!
+  created_toc: Author page created with empty template
+  creation: Creation
+  credit_section: Credits
+  crowdsourcing: The Work and Craft
+  crowdsourcing_assign_more_work: Assign Another Task
+  crowdsourcing_continue_work_on: Continue work on %{topic}
+  crowdsourcing_intro: Project Ben-Yehuda is built by volunteers like you! Here are
+    some tasks where we need help. Each task has detailed instructions, and everything
+    is without commitment and without time limits.
+  crowdsourcing_not_crowdsourcer: Want to help us with work and craft? Log in (top
+    left) with a Google account and contact us (through the About the Project menu),
+    and we'll get started.
+  crowdsourcing_populate_edition: Add Publication Details to Works
+  curate_featured_content: Curate Featured Content
+  curated_text: Curated Text
+  curated_text_bit: Curated Text
+  curated_text_bits: Curated Texts
+  curated_text_title: Text Section Name
+  current_editing_files: Current Technical Edits
+  current_image: Current Image
+  current_toc: Current Author Page
+  currently_reading: Currently Reading
+  czech: Czech
+  danish: Danish
+  dashboard: Activity Center
+  date:
+    formats:
+      default: "%m/%d/%Y"
+    order:
+    - month
+    - day
+    - year
+  dbirth: Birth Date
+  dcreated: Created
+  ddeath: Death Date
+  deactivate_bit: Cancel Role
+  death_year: Death Year
+  default: Default
+  default_copyright_for_protected_texts: Default State for Protected Texts
+  default_page_title: Project Ben-Yehuda
+  delete_description: The anthology will be completely deleted, the works will of
+    course remain available in the project but any custom text included in it will
+    be deleted without possibility of recovery
+  delete_link: Remove Link
+  delete_photo: Delete Photo (permanently!)
+  desktop_missing_entries: "[%{x} missing entries]"
+  dict_help_x_entries: "<p>Uploading Eliezer Ben-Yehuda's dictionary to the web is
+    a long process still in progress. So far %{x} entries have been uploaded to the
+    Project Ben-Yehuda site. <p/>The entries are displayed as close to their original
+    form as possible, preserving the dictionary's unique historical format.<p/>This
+    page shows the list of entries, where you can choose to display only entry names
+    or a list of entries including summaries of entry definitions.<p/>Due to its length,
+    the list is divided into sub-pages containing up to one hundred entries each.<p/>You
+    can browse the list using the controls above and below the list, allowing page
+    navigation and locating the first letter of each entry.<p/>In addition, filtering
+    operations can be activated to narrow the list by selecting various characteristics.<p/>For
+    simplicity, the page initially loads without filter controls, and only after the
+    user chooses will the filter control panel appear instead of this explanatory
+    text.<p/>To activate filtering options, you can toggle the switch in the top bar."
+  dict_list: Entry List
+  dict_snippets: Entry Summaries
+  dictionary_definition: Dictionary Entry
+  dictionary_entries_en: dictionary entries
+  dir_not_associated: Old folder not linked to a person
+  disabled: Disabled
+  display: 'Display:'
+  display_anthology_description: The anthology, including all texts of selected works
+    and also custom texts (if created), will be displayed in full on a separate page
+    that will open in a new tab
+  display_text: Display Text
+  doc_format: Document for Word Software
+  docx_too_large: Not enough memory to convert the file. It must be split or converted
+    manually.
+  don_banner_body_html: The site serves the public of Hebrew literature lovers and
+    students, and will <b>always remain freely accessible without ads!</b> Scanning,
+    typing, proofreading, and technical editing are done voluntarily, but we must
+    pay for hosting and software development – and here we need your help.
+  don_banner_head_happy: We're glad you've returned to Project Ben-Yehuda!
+  don_footer_desktop_html: So far we have uploaded %{total_works} works by %{total_authors}
+    authors to the database, in Hebrew and in translation from %{total_langs} languages.
+    We have also uploaded %{total_headwords} dictionary entries. The vast majority
+    of work is done voluntarily, but we need to fund hosting and storage services,
+    software development, user interface design, and graphic design. <br /> <br />
+    Thanks to public donations we recently added the ability to create anthologies
+    that can be shared with friends or students, <a href="/page/api">an API interface
+    for automated site access</a>, and we are working on many other developments,
+    such as adding Hebrew journals, including contemporary ones. <br /><br /> We would
+    appreciate if you could help us continue to serve you!
+  don_footer_mobile_text: The vast majority of work is done voluntarily, but we need
+    to fund hosting and storage services, software development, user interface design,
+    and graphic design. We would appreciate if you could help us continue to serve
+    you!
+  don_footer_title: We're glad you're using the Project Ben-Yehuda site
+  donate: Donation
+  donate_en: donate
+  donate_money: Financial Donation
+  donate_p1_html: All typing, proofreading and editing work in the project is done
+    <b>voluntarily without compensation</b>. Nevertheless, we hire software development,
+    design, and user interface design services from contractors, and for this we raise
+    donations.
+  donate_p2_html: Your donation funds are transferred to the account of the Association
+    for Computerization of Hebrew Literature (a registered nonprofit), which we established
+    to support the project, and will be used only for these purposes.
+  donate_sidebox_html: We need you. We commit that the project site will always remain
+    free to use and clean of ads.<br/><br/>However, we have development, management
+    and server hosting expenses, and therefore need your support, if possible for
+    you.
+  donate_title: Financial Support for the Project
+  donate_tt: To financial donation page for the project
+  donation: Financial Donation
+  dont_show_again: No need to show again
+  download: Download
+  download_description: The anthology, including all texts of selected works and also
+    custom texts (if created), will be saved as a separate standalone file in the
+    format of your choice
+  download_disabled: We do not have permission to allow downloading these works collectively.
+  download_ebook: Download E-book
+  download_footer_html: The above text[s] were produced by volunteers of <a href="https://benyehuda.org/">Project
+    Ben-Yehuda on the Internet</a>.  <br />Everything is always available at the following
+    address:<br /><a href="%{url}">%{url}</a>
+  download_instructions: Please select the desired file format. The file will download
+    immediately upon clicking the download button and will be saved in the download
+    folder defined in your browser.
+  download_to_file: Save Text to File
+  dpublished: Published
+  duploaded: Uploaded to Site
+  dutch: Dutch
+  edit_bib_source: Edit Bibliographic Source
+  edit_catalog: Edit Catalog
+  edit_curated_text: Edit Curated Text
+  edit_markdown: Edit Text
+  edit_markdown_in_new_window: Edit Text in New Tab
+  edit_people: Edit Persons
+  edit_person: Edit Person Record
+  edit_sitenotice: Manage Site Notices
+  edit_toc: Edit Author Page
+  edited_by: Edited by
+  editing_dir: Editing Old Folder
+  editing_or_compilation: Editing/Compilation
+  edition_details: Edition Details and Additional Information
+  editor: Editor (male)
+  editor_actions: Editor Actions
+  editor_bits: Editor Roles
+  editor_f: Editor (female)
+  editors: Edited by
+  email_footer_html: "Best regards, Project Ben-Yehuda Team.\n\nYou might find interest
+    in Project Ben-Yehuda's Facebook page: https://www.facebook.com/projectbenyehuda
+    \n\n Or Project Ben-Yehuda's YouTube channel: https://www.youtube.com/user/ProjectBenYehuda/videos?flow=grid&view=0"
+  empty_collection: Collection Without Items
+  empty_markdown_template: An empty file was created. Paste text here instead of these
+    words.
+  empty_work_title_or_no_content: Work Without Title or Empty of Content
+  enabled: Enabled
+  english: English
+  enlightenment: The Enlightenment
+  enlightenment_long: The Enlightenment (1700 to 1880)
+  entries: Entries
+  epub_format: For E-readers Including Kindle
+  error: Error
+  error_loading_context: Error Loading Context
+  escalate_to_editor: Escalate to Chief Editor for Decision
+  escalated: Escalated for Additional Review
+  etext: E-book
+  excited_new: New!
+  existing_aboutnesses: Existing Topics
+  existing_tags_for_this_item: 'Existing tags for this item:'
+  existing_title: Existing Title
+  explain_rejection: Please explain the reason for rejection
+  explain_up_to_10: You can filter the works list by multiple authors simultaneously
+    by selecting them from the list. Filtering is limited to up to 10 authors simultaneously.
+  expression_details: Expression Details
+  expressions: Expressions
+  external_links: External Links
+  facebook: Facebook
+  facebook_url: https://www.facebook.com/projectbenyehuda/
+  featured_author: Featured Author
+  featured_authors_management: Featured Authors Management
+  featured_content_body: Recommendation Content
+  featured_content_heading: Featured Content Management
+  featured_item: Featured Work
+  female: Female
+  file_can_be_skipped: You can also skip file upload and create a record with empty
+    text, for example to paste text.
+  file_error: File Error
+  filter_by: 'Filter by: '
+  filter_langs: Filter Foreign Languages
+  filter_state: Filter State
+  filtered: Filtered
+  filters_loading: Loading filters...
+  find_in_text: Find in Text
+  find_work_by_author: Find work by %{author}
+  finnish: Finnish
+  first_author: Author (not translator; you can add other persons later, in catalog)
+  first_last_name: First / Last Name
+  first_manifestation_date: First Creation Date
+  first_manifestation_title: First Work Title
+  first_manifestations_between_dates: Authors Uploaded to Database (by first creation
+    date)
+  folder_list: Folder List
+  font_size: Font Size
+  footnotes: Footnotes
+  for_pasting: Text for Pasting
+  for_publishers_project: For works uploaded as part of the publishers' project only
+  for_tag: For tag "%{tag}"
+  frbr_ready: Bibliographic Entities Ready!
+  frbrization_error: Error During Entity Creation!
+  frbrize: Create Catalog Entities
+  french: French
+  from: By
+  from_lang: From
+  from_pby_and_available_at: From Project Ben-Yehuda. Available at
+  from_project_ben_yehuda: From Project Ben-Yehuda
+  fromdate: From Date
+  full: Full
+  full_collection_available: All items of this %{ctype} are available below
+  full_mode: Full View
+  general: General
+  generated_toc: Raw Author Page from Bibliographic Workshop
+  generated_toc_explanation: 'Note: What''s in this box is not saved anywhere unless
+    you copy it to the regular edit box below.'
+  genre: Genre
+  genres: Genres
+  genres_and_types: Genres and Types
+  georgian: Georgian
+  german: German
+  get_bibs: Search Bibliographic Records by Author
+  get_bibs_instructions: Enter author name (can be partial; if full, last name, first
+    name), and click search.
+  go_to_bookmark: Go to Bookmark
+  googlebooks: Google Books
+  greek: Greek
+  group_in_collections: Group in Collections
+  handle_proofs: Handle Proofs
+  handle_recommendations: Handle Recommendations
+  hate_ads: Love Project Ben-Yehuda?
+  have_read: I Read
+  hebrew: Hebrew
+  hebrewbooks: HebrewBooks
+  hello_anon: Hello!
+  hello_x: Hello %{name}
+  highlighted_passage: Highlighted Passage
+  'false': 'False'
+  highlights:explanations: Highlighted Passages
+  holdings: Inventory
+  homepage: Homepage
+  how_to_help: Volunteer at the Project
+  html_dirs_list: List of Old Folders
+  html_file_published: The file from the old system has now been published in the
+    new system and added to the system catalog!
+  html_files_list: List of Files for Conversion
+  html_format: Web Page for Browser Viewing
+  hungarian: Hungarian
+  i_understand_and_accept: I understand and agree to these principles.
+  i_want_to_suggest_a_tag: I want to suggest a tag
+  icelandic: Icelandic
+  identifier: Identifier
+  if_you_know_viaf_id: If you know the VIAF ID, enter it here
+  illustrated_by: Illustrated by
+  illustrator: Illustrator (male)
+  illustrator_f: Illustrator (female)
+  image_alt: Image
+  image_filename: Image File Name
+  images: Images
+  import: Import
+  in_anthology: 'In Anthology:'
+  in_bookshelf: 'In Reading List:'
+  in_collection: In collection %{coll}
+  in_featured_collections: In Featured Collections
+  in_main_catalog: In Main Catalog
+  include_toc: Include Table of Contents
+  incongruous_copyright_count: "%{count} works with probable incongruous copyright"
+  indent_paragraph: Indent Paragraph
+  infoboxes: About Boxes
+  ingested: Ingested
+  initial_upload_succeeded: Text file uploaded successfully. Now complete the cataloging
+    details.
+  insert_new_item: Add New Item
+  insert_new_placeholder_item: Add Placeholder
+  internal_recommendation: Internal Recommendation
+  intro_teaser: Introduction Teaser
+  involved_authority_added: Linked person added
+  involved_authority_removed: Linked person removed
+  involved_authority_role_changed: Role changed
+  involved_authority_updated: Linked person updated
+  irrelevant_to_project: Not Relevant to Project
+  is_not_a_public_bookshelf: This reading list is private
+  issue_number: Issue Number
+  issues: Issues
+  italian: Italian
+  item: Item
+  item_type: Item Type
+  items: Items
+  ? |-
+    japane
+
+    se
+  : Japanese
+  kovetz: Collection
+  kudos: Thank You!
+  label: Label
+  labels: Labels
+  lang: Language
+  language: Language
+  last_updated: Last Updated
+  latest: Latest
+  latest_added_works: Latest Added Works
+  latest_dictionary: Latest Dictionary Entries
+  latest_periodical_updates: Latest Periodical Updates
+  latest_proof_update: Latest Proof Update
+  latest_uploaded: Latest Uploaded
+  latin: Latin
+  latvian: Latvian
+  lccn: LCCN
+  leave_bookmark: Leave Bookmark
+  legacy_file_upload: Legacy File Upload
+  letters_all: All Letters
+  like_author_tt: I like this author
+  like_manifestation_tt: I like this work
+  liked: Liked
+  likes_for_this_author: Likes for this author
+  likes_for_this_work: Likes for this work
+  limited_copyright: Limited Copyright
+  link: Link
+  link_author_to_viaf: Link Author to VIAF
+  link_persons_and_publish: Link Persons and Publish
+  linked_authorities: Linked Authorities
+  linked_person: Linked Person
+  links: Links
+  list_collection_items: List Collection Items
+  list_html_dirs: List Old Folders
+  list_html_files: List Files for Conversion
+  list_type: List Type
+  listed_as_incongruous: Listed as Incongruous
+  lithuanian: Lithuanian
+  loading: Loading...
+  locale: Language
+  lock: Lock
+  locked: Locked
+  locked_by: Locked by %{user}
+  login: Login
+  login_to_create_list: Login to Create List
+  logout: Logout
+  long_markdown: Long Markdown
+  m_dash: Em Dash
+  macedonian: Macedonian
+  made_public_on: Made Public on
+  male: Male
+  manage: Manage
+  manage_anthology_list: Manage Anthology
+  manage_authorities: Manage Authorities
+  manage_bookshelf: Manage Reading List
+  manage_impressions: Manage Impressions
+  manage_involved_authorities: Manage Linked Persons
+  manage_publications: Manage Publications
+  manage_recommended_works: Manage Recommended Works
+  manage_toc_select: Select author for table of contents management
+  manifestation_authors: Work Authors
+  manifestation_cloned: Work Cloned
+  manifestation_count: Works Count
+  manifestation_created: Work Created
+  manifestation_deleted: Work Deleted
+  manifestation_details: Work Details
+  manifestation_genre: Work Genre
+  manifestation_likes: Work Likes
+  manifestation_markdown: Work Markdown
+  manifestation_new: New Work
+  manifestation_not_found: Work Not Found
+  manifestation_orig_lang: Work Original Language
+  manifestation_published: Work Published
+  manifestation_title: Work Title
+  manifestation_type: Work Type
+  manifestation_unpublished: Work Unpublished
+  manifestation_updated: Work Updated
+  manifestations_authored: Works Authored
+  manifestations_count: Works Count
+  manifestations_edited: Works Edited
+  manifestations_illustrated: Works Illustrated
+  manifestations_list: Works List
+  manifestations_translated: Works Translated
+  manually_fixed: Manually Fixed
+  many_genres: Various Genres
+  markdown: Markdown
+  markdown_source: Markdown Source
+  matching: Matching
+  medieval: Medieval
+  medieval_long: Medieval (900 to 1700)
+  merge: Merge
+  merge_duplicate_works: Merge Duplicate Works
+  merge_success: Successfully Merged
+  merge_tags: Merge Tags
+  merge_target_tag: Target Tag (will absorb the other tag)
+  merge_this_tag_into: 'Merge this tag into:'
+  merged: Merged
+  merged_into: Merged into %{target}
+  metadata: Metadata
+  migrated: Migrated
+  minimal: Minimal
+  moderate: Moderate
+  moderation: Moderation
+  moderation_explanation: Moderation Explanation
+  modern: Modern
+  modern_long: Modern (1880 to Present)
+  more: More
+  more_from_this_author: More from this Author
+  more_info: More Information
+  more_options: More Options
+  most_liked: Most Liked
+  most_read: Most Read
+  multi_markdown: Multiple Markdown Texts
+  multi_option: Multiple Option
+  multiple: Multiple
+  my_account: My Account
+  my_anthologies: My Anthologies
+  my_bookshelves: My Reading Lists
+  my_profile: My Profile
+  name: Name
+  narrative_prose: Narrative Prose
+  navigation: Navigation
+  n_dash: En Dash
+  need_approval: Need Approval
+  needs_completion: Needs Completion
+  never: Never
+  new: New
+  new_additions: New Additions
+  new_anthology: New Anthology
+  new_author: New Author
+  new_authority: New Authority
+  new_bookshelf: New Reading List
+  new_collection: New Collection
+  new_dict_entry: New Dictionary Entry
+  new_expression: New Expression
+  new_external_link: New External Link
+  new_holding: New Holding
+  new_ingestible: New Ingestible
+  new_involved_authority: New Linked Person
+  new_item: New Item
+  new_manifestation: New Work
+  new_publication: New Publication
+  new_recommendation: New Recommendation
+  new_tag: New Tag
+  new_tag_name: New Tag Name
+  new_user: New User
+  new_window: New Window
+  new_work: New Work
+  newest_first: Newest First
+  next: Next
+  nikkud: Vocalization
+  nikkud_full: Full Vocalization
+  nikkud_some: Partial Vocalization
+  no_authorities_for_this: No authorities for this
+  no_image_url: No Image URL
+  no_links_approved_yet: No Links Approved Yet
+  no_results: No Results
+  non_public_domain: Not Public Domain
+  norwegian: Norwegian
+  not_a_person: Not a Person
+  not_applicable: Not Applicable
+  not_available: Not Available
+  not_copyrighted: Not Copyrighted
+  not_found: Not Found
+  not_implemented: Not Implemented
+  not_ingested_yet: Not Ingested Yet
+  not_locked: Not Locked
+  not_published: Not Published
+  not_set: Not Set
+  note: Note
+  notes: Notes
+  notice: Notice
+  notifications:
+    block:
+      subject: Notifications Block Subject
+    contact_form_submitted:
+      subject: Notifications Contact Form Submitted Subject
+    notification_digest:
+      subject: Notifications Notification Digest Subject
+    proof_fixed:
+      subject: Notifications Proof Fixed Subject
+    proof_wontfix:
+      subject: Notifications Proof Wontfix Subject
+    recommendation_accepted:
+      subject: Notifications Recommendation Accepted Subject
+    recommendation_published:
+      subject: Notifications Recommendation Published Subject
+    tag_approved:
+      subject: Notifications Tag Approved Subject
+    tag_merged:
+      subject: Notifications Tag Merged Subject
+    tag_rejected:
+      subject: Notifications Tag Rejected Subject
+    tagging_approved:
+      subject: Notifications Tagging Approved Subject
+    tagging_rejected:
+      subject: Notifications Tagging Rejected Subject
+    volunteer_form_submitted:
+      subject: Notifications Volunteer Form Submitted Subject
+    warn:
+      subject: Notifications Warn Subject
+  number_of_works: Number of Works
+  oclc: OCLC
+  of: of
+  of_x_total: of %{x} total
+  oldest_first: Oldest First
+  'on': 'On'
+  one: One
+  online_bibliography: Online Bibliography
+  only_editors_can_do_this: Only editors can do this
+  open: Open
+  open_in_new_tab: Open in New Tab
+  optional: Optional
+  option: Option
+  options: Options
+  or: Or
+  order: Order
+  orig_lang: Original Language
+  orig_lang_title: Original Language Title
+  original: Original
+  original_author: Original Author
+  original_lang: Original Language
+  original_language: Original Language
+  original_title: Original Title
+  orphan_work: Orphan Work
+  other_authors: Other Authors
+  other_formats: Other Formats
+  other_lang: Other Language
+  other_options: Other Options
+  other_related_items: Other Related Items
+  other_works: Other Works
+  others: Others
+  owner: Owner
+  page: Page
+  page_count: Page Count
+  page_not_found: Page Not Found
+  page_number: Page Number
+  pages: Pages
+  paging: Paging
+  paragraph: Paragraph
+  parse: Parse
+  parse_failed: Parse Failed
+  parsed: Parsed
+  partial: Partial
+  password: Password
+  password_confirmation: Password Confirmation
+  path: Path
+  pdf_format: PDF Format
+  pending: Pending
+  pending_html_files: Pending HTML Files
+  people: People
+  period: Period
+  periodical: Periodical
+  periodical_issue: Periodical Issue
+  periodical_title: Periodical Title
+  periodicals:
+    index:
+      x_issues: Periodicals Index X Issues
+      x_texts: Periodicals Index X Texts
+  permission: Permission
+  permission_for_all: Permission for All
+  permission_for_selected: Permission for Selected
+  person: Person
+  person_details: Person Details
+  person_name: Person Name
+  person_or_corporate_body: Person or Corporate Body
+  persons: Persons
+  persons_related_to_this_work: Persons Related to This Work
+  photo: Photo
+  photographer: Photographer (male)
+  photographer_f: Photographer (female)
+  placeholder: Placeholder
+  placeholder_item: Placeholder Item
+  please_login: Please Login
+  please_wait: Please Wait
+  poetry: Poetry
+  polish: Polish
+  popularity: Popularity
+  portuguese: Portuguese
+  position: Position
+  preview: Preview
+  previous: Previous
+  primary: Primary
+  print: Print
+  print_anthology: Print Anthology
+  print_ready: Print Ready
+  priority: Priority
+  private: Private
+  proceed: Proceed
+  profile: Profile
+  proof: Proof
+  proof_assigned: Proof Assigned
+  proof_comment: Proof Comment
+  proof_explanation: Proof Explanation
+  proof_note: Proof Note
+  proof_status: Proof Status
+  proof_submitted: Proof Submitted
+  proofread: Proofread
+  proofreader: Proofreader
+  proofs_by_status: Proofs by Status
+  proofs_count: Proofs Count
+  proofs_dashboard: Proofs Dashboard
+  proofs_index: Proofs Index
+  proposed: Proposed
+  prose: Prose
+  pub_date: Publication Date
+  pubdate: Publication Date
+  public: Public
+  public_anthology: Public Anthology
+  publication: Publication
+  publication_date: Publication Date
+  publication_details: Publication Details
+  publication_place: Publication Place
+  publications: Publications
+  publish: Publish
+  publish_date: Publish Date
+  published_at: Published at
+  published_on: Published on
+  published_works: Published Works
+  publisher: Publisher
+  publisher_name: Publisher Name
+  publishing: Publishing
+  quality: Quality
+  query: Query
+  question: Question
+  quick_add: Quick Add
+  quote: Quote
+  random: Random
+  random_work: Random Work
+  read: Read
+  read_more: Read More
+  read_online: Read Online
+  reader_name: Reader Name
+  readers: Readers
+  reading_list: Reading List
+  reading_lists: Reading Lists
+  ready: Ready
+  recent: Recent
+  recently_added: Recently Added
+  recently_updated: Recently Updated
+  recommend: Recommend
+  recommendation: Recommendation
+  recommendation_accepted: Recommendation Accepted
+  recommendation_comment: Recommendation Comment
+  recommendation_explanation: Recommendation Explanation
+  recommendation_rejected: Recommendation Rejected
+  recommendation_status: Recommendation Status
+  recommendation_submitted: Recommendation Submitted
+  recommendations: Recommendations
+  recommendations_count: Recommendations Count
+  recommended: Recommended
+  recommended_works: Recommended Works
+  record: Record
+  reference: Reference
+  refresh: Refresh
+  register: Register
+  registered: Registered
+  registration: Registration
+  reject: Reject
+  reject_and_next: Reject and Next
+  rejected: Rejected
+  rejection_note: Rejection Note
+  related: Related
+  related_authorities: Related Authorities
+  related_items: Related Items
+  related_works: Related Works
+  relevance: Relevance
+  relevant: Relevant
+  reload: Reload
+  remember_me: Remember Me
+  remove_bookmark: Remove Bookmark
+  remove_from_anthology: Remove from Anthology
+  remove_from_bookshelf: Remove from Reading List
+  remove_image: Remove Image
+  remove_involved_authority: Remove Linked Person
+  rename: Rename
+  reopen: Reopen
+  replace: Replace
+  report: Report
+  report_error: Report Error
+  request: Request
+  required: Required
+  reset: Reset
+  resolve: Resolve
+  resolved: Resolved
+  results: Results
+  retry: Retry
+  return_to_list: Return to List
+  review: Review
+  reviewed: Reviewed
+  reviewer: Reviewer
+  role: Role
+  romanian: Romanian
+  russian: Russian
+  save_and_continue: Save and Continue
+  save_draft: Save Draft
+  scanned: Scanned
+  scanned_at: Scanned at
+  scanned_image: Scanned Image
+  scans: Scans
+  scenario: Scenario
+  scope: Scope
+  search: Search
+  search_authors: Search Authors
+  search_for: Search for
+  search_in: Search in
+  search_query: Search Query
+  search_results: Search Results
+  search_term: Search Term
+  search_works: Search Works
+  searching: Searching...
+  secondary: Secondary
+  section: Section
+  sections: Sections
+  see_all: See All
+  see_also: See Also
+  see_more: See More
+  select: Select
+  select_all: Select All
+  select_author: Select Author
+  select_collection: Select Collection
+  select_file: Select File
+  select_genre: Select Genre
+  select_language: Select Language
+  select_manifestation: Select Work
+  select_none: Select None
+  select_option: Select Option
+  select_period: Select Period
+  select_person: Select Person
+  select_status: Select Status
+  select_tag: Select Tag
+  select_type: Select Type
+  selected: Selected
+  send: Send
+  serbian: Serbian
+  series: Series
+  series_title: Series Title
+  set: Set
+  settings: Settings
+  share: Share
+  share_on_facebook: Share on Facebook
+  share_on_twitter: Share on Twitter
+  sharing: Sharing
+  short: Short
+  short_story: Short Story
+  show: Show
+  show_all: Show All
+  show_details: Show Details
+  show_filters: Show Filters
+  show_less: Show Less
+  show_more: Show More
+  show_original: Show Original
+  showing: Showing
+  sign_in: Sign In
+  sign_out: Sign Out
+  sign_up: Sign Up
+  signup: Sign Up
+  similar: Similar
+  similar_tags: Similar Tags
+  similar_works: Similar Works
+  single: Single
+  site_admin: Site Admin
+  site_footer: Site Footer
+  site_header: Site Header
+  site_title: Site Title
+  sitenotice: Site Notice
+  size: Size
+  skip: Skip
+  slovak: Slovak
+  slovenian: Slovenian
+  snippet: Snippet
+  sort: Sort
+  sort_options: Sort Options
+  source: Source
+  source_edition: Source Edition
+  source_language: Source Language
+  source_material: Source Material
+  sources: Sources
+  spam: Spam
+  spanish: Spanish
+  split: Split
+  split_works: Split Works
+  start: Start
+  start_date: Start Date
+  start_page: Start Page
+  state: State
+  statistics: Statistics
+  stats: Stats
+  stop: Stop
+  store: Store
+  story: Story
+  style: Style
+  sub_genre: Sub-genre
+  subgenre: Subgenre
+  subject: Subject
+  subjects: Subjects
+  submit: Submit
+  submit_contact_form: Submit Contact Form
+  submit_proof: Submit Proof
+  submit_recommendation: Submit Recommendation
+  submit_tag: Submit Tag
+  submitted: Submitted
+  submitted_at: Submitted at
+  submitted_by: Submitted by
+  subtitle: Subtitle
+  success: Success
+  suggest: Suggest
+  suggested: Suggested
+  suggestion: Suggestion
+  suggestions: Suggestions
+  summary: Summary
+  superseded: Superseded
+  support: Support
+  surprise: Surprise
+  surprise_me: Surprise Me
+  swedish: Swedish
+  synchronize: Synchronize
+  system: System
+  table: Table
+  table_of_contents: Table of Contents
+  tables: Tables
+  tag: Tag
+  tag_added: Tag Added
+  tag_approved: Tag Approved
+  tag_count: Tag Count
+  tag_moderation: Tag Moderation
+  tag_rejected: Tag Rejected
+  tag_status: Tag Status
+  tag_submitted: Tag Submitted
+  tagging: Tagging
+  tagging_accepted: Tagging Accepted
+  tagging_explanation: Tagging Explanation
+  tagging_rejected: Tagging Rejected
+  tagging_status: Tagging Status
+  tagging_submitted: Tagging Submitted
+  taggings: Taggings
+  taggings_count: Taggings Count
+  tags: Tags
+  tags_count: Tags Count
+  task: Task
+  tasks: Tasks
+  template: Template
+  term: Term
+  terms: Terms
+  test: Test
+  text: Text
+  text_body: Text Body
+  text_content: Text Content
+  text_direction: Text Direction
+  text_format: Text Format
+  text_language: Text Language
+  text_length: Text Length
+  text_processing: Text Processing
+  text_size: Text Size
+  text_snippet: Text Snippet
+  text_source: Text Source
+  thanks: Thanks
+  the_author: The Author
+  the_project: The Project
+  the_work: The Work
+  theme: Theme
+  this_month: This Month
+  this_week: This Week
+  this_year: This Year
+  time: Time
+  timestamp: Timestamp
+  title: Title
+  title_and_author: Title and Author
+  title_asc: 'Title: A-Z'
+  title_desc: 'Title: Z-A'
+  titles: Titles
+  to: To
+  to_anthology: To Anthology
+  to_bookshelf: To Reading List
+  to_collection: To Collection
+  to_lang: To
+  to_page: To Page
+  toc: Table of Contents
+  toc_available: Table of Contents Available
+  toc_entry: TOC Entry
+  toc_item: TOC Item
+  toc_not_available: Table of Contents Not Available
+  today: Today
+  toggle: Toggle
+  toggle_all: Toggle All
+  toggle_filters: Toggle Filters
+  toggle_view: Toggle View
+  too_long: Too Long
+  too_short: Too Short
+  tool: Tool
+  tools: Tools
+  top: Top
+  top_authors: Top Authors
+  top_tags: Top Tags
+  top_works: Top Works
+  topic: Topic
+  topics: Topics
+  total: Total
+  total_count: Total Count
+  total_items: Total Items
+  total_pages: Total Pages
+  total_results: Total Results
+  total_works: Total Works
+  totals: Totals
+  translate: Translate
+  translated: Translated
+  translated_by: Translated by
+  translated_from: Translated from
+  translated_title: Translated Title
+  translation_details: Translation Details
+  translation_language: Translation Language
+  translation_of: Translation of
+  translator: Translator (male)
+  translator_f: Translator (female)
+  'true': 'True'
+  turkish: Turkish
+  type: Type
+  types: Types
+  ukrainian: Ukrainian
+  unassigned: Unassigned
+  unauthorized_action: Unauthorized Action
+  uncollected: Uncollected
+  under_review: Under Review
+  undo: Undo
+  unknown_author: Unknown Author
+  unknown_genre: Unknown Genre
+  unknown_language: Unknown Language
+  unknown_status: Unknown Status
+  unlisted: Unlisted
+  unlock: Unlock
+  unlocked: Unlocked
+  unpublished_works: Unpublished Works
+  unread: Unread
+  untagged: Untagged
+  up: Up
+  updated: Updated
+  updated_at: Updated at
+  updating: Updating...
+  upload: Upload
+  upload_complete: Upload Complete
+  upload_date: Upload Date
+  upload_failed: Upload Failed
+  upload_file: Upload File
+  upload_image: Upload Image
+  uploaded: Uploaded
+  uploaded_at: Uploaded at
+  uploaded_by: Uploaded by
+  uploading: Uploading...
+  url: URL
+  usage: Usage
+  use: Use
+  user: User
+  user_account: User Account
+  user_details: User Details
+  user_info: User Info
+  user_name: User Name
+  user_not_found: User Not Found
+  user_profile: User Profile
+  username: Username
+  users: Users
+  valid: Valid
+  validate: Validate
+  validation: Validation
+  validation_error: Validation Error
+  value: Value
+  values: Values
+  version: Version
+  versions: Versions
+  via: Via
+  viaf: VIAF
+  viaf_link: VIAF Link
+  view: View
+  view_all: View All
+  view_anthology: View Anthology
+  view_author: View Author
+  view_bookshelf: View Reading List
+  view_collection: View Collection
+  view_details: View Details
+  view_full_text: View Full Text
+  view_history: View History
+  view_manifestation: View Work
+  view_on_site: View on Site
+  view_options: View Options
+  view_original: View Original
+  view_profile: View Profile
+  view_work: View Work
+  views:
+    pagination:
+      first: Views Pagination First
+      last: Views Pagination Last
+      next: Views Pagination Next
+      previous: Views Pagination Previous
+      truncate: Views Pagination Truncate
+  views_count: Views Count
+  volume: Volume
+  volume_number: Volume Number
+  volume_title: Volume Title
+  volunteer: Volunteer
+  volunteer_form: Volunteer Form
+  volunteer_info: Volunteer Info
+  volunteer_signup: Volunteer Signup
+  volunteering: Volunteering
+  volunteers: Volunteers
+  waiting: Waiting
+  want_to_read: Want to Read
+  warning: Warning
+  warnings: Warnings
+  week: Week
+  weekly: Weekly
+  welsh: Welsh
+  what: What
+  when: When
+  where: Where
+  who: Who
+  why: Why
+  width: Width
+  with: With
+  without: Without
+  word: Word
+  word_count: Word Count
+  words: Words
+  work: Work
+  work_added: Work Added
+  work_author: Work Author
+  work_cloned: Work Cloned
+  work_created: Work Created
+  work_deleted: Work Deleted
+  work_details: Work Details
+  work_genre: Work Genre
+  work_language: Work Language
+  work_liked: Work Liked
+  work_published: Work Published
+  work_title: Work Title
+  work_type: Work Type
+  work_unliked: Work Unliked
+  work_unpublished: Work Unpublished
+  work_updated: Work Updated
+  works_by: Works by
+  works_by_author: Works by Author
+  works_by_genre: Works by Genre
+  works_by_period: Works by Period
+  works_count: Works Count
+  works_in: Works in
+  works_list: Works List
+  works_tagged_with: Works Tagged with
+  workshop: Workshop
+  write: Write
+  writer: Writer
+  writers: Writers
+  year: Year
+  year_of_death: Year of Death
+  year_published: Year Published
+  yearly: Yearly
+  years: Years
+  yiddish: Yiddish
+  you: You
+  your: Your
+  your_account: Your Account
+  your_anthologies: Your Anthologies
+  your_bookshelves: Your Reading Lists
+  your_email: Your Email
+  your_name: Your Name
+  your_profile: Your Profile
+  your_recommendations: Your Recommendations
+  id: Id
+  idea: Idea
+  identifiers: Identifiers
+  if_you_meant_works: If You Meant Works
+  illustrations_by: Illustrations By
+  improvements_soon: Improvements Soon
+  in_current_cursor: In Current Cursor
+  in_orig_lang: In Orig Lang
+  in_role: In Role
+  ingestibles_system: Ingestibles System
+  inside: Inside
+  institution: Institution
+  internal_search: Internal Search
+  irrelevant: Irrelevant
+  is_scanned: Is Scanned
+  issue_of: Issue Of
+  item_pattern: Item Pattern
+  items_pending_for_this_tag: Items Pending For This Tag
+  join_volunteer: Join Volunteer
+  jump_to: Jump To
+  jump_to_chapter: Jump To Chapter
+  kwic_browser_title: Kwic Browser Title
+  kwic_concordance: Kwic Concordance
+  kwic_current_paragraph: Kwic Current Paragraph
+  kwic_download_filtered: Kwic Download Filtered
+  kwic_download_full: Kwic Download Full
+  kwic_entries_per_page: Kwic Entries Per Page
+  kwic_filter_placeholder: Kwic Filter Placeholder
+  kwic_format: Kwic Format
+  kwic_go_to_source: Kwic Go To Source
+  kwic_hide_context: Kwic Hide Context
+  kwic_loading_context: Kwic Loading Context
+  kwic_next_paragraph: Kwic Next Paragraph
+  kwic_paragraph: Kwic Paragraph
+  kwic_previous_paragraph: Kwic Previous Paragraph
+  kwic_show_context: Kwic Show Context
+  kwic_showing_page: Kwic Showing Page
+  kwic_token: Kwic Token
+  kwic_total_entries: Kwic Total Entries
+  ladino: Ladino
+  languages: Languages
+  last_proposed_tags: Last Proposed Tags
+  last_update: Last Update
+  latest_blog: Latest Blog
+  latest_facebook: Latest Facebook
+  latest_updates: Latest Updates
+  latest_uploads_for: Latest Uploads For
+  latest_works_tagged: Latest Works Tagged
+  latest_youtube: Latest Youtube
+  launch_visual_editor: Launch Visual Editor
+  leave_readmode_tt: Leave Readmode Tt
+  left_todo: Left Todo
+  legacy_guessed_person: Legacy Guessed Person
+  legacy_metadata: Legacy Metadata
+  legacy_text_from_url: Legacy Text From Url
+  legacy_url: Legacy Url
+  life_years: Life Years
+  like: Like
+  link_description: Link Description
+  link_moderation: Link Moderation
+  link_type: Link Type
+  linked_author: Linked Author
+  linked_taggings: Linked Taggings
+  linking_entries: Linking Entries
+  list_all_authors: List All Authors
+  list_all_works: List All Works
+  location: Location
+  location_in_work: Location In Work
+  logo: Logo
+  logo_alt: Logo Alt
+  ltr: Ltr
+  made_available_by: Made Available By
+  main_catalog_management: Main Catalog Management
+  maintenance: Maintenance
+  make_admin: Make Admin
+  make_author_page: Make Author Page
+  make_corrections_below: Make Corrections Below
+  make_crowdsourcer: Make Crowdsourcer
+  make_editor: Make Editor
+  make_published: Make Published
+  malformed_line: Malformed Line
+  manage_bib_sources: Manage Bib Sources
+  manage_people: Manage People
+  manual: Manual
+  mark_as_done: Mark As Done
+  mark_as_false_positive: Mark As False Positive
+  mark_as_manual: Mark As Manual
+  mark_as_missing: Mark As Missing
+  mark_as_obsolete: Mark As Obsolete
+  mark_as_obtained: Mark As Obtained
+  mark_as_scanned: Mark As Scanned
+  mark_as_superseded: Mark As Superseded
+  mark_as_uploaded: Mark As Uploaded
+  mark_as_valid: Mark As Valid
+  markdown_display: Markdown Display
+  markdown_instructions: Markdown Instructions
+  markdown_instructions_markdown: Markdown Instructions Markdown
+  merge_rename: Merge Rename
+  merge_tag_generic_html: Merge Tag Generic Html
+  merge_tag_preview_html: Merge Tag Preview Html
+  merge_tag_title: Merge Tag Title
+  merge_tagging_preview_html: Merge Tagging Preview Html
+  merge_tagging_title: Merge Tagging Title
+  merge_with_this_tag: Merge With This Tag
+  messy_tocs_report: Messy Tocs Report
+  metadata_approved: Metadata Approved
+  minimize: Minimize
+  minuses_to_makafim: Minuses To Makafim
+  miscellaneous: Miscellaneous
+  missing: Missing
+  missing_bio: Missing Bio
+  missing_copyright_report: Missing Copyright Report
+  missing_genre_report: Missing Genre Report
+  missing_image: Missing Image
+  missing_images: Missing Images
+  missing_item_ids: Missing Item Ids
+  missing_language_report: Missing Language Report
+  missing_orig: Missing Orig
+  missing_period: Missing Period
+  missing_xlat: Missing Xlat
+  mistake_important: Mistake Important
+  mlbhd: Mlbhd
+  mobi_format: Mobi Format
+  mobile_missing_entries: Mobile Missing Entries
+  mobile_totals: Mobile Totals
+  mode: Mode
+  moderate_tags: Moderate Tags
+  month_year: Month Year
+  more_of_author: More Of Author
+  more_recommendations_in_the_blog: More Recommendations In The Blog
+  most_popular_authors: Most Popular Authors
+  most_popular_translated_authors: Most Popular Translated Authors
+  most_popular_works: Most Popular Works
+  most_popular_works_this_month: Most Popular Works This Month
+  most_read_authors: Most Read Authors
+  most_read_authors_last_month: Most Read Authors Last Month
+  most_read_authors_of_genre: Most Read Authors Of Genre
+  most_read_last_month: Most Read Last Month
+  most_read_translated_authors_in_genre: Most Read Translated Authors In Genre
+  most_read_translated_works_of_genre: Most Read Translated Works Of Genre
+  most_read_works: Most Read Works
+  most_read_works_of_author: Most Read Works Of Author
+  most_read_works_of_genre: Most Read Works Of Genre
+  most_read_xlat_last_month: Most Read Xlat Last Month
+  multiselect: Multiselect
+  must_accept_before_publishing: Must Accept Before Publishing
+  must_be_logged_in: Must Be Logged In
+  must_login_for_this: Must Login For This
+  must_set_author: Must Set Author
+  must_set_genre: Must Set Genre
+  my_activity: My Activity
+  nav_by_genre: Nav By Genre
+  neighboring_entries: Neighboring Entries
+  new_api_key: New Api Key
+  new_authors: New Authors
+  new_bib_source: New Bib Source
+  new_featured_author: New Featured Author
+  new_file: New File
+  new_file_to_convert: New File To Convert
+  new_sitenotice: New Sitenotice
+  new_static_page: New Static Page
+  new_tag_teaser: New Tag Teaser
+  new_title_only: New Title Only
+  new_volunteer_profile: New Volunteer Profile
+  new_works: New Works
+  new_works_by_existing_authors: New Works By Existing Authors
+  new_works_by_new_authors: New Works By New Authors
+  new_works_in_the_project: New Works In The Project
+  newest_authors: Newest Authors
+  newest_works: Newest Works
+  next_entry: Next Entry
+  next_match: Next Match
+  next_milestone: Next Milestone
+  nil: Nil
+  nli_api: Nli Api
+  no_date: No Date
+  no_lists_yet: No Lists Yet
+  no_more_items: No More Items
+  no_more_to_review: No More To Review
+  no_next_chapter: No Next Chapter
+  no_permission: No Permission
+  no_prev_chapter: No Prev Chapter
+  no_recommendations_yet: No Recommendations Yet
+  no_source_edition: No Source Edition
+  no_such_item: No Such Item
+  no_tags_yet: No Tags Yet
+  no_thank_you: No Thank You
+  no_toc_yet: No Toc Yet
+  no_url_specified: No Url Specified
+  no_works_for_author: No Works For Author
+  non_hebrew_languages: Non Hebrew Languages
+  non_whitespace_before_first_part: Non Whitespace Before First Part
+  none_yet_click_edit_to_associate: None Yet Click Edit To Associate
+  nonpd_only: Nonpd Only
+  not_an_admin: Not An Admin
+  not_public_yet: Not Public Yet
+  nothing_found_try_surname: Nothing Found Try Surname
+  number_of_selected_texts: Number Of Selected Texts
+  obtained: Obtained
+  odt_format: Odt Format
+  offer_a_recommendation: Offer A Recommendation
+  one_work: One Work
+  open_shelves_tt: Open Shelves Tt
+  optional_explanation_of_rejection: Optional Explanation Of Rejection
+  origlang_title: Origlang Title
+  orphans: Orphans
+  our_own_content: Our Own Content
+  our_volunteers: Our Volunteers
+  out_of_x: Out Of X
+  override_validation: Override Validation
+  page_colon: Page Colon
+  page_x_of_y: Page X Of Y
+  paratext: Paratext
+  parent_collections: Parent Collections
+  paste_or_copy_text_here: Paste Or Copy Text Here
+  paste_to_all: Paste To All
+  paste_to_selected: Paste To Selected
+  pby_publications: Pby Publications
+  pd_only: Pd Only
+  pending_taggings: Pending Taggings
+  pending_tags: Pending Tags
+  pending_tags_and_taggings: Pending Tags And Taggings
+  periodicals_description: Periodicals Description
+  periodicals_label: Periodicals Label
+  periodless: Periodless
+  periods: Periods
+  persian: Persian
+  person_entity: Person Entity
+  placeholder_image: Placeholder Image
+  plain_markdown: Plain Markdown
+  please_confirm_action: Please Confirm Action
+  please_log_in: Please Log In
+  please_note: Please Note
+  popular_tags: Popular Tags
+  popular_tags_by_user: Popular Tags By User
+  popular_translated_authors: Popular Translated Authors
+  popular_translators: Popular Translators
+  popular_work_tags: Popular Work Tags
+  port: Port
+  prev_entry: Prev Entry
+  preview_here: Preview Here
+  previous_match: Previous Match
+  primo: Primo
+  print_description: Print Description
+  print_disabled: Print Disabled
+  priv: Priv
+  probably_add_picture_first: Probably Add Picture First
+  profile_image: Profile Image
+  project_ben_yehuda: Project Ben Yehuda
+  projects:
+    active: Projects Active
+    contact_information: Projects Contact Information
+    default_external_link_hint: Projects Default External Link Hint
+    default_link_description_hint: Projects Default Link Description Hint
+    default_link_info: Projects Default Link Info
+    edit:
+      title: Projects Edit Title
+    end_date_hint: Projects End Date Hint
+    inactive: Projects Inactive
+    index:
+      title: Projects Index Title
+    new:
+      title: Projects New Title
+    no_end_date: Projects No End Date
+  proof_contact_html: Proof Contact Html
+  proof_failed: Proof Failed
+  proof_file: Proof File
+  proof_fixed: Proof Fixed
+  proof_fixed_m: Proof Fixed M
+  proof_for: Proof For
+  proof_for_missing_item: Proof For Missing Item
+  proof_heading: Proof Heading
+  proof_show_text: Proof Show Text
+  proof_subscribed: Proof Subscribed
+  proof_when: Proof When
+  proof_wontfix: Proof Wontfix
+  proof_wontfix_m: Proof Wontfix M
+  proofed: Proofed
+  proofing: Proofing
+  proofstatus_assigned: Proofstatus Assigned
+  proofstatus_escalated: Proofstatus Escalated
+  proofstatus_fixed: Proofstatus Fixed
+  proofstatus_new: Proofstatus New
+  proofstatus_wontfix: Proofstatus Wontfix
+  provide_reason: Provide Reason
+  pub: Pub
+  pub_status_explanation: Pub Status Explanation
+  public_anthologies: Public Anthologies
+  publish_person: Publish Person
+  published_in_book: Published In Book
+  publisher_details: Publisher Details
+  publisher_link: Publisher Link
+  publisher_link_text: Publisher Link Text
+  publishing_person_explanation: Publishing Person Explanation
+  pubs_by_author: Pubs By Author
+  pubs_by_person_instructions_html: Pubs By Person Instructions Html
+  pubs_maybe_done: Pubs Maybe Done
+  purge_rejected_recommendations: Purge Rejected Recommendations
+  purged: Purged
+  quick_actions: Quick Actions
+  random_authors: Random Authors
+  random_order: Random Order
+  random_works: Random Works
+  raw: Raw
+  raw_markdown_html: Raw Markdown Html
+  raw_tocs: Raw Tocs
+  reading_list_explanation: Reading List Explanation
+  reading_list_or_anthology: Reading List Or Anthology
+  reading_mode: Reading Mode
+  readmode_search_tt: Readmode Search Tt
+  readmode_settings_tt: Readmode Settings Tt
+  readmode_tt: Readmode Tt
+  rec_accepted: Rec Accepted
+  rec_file: Rec File
+  rec_published: Rec Published
+  rec_when: Rec When
+  recent_tags_by_user: Recent Tags By User
+  recno: Recno
+  recommendation_for: Recommendation For
+  recommendations_below: Recommendations Below
+  recommendations_by_status: Recommendations By Status
+  recommendations_by_volunteer: Recommendations By Volunteer
+  recommendations_for_collection: Recommendations For Collection
+  recommendations_for_work: Recommendations For Work
+  record_id: Record Id
+  record_source: Record Source
+  reject_and_explain: Reject And Explain
+  remember_this_choice: Remember This Choice
+  remember_to_save: Remember To Save
+  remove_angled_brackets: Remove Angled Brackets
+  remove_final_period: Remove Final Period
+  remove_line_nums: Remove Line Nums
+  removed: Removed
+  removed_from_group: Removed From Group
+  removing: Removing
+  rename_this_anthology: Rename This Anthology
+  render: Render
+  report_inappropriate_content: Report Inappropriate Content
+  reports: Reports
+  reset_filter: Reset Filter
+  reset_multiselect: Reset Multiselect
+  resolve_as_accepted: Resolve As Accepted
+  resolve_as_archived: Resolve As Archived
+  resolve_as_blogged: Resolve As Blogged
+  resolve_as_escalate: Resolve As Escalate
+  resolve_as_fixed: Resolve As Fixed
+  resolve_as_fixed_no_email: Resolve As Fixed No Email
+  resolve_as_fixed_with_explanation: Resolve As Fixed With Explanation
+  resolve_as_rejected: Resolve As Rejected
+  resolve_as_spam: Resolve As Spam
+  resolve_as_wontfix: Resolve As Wontfix
+  resolve_as_wontfix_no_email: Resolve As Wontfix No Email
+  resolve_as_wontfix_with_explanation: Resolve As Wontfix With Explanation
+  resolve_no_email_explanation: Resolve No Email Explanation
+  resolved_as: Resolved As
+  responsibility_statement: Responsibility Statement
+  rest_in_wikipedia: Rest In Wikipedia
+  rest_of_work: Rest Of Work
+  review_bibs: Review Bibs
+  revival: Revival
+  revival_long: Revival Long
+  rollup: Rollup
+  sample_authors_of: Sample Authors Of
+  sample_translated_authors: Sample Translated Authors
+  sample_translators: Sample Translators
+  sample_works_of: Sample Works Of
+  sanskrit: Sanskrit
+  save_and_exit: Save And Exit
+  save_and_update_display: Save And Update Display
+  save_tag_suggestion: Save Tag Suggestion
+  save_to_file: Save To File
+  scanning: Scanning
+  search_by_tag: Search By Tag
+  search_in_text: Search In Text
+  search_placeholder: Search Placeholder
+  search_tasks_system: Search Tasks System
+  search_terms: Search Terms
+  search_the_dictionary: Search The Dictionary
+  search_the_site: Search The Site
+  search_total: Search Total
+  search_tt: Search Tt
+  search_wikidata: Search Wikidata
+  see_all_works_from_periodicals: See All Works From Periodicals
+  sefaria_linker: Sefaria Linker
+  select_from_full_list: Select From Full List
+  select_person_first: Select Person First
+  select_publication_first: Select Publication First
+  select_tag_from_list: Select Tag From List
+  select_text_to_add_to: Select Text To Add To
+  select_text_to_remove_from: Select Text To Remove From
+  send_to_viaf: Send To Viaf
+  share_description: Share Description
+  share_options: Share Options
+  share_tt: Share Tt
+  shopping_list_for: Shopping List For
+  shopping_lists: Shopping Lists
+  show_all_recommendations: Show All Recommendations
+  show_my_convs: Show My Convs
+  show_open_recommendations: Show Open Recommendations
+  show_text: Show Text
+  show_toc: Show Toc
+  sign_in_google_twitter: Sign In Google Twitter
+  similar_titles_report: Similar Titles Report
+  similar_to_x: Similar To X
+  sitenotice_body: Sitenotice Body
+  sitenotice_edit: Sitenotice Edit
+  sitenotice_management: Sitenotice Management
+  sitenotices: Sitenotices
+  skipped_x_entries: Skipped X Entries
+  skipped_x_items: Skipped X Items
+  slash_in_titles_report: Slash In Titles Report
+  slogan: Slogan
+  some: Some
+  some_authors_to_work_on: Some Authors To Work On
+  sort_and_filter: Sort And Filter
+  sort_and_filter_popover: Sort And Filter Popover
+  sort_title: Sort Title
+  sorting_caveat: Sorting Caveat
+  sorting_caveat_title: Sorting Caveat Title
+  source_type: Source Type
+  split_work_mode: Split Work Mode
+  split_work_mode_intro: Split Work Mode Intro
+  spotlight_on_periodical: Spotlight On Periodical
+  static_page: Static Page
+  static_pages: Static Pages
+  stay_at_top: Stay At Top
+  suggest_new_tag: Suggest New Tag
+  suggest_tag: Suggest Tag
+  suggest_tags: Suggest Tags
+  suggested_by: Suggested By
+  suggested_tag: Suggested Tag
+  suggested_tag_name: Suggested Tag Name
+  suggested_tagging: Suggested Tagging
+  suggested_tags: Suggested Tags
+  support_the_project: Support The Project
+  surprise_author: Surprise Author
+  surprise_author_in_genre: Surprise Author In Genre
+  surprise_me_again: Surprise Me Again
+  suspicious_headings_report: Suspicious Headings Report
+  suspicious_titles_report: Suspicious Titles Report
+  suspicious_translations_report: Suspicious Translations Report
+  tag_approved_intro: Tag Approved Intro
+  tag_approved_with_different_name: Tag Approved With Different Name
+  tag_escalated: Tag Escalated
+  tag_list: Tag List
+  tag_merged: Tag Merged
+  tag_merged_intro: Tag Merged Intro
+  tag_not_found: Tag Not Found
+  tag_page: Tag Page
+  tag_policy_intro_html: Tag Policy Intro Html
+  tag_rejected_intro: Tag Rejected Intro
+  tag_renamed: Tag Renamed
+  taggable_item: Taggable Item
+  tagging_approved: Tagging Approved
+  tagging_approved_email_html: Tagging Approved Email Html
+  tagging_escalated: Tagging Escalated
+  tagging_merged: Tagging Merged
+  tagging_of: Tagging Of
+  tagging_rejected_email_html: Tagging Rejected Email Html
+  tagging_suggestions_count: Tagging Suggestions Count
+  tagging_system_locked: Tagging System Locked
+  tagging_system_locked_by: Tagging System Locked By
+  taggings_merged: Taggings Merged
+  taggings_will_be_merged: Taggings Will Be Merged
+  tags_are_a_way: Tags Are A Way
+  tags_etc_title: Tags Etc Title
+  tags_for_work: Tags For Work
+  tamil: Tamil
+  temporary_worklist: Temporary Worklist
+  text_contains_x: Text Contains X
+  texts_between_dates: Texts Between Dates
+  the_blog: The Blog
+  thedate: Thedate
+  their_most_read_works: Their Most Read Works
+  this_author_f: This Author F
+  this_author_has_a_generated_toc: This Author Has A Generated Toc
+  this_author_m: This Author M
+  this_item: This Item
+  this_work: This Work
+  this_work_has_x_recommendations: This Work Has X Recommendations
+  tidy_footnote_dirs: Tidy Footnote Dirs
+  time_waiting: Time Waiting
+  title_ends_with_period: Title Ends With Period
+  title_not_informative: Title Not Informative
+  title_only_if_needed: Title Only If Needed
+  title_starts_with_ordinals: Title Starts With Ordinals
+  title_x: Title X
+  to_actions: To Actions
+  to_all_authors: To All Authors
+  to_all_authors_in_genre: To All Authors In Genre
+  to_all_authors_tagged: To All Authors Tagged
+  to_all_periodicals: To All Periodicals
+  to_all_the_works_of_this_author: To All The Works Of This Author
+  to_all_whatsnew: To All Whatsnew
+  to_all_works: To All Works
+  to_all_works_in_genre: To All Works In Genre
+  to_all_works_in_this_genre: To All Works In This Genre
+  to_all_works_tagged: To All Works Tagged
+  to_all_x_items: To All X Items
+  to_blog_tt: To Blog Tt
+  to_external_content: To External Content
+  to_facebook_tt: To Facebook Tt
+  to_full_list: To Full List
+  to_full_tagging_policy: To Full Tagging Policy
+  to_manage_people: To Manage People
+  to_next_item: To Next Item
+  to_other_translations_of_author: To Other Translations Of Author
+  to_periodical: To Periodical
+  to_previous_item: To Previous Item
+  to_tagging_instructions: To Tagging Instructions
+  to_the_author_page: To The Author Page
+  to_the_authoress_page: To The Authoress Page
+  to_the_blog: To The Blog
+  to_the_facebook_page: To The Facebook Page
+  to_the_full_entry: To The Full Entry
+  to_the_full_feature: To The Full Feature
+  to_the_full_list: To The Full List
+  to_the_full_work: To The Full Work
+  to_the_item: To The Item
+  to_the_task: To The Task
+  to_the_wikipedia_article: To The Wikipedia Article
+  to_the_work_in_the_catalog: To The Work In The Catalog
+  to_the_work_in_the_site: To The Work In The Site
+  to_the_work_page: To The Work Page
+  to_the_works_in_the_genre_of_this_author: To The Works In The Genre Of This Author
+  to_the_works_page: To The Works Page
+  to_the_youtube: To The Youtube
+  to_the_youtube_channel: To The Youtube Channel
+  to_youtube_tt: To Youtube Tt
+  toc_edit_title: Toc Edit Title
+  toc_order_reminder: Toc Order Reminder
+  toc_status: Toc Status
+  tocs_linking_to_missing_items: Tocs Linking To Missing Items
+  tocs_missing_links_report: Tocs Missing Links Report
+  todate: Todate
+  todo: Todo
+  todo_x_out_of_y_pct: Todo X Out Of Y Pct
+  toggle_filters_tt: Toggle Filters Tt
+  toolbox: Toolbox
+  top_ten_authors: Top Ten Authors
+  top_ten_works: Top Ten Works
+  total_manifestations: Total Manifestations
+  total_result_pages: Total Result Pages
+  total_x_records: Total X Records
+  total_x_works: Total X Works
+  translated_authors: Translated Authors
+  translated_from_multiple_languages: Translated From Multiple Languages
+  translation_from: Translation From
+  translation_must_have_original_language: Translation Must Have Original Language
+  translation_must_have_translator: Translation Must Have Translator
+  translations_by: Translations By
+  translator_gender: Translator Gender
+  translator_name: Translator Name
+  treat_as_poetry: Treat As Poetry
+  twitter: Twitter
+  txt_format: Txt Format
+  type_new_name_below: Type New Name Below
+  typed: Typed
+  typing: Typing
+  uncollected_works_collection_explanation: Uncollected Works Collection Explanation
+  unique_only: Unique Only
+  unmake_crowdsourcer: Unmake Crowdsourcer
+  unmake_editor: Unmake Editor
+  until: Until
+  up_to_10_authors: Up To 10 Authors
+  update_bookmark: Update Bookmark
+  update_toc: Update Toc
+  upload_new_image: Upload New Image
+  uploaded_directly: Uploaded Directly
+  uploaded_images: Uploaded Images
+  uploaded_to_tasks: Uploaded To Tasks
+  used_on_other_works: Used On Other Works
+  user_list: User List
+  user_management: User Management
+  user_warned: User Warned
+  user_warning_email: User Warning Email
+  usermenu_tt: Usermenu Tt
+  volunteer_areas: Volunteer Areas
+  volunteer_bio: Volunteer Bio
+  volunteer_form_email_greeting: Volunteer Form Email Greeting
+  volunteer_form_title: Volunteer Form Title
+  volunteer_pick_all_that_applies: Volunteer Pick All That Applies
+  volunteer_profile: Volunteer Profile
+  volunteer_profiles: Volunteer Profiles
+  volunteer_statement: Volunteer Statement
+  volunteers_who_helped: Volunteers Who Helped
+  volunteers_who_helped_collection: Volunteers Who Helped Collection
+  wait: Wait
+  want_to_tag: Want To Tag
+  warn_user: Warn User
+  welcome_heading: Welcome Heading
+  welcome_paragraph_html: Welcome Paragraph Html
+  welcome_stats_html: Welcome Stats Html
+  welcome_title: Welcome Title
+  welcome_to_authors_browsing: Welcome To Authors Browsing
+  welcome_to_ebydict: Welcome To Ebydict
+  welcome_to_works_browsing: Welcome To Works Browsing
+  what_to_search_for: What To Search For
+  whats_new: Whats New
+  whatsapp: Whatsapp
+  whatsnew: Whatsnew
+  whatsnew_subtitle: Whatsnew Subtitle
+  wikidata_id: Wikidata Id
+  wikidata_item: Wikidata Item
+  will_open_in_new_tab: Will Open In New Tab
+  with_the_tag: With The Tag
+  work_download_tt: Work Download Tt
+  work_entity_details: Work Entity Details
+  work_heart_button: Work Heart Button
+  work_liked_tt: Work Liked Tt
+  work_not_available: Work Not Available
+  work_print_tt: Work Print Tt
+  worklist_download_tt: Worklist Download Tt
+  worklist_first_page_tt: Worklist First Page Tt
+  worklist_last_page_tt: Worklist Last Page Tt
+  worklist_multi_tt: Worklist Multi Tt
+  worklist_next_page_tt: Worklist Next Page Tt
+  worklist_pagination_handle_tt: Worklist Pagination Handle Tt
+  worklist_prev_page_tt: Worklist Prev Page Tt
+  worklist_print_tt: Worklist Print Tt
+  worklist_sort_tt: Worklist Sort Tt
+  works_about: Works About
+  works_about_this_author: Works About This Author
+  works_about_this_work: Works About This Work
+  works_already_online: Works Already Online
+  works_and_volumes: Works And Volumes
+  works_browsing_intro_html: Works Browsing Intro Html
+  works_browsing_intro_paging: Works Browsing Intro Paging
+  works_by_tag: Works By Tag
+  works_en: Works En
+  works_from_periodicals: Works From Periodicals
+  works_in_the_project: Works In The Project
+  works_in_this_collection_have_x_recommendations: Works In This Collection Have X
+    Recommendations
+  works_page: Works Page
+  works_tagged_with_this: Works Tagged With This
+  works_totals_p1: Works Totals P1
+  works_totals_p2: Works Totals P2
+  writing_language: Writing Language
+  x_authors: X Authors
+  x_authors_female: X Authors Female
+  x_authors_male: X Authors Male
+  x_authors_mixed_gender: X Authors Mixed Gender
+  x_issues_available: X Issues Available
+  x_liked: X Liked
+  x_liked_ctype: X Liked Ctype
+  x_liked_y_recommended: X Liked Y Recommended
+  x_of_y_items_available: X Of Y Items Available
+  x_pending_taggings_for_tag: X Pending Taggings For Tag
+  x_public_anthologies: X Public Anthologies
+  x_words: X Words
+  x_works_plain: X Works Plain
+  x_years_ago: X Years Ago
+  yes_i_would_love_to_help: Yes I Would Love To Help
+  you_can: You Can
+  you_can_create_lists: You Can Create Lists
+  youtube_url: Youtube Url

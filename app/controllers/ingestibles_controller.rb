@@ -93,6 +93,10 @@ class IngestiblesController < ApplicationController
     elsif @authorities_tbd.present?
       @ingestible.awaiting_authorities!
       redirect_to ingestibles_path, alert: t('.ingestion_now_pending')
+    elsif @potential_duplicates.present? && params[:confirm_duplicates] != '1'
+      # Block ingestion if duplicates found and not confirmed
+      @ingestible.draft! unless @ingestible.draft?
+      redirect_to review_ingestible_url(@ingestible), alert: t('.duplicates_found_not_confirmed')
     else
       @failures = []
       @changes = { placeholders: [], texts: [], collections: [] }
@@ -416,6 +420,36 @@ class IngestiblesController < ApplicationController
       @empty_texts << t.title
     end
 
+    # Check for potential duplicates
+    @potential_duplicates = []
+    @texts_to_upload.each do |toc_line|
+      title = toc_line[1]
+      authorities_json = toc_line[2]
+
+      # Merge authorities to get the complete list that will be used
+      merged_authorities = merge_authorities_per_role(authorities_json, @ingestible.default_authorities)
+
+      # Find manifestations with the same title and eager load authorities to avoid N+1 queries
+      existing_manifestations = Manifestation.where(title: title).with_involved_authorities
+
+      existing_manifestations.each do |manifestation|
+        # Get involved authorities for this manifestation
+        existing_involved = manifestation.involved_authorities
+
+        # Compare authorities - check if they match
+        if same_authorities?(merged_authorities, existing_involved)
+          @potential_duplicates << {
+            title: title,
+            manifestation_id: manifestation.id,
+            manifestation_url: url_for(controller: :manifestation, action: :read, id: manifestation.id, only_path: true)
+          }
+        end
+      end
+    end
+
+    # Remove duplicate entries (same manifestation found for multiple texts)
+    @potential_duplicates.uniq! { |d| d[:manifestation_id] }
+
     @errors = @missing_in_markdown.present? || @extraneous_markdown.present? || @missing_genre.present? || @missing_origlang.present? || @missing_authority.present? || @missing_translators.present? || @missing_authors.present? || @missing_publisher_info || @empty_texts
   end
 
@@ -565,6 +599,27 @@ class IngestiblesController < ApplicationController
     end
 
     result
+  end
+
+  # Compare if two sets of authorities are the same
+  # merged_authorities is an array of hashes from TOC
+  # existing_involved is an array of InvolvedAuthority records
+  def same_authorities?(merged_authorities, existing_involved)
+    # Filter out authorities without IDs (new_person entries)
+    # and build sets of (authority_id, role) pairs for comparison
+    toc_authorities_set = merged_authorities
+                          .select { |auth| auth['authority_id'].present? }
+                          .map { |auth| [auth['authority_id'].to_i, auth['role']] }
+                          .to_set
+
+    existing_authorities_set = existing_involved.map do |ia|
+      [ia.authority_id, ia.role]
+    end.to_set
+
+    # They match if both sets are non-empty and equal
+    return false if toc_authorities_set.empty? || existing_authorities_set.empty?
+
+    toc_authorities_set == existing_authorities_set
   end
 
   def upload_text(toc_line, index)
