@@ -6,4 +6,22 @@
   max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
+  max-width: 600px; // Prevent extending beyond reasonable width
+
+  // Handle long text in RTL (Hebrew)
+  li.ui-menu-item {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    direction: rtl; // Ensure RTL direction is respected
+    text-align: right; // Align text to the right for Hebrew
+  }
+
+  // Ensure the anchor elements inside also respect the truncation
+  li.ui-menu-item a {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
