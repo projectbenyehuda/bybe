@@ -429,21 +429,24 @@ class IngestiblesController < ApplicationController
       # Merge authorities to get the complete list that will be used
       merged_authorities = merge_authorities_per_role(authorities_json, @ingestible.default_authorities)
 
+      # Unescape title for comparison - titles are stored unescaped in the database
+      unescaped_title = unescape_markdown_title(title)
+
       # Find manifestations with the same title and eager load authorities to avoid N+1 queries
-      existing_manifestations = Manifestation.where(title: title).with_involved_authorities
+      existing_manifestations = Manifestation.where(title: unescaped_title).with_involved_authorities
 
       existing_manifestations.each do |manifestation|
         # Get involved authorities for this manifestation
         existing_involved = manifestation.involved_authorities
 
         # Compare authorities - check if they match
-        if same_authorities?(merged_authorities, existing_involved)
-          @potential_duplicates << {
-            title: title,
-            manifestation_id: manifestation.id,
-            manifestation_url: url_for(controller: :manifestation, action: :read, id: manifestation.id, only_path: true)
-          }
-        end
+        next unless same_authorities?(merged_authorities, existing_involved)
+
+        @potential_duplicates << {
+          title: unescaped_title,
+          manifestation_id: manifestation.id,
+          manifestation_url: url_for(controller: :manifestation, action: :read, id: manifestation.id, only_path: true)
+        }
       end
     end
 
@@ -567,10 +570,11 @@ class IngestiblesController < ApplicationController
 
   # add a placeholder (itemless CollectionItem) to the collection
   def create_placeholder(toc_line)
-    return if @collection.collection_items.where(alt_title: toc_line[1]).present? # don't create duplicate placeholders. It is expected they are unique within the collection. Genuine duplicate titles that the user DOES want created should have been disambiguated at the review phase.
+    unescaped_title = unescape_markdown_title(toc_line[1])
+    return if @collection.collection_items.where(alt_title: unescaped_title).present? # don't create duplicate placeholders. It is expected they are unique within the collection. Genuine duplicate titles that the user DOES want created should have been disambiguated at the review phase.
 
-    @collection.append_collection_item(CollectionItem.new(alt_title: toc_line[1]))
-    @changes[:placeholders] << toc_line[1]
+    @collection.append_collection_item(CollectionItem.new(alt_title: unescaped_title))
+    @changes[:placeholders] << unescaped_title
   end
 
   # Merge work-specific authorities with defaults per role
@@ -588,7 +592,7 @@ class IngestiblesController < ApplicationController
     return work_auths if default_auths.empty?
 
     # Get roles present in work authorities
-    work_roles = work_auths.map { |a| a['role'] }.uniq
+    work_roles = work_auths.pluck('role').uniq
 
     # Start with work authorities, then add defaults for roles not present in work authorities
     result = work_auths.dup
@@ -609,12 +613,11 @@ class IngestiblesController < ApplicationController
     # and build sets of (authority_id, role) pairs for comparison
     toc_authorities_set = merged_authorities
                           .select { |auth| auth['authority_id'].present? }
-                          .map { |auth| [auth['authority_id'].to_i, auth['role']] }
-                          .to_set
+                          .to_set { |auth| [auth['authority_id'].to_i, auth['role']] }
 
-    existing_authorities_set = existing_involved.map do |ia|
+    existing_authorities_set = existing_involved.to_set do |ia|
       [ia.authority_id, ia.role]
-    end.to_set
+    end
 
     # They match if both sets are non-empty and equal
     return false if toc_authorities_set.empty? || existing_authorities_set.empty?
@@ -627,8 +630,9 @@ class IngestiblesController < ApplicationController
 
     Chewy.strategy(:atomic) do
       ActiveRecord::Base.transaction do
+        unescaped_title = unescape_markdown_title(toc_line[1])
         w = Work.new(
-          title: toc_line[1],
+          title: unescaped_title,
           orig_lang: toc_line[4],
           genre: toc_line[3],
           primary: true # TODO: un-hardcode primariness when ingestible TOC editing supports it
@@ -666,7 +670,7 @@ class IngestiblesController < ApplicationController
                                       end
 
         e = w.expressions.build(
-          title: toc_line[1],
+          title: unescaped_title,
           language: 'he',
           period: period, # what to do if corporate body?
           intellectual_property: intellectual_property_value,
@@ -678,7 +682,7 @@ class IngestiblesController < ApplicationController
         responsibility_line = translators.present? ? translator_names.join(', ') : authors.join(', ')
         # the_markdown = @ingestible.markdown.scan(/^&&&\s+#{toc_line[1]}\s*\n(.+?)(?=\n&&&|$)/m).first.first
         m = e.manifestations.build(
-          title: toc_line[1],
+          title: unescaped_title,
           responsibility_statement: responsibility_line,
           conversion_verified: true,
           medium: I18n.t(:etext),
@@ -730,7 +734,7 @@ class IngestiblesController < ApplicationController
 
         unless @ingestible.no_volume
           # finally, add to collection, replacing placeholder if appropriate
-          placeholder = @collection.collection_items.reload.where(alt_title: toc_line[1], item: nil)
+          placeholder = @collection.collection_items.reload.where(alt_title: unescaped_title, item: nil)
           if placeholder.present? # we will insert the item just below the placeholder
             # Use the insertion logic from CollectionItemsController#drag_item
             items = @collection.collection_items.order(:seqno).to_a
@@ -761,5 +765,12 @@ class IngestiblesController < ApplicationController
   rescue StandardError
     @failures << "#{toc_line[1]} - #{$ERROR_INFO}"
     return I18n.t(:frbrization_error)
+  end
+
+  # Remove markdown escape backslashes from title text
+  # Pandoc escapes special characters when converting DOCX to markdown,
+  # but these backslashes should not be stored in the database
+  def unescape_markdown_title(title)
+    title.gsub(/\\([\[\]\*\_\{\}\(\)\#\+\-\.\!'])/, '\1')
   end
 end

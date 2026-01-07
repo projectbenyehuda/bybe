@@ -81,14 +81,6 @@ describe IngestiblesController do
     let(:locked_at) { nil }
 
     shared_context 'redirects to show page if record cannot be locked' do
-      context 'when record is locked by other user' do
-        let(:locked_by_user) { create(:user) }
-        let(:locked_at) { 5.minutes.ago }
-
-        # it 'redirects to show page and shows alert' do
-        #  expect(flash.alert).to eq I18n.t('ingestibles.ingestible_locked', user: locked_by_user.name)
-        # end
-      end
     end
 
     describe '#show' do
@@ -331,8 +323,14 @@ describe IngestiblesController do
 
       context 'when checking for potential duplicates' do
         let!(:existing_work) { create(:work, title: 'Work 1', orig_lang: 'en', genre: 'prose', author: author1) }
-        let!(:existing_expression) { create(:expression, work: existing_work, title: 'Work 1', language: 'he', orig_lang: 'en', translator: translator) }
-        let!(:existing_manifestation) { create(:manifestation, expression: existing_expression, title: 'Work 1', author: author1, translator: translator, orig_lang: 'en') }
+        let!(:existing_expression) do
+          create(:expression, work: existing_work, title: 'Work 1', language: 'he', orig_lang: 'en',
+                              translator: translator)
+        end
+        let!(:existing_manifestation) do
+          create(:manifestation, expression: existing_expression, title: 'Work 1', author: author1, translator: translator,
+                                 orig_lang: 'en')
+        end
 
         it 'detects potential duplicates with same title and authorities' do
           call
@@ -508,6 +506,75 @@ describe IngestiblesController do
         post :ingest, params: { id: ingestible.id }
       end
 
+      it 'removes markdown escape backslashes from titles during ingestion' do
+        # Create ingestible with title containing escaped brackets
+        brackets_markdown = "&&& \\[Test Work\\]\n\nContent with brackets in title"
+        brackets_toc = " yes || \\[Test Work\\] || #{[{ seqno: 1, authority_id: author.id, authority_name: author.name,
+                                                        role: 'author' }].to_json} || prose || fr || public_domain"
+        brackets_ingestible = create(:ingestible,
+                                     markdown: brackets_markdown,
+                                     toc_buffer: brackets_toc,
+                                     prospective_volume_id: collection.id.to_s,
+                                     publisher: 'Test Publisher',
+                                     no_volume: false,
+                                     year_published: '2023',
+                                     default_authorities: [{ seqno: 1, authority_id: translator.id,
+                                                             authority_name: translator.name,
+                                                             role: 'translator' }].to_json)
+        brackets_ingestible.update_parsing
+
+        expect do
+          post :ingest, params: { id: brackets_ingestible.id, confirm_duplicates: '1' }
+        end.to change(Manifestation, :count).by(1)
+
+        manifestation = Manifestation.order(id: :desc).first
+        expression = manifestation.expression
+        work = expression.work
+
+        # Verify that titles don't have escape backslashes
+        expect(work.title).to eq('[Test Work]')
+        expect(expression.title).to eq('[Test Work]')
+        expect(manifestation.title).to eq('[Test Work]')
+      end
+
+      it 'detects duplicates when ingesting escaped bracket titles matching existing unescaped titles' do
+        # First, create an existing manifestation with unescaped title
+        existing_work = create(:work, title: '[Existing Work]', orig_lang: 'fr', genre: 'prose', author: author)
+        existing_expression = create(:expression, work: existing_work, title: '[Existing Work]', language: 'he',
+                                                  orig_lang: 'fr', translator: translator)
+        existing_manifestation = create(:manifestation, expression: existing_expression, title: '[Existing Work]',
+                                                        author: author, translator: translator, orig_lang: 'fr')
+
+        # Now try to ingest a text with the ESCAPED version of the same title
+        brackets_markdown = "&&& \\[Existing Work\\]\n\nContent with brackets"
+        brackets_toc = " yes || \\[Existing Work\\] || #{[{ seqno: 1, authority_id: author.id, authority_name: author.name,
+                                                            role: 'author' }].to_json} || prose || fr || public_domain"
+        brackets_ingestible = create(:ingestible,
+                                     markdown: brackets_markdown,
+                                     toc_buffer: brackets_toc,
+                                     prospective_volume_id: collection.id.to_s,
+                                     publisher: 'Test Publisher',
+                                     no_volume: false,
+                                     year_published: '2023',
+                                     default_authorities: [{ seqno: 1, authority_id: translator.id,
+                                                             authority_name: translator.name,
+                                                             role: 'translator' }].to_json)
+        brackets_ingestible.update_parsing
+
+        # Ingestion should be blocked due to duplicate detection
+        post :ingest, params: { id: brackets_ingestible.id, confirm_duplicates: '0' }
+
+        expect(response).to redirect_to(review_ingestible_path(brackets_ingestible))
+        expect(flash[:alert]).to eq(I18n.t('ingestibles.ingest.duplicates_found_not_confirmed'))
+
+        # Verify the duplicate was detected
+        potential_duplicates = controller.instance_variable_get(:@potential_duplicates)
+        expect(potential_duplicates).not_to be_empty
+        duplicate = potential_duplicates.find { |d| d[:title] == '[Existing Work]' }
+        expect(duplicate).to be_present
+        expect(duplicate[:manifestation_id]).to eq(existing_manifestation.id)
+      end
+
       it 'updates cached_people field on manifestations after ingestion' do
         post :ingest, params: { id: ingestible.id }
 
@@ -600,8 +667,14 @@ describe IngestiblesController do
 
       context 'when potential duplicates exist' do
         let!(:existing_work) { create(:work, title: 'Work 1', orig_lang: 'fr', genre: 'prose', author: author) }
-        let!(:existing_expression) { create(:expression, work: existing_work, title: 'Work 1', language: 'he', orig_lang: 'fr', translator: translator) }
-        let!(:existing_manifestation) { create(:manifestation, expression: existing_expression, title: 'Work 1', author: author, translator: translator, orig_lang: 'fr') }
+        let!(:existing_expression) do
+          create(:expression, work: existing_work, title: 'Work 1', language: 'he', orig_lang: 'fr',
+                              translator: translator)
+        end
+        let!(:existing_manifestation) do
+          create(:manifestation, expression: existing_expression, title: 'Work 1', author: author, translator: translator,
+                                 orig_lang: 'fr')
+        end
 
         before do
           ingestible.update_parsing
