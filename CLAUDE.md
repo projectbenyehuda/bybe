@@ -339,6 +339,20 @@ Important reminders:
 
 Addressing PR code review comments:
 
-when asked to address PR code reviews, DO NOT issue 'gh pr view' commands (those have been deprecated since 2024). Instead, use the GitHub CLI API, e.g. gh api repos/projectbenyehuda/bybe/pulls/860/comments
+**CRITICAL**: When asked to address PR code review comments, use this two-step process:
+
+1. **Get review metadata**: Run `gh pr view <number> --json reviews,comments` to see all reviews
+2. **Fetch full review content**: If reviews exist with actual content (not just line comments from bots), use WebFetch on the review URL to get the full substantive review. The URL format is:
+   ```
+   https://github.com/projectbenyehuda/bybe/pull/<number>#pullrequestreview-<review-id>
+   ```
+
+**Why this matters**:
+- `gh api repos/.../pulls/<number>/comments` only returns individual line comments (lint issues, isolated feedback)
+- It does NOT return the full review body text or comprehensive review content
+- Bot reviews (github-actions, copilot-pull-request-reviewer) often provide detailed analysis in the review body, not just line comments
+- WebFetch on the review URL provides the complete review including summary, analysis, and all recommendations
+
+**Don't rely solely on the comments API** - it will miss substantive reviews!
 
 For more details, see README.md in the project home directory.
