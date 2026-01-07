@@ -27,6 +27,68 @@ describe UserController do
       end
     end
 
+    context 'with privilege filter' do
+      let!(:editor_user) { create(:user, name: 'Editor User', editor: true) }
+      let!(:admin_user) { create(:user, name: 'Admin User', admin: true) }
+      let!(:crowdsourcer_user) { create(:user, name: 'Crowdsourcer User', crowdsourcer: true) }
+      let!(:regular_user) { create(:user, name: 'Regular User') }
+
+      it 'shows all users when no filter is selected' do
+        get :list
+        expect(response).to be_successful
+        expect(assigns(:user_list)).to include(editor_user, admin_user, crowdsourcer_user, regular_user)
+      end
+
+      it 'filters to editors only' do
+        get :list, params: { privilege_filter: 'editor' }
+        expect(response).to be_successful
+        expect(assigns(:user_list)).to include(editor_user)
+        expect(assigns(:user_list)).not_to include(regular_user)
+        expect(assigns(:user_list)).not_to include(admin_user)
+        expect(assigns(:user_list)).not_to include(crowdsourcer_user)
+      end
+
+      it 'filters to admins only' do
+        get :list, params: { privilege_filter: 'admin' }
+        expect(response).to be_successful
+        expect(assigns(:user_list)).to include(admin_user)
+        expect(assigns(:user_list)).not_to include(regular_user)
+        expect(assigns(:user_list)).not_to include(editor_user)
+        expect(assigns(:user_list)).not_to include(crowdsourcer_user)
+      end
+
+      it 'filters to crowdsourcers only' do
+        get :list, params: { privilege_filter: 'crowdsourcer' }
+        expect(response).to be_successful
+        expect(assigns(:user_list)).to include(crowdsourcer_user)
+        expect(assigns(:user_list)).not_to include(regular_user)
+        expect(assigns(:user_list)).not_to include(editor_user)
+        expect(assigns(:user_list)).not_to include(admin_user)
+      end
+
+      it 'filters to editors or admins' do
+        get :list, params: { privilege_filter: 'editor_or_admin' }
+        expect(response).to be_successful
+        expect(assigns(:user_list)).to include(editor_user)
+        expect(assigns(:user_list)).to include(admin_user)
+        expect(assigns(:user_list)).not_to include(regular_user)
+        expect(assigns(:user_list)).not_to include(crowdsourcer_user)
+      end
+
+      it 'combines text search with privilege filter' do
+        get :list, params: { q: 'Editor', privilege_filter: 'editor' }
+        expect(response).to be_successful
+        expect(assigns(:user_list)).to include(editor_user)
+        expect(assigns(:user_list)).not_to include(regular_user)
+        expect(assigns(:user_list)).not_to include(admin_user)
+      end
+
+      it 'sets instance variable for privilege filter' do
+        get :list, params: { privilege_filter: 'editor' }
+        expect(assigns(:privilege_filter)).to eq('editor')
+      end
+    end
+
     context 'with pagination' do
       before do
         create_list(:user, 30)
@@ -47,6 +109,21 @@ describe UserController do
       test_user.reload
       expect(test_user.crowdsourcer).to be true
     end
+
+    it 'preserves privilege filter parameter' do
+      get :make_crowdsourcer, params: {
+        id: test_user.id,
+        q: 'Test',
+        page: 2,
+        privilege_filter: 'editor'
+      }
+      expect(response).to redirect_to(
+        action: :list,
+        q: 'Test',
+        page: 2,
+        privilege_filter: 'editor'
+      )
+    end
   end
 
   describe '#make_editor' do
@@ -56,6 +133,19 @@ describe UserController do
       test_user.reload
       expect(test_user.editor).to be true
     end
+
+    it 'preserves privilege filter parameter' do
+      get :make_editor, params: {
+        id: test_user.id,
+        privilege_filter: 'crowdsourcer'
+      }
+      expect(response).to redirect_to(
+        action: :list,
+        q: nil,
+        page: nil,
+        privilege_filter: 'crowdsourcer'
+      )
+    end
   end
 
   describe '#make_admin' do
@@ -64,6 +154,19 @@ describe UserController do
       expect(response).to redirect_to(action: :list, q: 'Test', page: 2)
       test_user.reload
       expect(test_user.admin).to be true
+    end
+
+    it 'preserves privilege filter parameter' do
+      get :make_admin, params: {
+        id: test_user.id,
+        privilege_filter: 'admin'
+      }
+      expect(response).to redirect_to(
+        action: :list,
+        q: nil,
+        page: nil,
+        privilege_filter: 'admin'
+      )
     end
   end
 
@@ -116,6 +219,21 @@ describe UserController do
       }
       expect(response).to redirect_to(action: :list, q: 'Test', page: 2)
       expect(ListItem.where(listkey: 'handle_proofs', item: test_user)).not_to exist
+    end
+
+    it 'preserves privilege filter parameter' do
+      post :set_editor_bit, params: {
+        id: test_user.id,
+        bit: 'handle_proofs',
+        set_to: '1',
+        privilege_filter: 'editor_or_admin'
+      }
+      expect(response).to redirect_to(
+        action: :list,
+        q: nil,
+        page: nil,
+        privilege_filter: 'editor_or_admin'
+      )
     end
   end
 end

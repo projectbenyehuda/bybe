@@ -3,6 +3,10 @@
   = form_tag do
     = label_tag(t(:name))
     = text_field_tag(:q, @q)
+    %br
+    = label_tag(:privilege_filter, t(:filter_by_privilege))
+    = select_tag(:privilege_filter, options_for_select([[t(:all_users), ''], [t(:editors_only), 'editor'], [t(:admins_only), 'admin'], [t(:crowdsourcers_only), 'crowdsourcer'], [t(:editors_or_admins), 'editor_or_admin']], @privilege_filter))
+    %br
     = submit_tag(t(:filter))
 
   %table
@@ -28,22 +32,22 @@
               = hidden_field_tag :id, u.id
               = hidden_field_tag :q, @q
               = hidden_field_tag :page, params[:page]
+              = hidden_field_tag :privilege_filter, @privilege_filter
               = select_tag :bit, options_for_select(User::EDITOR_BITS.map{|bit| [t(bit), bit]})
               = select_tag :set_to, options_for_select([[t(:activate_bit), 1],[t(:deactivate_bit), 0]])
               = submit_tag t(:submit)
         %td
           - unless u.crowdsourcer?
-            = link_to t(:make_crowdsourcer), user_make_crowdsourcer_path(u, q: @q, page: params[:page])
+            = link_to t(:make_crowdsourcer), user_make_crowdsourcer_path(u, q: @q, page: params[:page], privilege_filter: @privilege_filter)
           - else
-            = link_to t(:unmake_crowdsourcer), user_unmake_crowdsourcer_path(u, q: @q, page: params[:page])
+            = link_to t(:unmake_crowdsourcer), user_unmake_crowdsourcer_path(u, q: @q, page: params[:page], privilege_filter: @privilege_filter)
           = ' | '
           - unless u.editor?
-            = link_to t(:make_editor), user_make_editor_path(u, q: @q, page: params[:page])
+            = link_to t(:make_editor), user_make_editor_path(u, q: @q, page: params[:page], privilege_filter: @privilege_filter)
           - else
-            = link_to t(:unmake_editor), user_unmake_editor_path(u, q: @q, page: params[:page])
+            = link_to t(:unmake_editor), user_unmake_editor_path(u, q: @q, page: params[:page], privilege_filter: @privilege_filter)
           = ' | '
           - unless u.admin?
-            = link_to t(:make_admin), user_make_admin_path(u, q: @q, page: params[:page])
+            = link_to t(:make_admin), user_make_admin_path(u, q: @q, page: params[:page], privilege_filter: @privilege_filter)
 
   != paginate @user_list
-
