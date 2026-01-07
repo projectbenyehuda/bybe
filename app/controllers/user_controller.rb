@@ -11,24 +11,18 @@ class UserController < ApplicationController
       @q = params[:q]
     end
 
-    # Apply role filters with OR logic
-    role_conditions = []
-    if params[:filter_editor] == '1'
-      role_conditions << 'editor = 1'
-      @filter_editor = true
+    # Apply privilege filter
+    @privilege_filter = params[:privilege_filter]
+    case @privilege_filter
+    when 'editor'
+      @user_list = @user_list.where(editor: true)
+    when 'admin'
+      @user_list = @user_list.where(admin: true)
+    when 'crowdsourcer'
+      @user_list = @user_list.where(crowdsourcer: true)
+    when 'editor_or_admin'
+      @user_list = @user_list.where('editor = 1 OR admin = 1')
     end
-
-    if params[:filter_admin] == '1'
-      role_conditions << 'admin = 1'
-      @filter_admin = true
-    end
-
-    if params[:filter_crowdsourcer] == '1'
-      role_conditions << 'crowdsourcer = 1'
-      @filter_crowdsourcer = true
-    end
-
-    @user_list = @user_list.where(role_conditions.join(' OR ')) unless role_conditions.empty?
 
     @user_list = @user_list.page params[:page]
   end
@@ -103,9 +97,7 @@ class UserController < ApplicationController
       action: :list,
       q: params[:q],
       page: params[:page],
-      filter_editor: params[:filter_editor],
-      filter_admin: params[:filter_admin],
-      filter_crowdsourcer: params[:filter_crowdsourcer]
+      privilege_filter: params[:privilege_filter]
     }
   end
 end

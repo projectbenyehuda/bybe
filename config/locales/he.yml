@@ -1922,10 +1922,13 @@ he:
   manage_toc_link: 'ניהול דף יוצר מבוסס אוספים'
   manage_toc_explanation: במסך זה אפשר לערוך את כל האוספים שבם יוצר/ת זה/זו מעורב/ת ברמת האוסף. אפשר גם להוסיף יצירה או אוסף מתוך כלל המאגר לתוך אחד האוספים המופיעים כאן, וגם ליצור אוסף חדש לגמרי ולקשר אותו ליוצר/ת זה/זו. אם היה דף יוצר ידני בעבר, הוא מוצג משמאל.
   show_genres: סינון לפי סוגה
-  show_only_admins: הצג מנהלים
-  show_only_crowdsourcers: הצג מתנדבים
-  show_only_editors: הצג עורכים
   refresh_uncollected_works: רענון יצירות שלא כונסו
+  filter_by_privilege: סינון לפי הרשאות
+  all_users: כל המשתמשים
+  editors_only: עורכים בלבד
+  admins_only: מנהלים בלבד
+  crowdsourcers_only: מתנדבים בלבד
+  editors_or_admins: עורכים או מנהלים
   out_of: "מתוך "
   full_display: תצוגה מלאה
   immediate_child_only: הצג רמה אחת בלבד
