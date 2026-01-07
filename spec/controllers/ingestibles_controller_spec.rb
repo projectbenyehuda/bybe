@@ -328,6 +328,44 @@ describe IngestiblesController do
           expect(missing_authors).not_to include('Work 1')
         end
       end
+
+      context 'when checking for potential duplicates' do
+        let!(:existing_work) { create(:work, title: 'Work 1', orig_lang: 'en', genre: 'prose', author: author1) }
+        let!(:existing_expression) { create(:expression, work: existing_work, title: 'Work 1', language: 'he', orig_lang: 'en', translator: translator) }
+        let!(:existing_manifestation) { create(:manifestation, expression: existing_expression, title: 'Work 1', author: author1, translator: translator, orig_lang: 'en') }
+
+        it 'detects potential duplicates with same title and authorities' do
+          call
+          potential_duplicates = controller.instance_variable_get(:@potential_duplicates)
+
+          expect(potential_duplicates).not_to be_empty
+          duplicate = potential_duplicates.find { |d| d[:title] == 'Work 1' }
+          expect(duplicate).to be_present
+          expect(duplicate[:manifestation_id]).to eq(existing_manifestation.id)
+        end
+
+        it 'does not report duplicate for works with different authorities' do
+          call
+          potential_duplicates = controller.instance_variable_get(:@potential_duplicates)
+
+          # Work 2 has different authorities (only translator, no author1)
+          work2_duplicate = potential_duplicates.find { |d| d[:title] == 'Work 2' }
+          expect(work2_duplicate).to be_nil
+        end
+
+        context 'when no duplicates exist' do
+          # Don't create existing records in this context
+          let!(:existing_work) { nil }
+          let!(:existing_expression) { nil }
+          let!(:existing_manifestation) { nil }
+
+          it 'returns empty potential_duplicates array' do
+            call
+            potential_duplicates = controller.instance_variable_get(:@potential_duplicates)
+            expect(potential_duplicates).to be_empty
+          end
+        end
+      end
     end
 
     describe '#ingest' do
@@ -556,6 +594,52 @@ describe IngestiblesController do
 
             publication.reload
             expect(publication.title).to eq(original_pub_title)
+          end
+        end
+      end
+
+      context 'when potential duplicates exist' do
+        let!(:existing_work) { create(:work, title: 'Work 1', orig_lang: 'fr', genre: 'prose', author: author) }
+        let!(:existing_expression) { create(:expression, work: existing_work, title: 'Work 1', language: 'he', orig_lang: 'fr', translator: translator) }
+        let!(:existing_manifestation) { create(:manifestation, expression: existing_expression, title: 'Work 1', author: author, translator: translator, orig_lang: 'fr') }
+
+        before do
+          ingestible.update_parsing
+        end
+
+        context 'when confirm_duplicates is not checked' do
+          it 'blocks ingestion and redirects to review with alert' do
+            post :ingest, params: { id: ingestible.id, confirm_duplicates: '0' }
+            expect(response).to redirect_to(review_ingestible_path(ingestible))
+            expect(flash[:alert]).to eq(I18n.t('ingestibles.ingest.duplicates_found_not_confirmed'))
+          end
+
+          it 'does not create new manifestation' do
+            expect do
+              post :ingest, params: { id: ingestible.id, confirm_duplicates: '0' }
+            end.not_to change(Manifestation, :count)
+          end
+        end
+
+        context 'when confirm_duplicates is checked' do
+          it 'allows ingestion to proceed' do
+            post :ingest, params: { id: ingestible.id, confirm_duplicates: '1' }
+            expect(response).to redirect_to(ingestible_path(ingestible))
+            expect(flash[:notice]).to eq(I18n.t('ingestibles.ingest.success'))
+          end
+
+          it 'creates new manifestation despite duplicate' do
+            expect do
+              post :ingest, params: { id: ingestible.id, confirm_duplicates: '1' }
+            end.to change(Manifestation, :count).by(1)
+          end
+        end
+
+        context 'when confirm_duplicates param is not present' do
+          it 'blocks ingestion (treats missing param as not confirmed)' do
+            post :ingest, params: { id: ingestible.id }
+            expect(response).to redirect_to(review_ingestible_path(ingestible))
+            expect(flash[:alert]).to eq(I18n.t('ingestibles.ingest.duplicates_found_not_confirmed'))
           end
         end
       end

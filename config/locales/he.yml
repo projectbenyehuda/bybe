@@ -561,6 +561,7 @@ he:
   remember_this_choice: בחירת התנהגות זו באופן קבוע <BR>(ניתן לשנות בהגדרות באזור האישי)
   ok: אישור
   cancel: ביטול
+  loading: טוען...
   close: סגירה
   unauthorized: אין לך הרשאה לבצע פעולה זו
   can_only_cancel_pending_links: ניתן לבטל רק קישוריות בהמתנה לאישור
@@ -1627,6 +1628,7 @@ he:
       failures: אירעו שגיאות. ראו בשדה תיאור בעיה בלשונית הראשונה.
       success: הידד! היצירות עלו וההעלאה הסתיימה בהצלחה.
       errors: שגיאות!
+      duplicates_found_not_confirmed: זוהו יצירות שעשויות להיות כפולות. נא לעיין ולאשר אם ברצונך להמשיך.
     review:
       title: "סקירת העלאה: %{title}"
       statistics: סטטיסטיקה
@@ -1659,6 +1661,15 @@ he:
       awaiting_authorities_resolved: ההעלאה במצב המתנה לישויות, אבל כל הישויות כבר סודרו. אפשר לסיים את ההעלאה!
       problem_is_not_empty: שדה הבעיות אינו ריק!
       to_originating_task: למקור במערכת המשימות
+      potential_duplicates_warning: זוהו יצירות כפולות אפשריות!
+      potential_duplicates_explanation: חלק מהיצירות בהעלאה זו נראות כבר קיימות במערכת עם אותה כותרת ויוצרים מעורבים. נא לבדוק בקפידה.
+      duplicate_warning: כפול
+      existing_manifestation: 'כבר קיימת במערכת:'
+      view_existing: צפייה ביצירה הקיימת
+      confirm_duplicates_title: אישור העלאת יצירות כפולות
+      confirm_duplicates_explanation: היצירות הבאות נראות ככפילויות של יצירות קיימות. נא לוודא שברצונך להעלות אותן בכל זאת.
+      confirm_duplicates_checkbox: אני מאשר/ת שברצוני להעלות יצירות אלה למרות אזהרת הכפילות
+      must_confirm_duplicates: עליך לאשר שברצונך להעלות יצירות כפולות על ידי סימון תיבת האישור.
     index:
       my_title: העלאות נעולות על ידי כרגע
       locked_title: העלאות נעולות על ידי אחרים כרגע

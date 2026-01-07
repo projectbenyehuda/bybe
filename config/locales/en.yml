@@ -15,6 +15,7 @@ en:
   save: Save
   ok: OK
   cancel: Cancel
+  loading: Loading...
   unauthorized: You are not authorized to perform this action
   can_only_cancel_pending_links: You can only cancel pending links
   update: Update
@@ -229,6 +230,7 @@ en:
       failures: Ingestibles Ingest Failures
       ingestion_now_pending: Ingestibles Ingest Ingestion Now Pending
       success: Ingestibles Ingest Success
+      duplicates_found_not_confirmed: Potential duplicate texts detected. Please review and confirm if you wish to proceed.
     replace_with_authority: Ingestibles Replace With Authority
     review:
       adding_to_existing_volume: Ingestibles Review Adding To Existing Volume
@@ -262,6 +264,15 @@ en:
       title: Ingestibles Review Title
       to_originating_task: Ingestibles Review To Originating Task
       volume_information: Ingestibles Review Volume Information
+      potential_duplicates_warning: Potential Duplicates Detected!
+      potential_duplicates_explanation: Some texts in this ingestion appear to already exist in the system with the same title and involved authorities. Please review carefully.
+      duplicate_warning: DUPLICATE
+      existing_manifestation: 'Already exists in system:'
+      view_existing: View existing
+      confirm_duplicates_title: Confirm Duplicate Ingestion
+      confirm_duplicates_explanation: The following texts appear to be duplicates of existing texts. Please verify that you want to ingest them anyway.
+      confirm_duplicates_checkbox: I confirm that I want to ingest these texts despite the duplication warning
+      must_confirm_duplicates: You must confirm that you want to ingest duplicate texts by checking the confirmation checkbox.
     show:
       collections: Ingestibles Show Collections
       created: Ingestibles Show Created
