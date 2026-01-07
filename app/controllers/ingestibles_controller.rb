@@ -429,8 +429,8 @@ class IngestiblesController < ApplicationController
       # Merge authorities to get the complete list that will be used
       merged_authorities = merge_authorities_per_role(authorities_json, @ingestible.default_authorities)
 
-      # Find manifestations with the same title
-      existing_manifestations = Manifestation.where(title: title)
+      # Find manifestations with the same title and eager load authorities to avoid N+1 queries
+      existing_manifestations = Manifestation.where(title: title).with_involved_authorities
 
       existing_manifestations.each do |manifestation|
         # Get involved authorities for this manifestation
@@ -446,6 +446,9 @@ class IngestiblesController < ApplicationController
         end
       end
     end
+
+    # Remove duplicate entries (same manifestation found for multiple texts)
+    @potential_duplicates.uniq! { |d| d[:manifestation_id] }
 
     @errors = @missing_in_markdown.present? || @extraneous_markdown.present? || @missing_genre.present? || @missing_origlang.present? || @missing_authority.present? || @missing_translators.present? || @missing_authors.present? || @missing_publisher_info || @empty_texts
   end
