@@ -1,5 +1,13 @@
 // Styles for ingestibles forms
 
+// Loading indicator for autocomplete fields
+.ingestible-autocomplete-author.autocomplete-loading,
+.ingestible-autocomplete-volume.autocomplete-loading {
+  background-color: #f8f9fa; // Very subtle gray background
+  box-shadow: inset 0 0 3px rgba(0, 123, 255, 0.3); // Subtle blue shadow
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
 // Make autocomplete dropdowns scrollable for ingestibles edit form
 .ingestible-autocomplete-author + ul.ui-autocomplete,
 .ingestible-autocomplete-volume + ul.ui-autocomplete {
