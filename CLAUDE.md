@@ -127,13 +127,20 @@ end
    - Branch naming: `fix/` for bugs, `feature/` for new features
    - Use descriptive names that indicate what the work is about
 
-3. **Make your changes and commit to YOUR branch:**
+3. **Make your changes, lint them, and commit to YOUR branch:**
    ```bash
+   # FIRST: Run linters on ALL files you changed
+   bundle exec rubocop <changed_ruby_files>  # Fix ALL RuboCop issues
+   bundle exec haml-lint <changed_haml_files>  # Fix ALL HAML-Lint issues
+
+   # ONLY proceed to commit after fixing ALL lint issues
    git add <files>
    bd sync  # sync beads changes
    git commit -m "Your commit message"
    bd sync  # sync beads changes again
    ```
+   - **CRITICAL**: You MUST run linters and fix ALL issues before committing
+   - Focus on fixing issues in files YOU modified, not pre-existing issues
    - Never run `git commit` while on master/main!
    - Double-check with `git branch --show-current` if unsure
 
@@ -167,6 +174,9 @@ Once a PR has been produced for an issue (a bead), you may close the bead as com
 ### Pre-Commit Checklist (for AI agents)
 
 Before running ANY git command, verify:
+- [ ] Have I run linters on ALL files I changed?
+  - [ ] `bundle exec rubocop <changed_ruby_files>` - Fixed ALL issues
+  - [ ] `bundle exec haml-lint <changed_haml_files>` - Fixed ALL issues
 - [ ] Am I on a branch I created in this session? (`git branch --show-current`)
 - [ ] If not, have I created a new feature/fix branch?
 - [ ] Am I about to push to my own branch, not master/main?
