@@ -35,6 +35,10 @@ Bybeconv::Application.routes.draw do
       end
     end
     resources :texts, controller: :ingestible_texts, only: %i(edit update)
+    collection do
+      get :autocomplete_authority_full
+      get :autocomplete_collection_full
+    end
     member do
       get :review
       patch :update_markdown

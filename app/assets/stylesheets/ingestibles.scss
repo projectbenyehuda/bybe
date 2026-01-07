@@ -1,0 +1,58 @@
+// Styles for ingestibles forms
+
+// Loading indicator for autocomplete fields
+.ingestible-autocomplete-author.autocomplete-loading,
+.ingestible-autocomplete-volume.autocomplete-loading {
+  background-color: #f8f9fa; // Very subtle gray background
+  box-shadow: inset 0 0 3px rgba(0, 123, 255, 0.3); // Subtle blue shadow
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+// Loading badge that appears next to the field
+.autocomplete-loading-badge {
+  display: inline-block;
+  margin-right: 10px; // Space from input field (for RTL)
+  padding: 4px 12px;
+  background-color: #17a2b8; // Info color (teal/cyan)
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 12px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+// Pulse animation for the loading badge
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+// Make autocomplete dropdowns scrollable for ingestibles edit form
+.ingestible-autocomplete-author + ul.ui-autocomplete,
+.ingestible-autocomplete-volume + ul.ui-autocomplete {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-width: 600px; // Prevent extending beyond reasonable width
+
+  // Handle long text in RTL (Hebrew)
+  li.ui-menu-item {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    direction: rtl; // Ensure RTL direction is respected
+    text-align: right; // Align text to the right for Hebrew
+  }
+
+  // Ensure the anchor elements inside also respect the truncation
+  li.ui-menu-item a {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

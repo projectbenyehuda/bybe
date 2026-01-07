@@ -561,6 +561,7 @@ he:
   remember_this_choice: בחירת התנהגות זו באופן קבוע <BR>(ניתן לשנות בהגדרות באזור האישי)
   ok: אישור
   cancel: ביטול
+  loading: טוען...
   close: סגירה
   unauthorized: אין לך הרשאה לבצע פעולה זו
   can_only_cancel_pending_links: ניתן לבטל רק קישוריות בהמתנה לאישור
