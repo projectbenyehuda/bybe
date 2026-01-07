@@ -1,0 +1,9 @@
+// Styles for ingestibles forms
+
+// Make autocomplete dropdowns scrollable for ingestibles edit form
+.ingestible-autocomplete-author + ul.ui-autocomplete,
+.ingestible-autocomplete-volume + ul.ui-autocomplete {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

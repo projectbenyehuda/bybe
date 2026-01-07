@@ -288,6 +288,27 @@ class IngestiblesController < ApplicationController
     redirect_to ingestibles_url, notice: t('.success')
   end
 
+  # Autocomplete for authorities in ingestibles#edit form - returns ALL matching results
+  def autocomplete_authority_full
+    items = ElasticsearchAutocomplete.call(
+      params[:term],
+      AuthoritiesAutocompleteIndex,
+      %i(name other_designation),
+      limit: 10000
+    )
+
+    render json: json_for_autocomplete(items, :name)
+  end
+
+  # Autocomplete for collections in ingestibles#edit form - returns ALL matching results
+  def autocomplete_collection_full
+    items = Collection.where('title LIKE ?', "%#{params[:term]}%")
+                      .order(:title)
+                      .limit(10000)
+
+    render json: items.map { |c| { id: c.id, label: c.title_and_authors, value: c.title } }
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
