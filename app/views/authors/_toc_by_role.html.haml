@@ -5,27 +5,28 @@
                                     .sort_by(&:sort_term)
   uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
   involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+- if involved_on_collection_level.present? || involved_on_work_level.present? || (uncollected_node.present? && !uncollected_node.visible?(role, authority_id, false))
+  .headline-books #{title}
+  - if involved_on_collection_level.present?
+    %div{ id: "works-#{role}-collection-level", role: 'tabpanel' }
+      .headline-2-v02 #{t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)}
+      %ul.toclist{ role: 'tree' }
+        = render partial: 'authors/toc_node', collection: involved_on_collection_level,
+                locals: { role: role, authority_id: authority_id, editable: editable,
+                          nonce: nonce, uncollected: false, involved_on_collection_level: true }
 
-- if involved_on_collection_level.present?
-  %div{ id: "works-#{role}-collection-level", role: 'tabpanel' }
-    .headline-books #{title} (#{t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)})
-    %ul.toclist{ role: 'tree' }
-      = render partial: 'authors/toc_node', collection: involved_on_collection_level,
-               locals: { role: role, authority_id: authority_id, editable: editable,
-                         nonce: nonce, uncollected: false, involved_on_collection_level: true }
-
-- if involved_on_work_level.present?
-  %div{ id: "works-#{role}-work-level", role: 'tabpanel' }
-    .headline-books #{title} (#{t('toc_by_role.involved_on_work_level')})
-    %ul.toclist{ role: 'tree' }
-      = render partial: 'authors/toc_node', collection: involved_on_work_level,
-               locals: { role: role, authority_id: authority_id, editable: editable,
-                         nonce: "#{nonce}-work-level", uncollected: false,
-                         involved_on_collection_level: false }
-- if uncollected_node&.visible?(role, authority_id, false)
-  %div{ id: "works-#{role}-uncollected", role: 'tabpanel' }
-    .headline-books #{title} (#{t('toc_by_role.uncollected_works')})
-    %ul.toclist{ role: 'tree' }
-      = render partial: 'authors/toc_node', collection: [uncollected_node],
-               locals: { role: role, authority_id: authority_id, editable: editable, nonce: "#{nonce}-uncollected",
-                         uncollected: false, involved_on_collection_level: false }
+  - if involved_on_work_level.present?
+    %div{ id: "works-#{role}-work-level", role: 'tabpanel' }
+      .headline-2-v02 #{t('toc_by_role.involved_on_work_level')}
+      %ul.toclist{ role: 'tree' }
+        = render partial: 'authors/toc_node', collection: involved_on_work_level,
+                locals: { role: role, authority_id: authority_id, editable: editable,
+                          nonce: "#{nonce}-work-level", uncollected: false,
+                          involved_on_collection_level: false }
+  - if uncollected_node&.visible?(role, authority_id, false)
+    %div{ id: "works-#{role}-uncollected", role: 'tabpanel' }
+      .headline-2-v02 #{t('toc_by_role.uncollected_works')}
+      %ul.toclist{ role: 'tree' }
+        = render partial: 'authors/toc_node', collection: [uncollected_node],
+                locals: { role: role, authority_id: authority_id, editable: editable, nonce: "#{nonce}-uncollected",
+                          uncollected: false, involved_on_collection_level: false }
