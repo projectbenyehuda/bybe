@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_06_040250) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_08_221804) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -664,6 +664,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_06_040250) do
     t.index ["sort_title"], name: "index_manifestations_on_sort_title"
     t.index ["status", "sort_title"], name: "index_manifestations_on_status_and_sort_title"
     t.index ["status"], name: "index_manifestations_on_status"
+    t.index ["title"], name: "index_manifestations_on_title"
     t.index ["updated_at"], name: "index_manifestations_on_updated_at"
   end
 

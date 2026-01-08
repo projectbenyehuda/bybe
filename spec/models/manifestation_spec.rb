@@ -844,4 +844,96 @@ describe Manifestation do
       end
     end
   end
+
+  describe '.popular_works' do
+    let!(:manifestation1) { create(:manifestation) }
+    let!(:manifestation2) { create(:manifestation) }
+    let!(:manifestation3) { create(:manifestation) }
+    let!(:deleted_manifestation) { create(:manifestation) }
+    let(:deleted_id) { deleted_manifestation.id }
+
+    before do
+      # Create recent view events (within last month)
+      # manifestation1: 5 views (most popular)
+      5.times do
+        visit = create(:ahoy_visit, started_at: 1.day.ago)
+        create(:ahoy_event, visit: visit, name: 'view', time: 1.day.ago,
+                            properties: { id: manifestation1.id, type: 'Manifestation' })
+      end
+
+      # manifestation2: 3 views (second most popular)
+      3.times do
+        visit = create(:ahoy_visit, started_at: 2.days.ago)
+        create(:ahoy_event, visit: visit, name: 'view', time: 2.days.ago,
+                            properties: { id: manifestation2.id, type: 'Manifestation' })
+      end
+
+      # deleted_manifestation: 4 views (would be second most popular, but deleted)
+      4.times do
+        visit = create(:ahoy_visit, started_at: 3.days.ago)
+        create(:ahoy_event, visit: visit, name: 'view', time: 3.days.ago,
+                            properties: { id: deleted_manifestation.id, type: 'Manifestation' })
+      end
+
+      # manifestation3: 2 views (least popular of the existing ones)
+      2.times do
+        visit = create(:ahoy_visit, started_at: 4.days.ago)
+        create(:ahoy_event, visit: visit, name: 'view', time: 4.days.ago,
+                            properties: { id: manifestation3.id, type: 'Manifestation' })
+      end
+
+      # Delete the manifestation (simulating the production issue)
+      deleted_manifestation.destroy!
+    end
+
+    it 'returns popular works without crashing when a manifestation is deleted' do
+      expect { described_class.popular_works }.not_to raise_error
+    end
+
+    it 'returns only existing manifestations in order of popularity' do
+      result = described_class.popular_works
+      expect(result).to eq([manifestation1, manifestation2, manifestation3])
+    end
+
+    it 'skips deleted manifestations that still have view events' do
+      result = described_class.popular_works
+      expect(result).not_to include(deleted_manifestation)
+    end
+
+    it 'preloads involved_authorities for efficient querying' do
+      # Call popular_works
+      result = described_class.popular_works
+
+      # Verify that the association is preloaded by checking that accessing it doesn't trigger queries
+      expect do
+        result.each do |manifestation|
+          manifestation.expression.involved_authorities.to_a
+          manifestation.expression.work.involved_authorities.to_a
+        end
+      end.not_to exceed_query_limit(0)
+    end
+
+    context 'when there are no view events' do
+      before do
+        Ahoy::Event.where(name: 'view', item_type: 'Manifestation').delete_all
+      end
+
+      it 'returns an empty array' do
+        expect(described_class.popular_works).to eq([])
+      end
+    end
+
+    context 'when all viewed manifestations have been deleted' do
+      before do
+        manifestation1.destroy!
+        manifestation2.destroy!
+        manifestation3.destroy!
+      end
+
+      it 'returns an empty array without crashing' do
+        expect { described_class.popular_works }.not_to raise_error
+        expect(described_class.popular_works).to eq([])
+      end
+    end
+  end
 end
