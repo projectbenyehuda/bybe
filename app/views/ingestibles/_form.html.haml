@@ -135,7 +135,7 @@
           &nbsp;
           %span{id: 'explain_attach_photos'}= '[?]'
 
-        - if @ingestible.docx.present?
+        - if @ingestible.persisted? && @ingestible.docx.present?
           %p
             = t('ingestible.current_file')
             = link_to @ingestible.docx.filename.to_s, url_for(@ingestible.docx)

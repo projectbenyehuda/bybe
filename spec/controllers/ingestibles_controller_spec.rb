@@ -46,6 +46,24 @@ describe IngestiblesController do
         expect { call }.to not_change(Ingestible, :count)
         expect(call).to render_template(:new)
       end
+
+      context 'when docx file is attached' do
+        let(:docx_file) do
+          Rack::Test::UploadedFile.new(
+            Rails.root.join('spec/fixtures/docx/inherited_formatting_test.docx'),
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          )
+        end
+        let(:ingestible_params) do
+          attributes_for(:ingestible, title: nil, docx: docx_file)
+        end
+
+        it 'does not crash with signed_id error when rendering form with new record' do
+          expect { call }.to not_change(Ingestible, :count)
+          expect(call).to render_template(:new)
+          expect(response.body).not_to include('Cannot get a signed_id for a new record')
+        end
+      end
     end
 
     context 'with duplicate volume params' do
