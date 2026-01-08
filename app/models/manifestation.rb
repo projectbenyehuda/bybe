@@ -506,7 +506,14 @@ class Manifestation < ApplicationRecord
                      .order(Arel.sql('count(*) desc'))
                      .limit(10)
                      .pluck(:item_id)
-    with_involved_authorities.find(ids)
+
+    return [] if ids.empty?
+
+    # Use where instead of find to handle missing records gracefully
+    manifestations = with_involved_authorities.where(id: ids).to_a.index_by(&:id)
+
+    # Return in the original popularity order, skipping missing records
+    ids.filter_map { |id| manifestations[id] }
   end
 
   def self.update_suspected_typos_list
