@@ -65,22 +65,23 @@
     - if !uncollected || children.present?
       .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
         %span{style:'font-size:120%;'}
-          %span.ctitle_only{ style: 'display:none;' }= collection.title
-          %span.ctitle
-            - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
-            - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
-            - if children.present?
-              - unless full_toc
-                = t(:out_of)
-              = link_to ctitle, collection_path(collection), extra_data
-            - else
-              = ctitle
-          - if current_user && current_user.editor?
-            - if type_prefix.present?
-              = " (#{type_prefix})"
-            != '&nbsp;&nbsp;&nbsp;'
-            = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
-          - if uncollected
+          - unless uncollected
+            %span.ctitle_only{ style: 'display:none;' }= collection.title
+            %span.ctitle
+              - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
+              - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
+              - if children.present?
+                - unless full_toc
+                  = t(:out_of)
+                = link_to ctitle, collection_path(collection), extra_data
+              - else
+                = ctitle
+            - if current_user && current_user.editor?
+              - if type_prefix.present?
+                = " (#{type_prefix})"
+              != '&nbsp;&nbsp;&nbsp;'
+              = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
+          - else
             %p{style: 'font-size: 0.8rem; color: #222222;'}= t(:uncollected_works_collection_explanation)
           - # if the collection's involved authorities number more than one for any given role, return all for that role. Otherwise, return only authorities that aren't the authority_id.
           - ias = collection.involved_authorities
