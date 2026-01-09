@@ -52,7 +52,7 @@
                   %span.by-icon-v02> U
                   = t(:share)
     .row.error-found-row
-      .side-nav-col
+      .author-side-nav-col
         - if @author.toc.present?
           = render partial: 'shared/genre_navbar', locals: {genres_present: @genres_present, page: :toc, curated_content: @any_curated}
         - else
