@@ -1,3 +1,140 @@
+%nav.book-nav-full.by-card-v02
+  .side-nav-in-page
+    = t(:navigation_in_page)
+  - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+    .nav-book-group.selected
+      .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
+      .book-type.selected
+        .truncate>= t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
+      .book-type
+        .truncate>= t('toc_by_role.involved_on_work_level')
+      .book-type
+        .truncate>= t('toc_by_role.uncollected_works')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  .nav-book-group.editorial-nav
+    .headline-2-v02 תוכן אוצרותי
+    .book-type
+      .truncate עדכונים אחרונים
+    .book-type
+      .truncate יצירות על אודות היוצר
+    .book-type
+      .truncate קישורים חיצוניים
+    .book-type
+      .truncate המלצות קוראים
+  - if @lexicon_entry.present?
+    .nav-book-group.lexicon-background-color
+      .headline-2-v02 ערך היוצר בלקסיקון הספרות העברית החדשה
+      .book-type
+        .truncate תמצית
+      .book-type
+        .truncate רשימת ספרים
+      .book-type
+        .truncate על המחבר ויצירתו
+      .book-type
+        .truncate קישורים
+  %ul.navbar-nav{"aria-label" => "file-navigator", :role => "tree"}
+    %li.nav-author{:role => "treeitem"}
+      %a.nav-link-chapter{:href => "#"}
+        .by-icon-v02.iconNearText-v02 J
+        .truncate אֹפֶל בַּת־צִיּוֹן: מַשָּׂא חִזָּיוֹן בארבעה מחזות
+        %div (1)
+    %li.nav-author{:role => "treeitem"}
+      %a.nav-link-chapter{:href => "#"}
+        .by-icon-v02.iconNearText-v02 J
+        .truncate אגרות יהודה ליב גאָרדאָן: מן שנת תרי"ח עד תרנ"ב
+        %div (28)
+    %li.nav-author{:role => "treeitem"}
+      %a.nav-link-chapter{:href => "#"}
+        .by-icon-v02.iconNearText-v02 J
+        .truncate שירי מנחם: הגיונות וחזיונות, משלים ומכתמים, ישנים וגם חדשים
+        %div (1)
+    %li.nav-author{"aria-expanded" => "true", :role => "treeitem"}
+      %a.nav-link-chapter{:href => "#"}
+        .by-icon-v02.iconNearText-v02 J
+        .truncate כל כתבי יהודה ליב גורדון
+        %div (298)
+      %ul{:role => "group"}
+        %li{"aria-expanded" => "true", :role => "treeitem"}
+          %a.nav-link-chapter{:href => "#"}
+            .by-icon-v02.iconNearText-v02 J
+            .truncate כתבי יהודה ליב גורדון
+            %div שירה
+          %ul{:role => "group"}
+            %li{"aria-expanded" => "true", :role => "treeitem"}
+              %a.nav-link-chapter{:href => "#"}
+                .by-icon-v02.iconNearText-v02 J
+                .truncate שירי הגיון
+              %ul{:role => "group"}
+                %li{"aria-expanded" => "false", :role => "treeitem"}
+                  %a.nav-link-chapter.selected{:href => "#"}
+                    .by-icon-v02.iconNearText-v02 J
+                    .truncate שירי זהב
+                  %ul{:role => "group"}
+            %li{"aria-expanded" => "false", :role => "treeitem"}
+              %a.nav-link-chapter{:href => "#"}
+                .by-icon-v02.iconNearText-v02 J
+                .truncate שירי עלילה
+              %ul{:role => "group"}
+            %li{"aria-expanded" => "false", :role => "treeitem"}
+              %a.nav-link-chapter{:href => "#"}
+                .by-icon-v02.iconNearText-v02 J
+                .truncate משלי יהודה
+              %ul{:role => "group"}
+            %li{"aria-expanded" => "false", :role => "treeitem"}
+              %a.nav-link-chapter{:href => "#"}
+                .by-icon-v02.iconNearText-v02 J
+                .truncate גם אלה משלי יהודה לייב גורדון
+              %ul{:role => "group"}
+            %li{"aria-expanded" => "false", :role => "treeitem"}
+              %a.nav-link-chapter{:href => "#"}
+                .by-icon-v02.iconNearText-v02 J
+                .truncate תרגומים
+              %ul{:role => "group"}
+            %li{"aria-expanded" => "false", :role => "treeitem"}
+              %a.nav-link-chapter{:href => "#"}
+                .by-icon-v02.iconNearText-v02 J
+                .truncate שירים לעת מצוא
+              %ul{:role => "group"}
+        %li{"aria-expanded" => "false", :role => "treeitem"}
+          %a.nav-link-chapter{:href => "#"}
+            .by-icon-v02.iconNearText-v02 J
+            .truncate כתבי יהודה ליב גורדון
+            %div פרוזה
+          %ul{:role => "group"}
+
+%nav.book-nav-thin.by-card-v02
+  .side-nav-in-page
+    %a.horizontal-collapse-expand{:href => "#"}
+  - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+    .nav-books.selected
+      .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
+  - if @any_curated
+    .nav-books
+      .headline-2-v02= t(:curated_content)
+  - if @lexicon_entry.present?
+    .nav-books.lexicon-background-color
+      .headline-2-v02= t(:lexicon_content)
+
 - genres = get_genres + ['translations']
 - first = true
 %nav.navbar#genrenav
