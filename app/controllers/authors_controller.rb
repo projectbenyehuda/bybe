@@ -481,6 +481,9 @@ class AuthorsController < ApplicationController
           RefreshUncollectedWorksCollection.call(@author)
         end
         # generate_toc # legacy generated TOC
+        # Pre-calculate TOC tree and counts for efficiency (used in both navbar and TOC body)
+        @toc_tree = GenerateTocTree.call(@author)
+        @toc_counts = calculate_toc_counts(@toc_tree, @author.id)
       end
       prep_user_content(:author)
       @scrollspy_target = 'genrenav'
@@ -723,5 +726,49 @@ class AuthorsController < ApplicationController
         generate_toc
       end
     end
+  end
+
+  private
+
+  # Calculate manifestation counts for each role and section (collection_level, work_level, uncollected)
+  # This is called once in the controller to avoid duplicate calculations in navbar and TOC body
+  def calculate_toc_counts(toc_tree, authority_id)
+    counts = {}
+
+    InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+      top_nodes = toc_tree.top_level_nodes
+
+      involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
+                                              .sort_by(&:sort_term)
+      involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
+                                        .sort_by(&:sort_term)
+      uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
+      involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+
+      collection_level_count = involved_on_collection_level.sum do |node|
+        node.count_manifestations(role, authority_id, true)
+      end
+
+      work_level_count = involved_on_work_level.sum do |node|
+        node.count_manifestations(role, authority_id, false)
+      end
+
+      uncollected_count = if uncollected_node&.visible?(role, authority_id, false)
+                            uncollected_node.count_manifestations(role, authority_id, false)
+                          else
+                            0
+                          end
+
+      total_count = collection_level_count + work_level_count + uncollected_count
+
+      counts[role] = {
+        collection_level: collection_level_count,
+        work_level: work_level_count,
+        uncollected: uncollected_count,
+        total: total_count
+      }
+    end
+
+    counts
   end
 end

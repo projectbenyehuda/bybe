@@ -1,49 +1,60 @@
+- top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
+
 %nav.book-nav-full.by-card-v02
   .side-nav-in-page
     = t(:navigation_in_page)
   - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
-    .nav-book-group.selected
-      .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
-      .book-type.selected
-        .truncate>= t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
+    :ruby
+      involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
+                                              .sort_by(&:sort_term)
+      involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
+                                        .sort_by(&:sort_term)
+      uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
+      involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+
+    - role_counts = @toc_counts ? @toc_counts[role] : nil
+    - if role_counts && role_counts[:total] > 0
+      .nav-book-group.selected
+        .headline-2-v02
+          = t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
+          - if role_counts[:total] > 0
+            = " (#{role_counts[:total]})"
+        - if role_counts[:collection_level] > 0
+          .book-type.selected
+            .truncate
+              = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
+              %span.count-badge= " (#{role_counts[:collection_level]})"
+          %ul.navbar-nav{"aria-label" => "file-navigator", :role => "tree"}
+            = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
+        - if role_counts[:work_level] > 0
+          .book-type
+            .truncate
+              = t('toc_by_role.involved_on_work_level')
+              %span.count-badge= " (#{role_counts[:work_level]})"
+          %ul.navbar-nav{"aria-label" => "file-navigator", :role => "tree"}
+            = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
+        - if role_counts[:uncollected] > 0
+          .book-type
+            .truncate
+              = t('toc_by_role.uncollected_works')
+              %span.count-badge= " (#{role_counts[:uncollected]})"
+          %ul.navbar-nav{"aria-label" => "file-navigator", :role => "tree"}
+            = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
+
+  - if @any_curated
+    .nav-book-group.editorial-nav
+      .headline-2-v02= t(:curated_content)
       .book-type
-        .truncate>= t('toc_by_role.involved_on_work_level')
+        .truncate עדכונים אחרונים
       .book-type
-        .truncate>= t('toc_by_role.uncollected_works')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  .nav-book-group.editorial-nav
-    .headline-2-v02 תוכן אוצרותי
-    .book-type
-      .truncate עדכונים אחרונים
-    .book-type
-      .truncate יצירות על אודות היוצר
-    .book-type
-      .truncate קישורים חיצוניים
-    .book-type
-      .truncate המלצות קוראים
+        .truncate יצירות על אודות היוצר
+      .book-type
+        .truncate קישורים חיצוניים
+      .book-type
+        .truncate המלצות קוראים
   - if @lexicon_entry.present?
     .nav-book-group.lexicon-background-color
-      .headline-2-v02 ערך היוצר בלקסיקון הספרות העברית החדשה
+      .headline-2-v02= t(:lexicon_content)
       .book-type
         .truncate תמצית
       .book-type
@@ -52,98 +63,7 @@
         .truncate על המחבר ויצירתו
       .book-type
         .truncate קישורים
-  %ul.navbar-nav{"aria-label" => "file-navigator", :role => "tree"}
-    %li.nav-author{:role => "treeitem"}
-      %a.nav-link-chapter{:href => "#"}
-        .by-icon-v02.iconNearText-v02 J
-        .truncate אֹפֶל בַּת־צִיּוֹן: מַשָּׂא חִזָּיוֹן בארבעה מחזות
-        %div (1)
-    %li.nav-author{:role => "treeitem"}
-      %a.nav-link-chapter{:href => "#"}
-        .by-icon-v02.iconNearText-v02 J
-        .truncate אגרות יהודה ליב גאָרדאָן: מן שנת תרי"ח עד תרנ"ב
-        %div (28)
-    %li.nav-author{:role => "treeitem"}
-      %a.nav-link-chapter{:href => "#"}
-        .by-icon-v02.iconNearText-v02 J
-        .truncate שירי מנחם: הגיונות וחזיונות, משלים ומכתמים, ישנים וגם חדשים
-        %div (1)
-    %li.nav-author{"aria-expanded" => "true", :role => "treeitem"}
-      %a.nav-link-chapter{:href => "#"}
-        .by-icon-v02.iconNearText-v02 J
-        .truncate כל כתבי יהודה ליב גורדון
-        %div (298)
-      %ul{:role => "group"}
-        %li{"aria-expanded" => "true", :role => "treeitem"}
-          %a.nav-link-chapter{:href => "#"}
-            .by-icon-v02.iconNearText-v02 J
-            .truncate כתבי יהודה ליב גורדון
-            %div שירה
-          %ul{:role => "group"}
-            %li{"aria-expanded" => "true", :role => "treeitem"}
-              %a.nav-link-chapter{:href => "#"}
-                .by-icon-v02.iconNearText-v02 J
-                .truncate שירי הגיון
-              %ul{:role => "group"}
-                %li{"aria-expanded" => "false", :role => "treeitem"}
-                  %a.nav-link-chapter.selected{:href => "#"}
-                    .by-icon-v02.iconNearText-v02 J
-                    .truncate שירי זהב
-                  %ul{:role => "group"}
-            %li{"aria-expanded" => "false", :role => "treeitem"}
-              %a.nav-link-chapter{:href => "#"}
-                .by-icon-v02.iconNearText-v02 J
-                .truncate שירי עלילה
-              %ul{:role => "group"}
-            %li{"aria-expanded" => "false", :role => "treeitem"}
-              %a.nav-link-chapter{:href => "#"}
-                .by-icon-v02.iconNearText-v02 J
-                .truncate משלי יהודה
-              %ul{:role => "group"}
-            %li{"aria-expanded" => "false", :role => "treeitem"}
-              %a.nav-link-chapter{:href => "#"}
-                .by-icon-v02.iconNearText-v02 J
-                .truncate גם אלה משלי יהודה לייב גורדון
-              %ul{:role => "group"}
-            %li{"aria-expanded" => "false", :role => "treeitem"}
-              %a.nav-link-chapter{:href => "#"}
-                .by-icon-v02.iconNearText-v02 J
-                .truncate תרגומים
-              %ul{:role => "group"}
-            %li{"aria-expanded" => "false", :role => "treeitem"}
-              %a.nav-link-chapter{:href => "#"}
-                .by-icon-v02.iconNearText-v02 J
-                .truncate שירים לעת מצוא
-              %ul{:role => "group"}
-        %li{"aria-expanded" => "false", :role => "treeitem"}
-          %a.nav-link-chapter{:href => "#"}
-            .by-icon-v02.iconNearText-v02 J
-            .truncate כתבי יהודה ליב גורדון
-            %div פרוזה
-          %ul{:role => "group"}
 
-%nav.book-nav-thin.by-card-v02
-  .side-nav-in-page
-    %a.horizontal-collapse-expand{:href => "#"}
-  - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
-    .nav-books.selected
-      .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
-  - if @any_curated
-    .nav-books
-      .headline-2-v02= t(:curated_content)
-  - if @lexicon_entry.present?
-    .nav-books.lexicon-background-color
-      .headline-2-v02= t(:lexicon_content)
-
-- genres = get_genres + ['translations']
-- first = true
-%nav.navbar#genrenav
-  %ul.nav.navbar-nav.flex-column.by-card-v02#genre-nav{'aria-orientation' => 'vertical'}
-    /- if curated_content
-    %li.by-side-menu-seperator
-    %li.nav-item
-      %a.nav-link.nav-link-edit{id: 'curated_button', href: "#curated_g"}
-        .side-menu-icon.icon-byadditionals
 :javascript
   $(document).ready(function() {
     $('.nav-link').click(function(e) {
