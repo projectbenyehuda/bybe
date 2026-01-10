@@ -1029,47 +1029,34 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
-/* Navbar hover expansion - expand clipped content on hover */
-/* Author TOC navbar - .truncate elements */
-.book-nav-full .truncate:hover,
-.nav-book-group .truncate:hover,
-.book-type .truncate:hover {
-  width: auto;
-  max-width: max-content;
-  overflow: visible;
-  text-overflow: clip;
-  position: relative;
+/* Navbar hover expansion - expand entire navbar column on hover to show clipped content */
+
+/* Expand the navbar column containers on hover - stay right-aligned */
+.author-side-nav-col:hover,
+.side-nav-col:hover {
+  width: auto !important;
+  max-width: max-content !important;
+  min-width: 200px !important;  /* Don't shrink below original width */
+  overflow: visible !important;
+  margin-left: auto !important;  /* Keep it right-aligned */
   z-index: 100;
-  background-color: white;
-  padding-left: 4px;
-  padding-right: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Collection/Manifestation navbar - .nav-chapter-name elements */
-.nav-chapter-name:hover {
-  width: auto;
-  max-width: max-content;
-  overflow: visible;
-  text-overflow: clip;
-  position: relative;
-  z-index: 100;
-  background-color: white;
-  padding-left: 4px;
-  padding-right: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+/* Make parent row containers allow overflow and use flexbox for alignment */
+.row:has(.author-side-nav-col),
+.row:has(.side-nav-col) {
+  overflow: visible !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
 }
 
-/* Collection show - .side-menu-item links */
-.binder-texts-list .side-menu-item:hover {
-  width: auto;
-  max-width: max-content;
-  overflow: visible;
-  white-space: nowrap;
-  position: relative;
-  z-index: 100;
-  background-color: white;
-  padding-left: 4px;
-  padding-right: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+/* Add visual feedback on navbar hover */
+.author-side-nav-col:hover .book-nav-full,
+.author-side-nav-col:hover .mainlist,
+.side-nav-col:hover #chapter-nav,
+.side-nav-col:hover #chapternav,
+.side-nav-col:hover .binder-texts-list {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding-right: 8px;
+  padding-left: 8px;
 }
