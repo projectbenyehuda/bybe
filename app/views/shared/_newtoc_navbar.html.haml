@@ -1,5 +1,5 @@
 - top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
-
+- first = true
 %nav.book-nav-full.by-card-v02
   .side-nav-in-page
     = t(:navigation_in_page)
@@ -24,22 +24,25 @@
             .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse"}
               = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
               %span.count-badge= " (#{role_counts[:collection_level]})"
-          %ul.collapse.navbar-nav{ id: "collection-#{role}-collapse", "aria-label" => "file-navigator", :role => "tree"}
+          %ul{ id: "collection-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
+          - first = false
         - if role_counts[:work_level] > 0
           .book-type.pointer
             .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse"}
               = t('toc_by_role.involved_on_work_level')
               %span.count-badge= " (#{role_counts[:work_level]})"
-          %ul.collapse.navbar-nav{ id: "work-#{role}-collapse", "aria-label" => "file-navigator", :role => "tree"}
+          %ul{ id: "work-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
+          - first = false
         - if role_counts[:uncollected] > 0
           .book-type.pointer
             .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse"}
               = t('toc_by_role.uncollected_works')
               %span.count-badge= " (#{role_counts[:uncollected]})"
-          %ul.collapse.navbar-nav{ id: "uncollected-#{role}-collapse", "aria-label" => "file-navigator", :role => "tree"}
+          %ul{ id: "uncollected-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
+          - first = false
 
   - if @any_curated
     .nav-book-group.editorial-nav
