@@ -44,6 +44,62 @@ describe GenerateTocTree do
         nil, 'Markdown placeholder'
       )
     end
+
+    context 'with count_manifestations' do
+      it 'counts manifestations correctly for top-level collection at work level' do
+        # top_level_collection doesn't have authority involved at collection level,
+        # only at work level (manifestations have author: authority)
+        count = top_level_node.count_manifestations(:author, authority.id, false)
+        expect(count).to eq(top_level_manifestations.count)
+      end
+
+      it 'counts manifestations correctly for nested collections' do
+        # Count edited manifestations (editor role, collection level)
+        edited_count = nested_edited_node.count_manifestations(:editor, authority.id, true)
+        expect(edited_count).to eq(edited_manifestations.count)
+      end
+
+      it 'counts manifestations correctly for uncollected works' do
+        # Count uncollected manifestations (author role, work level)
+        uncollected_count = uncollected_node.count_manifestations(:author, authority.id, false)
+        expect(uncollected_count).to eq(uncollected_manifestations.count)
+      end
+
+      it 'returns 0 for placeholders' do
+        placeholder_node = nested_translated_subnode.children.map(&:first).find do |child|
+          child.is_a?(TocTree::PlaceholderNode)
+        end
+        expect(placeholder_node.count_manifestations(:translator, authority.id, true)).to eq(0)
+      end
+
+      it 'counts manifestations recursively in nested structure' do
+        # Count all manifestations where authority is involved as translator at collection level
+        total_translated = top_level_with_nested_node.count_manifestations(:translator, authority.id, true)
+        # Should include manifestations in nested_translated_collection (2 items)
+        expect(total_translated).to eq(translated_manifestations.count)
+      end
+
+      it 'returns 0 for invisible manifestations' do
+        manifestation_node = TocTree::ManifestationNode.new(top_level_manifestations.first)
+        # Should return 0 when checking for a role the authority doesn't have
+        count = manifestation_node.count_manifestations(:translator, authority.id, false)
+        expect(count).to eq(0)
+      end
+
+      it 'returns 1 for visible published manifestations' do
+        manifestation_node = TocTree::ManifestationNode.new(top_level_manifestations.first)
+        # Should return 1 when checking for author role
+        count = manifestation_node.count_manifestations(:author, authority.id, false)
+        expect(count).to eq(1)
+      end
+
+      it 'returns 0 for unpublished manifestations' do
+        unpublished = create(:manifestation, author: authority, collections: [top_level_collection], status: 'unpublished')
+        manifestation_node = TocTree::ManifestationNode.new(unpublished)
+        count = manifestation_node.count_manifestations(:author, authority.id, false)
+        expect(count).to eq(0)
+      end
+    end
   end
 
   private
