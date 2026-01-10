@@ -44,7 +44,7 @@
               %span.count-badge= " (#{role_counts[:uncollected]})"
               %span.collapse-arrow ↓
           %ul{ id: "uncollected-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
-            = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
+            = render partial: 'shared/navbar/toc_node', collection: [uncollected_node], locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
           - first = false
 
   - if @any_curated
