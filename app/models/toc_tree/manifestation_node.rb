@@ -26,6 +26,14 @@ module TocTree
       return involvement_check && !involved_in_parent
     end
 
+    # Count manifestations (1 if visible and published, 0 otherwise)
+    def count_manifestations(role, authority_id, involved_on_collection_level)
+      return 0 unless visible?(role, authority_id, involved_on_collection_level)
+      return 0 unless @manifestation.status == 'published'
+
+      1
+    end
+
     private
 
     def involved_in_parent_collection(parent_collections, role, authority_id)
