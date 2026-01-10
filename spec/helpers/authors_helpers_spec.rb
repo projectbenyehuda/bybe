@@ -96,4 +96,66 @@ describe AuthorsHelper do
       end
     end
   end
+
+  describe '.count_toc_nodes_manifestations' do
+    include_context 'when authority has several collections'
+
+    subject(:result) do
+      tree = GenerateTocTree.call(authority)
+      nodes = tree.top_level_nodes.select { |node| node.visible?(role, authority.id, involved_on_collection_level) }
+      helper.count_toc_nodes_manifestations(nodes, role, authority.id, involved_on_collection_level)
+    end
+
+    context 'when counting author works at collection level' do
+      let(:role) { :author }
+      let(:involved_on_collection_level) { true }
+
+      it 'returns correct count' do
+        # Authority is not involved at collection level in the test data,
+        # so this should return 0
+        expect(result).to eq(0)
+      end
+    end
+
+    context 'when counting editor works at collection level' do
+      let(:role) { :editor }
+      let(:involved_on_collection_level) { true }
+
+      it 'returns correct count' do
+        # Should count edited_manifestations (3 items)
+        expect(result).to eq(edited_manifestations.count)
+      end
+    end
+
+    context 'when counting translator works at collection level' do
+      let(:role) { :translator }
+      let(:involved_on_collection_level) { true }
+
+      it 'returns correct count' do
+        # Should count translated_manifestations (2 items)
+        expect(result).to eq(translated_manifestations.count)
+      end
+    end
+
+    context 'when counting author works at work level' do
+      let(:role) { :author }
+      let(:involved_on_collection_level) { false }
+
+      it 'returns correct count' do
+        # Should count uncollected (2) + top_level (3) = 5 manifestations
+        # where authority is author at work level
+        expect(result).to eq(uncollected_manifestations.count + top_level_manifestations.count)
+      end
+    end
+
+    context 'when nodes array is empty' do
+      let(:role) { :author }
+      let(:involved_on_collection_level) { true }
+
+      it 'returns 0' do
+        count = helper.count_toc_nodes_manifestations([], role, authority.id, involved_on_collection_level)
+        expect(count).to eq(0)
+      end
+    end
+  end
 end

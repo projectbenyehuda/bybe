@@ -85,4 +85,9 @@ module AuthorsHelper
       }
     )
   end
+
+  # Count total manifestations across multiple TOC nodes
+  def count_toc_nodes_manifestations(nodes, role, authority_id, involved_on_collection_level)
+    nodes.sum { |node| node.count_manifestations(role, authority_id, involved_on_collection_level) }
+  end
 end
