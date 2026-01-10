@@ -128,19 +128,6 @@
         }, 500);
       }
     });
-
-    // Handle collection anchor links smooth scrolling
-    $('.collection-anchor-link').click(function(e) {
-      e.preventDefault();
-      var target = $(this).attr('href');
-      if ($(target).length > 0) {
-        var headerHeight = $('#header-author').outerHeight() || 0;
-        var offset = $(target).offset().top - headerHeight - 20;
-        $('html, body').animate({
-          scrollTop: offset
-        }, 500);
-      }
-    });
     $('.nav-link').click(function(e) {
       e.preventDefault();
       //$('.nav-item').removeClass('current-menu-item');
