@@ -1028,3 +1028,48 @@ p.by-genre-name-v02.headline-2-v02 {
     overflow-y: auto;
   }
 }
+
+/* Navbar hover expansion - expand clipped content on hover */
+/* Author TOC navbar - .truncate elements */
+.book-nav-full .truncate:hover,
+.nav-book-group .truncate:hover,
+.book-type .truncate:hover {
+  width: auto;
+  max-width: max-content;
+  overflow: visible;
+  text-overflow: clip;
+  position: relative;
+  z-index: 100;
+  background-color: white;
+  padding-left: 4px;
+  padding-right: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Collection/Manifestation navbar - .nav-chapter-name elements */
+.nav-chapter-name:hover {
+  width: auto;
+  max-width: max-content;
+  overflow: visible;
+  text-overflow: clip;
+  position: relative;
+  z-index: 100;
+  background-color: white;
+  padding-left: 4px;
+  padding-right: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Collection show - .side-menu-item links */
+.binder-texts-list .side-menu-item:hover {
+  width: auto;
+  max-width: max-content;
+  overflow: visible;
+  white-space: nowrap;
+  position: relative;
+  z-index: 100;
+  background-color: white;
+  padding-left: 4px;
+  padding-right: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
