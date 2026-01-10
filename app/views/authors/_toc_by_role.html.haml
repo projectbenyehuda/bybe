@@ -5,11 +5,24 @@
                                     .sort_by(&:sort_term)
   uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
   involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+
+  # Calculate counts for each section
+  collection_level_count = count_toc_nodes_manifestations(involved_on_collection_level, role, authority_id, true)
+  work_level_count = count_toc_nodes_manifestations(involved_on_work_level, role, authority_id, false)
+  uncollected_count = uncollected_node&.visible?(role, authority_id, false) ? uncollected_node.count_manifestations(role, authority_id, false) : 0
+  total_count = collection_level_count + work_level_count + uncollected_count
+
 - if involved_on_collection_level.present? || involved_on_work_level.present? || (uncollected_node.present? && !uncollected_node.visible?(role, authority_id, false))
-  .headline-books #{title}
+  .headline-books
+    = title
+    - if total_count > 0
+      %span.count-badge= " (#{total_count})"
   - if involved_on_collection_level.present?
     %div{ id: "works-#{role}-collection-level", role: 'tabpanel' }
-      .headline-2-v02 #{t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)}
+      .headline-2-v02
+        = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
+        - if collection_level_count > 0
+          %span.count-badge= " (#{collection_level_count})"
       %ul.toclist{ role: 'tree' }
         = render partial: 'authors/toc_node', collection: involved_on_collection_level,
                 locals: { role: role, authority_id: authority_id, editable: editable,
@@ -17,7 +30,10 @@
 
   - if involved_on_work_level.present?
     %div{ id: "works-#{role}-work-level", role: 'tabpanel' }
-      .headline-2-v02 #{t('toc_by_role.involved_on_work_level')}
+      .headline-2-v02
+        = t('toc_by_role.involved_on_work_level')
+        - if work_level_count > 0
+          %span.count-badge= " (#{work_level_count})"
       %ul.toclist{ role: 'tree' }
         = render partial: 'authors/toc_node', collection: involved_on_work_level,
                 locals: { role: role, authority_id: authority_id, editable: editable,
@@ -25,7 +41,10 @@
                           involved_on_collection_level: false }
   - if uncollected_node&.visible?(role, authority_id, false)
     %div{ id: "works-#{role}-uncollected", role: 'tabpanel' }
-      .headline-2-v02 #{t('toc_by_role.uncollected_works')}
+      .headline-2-v02
+        = t('toc_by_role.uncollected_works')
+        - if uncollected_count > 0
+          %span.count-badge= " (#{uncollected_count})"
       %ul.toclist{ role: 'tree' }
         = render partial: 'authors/toc_node', collection: [uncollected_node],
                 locals: { role: role, authority_id: authority_id, editable: editable, nonce: "#{nonce}-uncollected",
