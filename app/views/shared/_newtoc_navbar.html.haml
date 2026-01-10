@@ -24,6 +24,7 @@
             .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse"}
               = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
               %span.count-badge= " (#{role_counts[:collection_level]})"
+              %span.collapse-arrow ↓
           %ul{ id: "collection-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
           - first = false
@@ -32,6 +33,7 @@
             .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse"}
               = t('toc_by_role.involved_on_work_level')
               %span.count-badge= " (#{role_counts[:work_level]})"
+              %span.collapse-arrow ↓
           %ul{ id: "work-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
           - first = false
@@ -40,6 +42,7 @@
             .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse"}
               = t('toc_by_role.uncollected_works')
               %span.count-badge= " (#{role_counts[:uncollected]})"
+              %span.collapse-arrow ↓
           %ul{ id: "uncollected-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
           - first = false
@@ -69,6 +72,13 @@
 
 :javascript
   $(document).ready(function() {
+    // Initialize arrows based on current collapse state
+    $('.collapse.navbar-nav').each(function() {
+      var targetId = $(this).attr('id');
+      var isExpanded = $(this).hasClass('show');
+      $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text(isExpanded ? '↑' : '↓');
+    });
+
     $('.book-type .truncate').click(function() {
       $($(this).data('bs-target')).collapse('toggle');
     });
@@ -80,5 +90,16 @@
       $('html, body').animate({
         scrollTop: $('a[name='+anchor+']').offset().top - $('#header').height() -65
       }, 800);
-    }); 
+    });
+
+    // Toggle collapse arrows
+    $('.collapse.navbar-nav').on('show.bs.collapse', function() {
+      var targetId = $(this).attr('id');
+      $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text('↑');
+    });
+
+    $('.collapse.navbar-nav').on('hide.bs.collapse', function() {
+      var targetId = $(this).attr('id');
+      $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text('↓');
+    });
   });
