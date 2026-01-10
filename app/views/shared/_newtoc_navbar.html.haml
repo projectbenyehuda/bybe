@@ -20,25 +20,25 @@
           - if role_counts[:total] > 0
             = " (#{role_counts[:total]})"
         - if role_counts[:collection_level] > 0
-          .book-type.selected
-            .truncate
+          .book-type.selected.pointer
+            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse"}
               = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
               %span.count-badge= " (#{role_counts[:collection_level]})"
-          %ul.navbar-nav{"aria-label" => "file-navigator", :role => "tree"}
+          %ul.collapse.navbar-nav{ id: "collection-#{role}-collapse", "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
         - if role_counts[:work_level] > 0
-          .book-type
-            .truncate
+          .book-type.pointer
+            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse"}
               = t('toc_by_role.involved_on_work_level')
               %span.count-badge= " (#{role_counts[:work_level]})"
-          %ul.navbar-nav{"aria-label" => "file-navigator", :role => "tree"}
+          %ul.collapse.navbar-nav{ id: "work-#{role}-collapse", "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
         - if role_counts[:uncollected] > 0
-          .book-type
-            .truncate
+          .book-type.pointer
+            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse"}
               = t('toc_by_role.uncollected_works')
               %span.count-badge= " (#{role_counts[:uncollected]})"
-          %ul.navbar-nav{"aria-label" => "file-navigator", :role => "tree"}
+          %ul.collapse.navbar-nav{ id: "uncollected-#{role}-collapse", "aria-label" => "file-navigator", :role => "tree"}
             = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
 
   - if @any_curated
@@ -66,6 +66,9 @@
 
 :javascript
   $(document).ready(function() {
+    $('.book-type .truncate').click(function() {
+      $($(this).data('bs-target')).collapse('toggle');
+    });
     $('.nav-link').click(function(e) {
       e.preventDefault();
       //$('.nav-item').removeClass('current-menu-item');
