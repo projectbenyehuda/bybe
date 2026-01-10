@@ -1128,3 +1128,19 @@ p.by-genre-name-v02.headline-2-v02 {
 .nav-book-group .headline-2-v02 {
     white-space: unset;
 }
+
+.author-side-nav-col{
+	position: sticky;
+  top: 138px;
+	max-height: calc(100vh - 138px);
+	overflow-y: auto;
+}
+
+@media only screen and (max-width: 991px) {
+  .author-side-nav-col {
+    position: sticky;
+    top: 120px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+}
