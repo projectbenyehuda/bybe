@@ -67,5 +67,14 @@ module TocTree
         @collection.id
       ]
     end
+
+    # Count manifestations recursively in this collection and its children
+    def count_manifestations(role, authority_id, involved_on_collection_level)
+      return 0 unless visible?(role, authority_id, involved_on_collection_level)
+
+      children_by_role(role, authority_id, involved_on_collection_level).sum do |child|
+        child.count_manifestations(role, authority_id, involved_on_collection_level)
+      end
+    end
   end
 end
