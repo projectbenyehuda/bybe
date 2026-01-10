@@ -79,11 +79,33 @@
       $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text(isExpanded ? '↑' : '↓');
     });
 
-    $('.book-type .truncate').click(function(e) {
-      // Toggle collapse
-      $($(this).data('bs-target')).collapse('toggle');
+    // Handle clicks on collapsible sections
+    // Note: While Bootstrap can auto-handle via data-bs-toggle, we need to manually
+    // trigger it here to ensure our scroll timing works correctly with the collapse events
+    $('.book-type .truncate[data-bs-toggle="collapse"]').click(function(e) {
+      var $trigger = $(this);
+      var $collapseTarget = $($trigger.data('bs-target'));
+      var scrollTarget = $trigger.data('scroll-target');
 
-      // Scroll to target section if it exists
+      // Set up one-time listener for scroll after collapse animation
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        $collapseTarget.one('shown.bs.collapse hidden.bs.collapse', function() {
+          var headerHeight = $('#header-author').outerHeight() || 0;
+          var offset = $(scrollTarget).offset().top - headerHeight - 120;
+          $('html, body').animate({
+            scrollTop: offset
+          }, 500);
+        });
+      }
+
+      // Manually trigger the collapse
+      // (Prevents Bootstrap's automatic handler from also triggering - avoids double-toggle)
+      e.preventDefault();
+      $collapseTarget.collapse('toggle');
+    });
+
+    // Handle clicks on sections without collapse targets (just scroll immediately)
+    $('.book-type .truncate').not('[data-bs-toggle="collapse"]').click(function(e) {
       var scrollTarget = $(this).data('scroll-target');
       if (scrollTarget && $(scrollTarget).length > 0) {
         var headerHeight = $('#header-author').outerHeight() || 0;
