@@ -4,14 +4,14 @@
   - uncollected = collection.collection_type == 'uncollected'
   - children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
   - children.reject!{ |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.status != 'published' } # don't show deleted or unpublished manifestations in the TOC
-  - if !uncollected || children.present?
+  - if !uncollected && children.present?
     %li.nav-author{"aria-expanded" => "false", :role => "treeitem"}
       .nav-link-chapter{ 'data-collection-id' => collection.id, 'data-scroll-target' => "#cwrapper_#{collection.id}" }
         .by-icon-v02.iconNearText-v02{ title: textify_collection_type(collection.collection_type) }= 'J'
         .truncate
           - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
           - manifestation_count = toc_node.count_manifestations(role, authority_id, involved_on_collection_level)
-          %a{ href: "#cwrapper_#{collection.id}", class: 'collection-anchor-link' }= ctitle
+          %a.collection-anchor-link{ href: "#cwrapper_#{collection.id}" }= ctitle
         - if manifestation_count > 0
           %div= " (#{manifestation_count})"
       - unless children.empty?
