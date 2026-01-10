@@ -21,7 +21,7 @@
             = " (#{role_counts[:total]})"
         - if role_counts[:collection_level] > 0
           .book-type.selected.pointer
-            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse"}
+            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-collection-level"}
               = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
               %span.count-badge= " (#{role_counts[:collection_level]})"
               %span.collapse-arrow ↓
@@ -30,7 +30,7 @@
           - first = false
         - if role_counts[:work_level] > 0
           .book-type.pointer
-            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse"}
+            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level"}
               = t('toc_by_role.involved_on_work_level')
               %span.count-badge= " (#{role_counts[:work_level]})"
               %span.collapse-arrow ↓
@@ -39,7 +39,7 @@
           - first = false
         - if role_counts[:uncollected] > 0
           .book-type.pointer
-            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse"}
+            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-uncollected"}
               = t('toc_by_role.uncollected_works')
               %span.count-badge= " (#{role_counts[:uncollected]})"
               %span.collapse-arrow ↓
@@ -79,8 +79,19 @@
       $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text(isExpanded ? '↑' : '↓');
     });
 
-    $('.book-type .truncate').click(function() {
+    $('.book-type .truncate').click(function(e) {
+      // Toggle collapse
       $($(this).data('bs-target')).collapse('toggle');
+
+      // Scroll to target section if it exists
+      var scrollTarget = $(this).data('scroll-target');
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        var headerHeight = $('#header-author').outerHeight() || 0;
+        var offset = $(scrollTarget).offset().top - headerHeight - 20;
+        $('html, body').animate({
+          scrollTop: offset
+        }, 500);
+      }
     });
     $('.nav-link').click(function(e) {
       e.preventDefault();
