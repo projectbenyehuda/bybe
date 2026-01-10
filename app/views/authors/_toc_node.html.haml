@@ -52,12 +52,15 @@
                 %span.ctitle
                   - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
                   - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
+                  - manifestation_count = toc_node.count_manifestations(role, authority_id, involved_on_collection_level)
                   - if children.present?
                     - if !involved_on_collection_level
                       = t(:out_of)
                     = link_to ctitle, collection_path(collection), extra_data
                   - else
                     = ctitle
+                  - if manifestation_count > 0
+                    %span.count-badge= " (#{manifestation_count})"
                 - if current_user && current_user.editor?
                   - if type_prefix.present?
                     = " (#{type_prefix})"
