@@ -203,39 +203,5 @@ RSpec.describe 'Author navbar anchor scrolling', type: :system, js: true do
 
       expect(tested).to be(true), 'No valid collection anchor links found to test'
     end
-
-    it 'makes collection links scroll to collection anchors instead of navigating away' do
-      visit authority_path(author)
-
-      # Wait for page to load
-      expect(page).to have_css('.book-nav-full')
-
-      # Find collection anchor links in the navbar
-      collection_links = all('.collection-anchor-link')
-
-      # Skip test if no collection links found
-      skip 'No collection anchor links found' if collection_links.empty?
-
-      # Test with the first collection link
-      collection_links.each do |link|
-        anchor_target = link['href']
-
-        # Skip if it's not an anchor link (should start with #)
-        next unless anchor_target&.start_with?('#')
-
-        # Verify the target exists in the mainlist
-        target_id = anchor_target.delete_prefix('#')
-        next unless page.has_css?("##{target_id}", visible: :all)
-
-        # The link should have the collection-anchor-link class
-        expect(link[:class]).to include('collection-anchor-link')
-
-        # The link href should point to a cwrapper ID
-        expect(anchor_target).to match(/^#cwrapper_\d+$/)
-
-        # Test passed, exit loop
-        break
-      end
-    end
   end
 end
