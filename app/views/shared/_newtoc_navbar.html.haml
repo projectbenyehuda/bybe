@@ -30,16 +30,16 @@
           - first = false
         - if role_counts[:work_level] > 0
           .book-type.pointer
-            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level"}
+            .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level" }
               = t('toc_by_role.involved_on_work_level')
               %span.count-badge= " (#{role_counts[:work_level]})"
               %span.collapse-arrow ↓
-          %ul{ id: "work-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
+          %ul{ id: "work-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree" }
             = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
           - first = false
         - if role_counts[:uncollected] > 0
           .book-type.pointer
-            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-uncollected"}
+            .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-uncollected" }
               = t('toc_by_role.uncollected_works')
               %span.count-badge= " (#{role_counts[:uncollected]})"
               %span.collapse-arrow ↓
@@ -87,7 +87,7 @@
       var scrollTarget = $(this).data('scroll-target');
       if (scrollTarget && $(scrollTarget).length > 0) {
         var headerHeight = $('#header-author').outerHeight() || 0;
-        var offset = $(scrollTarget).offset().top - headerHeight - 20;
+        var offset = $(scrollTarget).offset().top - headerHeight - 120;
         $('html, body').animate({
           scrollTop: offset
         }, 500);
@@ -100,7 +100,7 @@
       var target = $(this).attr('href');
       if ($(target).length > 0) {
         var headerHeight = $('#header-author').outerHeight() || 0;
-        var offset = $(target).offset().top - headerHeight - 20;
+        var offset = $(target).offset().top - headerHeight - 150;
         $('html, body').animate({
           scrollTop: offset
         }, 500);
