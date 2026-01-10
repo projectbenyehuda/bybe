@@ -56,7 +56,7 @@
         - if @author.toc.present?
           = render partial: 'shared/genre_navbar', locals: {genres_present: @genres_present, page: :toc, curated_content: @any_curated}
         - else
-          = render partial: 'shared/newtoc_navbar', locals: {genres_present: @genres_present, page: :author, curated_content: @any_curated}
+          = render partial: 'shared/newtoc_navbar', locals: {genres_present: @genres_present, page: :author, curated_content: @any_curated, authority_id: @author.id}
       .col{style:'z-index:-1;height:0;'}
       .col-4.error-found-col
         %button.error-found-btn.notyet{title: t(:report_error_tt)}

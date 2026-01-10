@@ -30,5 +30,10 @@ module TocTree
     def markdown
       @collection_item.markdown
     end
+
+    # Placeholders don't contain manifestations
+    def count_manifestations(_role, _authority_id, _involved_on_collection_level)
+      0
+    end
   end
 end
