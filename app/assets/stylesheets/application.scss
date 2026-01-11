@@ -1037,7 +1037,8 @@ p.by-genre-name-v02.headline-2-v02 {
   width: auto !important;
   max-width: max-content !important;
   min-width: 200px !important;  /* Don't shrink below original width */
-  overflow: visible !important;
+  overflow-x: visible !important;  /* Allow horizontal expansion */
+  overflow-y: auto !important;     /* Maintain vertical scrolling */
   margin-left: auto !important;  /* Keep it right-aligned */
   z-index: 100;
 }
