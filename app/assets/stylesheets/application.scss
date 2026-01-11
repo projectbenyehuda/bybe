@@ -1058,7 +1058,7 @@ p.by-genre-name-v02.headline-2-v02 {
 .side-nav-col .nav-link-chapter:hover a {
   white-space: normal !important;
 }
-/* Make parent row containers allow overflow for horizontal expansion */
+/* Make parent row containers allow overflow and wrapping for text expansion */
 .row:has(.author-side-nav-col),
 .row:has(.side-nav-col) {
   overflow: visible !important;
