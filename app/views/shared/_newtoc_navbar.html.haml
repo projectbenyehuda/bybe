@@ -1,63 +1,84 @@
 - top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
 - first = true
+
+-# Calculate visibility for all roles upfront to share between full and thin navbars
+:ruby
+  visible_roles = []
+  roles_data = {}
+
+  InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+    role_counts = @toc_counts ? @toc_counts[role] : nil
+    next unless role_counts && role_counts[:total] > 0
+
+    involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
+                                            .sort_by(&:sort_term)
+    involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
+                                      .sort_by(&:sort_term)
+    uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
+    involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+
+    visible_roles << role
+    roles_data[role] = {
+      counts: role_counts,
+      involved_on_collection_level: involved_on_collection_level,
+      involved_on_work_level: involved_on_work_level,
+      uncollected_node: uncollected_node
+    }
+  end
+
 %nav.book-nav-full.by-card-v02
   .side-nav-in-page
     = t(:navigation_in_page)
-  - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
-    :ruby
-      involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
-                                              .sort_by(&:sort_term)
-      involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
-                                        .sort_by(&:sort_term)
-      uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
-      involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+  - visible_roles.each do |role|
+    - data = roles_data[role]
+    - role_counts = data[:counts]
+    - involved_on_collection_level = data[:involved_on_collection_level]
+    - involved_on_work_level = data[:involved_on_work_level]
+    - uncollected_node = data[:uncollected_node]
 
-    - role_counts = @toc_counts ? @toc_counts[role] : nil
-    - if role_counts && role_counts[:total] > 0
-      %div{ class: first ? "nav-book-group selected" : "nav-book-group" }
-        .headline-2-v02
-          = t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
-          - if role_counts[:total] > 0
-            = " (#{role_counts[:total]})"
-        - if role_counts[:collection_level] > 0
-          %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
-            .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-collection-level"}
-              = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
-              %span.count-badge= " (#{role_counts[:collection_level]})"
-              %span.collapse-arrow ↓
-          %ul{ id: "collection-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
-            = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
-          - first = false
-        - if role_counts[:work_level] > 0
-          %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
-            .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level" }
-              = t('toc_by_role.involved_on_work_level')
-              %span.count-badge= " (#{role_counts[:work_level]})"
-              %span.collapse-arrow ↓
-          %ul{ id: "work-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree" }
-            = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
-          - first = false
-        - if role_counts[:uncollected] > 0
-          %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
-            .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-uncollected" }
-              = t('toc_by_role.uncollected_works')
-              %span.count-badge= " (#{role_counts[:uncollected]})"
-              %span.collapse-arrow ↓
-          %ul{ id: "uncollected-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
-            = render partial: 'shared/navbar/toc_node', collection: [uncollected_node], locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
-          - first = false
+    %div{ class: first ? "nav-book-group selected" : "nav-book-group" }
+      .headline-2-v02
+        = t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
+        - if role_counts[:total] > 0
+          = " (#{role_counts[:total]})"
+      - if role_counts[:collection_level] > 0
+        %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
+          .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-collection-level"}
+            = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
+            %span.count-badge= " (#{role_counts[:collection_level]})"
+            %span.collapse-arrow ↓
+        %ul{ id: "collection-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
+          = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
+        - first = false
+      - if role_counts[:work_level] > 0
+        %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
+          .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level" }
+            = t('toc_by_role.involved_on_work_level')
+            %span.count-badge= " (#{role_counts[:work_level]})"
+            %span.collapse-arrow ↓
+        %ul{ id: "work-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree" }
+          = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
+        - first = false
+      - if role_counts[:uncollected] > 0
+        %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
+          .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-uncollected" }
+            = t('toc_by_role.uncollected_works')
+            %span.count-badge= " (#{role_counts[:uncollected]})"
+            %span.collapse-arrow ↓
+        %ul{ id: "uncollected-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
+          = render partial: 'shared/navbar/toc_node', collection: [uncollected_node], locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
+        - first = false
 
-  - if @any_curated
-    .nav-book-group.editorial-nav
-      .headline-2-v02= t(:curated_content)
-      .book-type
-        .truncate עדכונים אחרונים
-      .book-type
-        .truncate יצירות על אודות היוצר
-      .book-type
-        .truncate קישורים חיצוניים
-      .book-type
-        .truncate המלצות קוראים
+  .nav-book-group.editorial-nav
+    .headline-2-v02= t(:curated_content)
+    .book-type
+      .truncate= t(:latest_updates)
+    .book-type
+      .truncate= t(:works_about_author)
+    .book-type
+      .truncate= t(:external_links)
+    .book-type
+      .truncate= t(:reader_recommendations)
   - if @lexicon_entry.present?
     .nav-book-group.lexicon-background-color
       .headline-2-v02= t(:lexicon_content)
@@ -69,6 +90,18 @@
         .truncate על המחבר ויצירתו
       .book-type
         .truncate קישורים
+
+%nav.book-nav-thin.by-card-v02
+  .side-nav-in-page
+    %a.horizontal-collapse-expand{:href => "#"}
+  - visible_roles.each do |role|
+    .nav-books
+      .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
+  .nav-books
+    .headline-2-v02= t(:curated_content)
+  - if @lexicon_entry.present?
+    .nav-books.lexicon-background-color
+      .headline-2-v02= t(:lexicon_content)
 
 :javascript
   $(document).ready(function() {
