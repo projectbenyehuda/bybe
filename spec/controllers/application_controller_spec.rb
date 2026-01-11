@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 describe ApplicationController do
@@ -11,7 +13,7 @@ describe ApplicationController do
         let!(:base_user) { create(:base_user, session_id: session.id.private_id) }
 
         it 'returns it' do
-          expect { subject }.not_to(change { BaseUser.count })
+          expect { subject }.not_to(change(BaseUser, :count))
           expect(subject).to eq base_user
         end
       end
@@ -23,11 +25,25 @@ describe ApplicationController do
           subject { @controller.base_user(true) }
 
           it 'creates new one' do
-            expect { subject }.to change { BaseUser.count }.by(1)
+            expect { subject }.to change(BaseUser, :count).by(1)
             bu = BaseUser.order(id: :desc).first
             expect(subject).to eq bu
             expect(bu.session_id).to eq session.id.private_id
             expect(bu.user).to be_nil
+          end
+
+          context 'when session cannot be created' do
+            before do
+              # Stub session to have nil id even after trying to create it
+              stub_session = double('session')
+              allow(stub_session).to receive_messages(id: nil, '[]=': nil, delete: nil, '[]': nil)
+              allow(@controller).to receive(:session).and_return(stub_session)
+            end
+
+            it 'returns nil without creating BaseUser' do
+              expect { subject }.not_to(change(BaseUser, :count))
+              expect(subject).to be_nil
+            end
           end
         end
       end
@@ -42,7 +58,7 @@ describe ApplicationController do
         let!(:base_user) { create(:base_user, user: user) }
 
         it 'returns it' do
-          expect { subject }.not_to(change { BaseUser.count })
+          expect { subject }.not_to(change(BaseUser, :count))
           expect(subject).to eq base_user
         end
       end
@@ -54,7 +70,7 @@ describe ApplicationController do
           subject { @controller.base_user(true) }
 
           it 'creates new one' do
-            expect { subject }.to change { BaseUser.count }.by(1)
+            expect { subject }.to change(BaseUser, :count).by(1)
             bu = BaseUser.order(id: :desc).first
             expect(subject).to eq bu
             expect(bu.user_id).to eq user.id
