@@ -58,6 +58,7 @@ he:
     files:
       index:
         title: רשימת הקבצים
+        title_placeholder: חיפוש לפי כותרת...
       migrate:
         success: Migration queued
         title: Analyze
