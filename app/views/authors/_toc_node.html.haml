@@ -44,7 +44,7 @@
       %li.by-card-v02{"aria-expanede" => "false", :role => "treeitem"}
         .by-card-content-v02{:style => "padding-top: 12px;"}
           .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
-            %div{style:'font-size:120%;'}
+            %span{style:'font-size:120%;'}
               - if uncollected
                 %p{style: 'font-size: 0.8rem; color: #222222;'}= t(:uncollected_works_collection_explanation)
               - else

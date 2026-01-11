@@ -1,6 +1,5 @@
 - if toc_node.is_a?(TocTree::CollectionNode)
   - collection = toc_node.collection
-  - type_prefix = collection.collection_type == 'uncollected' ? '' : textify_collection_type(collection.collection_type)
   - uncollected = collection.collection_type == 'uncollected'
   - children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
   - children.reject!{ |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.status != 'published' } # don't show deleted or unpublished manifestations in the TOC
