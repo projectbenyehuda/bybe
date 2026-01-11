@@ -341,6 +341,10 @@ GEM
       thor
     hebrew (0.2.6)
     hebruby (2.1.1)
+    hotwire-livereload (2.1.1)
+      actioncable (>= 7.0.0)
+      listen (>= 3.0.0)
+      railties (>= 7.0.0)
     htmlentities (4.3.4)
     http-accept (1.7.0)
     http-cookie (1.0.8)
@@ -904,6 +908,7 @@ DEPENDENCIES
   haml_lint (~> 0.57.0)
   hebrew (>= 0.2.1)
   hebruby
+  hotwire-livereload (~> 2.1)
   htmlentities
   human_enum_name
   image_processing
