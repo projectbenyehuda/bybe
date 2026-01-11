@@ -1192,15 +1192,13 @@ p.by-genre-name-v02.headline-2-v02 {
   padding-right: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
-/* Add visual feedback on navbar hover */
+/* Add visual feedback on navbar hover - shadow only, no padding to avoid layout shift */
 .author-side-nav-col:hover .book-nav-full,
 .author-side-nav-col:hover .mainlist,
 .side-nav-col:hover #chapter-nav,
 .side-nav-col:hover #chapternav,
 .side-nav-col:hover .binder-texts-list {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  padding-right: 8px;
-  padding-left: 8px;
 }
 
 /* Collapse arrow indicators for navbar */
