@@ -58,6 +58,7 @@ en:
     files:
       index:
         title: List of files
+        title_placeholder: Search by title...
       migrate:
         success: Migration queued
         title: Analyze
