@@ -13,11 +13,12 @@ module TocTree
       @id ||= "placeholder:#{@collection_item.id}"
     end
 
-    def visible?(role, authority_id, involved_on_collection_level)
+    def visible?(role, authority_id, involved_on_collection_level, parent_collection = nil)
       # Placeholders should only be visible if authority is involved on collection level
       return false unless involved_on_collection_level
 
       # Placeholder should be visible if authority is involved in parent collection with given role
+      # parent_collection parameter is not used here as placeholder visibility is determined by its direct parent
       @collection_item.collection.involved_authorities.any? do |ia|
         ia.role == role.to_s && ia.authority_id == authority_id
       end
@@ -32,7 +33,7 @@ module TocTree
     end
 
     # Placeholders don't contain manifestations
-    def count_manifestations(_role, _authority_id, _involved_on_collection_level)
+    def count_manifestations(_role, _authority_id, _involved_on_collection_level, _parent_collection = nil)
       0
     end
   end
