@@ -20,8 +20,9 @@ class ApplicationController < ActionController::Base
       session[:dummy] = true
       session.delete(:dummy)
 
-      # no session exists, so no stored data for this user yet
-
+      # Check if session was created successfully
+      # If session.id is still nil, we can't create a BaseUser without a session
+      return nil if session.id.nil?
     end
 
     attrs = if current_user
