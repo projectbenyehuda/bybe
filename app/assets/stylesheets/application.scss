@@ -1142,20 +1142,36 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
-/* Navbar hover expansion - expand entire navbar column on hover to show clipped content */
+/* Navbar hover expansion - show full text by wrapping instead of extending horizontally */
 
-/* Expand the navbar column containers on hover - stay right-aligned */
-.author-side-nav-col:hover,
-.side-nav-col:hover {
-  width: auto !important;
-  max-width: max-content !important;
-  min-width: 200px !important;  /* Don't shrink below original width */
+/* Simple direct hover on truncate - apply to all truncate elements in sidebars */
+.author-side-nav-col .truncate:hover,
+.side-nav-col .truncate:hover {
+  white-space: normal !important;
   overflow: visible !important;
-  margin-left: auto !important;  /* Keep it right-aligned */
-  z-index: 100;
+  text-overflow: clip !important;
+  word-break: break-word !important;
+  max-width: none !important;
 }
 
-/* Make parent row containers allow overflow and use flexbox for alignment */
+/* Also when hovering parent containers */
+.author-side-nav-col .book-type:hover .truncate,
+.author-side-nav-col .nav-link-chapter:hover .truncate,
+.side-nav-col .book-type:hover .truncate,
+.side-nav-col .nav-link-chapter:hover .truncate {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word !important;
+  max-width: none !important;
+}
+.author-side-nav-col .book-type:hover .nav-author a,
+.author-side-nav-col .nav-link-chapter:hover a,
+.side-nav-col .book-type:hover .nav-author a,
+.side-nav-col .nav-link-chapter:hover a {
+  white-space: normal !important;
+}
+/* Make parent row containers allow overflow for horizontal expansion */
 .row:has(.author-side-nav-col),
 .row:has(.side-nav-col) {
   overflow: visible !important;
