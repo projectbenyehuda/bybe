@@ -16,6 +16,11 @@
   $(document).ready(function() {
     $('.dismiss_b').click(function() {
       $('.donation-top-baner').hide();
-      $.ajax( { url: "#{preference_url(:suppress_donation_banner)}", method: 'PUT', data: { value: #{Time.now.to_i} } });
+      $.ajax({
+        url: "#{preference_url(:suppress_donation_banner)}",
+        method: 'PUT',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { value: #{Time.now.to_i} }
+      });
     });
   });
