@@ -10,9 +10,15 @@ module Lexicon
     def index
       @lex_files = LexFile.all
       @entrytype = params[:entrytype]
+      @title = params[:title]
 
       if @entrytype.present?
         @lex_files = @lex_files.where(entrytype: @entrytype)
+      end
+
+      if @title.present?
+        @lex_files = @lex_files.joins(:lex_entry)
+                               .where('lex_entries.title LIKE ?', "%#{@title}%")
       end
 
       @lex_files = @lex_files.preload(:lex_entry)
