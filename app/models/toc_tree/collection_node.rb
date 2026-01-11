@@ -33,7 +33,9 @@ module TocTree
     # @param involved_on_collection_level [Boolean] mode of check: if true we check if authority is involved on
     #   collection level (and optionally at work level), otherwise we check if authority is NOT involved on
     #   collection level
-    def visible?(role, authority_id, involved_on_collection_level)
+    # @param parent_collection [Collection] optional parent collection context (not used for CollectionNode,
+    #   but needed for signature consistency with other node types)
+    def visible?(role, authority_id, involved_on_collection_level, parent_collection = nil)
       involvement_check = @collection.involved_authorities.any? do |ia|
         ia.role == role.to_s && ia.authority_id == authority_id
       end
@@ -52,7 +54,7 @@ module TocTree
     def children_by_role(role, authority_id, involved_on_collection_level)
       @children_by_role ||= {}
       @children_by_role["#{role}_#{involved_on_collection_level}"] ||= sorted_children.select do |child|
-        child.visible?(role, authority_id, involved_on_collection_level)
+        child.visible?(role, authority_id, involved_on_collection_level, @collection)
       end
     end
 
@@ -69,11 +71,11 @@ module TocTree
     end
 
     # Count manifestations recursively in this collection and its children
-    def count_manifestations(role, authority_id, involved_on_collection_level)
-      return 0 unless visible?(role, authority_id, involved_on_collection_level)
+    def count_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
+      return 0 unless visible?(role, authority_id, involved_on_collection_level, parent_collection)
 
       children_by_role(role, authority_id, involved_on_collection_level).sum do |child|
-        child.count_manifestations(role, authority_id, involved_on_collection_level)
+        child.count_manifestations(role, authority_id, involved_on_collection_level, @collection)
       end
     end
   end
