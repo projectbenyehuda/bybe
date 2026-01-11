@@ -5,7 +5,9 @@ require 'sidekiq/testing'
 
 describe '/lexicon/files' do
   describe '#index' do
-    subject(:call) { get '/lex/files' }
+    subject(:call) { get '/lex/files', params: params }
+
+    let(:params) { {} }
 
     before do
       create_list(:lex_file, 2, :person, status: :classified)
@@ -16,6 +18,82 @@ describe '/lexicon/files' do
 
     it 'renders successfully' do
       expect(call).to eq(200)
+    end
+
+    context 'when filtering by title' do
+      let!(:file_with_title) do
+        create(
+          :lex_file,
+          :person,
+          status: :classified,
+          title: 'Unique Test Title'
+        )
+      end
+
+      let(:params) { { title: 'Unique' } }
+
+      it 'filters files by title substring' do
+        call
+        expect(assigns(:lex_files).map(&:id)).to include(file_with_title.id)
+        expect(assigns(:lex_files).count).to be >= 1
+      end
+    end
+
+    context 'when filtering by title with partial match' do
+      let!(:file1) do
+        create(
+          :lex_file,
+          :person,
+          status: :classified,
+          title: 'Abraham Lincoln'
+        )
+      end
+
+      let!(:file2) do
+        create(
+          :lex_file,
+          :person,
+          status: :classified,
+          title: 'Abraham Mapu'
+        )
+      end
+
+      let(:params) { { title: 'Abraham' } }
+
+      it 'returns all files matching the substring' do
+        call
+        file_ids = assigns(:lex_files).map(&:id)
+        expect(file_ids).to include(file1.id, file2.id)
+      end
+    end
+
+    context 'when filtering by both entrytype and title' do
+      let!(:person_file) do
+        create(
+          :lex_file,
+          :person,
+          status: :classified,
+          title: 'Test Person'
+        )
+      end
+
+      let!(:publication_file) do
+        create(
+          :lex_file,
+          :publication,
+          status: :classified,
+          title: 'Test Publication'
+        )
+      end
+
+      let(:params) { { entrytype: 'person', title: 'Test' } }
+
+      it 'applies both filters' do
+        call
+        file_ids = assigns(:lex_files).map(&:id)
+        expect(file_ids).to include(person_file.id)
+        expect(file_ids).not_to include(publication_file.id)
+      end
     end
   end
 
