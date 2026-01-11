@@ -3,7 +3,7 @@ class PreferencesController < ApplicationController
     bu = base_user(true)
 
     # If we couldn't create a base_user (e.g., session couldn't be created),
-    # return an error response - user preferences can't be saved without a session
+    # silently fail - user preferences can't be saved without a session
     if bu.nil?
       render json: { status: 'error', message: 'Could not create session' }, status: :unprocessable_content
       return
