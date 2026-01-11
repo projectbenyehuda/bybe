@@ -20,11 +20,11 @@
     # Determine the first visible scroll target for this role (for thin navbar)
     first_scroll_target = if role_counts[:collection_level] > 0
                            "#works-#{role}-collection-level"
-                         elsif role_counts[:work_level] > 0
+                          elsif role_counts[:work_level] > 0
                            "#works-#{role}-work-level"
-                         elsif role_counts[:uncollected] > 0
+                          elsif role_counts[:uncollected] > 0
                            "#works-#{role}-uncollected"
-                         end
+                          end
 
     visible_roles << role
     roles_data[role] = {
@@ -80,26 +80,26 @@
         - first = false
 
   .nav-book-group.editorial-nav
-    .headline-2-v02= t(:curated_content)
+    .headline-2-v02= t(:additional_content)
     .book-type
       .truncate= t(:latest_updates)
     .book-type
-      .truncate= t(:works_about_author)
+      .truncate= t(:works_about_this_author)
     .book-type
       .truncate= t(:external_links)
     .book-type
-      .truncate= t(:reader_recommendations)
+      .truncate= t(:recommendations_for_work)
   - if @lexicon_entry.present?
-    .nav-book-group.lexicon-background-color
+    .nav-book-group.lexicon-background-color{ 'data-scroll-target' => '#lexicon-content' }
       .headline-2-v02= t(:lexicon_content)
       .book-type
-        .truncate תמצית
+        .truncate= t('lexicon.verification.sections.biography')
       .book-type
-        .truncate רשימת ספרים
+        .truncate= t('lexicon.verification.sections.works_section')
       .book-type
-        .truncate על המחבר ויצירתו
+        .truncate= t('activerecord.attributes.lex_person.about', gender_suffix: @author.female? ? 'ת' : '', gender_letter: @author.gender_letter)
       .book-type
-        .truncate קישורים
+        .truncate= t('lexicon.verification.sections.links_section')
 
 %nav.book-nav-thin.by-card-v02
   .side-nav-in-page
