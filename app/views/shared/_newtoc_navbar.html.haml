@@ -17,12 +17,22 @@
     uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
     involved_on_work_level -= [uncollected_node] if uncollected_node.present?
 
+    # Determine the first visible scroll target for this role (for thin navbar)
+    first_scroll_target = if role_counts[:collection_level] > 0
+                           "#works-#{role}-collection-level"
+                         elsif role_counts[:work_level] > 0
+                           "#works-#{role}-work-level"
+                         elsif role_counts[:uncollected] > 0
+                           "#works-#{role}-uncollected"
+                         end
+
     visible_roles << role
     roles_data[role] = {
       counts: role_counts,
       involved_on_collection_level: involved_on_collection_level,
       involved_on_work_level: involved_on_work_level,
-      uncollected_node: uncollected_node
+      uncollected_node: uncollected_node,
+      first_scroll_target: first_scroll_target
     }
   end
 
@@ -95,12 +105,13 @@
   .side-nav-in-page
     %a.horizontal-collapse-expand{:href => "#"}
   - visible_roles.each do |role|
-    .nav-books
+    - scroll_target = roles_data[role][:first_scroll_target]
+    .nav-books.pointer{ 'data-scroll-target' => scroll_target }
       .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
-  .nav-books
+  .nav-books.pointer{ 'data-scroll-target' => '#curated-content' }
     .headline-2-v02= t(:curated_content)
   - if @lexicon_entry.present?
-    .nav-books.lexicon-background-color
+    .nav-books.lexicon-background-color.pointer{ 'data-scroll-target' => '#lexicon-content' }
       .headline-2-v02= t(:lexicon_content)
 
 :javascript
@@ -180,5 +191,17 @@
     $('.collapse.navbar-nav').on('hide.bs.collapse', function() {
       var targetId = $(this).attr('id');
       $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text('↓');
+    });
+
+    // Handle clicks on thin navbar items (mobile)
+    $('.book-nav-thin .nav-books[data-scroll-target]').click(function(e) {
+      var scrollTarget = $(this).data('scroll-target');
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        var headerHeight = $('#header-author').outerHeight() || 0;
+        var offset = $(scrollTarget).offset().top - headerHeight - 120;
+        $('html, body').animate({
+          scrollTop: offset
+        }, 500);
+      }
     });
   });
