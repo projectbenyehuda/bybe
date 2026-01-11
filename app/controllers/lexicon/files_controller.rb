@@ -21,7 +21,7 @@ module Lexicon
                                .where('lex_entries.title LIKE ?', "%#{@title}%")
       end
 
-      @lex_files = @lex_files.preload(:lex_entry)
+      @lex_files = @lex_files.includes(:lex_entry)
                              .order(:fname)
                              .page(params[:page])
     end
