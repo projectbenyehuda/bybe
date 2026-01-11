@@ -14,13 +14,13 @@
 
     - role_counts = @toc_counts ? @toc_counts[role] : nil
     - if role_counts && role_counts[:total] > 0
-      .nav-book-group.selected
+      %div{ class: first ? "nav-book-group selected" : "nav-book-group" }
         .headline-2-v02
           = t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
           - if role_counts[:total] > 0
             = " (#{role_counts[:total]})"
         - if role_counts[:collection_level] > 0
-          .book-type.selected.pointer
+          %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
             .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-collection-level"}
               = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
               %span.count-badge= " (#{role_counts[:collection_level]})"
@@ -29,7 +29,7 @@
             = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
           - first = false
         - if role_counts[:work_level] > 0
-          .book-type.pointer
+          %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
             .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level" }
               = t('toc_by_role.involved_on_work_level')
               %span.count-badge= " (#{role_counts[:work_level]})"
@@ -38,7 +38,7 @@
             = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
           - first = false
         - if role_counts[:uncollected] > 0
-          .book-type.pointer
+          %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
             .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-uncollected" }
               = t('toc_by_role.uncollected_works')
               %span.count-badge= " (#{role_counts[:uncollected]})"
