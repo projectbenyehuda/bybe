@@ -77,6 +77,7 @@ Rails.application.configure do
 
   routes.default_url_options[:host] = 'localhost:3000'
   routes.default_url_options[:protocol] = 'https'
+  config.assets.compile = true
 
   if ENV['PROFILE']
     config.cache_classes = true
@@ -93,7 +94,7 @@ Rails.application.configure do
     config.assets.js_compressor = :uglifier
     config.assets.css_compressor = :sass
     config.assets.compile = true
-    config.assets.digest = true
+    config.assets.digest = false
     config.assets.debug = false
 
     config.active_record.migration_error = false
