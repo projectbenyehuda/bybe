@@ -13,9 +13,18 @@ module TocTree
       @id ||= "manifestation:#{@manifestation.id}"
     end
 
-    def visible?(role, authority_id, involved_on_collection_level)
+    def visible?(role, authority_id, involved_on_collection_level, parent_collection = nil)
+      # When called from a collection context, only check involvement in that specific collection's hierarchy
+      # This prevents a manifestation from appearing at collection-level just because it has involvement
+      # in a different collection's hierarchy
+      parent_collections = if parent_collection
+                             [parent_collection]
+                           else
+                             @manifestation.collection_items.map(&:collection)
+                           end
+
       involved_in_parent = involved_in_parent_collection(
-        @manifestation.collection_items.map(&:collection),
+        parent_collections,
         role,
         authority_id
       )
@@ -27,8 +36,8 @@ module TocTree
     end
 
     # Count manifestations (1 if visible and published, 0 otherwise)
-    def count_manifestations(role, authority_id, involved_on_collection_level)
-      return 0 unless visible?(role, authority_id, involved_on_collection_level)
+    def count_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
+      return 0 unless visible?(role, authority_id, involved_on_collection_level, parent_collection)
       return 0 unless @manifestation.status == 'published'
 
       1
