@@ -4,6 +4,9 @@ module Lexicon
   # Controller for migration verification workbench
   class VerificationController < ApplicationController
     before_action :set_entry, except: %i[index]
+    before_action do |c|
+      c.require_editor('edit_lexicon')
+    end
     layout 'lexicon_backend'
 
     # GET /lexicon/verification/queue
