@@ -485,8 +485,8 @@ class AuthorsController < ApplicationController
         @toc_tree = GenerateTocTree.call(@author)
         @toc_counts = calculate_toc_counts(@toc_tree, @author.id)
       end
-      if @author.lexicon_entry.present?
-        @lexicon_entry = @author.lexicon_entry
+      if @author.lex_person.present?
+        @lexicon_entry = @author.lex_person.entry
       end
       prep_user_content(:author)
       @scrollspy_target = 'genrenav'
