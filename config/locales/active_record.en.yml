@@ -109,6 +109,16 @@ en:
           text: Text
           bib: Bib
           other: Other
+      lex_entry:
+        statuses:
+          draft: Draft
+          deprecated: Deprecated
+          published: Published
+          raw: Raw
+          migrating: Migrating
+          error: Error
+          verifying: Verifying
+          verified: Verified
       lex_person:
         birthdate: Birthdate
         deathdate: Deathdate
