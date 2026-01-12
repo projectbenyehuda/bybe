@@ -27,6 +27,12 @@ en:
         add_person: Add Person
         add_publication: Add Publication
         title: List of Lexicon Entries
+        filter_title: Title
+        filter_title_placeholder: Search by title...
+        filter_status: Status
+        all_statuses: All statuses
+        filter: Filter
+        clear_filters: Clear filters
       show:
         to_pby_person: To the creator's page on Ben-Yehuda Project
         unsupported_entry_type: Unsupported entry type
