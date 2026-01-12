@@ -4,8 +4,7 @@
       = link_to collection.title, collection_path(collection)
   .by-card-content-v02
     %p
-      %b= t(:items_count) + ':'
-      = collection.collection_items.count
+      = t(:items_count, count: collection.collection_items.count)
     - if @sort_order == 'recent'
       %p.whatsnew-item-date
-        = t(:created) + ': ' + l(collection.created_at.to_date, format: :long)
+        = t(:created_with_date, date: l(collection.created_at.to_date, format: :long))

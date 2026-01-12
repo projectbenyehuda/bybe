@@ -1,69 +1,68 @@
-- cache ['whatsnew_page', @sort_order], expires_in: 2.hours do
-  .container-fluid
-    .row
-      / Left Sidebar - Navigation
-      .col-12.col-lg-2.whatsnew-nav
-        %nav.navbar.whatsnew-sticky-nav
-          %ul.nav.flex-column.by-card-v02
-            %li.nav-item
-              %a.nav-link{ href: '#new-authors' }= t(:new_authors)
-            %li.nav-item
-              %a.nav-link{ href: '#new-texts' }= t(:new_texts)
-            %li.nav-item
-              %a.nav-link{ href: '#new-collections' }= t(:new_collections)
-            %li.nav-item
-              %a.nav-link{ href: '#new-tags' }= t(:new_tags)
+.container-fluid
+  .row
+    / Left Sidebar - Navigation
+    .col-12.col-lg-2.whatsnew-nav
+      %nav.navbar.whatsnew-sticky-nav
+        %ul.nav.flex-column.by-card-v02
+          %li.nav-item
+            %a.nav-link{ href: '#new-authors' }= t(:new_authors)
+          %li.nav-item
+            %a.nav-link{ href: '#new-texts' }= t(:new_texts)
+          %li.nav-item
+            %a.nav-link{ href: '#new-collections' }= t(:new_collections)
+          %li.nav-item
+            %a.nav-link{ href: '#new-tags' }= t(:new_tags)
 
-      / Main Content Area
-      .col-12.col-lg-8
-        / Sort Toggle
-        .displayMethodLine.mb-3
-          .switch-label= t(:sort_by)
-          .BYD-switch
-            %button.search-mobile-option{ id: 'sort_alpha', class: (@sort_order == 'alpha' ? 'active' : '') }
-              = t(:alphabetical)
-            %button.search-mobile-option{ id: 'sort_recent', class: (@sort_order == 'recent' ? 'active' : '') }
-              = t(:recent)
+    / Main Content Area
+    .col-12.col-lg-8
+      / Sort Toggle
+      .displayMethodLine.mb-3
+        .switch-label= t(:sort_by)
+        .BYD-switch
+          %button.search-mobile-option{ id: 'sort_alpha', class: (@sort_order == 'alpha' ? 'active' : '') }
+            = t(:alphabetical)
+          %button.search-mobile-option{ id: 'sort_recent', class: (@sort_order == 'recent' ? 'active' : '') }
+            = t(:recent)
 
-        / Category 1: New Authors
-        %section.mb-5#new-authors
-          %h2.headline-2-v02= t(:new_authors)
-          - if @new_authors.empty?
-            %p.text-muted= t(:no_new_authors)
-          - else
-            - @new_authors.each do |author|
-              = render partial: 'whatsnew_author', locals: { author: author }
+      / Category 1: New Authors
+      %section.mb-5#new-authors
+        %h2.headline-2-v02= t(:new_authors)
+        - if @new_authors.empty?
+          %p.text-muted= t(:no_new_authors)
+        - else
+          - @new_authors.each do |author|
+            = render partial: 'whatsnew_author', locals: { author: author }
 
-        / Category 2: New Texts
-        %section.mb-5#new-texts
-          %h2.headline-2-v02= t(:new_texts)
-          - if @new_texts.empty?
-            %p.text-muted= t(:no_new_texts)
-          - else
-            - @new_texts.each do |manifestation|
-              = render partial: 'whatsnew_text', locals: { manifestation: manifestation }
+      / Category 2: New Texts
+      %section.mb-5#new-texts
+        %h2.headline-2-v02= t(:new_texts)
+        - if @new_texts.empty?
+          %p.text-muted= t(:no_new_texts)
+        - else
+          - @new_texts.each do |manifestation|
+            = render partial: 'whatsnew_text', locals: { manifestation: manifestation }
 
-        / Category 3: New Collections
-        %section.mb-5#new-collections
-          %h2.headline-2-v02= t(:new_collections)
-          - if @new_collections.empty?
-            %p.text-muted= t(:no_new_collections)
-          - else
-            - @new_collections.each do |type, collections|
-              - next if collections.empty?
+      / Category 3: New Collections
+      %section.mb-5#new-collections
+        %h2.headline-2-v02= t(:new_collections)
+        - if @new_collections.empty?
+          %p.text-muted= t(:no_new_collections)
+        - else
+          - @new_collections.each do |type, collections|
+            - next if collections.empty?
 
-              %h3.headline-3-v02= t("collection.type.#{type}")
-              - collections.each do |collection|
-                = render partial: 'whatsnew_collection', locals: { collection: collection }
+            %h3.headline-3-v02= t("collection.type.#{type}")
+            - collections.each do |collection|
+              = render partial: 'whatsnew_collection', locals: { collection: collection }
 
-        / Category 4: New Tags
-        %section.mb-5#new-tags
-          %h2.headline-2-v02= t(:new_tags)
-          - if @new_tags.empty?
-            %p.text-muted= t(:no_new_tags)
-          - else
-            - @new_tags.each do |tag|
-              = render partial: 'whatsnew_tag', locals: { tag: tag }
+      / Category 4: New Tags
+      %section.mb-5#new-tags
+        %h2.headline-2-v02= t(:new_tags)
+        - if @new_tags.empty?
+          %p.text-muted= t(:no_new_tags)
+        - else
+          - @new_tags.each do |tag|
+            = render partial: 'whatsnew_tag', locals: { tag: tag }
 
-      / Right Sidebar - Empty for now
-      .col-12.col-lg-2
+    / Right Sidebar - Empty for now
+    .col-12.col-lg-2

@@ -7,7 +7,7 @@
       %p.text-muted= author.other_designation
     - if @sort_order == 'recent'
       %p.whatsnew-item-date
-        = t(:created) + ': ' + l(author.created_at.to_date, format: :long)
+        = t(:created_with_date, date: l(author.created_at.to_date, format: :long))
   .whatsnew-pic-wide
     - if author.profile_image.present?
       %img.img-responsive{ src: author.profile_image.url(:tiny), alt: author.name }

@@ -125,8 +125,7 @@ class IngestiblesController < ApplicationController
         # - email (whom?) with news about the ingestion, and links to all the created entities
         # - show post-ingestion screen, with links to all created entities and affected authorities
         # Invalidate whatsnew page cache after successful ingestion
-        Rails.cache.delete(['whatsnew_page', 'alpha'])
-        Rails.cache.delete(['whatsnew_page', 'recent'])
+        invalidate_whatsnew_cache
         redirect_to ingestible_url(@ingestible), notice: t('.success')
       end
     end
@@ -774,5 +773,14 @@ class IngestiblesController < ApplicationController
   # but these backslashes should not be stored in the database
   def unescape_markdown_title(title)
     title.gsub(/\\([\[\]\*\_\{\}\(\)\#\+\-\.\!'])/, '\1')
+  end
+
+  def invalidate_whatsnew_cache
+    # Delete cache for all sort orders and locales
+    %w[alpha recent].each do |sort_order|
+      I18n.available_locales.each do |locale|
+        Rails.cache.delete(%w[whatsnew_data] + [sort_order, locale.to_s])
+      end
+    end
   end
 end
