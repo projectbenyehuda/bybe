@@ -679,6 +679,7 @@ he:
   filtered_manifestations_count: "תוצאות מסוננות: %{count}"
   total_manifestations_count: "סה\"כ במאגר: %{total}"
   additional_content: 'תוכן נוסף:'
+  lexicon_content: תוכן מהלקסיקון
   additional_items: פריטים נוספים
   authors_of: יוצרי
   sample_authors_of: מבחר יוצרי
