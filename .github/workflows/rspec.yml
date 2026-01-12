@@ -50,4 +50,4 @@ jobs:
           bin/rails db:migrate RAILS_ENV=test
       - name: Run tests
         run: |
-          bundle exec rspec --exclude-pattern spec/system/
+          bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
