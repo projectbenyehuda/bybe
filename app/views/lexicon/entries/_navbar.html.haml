@@ -4,41 +4,43 @@
 - lex_item = @lex_entry.lex_item
 - is_person = lex_item.is_a?(LexPerson)
 
-%nav.book-nav-full.by-card-v02
-  .nav-book-group.lexicon-background-color
+%nav#genrenav.navbar
+  %ul#genre-nav.navbar-nav.flex-column.by-card-v02{"aria-orientation" => "vertical"}
     - if is_person
-      .book-type.selected.pointer{ 'data-scroll-target' => '#lexicon-biography' }
-        .truncate= t('lexicon.verification.sections.biography')
-      .book-type.pointer{ 'data-scroll-target' => '#lexicon-works' }
-        .truncate= t('lexicon.verification.sections.works_section')
-      .book-type.pointer{ 'data-scroll-target' => '#lexicon-about' }
-        .truncate= t('activerecord.attributes.lex_person.about', gender_suffix: lex_item.female? ? 'ת' : '', gender_letter: lex_item.gender_letter)
-      .book-type.pointer{ 'data-scroll-target' => '#lexicon-links' }
-        .truncate= t('lexicon.verification.sections.links_section')
+      %li.nav-item.active.pointer{ 'data-scroll-target' => '#lexicon-biography' }
+        %a#translations_button.nav-link{"aria-selected" => "false", :href => "#"}
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.biography')
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-works' }
+        %a#works_button.nav-link{"aria-selected" => "true", :href => "#"}
+          .side-menu-icon K
+          .side-menu-name= t('lexicon.verification.sections.works_section')
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-about' }
+        %a#about_author_button.nav-link{"aria-selected" => "false", :href => "#"}
+          .side-menu-icon M
+          .side-menu-name= t('activerecord.attributes.lex_person.about', gender_suffix: lex_item.female? ? 'ת' : '', gender_letter: lex_item.gender_letter)
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
+        %a#links_button.nav-link{"aria-selected" => "false", :href => "#"}
+          .side-menu-icon +
+          .side-menu-name= t('lexicon.verification.sections.links_section')
     - else
-      .book-type.selected.pointer{ 'data-scroll-target' => '#lexicon-description' }
+      %li.nav-item.selected.pointer{ 'data-scroll-target' => '#lexicon-description' }
         .truncate= t('lexicon.verification.sections.description_section')
-      .book-type.pointer{ 'data-scroll-target' => '#lexicon-toc' }
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-toc' }
         .truncate= t('lexicon.verification.sections.toc_section')
-      .book-type.pointer{ 'data-scroll-target' => '#lexicon-links' }
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
         .truncate= t('lexicon.verification.sections.links_section')
 
-%nav.book-nav-thin.by-card-v02
-  .side-nav-in-page
-    %a.horizontal-collapse-expand{:href => "#"}
-  .nav-books.lexicon-background-color.pointer{ 'data-scroll-target' => is_person ? '#lexicon-biography' : '#lexicon-description' }
-    .headline-2-v02= t(:lexicon_content)
 
 :javascript
   $(document).ready(function() {
     // Handle clicks on navbar items
-    $('.book-type[data-scroll-target]').click(function(e) {
+    $('.nav-item[data-scroll-target]').click(function(e) {
       var scrollTarget = $(this).data('scroll-target');
 
-      // Remove .selected from all .book-type elements and add to the clicked one
-      $('.book-type').removeClass('selected');
-      $(this).addClass('selected');
-
+      // Remove .active from all .nav-link elements and add to the clicked one
+      $('.nav-link').removeClass('active');
+      $(this).find('.nav-link').addClass('active');
       if (scrollTarget && $(scrollTarget).length > 0) {
         var offset = $(scrollTarget).offset().top - 120;
         $('html, body').animate({
@@ -46,15 +48,7 @@
         }, 500);
       }
     });
-
-    // Handle clicks on thin navbar (mobile)
-    $('.book-nav-thin .nav-books[data-scroll-target]').click(function(e) {
-      var scrollTarget = $(this).data('scroll-target');
-      if (scrollTarget && $(scrollTarget).length > 0) {
-        var offset = $(scrollTarget).offset().top - 120;
-        $('html, body').animate({
-          scrollTop: offset
-        }, 500);
-      }
+    $('.nav-link').click(function(e) {
+      e.preventDefault();
     });
   });
