@@ -92,14 +92,14 @@
   - if @lexicon_entry.present?
     .nav-book-group.lexicon-background-color{ 'data-scroll-target' => '#lexicon-content' }
       .headline-2-v02= t(:lexicon_content)
-      .book-type
-        .truncate= t('lexicon.verification.sections.biography')
-      .book-type
-        .truncate= t('lexicon.verification.sections.works_section')
-      .book-type
-        .truncate= t('activerecord.attributes.lex_person.about', gender_suffix: @author.person.female? ? 'ת' : '', gender_letter: @author.gender_letter)
-      .book-type
-        .truncate= t('lexicon.verification.sections.links_section')
+      .book-type.pointer
+        .truncate{ 'data-scroll-target' => '#lexicon-bio' }= t('lexicon.verification.sections.biography')
+      .book-type.pointer
+        .truncate{ 'data-scroll-target' => '#lexicon-works' }= t('lexicon.verification.sections.works_section')
+      .book-type.pointer
+        .truncate{ 'data-scroll-target' => '#lexicon-about' }= t('activerecord.attributes.lex_person.about', gender_suffix: @author.person.female? ? 'ת' : '', gender_letter: @author.gender_letter)
+      .book-type.pointer
+        .truncate{ 'data-scroll-target' => '#lexicon-links' }= t('lexicon.verification.sections.links_section')
 
 %nav.book-nav-thin.by-card-v02
   .side-nav-in-page
