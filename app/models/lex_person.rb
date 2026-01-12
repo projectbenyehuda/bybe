@@ -21,4 +21,9 @@ class LexPerson < ApplicationRecord
   def gender_letter
     female? ? 'ה' : 'ו'
   end
+
+  # Returns the LexEntry that links to this person
+  def lex_entry
+    entry
+  end
 end
