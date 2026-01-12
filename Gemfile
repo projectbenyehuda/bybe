@@ -64,7 +64,7 @@ gem 'yt' # for polling YouTube for new videos
 gem 'gared', '>= 0.1.2' # https://gitlab.com/abartov/gared # for scraping bibliographic data from Hebrew sources
 gem 'hebrew', '>= 0.2.1' # https://github.com/abartov/hebrew
 # gem 'goldiloader'
-gem 'haml', '< 6.4' # we should stick to haml 6.3, as haml_lint does not supports 6.4+ yet
+gem 'haml'
 # gem 'zoom', '~>0.4.1', :git => 'https://github.com/bricestacey/ruby-zoom.git' # for Z39.50 queries to libraries
 gem 'docx', '~> 0.9.1' # for pre-processing DOCX files to preserve stanzas. Version locked until they fix https://github.com/ruby-docx/docx/issues/168
 gem 'gepub' # for generating EPUBs
@@ -130,7 +130,7 @@ group :development do
   gem 'debug'
   gem 'derailed_benchmarks'
   gem 'ed25519'
-  gem 'haml_lint', '~> 0.57.0', require: false
+  gem 'haml_lint', '~> 0.68.0', require: false
   gem 'immigrant'
   gem 'listen'
   gem 'pronto'
