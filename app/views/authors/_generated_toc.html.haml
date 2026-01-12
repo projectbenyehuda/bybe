@@ -17,6 +17,31 @@
                          authority_id: @author.id,
                          editable: false,
                          nonce: role }
+  - if @lexicon_entry.present?
+    - lex_person = @lexicon_entry.lex_item # TODO: generalize for other lex_item types
+    .headline-books
+      = t('lexicon.header.title')
+      .lexicon-logo
+    .peach2-lexicon
+      .by-card-v02
+        #lexicon-bio
+        .by-card-content-v02
+          %p#lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
+      #lexicon-works
+        = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
+          %ul
+            - lex_person.works.split("\n").each do |book|
+              %li!= MarkdownToHtml.call(book)
+      #lexicon-about
+        = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
+          - lex_person.citations.group_by(&:subject).each do |subject, list|
+            %h4= subject
+            %ul
+              - list.each do |c|
+                - cit_text = render_citation(c)
+                %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
+      #lexicon-links
+        = render partial: 'lexicon/entries/links', locals: { links: lex_person.links }
 
   .by-card-v02#text-volunteers-desktop
     .by-card-header-v02
