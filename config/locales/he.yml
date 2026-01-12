@@ -631,6 +631,7 @@ he:
   welcome_stats_html: "כיום כלולות בפרויקט <b>%{works}</b> יצירות, מאת כ-<b>%{authors}</b> יוצרים, ו-<b>%{headwords}</b> ערכים מילוניים."
   total_manifestations: "סה\"כ יצירות: %{total}"
   additional_content: 'תוכן נוסף:'
+  lexicon_content: תוכן מהלקסיקון
   additional_items: פריטים נוספים
   authors_of: יוצרי
   sample_authors_of: מבחר יוצרי
