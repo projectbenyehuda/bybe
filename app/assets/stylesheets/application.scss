@@ -1133,11 +1133,34 @@ p.by-genre-name-v02.headline-2-v02 {
 	overflow-y: auto;
 }
 
+/* Sticky navbar for lexicon entries */
+.peach2-lexicon .side-menu-area {
+	position: sticky;
+  top: 20px;
+	align-self: flex-start;
+}
+
+.peach2-lexicon .side-menu-area .book-nav-full {
+	max-height: calc(100vh - 40px);
+	overflow-y: auto;
+}
+
 @media only screen and (max-width: 991px) {
   .author-side-nav-col {
     position: sticky;
     top: 120px;
     max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  .peach2-lexicon .side-menu-area {
+    position: sticky;
+    top: 10px;
+    align-self: flex-start;
+  }
+
+  .peach2-lexicon .side-menu-area .book-nav-full {
+    max-height: calc(100vh - 20px);
     overflow-y: auto;
   }
 }

@@ -1,9 +1,16 @@
 .row
-  .col-8
-    = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:description) } do
-      != MarkdownToHtml.call(lex_publication.description)
-    = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:toc) } do
-      != MarkdownToHtml.call(lex_publication.toc)
-    = render partial: 'links', locals: { links: lex_publication.links }
-  .col-4
+  .col-12.col-lg-8
+    .row
+      .col.side-menu-area
+        = render partial: 'navbar'
+      .col
+        #lexicon-description
+          = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:description) } do
+            != MarkdownToHtml.call(lex_publication.description)
+        #lexicon-toc
+          = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:toc) } do
+            != MarkdownToHtml.call(lex_publication.toc)
+        #lexicon-links
+          = render partial: 'links', locals: { links: lex_publication.links }
+  .col-12.col-lg-4
     = render partial: 'lexicon/shared/images', locals: { entry: lex_publication.entry }
