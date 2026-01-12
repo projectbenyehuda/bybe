@@ -16,7 +16,7 @@ class User < ApplicationRecord
   # no apparent need to be able to retrieve all recommendations a particular (admin) user has *resolved*.  If one arises, use a separate association on the resolved_by foreign key
 
   # editor bits
-  EDITOR_BITS = ['handle_proofs', 'handle_recommendations', 'curate_featured_content', 'bib_workshop', 'edit_catalog', 'legacy_metadata', 'edit_people', 'conversion_verification', 'edit_sitenotice', 'moderate_tags']
+  EDITOR_BITS = ['handle_proofs', 'handle_recommendations', 'curate_featured_content', 'bib_workshop', 'edit_catalog', 'legacy_metadata', 'edit_people', 'conversion_verification', 'edit_sitenotice', 'moderate_tags', 'edit_lexicon']
 
   def admin?
     admin
