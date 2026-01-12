@@ -42,7 +42,7 @@ Bybeconv::Application.routes.draw do
     resources :citation_authors, only: %i(update destroy)
 
     resources :publications, only: %i(edit update new create)
-    resources :entries, except: %i(update new create) do
+    resources :entries, except: %i(new create) do
       resources :attachments, only: %i(index create destroy)
       resources :links, shallow: true, except: %i(show)
     end
