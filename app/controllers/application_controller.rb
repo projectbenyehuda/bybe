@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   # before_action :set_font_size # TODO: re-enable when we support this
   before_action :set_base_user
   before_action :mention_skipped
+  before_action :prep_tabs
   after_action :set_access_control_headers
   autocomplete :tag_name, :name, limit: 15, scopes: [:approved], extra_data: [:tag_id] # TODO: also search alternate titles!
 
@@ -341,6 +342,18 @@ class ApplicationController < ActionController::Base
     return unless params[:skipped].present?
 
     flash.now[:notice] = I18n.t(:skipped_x_items, x: params[:skipped]) # the .now avoid showing the flash on the next page
+  end
+
+  def prep_tabs
+    @periodicals_count = Rails.cache.fetch('periodicals_count', expires_in: 60.minutes) do
+      Collection.where(collection_type: 'periodical').count
+    end
+    @pby_volumes_count = Rails.cache.fetch('pby_volumes_count', expires_in: 60.minutes) do
+      Collection.pby_volumes.count
+    end
+    @public_anthologies_count = Rails.cache.fetch('public_anthologies_count', expires_in: 60.minutes) do
+      Anthology.public_anthology.count
+    end
   end
 
   helper_method :current_user, :html_entities_coder

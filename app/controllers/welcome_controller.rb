@@ -24,20 +24,11 @@ class WelcomeController < ApplicationController
     @authors_in_period = cached_authors_in_period
     @works_by_period = cached_works_by_period
     @periodicals = Collection.includes(:collection_items).where(collection_type: 'periodical').order(:title) # TODO: what order would make sense?
-    @periodicals_count = Rails.cache.fetch('periodicals_count', expires_in: 60.minutes) do
-      Collection.where(collection_type: 'periodical').count
-    end
     @periodicals_text_count = Rails.cache.fetch('periodicals_text_count', expires_in: 15.minutes) do
       ManifestationsIndex.query(match: { in_periodical: true }).count
     end
-    @pby_volumes_count = Rails.cache.fetch('pby_volumes_count', expires_in: 60.minutes) do
-      Collection.pby_volumes.count
-    end
     @pby_works_count = Rails.cache.fetch('pby_works_count', expires_in: 60.minutes) do
       Collection.pby_volumes.map(&:manifestations_count).sum
-    end
-    @public_anthologies_count = Rails.cache.fetch('public_anthologies_count', expires_in: 60.minutes) do
-      Anthology.public_anthology.count
     end
     # @whatsnew = whatsnew_anonymous # TODO: custom calculate for logged-in users
     @featured_content = featured_content
