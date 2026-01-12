@@ -1,0 +1,10 @@
+.by-card-v02.mb-3
+  .by-card-header-v02
+    %p.headline-3-v02
+      = link_to collection.title, collection_path(collection)
+  .by-card-content-v02
+    %p
+      = t(:items_count, count: collection.collection_items.count)
+    - if @sort_order == 'recent'
+      %p.whatsnew-item-date
+        = t(:created_with_date, date: l(collection.created_at.to_date, format: :long))

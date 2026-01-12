@@ -1168,6 +1168,8 @@ class AdminController < ApplicationController
       t = Tag.find(params[:id])
       if t.present?
         t.approve!(current_user)
+        # Invalidate whatsnew page cache when a tag is approved
+        invalidate_whatsnew_cache
         Notifications.send_or_queue(:tag_approved, t.creator.email, t) unless t.creator.blocked? # don't send email if user is blocked
         flash[:notice] = t(:tag_approved)
         redirect_to url_for(action: :tag_moderation, tag_id: t.id)
@@ -1185,6 +1187,8 @@ class AdminController < ApplicationController
       t = Tag.find(params[:id])
       if t.present?
         t.approve!(current_user)
+        # Invalidate whatsnew page cache when a tag is approved
+        invalidate_whatsnew_cache
         Notifications.send_or_queue(:tag_approved, t.creator.email, t) unless t.creator.blocked? # don't send email if user is blocked
         next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
                                                                                                 t.created_at).order(:created_at).limit(1)
@@ -1520,5 +1524,14 @@ class AdminController < ApplicationController
 
   def prepare_similar_tags
     ListItem.where(listkey: 'tag_similarity').pluck(:item_id, :extra).to_h
+  end
+
+  def invalidate_whatsnew_cache
+    # Delete cache for all sort orders and locales
+    %w[alpha recent].each do |sort_order|
+      I18n.available_locales.each do |locale|
+        Rails.cache.delete(%w[whatsnew_data] + [sort_order, locale.to_s])
+      end
+    end
   end
 end

@@ -1,0 +1,13 @@
+.by-card-v02.mb-3
+  .by-card-header-v02
+    %p.headline-3-v02
+      = link_to author.name, authority_path(author)
+  .by-card-content-v02
+    - if author.other_designation.present?
+      %p.text-muted= author.other_designation
+    - if @sort_order == 'recent'
+      %p.whatsnew-item-date
+        = t(:created_with_date, date: l(author.created_at.to_date, format: :long))
+  .whatsnew-pic-wide
+    - if author.profile_image.present?
+      %img.img-responsive{ src: author.profile_image.url(:tiny), alt: author.name }

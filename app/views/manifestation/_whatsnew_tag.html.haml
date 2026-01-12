@@ -1,0 +1,12 @@
+.by-card-v02.mb-3
+  .by-card-header-v02
+    %p.headline-3-v02
+      = link_to tag.name, tag_path(tag)
+  .by-card-content-v02
+    - if tag.description.present?
+      %p= tag.description
+    %p.text-muted
+      = t(:tagged_items_count, count: tag.taggings.count)
+    - if @sort_order == 'recent'
+      %p.whatsnew-item-date
+        = t(:created_with_date, date: l(tag.created_at.to_date, format: :long))
