@@ -2289,10 +2289,15 @@ en:
   no_new_texts: No new texts in the last month
   no_new_collections: No new collections in the last month
   no_new_tags: No new tags in the last month
-  items_count: Items
-  tagged_items_count: Tagged items
+  items_count:
+    one: "%{count} item"
+    other: "%{count} items"
+  tagged_items_count:
+    one: "%{count} tagged item"
+    other: "%{count} tagged items"
   all_involved_authorities: All Involved Authors
   created: Created
+  created_with_date: "Created: %{date}"
   newest_authors: Newest Authors
   newest_works: Newest Works
   next_entry: Next Entry

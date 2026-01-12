@@ -2,8 +2,15 @@
 
 .whatsnew-sticky-nav {
   position: sticky;
-  top: 100px; // Leave space for header
+  // Use calc to allow for flexible header height
+  // Adjust this value if header height changes
+  top: calc(var(--header-height, 80px) + 20px);
   z-index: 20;
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    top: calc(var(--header-height, 60px) + 10px);
+  }
 }
 
 .whatsnew-nav {

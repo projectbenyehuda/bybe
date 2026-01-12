@@ -4,24 +4,38 @@ $(document).ready(function() {
     return;
   }
 
-  // Sort toggle
-  $('#sort_alpha').click(function() {
-    window.location.href = '/whatsnew?sort=alpha';
-  });
+  // Sort toggle - add defensive checks for button existence
+  var $sortAlpha = $('#sort_alpha');
+  var $sortRecent = $('#sort_recent');
 
-  $('#sort_recent').click(function() {
-    window.location.href = '/whatsnew?sort=recent';
-  });
+  if ($sortAlpha.length) {
+    $sortAlpha.click(function() {
+      window.location.href = '/whatsnew?sort=alpha';
+    });
+  }
+
+  if ($sortRecent.length) {
+    $sortRecent.click(function() {
+      window.location.href = '/whatsnew?sort=recent';
+    });
+  }
 
   // Scrollspy for navigation highlighting
-  $('body').scrollspy({ target: '.whatsnew-nav' });
+  if (typeof $('body').scrollspy === 'function') {
+    $('body').scrollspy({ target: '.whatsnew-nav' });
+  }
 
   // Smooth scrolling for nav links
   $('.whatsnew-nav a[href^="#"]').click(function(e) {
     e.preventDefault();
     var target = $(this).attr('href');
-    $('html, body').animate({
-      scrollTop: $(target).offset().top - 100
-    }, 500);
+    var $targetElement = $(target);
+
+    // Only scroll if target element exists
+    if ($targetElement.length) {
+      $('html, body').animate({
+        scrollTop: $targetElement.offset().top - 100
+      }, 500);
+    }
   });
 });

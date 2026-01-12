@@ -9,4 +9,4 @@
       = t(:tagged_items_count, count: tag.taggings.count)
     - if @sort_order == 'recent'
       %p.whatsnew-item-date
-        = t(:created) + ': ' + l(tag.created_at.to_date, format: :long)
+        = t(:created_with_date, date: l(tag.created_at.to_date, format: :long))

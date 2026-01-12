@@ -162,16 +162,31 @@ class ManifestationController < ApplicationController
     @page_title = t(:whatsnew)
     @sort_order = params[:sort] || 'alpha' # 'alpha' or 'recent'
 
-    # Fetch all four categories
-    since = 1.month.ago
+    # Cache data at controller level for performance
+    cache_key = ['whatsnew_data', @sort_order, I18n.locale]
+    cached_data = Rails.cache.fetch(cache_key, expires_in: 2.hours) do
+      since = 1.month.ago
 
-    @new_authors = fetch_new_authors(since)
-    @new_texts = fetch_new_texts(since)
-    @new_collections = fetch_new_collections(since)
-    @new_tags = fetch_new_tags(since)
+      new_authors = fetch_new_authors(since)
+      new_texts = fetch_new_texts(since)
+      new_collections = fetch_new_collections(since)
+      new_tags = fetch_new_tags(since)
 
-    # Apply sorting
-    sort_data!(@sort_order)
+      # Apply sorting before caching
+      sort_whatsnew_data(new_authors, new_texts, new_collections, new_tags, @sort_order)
+
+      {
+        authors: new_authors,
+        texts: new_texts,
+        collections: new_collections,
+        tags: new_tags
+      }
+    end
+
+    @new_authors = cached_data[:authors]
+    @new_texts = cached_data[:texts]
+    @new_collections = cached_data[:collections]
+    @new_tags = cached_data[:tags]
   end
 
   private
@@ -203,18 +218,18 @@ class ManifestationController < ApplicationController
        .to_a
   end
 
-  def sort_data!(order)
+  def sort_whatsnew_data(authors, texts, collections, tags, order)
     if order == 'recent'
-      @new_authors.sort_by! { |a| -a.created_at.to_i }
-      @new_texts.sort_by! { |m| -m.created_at.to_i }
-      @new_tags.sort_by! { |t| -t.created_at.to_i }
+      authors.sort_by! { |a| -a.created_at.to_i }
+      texts.sort_by! { |m| -m.created_at.to_i }
+      tags.sort_by! { |t| -t.created_at.to_i }
       # Collections already grouped, sort within each group
-      @new_collections.each { |_type, cols| cols.sort_by! { |c| -c.created_at.to_i } }
+      collections.each_value { |cols| cols.sort_by! { |c| -c.created_at.to_i } }
     else # 'alpha'
-      @new_authors.sort_by! { |a| a.name.to_s }
-      @new_texts.sort_by! { |m| m.title_and_authors.to_s }
-      @new_tags.sort_by! { |t| t.name.to_s }
-      @new_collections.each { |_type, cols| cols.sort_by! { |c| c.title.to_s } }
+      authors.sort_by! { |a| a.name.to_s }
+      texts.sort_by! { |m| m.title_and_authors.to_s }
+      tags.sort_by! { |t| t.name.to_s }
+      collections.each_value { |cols| cols.sort_by! { |c| c.title.to_s } }
     end
   end
 

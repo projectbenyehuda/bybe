@@ -23,4 +23,4 @@
           = textify_lang(manifestation.expression.work.orig_lang)
     - if @sort_order == 'recent'
       %p.whatsnew-item-date
-        = t(:created) + ': ' + l(manifestation.created_at.to_date, format: :long)
+        = t(:created_with_date, date: l(manifestation.created_at.to_date, format: :long))

@@ -115,10 +115,15 @@ he:
   no_new_texts: אין טקסטים חדשים בחודש האחרון
   no_new_collections: אין אוספים חדשים בחודש האחרון
   no_new_tags: אין תגיות חדשות בחודש האחרון
-  items_count: פריטים
-  tagged_items_count: פריטים מתויגים
+  items_count:
+    one: "פריט %{count}"
+    other: "%{count} פריטים"
+  tagged_items_count:
+    one: "פריט מתויג %{count}"
+    other: "%{count} פריטים מתויגים"
   all_involved_authorities: כל היוצרים המעורבים
   created: נוצר
+  created_with_date: "נוצר: %{date}"
   surprise: יצירה בהפתעה
   confirm: אשר!
   confirmed: אושר
