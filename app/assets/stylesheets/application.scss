@@ -1023,12 +1023,12 @@ p.by-genre-name-v02.headline-2-v02 {
 /* Sticky navbar for lexicon entries */
 .peach2-lexicon .side-menu-area {
 	position: sticky;
-  top: 20px;
+  top: 80px;
 	align-self: flex-start;
 }
 
 .peach2-lexicon .side-menu-area .book-nav-full {
-	max-height: calc(100vh - 40px);
+	max-height: calc(100vh - 100px);
 	overflow-y: auto;
 }
 
@@ -1042,12 +1042,12 @@ p.by-genre-name-v02.headline-2-v02 {
 
   .peach2-lexicon .side-menu-area {
     position: sticky;
-    top: 10px;
+    top: 60px;
     align-self: flex-start;
   }
 
   .peach2-lexicon .side-menu-area .book-nav-full {
-    max-height: calc(100vh - 20px);
+    max-height: calc(100vh - 80px);
     overflow-y: auto;
   }
 }
