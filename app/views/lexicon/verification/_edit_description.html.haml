@@ -1,0 +1,17 @@
+= form_with model: @item, url: lexicon_update_section_verification_path(@entry), method: :patch, local: false, html: { class: 'verification-edit-form' } do |f|
+  = hidden_field_tag :section, 'description'
+
+  .form-group
+    = f.label :description, t('lexicon.verification.sections.description_section'), class: 'form-label'
+    = f.text_area :description, class: 'form-control', rows: 10, dir: 'rtl'
+    .form-text.text-muted
+      = t('lexicon.verification.edit.html_allowed')
+
+  .form-check.mt-3
+    = check_box_tag :mark_verified, '1', false, class: 'form-check-input'
+    = label_tag :mark_verified, t('lexicon.verification.edit.mark_as_verified'), class: 'form-check-label'
+
+  .modal-footer
+    %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }
+      = t('cancel')
+    = f.submit t('save'), class: 'btn btn-primary'
