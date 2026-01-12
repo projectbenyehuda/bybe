@@ -115,6 +115,16 @@ he:
           text: טקסט
           bib: ביבליוגרפיה
           other: אחר
+      lex_entry:
+        statuses:
+          draft: טיוטה
+          deprecated: מבוטל
+          published: פורסם
+          raw: גולמי
+          migrating: בהסבה
+          error: שגיאה
+          verifying: בבדיקה
+          verified: הסבה אושרה
       lex_person:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה
