@@ -3,6 +3,19 @@
 .btn-panel.btn-sm
   %button.btn.btn-primary#add-person= t('.add_person')
   %button.btn.btn-primary#add-publication= t('.add_publication')
+
+= form_with url: lexicon_entries_path, method: :get, local: true, class: 'filter-form mb-3' do |f|
+  .row
+    .col-md-4
+      = f.label :title, t('.filter_title')
+      = f.text_field :title, value: params[:title], class: 'form-control', placeholder: t('.filter_title_placeholder')
+    .col-md-4
+      = f.label :status, t('.filter_status')
+      = f.select :status, options_for_select(LexEntry.statuses.keys.map { |s| [t("activerecord.attributes.lex_entry.statuses.#{s}"), s] }, params[:status]), { include_blank: t('.all_statuses') }, class: 'form-control'
+    .col-md-4.d-flex.align-items-end
+      = f.submit t('.filter'), class: 'btn btn-primary me-2'
+      = link_to t('.clear_filters'), lexicon_entries_path, class: 'btn btn-secondary'
+
 %table.table
   %thead
     %tr
@@ -17,7 +30,14 @@
       - item = lex_entry.lex_item
       %tr
         %td= lex_entry.title
-        %td= lex_entry.status
+        %td
+          = LexEntry.human_enum_name(:status, lex_entry.status)
+          - case lex_entry.status
+          - when 'verifying'
+            = link_to t('lexicon.verification.queue.actions.continue'), lexicon_verification_path(lex_entry), class: 'btn btn-warning btn-sm ms-2'
+          - when 'verified' || 'draft'
+            = button_tag t('publish'), class: 'btn btn-success btn-sm ms-2 publish-lex-entry-btn', data: { lex_entry_id: lex_entry.id }
+
         %td= item.model_name.human
         %td
           = link_to t(:show), lexicon_entry_path(lex_entry)
@@ -33,4 +53,30 @@
   $(function() {
     $('#add-person').click(function() { openModal('/lex/people/new'); });
     $('#add-publication').click(function() { openModal('/lex/publications/new'); });
+    $('.publish-lex-entry-btn').click(function() {
+      var lexEntryId = $(this).data('lex-entry-id');
+      var button = $(this);
+
+      $.ajax({
+        url: '/lex/entries/' + lexEntryId,
+        type: 'PATCH',
+        dataType: 'json',
+        headers: {
+          'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+          lex_entry: {
+            status: 'published'
+          }
+        },
+        success: function(data) {
+          if (data.success) {
+            location.reload();
+          }
+        },
+        error: function(xhr) {
+          alert('Error publishing entry: ' + (xhr.responseJSON && xhr.responseJSON.errors ? xhr.responseJSON.errors.join(', ') : 'Unknown error'));
+        }
+      });
+    });
   });
