@@ -6,7 +6,7 @@ module Lexicon
     before_action except: %i(show list) do |c|
       c.require_editor('edit_lexicon')
     end
-    before_action :set_lex_entry, only: %i(show edit destroy)
+    before_action :set_lex_entry, only: %i(show edit update destroy)
 
     layout 'lexicon_backend', except: %i(show)
 
@@ -48,6 +48,14 @@ module Lexicon
                               end
 
       @tab = params[:tab] || 'properties'
+    end
+
+    def update
+      if @lex_entry.update(lex_entry_params)
+        render json: { success: true, status: @lex_entry.status }
+      else
+        render json: { success: false, errors: @lex_entry.errors.full_messages }, status: :unprocessable_entity
+      end
     end
 
     def destroy
