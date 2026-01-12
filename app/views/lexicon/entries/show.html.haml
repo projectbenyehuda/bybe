@@ -1,5 +1,8 @@
 .peach2-lexicon
   - lex_item = @lex_entry.lex_item
+  - unless @lex_entry.status_published?
+    .alert.alert-warning
+      = t('lexicon.entries.show.unpublished_warning', status: LexEntry.human_enum_name(:status, @lex_entry.status))
   - if lex_item.is_a?(LexPerson)
     = render partial: 'show_person', locals: { lex_person: lex_item }
   - elsif lex_item.is_a?(LexPublication)

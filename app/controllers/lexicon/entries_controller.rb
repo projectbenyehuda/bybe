@@ -3,6 +3,9 @@
 module Lexicon
   # Controller to render list of all Lexicon entries
   class EntriesController < ApplicationController
+    before_action except: %i(show) do |c|
+      c.require_editor('edit_lexicon')
+    end
     before_action :set_lex_entry, only: %i(show edit destroy)
 
     layout 'lexicon_backend', except: %i(show)
@@ -12,7 +15,11 @@ module Lexicon
       @lex_entries = LexEntry.where.not(lex_item: nil).page(params[:page])
     end
 
-    def show; end
+    def show
+      unless @lex_entry.status_published?
+        require_editor('edit_lexicon')
+      end
+    end
 
     def edit
       @edit_properties_path = if @lex_entry.lex_item.is_a?(LexPerson)
@@ -42,5 +49,6 @@ module Lexicon
     def lex_entry_params
       params.expect(lex_entry: %i(title status lex_person_id lex_publication_id))
     end
+    
   end
 end
