@@ -3,7 +3,7 @@
 module Lexicon
   # Controller to render list of all Lexicon entries
   class EntriesController < ApplicationController
-    before_action except: %i(show) do |c|
+    before_action except: %i(show list) do |c|
       c.require_editor('edit_lexicon')
     end
     before_action :set_lex_entry, only: %i(show edit destroy)
@@ -12,7 +12,24 @@ module Lexicon
 
     # GET /lex_entries or /lex_entries.json
     def index
-      @lex_entries = LexEntry.where.not(lex_item: nil).page(params[:page])
+      @lex_entries = LexEntry.where.not(lex_item: nil)
+
+      # Filter by status if provided
+      if params[:status].present?
+        @lex_entries = @lex_entries.where(status: params[:status])
+      end
+
+      # Filter by title substring if provided (case-insensitive)
+      if params[:title].present?
+        @lex_entries = @lex_entries.where('LOWER(title) LIKE LOWER(?)', "%#{params[:title]}%")
+      end
+
+      @lex_entries = @lex_entries.page(params[:page])
+    end
+
+    def list
+      @lex_entries = LexEntry.where.not(lex_item: nil).where(status: :published).order(:title)
+      @lex_entries = @lex_entries.page(params[:page])
     end
 
     def show
