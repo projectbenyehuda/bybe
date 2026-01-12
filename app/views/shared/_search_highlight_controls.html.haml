@@ -1,6 +1,8 @@
 -# Search highlight navigation controls
 - if local_assigns[:search_query].present?
-  #search-highlight-controls{ style: 'display: none;', data: { search_query: search_query, manifestation_title: local_assigns[:manifestation_title] } }
+  #search-highlight-controls{ style: 'display: none;',
+                               data: { search_query: search_query,
+                                       manifestation_title: local_assigns[:manifestation_title] } }
     .search-highlight-info
       %span#current-match 0
       %span /
@@ -29,16 +31,16 @@
 
       var currentMatchIndex = 0;
       var totalMatches = 0;
-      
+
       // Get manifestation title and check if search query matches it
       var manifestationTitle = $controls.data('manifestation-title');
       var titleMatches = false;
-      
+
       if (manifestationTitle) {
         // Normalize both strings for comparison (case-insensitive, trim whitespace)
         var normalizedTitle = manifestationTitle.toLowerCase().trim();
         var normalizedQuery = searchQuery.toLowerCase().trim();
-        
+
         // Check if the title contains the search query
         titleMatches = normalizedTitle.indexOf(normalizedQuery) !== -1;
       }

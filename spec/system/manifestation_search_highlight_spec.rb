@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Manifestation search highlighting', type: :system, js: true do
+RSpec.describe 'Manifestation search highlighting', :js, type: :system do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
@@ -23,18 +23,18 @@ RSpec.describe 'Manifestation search highlighting', type: :system, js: true do
 
   let!(:manifestation_with_title_match) do
     Chewy.strategy(:atomic) do
-      create(:manifestation, 
-             title: 'Sample Work Title', 
-             markdown: markdown_content, 
+      create(:manifestation,
+             title: 'Sample Work Title',
+             markdown: markdown_content,
              status: :published)
     end
   end
 
   let!(:manifestation_without_title_match) do
     Chewy.strategy(:atomic) do
-      create(:manifestation, 
-             title: 'Different Work Title', 
-             markdown: markdown_content, 
+      create(:manifestation,
+             title: 'Different Work Title',
+             markdown: markdown_content,
              status: :published)
     end
   end
@@ -43,7 +43,7 @@ RSpec.describe 'Manifestation search highlighting', type: :system, js: true do
     # Ensure heading lines are calculated
     manifestation_with_title_match.recalc_heading_lines
     manifestation_with_title_match.save!
-    
+
     manifestation_without_title_match.recalc_heading_lines
     manifestation_without_title_match.save!
   end
@@ -59,14 +59,14 @@ RSpec.describe 'Manifestation search highlighting', type: :system, js: true do
 
         # Wait for page to load and search highlighting to be applied
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
-        
+
         # Allow time for any potential scroll to happen
         sleep 0.5
-        
+
         # Check that we are still at the top of the page (not scrolled to first match in text)
         # The scroll position should be near 0 (allowing for header height)
         scroll_position = page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop')
-        
+
         # We expect scroll position to be minimal (< 300px) since we shouldn't have scrolled to the first text match
         expect(scroll_position).to be < 300
       end
@@ -76,7 +76,7 @@ RSpec.describe 'Manifestation search highlighting', type: :system, js: true do
 
         # Search controls should be visible
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
-        
+
         # Multiple matches should be found (at least 2 in the text content)
         total_matches = page.find('#total-matches').text.to_i
         expect(total_matches).to be >= 2
@@ -89,13 +89,13 @@ RSpec.describe 'Manifestation search highlighting', type: :system, js: true do
 
         # Wait for page to load and search highlighting to be applied
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
-        
+
         # Allow time for scroll to happen
         sleep 0.5
-        
+
         # Check that we have scrolled down (away from top of page)
         scroll_position = page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop')
-        
+
         # We expect scroll position to be significant (> 100px) since we should have scrolled to first match
         expect(scroll_position).to be > 100
       end
@@ -105,7 +105,7 @@ RSpec.describe 'Manifestation search highlighting', type: :system, js: true do
 
         # Search controls should be visible
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
-        
+
         # Multiple matches should be found
         total_matches = page.find('#total-matches').text.to_i
         expect(total_matches).to be >= 2
@@ -119,7 +119,7 @@ RSpec.describe 'Manifestation search highlighting', type: :system, js: true do
         # Wait for page to load
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
         sleep 0.5
-        
+
         # Should not scroll since "Sample" is in the title "Sample Work Title"
         scroll_position = page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop')
         expect(scroll_position).to be < 300
