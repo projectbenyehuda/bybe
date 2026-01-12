@@ -53,6 +53,25 @@ module TestHelpers
   def cleanup_tagging_lock
     File.delete('/tmp/tagging.lock') if File.exist?('/tmp/tagging.lock')
   end
+
+  # Creates an editor user with edit_lexicon privileges for testing
+  # Returns the created user, or the existing one if already created in this test run
+  def create_lexicon_editor
+    @lexicon_editor ||= begin
+      user = create(:user, editor: true)
+      # Grant edit_lexicon editor bits
+      ListItem.create!(listkey: 'edit_lexicon', item: user)
+      user
+    end
+  end
+
+  # Login helper for lexicon specs
+  def login_as_lexicon_editor
+    user = create_lexicon_editor
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    allow_any_instance_of(ApplicationController).to receive(:require_editor).and_return(true)
+    user
+  end
 end
 
 RSpec.configure do |config|
