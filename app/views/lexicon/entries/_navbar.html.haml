@@ -7,8 +7,8 @@
 %nav#genrenav.navbar
   %ul#genre-nav.navbar-nav.flex-column.by-card-v02{"aria-orientation" => "vertical"}
     - if is_person
-      %li.nav-item.active.pointer{ 'data-scroll-target' => '#lexicon-biography' }
-        %a#translations_button.nav-link{"aria-selected" => "false", :href => "#"}
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-biography' }
+        %a#translations_button.nav-link.active{"aria-selected" => "false", :href => "#"}
           .side-menu-icon
           .side-menu-name= t('lexicon.verification.sections.biography')
       %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-works' }
