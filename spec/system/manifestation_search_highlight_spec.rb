@@ -126,7 +126,7 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
     end
 
     context 'when search term partially matches the title' do
-      it 'does not auto-scroll when title contains the search term' do
+      it 'does not auto-scroll when title contains the search term (case-insensitive)' do
         visit manifestation_path(manifestation_with_title_match, q: 'Sample')
 
         # Wait for page to load
@@ -135,8 +135,82 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
         # Wait for any potential scroll to settle
         sleep 0.5
 
-        # Should not scroll since "Sample" is in the title "Sample Work Title"
+        # Should not scroll since "Sample" (different case) is in the title "Sample Work Title"
         expect(current_scroll_position).to be < MAX_NO_SCROLL_THRESHOLD
+      end
+    end
+
+    context 'with Hebrew text' do
+      let(:hebrew_markdown) do
+        <<~MARKDOWN
+          ## פרק ראשון
+
+          זה טקסט לדוגמה עם המילה דוגמה שמופיעה מספר פעמים.
+          זה פסקה נוספת עם תוכן נוסף.
+
+          ## פרק שני
+
+          עוד קטע עם תוכן שונה ועוד טקסט.
+          המילה דוגמה מופיעה גם כאן.
+        MARKDOWN
+      end
+
+      let!(:hebrew_manifestation_with_title_match) do
+        Chewy.strategy(:atomic) do
+          create(:manifestation,
+                 title: 'יצירה לדוגמה',
+                 markdown: hebrew_markdown,
+                 status: :published)
+        end
+      end
+
+      let!(:hebrew_manifestation_without_title_match) do
+        Chewy.strategy(:atomic) do
+          create(:manifestation,
+                 title: 'יצירה אחרת',
+                 markdown: hebrew_markdown,
+                 status: :published)
+        end
+      end
+
+      before do
+        hebrew_manifestation_with_title_match.recalc_heading_lines
+        hebrew_manifestation_with_title_match.save!
+
+        hebrew_manifestation_without_title_match.recalc_heading_lines
+        hebrew_manifestation_without_title_match.save!
+      end
+
+      it 'does not auto-scroll when Hebrew search term matches Hebrew title' do
+        visit manifestation_path(hebrew_manifestation_with_title_match, q: 'דוגמה')
+
+        # Wait for page to load
+        expect(page).to have_css('#search-highlight-controls', visible: :visible)
+        sleep 0.5
+
+        # Should not scroll since "דוגמה" is in the title "יצירה לדוגמה"
+        expect(current_scroll_position).to be < MAX_NO_SCROLL_THRESHOLD
+      end
+
+      it 'auto-scrolls when Hebrew search term does not match Hebrew title' do
+        visit manifestation_path(hebrew_manifestation_without_title_match, q: 'דוגמה')
+
+        # Wait for page to load
+        expect(page).to have_css('#search-highlight-controls', visible: :visible)
+
+        # Wait for scroll to happen
+        max_attempts = 10
+        attempts = 0
+        scrolled = false
+        while attempts < max_attempts && !scrolled
+          current_position = current_scroll_position
+          scrolled = current_position > MIN_SCROLLED_THRESHOLD
+          sleep 0.1 unless scrolled
+          attempts += 1
+        end
+
+        # Should have scrolled to first match in text
+        expect(current_scroll_position).to be > MIN_SCROLLED_THRESHOLD
       end
     end
 
