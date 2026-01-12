@@ -42,7 +42,7 @@
         var normalizedQuery = searchQuery.toLowerCase().trim();
 
         // Check if the title contains the search query
-        titleMatches = normalizedTitle.indexOf(normalizedQuery) !== -1;
+        titleMatches = normalizedTitle.includes(normalizedQuery);
       }
 
       // Use Mark.js to highlight all occurrences
