@@ -27,6 +27,12 @@ he:
         add_person: Add Person
         add_publication: Add Publication
         title: רשימת ערכי הלקסיקון
+        filter_title: כותרת
+        filter_title_placeholder: חיפוש לפי כותרת...
+        filter_status: סטטוס
+        all_statuses: כל הסטטוסים
+        filter: סנן
+        clear_filters: נקה סינונים
       show:
         to_pby_person: לדף היוצר בפרויקט בן־יהודה
         unsupported_entry_type: Unsupported entry type
