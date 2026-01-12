@@ -206,7 +206,12 @@ class ManifestationController < ApplicationController
 
   def fetch_new_collections(since)
     Collection.where('created_at > ?', since)
-              .where.not(collection_type: Collection.collection_types[:series])
+              .where.not(
+                collection_type: [
+                  Collection.collection_types[:series],
+                  Collection.collection_types[:uncollected]
+                ]
+              )
               .includes(:collection_items)
               .to_a
               .group_by(&:collection_type)

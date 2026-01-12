@@ -5,6 +5,8 @@
   .by-card-content-v02
     - if author.other_designation.present?
       %p.text-muted= author.other_designation
+    %p.text-muted
+      #{author.published_manifestations.count} #{t(:works_in_the_project)}
     - if @sort_order == 'recent'
       %p.whatsnew-item-date
         = t(:created_with_date, date: l(author.created_at.to_date, format: :long))
