@@ -131,6 +131,10 @@
       var $collapseTarget = $($trigger.data('bs-target'));
       var scrollTarget = $trigger.data('scroll-target');
 
+      // Remove .selected from all .book-type elements and add to the clicked one
+      $('.book-type').removeClass('selected');
+      $trigger.closest('.book-type').addClass('selected');
+
       // Set up one-time listener for scroll after collapse animation
       if (scrollTarget && $(scrollTarget).length > 0) {
         $collapseTarget.one('shown.bs.collapse hidden.bs.collapse', function() {
