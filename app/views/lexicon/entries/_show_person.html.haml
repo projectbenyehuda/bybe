@@ -4,6 +4,7 @@
       %img.logoBY-v02{ src: '/assets/logo-byp-mobile.svg' }
     .row
       .col.side-menu-area
+        = render partial: 'navbar'
       .col
         = render layout: 'lexicon/header' do
           .lexicon-author-details
@@ -20,19 +21,22 @@
               .metadata
                 = render partial: 'shared/intellectual_property',
                          locals: { intellectual_property: lex_person.intellectual_property }
-          %p!= MarkdownToHtml.call(lex_person.bio)
-        = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
-          %ul
-            - lex_person.works.split("\n").each do |book|
-              %li!= MarkdownToHtml.call(book)
-        = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
-          - lex_person.citations.group_by(&:subject).each do |subject, list|
-            %h4= subject
+          %p#lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
+        #lexicon-works
+          = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
             %ul
-              - list.each do |c|
-                - cit_text = render_citation(c)
-                %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
-        = render partial: 'links', locals: { links: lex_person.links }
+              - lex_person.works.split("\n").each do |book|
+                %li!= MarkdownToHtml.call(book)
+        #lexicon-about
+          = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
+            - lex_person.citations.group_by(&:subject).each do |subject, list|
+              %h4= subject
+              %ul
+                - list.each do |c|
+                  - cit_text = render_citation(c)
+                  %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
+        #lexicon-links
+          = render partial: 'links', locals: { links: lex_person.links }
 
   .col-12.col-lg-4
     .row
