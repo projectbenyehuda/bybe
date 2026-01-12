@@ -32,6 +32,7 @@ he:
         unsupported_entry_type: Unsupported entry type
         profile_image_alt: תמונת פרופיל
         profile_image_badge: תמונת פרופיל
+        unpublished_warning: "אזהרה: סטטוס הערך הוא '%{status}', ולכן אינו גלוי לציבור."
       show_person:
         pages: p.
     attachments:

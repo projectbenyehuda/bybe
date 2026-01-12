@@ -4,7 +4,9 @@ module Lexicon
   # Controller to manage Lexicon migration from static php files to Ben-Yehuda project
   class FilesController < ApplicationController
     before_action :set_lex_file, only: [:migrate]
-
+    before_action do |c|
+      c.require_editor('edit_lexicon')
+    end
     layout 'lexicon_backend'
 
     def index
