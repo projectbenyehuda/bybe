@@ -861,6 +861,7 @@ he:
   tag: תגית
   moderate_tags: ניטור תיוגים מהציבור
   link_moderation: ניטור קישוריות מהציבור
+  edit_lexicon: עריכת הלקסיקון
   next_milestone: היעד הבא
   my_activity: הפעילות שלי
   similar_to_x: "דומה לפריט: %{x}"
