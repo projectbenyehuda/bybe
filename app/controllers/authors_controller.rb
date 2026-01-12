@@ -485,7 +485,7 @@ class AuthorsController < ApplicationController
         @toc_tree = GenerateTocTree.call(@author)
         @toc_counts = calculate_toc_counts(@toc_tree, @author.id)
       end
-      if @author.lex_person.present?
+      if @author.lex_person.present? && @author.lex_person.entry.status_published?
         @lexicon_entry = @author.lex_person.entry
       end
       prep_user_content(:author)
