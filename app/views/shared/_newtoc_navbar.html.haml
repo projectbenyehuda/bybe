@@ -97,7 +97,7 @@
       .book-type
         .truncate= t('lexicon.verification.sections.works_section')
       .book-type
-        .truncate= t('activerecord.attributes.lex_person.about', gender_suffix: @author.female? ? 'ת' : '', gender_letter: @author.gender_letter)
+        .truncate= t('activerecord.attributes.lex_person.about', gender_suffix: @author.person.female? ? 'ת' : '', gender_letter: @author.gender_letter)
       .book-type
         .truncate= t('lexicon.verification.sections.links_section')
 

@@ -44,6 +44,7 @@ class Authority < ApplicationRecord
   belongs_to :corporate_body, optional: true
   belongs_to :uncollected_works_collection, class_name: 'Collection', optional: true
   belongs_to :lexicon_entry, class_name: 'LexEntry', optional: true
+  has_one :lex_person, dependent: :nullify
 
   attr_readonly :person, :corporate_body # Should not be modified after creation
 
