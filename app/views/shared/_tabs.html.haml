@@ -49,6 +49,19 @@
                 %span.by-icon-v02= glyph_for_genre('translations')
                 = t(:translations)
                 %span{style:'color:black'}= " - #{Expression.cached_translations_count} #{t(:works)}"
+              .by-dropdown-divider
+              %a{href: periodicals_index_path}
+                %span.by-icon-v02 H
+                = t(:periodicals_label)
+                %span{style:'color:black'}= " - #{@periodicals_count} #{t(:periodicals_label)}"
+              %a{href: pby_volumes_path}
+                %span.by-icon-v02 J
+                = t(:pby_publications)
+                %span{style:'color:black'}= " - #{@pby_volumes_count} #{t(:volumes)}"
+              %a{href: anthologies_browse_path}
+                %span.by-icon-v02 G
+                = t(:public_anthologies)
+                %span{style:'color:black'}= " - #{@public_anthologies_count}"
         %li.topMenuItem-v02
           .by-dropdown-v02.dropdown#ddperiods
             %a.by-nav-item-v02{'data-toggle' =>'dropdown', 'data-boundary' => 'viewport', tabindex: '4'}= t(:periods)
@@ -160,6 +173,23 @@
                 %span.by-icon-v02.iconInMenu= glyph_for_genre('translations')
                 = t(:translations)
                 %span{style:'color:black; font-weight: normal;'}= " - #{Expression.cached_translations_count} #{t(:works)}"
+            .by-dropdown-divider
+              %li
+                %a{href: periodicals_index_path}
+                  %span.by-icon-v02 H
+                  = t(:periodicals_label)
+                  %span{style:'color:black'}= " - #{@periodicals_count} #{t(:periodicals_label)}"
+              %li
+                %a{href: pby_volumes_path}
+                  %span.by-icon-v02 J
+                  = t(:pby_publications)
+                  %span{style:'color:black'}= " - #{@pby_volumes_count} #{t(:volumes)}"
+              %li
+                %a{href: anthologies_browse_path}
+                  %span.by-icon-v02 G
+                  = t(:public_anthologies)
+                  %span{style:'color:black'}= " - #{@public_anthologies_count}"
+
         %li.topMenuItemMobile-v02
           %span.caret= t(:periods)
           %ul.nested
