@@ -2282,6 +2282,17 @@ en:
   new_works_by_existing_authors: New Works By Existing Authors
   new_works_by_new_authors: New Works By New Authors
   new_works_in_the_project: New Works In The Project
+  new_texts: New Texts
+  new_collections: New Collections
+  new_tags: New Tags
+  no_new_authors: No new authors in the last month
+  no_new_texts: No new texts in the last month
+  no_new_collections: No new collections in the last month
+  no_new_tags: No new tags in the last month
+  items_count: Items
+  tagged_items_count: Tagged items
+  all_involved_authorities: All Involved Authors
+  created: Created
   newest_authors: Newest Authors
   newest_works: Newest Works
   next_entry: Next Entry

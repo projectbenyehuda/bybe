@@ -160,16 +160,65 @@ class ManifestationController < ApplicationController
   def whatsnew
     @tabclass = set_tab('works')
     @page_title = t(:whatsnew)
-    @whatsnew = []
-    @anonymous = true
-    if params['months'].nil? or params['months'].empty?
-      @whatsnew = whatsnew_anonymous
-    else
-      @whatsnew = whatsnew_since(params[:months].to_i.months.ago)
-      @anonymous = false
-    end
-    @new_authors = Authority.new_since(1.month.ago)
+    @sort_order = params[:sort] || 'alpha' # 'alpha' or 'recent'
+
+    # Fetch all four categories
+    since = 1.month.ago
+
+    @new_authors = fetch_new_authors(since)
+    @new_texts = fetch_new_texts(since)
+    @new_collections = fetch_new_collections(since)
+    @new_tags = fetch_new_tags(since)
+
+    # Apply sorting
+    sort_data!(@sort_order)
   end
+
+  private
+
+  def fetch_new_authors(since)
+    # Authorities created recently
+    # Note: Complex queries for "newly digitized authors" are deferred
+    # to future enhancement due to association complexity
+    Authority.new_since(since).to_a
+  end
+
+  def fetch_new_texts(since)
+    Manifestation.all_published.new_since(since)
+                 .includes(expression: { involved_authorities: :authority, work: { involved_authorities: :authority } })
+                 .to_a
+  end
+
+  def fetch_new_collections(since)
+    Collection.where('created_at > ?', since)
+              .where.not(collection_type: Collection.collection_types[:series])
+              .includes(:collection_items)
+              .to_a
+              .group_by(&:collection_type)
+  end
+
+  def fetch_new_tags(since)
+    Tag.where('created_at > ? AND status = ?', since, Tag.statuses[:approved])
+       .includes(:taggings)
+       .to_a
+  end
+
+  def sort_data!(order)
+    if order == 'recent'
+      @new_authors.sort_by! { |a| -a.created_at.to_i }
+      @new_texts.sort_by! { |m| -m.created_at.to_i }
+      @new_tags.sort_by! { |t| -t.created_at.to_i }
+      # Collections already grouped, sort within each group
+      @new_collections.each { |_type, cols| cols.sort_by! { |c| -c.created_at.to_i } }
+    else # 'alpha'
+      @new_authors.sort_by! { |a| a.name.to_s }
+      @new_texts.sort_by! { |m| m.title_and_authors.to_s }
+      @new_tags.sort_by! { |t| t.name.to_s }
+      @new_collections.each { |_type, cols| cols.sort_by! { |c| c.title.to_s } }
+    end
+  end
+
+  public
 
   def like
     unless current_user.nil?
@@ -470,11 +519,11 @@ class ManifestationController < ApplicationController
     @filtered_count = @manifestations.count
 
     # Apply ordering and pagination
-    if params[:title].blank? && params[:author].blank? && params[:status].blank?
-      @manifestations = @manifestations.page(params[:page]).order('updated_at DESC')
-    else
-      @manifestations = @manifestations.page(params[:page]).order('sort_title ASC')
-    end
+    @manifestations = if params[:title].blank? && params[:author].blank? && params[:status].blank?
+                        @manifestations.page(params[:page]).order('updated_at DESC')
+                      else
+                        @manifestations.page(params[:page]).order('sort_title ASC')
+                      end
   end
 
   def show

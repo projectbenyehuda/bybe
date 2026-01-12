@@ -1,29 +1,69 @@
-.container-fluid
-  .row
-    .col-lg-2
-    .col-lg-8
-      .container-fluid
-        .row
-          .col-md-12.main-group#works
-            - cache (@anonymous ? "whatsnew_page" : 'whatsnew_nonanon'), expires_in: 2.hours do
-              %p.headline-2-v02#new_works= t(:new_works_in_the_project)
-              - @whatsnew.keys.sort_by{|x| x.sort_name}.each do |author|
-                - works = @whatsnew[author]
-                .by-card-v02
-                  .by-card-header-v02
-                    .whatsnew-text{style:'max-height:none'}
-                      %p.headline-3-v02
-                        = link_to author.name, authority_path(author)
-                  .by-card-content-v02
-                    %p
-                      - worksbuf = ''
-                      - works.each do |genre|
-                        - next if genre[0] == :latest
-                        %p
-                          %b= textify_genre(genre[0]) + ': '
-                          - worksbuf = genre[1].map{ |m| link_to(m.expression.title + (m.expression.translation ? ' / '+m.authors_string : ''), url_for(controller: :manifestation, action: :read, id: m.id))}
-                          - worksbuf = worksbuf.join('; ')
-                          != worksbuf
-                  .whatsnew-pic-wide
-                    %img{ alt: author.name, :class => 'img-responsive', src: author.profile_image.url(:tiny)}
-    .col-lg-2
+- cache ['whatsnew_page', @sort_order], expires_in: 2.hours do
+  .container-fluid
+    .row
+      / Left Sidebar - Navigation
+      .col-12.col-lg-2.whatsnew-nav
+        %nav.navbar.whatsnew-sticky-nav
+          %ul.nav.flex-column.by-card-v02
+            %li.nav-item
+              %a.nav-link{ href: '#new-authors' }= t(:new_authors)
+            %li.nav-item
+              %a.nav-link{ href: '#new-texts' }= t(:new_texts)
+            %li.nav-item
+              %a.nav-link{ href: '#new-collections' }= t(:new_collections)
+            %li.nav-item
+              %a.nav-link{ href: '#new-tags' }= t(:new_tags)
+
+      / Main Content Area
+      .col-12.col-lg-8
+        / Sort Toggle
+        .displayMethodLine.mb-3
+          .switch-label= t(:sort_by)
+          .BYD-switch
+            %button.search-mobile-option{ id: 'sort_alpha', class: (@sort_order == 'alpha' ? 'active' : '') }
+              = t(:alphabetical)
+            %button.search-mobile-option{ id: 'sort_recent', class: (@sort_order == 'recent' ? 'active' : '') }
+              = t(:recent)
+
+        / Category 1: New Authors
+        %section.mb-5#new-authors
+          %h2.headline-2-v02= t(:new_authors)
+          - if @new_authors.empty?
+            %p.text-muted= t(:no_new_authors)
+          - else
+            - @new_authors.each do |author|
+              = render partial: 'whatsnew_author', locals: { author: author }
+
+        / Category 2: New Texts
+        %section.mb-5#new-texts
+          %h2.headline-2-v02= t(:new_texts)
+          - if @new_texts.empty?
+            %p.text-muted= t(:no_new_texts)
+          - else
+            - @new_texts.each do |manifestation|
+              = render partial: 'whatsnew_text', locals: { manifestation: manifestation }
+
+        / Category 3: New Collections
+        %section.mb-5#new-collections
+          %h2.headline-2-v02= t(:new_collections)
+          - if @new_collections.empty?
+            %p.text-muted= t(:no_new_collections)
+          - else
+            - @new_collections.each do |type, collections|
+              - next if collections.empty?
+
+              %h3.headline-3-v02= t("collection.type.#{type}")
+              - collections.each do |collection|
+                = render partial: 'whatsnew_collection', locals: { collection: collection }
+
+        / Category 4: New Tags
+        %section.mb-5#new-tags
+          %h2.headline-2-v02= t(:new_tags)
+          - if @new_tags.empty?
+            %p.text-muted= t(:no_new_tags)
+          - else
+            - @new_tags.each do |tag|
+              = render partial: 'whatsnew_tag', locals: { tag: tag }
+
+      / Right Sidebar - Empty for now
+      .col-12.col-lg-2

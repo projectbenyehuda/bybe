@@ -1,0 +1,26 @@
+- non_author_authorities = manifestation.involved_authorities.reject { |ia| ia.role == 'author' }
+.by-card-v02.mb-3
+  .by-card-header-v02
+    %p.headline-3-v02
+      = link_to manifestation.title_and_authors, manifestation_path(manifestation)
+  .by-card-content-v02
+    - if manifestation.expression&.work
+      %p
+        %b= t(:genre) + ':'
+        = textify_genre(manifestation.expression.work.genre)
+    - if non_author_authorities.present?
+      .whatsnew-authorities
+        %p
+          - non_author_authorities.each_with_index do |ia, index|
+            = link_to ia.authority.name, authority_path(id: ia.authority.id)
+            = "(#{textify_authority_role(ia.role)})"
+            - if index < non_author_authorities.length - 1
+              = ', '
+    - if manifestation.expression&.translation?
+      .whatsnew-translation-info
+        %p
+          %b= t(:orig_lang) + ':'
+          = textify_lang(manifestation.expression.work.orig_lang)
+    - if @sort_order == 'recent'
+      %p.whatsnew-item-date
+        = t(:created) + ': ' + l(manifestation.created_at.to_date, format: :long)
