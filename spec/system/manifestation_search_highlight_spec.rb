@@ -7,6 +7,11 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
 
+  # Scroll position thresholds for validation
+  # These values account for header height and provide buffer for test reliability
+  MINIMAL_SCROLL_THRESHOLD = 300  # Max scroll if we stayed at top (header + margin)
+  SIGNIFICANT_SCROLL_THRESHOLD = 100  # Min scroll if we scrolled to first match
+
   let(:markdown_content) do
     <<~MARKDOWN
       ## Chapter 1
@@ -52,6 +57,10 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
     Chewy.massacre
   end
 
+  def current_scroll_position
+    page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop')
+  end
+
   describe 'search highlighting behavior' do
     context 'when search term matches the title' do
       it 'does not auto-scroll to first occurrence in text' do
@@ -64,11 +73,8 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
         sleep 0.5
 
         # Check that we are still at the top of the page (not scrolled to first match in text)
-        # The scroll position should be near 0 (allowing for header height)
-        scroll_position = page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop')
-
-        # We expect scroll position to be minimal (< 300px) since we shouldn't have scrolled to the first text match
-        expect(scroll_position).to be < 300
+        # The scroll position should be minimal since we shouldn't have scrolled to the first text match
+        expect(current_scroll_position).to be < MINIMAL_SCROLL_THRESHOLD
       end
 
       it 'still highlights all occurrences of the search term' do
@@ -94,10 +100,8 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
         sleep 0.5
 
         # Check that we have scrolled down (away from top of page)
-        scroll_position = page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop')
-
-        # We expect scroll position to be significant (> 100px) since we should have scrolled to first match
-        expect(scroll_position).to be > 100
+        # We expect scroll position to be significant since we should have scrolled to first match
+        expect(current_scroll_position).to be > SIGNIFICANT_SCROLL_THRESHOLD
       end
 
       it 'highlights all occurrences of the search term' do
@@ -121,8 +125,7 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
         sleep 0.5
 
         # Should not scroll since "Sample" is in the title "Sample Work Title"
-        scroll_position = page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop')
-        expect(scroll_position).to be < 300
+        expect(current_scroll_position).to be < MINIMAL_SCROLL_THRESHOLD
       end
     end
 
