@@ -2,7 +2,7 @@
 - if local_assigns[:search_query].present?
   #search-highlight-controls{ style: 'display: none;',
                                data: { search_query: search_query,
-                                       manifestation_title: local_assigns[:manifestation_title] } }
+                                       entity_title: local_assigns[:entity_title] } }
     .search-highlight-info
       %span#current-match 0
       %span /
@@ -32,13 +32,15 @@
       var currentMatchIndex = 0;
       var totalMatches = 0;
 
-      // Get manifestation title and check if search query matches it
-      var manifestationTitle = $controls.data('manifestation-title');
+      // Get entity title and check if search query matches it
+      var entityTitle = $controls.data('entity-title');
       var titleMatches = false;
 
-      if (manifestationTitle) {
+      if (entityTitle) {
         // Normalize both strings for comparison (case-insensitive, trim whitespace)
-        var normalizedTitle = manifestationTitle.toLowerCase().trim();
+        // Note: toLowerCase() doesn't affect Hebrew characters (they have no case variants),
+        // but this works correctly for both Hebrew and Latin text matching
+        var normalizedTitle = entityTitle.toLowerCase().trim();
         var normalizedQuery = searchQuery.toLowerCase().trim();
 
         // Check if the title contains the search query
