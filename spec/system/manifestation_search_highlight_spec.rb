@@ -8,9 +8,10 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
   end
 
   # Scroll position thresholds for validation
-  # These values account for header height and provide buffer for test reliability
-  MINIMAL_SCROLL_THRESHOLD = 300  # Max scroll if we stayed at top (header + margin)
-  SIGNIFICANT_SCROLL_THRESHOLD = 100  # Min scroll if we scrolled to first match
+  # MAX_NO_SCROLL: Maximum scroll position if page stayed at top (header height + margin)
+  # MIN_SCROLLED: Minimum scroll position if page scrolled to first match in text
+  MAX_NO_SCROLL_THRESHOLD = 300
+  MIN_SCROLLED_THRESHOLD = 100
 
   let(:markdown_content) do
     <<~MARKDOWN
@@ -69,12 +70,12 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
         # Wait for page to load and search highlighting to be applied
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
 
-        # Allow time for any potential scroll to happen
+        # Wait a moment for any potential scroll to settle
+        # Then verify position remains at top
         sleep 0.5
 
         # Check that we are still at the top of the page (not scrolled to first match in text)
-        # The scroll position should be minimal since we shouldn't have scrolled to the first text match
-        expect(current_scroll_position).to be < MINIMAL_SCROLL_THRESHOLD
+        expect(current_scroll_position).to be < MAX_NO_SCROLL_THRESHOLD
       end
 
       it 'still highlights all occurrences of the search term' do
@@ -96,12 +97,20 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
         # Wait for page to load and search highlighting to be applied
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
 
-        # Allow time for scroll to happen
-        sleep 0.5
+        # Wait for scroll animation to happen - check we've scrolled significantly
+        # Use a loop to wait until scroll position indicates we've scrolled down
+        max_attempts = 10
+        attempts = 0
+        scrolled = false
+        while attempts < max_attempts && !scrolled
+          current_position = current_scroll_position
+          scrolled = current_position > MIN_SCROLLED_THRESHOLD
+          sleep 0.1 unless scrolled
+          attempts += 1
+        end
 
         # Check that we have scrolled down (away from top of page)
-        # We expect scroll position to be significant since we should have scrolled to first match
-        expect(current_scroll_position).to be > SIGNIFICANT_SCROLL_THRESHOLD
+        expect(current_scroll_position).to be > MIN_SCROLLED_THRESHOLD
       end
 
       it 'highlights all occurrences of the search term' do
@@ -122,10 +131,12 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
 
         # Wait for page to load
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
+
+        # Wait for any potential scroll to settle
         sleep 0.5
 
         # Should not scroll since "Sample" is in the title "Sample Work Title"
-        expect(current_scroll_position).to be < MINIMAL_SCROLL_THRESHOLD
+        expect(current_scroll_position).to be < MAX_NO_SCROLL_THRESHOLD
       end
     end
 
