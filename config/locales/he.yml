@@ -108,6 +108,23 @@ he:
   surprise_me: הפתיעו אותי...
   surprise_me_again: הפתיעו אותי שוב
   new_works_in_the_project: יצירות חדשות במאגר
+  new_texts: טקסטים חדשים
+  new_collections: אוספים חדשים
+  new_tags: תגיות חדשות
+  no_new_authors: אין יוצרים חדשים בחודש האחרון
+  no_new_texts: אין טקסטים חדשים בחודש האחרון
+  no_new_collections: אין אוספים חדשים בחודש האחרון
+  no_new_tags: אין תגיות חדשות בחודש האחרון
+  items_count:
+    one: "פריט %{count}"
+    other: "%{count} פריטים"
+  tagged_items_count:
+    one: "פריט מתויג %{count}"
+    other: "%{count} פריטים מתויגים"
+  all_involved_authorities: כל היוצרים המעורבים
+  created: נוצר
+  created_with_date: "נוצר: %{date}"
+  updated_with_date: "עודכן: %{date}"
   surprise: יצירה בהפתעה
   confirm: אשר!
   confirmed: אושר
@@ -1278,6 +1295,7 @@ he:
   creation_date: תאריך יצירה
   publication_date: תאריך פרסום בדפוס
   alphabetical: 'סדר א"ב'
+  recent: לפי תאריך
   popularity: נקראות ביותר באתר
   upload_date: תאריך עליה לאתר
   metadata_approved: עבר טיוב מטא-דאטה

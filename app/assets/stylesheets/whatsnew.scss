@@ -1,0 +1,60 @@
+// Whatsnew page styles
+
+.whatsnew-sticky-nav {
+  position: sticky;
+  // Use calc to allow for flexible header height
+  // Adjust this value if header height changes
+  top: calc(var(--header-height, 80px) + 20px);
+  z-index: 20;
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    top: calc(var(--header-height, 60px) + 10px);
+  }
+}
+
+.whatsnew-nav {
+  .navbar {
+    .nav-link {
+      &.active {
+        font-weight: bold;
+        color: #6b4c5f; // Use existing primary color
+      }
+    }
+  }
+}
+
+.displayMethodLine {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .switch-label {
+    font-weight: bold;
+  }
+}
+
+// Date display for items when sorting by recency
+.whatsnew-item-date {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+// Authority list styling
+.whatsnew-authorities {
+  margin-top: 0.5rem;
+  font-size: 0.95em;
+
+  .authority-label {
+    font-weight: bold;
+  }
+}
+
+// Translation language indicator
+.whatsnew-translation-info {
+  margin-top: 0.5rem;
+  font-size: 0.9em;
+  color: #555;
+}

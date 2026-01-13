@@ -31,6 +31,9 @@ module Tracking
     track_event('view', props)
     record.increment!(:impressions_count) # we simply increase impressions_count here
 
+    # we only update Chewy index every 10 views to reduce performance impact
+    return unless record.impressions_count % 10 == 0
+
     # increment! method does not trigger Chewy index update so we do it explicitly here
     # for performance purpose we specify only single field to be updated
     index_class = case record.class.name
