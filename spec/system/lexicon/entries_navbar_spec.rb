@@ -44,9 +44,9 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
     it 'displays the full navbar with correct sections' do
       visit lexicon_entry_path(entry)
 
-      expect(page).to have_css('.book-nav-full')
+      expect(page).to have_css('#genrenav')
 
-      within('.book-nav-full') do
+      within('#genrenav') do
         expect(page).to have_content(I18n.t('lexicon.verification.sections.biography'))
         expect(page).to have_content(I18n.t('lexicon.verification.sections.works_section'))
         expect(page).to have_content(I18n.t('lexicon.verification.sections.links_section'))
@@ -59,38 +59,25 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
       end
     end
 
-    it 'displays the thin navbar for mobile' do
-      visit lexicon_entry_path(entry)
-
-      # The thin navbar exists but is hidden on desktop (display: none)
-      # It's only visible on mobile viewports (< 991px)
-      expect(page).to have_css('.book-nav-thin', visible: :all)
-
-      within('.book-nav-thin', visible: :all) do
-        expect(page).to have_css('.nav-books.lexicon-background-color[data-scroll-target="#lexicon-biography"]', visible: :all)
-      end
-    end
+    # Note: The current implementation uses a single responsive navbar
+    # without separate desktop/mobile variants
 
     it 'scrolls to biography section when biography nav item is clicked' do
       visit lexicon_entry_path(entry)
 
       # Verify the navbar and biography section exist
-      expect(page).to have_css('.book-nav-full')
+      expect(page).to have_css('#genrenav')
       expect(page).to have_css('#lexicon-biography', visible: :all)
 
       # Scroll down first to ensure we can detect a scroll change
       page.execute_script('window.scrollTo(0, 500);')
-      sleep 0.2
 
-      within('.book-nav-full') do
-        biography_link = find('.book-type[data-scroll-target="#lexicon-biography"]')
+      within('#genrenav') do
+        biography_link = find('.nav-item[data-scroll-target="#lexicon-biography"]')
         biography_link.click
       end
 
-      # Wait for scroll animation
-      sleep 0.6
-
-      # Verify the biography section is present
+      # Verify the biography section is present (Capybara waits automatically)
       biography_element = page.find('#lexicon-biography', visible: :all)
       expect(biography_element).to be_present
     end
@@ -101,15 +88,12 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
       # Scroll to top first
       page.execute_script('window.scrollTo(0, 0);')
 
-      within('.book-nav-full') do
-        works_link = find('.book-type[data-scroll-target="#lexicon-works"]')
+      within('#genrenav') do
+        works_link = find('.nav-item[data-scroll-target="#lexicon-works"]')
         works_link.click
       end
 
-      # Wait for scroll animation
-      sleep 0.6
-
-      # Verify the works section exists
+      # Verify the works section exists (Capybara waits automatically)
       expect(page).to have_css('#lexicon-works')
     end
 
@@ -119,15 +103,12 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
       # Scroll to top first
       page.execute_script('window.scrollTo(0, 0);')
 
-      within('.book-nav-full') do
-        about_link = find('.book-type[data-scroll-target="#lexicon-about"]')
+      within('#genrenav') do
+        about_link = find('.nav-item[data-scroll-target="#lexicon-about"]')
         about_link.click
       end
 
-      # Wait for scroll animation
-      sleep 0.6
-
-      # Verify the about section exists
+      # Verify the about section exists (Capybara waits automatically)
       expect(page).to have_css('#lexicon-about')
     end
 
@@ -137,38 +118,37 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
       # Scroll to top first
       page.execute_script('window.scrollTo(0, 0);')
 
-      within('.book-nav-full') do
-        links_link = find('.book-type[data-scroll-target="#lexicon-links"]')
+      within('#genrenav') do
+        links_link = find('.nav-item[data-scroll-target="#lexicon-links"]')
         links_link.click
       end
 
-      # Wait for scroll animation
-      sleep 0.6
-
-      # Verify the links section exists
+      # Verify the links section exists (Capybara waits automatically)
       expect(page).to have_css('#lexicon-links')
     end
 
     it 'updates selected state when clicking navbar items' do
       visit lexicon_entry_path(entry)
 
-      within('.book-nav-full') do
-        biography_link = find('.book-type[data-scroll-target="#lexicon-biography"]')
-        works_link = find('.book-type[data-scroll-target="#lexicon-works"]')
+      within('#genrenav') do
+        biography_item = find('.nav-item[data-scroll-target="#lexicon-biography"]')
+        biography_link = biography_item.find('.nav-link')
+        works_item = find('.nav-item[data-scroll-target="#lexicon-works"]')
 
-        # Biography should be selected by default
-        expect(biography_link[:class]).to include('selected')
+        # Biography nav-link should have active class by default
+        expect(biography_link[:class]).to include('active')
 
-        # Click works link
-        works_link.click
+        # Click works item
+        works_item.click
 
-        # Wait for JavaScript to update classes
-        sleep 0.2
+        # Wait for JavaScript to update classes by checking that works has active class
+        # Re-find the links after the click to get updated classes
+        works_link_after = works_item.find('.nav-link')
+        biography_link_after = biography_item.find('.nav-link')
 
-        # Works should now be selected
-        expect(works_link[:class]).to include('selected')
-        # Biography should no longer be selected
-        expect(biography_link[:class]).not_to include('selected')
+        expect(works_link_after[:class]).to include('active')
+        # Biography should no longer have active class
+        expect(biography_link_after[:class]).not_to include('active')
       end
     end
   end
@@ -197,9 +177,9 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
     it 'displays the full navbar with publication-specific sections' do
       visit lexicon_entry_path(entry)
 
-      expect(page).to have_css('.book-nav-full')
+      expect(page).to have_css('#genrenav')
 
-      within('.book-nav-full') do
+      within('#genrenav') do
         expect(page).to have_content(I18n.t('lexicon.verification.sections.description_section'))
         expect(page).to have_content(I18n.t('lexicon.verification.sections.toc_section'))
         expect(page).to have_content(I18n.t('lexicon.verification.sections.links_section'))
@@ -212,15 +192,12 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
       # Scroll to top first
       page.execute_script('window.scrollTo(0, 0);')
 
-      within('.book-nav-full') do
-        description_link = find('.book-type[data-scroll-target="#lexicon-description"]')
+      within('#genrenav') do
+        description_link = find('.nav-item[data-scroll-target="#lexicon-description"]')
         description_link.click
       end
 
-      # Wait for scroll animation
-      sleep 0.6
-
-      # Verify the description section exists
+      # Verify the description section exists (Capybara waits automatically)
       expect(page).to have_css('#lexicon-description')
     end
 
@@ -230,26 +207,13 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
       # Scroll to top first
       page.execute_script('window.scrollTo(0, 0);')
 
-      within('.book-nav-full') do
-        toc_link = find('.book-type[data-scroll-target="#lexicon-toc"]')
+      within('#genrenav') do
+        toc_link = find('.nav-item[data-scroll-target="#lexicon-toc"]')
         toc_link.click
       end
 
-      # Wait for scroll animation
-      sleep 0.6
-
-      # Verify the TOC section exists
+      # Verify the TOC section exists (Capybara waits automatically)
       expect(page).to have_css('#lexicon-toc')
-    end
-
-    it 'thin navbar scrolls to description by default for publications' do
-      visit lexicon_entry_path(entry)
-
-      # The thin navbar exists but is hidden on desktop (display: none)
-      # It's only visible on mobile viewports (< 991px)
-      within('.book-nav-thin', visible: :all) do
-        expect(page).to have_css('.nav-books.lexicon-background-color[data-scroll-target="#lexicon-description"]', visible: :all)
-      end
     end
   end
 end
