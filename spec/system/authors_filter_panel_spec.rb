@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'Authors filter panel behavior', type: :system, js: true do
   before do
+    skip 'WebDriver not available or misconfigured, skipping JS system specs' if Capybara.current_driver == :rack_test
     clean_tables
     Chewy.strategy(:atomic) do
       # Create authors with different characteristics for filtering
