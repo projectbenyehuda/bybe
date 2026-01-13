@@ -212,7 +212,7 @@ class ManifestationController < ApplicationController
                   Collection.collection_types[:uncollected]
                 ]
               )
-              .includes(:collection_items, :involved_authorities)
+              .includes(:involved_authorities, collection_items: :item)
               .to_a
               .select { |c| published_manifestations?(c) }
               .group_by(&:collection_type)
