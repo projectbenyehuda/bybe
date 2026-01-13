@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe 'Lexicon::Verification', type: :request do
+  before do
+    login_as_lexicon_editor
+  end
+
   describe 'PATCH /lex/verification/:id/set_profile_image' do
     let(:entry) { create(:lex_entry) }
     let(:url) { "/lex/verification/#{entry.id}/set_profile_image" }
