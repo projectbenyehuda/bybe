@@ -4,6 +4,10 @@ require 'rails_helper'
 require 'sidekiq/testing'
 
 describe '/lexicon/files' do
+  before do
+    login_as_lexicon_editor
+  end
+
   describe '#index' do
     subject(:call) { get '/lex/files', params: params }
 
