@@ -96,6 +96,38 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
       end
     end
 
+    it 'shows old collections if they contain new manifestations' do
+      # Create an old collection with a new manifestation
+      old_collection_with_new_content = create(:collection, collection_type: :volume, created_at: 3.months.ago)
+      new_m = create(:manifestation, status: :published, created_at: 1.week.ago)
+      create(:collection_item, collection: old_collection_with_new_content, item: new_m, seqno: 1)
+
+      visit whatsnew_path
+
+      within('#new-collections') do
+        expect(page).to have_link(old_collection_with_new_content.title)
+      end
+    end
+
+    it 'shows old collections with nested collections containing new manifestations' do
+      # Create an old parent collection
+      parent_collection = create(:collection, collection_type: :volume, created_at: 3.months.ago)
+      # Create an old nested collection
+      nested_collection = create(:collection, collection_type: :volume, created_at: 3.months.ago)
+      create(:collection_item, collection: parent_collection, item: nested_collection, seqno: 1)
+      # Add a new manifestation to the nested collection
+      new_m = create(:manifestation, status: :published, created_at: 1.week.ago)
+      create(:collection_item, collection: nested_collection, item: new_m, seqno: 1)
+
+      visit whatsnew_path
+
+      within('#new-collections') do
+        # Both parent and nested collections should be shown because they contain a new manifestation
+        expect(page).to have_link(parent_collection.title)
+        expect(page).to have_link(nested_collection.title)
+      end
+    end
+
     it 'shows only tags from last 30 days' do
       within('#new-tags') do
         expect(page).to have_link(new_tag.name)
