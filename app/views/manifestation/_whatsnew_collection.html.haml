@@ -5,6 +5,14 @@
   .by-card-content-v02
     %p
       = t(:items_count, count: collection.collection_items.count)
+    - if collection.involved_authorities.present?
+      .whatsnew-authorities
+        %p
+          - collection.involved_authorities.each_with_index do |ia, index|
+            = link_to ia.authority.name, authority_path(id: ia.authority.id)
+            = "(#{textify_authority_role(ia.role)})"
+            - if index < collection.involved_authorities.length - 1
+              = ', '
     - if @sort_order == 'recent'
       %p.whatsnew-item-date
         = t(:created_with_date, date: l(collection.created_at.to_date, format: :long))

@@ -2298,6 +2298,7 @@ en:
   all_involved_authorities: All Involved Authors
   created: Created
   created_with_date: "Created: %{date}"
+  updated_with_date: "Updated: %{date}"
   newest_authors: Newest Authors
   newest_works: Newest Works
   next_entry: Next Entry

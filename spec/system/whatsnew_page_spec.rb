@@ -3,8 +3,20 @@
 require 'rails_helper'
 
 RSpec.describe 'Whatsnew Page', :js, type: :system do
-  let!(:old_author) { create(:authority, created_at: 3.months.ago) }
-  let!(:new_author) { create(:authority, created_at: 2.weeks.ago) }
+  let!(:old_author) do
+    author = create(:authority, created_at: 3.months.ago)
+    # Create a published manifestation so author is not filtered out
+    m = create(:manifestation, status: :published, created_at: 3.months.ago)
+    create(:involved_authority, authority: author, item: m.expression.work, role: 'author')
+    author
+  end
+  let!(:new_author) do
+    author = create(:authority, created_at: 2.weeks.ago)
+    # Create a published manifestation so author is not filtered out
+    m = create(:manifestation, status: :published, created_at: 2.weeks.ago)
+    create(:involved_authority, authority: author, item: m.expression.work, role: 'author')
+    author
+  end
   let!(:new_manifestation) do
     create(:manifestation, status: :published, created_at: 1.week.ago)
   end
@@ -12,13 +24,21 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
     create(:manifestation, status: :published, created_at: 3.months.ago)
   end
   let!(:new_collection) do
-    create(:collection, collection_type: :volume, created_at: 1.week.ago)
+    collection = create(:collection, collection_type: :volume, created_at: 1.week.ago)
+    # Add a published manifestation to the collection
+    m = create(:manifestation, status: :published, created_at: 1.week.ago)
+    create(:collection_item, collection: collection, item: m, seqno: 1)
+    collection
   end
   let!(:old_collection) do
-    create(:collection, collection_type: :volume, created_at: 3.months.ago)
+    collection = create(:collection, collection_type: :volume, created_at: 3.months.ago)
+    # Add a published manifestation to the collection
+    m = create(:manifestation, status: :published, created_at: 3.months.ago)
+    create(:collection_item, collection: collection, item: m, seqno: 1)
+    collection
   end
-  let!(:new_tag) { create(:tag, status: :approved, created_at: 1.week.ago) }
-  let!(:old_tag) { create(:tag, status: :approved, created_at: 3.months.ago) }
+  let!(:new_tag) { create(:tag, status: :approved, created_at: 1.week.ago, updated_at: 1.week.ago) }
+  let!(:old_tag) { create(:tag, status: :approved, created_at: 3.months.ago, updated_at: 3.months.ago) }
 
   before do
     Rails.cache.clear # Clear cache before each test
@@ -143,7 +163,8 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
         Authority.where('created_at > ?', 1.month.ago).destroy_all
         Manifestation.where('created_at > ?', 1.month.ago).destroy_all
         Collection.where('created_at > ?', 1.month.ago).destroy_all
-        Tag.where('created_at > ?', 1.month.ago).destroy_all
+        # Tags are filtered by updated_at, not created_at
+        Tag.where('updated_at > ?', 1.month.ago).destroy_all
 
         Rails.cache.clear
         visit whatsnew_path
@@ -177,7 +198,11 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
 
   describe 'collection type grouping' do
     let!(:new_periodical) do
-      create(:collection, collection_type: :periodical, created_at: 1.week.ago)
+      collection = create(:collection, collection_type: :periodical, created_at: 1.week.ago)
+      # Add a published manifestation to the collection
+      m = create(:manifestation, status: :published, created_at: 1.week.ago)
+      create(:collection_item, collection: collection, item: m, seqno: 1)
+      collection
     end
     let!(:new_series) do
       create(:collection, collection_type: :series, created_at: 1.week.ago)
@@ -190,7 +215,7 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
 
     it 'groups collections by type' do
       within('#new-collections') do
-        # Should show volume type heading
+        # Should show volume type heading (from the base fixtures)
         expect(page).to have_content(I18n.t('collection.type.volume'))
         # Should show periodical type heading
         expect(page).to have_content(I18n.t('collection.type.periodical'))
