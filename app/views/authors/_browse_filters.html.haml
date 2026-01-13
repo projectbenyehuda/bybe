@@ -20,8 +20,8 @@
                        selected_values: @genders,
                        facet: @gender_facet }
 
-    - labels = Authority.intellectual_properties.keys.index_with { |key| textify_intellectual_property(key) }
-    - icons = Authority.intellectual_properties.keys.index_with { |key| intellectual_property_glyph(key) }
+    - labels = Authority.intellectual_properties.keys.reject{|x| x == 'copyrighted'}.index_with { |key| textify_intellectual_property(key) }
+    - icons = Authority.intellectual_properties.keys.reject{|x| x == 'copyrighted'}.index_with { |key| intellectual_property_glyph(key) }
     = render partial: 'shared/filters/checkbox_group',
              locals: { group_name: :intellectual_property,
                        title: Authority.human_attribute_name(:intellectual_property),
