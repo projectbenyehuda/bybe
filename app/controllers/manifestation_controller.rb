@@ -228,7 +228,7 @@ class ManifestationController < ApplicationController
   # (including in nested collections)
   def published_manifestations?(collection)
     # Check direct manifestation items
-    return true if collection.manifestation_items.any? { |m| m.status == 'published' }
+    return true if collection.manifestation_items.any? { |m| m.published? }
 
     # Check nested collections recursively
     collection.coll_items.any? { |nested_coll| published_manifestations?(nested_coll) }
