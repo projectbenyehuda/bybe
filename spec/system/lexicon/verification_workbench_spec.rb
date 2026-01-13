@@ -23,9 +23,22 @@ def webdriver_available?
   end
 end
 
+# Check if vips is available for image processing
+def vips_available?
+  return @vips_available if defined?(@vips_available)
+
+  @vips_available = begin
+    require 'vips'
+    true
+  rescue LoadError
+    false
+  end
+end
+
 RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
+    login_as_lexicon_editor
   end
 
   let!(:person) do
@@ -434,6 +447,8 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
 
   describe 'Profile Image Selection', :js do
     before do
+      skip 'Vips library not available for image processing' unless vips_available?
+
       # Attach some test images to the entry
       entry.attachments.attach(
         io: StringIO.new('test image 1'),

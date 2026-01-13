@@ -680,6 +680,7 @@ he:
   total_manifestations_count: "סה\"כ במאגר: %{total}"
   additional_content: 'תוכן נוסף:'
   lexicon_content: תוכן מהלקסיקון
+  curated_content: תוכן אוצרותי
   additional_items: פריטים נוספים
   authors_of: יוצרי
   sample_authors_of: מבחר יוצרי
