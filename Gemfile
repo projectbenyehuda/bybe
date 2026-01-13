@@ -166,5 +166,3 @@ group :test, :development do
 end
 
 gem 'sidekiq'
-
-gem "hotwire-livereload", "~> 2.1", :group => :development
