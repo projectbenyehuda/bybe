@@ -192,10 +192,10 @@ class ManifestationController < ApplicationController
   private
 
   def fetch_new_authors(since)
-    # Authorities created recently
+    # Authorities created recently with published manifestations
     # Note: Complex queries for "newly digitized authors" are deferred
     # to future enhancement due to association complexity
-    Authority.new_since(since).to_a
+    Authority.new_since(since).to_a.select { |a| a.published_manifestations(:author).any? }
   end
 
   def fetch_new_texts(since)
@@ -212,22 +212,33 @@ class ManifestationController < ApplicationController
                   Collection.collection_types[:uncollected]
                 ]
               )
-              .includes(:collection_items)
+              .includes(:involved_authorities, collection_items: :item)
               .to_a
+              .select { |c| published_manifestations?(c) }
               .group_by(&:collection_type)
   end
 
   def fetch_new_tags(since)
-    Tag.where('created_at > ? AND status = ?', since, Tag.statuses[:approved])
+    Tag.where('updated_at > ? AND status = ?', since, Tag.statuses[:approved])
        .includes(:taggings)
        .to_a
+  end
+
+  # Helper method to check if a collection has any published manifestations
+  # (including in nested collections)
+  def published_manifestations?(collection)
+    # Check direct manifestation items
+    return true if collection.manifestation_items.any? { |m| m.published? }
+
+    # Check nested collections recursively
+    collection.coll_items.any? { |nested_coll| published_manifestations?(nested_coll) }
   end
 
   def sort_whatsnew_data(authors, texts, collections, tags, order)
     if order == 'recent'
       authors.sort_by! { |a| -a.created_at.to_i }
       texts.sort_by! { |m| -m.created_at.to_i }
-      tags.sort_by! { |t| -t.created_at.to_i }
+      tags.sort_by! { |t| -t.updated_at.to_i }
       # Collections already grouped, sort within each group
       collections.each_value { |cols| cols.sort_by! { |c| -c.created_at.to_i } }
     else # 'alpha'

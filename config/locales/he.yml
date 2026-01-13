@@ -124,6 +124,7 @@ he:
   all_involved_authorities: כל היוצרים המעורבים
   created: נוצר
   created_with_date: "נוצר: %{date}"
+  updated_with_date: "עודכן: %{date}"
   surprise: יצירה בהפתעה
   confirm: אשר!
   confirmed: אושר
