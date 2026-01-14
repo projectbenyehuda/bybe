@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 describe '/lexicon/citation_authors' do
+  before do
+    login_as_lexicon_editor
+  end
+
   let(:person) { create(:lex_person) }
   let!(:citation) { create(:lex_citation, person: person) }
   let(:author) { citation.authors.first }

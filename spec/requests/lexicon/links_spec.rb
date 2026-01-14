@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 describe '/lexicon/links' do
+  before do
+    login_as_lexicon_editor
+  end
+
   let(:entry) { create(:lex_entry, :person) }
   let(:person) { entry.lex_item }
 
