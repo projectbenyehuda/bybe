@@ -168,8 +168,11 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
         click_link I18n.t(:new_tags)
       end
 
+      # Wait for smooth scroll animation to complete (500ms)
+      sleep 0.6
+
       # Check that the URL has the hash
-      expect(page).to have_current_path(/\#new-tags/)
+      expect(page.current_url).to include('#new-tags')
     end
   end
 
