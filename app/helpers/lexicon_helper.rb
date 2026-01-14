@@ -19,4 +19,13 @@ module LexiconHelper
       "<b>#{author.display_name}</b>"
     end
   end
+
+  def render_person_work(work)
+    title = if work.publication.present?
+              link_to(work.publication.title, lexicon_entry_path(work.publication.entry))
+            else
+              work.title
+            end
+    raw "#{title} (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
+  end
 end

@@ -28,17 +28,11 @@ describe Lexicon::IngestPerson do
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1946', deathdate: nil)
       expect(person.citations.count).to eq(53)
-    end
+      expect(person.works.count).to eq(15)
 
-    it 'extracts English title' do
-      call
-      entry = file.lex_entry.reload
       expect(entry.english_title).to eq('Gabriela Avigur-Rotem')
-    end
 
-    it 'extracts external identifiers' do
-      call
-      entry = file.lex_entry.reload
+      # External identifiers
       expect(entry.external_identifiers).to include(
         'openlibrary' => 'OL4181279A',
         'wikidata' => 'Q12404844',
@@ -74,17 +68,10 @@ describe Lexicon::IngestPerson do
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1899', deathdate: '1949')
       expect(person.citations.count).to eq(4)
-    end
+      expect(person.works.count).to eq(22)
 
-    it 'extracts English title when available' do
-      call
-      entry = file.lex_entry.reload
       expect(entry.english_title).to eq('Samuel Bass')
-    end
 
-    it 'returns nil for external identifiers when not available' do
-      call
-      entry = file.lex_entry.reload
       expect(entry.external_identifiers).to be_nil
     end
   end

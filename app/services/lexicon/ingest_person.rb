@@ -12,8 +12,9 @@ module Lexicon
       # ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
       lex_person = LexPerson.new(
         bio: parse_person_bio(buf[%r{</table>.*?<a name="Books}m]),
-        works: parse_person_books(buf[/a name="Books".*?<a name/m])
       )
+
+      parse_person_books(buf[/a name="Books".*?<a name/m], lex_person)
 
       # Match both patterns: (YYYY) and (YYYY-YYYY)
       if (match = buf.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*</font>}))
@@ -34,14 +35,14 @@ module Lexicon
       HtmlToMarkdown.call(ActionView::Base.full_sanitizer.sanitize(buf))
     end
 
-    def parse_person_books(buf)
+    def parse_person_books(buf, lex_person)
       buf.scan(%r{<li>(.*?)</li>}m).map do |x|
         if x.instance_of?(Array)
-          HtmlToMarkdown.call(x[0]).gsub("\n", ' ')
-        else
-          ''
+          work = ParsePersonWork.call(x[0])
+          work.work_type = :original
+          lex_person.works << work
         end
-      end.join("\n")
+      end
     end
 
     def parse_person_links(person, buf)

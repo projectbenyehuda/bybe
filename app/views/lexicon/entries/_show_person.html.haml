@@ -25,8 +25,9 @@
         #lexicon-works
           = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
             %ul
-              - lex_person.works.split("\n").each do |book|
-                %li!= MarkdownToHtml.call(book)
+              - lex_person.works.each do |work|
+                %li!= render_person_work(work)
+
         #lexicon-about
           = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
             - lex_person.citations.group_by(&:subject).each do |subject, list|
