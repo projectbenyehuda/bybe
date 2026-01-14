@@ -4,6 +4,10 @@ module Lexicon
   # Controller to handle work with LexEntry attachments
   # This controller is mounted on lexicon/entries/:id/attachments path
   class AttachmentsController < ApplicationController
+    before_action do
+      require_editor('edit_lexicon')
+    end
+
     before_action :set_lex_entry
 
     helper_method :format_filesize

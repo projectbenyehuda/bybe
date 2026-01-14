@@ -3,6 +3,9 @@
 module Lexicon
   # Controller to work with Lexicon Citations
   class CitationsController < ApplicationController
+    before_action do
+      require_editor('edit_lexicon')
+    end
     before_action :set_citation, only: %i(edit update destroy approve)
     before_action :set_person, only: %i(new create index)
 
