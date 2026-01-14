@@ -3,6 +3,9 @@
 module Lexicon
   # Controller to work with People records in Lexicon
   class PeopleController < ::ApplicationController
+    before_action do
+      require_editor('edit_lexicon')
+    end
     before_action :set_lex_person, only: %i(edit update)
 
     layout false
@@ -15,7 +18,6 @@ module Lexicon
       )
       render json: json_for_autocomplete(items, :title)
     end
-
 
     # GET /lex_people/new
     def new
