@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 describe '/lexicon/entries/<ENTRY_ID>/attachments' do
+  before do
+    login_as_lexicon_editor
+  end
+
   let(:lex_entry) { create(:lex_entry, :person) }
 
   let!(:image) do
