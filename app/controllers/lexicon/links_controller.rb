@@ -3,6 +3,9 @@
 module Lexicon
   # Controller to work with Lexicon Links
   class LinksController < ApplicationController
+    before_action do
+      require_editor('edit_lexicon')
+    end
     before_action :set_link, only: %i(edit update destroy)
     before_action :set_entry, only: %i(new create index)
 
