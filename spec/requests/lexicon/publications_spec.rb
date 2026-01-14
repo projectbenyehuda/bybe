@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 describe '/lexicon/publications' do
+  before do
+    login_as_lexicon_editor
+  end
+
   let(:lex_publication) { create(:lex_entry, :publication).lex_item }
 
   let(:valid_publication_attributes) { attributes_for(:lex_publication).except('created_at', 'updated_at', 'id') }
