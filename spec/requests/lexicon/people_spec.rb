@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 describe '/lexicon/people' do
+  before do
+    login_as_lexicon_editor
+  end
+
   let(:lex_person) { create(:lex_entry, :person).lex_item }
   let(:authority) { create(:authority) }
 
