@@ -3,6 +3,10 @@
 require 'rails_helper'
 
 describe '/lexicon/citations' do
+  before do
+    login_as_lexicon_editor
+  end
+
   let(:person) { create(:lex_entry, :person).lex_item }
 
   let!(:citations) { create_list(:lex_citation, 3, person: person) }

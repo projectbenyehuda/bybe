@@ -3,6 +3,9 @@
 module Lexicon
   # Controller to work with Lexicon Publications
   class PublicationsController < ApplicationController
+    before_action do
+      require_editor('edit_lexicon')
+    end
     before_action :set_lex_publication, only: %i(edit update)
 
     layout false
