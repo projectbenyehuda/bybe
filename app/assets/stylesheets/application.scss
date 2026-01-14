@@ -1018,3 +1018,36 @@ p.by-genre-name-v02.headline-2-v02 {
 .bootstrap-datetimepicker-widget {
   z-index: 9999 !important;
 }
+
+/* Mobile-friendly whatsnew navbar */
+@media (max-width: 768px) {
+  .whatsnew-nav {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1000;
+    padding: 10px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .whatsnew-sticky-nav {
+    position: static;
+  }
+
+  .whatsnew-nav .navbar .nav.flex-column {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .whatsnew-nav .navbar .nav-item {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .whatsnew-nav .navbar .nav-link {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}
