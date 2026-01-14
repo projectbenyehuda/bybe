@@ -35,7 +35,10 @@ $(document).ready(function() {
     if ($targetElement.length) {
       $('html, body').animate({
         scrollTop: $targetElement.offset().top - 100
-      }, 500);
+      }, 500, function() {
+        // Update URL hash after scroll completes
+        window.history.pushState(null, null, target);
+      });
     }
   });
 });

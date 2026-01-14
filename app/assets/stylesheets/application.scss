@@ -1018,3 +1018,103 @@ p.by-genre-name-v02.headline-2-v02 {
 .bootstrap-datetimepicker-widget {
   z-index: 9999 !important;
 }
+
+/* Mobile-friendly whatsnew navbar */
+@media (max-width: 768px) {
+  .whatsnew-nav {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    z-index: 1000;
+    padding: 0;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    order: -1; /* Place navbar before content */
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .whatsnew-sticky-nav {
+    position: static !important;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+
+  .whatsnew-nav .navbar {
+    padding: 0;
+    margin: 0;
+    min-height: auto;
+    width: 100%;
+  }
+
+  /* Override by-card-v02 styles on mobile for better visibility */
+  .whatsnew-nav .by-card-v02 {
+    margin-top: 0 !important;
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    box-shadow: none;
+    border-radius: 0;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-padding-inline-end: 15px; /* Ensure padding on scroll end in RTL */
+  }
+
+  .whatsnew-nav .nav.flex-column {
+    flex-direction: row-reverse !important; /* RTL: reverse row direction */
+    flex-wrap: nowrap;
+    justify-content: flex-end; /* RTL: align items to the right */
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    display: flex !important;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .whatsnew-nav .nav-item {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    margin: 0;
+    display: block !important;
+    list-style: none;
+  }
+
+  .whatsnew-nav .nav-link {
+    padding: 10px 16px !important;
+    font-size: 14px;
+    display: inline-block !important;
+    background-color: #eeeced;
+    border-radius: 3px;
+    margin: 0 4px;  /* Add horizontal margin between items */
+    color: #660248;
+    text-decoration: none;
+    width: auto !important;  /* Override BY_styles_Max991.css 34px constraint */
+    height: auto !important; /* Override BY_styles_Max991.css 34px constraint */
+    min-width: fit-content;
+    line-height: normal;
+  }
+
+  /* Ensure first and last items have proper margin */
+  .whatsnew-nav .nav-item:first-child .nav-link {
+    margin-inline-end: 4px;
+  }
+
+  .whatsnew-nav .nav-item:last-child .nav-link {
+    margin-inline-start: 4px;
+  }
+
+  .whatsnew-nav .nav-link.active {
+    background-color: #660248;
+    color: white;
+    font-weight: bold;
+  }
+
+  .whatsnew-nav .nav-link:hover {
+    background-color: #d9cdd5;
+  }
+}
