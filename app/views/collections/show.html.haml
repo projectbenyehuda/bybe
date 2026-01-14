@@ -1,5 +1,6 @@
 .top-element
-= render partial: 'shared/search_highlight_controls', locals: { search_query: params[:q] }
+= render partial: 'shared/search_highlight_controls',
+         locals: { search_query: params[:q], entity_title: @collection.title }
 #content.container-fluid
   - cauthors = @collection.authors
   - ceditors = @collection.editors

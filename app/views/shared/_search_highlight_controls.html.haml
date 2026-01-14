@@ -1,6 +1,8 @@
 -# Search highlight navigation controls
 - if local_assigns[:search_query].present?
-  #search-highlight-controls{ style: 'display: none;', data: { search_query: search_query } }
+  #search-highlight-controls{ style: 'display: none;',
+                               data: { search_query: search_query,
+                                       entity_title: local_assigns[:entity_title] } }
     .search-highlight-info
       %span#current-match 0
       %span /
@@ -30,6 +32,21 @@
       var currentMatchIndex = 0;
       var totalMatches = 0;
 
+      // Get entity title and check if search query matches it
+      var entityTitle = $controls.data('entity-title');
+      var titleMatches = false;
+
+      if (entityTitle) {
+        // Normalize both strings for comparison (case-insensitive, trim whitespace)
+        // Note: toLowerCase() doesn't affect Hebrew characters (they have no case variants),
+        // but this works correctly for both Hebrew and Latin text matching
+        var normalizedTitle = entityTitle.toLowerCase().trim();
+        var normalizedQuery = searchQuery.toLowerCase().trim();
+
+        // Check if the title contains the search query
+        titleMatches = normalizedTitle.includes(normalizedQuery);
+      }
+
       // Use Mark.js to highlight all occurrences
       $textContainer.mark(searchQuery, {
         separateWordSearch: false,
@@ -48,8 +65,10 @@
             currentMatchIndex = 0;
             $('#current-match').text(currentMatchIndex + 1);
 
-            // Scroll to first match
-            scrollToMatch($marks.eq(0));
+            // Only scroll to first match if the title does NOT match the search query
+            if (!titleMatches) {
+              scrollToMatch($marks.eq(0));
+            }
           }
         }
       });

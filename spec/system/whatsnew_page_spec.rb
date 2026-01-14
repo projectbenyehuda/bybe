@@ -96,6 +96,38 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
       end
     end
 
+    it 'does not show new collections if they only contain old manifestations' do
+      # Create a new collection but with old manifestations
+      new_collection_old_content = create(:collection, collection_type: :volume, created_at: 1.week.ago)
+      old_m = create(:manifestation, status: :published, created_at: 3.months.ago)
+      create(:collection_item, collection: new_collection_old_content, item: old_m, seqno: 1)
+
+      visit whatsnew_path
+
+      within('#new-collections') do
+        expect(page).not_to have_link(new_collection_old_content.title)
+      end
+    end
+
+    it 'shows new collections with nested collections containing new manifestations' do
+      # Create a new parent collection
+      parent_collection = create(:collection, collection_type: :volume, created_at: 1.week.ago)
+      # Create a new nested collection
+      nested_collection = create(:collection, collection_type: :volume, created_at: 1.week.ago)
+      create(:collection_item, collection: parent_collection, item: nested_collection, seqno: 1)
+      # Add a new manifestation to the nested collection
+      new_m = create(:manifestation, status: :published, created_at: 1.week.ago)
+      create(:collection_item, collection: nested_collection, item: new_m, seqno: 1)
+
+      visit whatsnew_path
+
+      within('#new-collections') do
+        # Both parent and nested collections should be shown
+        expect(page).to have_link(parent_collection.title)
+        expect(page).to have_link(nested_collection.title)
+      end
+    end
+
     it 'shows only tags from last 30 days' do
       within('#new-tags') do
         expect(page).to have_link(new_tag.name)
@@ -136,8 +168,11 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
         click_link I18n.t(:new_tags)
       end
 
+      # Wait for smooth scroll animation to complete (500ms)
+      sleep 0.6
+
       # Check that the URL has the hash
-      expect(page).to have_current_path(/\#new-tags/)
+      expect(page.current_url).to include('#new-tags')
     end
   end
 

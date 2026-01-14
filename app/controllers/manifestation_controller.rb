@@ -214,7 +214,7 @@ class ManifestationController < ApplicationController
               )
               .includes(:involved_authorities, collection_items: :item)
               .to_a
-              .select { |c| published_manifestations?(c) }
+              .select { |c| published_manifestations?(c) && new_manifestations?(c, since) }
               .group_by(&:collection_type)
   end
 
@@ -232,6 +232,16 @@ class ManifestationController < ApplicationController
 
     # Check nested collections recursively
     collection.coll_items.any? { |nested_coll| published_manifestations?(nested_coll) }
+  end
+
+  # Helper method to check if a collection has any new manifestations
+  # (created after 'since', including in nested collections)
+  def new_manifestations?(collection, since)
+    # Check direct manifestation items
+    return true if collection.manifestation_items.any? { |m| m.created_at > since }
+
+    # Check nested collections recursively
+    collection.coll_items.any? { |nested_coll| new_manifestations?(nested_coll, since) }
   end
 
   def sort_whatsnew_data(authors, texts, collections, tags, order)
