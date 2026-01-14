@@ -205,12 +205,13 @@ class ManifestationController < ApplicationController
   end
 
   def fetch_new_collections(since)
-    Collection.where.not(
-      collection_type: [
-        Collection.collection_types[:series],
-        Collection.collection_types[:uncollected]
-      ]
-    )
+    Collection.where('created_at > ?', since)
+              .where.not(
+                collection_type: [
+                  Collection.collection_types[:series],
+                  Collection.collection_types[:uncollected]
+                ]
+              )
               .includes(:involved_authorities, collection_items: :item)
               .to_a
               .select { |c| published_manifestations?(c) && new_manifestations?(c, since) }
