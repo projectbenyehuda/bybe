@@ -3,6 +3,9 @@
 module Lexicon
   # Controller for LexCitationAuthor
   class CitationAuthorsController < ApplicationController
+    before_action do
+      require_editor('edit_lexicon')
+    end
     before_action :set_citation, only: %i(index create)
     before_action :set_author, only: %i(destroy)
 
