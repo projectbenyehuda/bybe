@@ -125,6 +125,8 @@ he:
           bib: ביבליוגרפיה
           other: אחר
       lex_entry:
+        title: כותרת
+        english_title: כותרת באנגלית
         statuses:
           draft: טיוטה
           deprecated: מבוטל
