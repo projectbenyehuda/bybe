@@ -110,6 +110,8 @@ en:
           bib: Bib
           other: Other
       lex_entry:
+        title: Title
+        english_title: English Title
         statuses:
           draft: Draft
           deprecated: Deprecated
