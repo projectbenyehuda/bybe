@@ -38,6 +38,16 @@
         %b= link_to t(:bib_workshop), bib_index_path
       %p= link_to t(:get_bibs), controller: :bib, action: :pubs_by_authority
       %p= link_to t(:review_bibs), publications_path
+  - if current_user.has_bit?('edit_lexicon')
+    .admin_dashboard_item
+      %h2= t('lexicon_name')
+      %p
+        %b= link_to t('to_lexicon_entries'), lexicon_entries_path
+      %p
+        %b= link_to t('lexicon_migration'), lexicon_files_path
+      %p
+        %b= link_to t('lexicon.verification.queue.title'), lexicon_verification_queue_path
+
   .admin_dashboard_item
     %h2= t(:maintenance)
     - if current_user.has_bit?('handle_proofs')

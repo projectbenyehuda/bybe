@@ -4,6 +4,7 @@
   - unless @lex_entry.status_published?
     .alert.alert-warning
       = t('lexicon.entries.show.unpublished_warning', status: LexEntry.human_enum_name(:status, @lex_entry.status))
+      = link_to t('lexicon.verification.queue.actions.start_or_continue'), lexicon_verification_path(@lex_entry), class: 'btn btn-sm btn-outline-primary ms-2'
   - if lex_item.is_a?(LexPerson)
     = render partial: 'show_person', locals: { lex_person: lex_item }
   - elsif lex_item.is_a?(LexPublication)
