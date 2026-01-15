@@ -132,7 +132,7 @@ he:
         header: קובץ מקור
         file_not_found: "⚠️ קובץ מקור לא נמצא"
       migrated:
-        header: ערך שהועבר
+        header: הערך המוסב
         edit: ערוך
         add_citation: הוסף מראה מקום
         add_link: הוסף קישור
