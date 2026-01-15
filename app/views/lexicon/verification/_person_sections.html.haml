@@ -9,6 +9,9 @@
       %strong= t('lexicon.verification.checklist.person.title') + ':'
       = entry.title
     %p
+      %strong= t('activerecord.attributes.lex_entry.english_title') + ':'
+      = entry.english_title.presence || t('unknown')
+    %p
       %strong= t('activerecord.attributes.lex_person.birthdate') + ':'
       = item.birthdate
     %p
@@ -21,6 +24,9 @@
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'title')}', onSectionEditSuccess('section-title'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['title']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'title' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 2: Biography
 .section.verification-section{id: 'section-bio', class: checklist['bio']&.dig('verified') ? 'verified' : 'not-verified'}
@@ -37,6 +43,9 @@
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'bio')}', onSectionEditSuccess('section-bio'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['bio']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'bio' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 3: Works
 .section.verification-section{id: 'section-works', class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
@@ -56,6 +65,9 @@
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', onSectionEditSuccess('section-works'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['works']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'works' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 4: Citations (מראי מקום)
 .section.verification-section{id: 'section-citations', class: checklist['citations']&.dig('verified') ? 'verified' : 'not-verified'}
