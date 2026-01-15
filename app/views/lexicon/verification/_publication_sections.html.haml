@@ -8,10 +8,16 @@
     %p
       %strong= t('lexicon.verification.checklist.publication.title') + ':'
       = entry.title
+    %p
+      %strong= t('activerecord.attributes.lex_entry.english_title') + ':'
+      = entry.english_title.presence || t('unknown')
   .section-actions
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'title')}', onSectionEditSuccess('section-title'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['title']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'title' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 2: Description
 .section.verification-section{id: 'section-description', class: checklist['description']&.dig('verified') ? 'verified' : 'not-verified'}
@@ -28,6 +34,9 @@
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'description')}', onSectionEditSuccess('section-description'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['description']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'description' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 3: Table of Contents
 .section.verification-section{id: 'section-toc', class: checklist['toc']&.dig('verified') ? 'verified' : 'not-verified'}
@@ -44,6 +53,9 @@
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'toc')}', onSectionEditSuccess('section-toc'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['toc']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'toc' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 4: A-Z Navigation
 .section.verification-section{id: 'section-az-navbar', class: checklist['az_navbar']&.dig('verified') ? 'verified' : 'not-verified'}
@@ -60,6 +72,9 @@
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'az_navbar')}', onSectionEditSuccess('section-az-navbar'))"}
       ✏️
       = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['az_navbar']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'az_navbar' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 5: Links
 .section.verification-section{id: 'section-links', class: checklist['links']&.dig('verified') ? 'verified' : 'not-verified'}
