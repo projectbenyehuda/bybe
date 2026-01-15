@@ -5,6 +5,10 @@
     = label_tag :entry_title, t('activerecord.attributes.lex_entry.title'), class: 'form-label'
     = text_field_tag :entry_title, @entry.title, class: 'form-control', required: true
 
+  .form-group
+    = label_tag :english_title, t('activerecord.attributes.lex_entry.english_title'), class: 'form-label'
+    = text_field_tag :english_title, @entry.english_title, class: 'form-control'
+
   - if @item.is_a?(LexPerson)
     .form-group
       = f.label :birthdate, t('activerecord.attributes.lex_person.birthdate'), class: 'form-label'
