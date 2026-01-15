@@ -143,6 +143,8 @@ module Lexicon
       # Update entry title and english_title if present
       entry_updates = {}
       entry_updates[:title] = params[:entry_title] if params[:entry_title].present?
+      # For english_title we check key presence rather than value presence so that
+      # submitting an empty string will clear the field instead of being ignored.
       entry_updates[:english_title] = params[:english_title] if params.key?(:english_title)
 
       if entry_updates.present? && !@entry.update(entry_updates)
