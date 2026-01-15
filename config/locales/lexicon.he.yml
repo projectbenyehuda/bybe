@@ -1,5 +1,7 @@
 he:
-  lexicon_migration: קליטת לקסיקון גלרון
+  lexicon_migration: הסבת הלקסיקון
+  lexicon_name: לקסיקון הספרות העברית החדשה
+  to_lexicon_entries: לערכי הלקסיקון
   lexicon_show_person: הצגת ערך
   lex_prev_entry: לרשומה הקודמת
   lex_next_entry: לרשומה הבאה
@@ -67,8 +69,8 @@ he:
         title: רשימת הקבצים
         title_placeholder: חיפוש לפי כותרת...
       migrate:
-        success: Migration queued
-        title: Analyze
+        success: ההסבה החלה
+        title: התחל הסבה
     header:
       title: לקסיקון הספרות העברית החדשה
       part_of_pby: חלק מפרויקט בן־יהודה
@@ -84,7 +86,7 @@ he:
         success: עודכן!
     verification:
       queue:
-        title: תור אימות הגירה
+        title: רשימת הסבות לבדיקה
         columns:
           title: כותרת
           type: סוג
@@ -93,20 +95,21 @@ he:
           last_updated: עדכון אחרון
           actions: פעולות
         actions:
-          start: התחל אימות
-          continue: המשך אימות
+          start: התחל בדיקה
+          continue: המשך בדיקה
+          start_or_continue: לבדיקת ההסבה
         filters:
           all: הכל
           draft: טיוטה
-          verifying: באימות
+          verifying: בבדיקה
           error: שגיאה
       show:
         title: "אימות: %{entry_title}"
         back_to_queue: חזור לרשימה
         save_progress: שמור התקדמות
-        mark_verified: סמן כמאומת
+        mark_verified: סמן כבדוק
         progress: התקדמות
-        hide_verified: הסתר פריטים מאומתים
+        hide_verified: הסתר פריטים בדוקים
       checklist:
         title: רשימת בדיקה
         overall_notes: הערות כלליות
@@ -134,9 +137,9 @@ he:
         add_citation: הוסף מראה מקום
         add_link: הוסף קישור
         upload_file: העלה קובץ
-        verified: מאומת
-        not_verified: לא אומת
-        mark_verified: סמן כמאומת
+        verified: בדוק
+        not_verified: לא בדוק
+        mark_verified: סמן כבדוק
       sections:
         title_and_years: כותרת וזמנים
         biography: ביוגרפיה
