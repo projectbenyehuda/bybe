@@ -33,9 +33,10 @@
                 .headline-1-v02
                   - if @collection.authors.present?
                     != @collection.authors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
-                  - if @collection.editors.present?
+                  - eds = @collection.editors(true)
+                  - if eds.present?
                     = t(:edited_by)
-                    != @collection.editors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != eds.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
                   - if @collection.illustrators.present?
                     .headline-3-v02
                       = "#{t(:illustrations_by)}: "
