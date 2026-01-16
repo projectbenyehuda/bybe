@@ -610,6 +610,8 @@ he:
   cancel: ביטול
   loading: טוען...
   close: סגירה
+  close_menu: סגור תפריט
+  expand_menu: הרחב תפריט
   unauthorized: אין לך הרשאה לבצע פעולה זו
   can_only_cancel_pending_links: ניתן לבטל רק קישוריות בהמתנה לאישור
   by: מאת
