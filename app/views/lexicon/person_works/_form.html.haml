@@ -1,0 +1,11 @@
+- path = @work.new_record? ? lexicon_person_works_path(@person) : lexicon_work_path(@work)
+= simple_form_for(@work, url: path, remote: true) do |f|
+  = f.error_notification
+  = f.input :title
+  = f.input :work_type, collection: LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_attribute_name("work_type.#{k}"), k] }
+  = f.input :publisher
+  = f.input :publication_place
+  = f.input :publication_date
+  = f.input :comment
+  = f.association :publication, collection: LexPublication.all.order(:title), label_method: :title, value_method: :id, include_blank: true
+  = f.submit t(:save)
