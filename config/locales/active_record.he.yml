@@ -22,7 +22,7 @@ he:
       lex_citation_author: Citation Author
       lex_entry: ערך בלקסיקון
       lex_person: אדם בלקסיקון
-      lex_person_work: יצירה של אדם בלקסיקון
+      lex_person_work: יצירת אדם בלקסיקון
       lex_publication: Lexicon Publication
       person: אדם
     errors:
@@ -143,7 +143,6 @@ he:
         publication_date: תאריך פרסום
         publication_place: מקום פרסום
         comment: הערה
-        lex_publication_id: קישור לערך פרסום
         work_types:
           original: מקורית
           translated: תורגמה

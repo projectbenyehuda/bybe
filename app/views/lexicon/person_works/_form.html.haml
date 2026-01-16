@@ -1,6 +1,5 @@
 - path = @work.new_record? ? lexicon_person_works_path(@person) : lexicon_work_path(@work)
-- work_type_collection = LexPersonWork.work_types.keys.map { |k| [I18n.t("activerecord.attributes.lex_person_work.work_types.#{k}"), k] }
-- publication_collection = LexPublication.joins(:entry).order('lex_entries.title')
+- work_type_collection = LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_enum_name(:work_type, k), k] }
 = simple_form_for(@work, url: path, remote: true) do |f|
   = f.error_notification
   = f.input :title
@@ -9,5 +8,4 @@
   = f.input :publication_place
   = f.input :publication_date
   = f.input :comment
-  = f.association :publication, collection: publication_collection, label_method: ->(p) { p.entry.title }, value_method: :id, include_blank: true
   = f.submit t(:save)

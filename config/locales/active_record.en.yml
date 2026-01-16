@@ -22,7 +22,7 @@ en:
       lex_citation_author: Citation Author
       lex_entry: Lexicon Entry
       lex_person: Lexicon Person
-      lex_person_work: Person Work
+      lex_person_work: Lexicon Person's Work
       lex_publication: Lexicon Publication
       person: Person
     errors:
@@ -134,7 +134,6 @@ en:
         publication_date: Publication Date
         publication_place: Publication Place
         comment: Comment
-        lex_publication_id: Link to Publication Entry
         work_types:
           original: Original
           translated: Translated

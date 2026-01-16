@@ -53,8 +53,7 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_person_work_params
-      params.expect(lex_person_work: %i(title work_type publisher publication_date publication_place comment
-                                        lex_publication_id))
+      params.expect(lex_person_work: %i(title work_type publisher publication_date publication_place comment))
     end
   end
 end

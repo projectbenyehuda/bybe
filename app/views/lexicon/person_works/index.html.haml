@@ -1,28 +1,30 @@
 %a.btn.btn-primary.add-work= t('.add_work')
 - @lex_person_works.group_by(&:work_type).each do |work_type, works|
-  %h4= I18n.t("activerecord.attributes.lex_person_work.work_types.#{work_type}")
-  %ul
-    - works.each do |w|
-      %li
-        = w.title
-        - if w.publisher.present?
-          = "(#{w.publisher}"
-          - if w.publication_place.present?
-            = ", #{w.publication_place}"
-          - if w.publication_date.present?
-            = ", #{w.publication_date}"
-          = ')'
-        = link_to t(:edit), nil, class: 'edit-work', data: { id: w.id }
-        = link_to t(:delete),
-                  lexicon_work_path(w),
-                  remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-work'
+  %h4= LexPersonWork.human_enum_name(:work_type, work_type)
+  %table.table.table-sm
+    %thead
+      %tr
+        %th= LexPersonWork.human_attribute_name(:title)
+        %th= LexPersonWork.human_attribute_name(:publisher)
+        %th= LexPersonWork.human_attribute_name(:publication_place)
+        %th= LexPersonWork.human_attribute_name(:publication_date)
+        %th= LexPersonWork.human_attribute_name(:comment)
+        %th= t(:actions)
+    %tbody
+      - works.each do |w|
+        %tr
+          %td= w.title
+          %td= w.publisher
+          %td= w.publication_place
+          %td= w.publication_date
+          %td= w.comment
+          %td
+            = link_to t(:edit), edit_lexicon_work_path(w), class: 'btn btn-sm btn-primary', remote: true
+            = link_to t(:delete),
+                      lexicon_work_path(w),
+                      remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'btn btn-sm btn-danger'
 
 :javascript
-  $('.edit-work').click(function(e) {
-    e.preventDefault();
-    const workId = $(this).data('id');
-    openModal(`/lex/works/${workId}/edit`);
-  });
   $('a.add-work').click(function() {
     openModal('/lex/people/#{@person.id}/works/new');
   });
