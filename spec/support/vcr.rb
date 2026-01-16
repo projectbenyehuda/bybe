@@ -7,7 +7,7 @@ VCR.configure do |config|
   config.ignore_localhost = true
 
   # hosts used by CI pipeline
-  config.ignore_hosts %w(elasticsearch mysql redis)
+  config.ignore_hosts 'elasticsearch', 'mysql', 'redis'
 
   config.configure_rspec_metadata!
   config.hook_into :webmock
