@@ -13,6 +13,7 @@ This means:
 - ❌ **NEVER** assume that being able to push means you should push
 - ✅ **ALWAYS** create a new feature/fix branch BEFORE making any commits
 - ✅ **ALWAYS** submit changes via Pull Request using `gh pr create`
+- ✅ **ALWAYS** make any CSS changes to the application.scss file. Treat other CSS files as read-only!
 
 **If you find yourself about to run `git push` on master/main, STOP! You're doing it wrong.**
 
@@ -44,6 +45,7 @@ If you accidentally pushed to master/main:
 ### Project architecture
 
 * READ AI_ARCHITECTURE_PRIMER.md for a primer on how the project is organized, its main models, controllers, and workflows. DO NOT SKIP THIS.
+* READ RAILS_GOTCHAS.md for documented Rails issues and their solutions. This file captures non-obvious problems that cost hours of debugging time. Always check this file when encountering unexplained Rails behavior.
 
 ### ⚠️ CRITICAL: Testing Requirements ⚠️
 
@@ -87,27 +89,6 @@ Before considering ANY work complete, you MUST:
 - **System specs** (`spec/system/`, requires `js: true`): Test full user interactions with JavaScript using Capybara
 - **Service specs** (`spec/services/`): Test service objects and business logic
 
-### ⚠️ CRITICAL: System Specs WebDriver Check
-
-**ALL system specs with `js: true` MUST include a WebDriver availability check to prevent CI failures.**
-
-The centralized check is already implemented in `spec/support/system_spec_helpers.rb`. You MUST add this check at the top of every system spec:
-
-```ruby
-# spec/system/your_feature_spec.rb
-require 'rails_helper'
-
-RSpec.describe 'Your feature', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
-  # ... rest of your tests
-end
-```
-
-**This is MANDATORY** - without it, the CI will fail when WebDriver/Chrome is unavailable in the CI environment.
-
 ### Example: Testing a UI Bug Fix
 
 When fixing a UI bug like scrollspy highlighting:
@@ -116,10 +97,6 @@ When fixing a UI bug like scrollspy highlighting:
 require 'rails_helper'
 
 RSpec.describe 'Feature name', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
   it 'properly highlights chapters on page load' do
     # Test the bug is fixed
   end
@@ -151,13 +128,20 @@ end
    - Branch naming: `fix/` for bugs, `feature/` for new features
    - Use descriptive names that indicate what the work is about
 
-3. **Make your changes and commit to YOUR branch:**
+3. **Make your changes, lint them, and commit to YOUR branch:**
    ```bash
+   # FIRST: Run linters on ALL files you changed
+   bundle exec rubocop <changed_ruby_files>  # Fix ALL RuboCop issues
+   bundle exec haml-lint <changed_haml_files>  # Fix ALL HAML-Lint issues
+
+   # ONLY proceed to commit after fixing ALL lint issues
    git add <files>
    bd sync  # sync beads changes
    git commit -m "Your commit message"
    bd sync  # sync beads changes again
    ```
+   - **CRITICAL**: You MUST run linters and fix ALL issues before committing
+   - Focus on fixing issues in files YOU modified, not pre-existing issues
    - Never run `git commit` while on master/main!
    - Double-check with `git branch --show-current` if unsure
 
@@ -191,6 +175,9 @@ Once a PR has been produced for an issue (a bead), you may close the bead as com
 ### Pre-Commit Checklist (for AI agents)
 
 Before running ANY git command, verify:
+- [ ] Have I run linters on ALL files I changed?
+  - [ ] `bundle exec rubocop <changed_ruby_files>` - Fixed ALL issues
+  - [ ] `bundle exec haml-lint <changed_haml_files>` - Fixed ALL issues
 - [ ] Am I on a branch I created in this session? (`git branch --show-current`)
 - [ ] If not, have I created a new feature/fix branch?
 - [ ] Am I about to push to my own branch, not master/main?
@@ -360,5 +347,23 @@ Important reminders:
    • Link discovered work with discovered-from dependencies
    • Check bd ready before asking "what should I work on?"
    • Run bd sync before and after commits
+
+Addressing PR code review comments:
+
+**CRITICAL**: When asked to address PR code review comments, use this two-step process:
+
+1. **Get review metadata**: Run `gh pr view <number> --json reviews,comments` to see all reviews
+2. **Fetch full review content**: If reviews exist with actual content (not just line comments from bots), use WebFetch on the review URL to get the full substantive review. The URL format is:
+   ```
+   https://github.com/projectbenyehuda/bybe/pull/<number>#pullrequestreview-<review-id>
+   ```
+
+**Why this matters**:
+- `gh api repos/.../pulls/<number>/comments` only returns individual line comments (lint issues, isolated feedback)
+- It does NOT return the full review body text or comprehensive review content
+- Bot reviews (github-actions, copilot-pull-request-reviewer) often provide detailed analysis in the review body, not just line comments
+- WebFetch on the review URL provides the complete review including summary, analysis, and all recommendations
+
+**Don't rely solely on the comments API** - it will miss substantive reviews!
 
 For more details, see README.md in the project home directory.
