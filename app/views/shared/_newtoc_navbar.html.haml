@@ -91,7 +91,7 @@
     .book-type
       .truncate= t(:recommendations_for_work)
   - if @lexicon_entry.present?
-    .nav-book-group.lexicon-background-color{ 'data-scroll-target' => '#lexicon-content' }
+    .nav-book-group.lexicon-background-color{ 'data-scroll-target' => '#lexicon-bio' }
       .headline-2-v02= t(:lexicon_content)
       .book-type.pointer
         .truncate{ 'data-scroll-target' => '#lexicon-bio' }= t('lexicon.verification.sections.biography')
@@ -109,10 +109,10 @@
     - scroll_target = roles_data[role][:first_scroll_target]
     .nav-books.pointer{ 'data-scroll-target' => scroll_target }
       .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
-  .nav-books.pointer{ 'data-scroll-target' => '#curated-content' }
-    .headline-2-v02= t(:curated_content)
+  .nav-books.pointer{ 'data-scroll-target' => '#author-whats-new-bg' }
+    .headline-2-v02= t(:additional_content)
   - if @lexicon_entry.present?
-    .nav-books.lexicon-background-color.pointer{ 'data-scroll-target' => '#lexicon-content' }
+    .nav-books.lexicon-background-color.pointer{ 'data-scroll-target' => '#lexicon-bio' }
       .headline-2-v02= t(:lexicon_content)
 
 .mobile-navbar-backdrop
