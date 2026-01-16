@@ -1,6 +1,9 @@
 ---
 en:
   edit_metadata: Edit metadata
+  originating_task: Originating task
+  find_originating_task: Find originating task
+  originating_task_not_found: No originating task found
   name_starts_with_x: 'Name starts with: ''%{x}'''
   title_starts_with_x: 'Title starts with: ''%{x}'''
   new_person: New Person
