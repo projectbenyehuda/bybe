@@ -9,7 +9,7 @@
     - if current_user.has_bit?(:edit_catalog)
       != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
       %span.static-btn#originating-task-btn
-        %a.pointer{ data: { manifestation_id: @m.id }, style: 'border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; display: inline-block;' }= t(:find_originating_task)
+        %a.pointer.originating-task-btn{ data: { 'manifestation-id': @m.id } }= t(:find_originating_task)
       %span#originating-task-result
     %br
   .headline-2-v02

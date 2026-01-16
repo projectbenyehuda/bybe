@@ -288,11 +288,10 @@
     $('#originating-task-btn a').click(function(e) {
       e.preventDefault();
       var $btn = $(this);
-      var manifestationId = $btn.data('manifestationId');
-      var originalText = $btn.text();
+      var manifestationId = $btn.data('manifestation-id');
 
       // Show loading message
-      $btn.text('#{ t(:loading) }');
+      $btn.text('#{t(:loading)}');
 
       $.ajax({
         url: '/manifestation/fetch_originating_task/' + manifestationId,

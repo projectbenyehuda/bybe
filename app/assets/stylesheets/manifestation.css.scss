@@ -97,3 +97,10 @@ h2 {
 input[type=file][data-direct-upload-url][disabled] {
   display: none;
 }
+
+.originating-task-btn {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 8px;
+  display: inline-block;
+}
