@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_08_221804) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_16_085301) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -108,6 +108,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_08_221804) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "impressions_count", default: 0
+    t.index ["user_id", "title"], name: "index_anthologies_on_user_id_and_title", unique: true
     t.index ["user_id"], name: "index_anthologies_on_user_id"
   end
 
@@ -631,7 +632,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_08_221804) do
     t.string "title"
     t.string "from_publication"
     t.string "pages"
-    t.string "link"
+    t.string "link", limit: 300
     t.string "item_type"
     t.bigint "item_id"
     t.integer "manifestation_id"
@@ -722,7 +723,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_08_221804) do
     t.string "birthdate"
     t.string "deathdate"
     t.text "bio"
-    t.text "works"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "authority_id"
@@ -742,6 +742,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_08_221804) do
     t.datetime "updated_at", precision: nil, null: false
     t.index ["item_type", "item_id"], name: "index_lex_people_items_on_item_type_and_item_id"
     t.index ["lex_person_id"], name: "index_lex_people_items_on_lex_person_id"
+  end
+
+  create_table "lex_person_works", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "lex_person_id", null: false
+    t.bigint "lex_publication_id"
+    t.string "title", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "publisher"
+    t.string "publication_date"
+    t.string "publication_place"
+    t.string "comment"
+    t.integer "work_type", null: false
+    t.index ["lex_person_id"], name: "index_lex_person_works_on_lex_person_id"
+    t.index ["lex_publication_id"], name: "index_lex_person_works_on_lex_publication_id"
   end
 
   create_table "lex_publications", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1170,6 +1185,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_08_221804) do
   add_foreign_key "lex_legacy_links", "lex_entries"
   add_foreign_key "lex_people", "authorities"
   add_foreign_key "lex_people_items", "lex_people"
+  add_foreign_key "lex_person_works", "lex_people"
+  add_foreign_key "lex_person_works", "lex_publications"
   add_foreign_key "lex_texts", "lex_issues"
   add_foreign_key "lex_texts", "lex_publications"
   add_foreign_key "lex_texts", "manifestations"
