@@ -11,7 +11,8 @@ describe '/lexicon/people' do
   let(:authority) { create(:authority) }
 
   let(:valid_person_attributes) do
-    attributes_for(:lex_person).except('created_at', 'updated_at', 'id').merge(authority_id: authority.id)
+    attributes_for(:lex_person).except(:created_at, :updated_at, :id, :works)
+                               .merge(authority_id: authority.id)
   end
 
   let(:valid_attributes) do
