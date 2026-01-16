@@ -1,0 +1,35 @@
+%a.btn.btn-primary.add-person-work= t('.add_work')
+- @lex_person_works.group_by(&:work_type).each do |work_type, works|
+  %h4= LexPersonWork.human_enum_name(:work_type, work_type)
+  %table.table.table-sm
+    %thead
+      %tr
+        %th= LexPersonWork.human_attribute_name(:title)
+        %th= LexPersonWork.human_attribute_name(:publisher)
+        %th= LexPersonWork.human_attribute_name(:publication_place)
+        %th= LexPersonWork.human_attribute_name(:publication_date)
+        %th= LexPersonWork.human_attribute_name(:comment)
+        %th= t(:actions)
+    %tbody
+      - works.each do |w|
+        %tr
+          %td= w.title
+          %td= w.publisher
+          %td= w.publication_place
+          %td= w.publication_date
+          %td= w.comment
+          %td
+            = link_to t(:edit), '#', class: 'edit-person-work', data: { id: w.id }
+            = link_to t(:delete),
+                      lexicon_work_path(w),
+                      remote: true, data: { confirm: t(:are_you_sure) }, method: :delete
+
+:javascript
+  $('.edit-person-work').click(function(e) {
+    e.preventDefault();
+    const workId = $(this).data('id');
+    openModal(`/lex/works/${workId}/edit`);
+  });
+  $('a.add-person-work').click(function() {
+    openModal('/lex/people/#{@person.id}/works/new');
+  });
