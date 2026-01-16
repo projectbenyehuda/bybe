@@ -1,6 +1,6 @@
 %a.btn.btn-primary.add-work= t('.add_work')
 - @lex_person_works.group_by(&:work_type).each do |work_type, works|
-  %h4= LexPersonWork.human_attribute_name("work_type.#{work_type}")
+  %h4= I18n.t("activerecord.attributes.lex_person_work.work_types.#{work_type}")
   %ul
     - works.each do |w|
       %li

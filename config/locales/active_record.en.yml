@@ -135,7 +135,7 @@ en:
         publication_place: Publication Place
         comment: Comment
         lex_publication_id: Link to Publication Entry
-        work_type:
+        work_types:
           original: Original
           translated: Translated
           edited: Edited

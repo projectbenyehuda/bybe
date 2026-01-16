@@ -144,7 +144,7 @@ he:
         publication_place: מקום פרסום
         comment: הערה
         lex_publication_id: קישור לערך פרסום
-        work_type:
+        work_types:
           original: מקורית
           translated: תורגמה
           edited: נערכה
