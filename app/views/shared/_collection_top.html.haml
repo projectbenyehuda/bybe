@@ -41,7 +41,7 @@
                 #{t(:edited_by)}:
                 %span= eds
           .field-v02.work-chapters-dropdown-field-desktop{style: 'background-color: unset;'}
-            = select_tag 'collitem', options_for_select(@htmls.reject{|x| x[0].blank?}.map{ |title, authors, html, is_curated, genre, i, ci, nesting_level, parent_authorities| [("\u00A0\u00A0" * nesting_level) + title, i] }, 0), class: 'dropdown-v02', id: 'collitem_dropdown', style: 'width: 100%;'
+            = select_tag 'collitem', options_for_select(@htmls.reject{|x| x[0].blank?}.map{ |title, authors, html, is_curated, genre, i, ci, nesting_level, parent_authorities| [("– " * nesting_level) + title, i] }, 0), class: 'dropdown-v02', id: 'collitem_dropdown', style: 'width: 100%;'
 
           .work-page-top-icons-desktop
             %button.btn-small-outline-v02.btn-text-v02.reading-mode-btn-v02{href: "#"}

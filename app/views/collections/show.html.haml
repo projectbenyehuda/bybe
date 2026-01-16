@@ -126,22 +126,22 @@
                       = link_to title, link
                     - else
                       = title
-                    -# Show all authorities with their roles (already filtered)
-                    - authors = ias.select{|ia| ia.role == 'author'}.map(&:authority)
-                    - if authors.present?
-                      %p
-                        = t(:by)
-                        != authors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
-                    - editors = ias.select{|ia| ia.role == 'editor'}.map(&:authority)
-                    - if editors.present?
-                      %p
-                        = t(:edited_by)
-                        != editors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
-                    - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority)
-                    - if translators.present?
-                      %p
-                        = t(:translated_by)
-                        != translators.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                  -# Show all authorities with their roles (already filtered)
+                  - authors = ias.select{|ia| ia.role == 'author'}.map(&:authority)
+                  - if authors.present?
+                    %p
+                      = t(:by)
+                      != authors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                  - editors = ias.select{|ia| ia.role == 'editor'}.map(&:authority)
+                  - if editors.present?
+                    %p
+                      = t(:edited_by)
+                      != editors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                  - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority)
+                  - if translators.present?
+                    %p
+                      = t(:translated_by)
+                      != translators.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
             - else
               -# This is a manifestation or other content item
               .by-card-v02.proofable{ card_attrs }

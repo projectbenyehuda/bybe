@@ -75,7 +75,6 @@ describe CollectionsController do
             ".proofable[data-item-id='#{collection_item.item_id}'][data-item-type='Collection']"
           )
           # The nested manifestation should be proofable as its own card
-          collection_item.item.collection_items.first
           expect(response.body).to have_css(
             ".proofable[data-item-id='#{nested_manifestation.id}'][data-item-type='Manifestation']"
           )
