@@ -13,7 +13,7 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
              birthdate: '1138',
              deathdate: '1204',
              bio: 'Test biography content',
-             works: "First work\nSecond work",
+             works_count: 2,
              gender: :male)
     end
 
