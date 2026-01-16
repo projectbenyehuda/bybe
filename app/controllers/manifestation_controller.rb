@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'pandoc-ruby'
 
 class ManifestationController < ApplicationController
@@ -12,17 +14,19 @@ class ManifestationController < ApplicationController
   before_action only: %i(edit update) do |c|
     c.require_editor(%w(edit_catalog conversion_verification handle_proofs))
   end
-  before_action only: %i(all genre period by_tag) do |c|
-    c.refuse_unreasonable_page
+  before_action only: %i(all genre period by_tag), &:refuse_unreasonable_page
+  before_action :set_manifestation,
+                only: %i(print read readmode dict dict_print dict_entry_print fetch_originating_task)
+  before_action only: %i(fetch_originating_task) do |c|
+    c.require_editor('edit_catalog')
   end
-  before_action :set_manifestation, only: %i(print read readmode dict dict_print dict_entry_print)
 
   autocomplete :manifestation, :title, limit: 20, display_value: :title_and_authors, full: true
 
   # layout false, only: [:print]
 
   DATE_FIELD = { 'uploaded' => 'manifestations.created_at', 'created' => 'works.normalized_creation_date',
-                 'published' => 'expressions.normalized_pub_date' }
+                 'published' => 'expressions.normalized_pub_date' }.freeze
 
   #############################################
   # public actions
@@ -44,7 +48,7 @@ class ManifestationController < ApplicationController
   # page switch
   def browse
     @pagetype = :works
-    @works_list_title = t(:works_list) unless @works_list_title.present? # TODO: adjust by query
+    @works_list_title = t(:works_list) if @works_list_title.blank? # TODO: adjust by query
     if valid_query?
       es_prep_collection
       @maxdate = Time.zone.today.strftime('%Y-%m')
@@ -129,7 +133,8 @@ class ManifestationController < ApplicationController
     render json: json_for_autocomplete(items, :title_and_authors, {}), root: false
   end
 
-  def periods # /periods dashboard
+  # /periods dashboard
+  def periods
     @tabclass = set_tab('periods')
     @page_title = t(:periods) + ' - ' + t(:project_ben_yehuda)
     @pagetype = :periods
@@ -228,7 +233,7 @@ class ManifestationController < ApplicationController
   # (including in nested collections)
   def published_manifestations?(collection)
     # Check direct manifestation items
-    return true if collection.manifestation_items.any? { |m| m.published? }
+    return true if collection.manifestation_items.any?(&:published?)
 
     # Check nested collections recursively
     collection.coll_items.any? { |nested_coll| published_manifestations?(nested_coll) }
@@ -290,7 +295,7 @@ class ManifestationController < ApplicationController
       @entity = @m
       @print_url = dict_print_path(@m)
       @all_headwords = DictionaryEntry.where(manifestation_id: @m.id)
-      unless params[:page].nil? || params[:page].empty?
+      if params[:page].present?
         params[:to_letter] = nil # if page was specified, forget the to_letter directive
       end
       oldpage = @page
@@ -298,14 +303,14 @@ class ManifestationController < ApplicationController
       @total_headwords = nonnil_headwords.length
       @headwords_page = nonnil_headwords.page(@page)
       @total_pages = @headwords_page.total_pages
-      unless params[:to_letter].nil? || params[:to_letter].empty? # for A-Z navigation, we need to adjust the page
+      if params[:to_letter].present? # for A-Z navigation, we need to adjust the page
         adjust_page_by_letter(nonnil_headwords, params[:to_letter], :sort_defhead, nil, false)
         @headwords_page = nonnil_headwords.page(@page) if oldpage != @page # re-get page X of manifestations if adjustment was made
       end
 
       @total = @total_headwords # needed?
       @filters = []
-      if @headwords_page.count == 0
+      if @headwords_page.none?
         first_seqno = 9
         last_seqno = 1 # safely generate zero results in following query
       else
@@ -365,7 +370,7 @@ class ManifestationController < ApplicationController
       @app_recs = recommendations.select(&:approved?)
       @total_recs = @my_pending_recs.size + @app_recs.size
 
-      @links = @m.external_links.group_by { |l| l.linktype }
+      @links = @m.external_links.group_by(&:linktype)
 
       @header_partial = 'manifestation/work_top'
       @works_about = @w.works_about
@@ -475,7 +480,8 @@ class ManifestationController < ApplicationController
     render partial: 'surprise_work', locals: { work: work }
   end
 
-  def workshow # temporary action to map to the first manifestation of the work; # TODO: in the future, show something intelligent about multiple expressions per work
+  # temporary action to map to the first manifestation of the work; # TODO: in the future, show something intelligent about multiple expressions per work
+  def workshow
     work = Work.find(params[:id])
     unless work.nil?
       m = work.expressions[0].manifestations[0]
@@ -489,7 +495,7 @@ class ManifestationController < ApplicationController
   def autocomplete_dict_entry
     term = params[:term]
     # we search *aliases*, to find headwords even without diacritics, or with spelling variants
-    items = if term&.present?
+    items = if term.present?
               DictionaryAlias.joins(:dictionary_entry).where(dictionary_entry: { manifestation_id: params[:manifestation_id] }).where(
                 'alias like ?', "#{term}%"
               ).limit(15)
@@ -561,9 +567,9 @@ class ManifestationController < ApplicationController
 
     # Apply ordering and pagination
     @manifestations = if params[:title].blank? && params[:author].blank? && params[:status].blank?
-                        @manifestations.page(params[:page]).order('updated_at DESC')
+                        @manifestations.page(params[:page]).order(updated_at: :desc)
                       else
-                        @manifestations.page(params[:page]).order('sort_title ASC')
+                        @manifestations.page(params[:page]).order(:sort_title)
                       end
   end
 
@@ -575,7 +581,7 @@ class ManifestationController < ApplicationController
     @html = MultiMarkdown.new(@m.markdown).to_html.force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '') # remove MMD's automatic figcaptions
     @html = highlight_suspicious_markdown(@html) # highlight suspicious markdown in backend
     h = @m.legacy_htmlfile
-    return if h.nil? or h.url.nil? or h.url.empty?
+    return if h.nil? || h.url.nil? || h.url.empty?
 
     @legacy_url = 'https://old.benyehuda.org' + h.url
   end
@@ -587,7 +593,7 @@ class ManifestationController < ApplicationController
     @html = highlight_suspicious_markdown(@html) # highlight suspicious markdown in backend
     @markdown = @m.markdown
     h = @m.legacy_htmlfile
-    return if h.nil? or h.url.nil? or h.url.empty?
+    return if h.nil? || h.url.nil? || h.url.empty?
 
     @legacy_url = 'https://old.benyehuda.org' + h.url
   end
@@ -665,7 +671,7 @@ class ManifestationController < ApplicationController
           @w.save!
           @e.save!
         else # markdown edit and save
-          unless params[:newtitle].nil? or params[:newtitle].empty?
+          if params[:newtitle].present?
             @e = @m.expression
             @w = @e.work
             @m.title = params[:newtitle]
@@ -696,7 +702,7 @@ class ManifestationController < ApplicationController
       @newtitle = params[:newtitle]
 
       h = @m.legacy_htmlfile
-      unless h.nil? or h.url.nil?
+      unless h.nil? || h.url.nil?
         @legacy_url = 'https://old.benyehuda.org' + h.url
       end
       render action: :edit
@@ -816,13 +822,38 @@ class ManifestationController < ApplicationController
               disposition: 'attachment'
   end
 
+  def fetch_originating_task
+    # Find an Ingestible that contains this manifestation's ID in its ingested_changes texts array
+    # First use the database to filter to records that might contain this ID,
+    # then parse only those to ensure it's in the texts array (not collections)
+    ingestible = Ingestible.where('ingested_changes LIKE ?', "%#{@m.id}%")
+                           .where.not(ingested_changes: nil)
+                           .where.not(originating_task: [nil, ''])
+                           .find do |ing|
+      changes = JSON.parse(ing.ingested_changes)
+      texts = changes['texts'] || []
+      texts.any? { |text_array| text_array[0] == @m.id }
+    rescue JSON::ParserError
+      false
+    end
+
+    originating_task_url = ingestible&.originating_task
+
+    respond_to do |format|
+      format.js do
+        render partial: 'originating_task_result', locals: { originating_task_url: originating_task_url }
+      end
+    end
+  end
+
   protected
 
   def valid_query?
     return true unless params[:to_letter].present? && (params[:to_letter].any_hebrew? == false)
   end
 
-  def bfunc(coll, page, l, field, direction) # binary-search function for ab_pagination
+  # binary-search function for ab_pagination
+  def bfunc(coll, page, l, field, direction)
     recs = coll.order(field).page(page)
     rec = recs.first
     return true if rec.nil?
@@ -839,12 +870,11 @@ class ManifestationController < ApplicationController
     if [:desc, 'desc'].include?(direction)
       return true if c == l || c < l # already too high a page
 
-      return false
-    else
-      return true if c == l || c > l # already too high a page
+    elsif c == l || c > l
+      return true # already too high a page
 
-      return false
     end
+    return false
   end
 
   def adjust_page_by_letter(coll, l, field, direction, is_es)
@@ -868,14 +898,14 @@ class ManifestationController < ApplicationController
     ret = {}
     @filters = []
     # periods
-    @periods = params['ckb_periods'] unless @periods.present?
+    @periods = params['ckb_periods'] if @periods.blank?
     if @periods.present?
       ret['periods'] = @periods
       @filters += @periods.map { |x| [I18n.t(x), "period_#{x}", :checkbox] }
     end
 
     # genres
-    @genres = params['ckb_genres'] unless @genres.present?
+    @genres = params['ckb_genres'] if @genres.blank?
     if @genres.present?
       ret['genres'] = @genres
       @filters += @genres.map { |x| [helpers.textify_genre(x), "genre_#{x}", :checkbox] }
@@ -930,7 +960,7 @@ class ManifestationController < ApplicationController
     # collection types (in_volume, in_periodical, uncollected)
     @collection_types = params['ckb_collection_types']
     # Only apply filter if not all three are selected (which would mean "show everything")
-    if @collection_types.present? && !(@collection_types.sort == %w(in_periodical in_volume uncollected).sort)
+    if @collection_types.present? && @collection_types.sort != %w(in_periodical in_volume uncollected).sort
       ret['collection_types'] = @collection_types
       @filters += @collection_types.map do |x|
         [I18n.t("collection_type_#{x}"), "collection_type_#{x}", :checkbox]
@@ -1055,7 +1085,7 @@ class ManifestationController < ApplicationController
     if params[:sort_by].present?
       @sort = params[:sort_by].dup
       @sort_by = params[:sort_by].sub(/_(a|de)sc$/, '')
-      @sort_dir = ::Regexp.last_match(0)[1..-1] unless ::Regexp.last_match(0).nil?
+      @sort_dir = ::Regexp.last_match(0)[1..] unless ::Regexp.last_match(0).nil?
     else
       # use alphabetical sorting by default
       @sort = 'alphabetical_asc'
@@ -1103,7 +1133,7 @@ class ManifestationController < ApplicationController
   end
 
   def refuse_unreasonable_page
-    return true if params[:page].nil? || params[:page].empty?
+    return true if params[:page].blank?
 
     p = params[:page].to_i
     return true unless p.nil? || p > 2000
@@ -1144,9 +1174,9 @@ class ManifestationController < ApplicationController
     @entity = @m
     @pagetype = :manifestation
     @liked = (current_user.nil? ? false : @m.likers.include?(current_user))
-    if @e.translation? && (@e.work.expressions.count > 1) # one is the one we're looking at...
+    if @e.translation? && @e.work.expressions.many? # one is the one we're looking at...
       @additional_translations = []
-      @e.work.expressions.joins(:manifestations).includes(:manifestations).each do |ex|
+      @e.work.expressions.joins(:manifestations).includes(:manifestations).find_each do |ex|
         @additional_translations << ex unless ex == @e
       end
     end

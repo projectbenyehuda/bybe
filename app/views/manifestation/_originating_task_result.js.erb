@@ -1,0 +1,23 @@
+// Replace the button with the result
+<% if originating_task_url.present? %>
+  $('#originating-task-btn').hide();
+  var $result = $('#originating-task-result');
+  $result.html('<%= j link_to t(:originating_task), originating_task_url, target: "_blank", rel: "noopener" %>');
+  $result.css({
+    'background-color': '#d4edda',
+    'border': '1px solid #c3e6cb',
+    'border-radius': '4px',
+    'padding': '4px 8px',
+    'display': 'inline-block'
+  });
+  // Fade out the green background over 2 seconds
+  setTimeout(function() {
+    $result.animate({
+      backgroundColor: 'transparent',
+      borderColor: 'transparent'
+    }, 2000);
+  }, 100);
+<% else %>
+  $('#originating-task-btn').hide();
+  $('#originating-task-result').html('<%= j content_tag(:span, t(:originating_task_not_found), class: "text-muted") %>');
+<% end %>

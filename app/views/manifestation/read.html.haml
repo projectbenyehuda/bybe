@@ -284,4 +284,20 @@
     if("#{@m.sefaria_linker}" != '') {
       sefaria.link({whitelistSelector: '#actualtext', contentLang: 'hebrew', interfaceLang: 'hebrew'});
     }
+    // Handle originating task lookup
+    $('#originating-task-btn a').click(function(e) {
+      e.preventDefault();
+      var $btn = $(this);
+      var manifestationId = $btn.data('manifestationId');
+      var originalText = $btn.text();
+
+      // Show loading message
+      $btn.text('#{ t(:loading) }');
+
+      $.ajax({
+        url: '/manifestation/fetch_originating_task/' + manifestationId,
+        type: 'GET',
+        dataType: 'script'
+      });
+    });
   });

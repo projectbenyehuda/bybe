@@ -419,6 +419,9 @@ he:
   source_edition: פרטי מהדורת מקור
   name: שם
   edit_metadata: עריכת מטא-דאטה
+  originating_task: משימה מקורית
+  find_originating_task: חיפוש משימה מקורית
+  originating_task_not_found: לא נמצאה משימה מקורית
   edit_toc: עריכת דף יוצר
   works_about: "יצירות על אודותיו/ה"
   translations_by: תרגומים
