@@ -22,6 +22,7 @@ he:
       lex_citation_author: Citation Author
       lex_entry: ערך בלקסיקון
       lex_person: אדם בלקסיקון
+      lex_person_work: יצירת אדם בלקסיקון
       lex_publication: Lexicon Publication
       person: אדם
     errors:
@@ -135,6 +136,17 @@ he:
         about: על המחבר%{gender_suffix} ויצירת%{gender_letter}
         links: קישוריוֹת
         gender: מגדר
+      lex_person_work:
+        title: כותרת
+        work_type: סוג יצירה
+        publisher: הוצאה לאור
+        publication_date: תאריך פרסום
+        publication_place: מקום פרסום
+        comment: הערה
+        work_types:
+          original: מקורית
+          translated: תורגמה
+          edited: נערכה
       lex_publication:
         toc: תוכן עניינים
         az_navbar: להציג סרגל א–ב?
