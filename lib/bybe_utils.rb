@@ -177,7 +177,26 @@ module BybeUtils
     section_texts = []
     collection.flatten_items.each do |ci|
       section_titles << ci.title
-      section_texts << (ci.collection? ? '<p/>' : ci.to_html)
+
+      # Build section text with authority information
+      section_html = ''
+
+      # Add involved authorities (plain text, no links for EPUB)
+      if ci.involved_authorities.present?
+        InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+          ras = ci.involved_authorities.select { |ia| ia.role == role }
+          next if ras.empty?
+
+          role_text = I18n.t(role, scope: 'involved_authority.abstract_roles')
+          names = ras.map { |ra| ra.authority.name }.join(', ')
+          section_html += "<h3>#{role_text}: #{names}</h3>\n"
+        end
+      end
+
+      # Add the actual content
+      section_html += (ci.collection? ? '<p/>' : ci.to_html)
+
+      section_texts << section_html
     end
     make_epub('https://benyehuda.org/collection/' + collection.id.to_s, collection.title,
               collection.authorities, section_titles, section_texts, "coll_#{collection.id}", "#{Rails.application.routes.url_helpers.root_url}#{Rails.application.routes.url_helpers.collection_path(collection)}")

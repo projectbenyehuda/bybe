@@ -67,16 +67,16 @@ describe CollectionsController do
         end
 
         it 'marks all items as proofable and adds markers for nested manifestations' do
-          # Both the top-level manifestation and the nested collection should be proofable
-          expect(response.body).to have_css('.by-card-v02.proofable', count: 2)
+          # The sub-collection header, nested manifestation, and top-level manifestation should all be proofable
+          expect(response.body).to have_css('.by-card-v02.proofable', count: 3)
           # The nested collection should be proofable
           collection_item = collection.collection_items.find { |ci| ci.item_type == 'Collection' }
           expect(response.body).to have_css(
             ".proofable[data-item-id='#{collection_item.item_id}'][data-item-type='Collection']"
           )
-          # The nested manifestation should have a marker div inside the nested collection
+          # The nested manifestation should be proofable as its own card
           expect(response.body).to have_css(
-            ".nested-manifestation-marker[data-item-id='#{nested_manifestation.id}'][data-item-type='Manifestation']"
+            ".proofable[data-item-id='#{nested_manifestation.id}'][data-item-type='Manifestation']"
           )
         end
       end
@@ -161,7 +161,7 @@ describe CollectionsController do
 
     it 'assigns pby_volumes' do
       get :pby_volumes
-      expect(assigns(:pby_volumes)).to match_array([pby_volume1, pby_volume2])
+      expect(assigns(:pby_volumes)).to contain_exactly(pby_volume1, pby_volume2)
     end
 
     it 'assigns pby_volumes_count' do
