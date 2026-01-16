@@ -24,6 +24,7 @@ he:
         properties: Properties
         attachments: Attachments
         citations: Citations
+        works: Works
         links: Links
       index:
         add_person: Add Person
@@ -60,6 +61,9 @@ he:
         approve: Approve Citation
       form:
         save_before_adding_authors: Please save the citation before adding authors
+    person_works:
+      index:
+        add_work: Add work
     links:
       index:
         add_link: Add link

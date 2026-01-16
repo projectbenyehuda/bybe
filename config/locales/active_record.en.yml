@@ -22,6 +22,7 @@ en:
       lex_citation_author: Citation Author
       lex_entry: Lexicon Entry
       lex_person: Lexicon Person
+      lex_person_work: Lexicon Person's Work
       lex_publication: Lexicon Publication
       person: Person
     errors:
@@ -127,6 +128,17 @@ en:
         deathdate: Deathdate
         bio: Biographical synopsis
         books: Books
+      lex_person_work:
+        title: Title
+        work_type: Work Type
+        publisher: Publisher
+        publication_date: Publication Date
+        publication_place: Publication Place
+        comment: Comment
+        work_types:
+          original: Original
+          translated: Translated
+          edited: Edited
       lex_publication:
         toc: Table of Contents
         az_navbar: Show AZ navbar?
