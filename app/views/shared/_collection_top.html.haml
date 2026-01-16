@@ -3,7 +3,7 @@
   = render partial: 'shared/breadcrumbs'
   .top-space
   - aus = @collection.authors_string
-  - eds = @collection.editors_string
+  - eds = @collection.editors_string(true)
   - if @collection.parent_collections.count > 0
     = t(:parent_collections)
     %ol

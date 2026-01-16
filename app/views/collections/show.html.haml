@@ -33,9 +33,10 @@
                 .headline-1-v02
                   - if @collection.authors.present?
                     != @collection.authors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
-                  - if @collection.editors.present?
+                  - eds = @collection.editors(true)
+                  - if eds.present?
                     = t(:edited_by)
-                    != @collection.editors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != eds.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
                   - if @collection.illustrators.present?
                     .headline-3-v02
                       = "#{t(:illustrations_by)}: "
@@ -90,9 +91,13 @@
 
           :ruby
             eauthors = {}
+            etranslators = {}
             @htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities|
               effective_authors = ias.select{|ia| ia.role == 'author'}.map(&:authority).reject{|a| cauthors.map(&:id).include?(a.id)}
               eauthors[title] = effective_authors.map(&:name).join(', ') if effective_authors.present?
+
+              effective_translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
+              etranslators[title] = effective_translators.map(&:name).join(', ') if effective_translators.present?
             end
           - if eauthors.present? || @htmls.any?
             .by-card-v02.binder-texts-list
@@ -105,10 +110,10 @@
                       %li{ li_attrs }
                         %a.side-menu-item{href: "#collitem_text_#{i}", 'data-target' => "collitem_text_#{i}"}
                           %span.by-icon-v02{title: textify_genre(genre) }= glyph_for_genre(genre)
-                          - if eauthors[title].present?
-                            = "#{title} / #{eauthors[title]}"
-                          - else
-                            = title
+                          - parts = [title]
+                          - parts << eauthors[title] if eauthors[title].present?
+                          - parts << etranslators[title] if etranslators[title].present?
+                          = parts.join(' / ')
 
           - @htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities|
             %a{ name: "collitem_text_#{i}" }

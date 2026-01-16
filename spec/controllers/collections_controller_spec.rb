@@ -140,6 +140,64 @@ describe CollectionsController do
     end
   end
 
+  describe '#show with translator display in TOC' do
+    let(:collection_author) { create(:authority, name: 'Collection Author') }
+    let(:collection_translator) { create(:authority, name: 'Collection Translator') }
+    let(:work_translator) { create(:authority, name: 'Work Translator') }
+    let(:manifestation) do
+      create(:manifestation, title: 'Translated Work').tap do |m|
+        m.expression.involved_authorities.create!(authority: work_translator, role: 'translator')
+      end
+    end
+    let(:other_manifestation) { create(:manifestation, title: 'Other Work') }
+
+    let(:collection) do
+      create(:collection, title: 'Test Collection').tap do |coll|
+        coll.involved_authorities.create!(authority: collection_author, role: 'author')
+        coll.involved_authorities.create!(authority: collection_translator, role: 'translator')
+        coll.collection_items.create!(item: manifestation, seqno: 1)
+        coll.collection_items.create!(item: other_manifestation, seqno: 2)
+      end
+    end
+
+    it 'displays work-specific translators in the TOC' do
+      get :show, params: { id: collection.id }
+      expect(response).to be_successful
+      expect(response.body).to include('Translated Work')
+      expect(response.body).to include('Work Translator')
+    end
+
+    it 'filters out collection-level translators from individual works' do
+      # Add the same translator to the manifestation's expression
+      manifestation.expression.involved_authorities.create!(authority: collection_translator, role: 'translator')
+
+      get :show, params: { id: collection.id }
+      expect(response).to be_successful
+
+      # The TOC should not show collection_translator name in the item listing
+      # since it's already shown at the collection level
+      toc_section = response.body.match(/binder-texts-list.*?<\/div>/m).to_s
+      expect(toc_section).not_to include("/ #{collection_translator.name}")
+    end
+
+    it 'displays both author and translator when both are present' do
+      work_author = create(:authority, name: 'Work Author')
+      # Add author to expression (not collection level, so it should appear in TOC)
+      manifestation.expression.work.involved_authorities.create!(authority: work_author, role: 'author')
+
+      get :show, params: { id: collection.id }
+      expect(response).to be_successful
+
+      # Extract the TOC section to verify format
+      toc_section = response.body.match(/binder-texts-list.*?<\/ul>/m).to_s
+
+      # Should display both author and translator in the TOC
+      expect(toc_section).to include('Translated Work')
+      expect(toc_section).to include('Work Author')
+      expect(toc_section).to include('Work Translator')
+    end
+  end
+
   describe '#pby_volumes' do
     let(:authority) { create(:authority, id: Authority::PBY_AUTHORITY_ID) }
     let!(:pby_volume1) do

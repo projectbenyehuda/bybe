@@ -732,4 +732,105 @@ describe Collection do
       expect(result).to be_empty
     end
   end
+
+  describe '#editors' do
+    let(:collection) { create(:collection) }
+    let(:parent_collection) { create(:collection) }
+    let(:editor1) { create(:authority) }
+    let(:editor2) { create(:authority) }
+
+    context 'when collection has its own editors' do
+      before do
+        create(:involved_authority, item: collection, authority: editor1, role: 'editor')
+      end
+
+      it 'returns the collection editors' do
+        expect(collection.editors).to contain_exactly(editor1)
+      end
+
+      it 'returns the collection editors when immediate_only is true' do
+        expect(collection.editors(true)).to contain_exactly(editor1)
+      end
+    end
+
+    context 'when collection has no editors but parent has editors' do
+      before do
+        create(:collection_item, collection: parent_collection, item: collection)
+        create(:involved_authority, item: parent_collection, authority: editor2, role: 'editor')
+      end
+
+      it 'inherits editors from parent collection by default' do
+        expect(collection.editors).to contain_exactly(editor2)
+      end
+
+      it 'returns empty array when immediate_only is true' do
+        expect(collection.editors(true)).to eq([])
+      end
+    end
+
+    context 'when collection has editors and parent also has editors' do
+      before do
+        create(:collection_item, collection: parent_collection, item: collection)
+        create(:involved_authority, item: collection, authority: editor1, role: 'editor')
+        create(:involved_authority, item: parent_collection, authority: editor2, role: 'editor')
+      end
+
+      it 'returns only the collection own editors, not parent editors' do
+        expect(collection.editors).to contain_exactly(editor1)
+      end
+
+      it 'returns only the collection own editors when immediate_only is true' do
+        expect(collection.editors(true)).to contain_exactly(editor1)
+      end
+    end
+  end
+
+  describe '#editors_string' do
+    let(:collection) { create(:collection) }
+    let(:parent_collection) { create(:collection) }
+    let(:editor1) { create(:authority, name: 'Editor One') }
+    let(:editor2) { create(:authority, name: 'Editor Two') }
+
+    context 'when collection has its own editors' do
+      before do
+        create(:involved_authority, item: collection, authority: editor1, role: 'editor')
+      end
+
+      it 'returns the editors names as a string' do
+        expect(collection.editors_string).to eq('Editor One')
+      end
+
+      it 'returns the editors names when immediate_only is true' do
+        expect(collection.editors_string(true)).to eq('Editor One')
+      end
+    end
+
+    context 'when collection has no editors but parent has editors' do
+      before do
+        create(:collection_item, collection: parent_collection, item: collection)
+        create(:involved_authority, item: parent_collection, authority: editor2, role: 'editor')
+      end
+
+      it 'inherits editors string from parent collection by default' do
+        expect(collection.editors_string).to eq('Editor Two')
+      end
+
+      it 'returns nil when immediate_only is true' do
+        expect(collection.editors_string(true)).to be_nil
+      end
+    end
+
+    context 'when collection has multiple editors' do
+      let(:editor3) { create(:authority, name: 'Editor Three') }
+
+      before do
+        create(:involved_authority, item: collection, authority: editor1, role: 'editor')
+        create(:involved_authority, item: collection, authority: editor3, role: 'editor')
+      end
+
+      it 'returns editors joined with comma and space' do
+        expect(collection.editors_string).to eq('Editor One, Editor Three')
+      end
+    end
+  end
 end

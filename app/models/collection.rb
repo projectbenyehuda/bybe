@@ -256,9 +256,10 @@ class Collection < ApplicationRecord
     return []
   end
 
-  def editors
+  def editors(immediate_only = false)
     eds = involved_authorities_by_role('editor')
     return eds if eds.count > 0
+    return [] if immediate_only
 
     seen_colls = []
     parent_collections.each do |pc| # iterate until we find editors
@@ -462,9 +463,10 @@ class Collection < ApplicationRecord
     end
   end
 
-  def editors_string
+  def editors_string(immediate_only = false)
     auths = involved_authorities_by_role('editor')
     return auths.map(&:name).join(', ') unless auths.empty?
+    return nil if immediate_only
 
     parent_collections.each do |pc| # iterate until we find editors
       s = pc.editors_string
