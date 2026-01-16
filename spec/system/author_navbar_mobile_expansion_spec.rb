@@ -100,14 +100,16 @@ RSpec.describe 'Author navbar mobile expansion', :js, type: :system do
       find('.horizontal-collapse-expand').click
       expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
 
-      page.driver.browser.action.move_to_location(350, 300).click.perform
+      page.execute_script("$('.mobile-navbar-backdrop.active').trigger('click')")
+      expect(page).not_to have_css('.book-nav-full.mobile-expanded', visible: :visible)
       expect(page).to have_css('.book-nav-thin', visible: :visible)
 
       # Second cycle: Verify it works multiple times
       find('.horizontal-collapse-expand').click
       expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
 
-      page.driver.browser.action.move_to_location(350, 300).click.perform
+      page.execute_script("$('.mobile-navbar-backdrop.active').trigger('click')")
+      expect(page).not_to have_css('.book-nav-full.mobile-expanded', visible: :visible)
       expect(page).to have_css('.book-nav-thin', visible: :visible)
     end
 
@@ -122,11 +124,13 @@ RSpec.describe 'Author navbar mobile expansion', :js, type: :system do
       expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
       expect(page).to have_css('.mobile-navbar-backdrop.active', visible: :visible)
 
-      # Click the backdrop in an area not covered by the navbar (right side of screen)
-      # The navbar is 300px wide on the left, so click at x=350 (right side)
-      page.driver.browser.action.move_to_location(350, 300).click.perform
+      # Click the backdrop using JavaScript (more reliable than coordinates)
+      page.execute_script("$('.mobile-navbar-backdrop.active').trigger('click')")
 
-      # Navbar should collapse
+      # Wait for collapse to complete
+      expect(page).not_to have_css('.book-nav-full.mobile-expanded', visible: :visible)
+
+      # Navbar should be back to thin
       expect(page).to have_css('.book-nav-thin', visible: :visible)
       expect(page).not_to have_css('.book-nav-full.mobile-expanded', visible: :visible)
       expect(page).not_to have_css('.mobile-navbar-backdrop.active', visible: :visible)

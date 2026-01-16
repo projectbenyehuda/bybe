@@ -1224,13 +1224,14 @@
 .book-nav-full.mobile-expanded{
 	display: block;
 	position: fixed;
-	left: 0;
+	right: 0;
 	top: 120px;
 	width: 300px;
 	max-height: calc(100vh - 120px);
 	overflow-y: auto;
 	z-index: 1000;
-	box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+	box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+	margin-right: 50px;
 }
 .book-nav-full.mobile-expanded .side-nav-in-page .horizontal-collapse-expand{
 	display: flex !important;
