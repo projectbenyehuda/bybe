@@ -1,0 +1,90 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+describe '/lexicon/person_works' do
+  before do
+    login_as_lexicon_editor
+  end
+
+  let(:person) { create(:lex_entry, :person).lex_item }
+
+  let!(:works) { create_list(:lex_person_work, 3, person: person) }
+
+  let(:work) { works.first }
+
+  describe 'GET /lexicon/people/:ID/works' do
+    subject(:call) { get "/lex/people/#{person.id}/works" }
+
+    it { is_expected.to eq(200) }
+  end
+
+  describe 'GET /lexicon/people/:ID/works/new' do
+    subject(:call) { get "/lex/people/#{person.id}/works/new" }
+
+    it { is_expected.to eq(200) }
+  end
+
+  describe 'POST /lex/people/:ID/works' do
+    subject(:call) { post "/lex/people/#{person.id}/works", params: { lex_person_work: work_params }, xhr: true }
+
+    context 'when valid params' do
+      let(:work_params) { attributes_for(:lex_person_work) }
+
+      it 'creates new record' do
+        expect { call }.to change { person.works.count }.by(1)
+        expect(call).to eq(200)
+
+        work = LexPersonWork.last
+        expect(work).to have_attributes(work_params)
+      end
+    end
+
+    context 'when invalid params' do
+      let(:work_params) { attributes_for(:lex_person_work, title: '') }
+
+      it 're-renders new form' do
+        expect { call }.not_to(change { person.works.count })
+        expect(call).to eq(422)
+        expect(call).to render_template(:new)
+      end
+    end
+  end
+
+  describe 'GET /lexicon/works/:id/edit' do
+    subject(:call) { get "/lex/works/#{work.id}/edit" }
+
+    it { is_expected.to eq(200) }
+  end
+
+  describe 'PATCH /lex/works/:id' do
+    subject(:call) { patch "/lex/works/#{work.id}", params: { lex_person_work: work_params }, xhr: true }
+
+    context 'when valid params' do
+      let(:work_params) { attributes_for(:lex_person_work) }
+
+      it 'updates record' do
+        expect(call).to eq(200)
+        expect(work.reload).to have_attributes(work_params)
+      end
+    end
+
+    context 'when invalid params' do
+      let(:work_params) { attributes_for(:lex_person_work, title: '') }
+
+      it 're-renders edit form' do
+        expect(call).to eq(422)
+        expect(call).to render_template(:edit)
+      end
+    end
+  end
+
+  describe 'DELETE /lex/works/:id' do
+    subject(:call) { delete "/lex/works/#{work.id}", xhr: true }
+
+    it 'removes record' do
+      expect { call }.to change { person.works.count }.by(-1)
+      expect(call).to eq(200)
+    end
+  end
+end

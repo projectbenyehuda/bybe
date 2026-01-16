@@ -162,9 +162,10 @@ end
 
 task wipe_lexicon: :environment do
   puts 'Wiping Lexicon...'
-  # We need to destroy entries one by one to trigger ActiveStorage cleanup
-  LexEntry.find_each(&:destroy!)
-
   LexFile.delete_all
+  # We need to destroy entries one by one to trigger ActiveStorage cleanup
+  Chewy.strategy(:atomic) do
+    LexEntry.find_each(&:destroy!)
+  end
   puts 'Done.'
 end
