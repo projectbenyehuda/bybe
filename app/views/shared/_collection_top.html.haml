@@ -41,9 +41,9 @@
                 #{t(:edited_by)}:
                 %span= eds
           .field-v02.work-chapters-dropdown-field-desktop{style: 'background-color: unset;'}
-            = select_tag 'collitem', options_for_select(@htmls.reject{|x| x[0].blank?}.map{ |title, authors, html, is_curated, genre, i, ci| [title, i] }, 0), class: 'dropdown-v02', id: 'collitem_dropdown', style: 'width: 100%;'
+            = select_tag 'collitem', options_for_select(@htmls.reject{|x| x[0].blank?}.map{ |title, authors, html, is_curated, genre, i, ci, nesting_level, parent_authorities| [("\u00A0\u00A0" * nesting_level) + title, i] }, 0), class: 'dropdown-v02', id: 'collitem_dropdown', style: 'width: 100%;'
 
-          .work-page-top-icons-desktop.notyet
+          .work-page-top-icons-desktop
             %button.btn-small-outline-v02.btn-text-v02.reading-mode-btn-v02{href: "#"}
               %span.by-icon-v02= '/'
               = t(:reading_mode)
@@ -68,8 +68,10 @@
       %nav#chapternav.navbar
         %ul#chapter-nav.navbar-nav.flex-column.by-card-v02{style:'width: unset', "aria-orientation" => "vertical"}
           - first = true
-          - @htmls.reject{|x| x[0].blank?}.each do |title, ias, html, is_curated, genre, i, ci|
-            %li.nav-item.side-menu-item{ id: "collitem_#{i}_button", 'data-target' => "collitem_text_#{i}"}
+          - @htmls.reject{|x| x[0].blank?}.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities|
+            - li_attrs = { id: "collitem_#{i}_button", 'data-target' => "collitem_text_#{i}" }
+            - li_attrs[:style] = "padding-right: #{nesting_level * 10}px;" if nesting_level > 0
+            %li.nav-item.side-menu-item{ li_attrs }
               %a{'class' => 'nav-link nav-chapter-name nav-link-chapter pointer linkcolor '+(first ? ' active' : ''), "aria-controls" => "#", "aria-selected" => "false", 'data-toggle' => 'tooltip', 'title' => title, 'data-placement' => 'top', 'data-delay' => { "show": 500, "hide": 100 }, href: "#"}
                 .nav-chapter-name= title
                 - first = false

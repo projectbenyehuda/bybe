@@ -90,46 +90,77 @@
 
           :ruby
             eauthors = {}
-            @htmls.each do |title, ias, html, is_curated, genre, i, ci|
+            @htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities|
               effective_authors = ias.select{|ia| ia.role == 'author'}.map(&:authority).reject{|a| cauthors.map(&:id).include?(a.id)}
               eauthors[title] = effective_authors.map(&:name).join(', ') if effective_authors.present?
             end
-          - if eauthors.present?
+          - if eauthors.present? || @htmls.any?
             .by-card-v02.binder-texts-list
               .by-card-content-v02
                 .list-no-bullets
                   %ul
-                    - @htmls.each do |title, ias, html, is_curated, genre, i, ci|
-                      %li
-                        - if html.present?
-                          %a.side-menu-item{href: "#collitem_text_#{i}", 'data-target' => "collitem_text_#{i}"}
-                            %span.by-icon-v02{title: textify_genre(genre) }= glyph_for_genre(genre)
-                            - if eauthors[title].present?
-                              = "#{title} / #{eauthors[title]}"
-                            - else
-                              = title
-                        - else
-                          = title
+                    - @htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities|
+                      - li_attrs = {}
+                      - li_attrs[:style] = "padding-right: #{nesting_level * 10}px;" if nesting_level > 0
+                      %li{ li_attrs }
+                        %a.side-menu-item{href: "#collitem_text_#{i}", 'data-target' => "collitem_text_#{i}"}
+                          %span.by-icon-v02{title: textify_genre(genre) }= glyph_for_genre(genre)
+                          - if eauthors[title].present?
+                            = "#{title} / #{eauthors[title]}"
+                          - else
+                            = title
 
-          - @htmls.each do |title, ias, html, is_curated, genre, i, ci|
+          - @htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities|
             %a{ name: "collitem_text_#{i}" }
-            .by-card-v02.proofable{ data: { item_id: ci.item_id, item_type: ci.item_type } }
-              - if title.present?
+            - card_attrs = { data: { item_id: ci.item_id, item_type: ci.item_type } }
+            - card_attrs[:style] = "margin-right: #{nesting_level * 10}px;" if nesting_level > 0
+            - if html.nil? && ci.item_type == 'Collection'
+              -# This is a sub-collection header - render with full detail
+              .by-card-v02.proofable{ card_attrs }
                 .by-card-header-v02
                   .by-icon-v02
                   .headline-1-v02
                     - link = url_for_collection_item(ci)
-                    - tstr = eauthors[title].present? ? "#{title} / #{eauthors[title]}" : title
+                    %span.by-icon-v02{title: textify_genre(genre)}= glyph_for_genre(genre)
                     - if link.present?
-                      %span.by-icon-v02{title: textify_genre(genre)}= glyph_for_genre(genre)
-                      = link_to tstr, link
+                      = link_to title, link
                     - else
-                      = tstr
-                    - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
+                      = title
+                    -# Show all authorities with their roles (already filtered)
+                    - authors = ias.select{|ia| ia.role == 'author'}.map(&:authority)
+                    - if authors.present?
+                      %p
+                        = t(:by)
+                        != authors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                    - editors = ias.select{|ia| ia.role == 'editor'}.map(&:authority)
+                    - if editors.present?
+                      %p
+                        = t(:edited_by)
+                        != editors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                    - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority)
                     - if translators.present?
-                      %p= "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
-              .by-card-content-v02.textcard#actualtext
-                != html
+                      %p
+                        = t(:translated_by)
+                        != translators.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+            - else
+              -# This is a manifestation or other content item
+              .by-card-v02.proofable{ card_attrs }
+                - if title.present?
+                  .by-card-header-v02
+                    .by-icon-v02
+                    .headline-1-v02
+                      - link = url_for_collection_item(ci)
+                      - tstr = eauthors[title].present? ? "#{title} / #{eauthors[title]}" : title
+                      - if link.present?
+                        %span.by-icon-v02{title: textify_genre(genre)}= glyph_for_genre(genre)
+                        = link_to tstr, link
+                      - else
+                        = tstr
+                      - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
+                      - if translators.present?
+                        %p= "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
+                .by-card-content-v02.textcard#actualtext
+                  != html
           - credit_lines = @collection.fetch_credits.lines
           - if credit_lines.present?
             .by-card-v02
