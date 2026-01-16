@@ -8,19 +8,22 @@
         .by-card-header-v02
           .headline-1-v02= t(:table_of_contents)
         .by-card-content-v02
-          - @htmls.each do |title, ias, html, is_curated, genre, i, ci|
-            %p
+          - @htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities|
+            - indent_style = nesting_level > 0 ? "padding-right: #{nesting_level * 10}px;" : ""
+            %p{style: indent_style}
               %a{href: "#title#{i}"}= title.gsub(/<[^>]*>/, ' ')
               - if is_curated
                 %span= ' ('+t(:curated_text)+')'
                 %span.by-icon-v02 _
-              = t(:by)
-              != pub_linkify_people(ias.select{|ia| ia.role == :author}.map(&:authority))
+              - authors = ias.select{|ia| ia.role == 'author'}.map(&:authority)
+              - if authors.present?
+                = t(:by)
+                != pub_linkify_people(authors)
           %br
           .headline-3-v02= t(:from_pby_and_available_at)+": #{request.base_url+collection_path(@collection.id)}"
       #actualtext
         - first = true
-        - @htmls.each do |title, ias, html, is_curated, genre, i, ci|
+        - @htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities|
           %div{id: 'title'+i.to_s}
           %a{name: 'title'+i.to_s}
 
@@ -39,12 +42,15 @@
           .by-card-v02
             .by-card-header-v02
               .headline-1-v02= title.gsub(/<[^>]*>/, ' ')
-              = t(:by)
-              != pub_linkify_people(ias.select{|ia| ia.role == :author}.map(&:authority))
+              - authors = ias.select{|ia| ia.role == 'author'}.map(&:authority)
+              - if authors.present?
+                = t(:by)
+                != pub_linkify_people(authors)
 
-            .work-area
-              %div{class: is_curated ? 'anthology-self-content' : 'anthology-by-content'}
-                != html
-              - unless is_curated
-                .work-side-color
-                  %div{'class' => "work-genre", style: "background-image: url(\"/assets/work_side_icons_#{genre}.svg\");"}
+            - if html.present?
+              .work-area
+                %div{class: is_curated ? 'anthology-self-content' : 'anthology-by-content'}
+                  != html
+                - unless is_curated
+                  .work-side-color
+                    %div{'class' => "work-genre", style: "background-image: url(\"/assets/work_side_icons_#{genre}.svg\");"}

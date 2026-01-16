@@ -405,7 +405,9 @@ class CollectionsController < ApplicationController
 
   def prep_for_show
     @htmls = []
-    i = 1
+    counter = { value: 1 } # Use hash to maintain reference across recursive calls
+    parent_authorities = @collection.involved_authorities.map { |ia| [ia.authority_id, ia.role] }
+
     if @collection.periodical? || @collection.volume_series? # we don't want to show an entire periodical's or volume series' run in a single Web page; instead, we show the complete TOC of all issues/volumes
       @collection.collection_items.each do |ci|
         next unless ci.item.present? && ci.item_type == 'Collection'
@@ -414,19 +416,12 @@ class CollectionsController < ApplicationController
                     (@collection.volume_series? && ci.item.collection_type == 'volume')
 
         html = ci.item.toc_html
-        @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false, ci.genre, i, ci]
-        i += 1
+        @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false,
+                   ci.genre, counter[:value], ci, 0, []]
+        counter[:value] += 1
       end
     else
-      @collection.collection_items.each do |ci|
-        next if ci.item.present? && ci.item_type == 'Manifestation' && ci.item.status != 'published' # deleted or unpublished manifestations
-
-        html = ci.to_html
-        # next unless html.present?
-        @htmls << [ci.title, ci.involved_authorities, html.present? ? footnotes_noncer(ci.to_html, i) : '', false, ci.genre,
-                   i, ci]
-        i += 1
-      end
+      build_htmls_recursively(@collection.collection_items, parent_authorities, 0, counter)
     end
     @collection_total_items = @collection.collection_items.reject { |ci| ci.paratext }.count
     @collection_minus_placeholders = @collection.collection_items.reject do |ci|
@@ -443,14 +438,62 @@ class CollectionsController < ApplicationController
                            end
   end
 
+  def build_htmls_recursively(collection_items, parent_authorities, nesting_level, counter)
+    collection_items.each do |ci|
+      next if ci.item.present? && ci.item_type == 'Manifestation' && ci.item.status != 'published' # deleted or unpublished manifestations
+
+      if ci.item.present? && ci.item_type == 'Collection'
+        # This is a sub-collection - render it with full detail
+        sub_collection = ci.item
+
+        # Filter out authorities that are exactly the same (ID and role) as parent
+        all_authorities = ci.involved_authorities
+        filtered_authorities = all_authorities.reject do |ia|
+          parent_authorities.include?([ia.authority_id, ia.role])
+        end
+
+        # Add the sub-collection header (without HTML content - will be rendered differently in view)
+        @htmls << [ci.title, filtered_authorities, nil, false, ci.genre, counter[:value], ci,
+                   nesting_level, parent_authorities]
+        counter[:value] += 1
+
+        # Build the new parent_authorities list for children of this sub-collection
+        # It's the combination of current parent_authorities plus this collection's authorities
+        new_parent_authorities = parent_authorities + all_authorities.map { |ia| [ia.authority_id, ia.role] }
+        new_parent_authorities.uniq!
+
+        # Recursively process the sub-collection's items
+        build_htmls_recursively(sub_collection.collection_items, new_parent_authorities, nesting_level + 1, counter)
+      else
+        # This is a manifestation or other item
+        html = ci.to_html
+        @htmls << [ci.title, ci.involved_authorities,
+                   html.present? ? footnotes_noncer(html, counter[:value]) : '',
+                   false, ci.genre, counter[:value], ci, nesting_level, parent_authorities]
+        counter[:value] += 1
+      end
+    end
+  end
+
   protected
 
   def downloadable_html(h)
     title, ias, html, = h
-    austr = textify_authorities_and_roles(ias)
     out = "<h1>#{title}</h1>\n"
-    out += "<h2>#{austr}</h2>" if austr.present?
-    out += html
+
+    # Add involved authorities (plain text, no links for downloads)
+    if ias.present?
+      InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+        ras = ias.select { |ia| ia.role == role }
+        next if ras.empty?
+
+        role_text = I18n.t(role, scope: 'involved_authority.abstract_roles')
+        names = ras.map { |ra| ra.authority.name }.join(', ')
+        out += "<h3>#{role_text}: #{names}</h3>\n"
+      end
+    end
+
+    out += html if html.present?
     out.force_encoding('UTF-8')
   end
 end
