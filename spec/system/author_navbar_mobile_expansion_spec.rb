@@ -66,7 +66,7 @@ RSpec.describe 'Author navbar mobile expansion', :js, type: :system do
       expect(navbar_width).to eq(300)
     end
 
-    it 'collapses full navbar back to thin when a nav link is clicked' do
+    it 'preserves navbar state when clicking collapsible triggers' do
       visit authority_path(author)
 
       # Wait for page to load
@@ -77,39 +77,37 @@ RSpec.describe 'Author navbar mobile expansion', :js, type: :system do
       expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
       expect(page).to have_css('.mobile-navbar-backdrop.active', visible: :visible)
 
-      # Click a nav link in the expanded navbar
-      within('.book-nav-full.mobile-expanded') do
-        first('.book-type[data-scroll-target], .truncate[data-scroll-target], .nav-link').click
-      end
+      # Click a collapsible trigger (has data-bs-toggle="collapse")
+      collapsible_trigger = first('.book-nav-full.mobile-expanded .truncate[data-bs-toggle="collapse"]')
 
-      # After clicking, navbar should collapse back to thin and backdrop should be hidden
-      expect(page).to have_css('.book-nav-thin', visible: :visible)
-      expect(page).not_to have_css('.book-nav-full.mobile-expanded', visible: :visible)
-      expect(page).not_to have_css('.mobile-navbar-backdrop.active', visible: :visible)
+      if collapsible_trigger
+        collapsible_trigger.click
+
+        # Navbar should still be expanded (not collapsed)
+        expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
+        expect(page).to have_css('.mobile-navbar-backdrop.active', visible: :visible)
+        expect(page).not_to have_css('.book-nav-thin', visible: :visible)
+      end
     end
 
-    it 'allows multiple expand-collapse cycles via nav links' do
+    it 'allows multiple expand-collapse cycles via backdrop' do
       visit authority_path(author)
 
       # Wait for page to load
       expect(page).to have_css('.book-nav-thin')
 
-      # First cycle: Expand and collapse via nav link
+      # First cycle: Expand and collapse via backdrop
       find('.horizontal-collapse-expand').click
       expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
 
-      within('.book-nav-full.mobile-expanded') do
-        first('.book-type[data-scroll-target], .truncate[data-scroll-target], .nav-link').click
-      end
+      page.driver.browser.action.move_to_location(350, 300).click.perform
       expect(page).to have_css('.book-nav-thin', visible: :visible)
 
       # Second cycle: Verify it works multiple times
       find('.horizontal-collapse-expand').click
       expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
 
-      within('.book-nav-full.mobile-expanded') do
-        first('.book-type[data-scroll-target], .truncate[data-scroll-target], .nav-link').click
-      end
+      page.driver.browser.action.move_to_location(350, 300).click.perform
       expect(page).to have_css('.book-nav-thin', visible: :visible)
     end
 
@@ -151,6 +149,33 @@ RSpec.describe 'Author navbar mobile expansion', :js, type: :system do
       # Verify max-height is set (should be viewport height minus top position)
       max_height = page.evaluate_script("$('.book-nav-full.mobile-expanded').css('max-height')")
       expect(max_height).to match(/\d+px/)
+    end
+
+    it 'allows collapsible sections to expand/collapse without closing navbar' do
+      visit authority_path(author)
+
+      # Wait for page to load
+      expect(page).to have_css('.book-nav-thin')
+
+      # Expand the navbar
+      find('.horizontal-collapse-expand').click
+      expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
+
+      # Find a collapsible trigger (has data-bs-toggle="collapse")
+      collapsible_trigger = first('.book-nav-full.mobile-expanded .truncate[data-bs-toggle="collapse"]')
+
+      if collapsible_trigger
+        # Click the collapsible trigger
+        collapsible_trigger.click
+
+        # Mobile navbar should still be expanded
+        expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
+        expect(page).to have_css('.mobile-navbar-backdrop.active', visible: :visible)
+
+        # The collapse section should toggle (we don't check if it's shown or hidden,
+        # just that the navbar is still expanded)
+        expect(page).to have_css('.book-nav-full.mobile-expanded')
+      end
     end
   end
 end

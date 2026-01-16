@@ -243,9 +243,10 @@
 
     // Handle clicks on full navbar links in mobile expanded mode
     // When a link is clicked, collapse back to thin navbar and scroll
+    // But exclude collapsible triggers (data-bs-toggle) which should expand/collapse sections
     var mobileExpandedSelectors = [
-      '.book-nav-full .book-type[data-scroll-target]',
-      '.book-nav-full .truncate[data-scroll-target]',
+      '.book-nav-full .book-type[data-scroll-target]:not([data-bs-toggle])',
+      '.book-nav-full .truncate[data-scroll-target]:not([data-bs-toggle])',
       '.book-nav-full .nav-link'
     ].join(', ');
     $(mobileExpandedSelectors).click(function() {
