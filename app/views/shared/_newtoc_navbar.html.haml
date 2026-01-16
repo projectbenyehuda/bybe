@@ -39,7 +39,7 @@
 %nav.book-nav-full.by-card-v02
   .side-nav-in-page
     = t(:navigation_in_page)
-    %a.horizontal-collapse-expand{:href => "#"}
+    %a.horizontal-collapse-expand{ href: '#', 'aria-label': t(:expand_menu) }
   - visible_roles.each do |role|
     - data = roles_data[role]
     - role_counts = data[:counts]
@@ -104,7 +104,7 @@
 
 %nav.book-nav-thin.by-card-v02
   .side-nav-in-page
-    %a.horizontal-collapse-expand{:href => "#"}
+    %a.horizontal-collapse-expand{ href: '#', 'aria-label': t(:expand_menu) }
   - visible_roles.each do |role|
     - scroll_target = roles_data[role][:first_scroll_target]
     .nav-books.pointer{ 'data-scroll-target' => scroll_target }
@@ -115,10 +115,17 @@
     .nav-books.lexicon-background-color.pointer{ 'data-scroll-target' => '#lexicon-bio' }
       .headline-2-v02= t(:lexicon_content)
 
-.mobile-navbar-backdrop
+.mobile-navbar-backdrop{ role: 'button', tabindex: '0', 'aria-label': t(:close_menu) }
 
 :javascript
   $(document).ready(function() {
+    // Shared function to collapse the mobile navbar
+    function collapseNavbar() {
+      $('.book-nav-full').removeClass('mobile-expanded');
+      $('.book-nav-thin').show();
+      $('.mobile-navbar-backdrop').removeClass('active');
+    }
+
     // Initialize arrows based on current collapse state
     $('.collapse.navbar-nav').each(function() {
       var targetId = $(this).attr('id');
@@ -222,10 +229,7 @@
 
       // Toggle the expanded state
       if ($fullNav.hasClass('mobile-expanded')) {
-        // Currently expanded, collapse it
-        $fullNav.removeClass('mobile-expanded');
-        $('.book-nav-thin').show();
-        $backdrop.removeClass('active');
+        collapseNavbar();
       } else {
         // Currently collapsed, expand it
         $('.book-nav-thin').hide();
@@ -236,9 +240,14 @@
 
     // Handle clicking on backdrop to close navbar
     $('.mobile-navbar-backdrop').click(function() {
-      $('.book-nav-full').removeClass('mobile-expanded');
-      $('.book-nav-thin').show();
-      $(this).removeClass('active');
+      collapseNavbar();
+    });
+
+    // Handle keyboard navigation - Escape key to close navbar
+    $(document).on('keydown', function(e) {
+      if (e.key === 'Escape' && $('.book-nav-full').hasClass('mobile-expanded')) {
+        collapseNavbar();
+      }
     });
 
     // Handle clicks on full navbar links in mobile expanded mode
@@ -252,14 +261,7 @@
     $(mobileExpandedSelectors).click(function() {
       // Check if we're in mobile expanded mode
       if ($('.book-nav-full').hasClass('mobile-expanded')) {
-        var $fullNav = $('.book-nav-full');
-        var $thinNav = $('.book-nav-thin');
-        var $backdrop = $('.mobile-navbar-backdrop');
-
-        // Collapse back to thin navbar
-        $fullNav.removeClass('mobile-expanded');
-        $thinNav.show();
-        $backdrop.removeClass('active');
+        collapseNavbar();
       }
     });
   });

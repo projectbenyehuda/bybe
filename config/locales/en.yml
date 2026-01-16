@@ -979,6 +979,8 @@ en:
   close: Close
   close_and_return_to_page: Close and Return to Page
   close_highlights: Cancel Result Highlighting
+  close_menu: Close menu
+  expand_menu: Expand menu
   coll_drag_tt: Drag area to reorder items in collection
   collection_circular_reference: Collection linked to itself!
   collection_item_type: Item Type

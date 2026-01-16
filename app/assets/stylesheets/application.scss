@@ -1103,3 +1103,42 @@ p.by-genre-name-v02.headline-2-v02 {
   margin-left: 4px;
   user-select: none;
 }
+
+/* Mobile navbar expansion styles (max-width: 991px) */
+@media only screen and (max-width: 991px) {
+  .book-nav-full.mobile-expanded {
+    display: block;
+    position: fixed;
+    right: 0;
+    top: 120px;
+    width: 300px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+    margin-right: 50px;
+  }
+
+  .book-nav-full.mobile-expanded .side-nav-in-page .horizontal-collapse-expand {
+    display: flex !important;
+    height: 34px;
+    width: 34px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-navbar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  .mobile-navbar-backdrop.active {
+    display: block;
+  }
+}
