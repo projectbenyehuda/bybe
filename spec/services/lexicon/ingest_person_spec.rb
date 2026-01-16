@@ -28,7 +28,9 @@ describe Lexicon::IngestPerson do
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1946', deathdate: nil)
       expect(person.citations.count).to eq(53)
-      expect(person.works.count).to eq(15)
+      expect(person.works.count).to eq(19)
+      expect(person.works.select(&:work_type_original?).size).to eq(15)
+      expect(person.works.select(&:work_type_edited?).size).to eq(4)
 
       expect(entry.english_title).to eq('Gabriela Avigur-Rotem')
 
@@ -69,6 +71,9 @@ describe Lexicon::IngestPerson do
       expect(person).to have_attributes(birthdate: '1899', deathdate: '1949')
       expect(person.citations.count).to eq(4)
       expect(person.works.count).to eq(22)
+      expect(person.works.select(&:work_type_original?).size).to eq(18)
+      expect(person.works.select(&:work_type_edited?).size).to eq(2)
+      expect(person.works.select(&:work_type_translated?).size).to eq(2)
 
       expect(entry.english_title).to eq('Samuel Bass')
 

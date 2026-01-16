@@ -3,46 +3,81 @@
 module Lexicon
   # Service to ingest Lexicon Person from php file
   class IngestPerson < IngestBase
+    EDITED_HEADER = 'עריכה:'
+    TRANSLATED_HEADER = 'תרגום:'
+
     def create_lex_item(html_doc)
-      citations = Lexicon::ExtractCitations.call(html_doc)
+      lex_person = LexPerson.new(citations: Lexicon::ExtractCitations.call(html_doc))
 
-      buf = html_doc.to_html
-
-      # anchors = buf.scan(/<a name="(.*?)">/)
-      # ret['links'] = parse_links(buf[/a name="links".*?<\/ul/m])
-      lex_person = LexPerson.new(
-        bio: parse_person_bio(buf[%r{</table>.*?<a name="Books}m]),
-      )
-
-      parse_person_books(buf[/a name="Books".*?<a name/m], lex_person)
-
+      heading_table = html_doc.at_css('table[width="100%"]')
+      heading_table_html = heading_table.to_html
       # Match both patterns: (YYYY) and (YYYY-YYYY)
-      if (match = buf.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*</font>}))
+      if (match = heading_table_html.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*</font>}))
         lex_person.birthdate = match[1]
         lex_person.deathdate = match[2]
       end
 
-      lex_person.citations = citations
-      lex_person.save!
+      if heading_table.parent.name == 'span'
+        heading_table = heading_table.parent
+      end
 
+      next_elem = heading_table.next_element
+      bio = []
+      while next_elem.present? && !works_header?(next_elem) do
+        bio << next_elem.to_html
+        next_elem = next_elem.next_element
+      end
+
+      lex_person.bio = HtmlToMarkdown.call(bio.join("\n"))
+
+      if next_elem.present? && works_header?(next_elem)
+        parse_person_works(next_elem, lex_person)
+      end
+
+      buf = html_doc.to_html
       parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
+
+      lex_person.save!
       lex_person
     end
 
     private
 
-    def parse_person_bio(buf)
-      HtmlToMarkdown.call(ActionView::Base.full_sanitizer.sanitize(buf))
+    def header?(elem)
+      (elem.name == 'p' || elem.name == 'font') && elem.at_css('a[name]')
     end
 
-    def parse_person_books(buf, lex_person)
-      buf.scan(%r{<li>(.*?)</li>}m).map do |x|
-        if x.instance_of?(Array)
-          work = ParsePersonWork.call(x[0])
-          work.work_type = :original
-          lex_person.works << work
-        end
+    def works_header?(elem)
+      header?(elem) && elem.at_css('a[name="Books"]')
+    end
+
+    def parse_person_works(works_header, lex_person)
+      next_elem = works_header.next_element
+      if next_elem.present? && next_elem.name == 'span'
+        next_elem = next_elem.first_element_child
       end
+
+      work_type = :original
+      while next_elem.present? && !header?(next_elem)
+        if next_elem.name == 'p'
+          if next_elem.text.strip == EDITED_HEADER
+            work_type = :edited
+          elsif next_elem.text.strip == TRANSLATED_HEADER
+            work_type = :translated
+          end
+        elsif next_elem.name == 'ul'
+          next_elem.css('li').each do |li|
+            work = ParsePersonWork.call(li.text)
+            work.work_type = work_type
+            lex_person.works << work
+          end
+        else
+          Rails.logger.warn('Unexpected element while parsing person works: ' + next_elem.name)
+        end
+        next_elem = next_elem.next_element
+      end
+
+      next_elem
     end
 
     def parse_person_links(person, buf)
@@ -57,7 +92,7 @@ module Lexicon
       end.map do |linkstring|
         next unless linkstring =~ %r{(.*?)<a .*? href="(.*?)".*?>(.*?)</a>(.*)}m
 
-        person.links.create!(
+        person.links.build(
           url: ::Regexp.last_match(2),
           description: "#{html2txt(::Regexp.last_match(1))} #{html2txt(::Regexp.last_match(3))} " \
                        "#{html2txt(::Regexp.last_match(4))}"
