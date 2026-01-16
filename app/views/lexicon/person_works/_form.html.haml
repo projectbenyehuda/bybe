@@ -1,9 +1,10 @@
 - path = @work.new_record? ? lexicon_person_works_path(@person) : lexicon_work_path(@work)
-- work_type_collection = LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_enum_name(:work_type, k), k] }
 = simple_form_for(@work, url: path, remote: true) do |f|
   = f.error_notification
   = f.input :title
-  = f.input :work_type, collection: work_type_collection
+  = f.input :work_type,
+            collection: LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_enum_name(:work_type, k), k] },
+            include_blank: false
   = f.input :publisher
   = f.input :publication_place
   = f.input :publication_date
