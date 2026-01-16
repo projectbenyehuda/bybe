@@ -5,6 +5,10 @@ require 'vcr'
 VCR.configure do |config|
   config.cassette_library_dir = Rails.root.join('spec/fixtures/cassettes')
   config.ignore_localhost = true
+
+  # hosts used by CI pipeline
+  config.ignore_hosts %w(elasticsearch mysql redis)
+
   config.configure_rspec_metadata!
   config.hook_into :webmock
 
