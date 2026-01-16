@@ -13,6 +13,7 @@ This means:
 - ❌ **NEVER** assume that being able to push means you should push
 - ✅ **ALWAYS** create a new feature/fix branch BEFORE making any commits
 - ✅ **ALWAYS** submit changes via Pull Request using `gh pr create`
+- ✅ **ALWAYS** make any CSS changes to the application.scss file. Treat other CSS files as read-only!
 
 **If you find yourself about to run `git push` on master/main, STOP! You're doing it wrong.**
 
@@ -56,7 +57,7 @@ Before considering ANY work complete, you MUST:
    ```bash
    bundle exec rspec
    ```
-   - Allow up to 12 minutes for the suite. It includes browser tests and Elasticsearch tests, which take longer.
+   - Allow up to 15 minutes for the suite. It includes browser tests and Elasticsearch tests, which take longer.
    - All existing tests MUST pass
    - Fix any failing tests before submitting your work
    - If tests fail due to your changes, investigate and fix the root cause
