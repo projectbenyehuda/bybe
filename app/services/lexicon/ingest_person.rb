@@ -23,7 +23,7 @@ module Lexicon
 
       next_elem = heading_table.next_element
       bio = []
-      while next_elem.present? && !works_header?(next_elem) do
+      while next_elem.present? && !works_header?(next_elem)
         bio << next_elem.to_html
         next_elem = next_elem.next_element
       end
@@ -44,7 +44,7 @@ module Lexicon
     private
 
     def header?(elem)
-      (elem.name == 'p' || elem.name == 'font') && elem.at_css('a[name]')
+      %w(p font).include?(elem.name) && elem.at_css('a[name]')
     end
 
     def works_header?(elem)

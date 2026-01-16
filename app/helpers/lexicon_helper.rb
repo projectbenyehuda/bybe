@@ -22,10 +22,10 @@ module LexiconHelper
 
   def render_person_work(work)
     result = if work.publication.present?
-              link_to(work.publication.title, lexicon_entry_path(work.publication.entry))
-            else
-              work.title
-            end
+               link_to(work.publication.title, lexicon_entry_path(work.publication.entry))
+             else
+               work.title
+             end
 
     result += " (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
     if work.comment.present?

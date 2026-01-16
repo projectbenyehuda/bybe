@@ -8,13 +8,12 @@ module Lexicon
     end
 
     def call(line)
-
       line = line.strip
       result = LexPersonWork.new
 
       # Extract comment if exists
       if line.match(/<(.+?)>/)
-        result.comment = $1
+        result.comment = ::Regexp.last_match(1)
         line = line.gsub(/<.+?>/, '').strip
       end
 
@@ -32,7 +31,7 @@ module Lexicon
       result.title = line[0...last_open_paren].strip
 
       # Extract inner content
-      inner = line[last_open_paren + 1...last_close_paren].strip
+      inner = line[(last_open_paren + 1)...last_close_paren].strip
 
       # Parse inner content: "place : publisher, year"
       match = inner.match(/(?<place>[^:]+?)\s*:\s*(?<publisher>.+?),\s*(?<year>.+)/)

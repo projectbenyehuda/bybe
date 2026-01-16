@@ -20,7 +20,9 @@ describe Lexicon::ParsePersonWork do
   end
 
   context 'when work string with comment is provided' do
+    # rubocop:disable Layout/LineLength
     let(:line) { 'וידויי ההרפתקן פליכס קרול : זכרונות, חלק ראשון / תומאס מאן (מרחביה : ספרית פועלים, 1956) <מהדורה מתוקנת יצאה לאור בתש״ם 1980>' }
+    # rubocop:enable Layout/LineLength
 
     it 'parses work successfully' do
       expect(result).to have_attributes(
