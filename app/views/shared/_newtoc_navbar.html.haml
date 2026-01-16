@@ -39,6 +39,7 @@
 %nav.book-nav-full.by-card-v02
   .side-nav-in-page
     = t(:navigation_in_page)
+    %a.horizontal-collapse-expand{:href => "#"}
   - visible_roles.each do |role|
     - data = roles_data[role]
     - role_counts = data[:counts]
@@ -113,6 +114,8 @@
   - if @lexicon_entry.present?
     .nav-books.lexicon-background-color.pointer{ 'data-scroll-target' => '#lexicon-content' }
       .headline-2-v02= t(:lexicon_content)
+
+.mobile-navbar-backdrop
 
 :javascript
   $(document).ready(function() {
@@ -206,6 +209,56 @@
         $('html, body').animate({
           scrollTop: offset
         }, 500);
+      }
+    });
+
+    // Handle mobile navbar expansion toggle
+    $('.horizontal-collapse-expand').click(function(e) {
+      e.preventDefault();
+      // Find the thin and full navbars (they are siblings)
+      var $thinNav = $(this).closest('.book-nav-thin');
+      var $fullNav = $thinNav.length ? $thinNav.siblings('.book-nav-full') : $(this).closest('.book-nav-full');
+      var $backdrop = $('.mobile-navbar-backdrop');
+
+      // Toggle the expanded state
+      if ($fullNav.hasClass('mobile-expanded')) {
+        // Currently expanded, collapse it
+        $fullNav.removeClass('mobile-expanded');
+        $('.book-nav-thin').show();
+        $backdrop.removeClass('active');
+      } else {
+        // Currently collapsed, expand it
+        $('.book-nav-thin').hide();
+        $fullNav.addClass('mobile-expanded');
+        $backdrop.addClass('active');
+      }
+    });
+
+    // Handle clicking on backdrop to close navbar
+    $('.mobile-navbar-backdrop').click(function() {
+      $('.book-nav-full').removeClass('mobile-expanded');
+      $('.book-nav-thin').show();
+      $(this).removeClass('active');
+    });
+
+    // Handle clicks on full navbar links in mobile expanded mode
+    // When a link is clicked, collapse back to thin navbar and scroll
+    var mobileExpandedSelectors = [
+      '.book-nav-full .book-type[data-scroll-target]',
+      '.book-nav-full .truncate[data-scroll-target]',
+      '.book-nav-full .nav-link'
+    ].join(', ');
+    $(mobileExpandedSelectors).click(function() {
+      // Check if we're in mobile expanded mode
+      if ($('.book-nav-full').hasClass('mobile-expanded')) {
+        var $fullNav = $('.book-nav-full');
+        var $thinNav = $('.book-nav-thin');
+        var $backdrop = $('.mobile-navbar-backdrop');
+
+        // Collapse back to thin navbar
+        $fullNav.removeClass('mobile-expanded');
+        $thinNav.show();
+        $backdrop.removeClass('active');
       }
     });
   });
