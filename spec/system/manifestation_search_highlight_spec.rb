@@ -10,12 +10,21 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
   # Scroll position thresholds for validation
   # MAX_NO_SCROLL: Maximum scroll position if page stayed at top (header height + margin)
   # MIN_SCROLLED: Minimum scroll position if page scrolled to first match in text
+  # Note: The scroll function subtracts 255px from the match position, so scrolling
+  # to matches near the top of content results in small scroll values
   MAX_NO_SCROLL_THRESHOLD = 300
-  MIN_SCROLLED_THRESHOLD = 100
+  MIN_SCROLLED_THRESHOLD = 20
 
   let(:markdown_content) do
     <<~MARKDOWN
       ## Chapter 1
+
+      This is the introduction paragraph with lots of filler content to push
+      the actual search term further down the page. We need enough content here
+      so that when we scroll to the first match, it will be significantly below
+      the top of the page. Adding more text here to create distance.
+      More filler text. More filler text. More filler text.
+      Even more filler text to create enough vertical space.
 
       This is some sample text with the word sample appearing multiple times.
       Here is another paragraph with more content.
@@ -97,17 +106,9 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
         # Wait for page to load and search highlighting to be applied
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
 
-        # Wait for scroll animation to happen - check we've scrolled significantly
-        # Use a loop to wait until scroll position indicates we've scrolled down
-        max_attempts = 10
-        attempts = 0
-        scrolled = false
-        while attempts < max_attempts && !scrolled
-          current_position = current_scroll_position
-          scrolled = current_position > MIN_SCROLLED_THRESHOLD
-          sleep 0.1 unless scrolled
-          attempts += 1
-        end
+        # Wait for scroll animation to complete (JavaScript uses 300ms animation)
+        # Give extra time for animation to fully complete and settle
+        sleep 0.5
 
         # Check that we have scrolled down (away from top of page)
         expect(current_scroll_position).to be > MIN_SCROLLED_THRESHOLD
@@ -144,6 +145,12 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
       let(:hebrew_markdown) do
         <<~MARKDOWN
           ## פרק ראשון
+
+          זוהי פסקת הקדמה עם הרבה תוכן מילוי כדי לדחוף את מילת החיפוש האמיתית
+          יותר למטה בעמוד. אנחנו צריכים מספיק תוכן כאן כדי שכאשר נגלול להתאמה הראשונה,
+          היא תהיה באופן משמעותי מתחת לחלק העליון של העמוד. מוסיפים עוד טקסט כאן
+          כדי ליצור מרחק. עוד טקסט מילוי. עוד טקסט מילוי. עוד טקסט מילוי.
+          אפילו עוד טקסט מילוי כדי ליצור מספיק מרווח אנכי.
 
           זה טקסט לדוגמה עם המילה דוגמה שמופיעה מספר פעמים.
           זה פסקה נוספת עם תוכן נוסף.
@@ -198,16 +205,9 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
         # Wait for page to load
         expect(page).to have_css('#search-highlight-controls', visible: :visible)
 
-        # Wait for scroll to happen
-        max_attempts = 10
-        attempts = 0
-        scrolled = false
-        while attempts < max_attempts && !scrolled
-          current_position = current_scroll_position
-          scrolled = current_position > MIN_SCROLLED_THRESHOLD
-          sleep 0.1 unless scrolled
-          attempts += 1
-        end
+        # Wait for scroll animation to complete (JavaScript uses 300ms animation)
+        # Give extra time for animation to fully complete and settle
+        sleep 0.5
 
         # Should have scrolled to first match in text
         expect(current_scroll_position).to be > MIN_SCROLLED_THRESHOLD
