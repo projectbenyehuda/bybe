@@ -11,7 +11,7 @@
             = ", #{w.publication_place}"
           - if w.publication_date.present?
             = ", #{w.publication_date}"
-          = ")"
+          = ')'
         = link_to t(:edit), nil, class: 'edit-work', data: { id: w.id }
         = link_to t(:delete),
                   lexicon_work_path(w),
