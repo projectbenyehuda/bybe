@@ -46,7 +46,6 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
            birthdate: '1138',
            deathdate: '1204',
            bio: '<p>Test biography</p>',
-           works: '<ul><li>Test work 1</li></ul>',
            gender: :male)
   end
 
