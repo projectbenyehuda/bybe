@@ -163,4 +163,7 @@ he:
         verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
       edit:
         mark_as_verified: סמן קטע זה כמאומת
+        mark_all_works_verified: סמן את כל היצירות כמאומתות
+        no_works: אין יצירות עדיין
+        verified: אומת
         html_allowed: ניתן להשתמש ב-HTML
