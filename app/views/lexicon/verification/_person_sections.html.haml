@@ -12,6 +12,12 @@
       %strong= t('activerecord.attributes.lex_entry.english_title') + ':'
       = entry.english_title.presence || t('unknown')
     %p
+      %strong= t('activerecord.attributes.lex_person.authority') + ':'
+      - if item.authority
+        = link_to item.authority.name, toc_path(item.authority), target: '_blank', rel: 'noopener'
+      - else
+        %span.text-muted= t('none')
+    %p
       %strong= t('activerecord.attributes.lex_person.birthdate') + ':'
       = item.birthdate
     %p

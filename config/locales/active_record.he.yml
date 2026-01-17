@@ -136,6 +136,7 @@ he:
         about: על המחבר%{gender_suffix} ויצירת%{gender_letter}
         links: קישוריוֹת
         gender: מגדר
+        authority: ישות במאגר
       lex_person_work:
         title: כותרת
         work_type: סוג יצירה
