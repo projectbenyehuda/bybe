@@ -34,7 +34,7 @@ class LexEntry < ApplicationRecord
   before_validation :update_sort_title!
 
   # Scopes for verification queue
-  scope :needs_verification, -> { where(status: %i[draft verifying error]) }
+  scope :needs_verification, -> { where(status: %i(draft verifying error)) }
   scope :in_verification, -> { where(status: :verifying) }
   scope :verified_pending_publish, -> { where(status: :verified) }
 
@@ -68,15 +68,15 @@ class LexEntry < ApplicationRecord
     verified = 0
 
     # Count top-level items (excluding collections)
-    %w[title life_years bio works description toc az_navbar attachments].each do |key|
+    %w(title life_years bio description toc az_navbar attachments).each do |key|
       next unless checklist[key]
 
       total += 1
       verified += 1 if checklist[key]['verified']
     end
 
-    # Count collection items (citations/מראי מקום, links)
-    %w[citations links].each do |collection|
+    # Count collection items (citations/מראי מקום, links, works)
+    %w(citations links works).each do |collection|
       next unless checklist[collection]&.dig('items')
 
       items = checklist[collection]['items']
@@ -114,14 +114,127 @@ class LexEntry < ApplicationRecord
 
     # Navigate to nested key and update
     keys = path.split('.')
-    target = keys.length > 1 ? (checklist.dig(*keys[0..-2]) || checklist) : checklist
-    target[keys.last] = { 'verified' => verified, 'notes' => notes }
+
+    if keys.length > 1
+      # For nested paths like "works.items.123", navigate to parent and update child
+      parent_keys = keys[0..-2]
+      last_key = keys.last
+
+      # Navigate to the parent hash, ensuring it exists
+      target = checklist
+      parent_keys.each do |key|
+        target[key] ||= {}
+        target = target[key]
+      end
+
+      # Set the value on the target
+      target[last_key] = { 'verified' => verified, 'notes' => notes }
+    else
+      # For top-level paths like "title"
+      checklist[keys.first] = { 'verified' => verified, 'notes' => notes }
+    end
+
+    # Auto-verify parent collections when all items are verified
+    auto_verify_collections!(checklist)
+
+    progress['last_updated_at'] = Time.current.iso8601
+    update!(verification_progress: progress)
+  end
+
+  # Sync works collection in verification checklist when works are added/deleted
+  def sync_works_checklist!
+    return unless verification_progress.present? && lex_item_type == 'LexPerson'
+
+    progress = verification_progress.deep_dup
+    checklist = progress['checklist']
+    return unless checklist
+
+    # Get current works from database
+    works = lex_item&.works
+    current_work_ids = works ? works.pluck(:id).map(&:to_s) : []
+    existing_items = checklist.dig('works', 'items') || {}
+
+    # Add new works
+    current_work_ids.each do |work_id|
+      existing_items[work_id] ||= { 'verified' => false, 'notes' => '' }
+    end
+
+    # Remove deleted works
+    existing_items.select! { |work_id, _| current_work_ids.include?(work_id) }
+
+    checklist['works']['items'] = existing_items
+
+    # Auto-verify parent collection if all items verified
+    auto_verify_collections!(checklist)
+
+    progress['last_updated_at'] = Time.current.iso8601
+    update!(verification_progress: progress)
+  end
+
+  # Mark all works as verified (called when marking entire works section as verified)
+  def mark_all_works_verified!(notes = '')
+    return unless verification_progress.present? && lex_item_type == 'LexPerson'
+
+    progress = verification_progress.deep_dup
+    checklist = progress['checklist']
+    return unless checklist && checklist['works']
+
+    # Get all current work IDs from database
+    works = lex_item&.works
+    work_ids = works ? works.pluck(:id).map(&:to_s) : []
+
+    # Mark each individual work as verified
+    work_ids.each do |work_id|
+      checklist['works']['items'] ||= {}
+      checklist['works']['items'][work_id] = { 'verified' => true, 'notes' => notes }
+    end
+
+    # Mark the works section itself as verified
+    checklist['works']['verified'] = true
+    checklist['works']['notes'] = notes
 
     progress['last_updated_at'] = Time.current.iso8601
     update!(verification_progress: progress)
   end
 
   private
+
+  # Auto-verify collection sections when all items are verified
+  def auto_verify_collections!(checklist)
+    %w(citations links works).each do |collection|
+      next unless checklist[collection]&.dig('items')
+
+      items = checklist[collection]['items']
+
+      # Special handling for works: verify against actual database records
+      if collection == 'works' && lex_item_type == 'LexPerson'
+        works = lex_item&.works
+        actual_work_ids = works ? works.pluck(:id).map(&:to_s) : []
+
+        # Only mark as verified if:
+        # 1. We have works in the database
+        # 2. All database works have corresponding checklist items
+        # 3. All those checklist items are verified
+        if actual_work_ids.any?
+          all_verified = actual_work_ids.all? do |work_id|
+            items[work_id].is_a?(Hash) && items[work_id]['verified'] == true
+          end
+          checklist[collection]['verified'] = all_verified
+        else
+          checklist[collection]['verified'] = false
+        end
+      else
+        # For other collections (citations, links), use the simpler check
+        checklist[collection]['verified'] = if items.any? && items.values.all? do |v|
+          v.is_a?(Hash) && v['verified'] == true
+        end
+                                              true
+                                            else
+                                              false
+                                            end
+      end
+    end
+  end
 
   # Build initial checklist based on item type
   def build_checklist
@@ -132,7 +245,16 @@ class LexEntry < ApplicationRecord
       checklist['title'] = { 'verified' => false, 'notes' => '' }
       checklist['life_years'] = { 'verified' => false, 'notes' => '' }
       checklist['bio'] = { 'verified' => false, 'notes' => '' }
-      checklist['works'] = { 'verified' => false, 'notes' => '' }
+
+      # Works (יצירות)
+      work_items = if lex_item&.works&.any?
+                     lex_item.works.each_with_object({}) do |work, hash|
+                       hash[work.id.to_s] = { 'verified' => false, 'notes' => '' }
+                     end
+                   else
+                     {}
+                   end
+      checklist['works'] = { 'verified' => false, 'items' => work_items }
 
       # Citations (מראי מקום)
       citation_items = if lex_item&.citations&.any?
