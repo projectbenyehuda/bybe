@@ -106,8 +106,9 @@
 
     // Handle individual work verification checkbox changes
     $('.verify-work-checkbox').on('change', function() {
-      const workId = $(this).data('work-id');
-      const verified = $(this).prop('checked');
+      const checkbox = $(this);
+      const workId = checkbox.data('work-id');
+      const verified = checkbox.prop('checked');
 
       $.ajax({
         url: `/lex/verification/${entryId}/update_checklist`,
@@ -122,8 +123,8 @@
         },
         success: function(data) {
           // Update progress bar
-          if (typeof updateVerificationProgress === 'function') {
-            updateVerificationProgress(data.percentage);
+          if (typeof updateProgressBar === 'function') {
+            updateProgressBar(data.percentage);
           }
 
           // Check if all individual works are verified
@@ -132,14 +133,15 @@
         error: function(xhr) {
           alert('Error updating work verification: ' + (xhr.responseJSON?.error || 'Unknown error'));
           // Revert checkbox
-          $(this).prop('checked', !verified);
+          checkbox.prop('checked', !verified);
         }
       });
     });
 
     // Handle "Mark all as verified" checkbox
     $('#mark_all_works_verified').on('change', function() {
-      const verified = $(this).prop('checked');
+      const checkbox = $(this);
+      const verified = checkbox.prop('checked');
 
       $.ajax({
         url: `/lex/verification/${entryId}/update_checklist`,
@@ -167,7 +169,7 @@
         error: function(xhr) {
           alert('Error updating works section: ' + (xhr.responseJSON?.error || 'Unknown error'));
           // Revert checkbox
-          $(this).prop('checked', !verified);
+          checkbox.prop('checked', !verified);
         }
       });
     });

@@ -219,16 +219,19 @@ module Lexicon
 
     def item_params
       # Permit params based on item type
+      # Using require().permit() for consistency with rest of codebase
+      # rubocop:disable Rails/StrongParametersExpect
       case @entry.lex_item_type
       when 'LexPerson'
-        params.expect(
-          lex_person: %i(birthdate deathdate bio works gender aliases copyrighted authority_id)
+        params.require(:lex_person).permit(
+          :birthdate, :deathdate, :bio, :works, :gender, :aliases, :copyrighted, :authority_id
         )
       when 'LexPublication'
-        params.expect(
-          lex_publication: %i(description toc az_navbar)
+        params.require(:lex_publication).permit(
+          :description, :toc, :az_navbar
         )
       end
+      # rubocop:enable Rails/StrongParametersExpect
     end
   end
 end

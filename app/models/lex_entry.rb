@@ -225,13 +225,9 @@ class LexEntry < ApplicationRecord
         end
       else
         # For other collections (citations, links), use the simpler check
-        checklist[collection]['verified'] = if items.any? && items.values.all? do |v|
-          v.is_a?(Hash) && v['verified'] == true
-        end
-                                              true
-                                            else
-                                              false
-                                            end
+        checklist[collection]['verified'] =
+          items.any? &&
+          items.values.all? { |v| v.is_a?(Hash) && v['verified'] == true }
       end
     end
   end
