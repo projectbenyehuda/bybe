@@ -1,6 +1,17 @@
-- path = @work.new_record? ? lexicon_person_works_path(@person) : lexicon_work_path(@work)
+:ruby
+  path = @work.new_record? ? lexicon_person_works_path(@person) : lexicon_work_path(@work)
+  authority = @person.authority
+  publications = authority&.publications || []
+  collections_by_pub = publications.select(&:volume).index_by(&:id)
+                                   .transform_values { |v| { id: v.id, title: v.title } }
+
 = simple_form_for(@work, url: path, remote: true) do |f|
   = f.error_notification
+
+  - unless authority
+    .alert.alert-warning
+      = t('lexicon.person_works.form.no_authority_warning')
+
   = f.input :title
   = f.input :work_type,
             collection: LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_enum_name(:work_type, k), k] },
@@ -9,4 +20,42 @@
   = f.input :publication_place
   = f.input :publication_date
   = f.input :comment
+
+  - if authority
+    = f.association :publication,
+                    collection: publications,
+                    label_method: :title,
+                    value_method: :id,
+                    include_blank: t('lexicon.person_works.form.select_publication'),
+                    input_html: { id: 'lex_person_work_publication_id',
+                                  data: { collections: collections_by_pub.to_json } }
+    :ruby
+      collection_volumes = authority.publications.includes(:volume)
+                                    .flat_map { |p| p.volume ? [p.volume] : [] }
+    = f.association :collection,
+                    collection: collection_volumes,
+                    label_method: :title,
+                    value_method: :id,
+                    include_blank: t('lexicon.person_works.form.select_collection'),
+                    input_html: { id: 'lex_person_work_collection_id' }
+
   = f.submit t(:save)
+
+:javascript
+  (function() {
+    const publicationSelect = document.getElementById('lex_person_work_publication_id');
+    const collectionSelect = document.getElementById('lex_person_work_collection_id');
+
+    if (publicationSelect && collectionSelect) {
+      const collectionsData = JSON.parse(publicationSelect.dataset.collections || '{}');
+
+      publicationSelect.addEventListener('change', function() {
+        const publicationId = this.value;
+
+        if (publicationId && collectionsData[publicationId]) {
+          const collection = collectionsData[publicationId];
+          collectionSelect.value = collection.id;
+        }
+      });
+    }
+  })();

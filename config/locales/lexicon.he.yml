@@ -20,17 +20,17 @@ he:
   lexicon:
     entries:
       destroy:
-        success: Lexicon Entry deleted
+        success: רשומת לקסיקון נמחקה
       edit:
-        title: Edit Lexicon Entry
-        properties: Properties
-        attachments: Attachments
-        citations: Citations
-        works: Works
-        links: Links
+        title: עריכת רשומת לקסיקון
+        properties: מאפיינים
+        attachments: קבצים מצורפים
+        citations: מראי מקום
+        works: יצירות
+        links: קישוריות
       index:
-        add_person: Add Person
-        add_publication: Add Publication
+        add_person: הוספת יוצר/ת
+        add_publication: הוספת פרסום
         title: רשימת ערכי הלקסיקון
         filter_title: כותרת
         filter_title_placeholder: חיפוש לפי כותרת...
@@ -40,7 +40,7 @@ he:
         clear_filters: נקה סינונים
       show:
         to_pby_person: לדף היוצר בפרויקט בן־יהודה
-        unsupported_entry_type: Unsupported entry type
+        unsupported_entry_type: סוג פריט לא נתמך
         profile_image_alt: תמונת פרופיל
         profile_image_badge: תמונת פרופיל
         unpublished_warning: "אזהרה: סטטוס הערך הוא '%{status}', ולכן אינו גלוי לציבור."
@@ -48,28 +48,28 @@ he:
         pages: p.
     attachments:
       index:
-        attach_new_file: Attach new file
-        filename: Filename
-        size: Size
-        preview: Preview
-        copy_link: Copy link to clipboard
+        attach_new_file: צרף קובץ חדש
+        filename: שם הקובץ
+        size: גודל
+        preview: תצוגה מקדימה
+        copy_link: העתקת קישור ללוח
     citation_authors:
       form:
-        add_author: Add author
+        add_author: הוספת יוצר/ת
     citations:
       index:
-        add_citation: Add citation
+        add_citation: הוספת מראה מקום
       edit:
-        approve: Approve Citation
+        approve: אישור מראה מקום
       form:
-        save_before_adding_authors: Please save the citation before adding authors
+        save_before_adding_authors: נא לשמור את מראה המקום לפני הוספת מחברים
     person_works:
       index:
-        add_work: Add work
+        add_work: הוספת יצירה
     links:
       index:
-        add_link: Add link
-        no_links: No links yet
+        add_link: הוספת קישורית
+        no_links: אין קישוריות עדיין
     files:
       index:
         title: רשימת הקבצים

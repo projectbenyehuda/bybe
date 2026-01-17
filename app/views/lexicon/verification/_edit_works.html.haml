@@ -41,10 +41,14 @@
   }
 
 #works-section
+  - unless @item.authority
+    .alert.alert-warning.mb-3
+      = t('lexicon.person_works.form.no_authority_warning')
+
   %a.btn.btn-primary.add-person-work.mb-3= t('lexicon.person_works.index.add_work')
 
   - if @item.works.any?
-    - @item.works.includes(:publication).group_by(&:work_type).each do |work_type, works|
+    - @item.works.includes(:publication, :collection).group_by(&:work_type).each do |work_type, works|
       %h4= LexPersonWork.human_enum_name(:work_type, work_type)
       .table-responsive
         %table.table.table-sm
@@ -56,6 +60,8 @@
               %th{ style: 'min-width: 120px;' }= LexPersonWork.human_attribute_name(:publisher)
               %th{ style: 'min-width: 120px;' }= LexPersonWork.human_attribute_name(:publication_place)
               %th{ style: 'min-width: 100px;' }= LexPersonWork.human_attribute_name(:publication_date)
+              %th{ style: 'min-width: 150px;' }= LexPersonWork.human_attribute_name(:publication)
+              %th{ style: 'min-width: 150px;' }= LexPersonWork.human_attribute_name(:collection)
               %th{ style: 'min-width: 150px;' }= LexPersonWork.human_attribute_name(:comment)
               %th.text-center{ style: 'min-width: 120px;' }= t(:actions)
           %tbody
@@ -71,6 +77,15 @@
                 %td= w.publisher
                 %td= w.publication_place
                 %td= w.publication_date
+                %td
+                  - if w.publication
+                    = link_to w.publication.title, '#', title: w.publication.title
+                %td
+                  - if w.collection
+                    = link_to w.collection.title, collection_path(w.collection),
+                              title: w.collection.title,
+                              target: '_blank',
+                              rel: 'noopener'
                 %td= w.comment
                 %td.text-center
                   = link_to t(:edit), '#',

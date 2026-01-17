@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_16_085301) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_17_142237) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -638,10 +638,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_085301) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.text "raw"
-    t.integer "status", null: false
     t.text "notes"
     t.string "subject"
     t.bigint "lex_person_id", null: false
+    t.integer "status"
     t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
@@ -754,8 +754,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_085301) do
     t.string "publication_place"
     t.string "comment"
     t.integer "work_type", null: false
+    t.integer "publication_id"
+    t.integer "collection_id"
+    t.index ["collection_id"], name: "index_lex_person_works_on_collection_id"
     t.index ["lex_person_id"], name: "index_lex_person_works_on_lex_person_id"
     t.index ["lex_publication_id"], name: "index_lex_person_works_on_lex_publication_id"
+    t.index ["publication_id"], name: "index_lex_person_works_on_publication_id"
   end
 
   create_table "lex_publications", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1184,8 +1188,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_16_085301) do
   add_foreign_key "lex_legacy_links", "lex_entries"
   add_foreign_key "lex_people", "authorities"
   add_foreign_key "lex_people_items", "lex_people"
+  add_foreign_key "lex_person_works", "collections"
   add_foreign_key "lex_person_works", "lex_people"
   add_foreign_key "lex_person_works", "lex_publications"
+  add_foreign_key "lex_person_works", "publications"
   add_foreign_key "lex_texts", "lex_issues"
   add_foreign_key "lex_texts", "lex_publications"
   add_foreign_key "lex_texts", "manifestations"
