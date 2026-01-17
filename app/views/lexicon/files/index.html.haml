@@ -17,7 +17,7 @@
         %th= LexFile.human_attribute_name(:error_message)
         %th= LexFile.human_attribute_name(:fname)
         %th= t(:title)
-        %th= t(:status)
+        %th= "#{t(:status)} (#{t(:file)} / #{t(:entry)})"
         %th= t(:entrytype)
         %th= t(:actions)
       - @lex_files.each do |lf|
@@ -26,7 +26,7 @@
           %td= lf.error_message
           %td= lf.fname.sub('.php', '').sub('/', '')
           %td= lf.lex_entry.title
-          %td #{t(lf.status)} / #{lf&.lex_entry&.status}
+          %td #{t(lf.status)} / #{LexEntry.human_enum_name(:status, lf.lex_entry&.status)}
           %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
           %td
             - if lex_entry.lex_item.present? && !lex_entry.status_error?
