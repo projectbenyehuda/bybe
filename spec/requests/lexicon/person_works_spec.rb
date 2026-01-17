@@ -29,7 +29,7 @@ describe '/lexicon/person_works' do
     subject(:call) { post "/lex/people/#{person.id}/works", params: { lex_person_work: work_params }, xhr: true }
 
     context 'when valid params' do
-      let(:work_params) { attributes_for(:lex_person_work) }
+      let(:work_params) { attributes_for(:lex_person_work).except(:person) }
 
       it 'creates new record' do
         expect { call }.to change { person.works.count }.by(1)
@@ -61,7 +61,7 @@ describe '/lexicon/person_works' do
     subject(:call) { patch "/lex/works/#{work.id}", params: { lex_person_work: work_params }, xhr: true }
 
     context 'when valid params' do
-      let(:work_params) { attributes_for(:lex_person_work) }
+      let(:work_params) { attributes_for(:lex_person_work).except(:person) }
 
       it 'updates record' do
         expect(call).to eq(200)
