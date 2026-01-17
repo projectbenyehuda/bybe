@@ -20,7 +20,7 @@ module Lexicon
       @entries = @entries.where(status: params[:status]) if params[:status].present?
 
       # Filter by type if provided
-      return unless params[:type].present?
+      return if params[:type].blank?
 
       @entries = @entries.where(lex_item_type: params[:type])
     end
@@ -53,8 +53,9 @@ module Lexicon
 
         render html: processed_content.html_safe, layout: false
       else
-        render html: '<div style="padding: 20px; text-align: center; color: #999;">⚠️ קובץ מקור לא נמצא (Source file not found)</div>'.html_safe,
-               layout: false
+        not_found_msg = '<div style="padding: 20px; text-align: center; color: #999;">' \
+                        '⚠️ קובץ מקור לא נמצא (Source file not found)</div>'
+        render html: not_found_msg.html_safe, layout: false
       end
     end
 
@@ -64,7 +65,15 @@ module Lexicon
       verified = ['true', true].include?(params[:verified])
       notes = params[:notes] || ''
 
-      @entry.update_checklist_item(path, verified, notes)
+      # Special handling: when marking entire works section as verified,
+      # also mark all individual works as verified
+      if path == 'works' && verified && @entry.lex_item_type == 'LexPerson'
+        @entry.mark_all_works_verified!(notes)
+      else
+        @entry.update_checklist_item(path, verified, notes)
+      end
+
+      @entry.reload # Ensure we have the latest data
 
       render json: {
         success: true,
@@ -126,6 +135,8 @@ module Lexicon
     # GET /lexicon/verification/:id/edit_section?section=title
     def edit_section
       @section = params[:section]
+      # Reload entry and associations to ensure fresh verification_progress data
+      @entry = LexEntry.includes(lex_item: :works).find(@entry.id)
       @item = @entry.lex_item
 
       render partial: "lexicon/verification/edit_#{@section}"
@@ -208,6 +219,8 @@ module Lexicon
 
     def item_params
       # Permit params based on item type
+      # Using require().permit() for consistency with rest of codebase
+      # rubocop:disable Rails/StrongParametersExpect
       case @entry.lex_item_type
       when 'LexPerson'
         params.require(:lex_person).permit(
@@ -218,6 +231,7 @@ module Lexicon
           :description, :toc, :az_navbar
         )
       end
+      # rubocop:enable Rails/StrongParametersExpect
     end
   end
 end
