@@ -8,6 +8,7 @@ module Lexicon
     end
     before_action :set_work, only: %i(edit update destroy)
     before_action :set_person, only: %i(new create index)
+    after_action :sync_verification_checklist, only: %i(create update destroy)
 
     layout false
 
@@ -54,6 +55,15 @@ module Lexicon
     # Only allow a list of trusted parameters through.
     def lex_person_work_params
       params.expect(lex_person_work: %i(title work_type publisher publication_date publication_place comment))
+    end
+
+    # Sync verification checklist when works are added/updated/deleted
+    def sync_verification_checklist
+      # Get the entry for this person if it exists and is being verified
+      entry = @person.entry
+      return if entry&.verification_progress.blank?
+
+      entry.sync_works_checklist!
     end
   end
 end
