@@ -53,26 +53,10 @@ function initVerification() {
         const newVerified = !isCurrentlyVerified;
 
         updateChecklistItem(updateUrl, path, newVerified, null, function() {
-            // Update button state
-            if (newVerified) {
-                button.removeClass('btn-outline-success').addClass('btn-success');
-            } else {
-                button.removeClass('btn-success').addClass('btn-outline-success');
-            }
-
-            // Update parent card
-            const card = button.closest('.citation-card, .link-card');
-            if (newVerified) {
-                card.removeClass('not-verified').addClass('verified');
-            } else {
-                card.removeClass('verified').addClass('not-verified');
-            }
-
-            // Update the corresponding checklist checkbox
-            const checkbox = $('.checklist-items input[data-path="' + path + '"]');
-            if (checkbox.length > 0) {
-                checkbox.prop('checked', newVerified);
-            }
+            // Reload page to show updated section content
+            setTimeout(function() {
+                location.reload();
+            }, 300);
         });
     });
 
