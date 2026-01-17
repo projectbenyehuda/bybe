@@ -157,4 +157,7 @@ en:
         verification_incomplete: Verification incomplete - please verify all components
       edit:
         mark_as_verified: Mark this section as verified
+        mark_all_works_verified: Mark all works as verified
+        no_works: No works yet
+        verified: Verified
         html_allowed: HTML is allowed
