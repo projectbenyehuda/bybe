@@ -145,9 +145,9 @@ he:
         publication_place: מקום פרסום
         comment: הערה
         work_types:
-          original: מקורית
-          translated: תורגמה
-          edited: נערכה
+          original: יצירות מקור
+          translated: תרגומים
+          edited: יצירות שנערכו
       lex_publication:
         toc: תוכן עניינים
         az_navbar: להציג סרגל א–ב?
