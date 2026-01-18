@@ -54,7 +54,8 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_person_work_params
-      params.expect(lex_person_work: %i(title work_type publisher publication_date publication_place comment))
+      params.expect(lex_person_work: %i(title work_type publisher publication_date publication_place comment
+                                        publication_id collection_id))
     end
 
     # Sync verification checklist when works are added/updated/deleted
