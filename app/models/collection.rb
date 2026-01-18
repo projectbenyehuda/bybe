@@ -561,6 +561,13 @@ class Collection < ApplicationRecord
     parent_collection_items.map(&:collection)
   end
 
+  # Get LexCitations for this collection via Publication -> LexPersonWork -> LexCitation chain
+  def lex_citations
+    return [] if publication.blank?
+
+    publication.lex_citations.includes(:authors, :manifestation)
+  end
+
   # update status of ALL manifestations included in this collection, including in nested collections
   def change_all_manifestations_status(new_status)
     flatten_items.each do |ci|

@@ -9,6 +9,9 @@ class LexPersonWork < ApplicationRecord
   belongs_to :publication, optional: true
   belongs_to :collection, optional: true
 
+  # Citations about this work
+  has_many :citations_about, as: :item, class_name: 'LexCitation', dependent: :destroy
+
   validates :title, :work_type, presence: true
   validate :collection_belongs_to_publication
 
