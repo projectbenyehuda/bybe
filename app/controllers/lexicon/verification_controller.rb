@@ -112,6 +112,31 @@ module Lexicon
       # Find the work and verify it belongs to this entry's person
       work = @entry.lex_item.works.find(work_id)
 
+      # Validate that publication belongs to the person's authority
+      person = @entry.lex_item
+      if person.authority.blank?
+        render json: { success: false, error: 'Person has no associated authority' },
+               status: :unprocessable_entity
+        return
+      end
+
+      publication = person.authority.publications.find_by(id: publication_id)
+      unless publication
+        render json: { success: false, error: 'Publication does not belong to authority' },
+               status: :unprocessable_entity
+        return
+      end
+
+      # Validate collection if provided
+      if collection_id.present?
+        collection = Collection.find_by(id: collection_id, publication_id: publication_id)
+        unless collection
+          render json: { success: false, error: 'Collection does not belong to publication' },
+                 status: :unprocessable_entity
+          return
+        end
+      end
+
       # Update the work with the confirmed publication and collection
       work.update!(
         publication_id: publication_id,
@@ -273,9 +298,15 @@ module Lexicon
       authority = person.authority
       return matches unless authority
 
-      # Get all publications associated with the authority
-      authority_publications = authority.publications.to_a
+      # Get all publications associated with the authority, with volume (collection) eager loaded
+      authority_publications = authority.publications.includes(:volume).to_a
       return matches if authority_publications.empty?
+
+      # Build a map of publication_id => collection for efficient lookup
+      publication_collections = {}
+      authority_publications.each do |pub|
+        publication_collections[pub.id] = pub.volume if pub.volume.present?
+      end
 
       # Get authority name for cleaning publication titles
       authority_name = authority.name
@@ -288,8 +319,8 @@ module Lexicon
         next unless best_match
 
         publication = best_match[:publication]
-        # Find matching collection if publication was matched
-        collection = Collection.find_by(publication_id: publication.id)
+        # Get collection from our pre-loaded map (no additional query)
+        collection = publication_collections[publication.id]
 
         matches[work.id] = {
           publication_id: publication.id,
