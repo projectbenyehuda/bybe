@@ -2,6 +2,10 @@
 - checklist = @entry.verification_progress&.dig('checklist', 'works') || {}
 - work_items = checklist['items'] || {}
 
+-# Get proposed matches (NOT persisted to database yet)
+- proposed_matches = defined?(@work_matches) ? @work_matches : {}
+- auto_match_count = proposed_matches.size
+
 :css
   /* Make modal wider when displaying works section */
   #generalDlg:has(#works-section) .modal-dialog {
@@ -10,15 +14,15 @@
     margin: 1.75rem auto;
   }
 
-  #works-section {
-    max-height: 70vh;
+  #generalDlg:has(#works-section) .modal-body {
+    max-height: 80vh;
     overflow-y: auto;
     overflow-x: hidden;
   }
+
   #works-section .table-responsive {
-    max-height: 50vh;
     overflow-x: auto;
-    overflow-y: auto;
+    overflow-y: visible;
   }
   #works-section table {
     min-width: 100%;
@@ -39,11 +43,68 @@
     position: static;
     float: none;
   }
+  /* Proposed match styling */
+  .proposed-match {
+    background: #e7f5e7;
+    border: 1px solid #a8d5a8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .proposed-match-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .proposed-match-actions {
+    display: flex;
+    gap: 4px;
+  }
+  .btn-confirm-match {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn-confirm-match:hover {
+    background: #218838;
+  }
+  .btn-reject-match {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .btn-reject-match:hover {
+    background: #c82333;
+  }
+  .similarity-badge {
+    background-color: yellow;
+    color: black;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+  }
 
 #works-section
   - unless @item.authority
     .alert.alert-warning.mb-3
       = t('lexicon.person_works.form.no_authority_warning')
+
+  - if auto_match_count > 0
+    .alert.alert-success.mb-3
+      = t('lexicon.verification.edit.auto_matched_works', count: auto_match_count)
 
   %a.btn.btn-primary.add-person-work.mb-3= t('lexicon.person_works.index.add_work')
 
@@ -77,14 +138,28 @@
                 %td= w.publisher
                 %td= w.publication_place
                 %td= w.publication_date
-                %td
-                  - if w.publication
+                %td{ id: "publication-cell-#{w.id}" }
+                  - proposed_match = proposed_matches[w.id]
+                  - if proposed_match
+                    .proposed-match{ data: { work_id: w.id,
+                                             publication_id: proposed_match[:publication_id],
+                                             collection_id: proposed_match[:collection_id] } }
+                      .proposed-match-info
+                        %span.fw-bold= proposed_match[:publication_title]
+                        %span.similarity-badge #{proposed_match[:similarity]}%
+                      .proposed-match-actions
+                        %button.btn-confirm-match{ title: 'Confirm match', data: { action: 'confirm' } } ✓
+                        %button.btn-reject-match{ title: 'Reject match', data: { action: 'reject' } } ✕
+                  - elsif w.publication
                     = link_to w.publication.title, publication_path(w.publication),
                               title: w.publication.title,
                               target: '_blank',
                               rel: 'noopener'
-                %td
-                  - if w.collection
+                %td{ id: "collection-cell-#{w.id}" }
+                  - proposed_match = proposed_matches[w.id]
+                  - if proposed_match && proposed_match[:collection_title]
+                    .text-muted.small (proposed: #{proposed_match[:collection_title]})
+                  - elsif w.collection
                     = link_to w.collection.title, collection_path(w.collection),
                               title: w.collection.title,
                               target: '_blank',
@@ -203,6 +278,59 @@
         $('#mark_all_works_verified').prop('checked', false);
       }
     }
+
+    // Handle proposed match confirmation
+    $('.btn-confirm-match').on('click', function(e) {
+      e.preventDefault();
+      const btn = $(this);
+      const matchBox = btn.closest('.proposed-match');
+      const workId = matchBox.data('work-id');
+      const publicationId = matchBox.data('publication-id');
+      const collectionId = matchBox.data('collection-id');
+
+      // Disable button during request
+      btn.prop('disabled', true);
+
+      $.ajax({
+        url: `/lex/verification/${entryId}/confirm_work_match`,
+        type: 'PATCH',
+        headers: {
+          'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+          work_id: workId,
+          publication_id: publicationId,
+          collection_id: collectionId
+        },
+        success: function(data) {
+          // Remove all other proposed matches for the same publication
+          $(`.proposed-match[data-publication-id="${publicationId}"]`).each(function() {
+            if ($(this).data('work-id') !== workId) {
+              $(this).fadeOut(300, function() { $(this).remove(); });
+            }
+          });
+
+          // Reload the works section to show the confirmed match
+          reloadWorksSection();
+        },
+        error: function(xhr) {
+          alert('Error confirming match: ' + (xhr.responseJSON?.error || 'Unknown error'));
+          btn.prop('disabled', false);
+        }
+      });
+    });
+
+    // Handle proposed match rejection
+    $('.btn-reject-match').on('click', function(e) {
+      e.preventDefault();
+      const btn = $(this);
+      const matchBox = btn.closest('.proposed-match');
+
+      // Simply hide the proposed match (don't persist rejection)
+      matchBox.fadeOut(300, function() {
+        matchBox.remove();
+      });
+    });
 
     // Handle add work button
     $('a.add-person-work').click(function(e) {

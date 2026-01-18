@@ -102,6 +102,57 @@ module Lexicon
       render json: { success: false, error: e.message }, status: :unprocessable_entity
     end
 
+    # PATCH /lexicon/verification/:id/confirm_work_match
+    # Confirms an auto-matched publication for a work
+    def confirm_work_match
+      work_id = params[:work_id].to_i
+      publication_id = params[:publication_id].to_i
+      collection_id = params[:collection_id].to_i if params[:collection_id].present?
+
+      # Find the work and verify it belongs to this entry's person
+      work = @entry.lex_item.works.find(work_id)
+
+      # Validate that publication belongs to the person's authority
+      person = @entry.lex_item
+      if person.authority.blank?
+        render json: { success: false, error: 'Person has no associated authority' },
+               status: :unprocessable_entity
+        return
+      end
+
+      publication = person.authority.publications.find_by(id: publication_id)
+      unless publication
+        render json: { success: false, error: 'Publication does not belong to authority' },
+               status: :unprocessable_entity
+        return
+      end
+
+      # Validate collection if provided
+      if collection_id.present?
+        collection = Collection.find_by(id: collection_id, publication_id: publication_id)
+        unless collection
+          render json: { success: false, error: 'Collection does not belong to publication' },
+                 status: :unprocessable_entity
+          return
+        end
+      end
+
+      # Update the work with the confirmed publication and collection
+      work.update!(
+        publication_id: publication_id,
+        collection_id: collection_id
+      )
+
+      render json: {
+        success: true,
+        message: I18n.t('lexicon.verification.messages.work_match_confirmed')
+      }
+    rescue ActiveRecord::RecordNotFound
+      render json: { success: false, error: 'Work not found' }, status: :not_found
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_entity
+    end
+
     # PATCH /lexicon/verification/:id/set_profile_image
     def set_profile_image
       attachment_id = params[:attachment_id].to_i
@@ -138,6 +189,11 @@ module Lexicon
       # Reload entry and associations to ensure fresh verification_progress data
       @entry = LexEntry.includes(lex_item: :works).find(@entry.id)
       @item = @entry.lex_item
+
+      # Auto-match works to publications if editing works section and authority exists
+      if @section == 'works' && @item.is_a?(LexPerson) && @item.authority.present?
+        @work_matches = auto_match_works_to_publications(@item)
+      end
 
       render partial: "lexicon/verification/edit_#{@section}"
     end
@@ -232,6 +288,111 @@ module Lexicon
         )
       end
       # rubocop:enable Rails/StrongParametersExpect
+    end
+
+    # Auto-match works to publications based on title similarity
+    # Returns proposed matches WITHOUT persisting to database
+    # Format: { work_id => { publication_id:, publication_title:, collection_id:, collection_title:, similarity: } }
+    def auto_match_works_to_publications(person)
+      matches = {}
+      authority = person.authority
+      return matches unless authority
+
+      # Get all publications associated with the authority, with volume (collection) eager loaded
+      authority_publications = authority.publications.includes(:volume).to_a
+      return matches if authority_publications.empty?
+
+      # Build a map of publication_id => collection for efficient lookup
+      publication_collections = {}
+      authority_publications.each do |pub|
+        publication_collections[pub.id] = pub.volume if pub.volume.present?
+      end
+
+      # Get authority name for cleaning publication titles
+      authority_name = authority.name
+
+      # Only match works that don't already have a publication
+      unmatched_works = person.works.where(publication_id: nil)
+
+      unmatched_works.each do |work|
+        best_match = find_best_publication_match(work, authority_publications, authority_name)
+        next unless best_match
+
+        publication = best_match[:publication]
+        # Get collection from our pre-loaded map (no additional query)
+        collection = publication_collections[publication.id]
+
+        matches[work.id] = {
+          publication_id: publication.id,
+          publication_title: publication.title,
+          collection_id: collection&.id,
+          collection_title: collection&.title,
+          similarity: best_match[:similarity]
+        }
+      end
+
+      matches
+    end
+
+    # Find the best publication match for a work
+    # Returns { publication: Publication, similarity: Integer } or nil
+    def find_best_publication_match(work, publications, authority_name)
+      work_title = work.title.to_s.strip
+      return nil if work_title.blank?
+
+      best_match = nil
+      best_similarity = 0
+
+      publications.each do |pub|
+        pub_title = normalize_publication_title(pub.title, authority_name)
+        next if pub_title.blank?
+
+        # Try exact match first
+        if work_title == pub_title
+          return { publication: pub, similarity: 100 }
+        end
+
+        # Try fuzzy match using DamerauLevenshtein
+        similarity = calculate_similarity(work_title, pub_title)
+
+        # Only consider matches with 70% or higher similarity
+        next unless similarity >= 70
+
+        next unless similarity > best_similarity
+
+        best_similarity = similarity
+        best_match = pub
+      end
+
+      best_match ? { publication: best_match, similarity: best_similarity } : nil
+    end
+
+    # Normalize publication title by removing authority name and slashes
+    def normalize_publication_title(title, authority_name)
+      return '' if title.blank?
+
+      normalized = title.dup
+
+      # Remove authority name (case-insensitive)
+      if authority_name.present?
+        normalized = normalized.gsub(/#{Regexp.escape(authority_name)}/i, '')
+      end
+
+      # Remove forward slashes
+      normalized = normalized.gsub('/', '')
+
+      # Clean up whitespace
+      normalized.strip
+    end
+
+    # Calculate similarity percentage between two strings using DamerauLevenshtein
+    # Caps denominator at 20 to reduce false positives on long names
+    def calculate_similarity(str1, str2)
+      d = DamerauLevenshtein.distance(str1, str2)
+      l = [str1.length, str2.length].max.clamp(0, 20).to_f
+      return 0 if l.zero?
+
+      ((1 - (d / l)) * 100).round
     end
   end
 end
