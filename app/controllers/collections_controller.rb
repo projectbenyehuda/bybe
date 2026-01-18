@@ -26,6 +26,7 @@ class CollectionsController < ApplicationController
     @print_url = url_for(action: :print, collection_id: @collection.id)
     @pagetype = :collection
     @taggings = @collection.taggings
+    @lex_citations = @collection.lex_citations
 
     @included_recs = @collection.included_recommendations.count
     @total_recs = @collection.recommendations.count + @included_recs
