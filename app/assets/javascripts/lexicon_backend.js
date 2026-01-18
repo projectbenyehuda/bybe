@@ -42,7 +42,7 @@ function openModal(path, onSuccess = null) {
 
     $.get(path).done(function(htmlContent) {
         setupModalContent(htmlContent);
-        $('#generalDlg').modal('show');
+        $('#generalDlg').modal({show: true, keyboard: true});
     }).fail(function(xhr, status, error) {
         alert('Failed to load modal: ' + status + ' - ' + error);
     });

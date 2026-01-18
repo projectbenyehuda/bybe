@@ -137,6 +137,7 @@ he:
         about: על המחבר%{gender_suffix} ויצירת%{gender_letter}
         links: קישוריוֹת
         gender: מגדר
+        authority: ישות במאגר
       lex_person_work:
         title: כותרת
         work_type: סוג יצירה
@@ -144,6 +145,8 @@ he:
         publication_date: תאריך פרסום
         publication_place: מקום פרסום
         comment: הערה
+        collection: כותר במאגר
+        publication: כותר בביבליוגרפיה
         work_types:
           original: יצירות מקור
           translated: תרגומים

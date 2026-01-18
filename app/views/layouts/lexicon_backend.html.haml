@@ -39,7 +39,7 @@
                          href: lexicon_files_path } Files
     %main.container-fluid
       = yield
-      .modal#generalDlg
+      .modal#generalDlg{ tabindex: '-1', role: 'dialog', data: { keyboard: 'true', backdrop: 'true' } }
         .modal-dialog
           .modal-content
             .modal-header
