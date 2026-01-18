@@ -144,6 +144,8 @@ he:
         publication_date: תאריך פרסום
         publication_place: מקום פרסום
         comment: הערה
+        collection: כותר במאגר
+        publication: כותר בביבליוגרפיה
         work_types:
           original: יצירות מקור
           translated: תרגומים

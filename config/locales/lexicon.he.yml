@@ -120,6 +120,7 @@ he:
         title: רשימת בדיקה
         overall_notes: הערות כלליות
         person:
+          authority: ישות במאגר
           title: כותרת
           life_years: שנות חיים
           bio: ביוגרפיה

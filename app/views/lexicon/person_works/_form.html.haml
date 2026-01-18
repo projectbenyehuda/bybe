@@ -3,7 +3,7 @@
   authority = @person.authority
   publications = authority&.publications || []
   collections_by_pub = publications.select(&:volume).index_by(&:id)
-                                   .transform_values { |v| { id: v.id, title: v.title } }
+                                   .transform_values { |pub| { id: pub.volume.id, title: pub.volume.title } }
 
 = simple_form_for(@work, url: path, remote: true) do |f|
   = f.error_notification

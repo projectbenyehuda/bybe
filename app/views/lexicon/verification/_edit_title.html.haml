@@ -11,15 +11,6 @@
 
   - if @item.is_a?(LexPerson)
     .form-group
-      = label_tag :authority_autocomplete, t('activerecord.attributes.lex_person.authority'), class: 'form-label'
-      = autocomplete_field_tag 'authority_autocomplete',
-                               @item.authority&.name,
-                               autocomplete_authority_name_and_aliases_path,
-                               id_element: '#lex_person_authority_id',
-                               class: 'form-control'
-      = f.hidden_field :authority_id, value: @item.authority_id
-
-    .form-group
       = f.label :birthdate, t('activerecord.attributes.lex_person.birthdate'), class: 'form-label'
       = f.text_field :birthdate, class: 'form-control'
 
@@ -39,10 +30,3 @@
     %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }
       = t('cancel')
     = f.submit t('save'), class: 'btn btn-primary'
-
-:javascript
-  (function() {
-    $('#authority_autocomplete').bind('railsAutocomplete.select', function(event, data){
-      $('#lex_person_authority_id').val(data.item.id);
-    });
-  })();
