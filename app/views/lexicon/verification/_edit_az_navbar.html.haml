@@ -1,15 +1,18 @@
 :css
   /* Make modal wider for az_navbar section */
-  #generalDlg:has(.verification-edit-form[action*="section"]) .modal-dialog {
+  #generalDlg:has(.verification-edit-form[action*="section"]) \
+  .modal-dialog {
     max-width: 70vw;
     width: 70vw;
   }
 
-  #generalDlg:has(.verification-edit-form[action*="section"]) .modal-body {
+  #generalDlg:has(.verification-edit-form[action*="section"]) \
+  .modal-body {
     max-height: 80vh;
     overflow-y: auto;
   }
 
+-# haml-lint:disable LineLength
 = form_with model: @item, url: lexicon_update_section_verification_path(@entry), method: :patch, local: false, html: { class: 'verification-edit-form' } do |f|
   = hidden_field_tag :section, 'az_navbar'
 

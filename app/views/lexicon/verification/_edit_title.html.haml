@@ -1,15 +1,18 @@
 :css
   /* Make modal wider for title section */
-  #generalDlg:has(.verification-edit-form[action*="section"]) .modal-dialog {
+  #generalDlg:has(.verification-edit-form[action*="section"]) \
+  .modal-dialog {
     max-width: 70vw;
     width: 70vw;
   }
 
-  #generalDlg:has(.verification-edit-form[action*="section"]) .modal-body {
+  #generalDlg:has(.verification-edit-form[action*="section"]) \
+  .modal-body {
     max-height: 80vh;
     overflow-y: auto;
   }
 
+-# haml-lint:disable LineLength
 = form_with model: @item, url: lexicon_update_section_verification_path(@entry), method: :patch, local: false, html: { class: 'verification-edit-form' } do |f|
   = hidden_field_tag :section, 'title'
 
@@ -32,7 +35,9 @@
 
     .form-group
       = f.label :gender, t('activerecord.attributes.lex_person.gender'), class: 'form-label'
-      = f.select :gender, options_for_select([[t('male'), 'male'], [t('female'), 'female'], [t('other'), 'other'], [t('unknown'), 'unknown']], @item.gender), { include_blank: true }, class: 'form-control'
+      -# haml-lint:disable LineLength
+      - gender_options = [[t('male'), 'male'], [t('female'), 'female'], [t('other'), 'other'], [t('unknown'), 'unknown']]
+      = f.select :gender, options_for_select(gender_options, @item.gender), { include_blank: true }, class: 'form-control'
 
   .form-check.mt-3
     = check_box_tag :mark_verified, '1', false, class: 'form-check-input'
