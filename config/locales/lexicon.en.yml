@@ -156,9 +156,13 @@ en:
         entry_verified: Entry verified successfully
         section_updated: Section updated successfully
         verification_incomplete: Verification incomplete - please verify all components
+        work_match_confirmed: Work matched to publication successfully
       edit:
         mark_as_verified: Mark this section as verified
         mark_all_works_verified: Mark all works as verified
         no_works: No works yet
         verified: Verified
         html_allowed: HTML is allowed
+        auto_matched_works:
+          one: "Auto-matched 1 work to publications based on title similarity"
+          other: "Auto-matched %{count} works to publications based on title similarity"
