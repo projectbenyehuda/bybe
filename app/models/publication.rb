@@ -4,6 +4,7 @@ class Publication < ApplicationRecord
   has_many :holdings, dependent: :destroy
   has_many :list_items, as: :item, dependent: :destroy
   has_one :volume, dependent: :nullify, class_name: 'Collection'
+  has_many :lex_person_works, dependent: :nullify
 
   enum :status, { todo: 0, scanned: 1, obtained: 2, uploaded: 3, irrelevant: 4, copyrighted: 5 }
 
