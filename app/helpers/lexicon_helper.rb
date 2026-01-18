@@ -21,8 +21,8 @@ module LexiconHelper
   end
 
   def render_person_work(work)
-    result = if work.publication.present?
-               link_to(work.publication.title, lexicon_entry_path(work.publication.entry))
+    result = if work.lex_publication.present?
+               link_to(work.lex_publication.title, lexicon_entry_path(work.lex_publication.entry))
              else
                work.title
              end
