@@ -162,9 +162,13 @@ he:
         entry_verified: הערך אומת בהצלחה
         section_updated: הקטע עודכן בהצלחה
         verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
+        work_match_confirmed: היצירה הותאמה לפרסום בהצלחה
       edit:
         mark_as_verified: סמן קטע זה כמאומת
         mark_all_works_verified: סמן את כל היצירות כמאומתות
         no_works: אין יצירות עדיין
         verified: אומת
         html_allowed: ניתן להשתמש ב-HTML
+        auto_matched_works:
+          one: "יצירה אחת הותאמה אוטומטית לפרסומים בהתבסס על דמיון בכותרת"
+          other: "%{count} יצירות הותאמו אוטומטית לפרסומים בהתבסס על דמיון בכותרת"
