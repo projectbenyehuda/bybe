@@ -30,8 +30,7 @@
                     input_html: { id: 'lex_person_work_publication_id',
                                   data: { collections: collections_by_pub.to_json } }
     :ruby
-      collection_volumes = authority.publications.includes(:volume)
-                                    .flat_map { |p| p.volume ? [p.volume] : [] }
+      collection_volumes = authority.publications.joins(:volume).includes(:volume).map(&:volume)
     = f.association :collection,
                     collection: collection_volumes,
                     label_method: :title,
@@ -47,7 +46,12 @@
     const collectionSelect = document.getElementById('lex_person_work_collection_id');
 
     if (publicationSelect && collectionSelect) {
-      const collectionsData = JSON.parse(publicationSelect.dataset.collections || '{}');
+      let collectionsData = {};
+      try {
+        collectionsData = JSON.parse(publicationSelect.dataset.collections || '{}');
+      } catch (e) {
+        console.error('Failed to parse collections data:', e);
+      }
 
       publicationSelect.addEventListener('change', function() {
         const publicationId = this.value;
@@ -55,6 +59,8 @@
         if (publicationId && collectionsData[publicationId]) {
           const collection = collectionsData[publicationId];
           collectionSelect.value = collection.id;
+        } else {
+          collectionSelect.value = '';
         }
       });
     }

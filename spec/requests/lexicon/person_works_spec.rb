@@ -61,6 +61,10 @@ describe '/lexicon/person_works' do
         )
       end
 
+      before do
+        person.update(authority: authority)
+      end
+
       it 'creates work with publication and collection associations' do
         expect { call }.to change { person.works.count }.by(1)
         expect(call).to eq(200)
@@ -105,6 +109,10 @@ describe '/lexicon/person_works' do
           publication_id: publication.id,
           collection_id: collection.id
         }
+      end
+
+      before do
+        person.update(authority: authority)
       end
 
       it 'updates work with publication and collection associations' do
