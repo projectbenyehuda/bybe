@@ -3198,3 +3198,13 @@ en:
     target_type_hint: "The target model class, e.g. Manifestation, Authority, FeaturedContent"
     target_id_hint: "The numeric ID of the target record"
     description_hint: "Optional note describing this mapping"
+
+  # Lexicon
+  lexicon:
+    person_works:
+      index:
+        add_work: Add Work
+      form:
+        no_authority_warning: Cannot associate works with publications without first associating this person with an Authority in the Ben-Yehuda database
+        select_publication: Select publication...
+        select_collection: Select collection...
