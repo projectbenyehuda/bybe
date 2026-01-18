@@ -12,10 +12,11 @@
   - if @item.is_a?(LexPerson)
     .form-group
       = label_tag :authority_autocomplete, t('activerecord.attributes.lex_person.authority'), class: 'form-label'
-      = text_field_tag 'authority_autocomplete',
-                       @item.authority&.name,
-                       class: 'form-control',
-                       data: { autocomplete: autocomplete_authority_name_and_aliases_path }
+      = autocomplete_field_tag 'authority_autocomplete',
+                               @item.authority&.name,
+                               autocomplete_authority_name_and_aliases_path,
+                               id_element: '#lex_person_authority_id',
+                               class: 'form-control'
       = f.hidden_field :authority_id, value: @item.authority_id
 
     .form-group
@@ -41,17 +42,7 @@
 
 :javascript
   (function() {
-    var $autocomplete = $('#authority_autocomplete');
-    var autocompleteUrl = $autocomplete.data('autocomplete');
-
-    if ($autocomplete.length && autocompleteUrl) {
-      $autocomplete.autocomplete({
-        source: autocompleteUrl,
-        minLength: 2,
-        select: function(event, ui) {
-          $('#lex_person_authority_id').val(ui.item.id);
-          return true;
-        }
-      });
-    }
+    $('#authority_autocomplete').bind('railsAutocomplete.select', function(event, data){
+      $('#lex_person_authority_id').val(data.item.id);
+    });
   })();
