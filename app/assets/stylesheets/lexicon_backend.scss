@@ -4,4 +4,9 @@
 @import 'verification';
 
 // We need this to make rails-autocomplete working in Bootstrap modals
-.ui-autocomplete { z-index:2000; }
+.ui-autocomplete {
+  z-index: 2000;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

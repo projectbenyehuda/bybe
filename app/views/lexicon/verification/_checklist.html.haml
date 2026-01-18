@@ -3,6 +3,12 @@
 
   %ul.checklist-items
     - if item.is_a?(LexPerson)
+      -# Authority
+      %li.checklist-item
+        %label
+          %input{type: 'checkbox', checked: checklist['authority']&.dig('verified'), disabled: true, data: {path: 'authority', 'section-id': 'section-authority'}}
+          = t('lexicon.verification.checklist.person.authority')
+
       -# Title
       %li.checklist-item
         %label
