@@ -563,9 +563,7 @@ class Collection < ApplicationRecord
   def lex_citations
     return [] if publication.blank?
 
-    LexCitation.joins('INNER JOIN lex_person_works ON lex_person_works.id = lex_citations.item_id')
-               .where(item_type: 'LexPersonWork', lex_person_works: { publication_id: publication.id })
-               .includes(:authors, :manifestation)
+    publication.lex_citations.includes(:authors, :manifestation)
   end
 
   # update status of ALL manifestations included in this collection, including in nested collections

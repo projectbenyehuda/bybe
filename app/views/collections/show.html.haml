@@ -173,7 +173,7 @@
               .by-card-content-v02
                 %ul
                   - @lex_citations.each do |citation|
-                    %li= raw render_citation(citation)
+                    %li= render_citation(citation)
 
           -# External links
           = render partial: 'shared/external_links_panel', locals: { linkable: @collection }
