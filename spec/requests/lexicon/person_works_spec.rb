@@ -8,6 +8,9 @@ describe '/lexicon/person_works' do
   end
 
   let(:person) { create(:lex_entry, :person).lex_item }
+  let(:authority) { create(:authority) }
+  let(:publication) { create(:publication, authority: authority) }
+  let(:collection) { create(:collection, publication: publication) }
 
   let!(:works) { create_list(:lex_person_work, 3, person: person) }
 
@@ -49,6 +52,28 @@ describe '/lexicon/person_works' do
         expect(call).to render_template(:new)
       end
     end
+
+    context 'when creating with publication and collection' do
+      let(:work_params) do
+        attributes_for(:lex_person_work).except(:person).merge(
+          publication_id: publication.id,
+          collection_id: collection.id
+        )
+      end
+
+      before do
+        person.update(authority: authority)
+      end
+
+      it 'creates work with publication and collection associations' do
+        expect { call }.to change { person.works.count }.by(1)
+        expect(call).to eq(200)
+
+        work = LexPersonWork.last
+        expect(work.publication).to eq(publication)
+        expect(work.collection).to eq(collection)
+      end
+    end
   end
 
   describe 'GET /lexicon/works/:id/edit' do
@@ -75,6 +100,27 @@ describe '/lexicon/person_works' do
       it 're-renders edit form' do
         expect(call).to eq(422)
         expect(call).to render_template(:edit)
+      end
+    end
+
+    context 'when updating with publication and collection' do
+      let(:work_params) do
+        {
+          publication_id: publication.id,
+          collection_id: collection.id
+        }
+      end
+
+      before do
+        person.update(authority: authority)
+      end
+
+      it 'updates work with publication and collection associations' do
+        expect(call).to eq(200)
+
+        work.reload
+        expect(work.publication).to eq(publication)
+        expect(work.collection).to eq(collection)
       end
     end
   end
