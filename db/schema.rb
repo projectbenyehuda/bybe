@@ -641,7 +641,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_17_142237) do
     t.text "notes"
     t.string "subject"
     t.bigint "lex_person_id", null: false
-    t.integer "status"
+    t.integer "status", null: false
     t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"

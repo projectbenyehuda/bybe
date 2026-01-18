@@ -79,7 +79,7 @@
                 %td= w.publication_date
                 %td
                   - if w.publication
-                    = link_to w.publication.title, '#', title: w.publication.title
+                    %span{ title: w.publication.title }= w.publication.title
                 %td
                   - if w.collection
                     = link_to w.collection.title, collection_path(w.collection),

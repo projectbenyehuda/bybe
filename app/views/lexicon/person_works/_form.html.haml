@@ -55,6 +55,8 @@
         if (publicationId && collectionsData[publicationId]) {
           const collection = collectionsData[publicationId];
           collectionSelect.value = collection.id;
+        } else {
+          collectionSelect.value = '';
         }
       });
     }
