@@ -2824,3 +2824,13 @@ en:
   total_collections_including_author: Total collections involving author
   collapse_all_sections: Collapse all sections
   expand_all_sections: Expand all sections
+
+  # Lexicon
+  lexicon:
+    person_works:
+      index:
+        add_work: Add Work
+      form:
+        no_authority_warning: Cannot associate works with publications without first associating this person with an Authority in the Ben-Yehuda database
+        select_publication: Select publication...
+        select_collection: Select collection...

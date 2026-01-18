@@ -1,3 +1,75 @@
+-# Section 0: Authority Association
+.section.verification-section{id: 'section-authority', class: checklist['authority']&.dig('verified') ? 'verified' : 'not-verified'}
+  .section-header
+    %h5= t('activerecord.attributes.lex_person.authority')
+    .verification-badge{class: checklist['authority']&.dig('verified') ? 'verified' : 'not-verified'}
+      = checklist['authority']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+  .section-content
+    #authority-display
+      %p
+        - if item.authority
+          = link_to item.authority.name, authority_path(item.authority), target: '_blank', rel: 'noopener'
+        - else
+          %span.text-muted= t('none')
+    #authority-edit{ style: 'display: none;' }
+      = form_with model: item, url: lexicon_update_section_verification_path(entry), method: :patch, local: false, html: { id: 'authority-form' } do |f|
+        = hidden_field_tag :section, 'authority'
+        .form-group
+          = label_tag :authority_autocomplete, t('activerecord.attributes.lex_person.authority'), class: 'form-label'
+          = autocomplete_field_tag 'authority_autocomplete',
+                                   item.authority&.name,
+                                   autocomplete_authority_name_and_aliases_path,
+                                   id_element: '#lex_person_authority_id',
+                                   class: 'form-control'
+          = f.hidden_field :authority_id, value: item.authority_id
+        .mt-2
+          %button.btn.btn-sm.btn-secondary{type: 'button', onclick: 'cancelAuthorityEdit()'}
+            = t('cancel')
+          = f.submit t('save'), class: 'btn btn-sm btn-primary'
+  .section-actions
+    %button.btn.btn-sm.btn-outline-primary#authority-edit-btn{onclick: 'toggleAuthorityEdit()'}
+      ✏️
+      = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['authority']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'authority' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
+
+:javascript
+  function toggleAuthorityEdit() {
+    $('#authority-display').hide();
+    $('#authority-edit').show();
+    $('#authority-edit-btn').prop('disabled', true);
+  }
+
+  function cancelAuthorityEdit() {
+    $('#authority-display').show();
+    $('#authority-edit').hide();
+    $('#authority-edit-btn').prop('disabled', false);
+  }
+
+  $(document).ready(function() {
+    $('#authority_autocomplete').bind('railsAutocomplete.select', function(event, data){
+      $('#lex_person_authority_id').val(data.item.id);
+    });
+
+    // Fix autocomplete positioning - append to the form and position correctly
+    $('#authority_autocomplete').on('autocompletefocus autocompleteopen', function() {
+      var autocomplete = $(this).autocomplete('widget');
+      autocomplete.css({
+        'position': 'absolute',
+        'top': $(this).offset().top + $(this).outerHeight(),
+        'left': $(this).offset().left,
+        'width': $(this).outerWidth()
+      });
+    });
+  });
+
+  $('#authority-form').on('ajax:success', function(event) {
+    const [data, status, xhr] = event.detail;
+    cancelAuthorityEdit();
+    location.reload();
+  });
+
 -# Section 1: Title and Life Years
 .section.verification-section{id: 'section-title', class: checklist['title']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
