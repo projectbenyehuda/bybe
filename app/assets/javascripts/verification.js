@@ -136,8 +136,17 @@ function initVerification() {
     });
 
     // Handle hide/show verified items toggle
-    $('#hide-verified-toggle').on('change', function() {
-        const hideVerified = $(this).is(':checked');
+    const hideVerifiedToggle = $('#hide-verified-toggle');
+
+    // Restore checkbox state from localStorage
+    const savedHideVerified = localStorage.getItem('hideVerifiedItems') === 'true';
+    if (savedHideVerified) {
+        hideVerifiedToggle.prop('checked', true);
+    }
+
+    // Apply hiding behavior based on current checkbox state (including restored state)
+    function applyHideVerifiedState() {
+        const hideVerified = hideVerifiedToggle.is(':checked');
 
         if (hideVerified) {
             // Hide verified sections in the migrated entry view
@@ -152,6 +161,20 @@ function initVerification() {
             // Show all items
             $('.hidden-verified').removeClass('hidden-verified');
         }
+    }
+
+    // Apply state on page load
+    applyHideVerifiedState();
+
+    // Handle checkbox changes
+    hideVerifiedToggle.on('change', function() {
+        const hideVerified = $(this).is(':checked');
+
+        // Save state to localStorage
+        localStorage.setItem('hideVerifiedItems', hideVerified);
+
+        // Apply the hiding/showing behavior
+        applyHideVerifiedState();
     });
 }
 
