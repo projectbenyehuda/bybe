@@ -114,6 +114,7 @@ en:
         title: Verification Checklist
         overall_notes: Overall Notes
         person:
+          authority: Authority
           title: Title
           life_years: Life Years
           bio: Biography
