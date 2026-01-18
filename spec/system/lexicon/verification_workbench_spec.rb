@@ -442,6 +442,26 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
         expect(title_li[:class]).to include('hidden-verified')
       end
     end
+
+    it 'persists the hide verified state across page reloads' do
+      # Check the toggle
+      within('.verification-header') do
+        find('#hide-verified-toggle').click
+      end
+
+      # Verified items should be hidden
+      expect(page).to have_css('#section-title.verified.hidden-verified', visible: :hidden)
+
+      # Reload the page
+      visit "/lex/verification/#{entry.id}"
+
+      # Toggle should still be checked
+      expect(page).to have_css('#hide-verified-toggle:checked')
+
+      # Verified items should still be hidden after reload
+      expect(page).to have_css('#section-title.verified.hidden-verified', visible: :hidden)
+      expect(page).to have_css('.citation-card.verified.hidden-verified', visible: :hidden)
+    end
   end
 
   describe 'Profile Image Selection', :js do
