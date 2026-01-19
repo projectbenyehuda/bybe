@@ -1919,6 +1919,7 @@ en:
   tags: Tags
   tags_count: Tags Count
   lex_citations_about_collection: Citations about this collection
+  lex_citations_about_author: Citations about this author
   task: Task
   tasks: Tasks
   template: Template
