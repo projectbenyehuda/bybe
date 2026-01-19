@@ -51,7 +51,7 @@ class ProofsController < ApplicationController
     @proofs = if @status.nil?
                 # Display all unresolved proofs. We order them by item, so all unresolved proofs
                 # about same work could be processed together
-                Proof.where.not(status: :spam).order(:item_type, :item_id)
+                Proof.where.not(status: :spam).order(updated_at: :desc)
               else
                 Proof.where(status: @status).order(updated_at: :asc)
               end
