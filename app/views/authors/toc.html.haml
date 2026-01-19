@@ -187,6 +187,17 @@
                     %div= t(:suggest_new_tag)
           
           = render partial: 'aboutnesses', cached: true, locals: { author: @author }
+
+          -# LexCitations
+          - if @lex_citations.any?
+            .by-card-v02.left-side-card-v02
+              .by-card-header-left-v02
+                %span.headline-1-v02= t(:lex_citations_about_author)
+              .by-card-content-v02
+                %ul
+                  - @lex_citations.each do |citation|
+                    %li= render_citation(citation)
+
           = render partial: 'shared/external_links_panel', locals: { linkable: @author }
 
           .by-card-v02#text-volunteers-mobile
