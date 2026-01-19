@@ -49,6 +49,10 @@ en:
           attributes:
             manifestation:
               taken: Text is already in the anthology
+        lex_citation:
+          attributes:
+            person_work:
+              belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
     attributes:
       authority:
         other_designation: Other designation
@@ -100,7 +104,6 @@ en:
         from_publication: From Publication
         authors: Authors
         pages: Pages
-        raw: RAW citation markup from legacy website
       lex_file:
         error_message: Error message
         fname: File name

@@ -16,11 +16,11 @@ module Lexicon
     end
 
     def new
-      @citation = @person.citations.build(status: :manual)
+      @citation = @person.citations.build
     end
 
     def create
-      @citation = @person.citations.build(lex_citation_params.merge(status: :manual))
+      @citation = @person.citations.build(lex_citation_params)
 
       return if @citation.save
 
@@ -37,10 +37,6 @@ module Lexicon
 
     def destroy
       @citation.destroy!
-    end
-
-    def approve
-      @citation.status_approved!
     end
 
     private

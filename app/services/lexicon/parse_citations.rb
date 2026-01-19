@@ -70,8 +70,6 @@ PROMPT
         subject = subject_works['subject']
         subject_works['works'].each do |work|
           citation = LexCitation.new(
-            status: :ai_parsed,
-            raw: sanitize_smart_quotes(work['raw']),
             subject: sanitize_smart_quotes(subject),
             title: sanitize_smart_quotes(work['title']),
             from_publication: sanitize_smart_quotes(work['from_publication']),

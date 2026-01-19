@@ -53,6 +53,10 @@ he:
           attributes:
             manifestation:
               taken: היצירה הנוכחית כבר מופיעה במקראה הזאת.
+        lex_citation:
+          attributes:
+            person_work:
+              belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
     attributes:
       authority:
         other_designation: כינויים אחרים
@@ -106,7 +110,6 @@ he:
         from_publication: From Publication
         authors: Authors
         pages: Pages
-        raw: RAW citation markup from legacy website
       lex_file:
         error_message: Error message
         fname: שם קובץ

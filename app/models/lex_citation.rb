@@ -9,24 +9,25 @@ class LexCitation < ApplicationRecord
   # (it can be about this person, or about one of his/her works)
   belongs_to :person, class_name: 'LexPerson', inverse_of: :citations, foreign_key: :lex_person_id
 
-  # optional item this citation is about (can be null if citation is general about the person)
-  belongs_to :item, inverse_of: :citations_about, polymorphic: true, optional: true
+  # optional LexPersonWork this citation is about (can be null if citation is general about the person)
+  belongs_to :person_work,
+             class_name: 'LexPersonWork', inverse_of: :citations_about,
+             foreign_key: :lex_person_work_id, optional: true
 
   belongs_to :manifestation, optional: true # manifestation representing this citation (if present in BYP)
 
   has_many :authors, class_name: 'LexCitationAuthor', inverse_of: :citation, dependent: :destroy
 
-  # This status column is temporary and should be removed in the future after migration from PHP will be completed
-  enum :status,
-       {
-         raw: 0, # markup copied from PHP file (need to be parsed and splitted into separate columns)
-         approved: 1, # markup parsed and stored in separate columns
-         manual: 2, # created manually (no raw markup existis)
-         ai_parsed: 3 # parsed using AI service
-       }, prefix: true
+  validates :title, presence: true
 
-  validates :raw, absence: true, if: :status_manual?
-  validates :raw, presence: true, unless: :status_manual?
+  validate :person_work_belongs_to_same_person
 
-  validates :title, presence: true, if: :status_manual?
+  private
+
+  def person_work_belongs_to_same_person
+    return if person_work.nil?
+    return if person_work.lex_person_id == lex_person_id
+
+    errors.add(:person_work, :invalid, message: :belongs_to_different_person)
+  end
 end

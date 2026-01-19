@@ -1,13 +1,6 @@
 - path = @citation.new_record? ? lexicon_person_citations_path(@person) : lexicon_citation_path(@citation)
 = simple_form_for(@citation, url: path, remote: true) do |f|
   = f.error_notification
-  = f.input :status do
-    .form-control
-      .badge.badge-primary= @citation.status
-  - unless @citation.status_manual?
-    = f.input :raw do
-      %br
-      = raw @citation.raw
   = f.input :subject
   = f.input :title
   = f.input :from_publication
