@@ -15,6 +15,10 @@ class LexPerson < ApplicationRecord
 
   belongs_to :authority, optional: true # link to an Authority record representing this person in BYP
 
+  def general_citations
+    citations.where(item: nil).includes(:authors, :manifestation)
+  end
+
   def intellectual_property
     copyrighted? ? 'copyrighted' : 'public_domain'
   end

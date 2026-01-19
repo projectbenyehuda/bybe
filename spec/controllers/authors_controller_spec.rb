@@ -124,6 +124,44 @@ describe AuthorsController do
           expect(request).to be_successful
         end
       end
+
+      context 'when author has lex_person with general citations' do
+        let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
+        let(:lex_person) { lex_entry.lex_item }
+        let!(:citation) { create(:lex_citation, person: lex_person, item: nil) }
+
+        before do
+          author.update(lex_person: lex_person)
+        end
+
+        it 'assigns @lex_citations with general citations only' do
+          request
+          expect(assigns(:lex_citations)).to eq([citation])
+        end
+      end
+
+      context 'when author has lex_person with work-specific citation' do
+        let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
+        let(:lex_person) { lex_entry.lex_item }
+        let(:lex_person_work) { create(:lex_person_work, person: lex_person) }
+        let!(:work_citation) { create(:lex_citation, person: lex_person, item: lex_person_work, title: 'About a Work') }
+
+        before do
+          author.update(lex_person: lex_person)
+        end
+
+        it 'does not include work-specific citations in @lex_citations' do
+          request
+          expect(assigns(:lex_citations)).to eq([])
+        end
+      end
+
+      context 'when author has no lex_person' do
+        it 'assigns empty @lex_citations' do
+          request
+          expect(assigns(:lex_citations)).to eq([])
+        end
+      end
     end
 
     describe '#whatsnew_popup' do
