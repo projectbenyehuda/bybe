@@ -488,6 +488,7 @@ class AuthorsController < ApplicationController
       if @author.lex_person.present? && @author.lex_person.entry.status_published?
         @lexicon_entry = @author.lex_person.entry
       end
+      @lex_citations = @author.lex_person&.general_citations || []
       prep_user_content(:author)
       @scrollspy_target = 'genrenav'
     else
