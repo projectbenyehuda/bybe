@@ -70,6 +70,38 @@ describe BybeUtils do
     end
   end
 
+  describe '#salt_footnote_link' do
+    let(:footnote_link) { '<a href="#fn:1" id="fnref:1" title="see footnote" class="footnote"><sup>1</sup></a>' }
+
+    it 'salts the href attribute' do
+      result = instance.salt_footnote_link(footnote_link, 5)
+      expect(result).to include('href="#fn:5_1"')
+    end
+
+    it 'salts the id attribute' do
+      result = instance.salt_footnote_link(footnote_link, 5)
+      expect(result).to include('id="fnref:5_1"')
+    end
+
+    it 'preserves other attributes' do
+      result = instance.salt_footnote_link(footnote_link, 5)
+      expect(result).to include('title="see footnote"')
+      expect(result).to include('class="footnote"')
+      expect(result).to include('<sup>1</sup>')
+    end
+
+    it 'returns nil when input is nil' do
+      result = instance.salt_footnote_link(nil, 5)
+      expect(result).to be_nil
+    end
+
+    it 'handles string nonces' do
+      result = instance.salt_footnote_link(footnote_link, 'test')
+      expect(result).to include('href="#fn:test_1"')
+      expect(result).to include('id="fnref:test_1"')
+    end
+  end
+
   describe '#kwic_concordance' do
     context 'with basic English text' do
       let(:input) do

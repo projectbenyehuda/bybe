@@ -417,7 +417,7 @@ class CollectionsController < ApplicationController
 
         html = ci.item.toc_html
         @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false,
-                   ci.genre, counter[:value], ci, 0, []]
+                   ci.genre, counter[:value], ci, 0, [], nil] # nil for footnote (TOC items don't have footnotes)
         counter[:value] += 1
       end
     else
@@ -454,7 +454,7 @@ class CollectionsController < ApplicationController
 
         # Add the sub-collection header (without HTML content - will be rendered differently in view)
         @htmls << [ci.title, filtered_authorities, nil, false, ci.genre, counter[:value], ci,
-                   nesting_level, parent_authorities]
+                   nesting_level, parent_authorities, nil] # nil for footnote
         counter[:value] += 1
 
         # Build the new parent_authorities list for children of this sub-collection
@@ -467,9 +467,20 @@ class CollectionsController < ApplicationController
       else
         # This is a manifestation or other item
         html = ci.to_html
+
+        # Extract first footnote reference if this is a manifestation
+        title_footnote = nil
+        if ci.item.present? && ci.item_type == 'Manifestation'
+          footnote_result = ExtractFirstFootnoteReference.call(ci.item.markdown, html)
+          html = footnote_result[:cleaned_html]
+          title_footnote = footnote_result[:footnote_html]
+          # Salt the footnote link to match the salted body
+          title_footnote = salt_footnote_link(title_footnote, counter[:value]) if title_footnote.present?
+        end
+
         @htmls << [ci.title, ci.involved_authorities,
                    html.present? ? footnotes_noncer(html, counter[:value]) : '',
-                   false, ci.genre, counter[:value], ci, nesting_level, parent_authorities]
+                   false, ci.genre, counter[:value], ci, nesting_level, parent_authorities, title_footnote]
         counter[:value] += 1
       end
     end

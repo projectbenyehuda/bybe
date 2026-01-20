@@ -19,7 +19,8 @@ describe ManifestationHtmlWithChapters do
       it 'returns a hash with expected data' do
         expect(result).to eq(
           html: expected_html,
-          chapters: expected_chapters
+          chapters: expected_chapters,
+          title_footnote: expected_title_footnote
         )
       end
     end
@@ -34,6 +35,7 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [] }
+      let(:expected_title_footnote) { nil }
 
       it_behaves_like 'produces expected result'
     end
@@ -77,6 +79,7 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '5'], ['Chapter 3', '8']] }
+      let(:expected_title_footnote) { nil }
 
       it_behaves_like 'produces expected result'
     end
@@ -117,6 +120,7 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Chapter 1', '2'], ['Part 2', '5'], ['Chapter 1', '7']] }
+      let(:expected_title_footnote) { nil }
 
       it_behaves_like 'produces expected result'
     end
@@ -166,6 +170,7 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '10']] }
+      let(:expected_title_footnote) { nil }
 
       it_behaves_like 'produces expected result'
     end
@@ -218,6 +223,7 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Chapter 1', '2'], ['Chapter 2', '5']] }
+      let(:expected_title_footnote) { nil }
 
       it_behaves_like 'produces expected result'
     end
@@ -252,6 +258,41 @@ describe ManifestationHtmlWithChapters do
         HTML
       end
       let(:expected_chapters) { [['Emphasized Chapter', '2'], ['Chapter with bold', '5']] }
+      let(:expected_title_footnote) { nil }
+
+      it_behaves_like 'produces expected result'
+    end
+
+    context 'when markdown starts with standalone footnote reference' do
+      let(:markdown) do
+        <<~MD
+          [^ftn1]
+
+          The quick brown fox jumps over the lazy dog.
+
+          [^ftn1]: This is a footnote at the beginning
+        MD
+      end
+      let(:expected_html) do
+        <<~HTML.strip
+          <p>The quick brown fox jumps over the lazy dog.</p>
+
+          <div class="footnotes">
+          <hr />
+          <ol>
+
+          <li id="fn:1">
+          <span>This is a footnote at the beginning <a href="#fnref:1" title="return to body" class="reversefootnote">&#160;&#8617;&#xfe0e;</a></span>
+          </li>
+
+          </ol>
+          </div>
+        HTML
+      end
+      let(:expected_chapters) { [] }
+      let(:expected_title_footnote) do
+        '<a href="#fn:1" id="fnref:1" title="see footnote" class="footnote"><sup>1</sup></a>'
+      end
 
       it_behaves_like 'produces expected result'
     end
