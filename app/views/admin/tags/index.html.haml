@@ -49,7 +49,7 @@
                 %td
                   %span.badge{ class: "status-#{tag.status}" }= t("admin.tags.status_#{tag.status}")
                 %td
-                  = link_to tag.taggings.count, admin_taggings_path(tag_id: tag.id)
+                  = link_to tag.taggings_count, admin_taggings_path(tag_id: tag.id)
                 %td= tag.creator&.name || t('admin.tags.unknown_creator')
                 %td= tag.created_at.strftime('%d/%m/%Y')
                 %td
