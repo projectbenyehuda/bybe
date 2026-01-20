@@ -1,0 +1,47 @@
+.backend
+  .by-card-v02
+    .by-card-header-v02
+      .headline-1-v02= t('admin.taggings.show.title', id: @tagging.id)
+
+    .by-card-content-v02
+      .row
+        .col-md-6
+          %p
+            %strong= t('admin.taggings.show.id')
+            = @tagging.id
+
+          %p
+            %strong= t('admin.taggings.show.tag')
+            = link_to @tagging.tag.name, admin_tag_path(@tagging.tag)
+
+          %p
+            %strong= t('admin.taggings.show.tagged_item')
+            - case @tagging.taggable_type
+            - when 'Manifestation'
+              = link_to @tagging.taggable.title, manifestation_path(@tagging.taggable), target: '_blank', rel: 'noopener'
+              %br
+              %small.text-muted= t('admin.taggings.type_manifestation')
+            - when 'Authority'
+              = link_to @tagging.taggable.name, author_path(@tagging.taggable), target: '_blank', rel: 'noopener'
+              %br
+              %small.text-muted= t('admin.taggings.type_authority')
+            - when 'Collection'
+              = link_to @tagging.taggable.title, collection_path(@tagging.taggable), target: '_blank', rel: 'noopener'
+              %br
+              %small.text-muted= t('admin.taggings.type_collection')
+
+          %p
+            %strong= t('admin.taggings.show.status')
+            %span.badge{ class: "status-#{@tagging.status}" }= t("admin.taggings.status_#{@tagging.status}")
+
+          %p
+            %strong= t('admin.taggings.show.suggester')
+            = @tagging.suggester&.name || t('admin.taggings.unknown_suggester')
+
+          %p
+            %strong= t('admin.taggings.show.created_at')
+            = @tagging.created_at.strftime('%d/%m/%Y %H:%M')
+
+      .mt-4
+        = link_to t(:back_to_list), admin_taggings_path, class: 'by-button-secondary-v02'
+        = link_to t(:destroy), admin_tagging_path(@tagging), method: :delete, data: { confirm: t('admin.taggings.delete_confirm') }, class: 'by-button-secondary-v02'

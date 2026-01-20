@@ -1,0 +1,61 @@
+.backend{style: 'height: 100vh; display: flex; flex-direction: column;'}
+  .by-card-v02{style: 'flex: 1; display: flex; flex-direction: column; min-height: 0;'}
+    .by-card-header-v02
+      .headline-1-v02= t('admin.tags.index.title')
+
+    .by-card-content-v02{style: 'flex: 1; display: flex; flex-direction: column; overflow: hidden;'}
+      / Filter Form
+      .filter-form
+        = form_with url: admin_tags_path, method: :get, local: true do |f|
+          .form-row
+            .form-group
+              = label_tag :q, t('admin.tags.search_label')
+              = text_field_tag :q, params[:q], class: 'form-control', placeholder: t('admin.tags.search_placeholder')
+
+            .form-group
+              = label_tag :status, t('admin.tags.status_label')
+              = select_tag :status, options_for_select([[t('admin.tags.status_all'), ''], [t('admin.tags.status_pending'), 'pending'], [t('admin.tags.status_approved'), 'approved'], [t('admin.tags.status_rejected'), 'rejected'], [t('admin.tags.status_escalated'), 'escalated']], params[:status].presence || 'approved'), class: 'form-control'
+
+            .form-group
+              = submit_tag t('admin.tags.filter_button'), class: 'by-button-v02'
+              = link_to t('admin.tags.clear_filters'), admin_tags_path, class: 'by-button-secondary-v02'
+
+      / Create New Tag Button
+      .mb-3
+        = link_to t('admin.tags.create_new'), new_admin_tag_path, class: 'by-button-v02'
+
+      / Tags Table
+      .management.management-content{style: 'flex: 1; overflow-y: auto; margin-top: 1rem;'}
+        %table
+          %thead
+            %tr
+              %th{style: 'width: 5%;'}= t('admin.tags.table.id')
+              %th{style: 'width: 20%;'}= t('admin.tags.table.name')
+              %th{style: 'width: 15%;'}= t('admin.tags.table.aliases')
+              %th{style: 'width: 10%;'}= t('admin.tags.table.status')
+              %th{style: 'width: 10%;'}= t('admin.tags.table.taggings_count')
+              %th{style: 'width: 15%;'}= t('admin.tags.table.creator')
+              %th{style: 'width: 10%;'}= t('admin.tags.table.created_at')
+              %th{style: 'width: 15%;'}= t('admin.tags.table.actions')
+          %tbody
+            - @tags.each do |tag|
+              %tr{ id: "tag-#{tag.id}", class: tag.status == 'rejected' ? 'rejected' : '' }
+                %td= tag.id
+                %td= link_to tag.name, admin_tag_path(tag)
+                %td
+                  %small.text-muted
+                    - aliases = tag.tag_names.reject { |tag_name| tag_name.name == tag.name }.map(&:name)
+                    = aliases.any? ? aliases.join(', ') : '-'
+                %td
+                  %span.badge{ class: "status-#{tag.status}" }= t("admin.tags.status_#{tag.status}")
+                %td
+                  = link_to tag.taggings_count, admin_taggings_path(tag_id: tag.id)
+                %td= tag.creator&.name || t('admin.tags.unknown_creator')
+                %td= tag.created_at.strftime('%d/%m/%Y')
+                %td
+                  .action-buttons
+                    = link_to t(:edit), edit_admin_tag_path(tag), class: 'ghost-btn'
+                    = link_to t(:destroy), admin_tag_path(tag), method: :delete, remote: true, data: { confirm: t('admin.tags.delete_confirm') }, class: 'ghost-btn'
+
+      / Pagination
+      != paginate @tags

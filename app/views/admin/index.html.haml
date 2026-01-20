@@ -59,6 +59,10 @@
     - if current_user.has_bit?('moderate_tags')
       = link_to t(:moderate_tags), tag_moderation_path
       %p= t(:pending_tags_and_taggings, pending_tags: @pending_tags, pending_taggings: @pending_taggings)
+      %p
+        = link_to t('admin.tags.management_link'), admin_tags_path
+        |
+        = link_to t('admin.taggings.management_link'), admin_taggings_path
     - if current_user.has_bit?('link_moderation')
       = link_to t('moderate_links.title'), moderate_external_links_path
       %p= t('moderate_links.dashboard_count', count: @pending_links)
