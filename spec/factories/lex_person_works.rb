@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :lex_person_work do
-    person { association :lex_person, works_count: 0 }
+    person { create(:lex_entry, :person).lex_item }
     publication_date { Random.rand(1950..2026).to_s }
     publication_place { Faker::Address.city }
     publisher { Faker::Name.name }

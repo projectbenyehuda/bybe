@@ -151,7 +151,7 @@
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
     - if item.citations.any?
-      - item.citations.group_by(&:subject).each do |subject, citations|
+      - item.citations.group_by(&:subject_title).each do |subject, citations|
         .citation-group.mb-3
           %h6.subject-header= subject.present? ? subject : 'General'
           - citations.each do |citation|

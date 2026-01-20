@@ -11,10 +11,9 @@ RSpec.describe 'Collection LexCitations', type: :request do
   let!(:lex_citation) do
     create(:lex_citation,
            person: lex_person,
-           item: lex_person_work,
+           person_work: lex_person_work,
            title: 'Test Citation',
-           from_publication: 'Test Publication',
-           status: :manual)
+           from_publication: 'Test Publication')
   end
 
   describe 'GET /collections/:id' do
