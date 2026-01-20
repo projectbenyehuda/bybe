@@ -31,14 +31,30 @@
         = @w.origlang_title
         - if @m.external_links.where(linktype: ExternalLink.linktypes[:source_text]).any?
           = " (#{ @m.external_links.where(linktype: ExternalLink.linktypes[:source_text]).first.url.present? ? link_to(t(:in_orig_lang), @m.external_links.where(linktype: ExternalLink.linktypes[:source_text]).first.url, target: '_blank') : ''})"
-  - if @illustrators.size > 0
+  - if @illustrators.present?
     .headline-3-v02
-      = "#{t(:illustrations_by)}: "
+      = "#{t('involved_authority.abstract_roles.illustrator')}: "
       != @illustrators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
-  - if @editors.size > 0
+  - if @photographers.present?
     .headline-3-v02
-      = "#{t(:editing_or_compilation)}: "
+      = "#{t('involved_authority.abstract_roles.photographer')}: "
+      != @photographers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+  - if @designers.present?
+    .headline-3-v02
+      = "#{t('involved_authority.abstract_roles.designer')}: "
+      != @designers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+  - if @editors.present?
+    .headline-3-v02
+      = "#{t('involved_authority.abstract_roles.editor')}: "
       != @editors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+  - if @contributors.present?
+    .headline-3-v02
+      = "#{t('involved_authority.abstract_roles.contributor')}: "
+      != @contributors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+  - if @others.present?
+    .headline-3-v02
+      = "#{t('involved_authority.abstract_roles.other')}: "
+      != @others.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
   - if @volumes.present? && !@single_text_volume
     - @volumes.each do |v|
       = link_to "#{t(:inside)} #{v.title}#{v.subtitle.present? ? ': '+v.subtitle : ''}", collection_path(v)
