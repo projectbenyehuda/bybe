@@ -15,7 +15,8 @@ module Admin
 
       # Filter by search query
       if params[:q].present?
-        search_term = "%#{params[:q]}%"
+        sanitized_query = ActiveRecord::Base.sanitize_sql_like(params[:q])
+        search_term = "%#{sanitized_query}%"
         @tags = @tags.joins(:tag_names).where('tag_names.name LIKE ?', search_term).distinct
       end
 

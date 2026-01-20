@@ -14,7 +14,8 @@ module Admin
 
       # Filter by tagged item title (search across polymorphic associations)
       if params[:item_q].present?
-        search_term = "%#{params[:item_q]}%"
+        sanitized_query = ActiveRecord::Base.sanitize_sql_like(params[:item_q])
+        search_term = "%#{sanitized_query}%"
         # For polymorphic associations, we need to search separately by type
         manifestation_ids = Manifestation.where('title LIKE ?', search_term).pluck(:id)
         authority_ids = Authority.where('name LIKE ?', search_term).pluck(:id)
@@ -32,7 +33,8 @@ module Admin
 
       # Filter by tag name
       if params[:tag_q].present?
-        tag_search = "%#{params[:tag_q]}%"
+        sanitized_tag = ActiveRecord::Base.sanitize_sql_like(params[:tag_q])
+        tag_search = "%#{sanitized_tag}%"
         @taggings = @taggings.joins(tag: :tag_names)
                              .where('tag_names.name LIKE ?', tag_search)
                              .distinct
