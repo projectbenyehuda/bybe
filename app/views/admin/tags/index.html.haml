@@ -44,7 +44,7 @@
                 %td= link_to tag.name, admin_tag_path(tag)
                 %td
                   %small.text-muted
-                    - aliases = tag.tag_names.where.not(name: tag.name).pluck(:name)
+                    - aliases = tag.tag_names.reject { |tag_name| tag_name.name == tag.name }.map(&:name)
                     = aliases.any? ? aliases.join(', ') : '-'
                 %td
                   %span.badge{ class: "status-#{tag.status}" }= t("admin.tags.status_#{tag.status}")
