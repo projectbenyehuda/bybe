@@ -16,8 +16,32 @@
               != @m.authors.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
             - if @e.translation && @e.translators.size > 0
               .headline-3-v02
-                = "#{t(:translation)}: "
+                = "#{t('involved_authority.abstract_roles.translator')}: "
                 != @translators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+            - if @illustrators.present?
+              .headline-3-v02
+                = "#{t('involved_authority.abstract_roles.illustrator')}: "
+                != @illustrators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+            - if @photographers.present?
+              .headline-3-v02
+                = "#{t('involved_authority.abstract_roles.photographer')}: "
+                != @photographers.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+            - if @designers.present?
+              .headline-3-v02
+                = "#{t('involved_authority.abstract_roles.designer')}: "
+                != @designers.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+            - if @editors.present?
+              .headline-3-v02
+                = "#{t('involved_authority.abstract_roles.editor')}: "
+                != @editors.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+            - if @contributors.present?
+              .headline-3-v02
+                = "#{t('involved_authority.abstract_roles.contributor')}: "
+                != @contributors.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+            - if @others.present?
+              .headline-3-v02
+                = "#{t('involved_authority.abstract_roles.other')}: "
+                != @others.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
             .rm-field-label &#x5E4;&#x5E8;&#x5E7;:
             %button.plainbutton.chapterbutton#prev_chapter= '('
             %select#chapters{name: 'chapters'}
