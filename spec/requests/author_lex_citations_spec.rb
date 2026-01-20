@@ -9,17 +9,17 @@ RSpec.describe 'Author LexCitations display', type: :request do
   context 'when author has lex_person with general citations' do
     let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
     let(:lex_person) { lex_entry.lex_item }
-    let!(:citation1) { create(:lex_citation, person: lex_person, item: nil, title: 'General Citation') }
+    let!(:citation1) { create(:lex_citation, person: lex_person, title: 'General Citation') }
     let!(:citation2) do
       lex_person_work = create(:lex_person_work, person: lex_person)
-      create(:lex_citation, person: lex_person, item: lex_person_work, title: 'Work Citation')
+      create(:lex_citation, person: lex_person, person_work: lex_person_work, title: 'Work Citation')
     end
 
     before do
       author.update(lex_person: lex_person)
     end
 
-    it 'displays only general citations (item nil)' do
+    it 'displays only general citations (work is nil)' do
       get authority_path(author)
       expect(response.body).to include('General Citation')
       expect(response.body).not_to include('Work Citation')
