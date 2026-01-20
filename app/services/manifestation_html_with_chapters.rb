@@ -26,6 +26,11 @@ class ManifestationHtmlWithChapters < ApplicationService
     html = MarkdownToHtml.call(lines.join)
     html = MakeHeadingIdsUnique.call(html)
 
+    # Extract first footnote reference if present
+    footnote_result = ExtractFirstFootnoteReference.call(manifestation.markdown, html)
+    html = footnote_result[:cleaned_html]
+    footnote_html = footnote_result[:footnote_html]
+
     # add permalinks
     permalink_base_url = manifestation_url(manifestation)
     html.gsub!(%r{<h2(.*?) id="(.*?)"(.*?)>(.*?)</h2>},
@@ -39,7 +44,8 @@ class ManifestationHtmlWithChapters < ApplicationService
 
     {
       html: html,
-      chapters: chapters
+      chapters: chapters,
+      title_footnote: footnote_html
     }
   end
 end

@@ -814,6 +814,15 @@ module BybeUtils
     ret
   end
 
+  def salt_footnote_link(footnote_html, nonce)
+    # Apply the same salting as footnotes_noncer to a single footnote link
+    return nil if footnote_html.nil?
+
+    footnote_html.gsub(/<a href="#fn:(\d+)" id="fnref:(\d+)"/m) do |_fn|
+      "<a href=\"#fn:#{nonce}_#{::Regexp.last_match(1)}\" id=\"fnref:#{nonce}_#{::Regexp.last_match(2)}\""
+    end
+  end
+
   def pub_title_for_comparison(s)
     ret = if s['/'].nil?
             s[0..[10, s.length].min]

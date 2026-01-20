@@ -1169,6 +1169,7 @@ class ManifestationController < ApplicationController
 
     @html = chapters_data[:html]
     @chapters = chapters_data[:chapters]
+    @title_footnote = chapters_data[:title_footnote]
 
     @tabclass = set_tab('works')
     @entity = @m
