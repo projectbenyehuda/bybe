@@ -3,13 +3,10 @@
 # Helpers for lexicon pages
 module LexiconHelper
   def render_citation(lex_citation)
-    if lex_citation.status_raw?
-      raw lex_citation.raw
-    else
-      author_bit = lex_citation.authors.sort_by(&:display_name)
-                               .map { |author| render_citation_author(author) }.join(', ')
-      raw "#{author_bit}, #{lex_citation.title}, <u>#{lex_citation.from_publication}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
-    end
+    author_bit = lex_citation.authors.sort_by(&:display_name)
+                             .map { |author| render_citation_author(author) }.join(', ')
+    raw "#{author_bit}, #{lex_citation.title}, " \
+        "<u>#{lex_citation.from_publication}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
   end
 
   def render_citation_author(author)

@@ -17,6 +17,7 @@ he:
   bib: ביבליוגרפיה
   classified: זוהה סוג הערך
   unclassified: לא זוהה סוג הערך
+  subject_line: About "%{subject}"
   lexicon:
     entries:
       destroy:

@@ -49,6 +49,12 @@ en:
           attributes:
             manifestation:
               taken: Text is already in the anthology
+        lex_citation:
+          attributes:
+            person_work:
+              belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
+            subject:
+              present: must be empty if record is linked to a work
     attributes:
       authority:
         other_designation: Other designation
@@ -98,10 +104,10 @@ en:
           ingested: Recorded in the catalogue
           failed: Upload failed
       lex_citation:
-        from_publication: From Publication
         authors: Authors
+        from_publication: From Publication
         pages: Pages
-        raw: RAW citation markup from legacy website
+        person_work: Work
       lex_file:
         error_message: Error message
         fname: File name
