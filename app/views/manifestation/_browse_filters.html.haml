@@ -92,9 +92,9 @@
 
     = render layout: 'shared/collapsible_block', locals: { container_name: 'collfdate', title: t(:thedate) } do
       .search-mobile-switch
-        %button.search-mobile-option.datetype#published= t(:publication)
-        %button.search-mobile-option.datetype#created= t(:creation)
-        %button.search-mobile-option.datetype#uploaded= t(:upload)
+        %button.search-mobile-option.datetype#published{ title: t(:publication_date_explanation) }= t(:publication)
+        %button.search-mobile-option.datetype#created{ title: t(:creation_date_explanation) }= t(:creation)
+        %button.search-mobile-option.datetype#uploaded{ title: t(:upload_date_explanation) }= t(:upload)
         = hidden_field_tag(:date_type, '', id: 'date_type')
       %break
       .dates-range
