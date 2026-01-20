@@ -13,6 +13,7 @@ en:
   bib: Bibliography
   classified: Classified
   unclassified: Unclassified
+  subject_line: About "%{subject}"
   lexicon:
     entries:
       destroy:
