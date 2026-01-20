@@ -13,7 +13,7 @@ This means:
 - ❌ **NEVER** assume that being able to push means you should push
 - ✅ **ALWAYS** create a new feature/fix branch BEFORE making any commits
 - ✅ **ALWAYS** submit changes via Pull Request using `gh pr create`
-- ✅ **ALWAYS** make any CSS changes to the application.scss file. Treat other CSS files as read-only!
+- ✅ **ALWAYS** make any CSS changes to the application.scss or other scss files. Treat the BY_*.css files as read-only!
 
 **If you find yourself about to run `git push` on master/main, STOP! You're doing it wrong.**
 
@@ -41,6 +41,7 @@ If you accidentally pushed to master/main:
 * we use RSpec for testing, not minitest
 * we use Capybara for integration tests of real usage scenarios
 * we use Rails I18n for all user-visible messages and UI labels. If you add a new message, make sure to create appropriatee entries in both config/locales/he.yml and config/locales/en.yml
+* remember the site is in Hebrew, and the view should be oriented right-to-left (if you use the Bootsrap grid, it is *already* right-to-left by default, so that the first column would be shown on the RIGHT)
 
 ### Project architecture
 
@@ -183,7 +184,7 @@ Before running ANY git command, verify:
 - [ ] Am I about to push to my own branch, not master/main?
 - [ ] Have I run `bd sync` before and after committing?
 - [ ] Will I create a PR after pushing?
-
+- [ ] Has the user approved the feature/fix?
 **If any answer is NO, do NOT proceed with git push!**
 
 ## Issue Tracking with bd (beads)
