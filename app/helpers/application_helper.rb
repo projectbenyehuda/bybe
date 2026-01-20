@@ -1,3 +1,5 @@
+require 'addressable/uri'
+
 module ApplicationHelper
   include BybeUtils
 
@@ -238,10 +240,10 @@ module ApplicationHelper
   end
 
   def update_param(uri, key, value)
-    u = URI(uri)
-    pp = URI.decode_www_form(u.query || '').to_h
+    u = Addressable::URI.parse(uri.to_s)
+    pp = u.query_values || {}
     pp[key] = value
-    u.query = URI.encode_www_form(pp.to_a)
+    u.query_values = pp
     u.to_s
   end
 
