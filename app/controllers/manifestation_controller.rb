@@ -1156,7 +1156,11 @@ class ManifestationController < ApplicationController
     end
     @translators = @m.translators
     @illustrators = @m.involved_authorities_by_role(:illustrator)
+    @photographers = @m.involved_authorities_by_role(:photographer)
+    @designers = @m.involved_authorities_by_role(:designer)
     @editors = @m.involved_authorities_by_role(:editor)
+    @contributors = @m.involved_authorities_by_role(:contributor)
+    @others = @m.involved_authorities_by_role(:other)
     @page_title = "#{@m.title_and_authors} - #{t(:default_page_title)}"
   end
 

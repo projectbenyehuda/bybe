@@ -30,17 +30,50 @@
                 - if current_user && current_user.editor?
                   = link_to collection_manage_path(@collection.id), {style:'color:white;'} do
                     %span.by-button-v02.pointer{style: 'width: min-content;'}= t(:edit)
-                .headline-1-v02
+                .headline-2-v02
                   - if @collection.authors.present?
                     != @collection.authors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
-                  - eds = @collection.editors(true)
-                  - if eds.present?
-                    = t(:edited_by)
-                    != eds.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
-                  - if @collection.illustrators.present?
-                    .headline-3-v02
-                      = "#{t(:illustrations_by)}: "
-                      != @collection.illustrators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                  - translators = @collection.translators
+                  - if translators.present?
+                    %br
+                    = "#{t('involved_authority.abstract_roles.translator')}: "
+                    != translators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+
+                - illustrators = @collection.involved_authorities_by_role(:illustrator)
+                - if illustrators.present?
+                  .headline-3-v02
+                    = "#{t('involved_authority.abstract_roles.illustrator')}: "
+                    != illustrators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+
+                - photographers = @collection.involved_authorities_by_role(:photographer)
+                - if photographers.present?
+                  .headline-3-v02
+                    = "#{t('involved_authority.abstract_roles.photographer')}: "
+                    != photographers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+
+                - designers = @collection.involved_authorities_by_role(:designer)
+                - if designers.present?
+                  .headline-3-v02
+                    = "#{t('involved_authority.abstract_roles.designer')}: "
+                    != designers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+
+                - editors = @collection.editors(true)
+                - if editors.present?
+                  .headline-3-v02
+                    = "#{t('involved_authority.abstract_roles.editor')}: "
+                    != editors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+
+                - contributors = @collection.involved_authorities_by_role(:contributor)
+                - if contributors.present?
+                  .headline-3-v02
+                    = "#{t('involved_authority.abstract_roles.contributor')}: "
+                    != contributors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+
+                - others = @collection.involved_authorities_by_role(:other)
+                - if others.present?
+                  .headline-3-v02
+                    = "#{t('involved_authority.abstract_roles.other')}: "
+                    != others.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
 
                 -# %button.by-button-v02{href: "#"} יוצרים שונים
                 - if @collection.parent_collections.present?
