@@ -21,16 +21,16 @@ class ExtractFirstFootnoteReference < ApplicationService
     # where N is the sequential footnote number (starting from 1)
 
     # Find the first paragraph that contains only the footnote reference link
-    # The pattern looks for a paragraph containing only whitespace and a footnote link
-    footnote_link_pattern = %r{<p>\s*(<a[^>]*href="#fn:\d+"[^>]*id="fnref:\d+"[^>]*>.*?</a>)\s*</p>}m
+    # The pattern looks for a paragraph containing only whitespace and a footnote link,
+    # and also consumes any immediately following empty paragraphs that may be left behind
+    footnote_link_pattern = %r{<p>\s*(<a[^>]*href="#fn:\d+"[^>]*id="fnref:\d+"[^>]*>.*?</a>)\s*</p>(?:\s*<p>\s*</p>)*}m
     html_match = html.match(footnote_link_pattern)
 
     if html_match
       footnote_html = html_match[1] # Extract just the <a> tag
-      # Remove the entire paragraph containing the footnote reference
-      cleaned_html = html.sub(footnote_link_pattern, '')
-      # Also remove any extra blank paragraphs that might be left
-      cleaned_html = cleaned_html.gsub(%r{<p>\s*</p>}, '').strip
+      # Remove the entire paragraph containing the footnote reference and any immediately
+      # following empty paragraphs that may have been left behind
+      cleaned_html = html.sub(footnote_link_pattern, '').strip
 
       { footnote_html: footnote_html, cleaned_html: cleaned_html }
     else
