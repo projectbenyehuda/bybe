@@ -1,5 +1,5 @@
 %a.btn.btn-primary.add-citation= t('.add_citation')
-- @lex_citations.group_by(&:subject).each do |subject, entries|
+- @lex_citations.group_by(&:subject_title).each do |subject, entries|
   %h4= subject
   %ul
     - entries.each do |c|

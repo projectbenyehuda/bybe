@@ -16,11 +16,11 @@ module Lexicon
     end
 
     def new
-      @citation = @person.citations.build(status: :manual)
+      @citation = @person.citations.build
     end
 
     def create
-      @citation = @person.citations.build(lex_citation_params.merge(status: :manual))
+      @citation = @person.citations.build(lex_citation_params)
 
       return if @citation.save
 
@@ -39,10 +39,6 @@ module Lexicon
       @citation.destroy!
     end
 
-    def approve
-      @citation.status_approved!
-    end
-
     private
 
     def set_person
@@ -57,7 +53,7 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_citation_params
-      params.expect(lex_citation: %i(title from_publication pages link manifestation_id subject))
+      params.expect(lex_citation: %i(title from_publication pages link manifestation_id subject lex_person_work_id))
     end
   end
 end

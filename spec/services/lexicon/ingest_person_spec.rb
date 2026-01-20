@@ -28,6 +28,10 @@ describe Lexicon::IngestPerson do
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1946', deathdate: nil)
       expect(person.citations.count).to eq(53)
+      expect(person.citations.select { |c| c.person_work.present? }.count).to eq(45)
+      # There is a discrepancy between the book name in file and the citation subject for 3 citations
+      expect(person.citations.select { |c| c.subject.present? }.count).to eq(3)
+
       expect(person.works.count).to eq(19)
       expect(person.works.select(&:work_type_original?).size).to eq(15)
       expect(person.works.select(&:work_type_edited?).size).to eq(4)
@@ -70,6 +74,9 @@ describe Lexicon::IngestPerson do
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1899', deathdate: '1949')
       expect(person.citations.count).to eq(4)
+      expect(person.citations.select { |c| c.person_work.present? }.count).to eq(1)
+      # There is a discrepancy between the book name in file and the citation subject for 3 citations
+      expect(person.citations.select { |c| c.subject.present? }.count).to eq(3)
       expect(person.works.count).to eq(22)
       expect(person.works.select(&:work_type_original?).size).to eq(18)
       expect(person.works.select(&:work_type_edited?).size).to eq(2)
