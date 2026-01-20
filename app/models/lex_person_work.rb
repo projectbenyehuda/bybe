@@ -10,7 +10,9 @@ class LexPersonWork < ApplicationRecord
   belongs_to :collection, optional: true
 
   # Citations about this work
-  has_many :citations_about, as: :item, class_name: 'LexCitation', dependent: :destroy
+  has_many :citations_about,
+           inverse_of: :person_work, class_name: 'LexCitation',
+           dependent: :destroy
 
   validates :title, :work_type, presence: true
   validate :collection_belongs_to_publication

@@ -6,11 +6,10 @@ FactoryBot.define do
       authors_count { 1 }
     end
 
-    title { item&.entry&.title || Faker::Book.title }
+    title { Faker::Book.title }
     from_publication { Faker::Book.title }
     authors { build_list(:lex_citation_author, authors_count) }
     pages { Random.rand(1..100).to_s }
     link { Faker::Internet.url }
-    status { 'manual' }
   end
 end
