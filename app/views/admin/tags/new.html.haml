@@ -1,0 +1,18 @@
+.backend
+  .by-card-v02
+    .by-card-header-v02
+      .headline-1-v02= t('admin.tags.new.title')
+
+    .by-card-content-v02
+      = form_with model: [:admin, @tag], local: true do |f|
+        .form-group{style: 'max-width: 600px;'}
+          = f.label :name, t('admin.tags.form.name_label'), class: 'headline-3-v02'
+          = f.text_field :name, class: 'form-control', required: true
+
+        .form-group{style: 'max-width: 300px; margin-top: 15px;'}
+          = f.label :status, t('admin.tags.form.status_label'), class: 'headline-3-v02'
+          = f.select :status, Tag.statuses.keys.map { |s| [t("admin.tags.status_#{s}"), s] }, { selected: 'approved' }, class: 'form-control'
+
+        %div{style: 'margin-top: 25px;'}
+          = f.submit t(:create), class: 'by-button-v02'
+          = link_to t(:cancel), admin_tags_path, class: 'by-button-secondary-v02'

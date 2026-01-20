@@ -793,6 +793,7 @@ he:
   background: רקע
   placeholder_image: "צללית יוצר/ת"
   new_works: יצירות חדשות במאגר
+  new_collections: כותרים חדשים במאגר
   homepage: דף הבית
   authors_page: דף יוצרים
   total: סך הכל
@@ -1251,6 +1252,8 @@ he:
   to_the_full_feature: להמלצה המלאה
   edit: עריכה
   destroy: מחיקה
+  back_to_list: חזור לרשימה
+  create: צור
   our_volunteers: המתנדבים שלנו
   featured_authors_management: ניהול זרקור על יוצרים
   recommendations_by_volunteer: המלצות עורכים ומתנדבים
@@ -1596,6 +1599,112 @@ he:
     featured_content_features:
       create:
         failed: קליטת טווח תאריכי תצוגה נכשלה. יש לבדוק את התאריכים.
+    tags:
+      management_link: ניהול תגיות
+      no_permission: אין לך הרשאה לנהל תגיות
+      index:
+        title: ניהול תגיות
+      new:
+        title: צור תגית חדשה
+      edit:
+        title: עריכת תגית
+      show:
+        title: "תגית: %{name}"
+        id: מזהה
+        name: שם
+        status: סטטוס
+        creator: נוצר על ידי
+        created_at: תאריך יצירה
+        taggings_count: מספר תיוגים
+        aliases: כינויים / שמות נוספים
+      search_label: חיפוש תגית (שם או חלק מהשם)
+      search_placeholder: הקלד טקסט לחיפוש...
+      status_label: סטטוס
+      status_all: הכל
+      status_pending: ממתין לאישור
+      status_approved: מאושר
+      status_rejected: נדחה
+      status_escalated: הועבר לעורך ראשי
+      filter_button: סנן
+      clear_filters: נקה סינון
+      create_new: צור תגית חדשה
+      table:
+        id: מזהה
+        name: שם התגית
+        aliases: כינויים/שמות נוספים
+        status: סטטוס
+        taggings_count: מספר תיוגים
+        creator: נוצר על ידי
+        created_at: תאריך יצירה
+        actions: פעולות
+      unknown_creator: לא ידוע
+      delete_confirm: האם אתה בטוח? פעולה זו תמחק גם את כל התיוגים המשוייכים לתגית זו.
+      destroyed_successfully:
+        one: התגית נמחקה בהצלחה, כולל תיוג אחד
+        other: התגית נמחקה בהצלחה, כולל %{count} תיוגים
+      destroy_failed: מחיקת התגית נכשלה
+      form:
+        name_label: שם התגית (מועדף)
+        status_label: סטטוס
+        aliases_section: כינויים/שמות נוספים (TagNames)
+        primary_alias: (שם מועדף)
+        make_primary: הפוך לשם מועדף
+        delete_alias: מחק
+        add_alias_section: הוסף כינוי חדש
+        alias_placeholder: שם כינוי חדש...
+        add_alias_button: הוסף
+      alias_name_blank: שם הכינוי לא יכול להיות ריק
+      alias_added: הכינוי נוסף בהצלחה
+      alias_add_failed: הוספת הכינוי נכשלה
+      primary_alias_changed: "השם המועדף שונה מ-%{old} ל-%{new}"
+      primary_alias_change_failed: שינוי השם המועדף נכשל
+      cannot_remove_last_alias: לא ניתן למחוק את הכינוי היחיד
+      cannot_remove_primary_alias: לא ניתן למחוק את השם המועדף
+      alias_removed: הכינוי הוסר בהצלחה
+      alias_remove_failed: הסרת הכינוי נכשלה
+      delete_alias_confirm: האם אתה בטוח שברצונך למחוק כינוי זה?
+    taggings:
+      management_link: ניהול תיוגים
+      no_permission: אין לך הרשאה לנהל תיוגים
+      index:
+        title: ניהול תיוגים
+      show:
+        title: "תיוג #%{id}"
+        id: מזהה
+        tag: תגית
+        tagged_item: פריט מתויג
+        status: סטטוס
+        suggester: הוצע על ידי
+        created_at: תאריך יצירה
+      search_item_label: חיפוש לפי פריט (כותרת)
+      search_item_placeholder: הקלד חלק מכותרת הפריט...
+      search_tag_label: חיפוש לפי תגית
+      search_tag_placeholder: הקלד שם תגית...
+      status_label: סטטוס
+      status_all: הכל
+      status_pending: ממתין לאישור
+      status_approved: מאושר
+      status_rejected: נדחה
+      status_semiapproved: אושר חלקית
+      status_escalated: הועבר לעורך ראשי
+      filter_button: סנן
+      clear_filters: נקה סינון
+      table:
+        id: מזהה
+        tag: תגית
+        tagged_item: פריט מתויג
+        item_type: סוג פריט
+        status: סטטוס
+        suggester: הוצע על ידי
+        created_at: תאריך
+        actions: פעולות
+      unknown_item: פריט לא ידוע
+      type_manifestation: Manifestation
+      type_authority: Authority
+      type_collection: Collection
+      unknown_suggester: לא ידוע
+      delete_confirm: האם אתה בטוח שברצונך למחוק תיוג זה?
+      destroy_failed: מחיקת התיוג נכשלה
     index:
       takes_long_time: דורש זמן רב!
       batch_operations: פעולות באצווה

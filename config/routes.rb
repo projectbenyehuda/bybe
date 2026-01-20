@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 include BybeUtils
 
 Bybeconv::Application.routes.draw do
@@ -21,6 +23,16 @@ Bybeconv::Application.routes.draw do
         post :refresh_uncollected_works_collection
       end
     end
+
+    # Tags and Taggings management
+    resources :tags do
+      member do
+        post :add_alias
+        post :make_primary_alias
+        delete :remove_alias
+      end
+    end
+    resources :taggings, only: %i(index show destroy)
   end
 
   resources :ingestibles do
@@ -296,7 +308,8 @@ Bybeconv::Application.routes.draw do
   get 'manifestation/chomp_period/:id' => 'manifestation#chomp_period', as: 'manifestation_chomp_period'
   post 'manifestation/set_bookmark'
   post 'manifestation/remove_bookmark'
-  get 'manifestation/fetch_originating_task/:id' => 'manifestation#fetch_originating_task', as: 'manifestation_fetch_originating_task'
+  get 'manifestation/fetch_originating_task/:id' => 'manifestation#fetch_originating_task',
+      as: 'manifestation_fetch_originating_task'
   get 'manifestation/edit/:id' => 'manifestation#edit', as: 'manifestation_edit'
   get 'manifestation/remove_image/:id' => 'manifestation#remove_image'
   get 'manifestation/edit_metadata/:id' => 'manifestation#edit_metadata', as: 'manifestation_edit_metadata'
