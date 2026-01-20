@@ -15,6 +15,8 @@ en:
   back: Back
   help: Help
   edit: Edit
+  back_to_list: Back to List
+  create: Create
   save: Save
   ok: OK
   cancel: Cancel
@@ -183,6 +185,112 @@ en:
     featured_content_features:
       create:
         failed: Failed to create feature period, ensure dates are provided
+    tags:
+      management_link: Tags Management
+      no_permission: You don't have permission to manage tags
+      index:
+        title: Tags Management
+      new:
+        title: Create New Tag
+      edit:
+        title: Edit Tag
+      show:
+        title: "Tag: %{name}"
+        id: ID
+        name: Name
+        status: Status
+        creator: Created By
+        created_at: Created At
+        taggings_count: Taggings Count
+        aliases: Aliases / Alternative Names
+      search_label: Search Tag (name or partial)
+      search_placeholder: Type text to search...
+      status_label: Status
+      status_all: All
+      status_pending: Pending Approval
+      status_approved: Approved
+      status_rejected: Rejected
+      status_escalated: Escalated to Editor
+      filter_button: Filter
+      clear_filters: Clear Filters
+      create_new: Create New Tag
+      table:
+        id: ID
+        name: Tag Name
+        aliases: Aliases/Alternative Names
+        status: Status
+        taggings_count: Taggings Count
+        creator: Created By
+        created_at: Created At
+        actions: Actions
+      unknown_creator: Unknown
+      delete_confirm: Are you sure? This will also delete all taggings associated with this tag.
+      destroyed_successfully:
+        one: Tag deleted successfully, including 1 tagging
+        other: Tag deleted successfully, including %{count} taggings
+      destroy_failed: Failed to delete tag
+      form:
+        name_label: Tag Name (Preferred)
+        status_label: Status
+        aliases_section: Aliases/Alternative Names (TagNames)
+        primary_alias: (Preferred Name)
+        make_primary: Make Primary
+        delete_alias: Delete
+        add_alias_section: Add New Alias
+        alias_placeholder: New alias name...
+        add_alias_button: Add
+      alias_name_blank: Alias name cannot be blank
+      alias_added: Alias added successfully
+      alias_add_failed: Failed to add alias
+      primary_alias_changed: "Primary name changed from %{old} to %{new}"
+      primary_alias_change_failed: Failed to change primary name
+      cannot_remove_last_alias: Cannot remove the only alias
+      cannot_remove_primary_alias: Cannot remove the primary name
+      alias_removed: Alias removed successfully
+      alias_remove_failed: Failed to remove alias
+      delete_alias_confirm: Are you sure you want to delete this alias?
+    taggings:
+      management_link: Taggings Management
+      no_permission: You don't have permission to manage taggings
+      index:
+        title: Taggings Management
+      show:
+        title: "Tagging #%{id}"
+        id: ID
+        tag: Tag
+        tagged_item: Tagged Item
+        status: Status
+        suggester: Suggested By
+        created_at: Created At
+      search_item_label: Search by Item (Title)
+      search_item_placeholder: Type part of item title...
+      search_tag_label: Search by Tag
+      search_tag_placeholder: Type tag name...
+      status_label: Status
+      status_all: All
+      status_pending: Pending Approval
+      status_approved: Approved
+      status_rejected: Rejected
+      status_semiapproved: Semi-Approved
+      status_escalated: Escalated to Editor
+      filter_button: Filter
+      clear_filters: Clear Filters
+      table:
+        id: ID
+        tag: Tag
+        tagged_item: Tagged Item
+        item_type: Item Type
+        status: Status
+        suggester: Suggested By
+        created_at: Date
+        actions: Actions
+      unknown_item: Unknown Item
+      type_manifestation: Manifestation
+      type_authority: Authority
+      type_collection: Collection
+      unknown_suggester: Unknown
+      delete_confirm: Are you sure you want to delete this tagging?
+      destroy_failed: Failed to delete tagging
     index:
       takes_long_time: Takes long time
       batch_operations: Batch Operations

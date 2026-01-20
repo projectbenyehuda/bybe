@@ -1,0 +1,46 @@
+.backend
+  .by-card-v02
+    .by-card-header-v02
+      .headline-1-v02= t('admin.tags.show.title', name: @tag.name)
+
+    .by-card-content-v02
+      .row
+        .col-md-6
+          %p
+            %strong= t('admin.tags.show.id')
+            = @tag.id
+
+          %p
+            %strong= t('admin.tags.show.name')
+            = @tag.name
+
+          %p
+            %strong= t('admin.tags.show.status')
+            %span.badge{ class: "status-#{@tag.status}" }= t("admin.tags.status_#{@tag.status}")
+
+          %p
+            %strong= t('admin.tags.show.creator')
+            = @tag.creator&.name || t('admin.tags.unknown_creator')
+
+          %p
+            %strong= t('admin.tags.show.created_at')
+            = @tag.created_at.strftime('%d/%m/%Y %H:%M')
+
+          %p
+            %strong= t('admin.tags.show.taggings_count')
+            = link_to @taggings_count, admin_taggings_path(tag_id: @tag.id)
+
+          %hr
+
+          %h3.headline-3-v02= t('admin.tags.show.aliases')
+          %ul
+            - @tag_names.each do |tag_name|
+              %li
+                = tag_name.name
+                - if tag_name.name == @tag.name
+                  %small.text-muted= t('admin.tags.form.primary_alias')
+
+      .mt-4
+        = link_to t(:edit), edit_admin_tag_path(@tag), class: 'by-button-v02'
+        = link_to t(:back_to_list), admin_tags_path, class: 'by-button-secondary-v02'
+        = link_to t(:destroy), admin_tag_path(@tag), method: :delete, data: { confirm: t('admin.tags.delete_confirm') }, class: 'by-button-secondary-v02'

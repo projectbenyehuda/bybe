@@ -1,0 +1,72 @@
+.backend{style: 'height: 100vh; display: flex; flex-direction: column;'}
+  .by-card-v02{style: 'flex: 1; display: flex; flex-direction: column; min-height: 0;'}
+    .by-card-header-v02
+      .headline-1-v02= t('admin.taggings.index.title')
+
+    .by-card-content-v02{style: 'flex: 1; display: flex; flex-direction: column; overflow: hidden;'}
+      / Filter Form
+      .filter-form
+        = form_with url: admin_taggings_path, method: :get, local: true do
+          .form-row
+            .form-group
+              = label_tag :item_q, t('admin.taggings.search_item_label')
+              = text_field_tag :item_q, params[:item_q], class: 'form-control', placeholder: t('admin.taggings.search_item_placeholder')
+
+            .form-group
+              = label_tag :tag_q, t('admin.taggings.search_tag_label')
+              = text_field_tag :tag_q, params[:tag_q], class: 'form-control', placeholder: t('admin.taggings.search_tag_placeholder')
+
+            .form-group
+              = label_tag :status, t('admin.taggings.status_label')
+              = select_tag :status, options_for_select([[t('admin.taggings.status_all'), ''], [t('admin.taggings.status_pending'), 'pending'], [t('admin.taggings.status_approved'), 'approved'], [t('admin.taggings.status_rejected'), 'rejected'], [t('admin.taggings.status_semiapproved'), 'semiapproved'], [t('admin.taggings.status_escalated'), 'escalated']], params[:status].presence || 'approved'), class: 'form-control'
+
+            .form-group
+              = submit_tag t('admin.taggings.filter_button'), class: 'by-button-v02'
+              = link_to t('admin.taggings.clear_filters'), admin_taggings_path, class: 'by-button-secondary-v02'
+
+      / Taggings Table
+      .management.management-content{style: 'flex: 1; overflow-y: auto; margin-top: 1rem;'}
+        %table
+          %thead
+            %tr
+              %th{style: 'width: 5%;'}= t('admin.taggings.table.id')
+              %th{style: 'width: 15%;'}= t('admin.taggings.table.tag')
+              %th{style: 'width: 25%;'}= t('admin.taggings.table.tagged_item')
+              %th{style: 'width: 10%;'}= t('admin.taggings.table.item_type')
+              %th{style: 'width: 10%;'}= t('admin.taggings.table.status')
+              %th{style: 'width: 12%;'}= t('admin.taggings.table.suggester')
+              %th{style: 'width: 10%;'}= t('admin.taggings.table.created_at')
+              %th{style: 'width: 13%;'}= t('admin.taggings.table.actions')
+          %tbody
+            - @taggings.each do |tagging|
+              %tr{ id: "tagging-#{tagging.id}", class: tagging.status == 'rejected' ? 'rejected' : '' }
+                %td= tagging.id
+                %td= link_to tagging.tag.name, admin_tag_path(tagging.tag)
+                %td
+                  - case tagging.taggable_type
+                  - when 'Manifestation'
+                    = link_to tagging.taggable.title, manifestation_path(tagging.taggable), target: '_blank', rel: 'noopener'
+                  - when 'Authority'
+                    = link_to tagging.taggable.name, author_path(tagging.taggable), target: '_blank', rel: 'noopener'
+                  - when 'Collection'
+                    = link_to tagging.taggable.title, collection_path(tagging.taggable), target: '_blank', rel: 'noopener'
+                  - else
+                    = t('admin.taggings.unknown_item')
+                %td
+                  - case tagging.taggable_type
+                  - when 'Manifestation'
+                    %span.badge.type-manifestation= t('admin.taggings.type_manifestation')
+                  - when 'Authority'
+                    %span.badge.type-authority= t('admin.taggings.type_authority')
+                  - when 'Collection'
+                    %span.badge.type-collection= t('admin.taggings.type_collection')
+                %td
+                  %span.badge{ class: "status-#{tagging.status}" }= t("admin.taggings.status_#{tagging.status}")
+                %td= tagging.suggester&.name || t('admin.taggings.unknown_suggester')
+                %td= tagging.created_at.strftime('%d/%m/%Y')
+                %td
+                  .action-buttons
+                    = link_to t(:destroy), admin_tagging_path(tagging), method: :delete, remote: true, data: { confirm: t('admin.taggings.delete_confirm') }, class: 'ghost-btn'
+
+      / Pagination
+      != paginate @taggings
