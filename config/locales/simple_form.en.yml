@@ -13,4 +13,6 @@ en:
     hints:
       lex_person:
         authority: creator's page on Ben-Yehuda Project
+      lex_citation:
+        subject: should only be used if work is not present in works list
     placeholders:

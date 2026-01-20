@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_17_142237) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_19_192317) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -108,6 +108,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_17_142237) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "impressions_count", default: 0
+    t.index ["user_id", "title"], name: "index_anthologies_on_user_id_and_title", unique: true
     t.index ["user_id"], name: "index_anthologies_on_user_id"
   end
 
@@ -632,18 +633,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_17_142237) do
     t.string "from_publication"
     t.string "pages"
     t.string "link", limit: 300
-    t.string "item_type"
-    t.bigint "item_id"
     t.integer "manifestation_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.text "raw"
     t.text "notes"
     t.string "subject"
     t.bigint "lex_person_id", null: false
-    t.integer "status"
-    t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
+    t.bigint "lex_person_work_id"
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
+    t.index ["lex_person_work_id"], name: "index_lex_citations_on_lex_person_work_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
     t.index ["title"], name: "index_lex_citations_on_title"
   end
@@ -1181,6 +1179,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_17_142237) do
   add_foreign_key "lex_citation_authors", "lex_citations"
   add_foreign_key "lex_citation_authors", "lex_people"
   add_foreign_key "lex_citations", "lex_people"
+  add_foreign_key "lex_citations", "lex_person_works"
   add_foreign_key "lex_citations", "manifestations"
   add_foreign_key "lex_entries", "active_storage_attachments", column: "profile_image_id", on_delete: :nullify
   add_foreign_key "lex_files", "lex_entries"

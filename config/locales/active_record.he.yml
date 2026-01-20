@@ -53,6 +53,12 @@ he:
           attributes:
             manifestation:
               taken: היצירה הנוכחית כבר מופיעה במקראה הזאת.
+        lex_citation:
+          attributes:
+            person_work:
+              belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
+            subject:
+              present: must be empty if record is linked to a work
     attributes:
       authority:
         other_designation: כינויים אחרים
@@ -103,10 +109,10 @@ he:
           ingested: נקלטה בקטלוג
           failed: ההעלאה נכשלה
       lex_citation:
-        from_publication: From Publication
         authors: Authors
+        from_publication: From Publication
         pages: Pages
-        raw: RAW citation markup from legacy website
+        person_work: Work
       lex_file:
         error_message: Error message
         fname: שם קובץ

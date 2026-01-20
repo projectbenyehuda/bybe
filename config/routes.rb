@@ -43,10 +43,6 @@ Bybeconv::Application.routes.draw do
         get :autocomplete
       end
       resources :citations, shallow: true, except: %i(show) do
-        member do
-          post :approve
-        end
-
         resources :authors, controller: 'citation_authors', only: %i(index create)
       end
       resources :works, controller: 'person_works', shallow: true, except: %i(show)
