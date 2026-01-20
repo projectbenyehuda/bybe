@@ -4,9 +4,11 @@ require 'rails_helper'
 
 RSpec.describe 'Collection show page - authority display', :js, type: :system do
   before do
-    Capybara.current_session.driver.browser if Capybara.current_session.driver.respond_to?(:browser)
-  rescue StandardError
-    skip 'WebDriver not available or misconfigured'
+    begin
+      Capybara.current_session.driver.browser if Capybara.current_session.driver.respond_to?(:browser)
+    rescue StandardError
+      skip 'WebDriver not available or misconfigured'
+    end
   end
 
   # Create authorities for each role
