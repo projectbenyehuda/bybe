@@ -107,9 +107,10 @@ he:
           ingested: נקלטה בקטלוג
           failed: ההעלאה נכשלה
       lex_citation:
-        from_publication: From Publication
         authors: Authors
+        from_publication: From Publication
         pages: Pages
+        person_work: Work
       lex_file:
         error_message: Error message
         fname: שם קובץ

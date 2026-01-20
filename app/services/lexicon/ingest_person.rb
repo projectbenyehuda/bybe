@@ -37,11 +37,33 @@ module Lexicon
       buf = html_doc.to_html
       parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
 
+      # We need to save the person and its citations and works before linking citations to works
+      # to avoid validation errors
       lex_person.save!
+
+      link_citations_to_works(lex_person)
       lex_person
     end
 
     private
+
+    def link_citations_to_works(lex_person)
+      lex_person.citations.each do |citation|
+        subject = citation.subject
+
+        next if subject.blank?
+
+        # For now, we're only checking for an exact title match
+        # We can also consider using more advanced matching techniques if needed to handle typos, etc.
+        work = lex_person.works.detect { |w| w.title == subject }
+
+        next if work.nil?
+
+        citation.person_work = work
+        citation.subject = nil # clear the subject since it's now linked to PersonWork
+        citation.save!
+      end
+    end
 
     def header?(elem)
       %w(p font).include?(elem.name) && elem.at_css('a[name]')

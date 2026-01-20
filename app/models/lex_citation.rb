@@ -22,6 +22,15 @@ class LexCitation < ApplicationRecord
 
   validate :person_work_belongs_to_same_person
 
+  # Subject is a string title of the work this citation is about (if any) and filled during parsing of legacy PHP files.
+  # We should replace all subjects with person_work references where possible, and then clear the subject field.
+  # After Legacy data migration is done, we can drop subject field entirely.
+  validates :subject, absence: true, if: -> { person_work.present? }
+
+  def subject_title
+    return person_work&.title || subject
+  end
+
   private
 
   def person_work_belongs_to_same_person

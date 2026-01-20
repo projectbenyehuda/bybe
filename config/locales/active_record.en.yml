@@ -101,9 +101,10 @@ en:
           ingested: Recorded in the catalogue
           failed: Upload failed
       lex_citation:
-        from_publication: From Publication
         authors: Authors
+        from_publication: From Publication
         pages: Pages
+        person_work: Work
       lex_file:
         error_message: Error message
         fname: File name
