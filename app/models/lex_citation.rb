@@ -37,6 +37,6 @@ class LexCitation < ApplicationRecord
     return if person_work.nil?
     return if person_work.lex_person_id == lex_person_id
 
-    errors.add(:person_work, :invalid, message: :belongs_to_different_person)
+    errors.add(:person_work, :belongs_to_different_person)
   end
 end
