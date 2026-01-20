@@ -128,7 +128,7 @@ describe AuthorsController do
       context 'when author has lex_person with general citations' do
         let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
         let(:lex_person) { lex_entry.lex_item }
-        let!(:citation) { create(:lex_citation, person: lex_person, item: nil) }
+        let!(:citation) { create(:lex_citation, person: lex_person) }
 
         before do
           author.update(lex_person: lex_person)
@@ -144,7 +144,9 @@ describe AuthorsController do
         let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
         let(:lex_person) { lex_entry.lex_item }
         let(:lex_person_work) { create(:lex_person_work, person: lex_person) }
-        let!(:work_citation) { create(:lex_citation, person: lex_person, item: lex_person_work, title: 'About a Work') }
+        let!(:work_citation) do
+          create(:lex_citation, person: lex_person, person_work: lex_person_work, title: 'About a Work')
+        end
 
         before do
           author.update(lex_person: lex_person)
