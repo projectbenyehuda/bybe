@@ -1,5 +1,8 @@
 .work-title.name-under-btn
-  .headline-1-v02= @m.title
+  .headline-1-v02
+    = @m.title
+    - if defined?(@title_footnote) && @title_footnote.present?
+      != ' ' + @title_footnote
   - if current_user && current_user.editor?
     %span.static-btn= link_to t(:edit_metadata), manifestation_edit_metadata_path(@m.id)
     != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
