@@ -16,15 +16,16 @@
 
           %p
             %strong= t('admin.taggings.show.tagged_item')
-            - if @tagging.taggable_type == 'Manifestation'
+            - case @tagging.taggable_type
+            - when 'Manifestation'
               = link_to @tagging.taggable.title, manifestation_path(@tagging.taggable), target: '_blank', rel: 'noopener'
               %br
               %small.text-muted= t('admin.taggings.type_manifestation')
-            - elsif @tagging.taggable_type == 'Authority'
+            - when 'Authority'
               = link_to @tagging.taggable.name, author_path(@tagging.taggable), target: '_blank', rel: 'noopener'
               %br
               %small.text-muted= t('admin.taggings.type_authority')
-            - elsif @tagging.taggable_type == 'Collection'
+            - when 'Collection'
               = link_to @tagging.taggable.title, collection_path(@tagging.taggable), target: '_blank', rel: 'noopener'
               %br
               %small.text-muted= t('admin.taggings.type_collection')

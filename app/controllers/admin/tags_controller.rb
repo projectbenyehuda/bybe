@@ -4,9 +4,8 @@
 module Admin
   # Tags controller handles CRUD operations for Tags and their aliases (TagNames)
   class TagsController < ApplicationController
-    before_action :require_editor,
+    before_action -> { require_editor('moderate_tags') },
                   only: %i(index show new create edit update destroy add_alias make_primary_alias remove_alias)
-    before_action :check_moderate_tags_permission
     before_action :set_tag, only: %i(show edit update destroy)
 
     layout 'backend'
@@ -161,12 +160,6 @@ module Admin
 
     def tag_params
       params.expect(tag: %i(name status))
-    end
-
-    def check_moderate_tags_permission
-      return if current_user&.editor? && current_user.has_bit?('moderate_tags')
-
-      redirect_to '/', flash: { error: t('admin.tags.no_permission') }
     end
   end
 end

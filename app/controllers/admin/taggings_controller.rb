@@ -4,8 +4,7 @@
 module Admin
   # Taggings controller handles viewing and deleting Taggings
   class TaggingsController < ApplicationController
-    before_action :require_editor, only: %i(index show destroy)
-    before_action :check_moderate_tags_permission
+    before_action -> { require_editor('moderate_tags') }, only: %i(index show destroy)
     before_action :set_tagging, only: %i(show destroy)
 
     layout 'backend'
@@ -67,12 +66,6 @@ module Admin
 
     def set_tagging
       @tagging = Tagging.find(params[:id])
-    end
-
-    def check_moderate_tags_permission
-      return if current_user&.editor? && current_user.has_bit?('moderate_tags')
-
-      redirect_to '/', flash: { error: t('admin.taggings.no_permission') }
     end
   end
 end

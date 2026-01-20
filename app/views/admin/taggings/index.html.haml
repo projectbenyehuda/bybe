@@ -6,7 +6,7 @@
     .by-card-content-v02{style: 'flex: 1; display: flex; flex-direction: column; overflow: hidden;'}
       / Filter Form
       .filter-form
-        = form_with url: admin_taggings_path, method: :get, local: true do |f|
+        = form_with url: admin_taggings_path, method: :get, local: true do
           .form-row
             .form-group
               = label_tag :item_q, t('admin.taggings.search_item_label')
@@ -43,20 +43,22 @@
                 %td= tagging.id
                 %td= link_to tagging.tag.name, admin_tag_path(tagging.tag)
                 %td
-                  - if tagging.taggable_type == 'Manifestation'
+                  - case tagging.taggable_type
+                  - when 'Manifestation'
                     = link_to tagging.taggable.title, manifestation_path(tagging.taggable), target: '_blank', rel: 'noopener'
-                  - elsif tagging.taggable_type == 'Authority'
+                  - when 'Authority'
                     = link_to tagging.taggable.name, author_path(tagging.taggable), target: '_blank', rel: 'noopener'
-                  - elsif tagging.taggable_type == 'Collection'
+                  - when 'Collection'
                     = link_to tagging.taggable.title, collection_path(tagging.taggable), target: '_blank', rel: 'noopener'
                   - else
                     = t('admin.taggings.unknown_item')
                 %td
-                  - if tagging.taggable_type == 'Manifestation'
+                  - case tagging.taggable_type
+                  - when 'Manifestation'
                     %span.badge.type-manifestation= t('admin.taggings.type_manifestation')
-                  - elsif tagging.taggable_type == 'Authority'
+                  - when 'Authority'
                     %span.badge.type-authority= t('admin.taggings.type_authority')
-                  - elsif tagging.taggable_type == 'Collection'
+                  - when 'Collection'
                     %span.badge.type-collection= t('admin.taggings.type_collection')
                 %td
                   %span.badge{ class: "status-#{tagging.status}" }= t("admin.taggings.status_#{tagging.status}")
