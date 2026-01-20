@@ -1299,7 +1299,10 @@ he:
   birth_year: שנת לידה
   death_year: שנת פטירה
   creation_date: תאריך יצירה
+  creation_date_explanation: "תאריך החיבור של היצירה, אם ידוע"
   publication_date: תאריך פרסום בדפוס
+  publication_date_explanation: "תאריך פרסום בדפוס של מהדורת המקור שממנה הקלדנו"
+  upload_date_explanation: "תאריך העלאת היצירה למאגר פרויקט בן־יהודה"
   alphabetical: 'סדר א"ב'
   recent: לפי תאריך
   popularity: נקראות ביותר באתר
