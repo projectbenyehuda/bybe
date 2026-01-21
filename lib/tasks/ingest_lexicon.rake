@@ -160,12 +160,12 @@ def process_legacy_lexicon_entry(fname)
   print entrytype[0]
 end
 
-task wipe_lexicon: :environment do
-  puts 'Wiping Lexicon...'
-  LexFile.delete_all
-  # We need to destroy entries one by one to trigger ActiveStorage cleanup
+task reset_lexicon_ingestion: :environment do
+  puts 'Wiping Ingested Lexicon Entries...'
   Chewy.strategy(:atomic) do
-    LexEntry.find_each(&:destroy!)
+    LexFile.find_each do |file|
+      file.lex_entry.reset_ingestion!
+    end
   end
   puts 'Done.'
 end
