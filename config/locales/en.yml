@@ -614,6 +614,7 @@ en:
     no_existing_authorities: No existing authorities in this collection
     new_authority: New
     clear_defaults: Clear Defaults
+    all_authorities_public_domain: According to the involved authorities, this material is public domain
     pick_periodical: Select Periodical
     pick_issue: Select Issue
     add_new_issue: "(Add New Issue)"

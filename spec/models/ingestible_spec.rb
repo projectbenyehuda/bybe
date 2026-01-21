@@ -414,4 +414,173 @@ describe Ingestible do
       end
     end
   end
+
+  describe '#calculate_copyright_status' do
+    let(:ingestible) { create(:ingestible) }
+    let(:public_domain_authority1) { create(:authority, intellectual_property: :public_domain) }
+    let(:public_domain_authority2) { create(:authority, intellectual_property: :public_domain) }
+    let(:copyrighted_authority) { create(:authority, intellectual_property: :copyrighted) }
+    let(:orphan_authority) { create(:authority, intellectual_property: :orphan) }
+
+    context 'when all involved authorities are public domain' do
+      it 'returns public_domain for text with only public domain authorities' do
+        text_authorities = [
+          { seqno: 1, authority_id: public_domain_authority1.id, authority_name: public_domain_authority1.name,
+            role: 'author' }
+        ].to_json
+        ingestible.default_authorities = ''
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('public_domain')
+      end
+
+      it 'returns public_domain when text and default authorities are all public domain' do
+        text_authorities = [
+          { seqno: 1, authority_id: public_domain_authority1.id, authority_name: public_domain_authority1.name,
+            role: 'author' }
+        ].to_json
+        ingestible.default_authorities = [
+          { seqno: 1, authority_id: public_domain_authority2.id, authority_name: public_domain_authority2.name,
+            role: 'translator' }
+        ].to_json
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('public_domain')
+      end
+
+      it 'returns public_domain when only defaults are set and all are public domain' do
+        text_authorities = ''
+        ingestible.default_authorities = [
+          { seqno: 1, authority_id: public_domain_authority1.id, authority_name: public_domain_authority1.name,
+            role: 'author' },
+          { seqno: 2, authority_id: public_domain_authority2.id, authority_name: public_domain_authority2.name,
+            role: 'translator' }
+        ].to_json
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('public_domain')
+      end
+    end
+
+    context 'when at least one authority is not public domain' do
+      it 'returns copyrighted when text has a copyrighted authority' do
+        text_authorities = [
+          { seqno: 1, authority_id: public_domain_authority1.id, authority_name: public_domain_authority1.name,
+            role: 'author' },
+          { seqno: 2, authority_id: copyrighted_authority.id, authority_name: copyrighted_authority.name,
+            role: 'translator' }
+        ].to_json
+        ingestible.default_authorities = ''
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('copyrighted')
+      end
+
+      it 'returns copyrighted when default authorities include copyrighted authority' do
+        text_authorities = [
+          { seqno: 1, authority_id: public_domain_authority1.id, authority_name: public_domain_authority1.name,
+            role: 'author' }
+        ].to_json
+        ingestible.default_authorities = [
+          { seqno: 1, authority_id: copyrighted_authority.id, authority_name: copyrighted_authority.name,
+            role: 'translator' }
+        ].to_json
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('copyrighted')
+      end
+
+      it 'returns copyrighted when authority is orphan' do
+        text_authorities = [
+          { seqno: 1, authority_id: orphan_authority.id, authority_name: orphan_authority.name, role: 'author' }
+        ].to_json
+        ingestible.default_authorities = ''
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('copyrighted')
+      end
+    end
+
+    context 'with collection authorities' do
+      it 'considers collection authorities when determining copyright status' do
+        text_authorities = ''
+        ingestible.default_authorities = ''
+        ingestible.collection_authorities = [
+          { seqno: 1, authority_id: copyrighted_authority.id, authority_name: copyrighted_authority.name,
+            role: 'author' }
+        ].to_json
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('copyrighted')
+      end
+
+      it 'returns public_domain when collection authorities are all public domain' do
+        text_authorities = ''
+        ingestible.default_authorities = ''
+        ingestible.collection_authorities = [
+          { seqno: 1, authority_id: public_domain_authority1.id, authority_name: public_domain_authority1.name,
+            role: 'author' }
+        ].to_json
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('public_domain')
+      end
+    end
+
+    context 'with authority role merging' do
+      it 'overrides default authority for same role with text authority' do
+        # Text has public domain author, default has copyrighted translator
+        text_authorities = [
+          { seqno: 1, authority_id: public_domain_authority1.id, authority_name: public_domain_authority1.name,
+            role: 'author' }
+        ].to_json
+        ingestible.default_authorities = [
+          { seqno: 1, authority_id: public_domain_authority2.id, authority_name: public_domain_authority2.name,
+            role: 'author' },
+          { seqno: 2, authority_id: copyrighted_authority.id, authority_name: copyrighted_authority.name,
+            role: 'translator' }
+        ].to_json
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        # Should use public_domain_authority1 (not default author), plus copyrighted_authority (default translator)
+        expect(result).to eq('copyrighted')
+      end
+    end
+
+    context 'edge cases' do
+      it 'returns copyrighted when no authorities are specified' do
+        text_authorities = ''
+        ingestible.default_authorities = ''
+        ingestible.collection_authorities = ''
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('copyrighted')
+      end
+
+      it 'returns copyrighted when authorities have no IDs (new_person)' do
+        text_authorities = [
+          { seqno: 1, new_person: 'Unknown Author', role: 'author' }
+        ].to_json
+        ingestible.default_authorities = ''
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('copyrighted')
+      end
+
+      it 'returns copyrighted when some authorities have IDs and some are copyrighted' do
+        text_authorities = [
+          { seqno: 1, authority_id: public_domain_authority1.id, authority_name: public_domain_authority1.name,
+            role: 'author' },
+          { seqno: 2, new_person: 'Unknown Translator', role: 'translator' }
+        ].to_json
+        ingestible.default_authorities = [
+          { seqno: 1, authority_id: copyrighted_authority.id, authority_name: copyrighted_authority.name,
+            role: 'editor' }
+        ].to_json
+
+        result = ingestible.calculate_copyright_status(text_authorities)
+        expect(result).to eq('copyrighted')
+      end
+    end
+  end
 end

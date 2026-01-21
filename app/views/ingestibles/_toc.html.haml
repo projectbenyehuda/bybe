@@ -91,11 +91,12 @@
         %td
           - calculated_copyright = @ingestible.calculate_copyright_status(ias)
           - if calculated_copyright == 'copyrighted'
-            - default_ip = intellectual_property || 'by_permission'
+            - default_ip = intellectual_property.presence || @ingestible.intellectual_property || 'by_permission'
             - select_opts = { class: 'toc-intellectual-property' }
             = select_tag :intellectual_property, options_for_select(copyrighted_ip_options, default_ip), select_opts
           - else
-            %span.text-muted= t(:public_domain)
+            %div{style: 'background-color: #d4edda; padding: 5px; border-radius: 3px;'}
+              = t('ingestible.all_authorities_public_domain')
       - else
         %td
         %td
@@ -155,6 +156,10 @@
       var new_person_tbd = $(this).closest('tr').find('input[name=new_person]').val();
 
       update_toc($(this), new_au, new_name, new_role, new_person_tbd);
+      // Reload TOC after authority change to update copyright status
+      setTimeout(function() {
+        $('#generalDlg').load("#{edit_toc_ingestible_path(@ingestible)}");
+      }, 500);
     });
     $('.replace_authority').click(function(e) {
       e.preventDefault();
@@ -176,6 +181,10 @@
           authority_name: new_name,
           role: new_role
         },
+        success: function(data) {
+          // Reload TOC after authority change to update copyright status
+          $('#generalDlg').load("#{edit_toc_ingestible_path(@ingestible)}");
+        }
       });
     });
     $('.delete_toc_authority').click(function(e) {
@@ -192,6 +201,10 @@
           rmauth: true,
           seqno: seqno
         },
+        success: function(data) {
+          // Reload TOC after authority change to update copyright status
+          $('#generalDlg').load("#{edit_toc_ingestible_path(@ingestible)}");
+        }
       });
     });
     $('.change_title').click(function(e) {
@@ -228,6 +241,10 @@
           title: title,
           clear_defaults: true
         },
+        success: function(data) {
+          // Reload TOC after authority change to update copyright status
+          $('#generalDlg').load("#{edit_toc_ingestible_path(@ingestible)}");
+        }
       });
     });
 
