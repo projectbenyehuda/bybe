@@ -145,11 +145,11 @@ describe CollectionsController do
     let(:collection_translator) { create(:authority, name: 'Collection Translator') }
     let(:work_translator) { create(:authority, name: 'Work Translator') }
     let(:manifestation) do
-      create(:manifestation, title: 'Translated Work').tap do |m|
+      create(:manifestation, title: 'Translated Work', markdown: 'Test content for translated work.').tap do |m|
         m.expression.involved_authorities.create!(authority: work_translator, role: 'translator')
       end
     end
-    let(:other_manifestation) { create(:manifestation, title: 'Other Work') }
+    let(:other_manifestation) { create(:manifestation, title: 'Other Work', markdown: 'Test content for other work.') }
 
     let(:collection) do
       create(:collection, title: 'Test Collection').tap do |coll|
