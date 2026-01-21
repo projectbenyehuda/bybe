@@ -38,15 +38,16 @@ class LexEntry < ApplicationRecord
     attachments.find_by(id: profile_image_id)
   end
 
+
+  # Should be called if we want to re-ingest the lex file
   def reset_ingestion!
     return if lex_file.nil? # Should not be called for entries without lex_file
-    # This method removes the associated lex_entry
-    # Should be called if we want to re-ingest the lex file
     Chewy.strategy(:atomic) do
       lex_item&.destroy!
       legacy_links.each(&:destroy!)
       attachments.purge
       status_raw!
+      lex_file.update!(error_message: nil)
     end
   end
 
