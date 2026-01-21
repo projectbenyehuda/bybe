@@ -8,14 +8,12 @@ module Lexicon
     def perform(lex_file_id)
       lex_file = LexFile.find(lex_file_id)
       Chewy.strategy(:atomic) do
-        LexEntry.transaction do
-          if lex_file.entrytype_person?
-            IngestPerson.call(lex_file)
-          elsif lex_file.entrytype_text?
-            IngestPublication.call(lex_file)
-          else
-            raise "unsupported entrytype: #{lex_file.entrytype}"
-          end
+        if lex_file.entrytype_person?
+          IngestPerson.call(lex_file)
+        elsif lex_file.entrytype_text?
+          IngestPublication.call(lex_file)
+        else
+          raise "unsupported entrytype: #{lex_file.entrytype}"
         end
       end
     rescue StandardError => e
