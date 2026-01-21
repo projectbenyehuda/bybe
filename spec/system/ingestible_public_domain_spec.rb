@@ -4,12 +4,16 @@ require 'rails_helper'
 
 RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
   let!(:public_domain_author) do
-    create(:authority, name: 'Public Domain Author',
-                       intellectual_property: :public_domain)
+    Chewy.strategy(:atomic) do
+      create(:authority, name: 'Public Domain Author',
+                         intellectual_property: :public_domain)
+    end
   end
   let!(:copyrighted_author) do
-    create(:authority, name: 'Copyrighted Author',
-                       intellectual_property: :copyrighted)
+    Chewy.strategy(:atomic) do
+      create(:authority, name: 'Copyrighted Author',
+                         intellectual_property: :copyrighted)
+    end
   end
 
   let!(:ingestible) do
@@ -26,6 +30,10 @@ RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
 
   before do
     login_as_catalog_editor
+  end
+
+  after do
+    Chewy.massacre
   end
 
   describe 'TOC copyright status display' do
