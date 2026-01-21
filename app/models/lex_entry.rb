@@ -22,13 +22,6 @@ class LexEntry < ApplicationRecord
   has_many_attached :attachments # attachments referenced by link or image on the entry page
   has_many :legacy_links, class_name: 'LexLegacyLink', dependent: :destroy, inverse_of: :lex_entry
 
-  # Returns the attachment selected as the profile image, or nil if none selected
-  def profile_image
-    return nil unless profile_image_id
-
-    attachments.find_by(id: profile_image_id)
-  end
-
   validates :title, :sort_title, :status, presence: true
 
   before_validation :update_sort_title!
@@ -37,6 +30,26 @@ class LexEntry < ApplicationRecord
   scope :needs_verification, -> { where(status: %i(draft verifying error)) }
   scope :in_verification, -> { where(status: :verifying) }
   scope :verified_pending_publish, -> { where(status: :verified) }
+
+  # Returns the attachment selected as the profile image, or nil if none selected
+  def profile_image
+    return nil unless profile_image_id
+
+    attachments.find_by(id: profile_image_id)
+  end
+
+
+  # Should be called if we want to re-ingest the lex file
+  def reset_ingestion!
+    return if lex_file.nil? # Should not be called for entries without lex_file
+    Chewy.strategy(:atomic) do
+      lex_item&.destroy!
+      legacy_links.each(&:destroy!)
+      attachments.purge
+      status_raw!
+      lex_file.update!(error_message: nil)
+    end
+  end
 
   def self.cached_count
     Rails.cache.fetch('lex_entry_count', expires_in: 24.hours) do
