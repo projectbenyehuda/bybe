@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_19_192317) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_21_214929) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -108,7 +108,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_19_192317) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "impressions_count", default: 0
-    t.index ["user_id", "title"], name: "index_anthologies_on_user_id_and_title", unique: true
     t.index ["user_id"], name: "index_anthologies_on_user_id"
   end
 
@@ -700,7 +699,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_19_192317) do
     t.string "new_path", null: false
     t.bigint "lex_entry_id", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
