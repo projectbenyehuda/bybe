@@ -189,7 +189,7 @@ describe CollectionsController do
       expect(response).to be_successful
 
       # Extract the TOC section to verify format
-      toc_section = response.body.match(/binder-texts-list.*?<\/ul>/m).to_s
+      toc_section = response.body.match(/binder-texts-list.*?<\/div>/m).to_s
 
       # Should display both author and translator in the TOC
       expect(toc_section).to include('Translated Work')
