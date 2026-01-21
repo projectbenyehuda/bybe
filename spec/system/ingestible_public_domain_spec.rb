@@ -3,8 +3,14 @@
 require 'rails_helper'
 
 RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
-  let!(:public_domain_author) { create(:authority, name: 'Public Domain Author', intellectual_property: :public_domain) }
-  let!(:copyrighted_author) { create(:authority, name: 'Copyrighted Author', intellectual_property: :copyrighted) }
+  let!(:public_domain_author) do
+    create(:authority, name: 'Public Domain Author',
+                       intellectual_property: :public_domain)
+  end
+  let!(:copyrighted_author) do
+    create(:authority, name: 'Copyrighted Author',
+                       intellectual_property: :copyrighted)
+  end
 
   let!(:ingestible) do
     create(:ingestible,
@@ -14,7 +20,8 @@ RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
              { title: 'Test Work 2', content: 'More content here.' }
            ].to_json,
            works_buffer_updated_at: Time.current,
-           toc_buffer: "yes || Test Work 1 ||  || poetry || he || \nyes || Test Work 2 ||  || poetry || he || ")
+           toc_buffer: "yes || Test Work 1 ||  || poetry || he || \n" \
+                       'yes || Test Work 2 ||  || poetry || he || ')
   end
 
   before do
@@ -27,7 +34,9 @@ RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
         # Set default authorities to public domain
         ingestible.update!(
           default_authorities: [
-            { seqno: 1, authority_id: public_domain_author.id, authority_name: public_domain_author.name,
+            { seqno: 1,
+              authority_id: public_domain_author.id,
+              authority_name: public_domain_author.name,
               role: 'author' }
           ].to_json
         )
@@ -53,7 +62,9 @@ RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
         # Set default authorities to include copyrighted author
         ingestible.update!(
           default_authorities: [
-            { seqno: 1, authority_id: copyrighted_author.id, authority_name: copyrighted_author.name,
+            { seqno: 1,
+              authority_id: copyrighted_author.id,
+              authority_name: copyrighted_author.name,
               role: 'author' }
           ].to_json
         )
@@ -71,22 +82,32 @@ RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
       end
     end
 
-    context 'constituent text with different authorities than defaults' do
-      it 'shows correct copyright status per individual text' do
-        # Default is public domain, but Text Work 1 has copyrighted author
-        text1_authorities = [
-          { seqno: 1, authority_id: copyrighted_author.id, authority_name: copyrighted_author.name,
-            role: 'author' }
-        ].to_json
-        ingestible.update!(
-          toc_buffer: "yes || Test Work 1 || #{text1_authorities} || poetry || he || by_permission\nyes || Test Work 2 ||  || poetry || he || by_permission",
-          default_authorities: [
-            { seqno: 1, authority_id: public_domain_author.id, authority_name: public_domain_author.name,
-              role: 'author' }
-          ].to_json
-        )
+    context 'when constituent text has different authorities than defaults' do
+      let(:text1_authorities) do
+        [{ seqno: 1,
+           authority_id: copyrighted_author.id,
+           authority_name: copyrighted_author.name,
+           role: 'author' }].to_json
+      end
 
-        visit edit_ingestible_path(ingestible, tab: 'toc')
+      let(:mixed_ingestible) do
+        toc_line1 = "yes || Test Work 1 || #{text1_authorities} || poetry || he || by_permission"
+        toc_line2 = 'yes || Test Work 2 ||  || poetry || he || by_permission'
+        ingestible.tap do |ing|
+          ing.update!(
+            toc_buffer: "#{toc_line1}\n#{toc_line2}",
+            default_authorities: [
+              { seqno: 1,
+                authority_id: public_domain_author.id,
+                authority_name: public_domain_author.name,
+                role: 'author' }
+            ].to_json
+          )
+        end
+      end
+
+      it 'shows correct copyright status per individual text' do
+        visit edit_ingestible_path(mixed_ingestible, tab: 'toc')
         click_button I18n.t('ingestible.included_works')
 
         expect(page).to have_css('#generalDlg', visible: true, wait: 5)
@@ -99,6 +120,5 @@ RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
         expect(page).to have_content(I18n.t('ingestible.all_authorities_public_domain'))
       end
     end
-
   end
 end

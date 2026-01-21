@@ -13,7 +13,7 @@ describe Ingestible do
         it 'returns true' do
           ingestible.default_authorities = ''
           ingestible.collection_authorities = [{ seqno: 1, authority_id: authority1.id,
-                                                  authority_name: authority1.name, role: 'author' }].to_json
+                                                 authority_name: authority1.name, role: 'author' }].to_json
           expect(ingestible.should_mirror_authorities?).to be true
         end
       end
@@ -257,7 +257,8 @@ describe Ingestible do
                              prospective_volume_title: 'Test Volume',
                              collection_authorities: collection_auths_json)
           expect(ingestible).not_to be_valid
-          expect(ingestible.errors[:prospective_volume_title]).to include(I18n.t('ingestible.errors.duplicate_volume_by_title'))
+          error_message = I18n.t('ingestible.errors.duplicate_volume_by_title')
+          expect(ingestible.errors[:prospective_volume_title]).to include(error_message)
         end
 
         it 'allows volume with same title but different authorities' do
@@ -288,11 +289,11 @@ describe Ingestible do
 
         it 'prevents duplicate when another draft ingestible proposes same volume' do
           # Create first ingestible proposing a volume
-          first_ingestible = create(:ingestible,
-                                    no_volume: false,
-                                    status: :draft,
-                                    prospective_volume_title: 'New Volume',
-                                    collection_authorities: collection_auths_json)
+          create(:ingestible,
+                 no_volume: false,
+                 status: :draft,
+                 prospective_volume_title: 'New Volume',
+                 collection_authorities: collection_auths_json)
 
           # Try to create second ingestible with same volume info
           second_ingestible = build(:ingestible,
@@ -300,16 +301,17 @@ describe Ingestible do
                                     prospective_volume_title: 'New Volume',
                                     collection_authorities: collection_auths_json)
           expect(second_ingestible).not_to be_valid
-          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
+          error_message = I18n.t('ingestible.errors.another_ingestible_proposing_volume')
+          expect(second_ingestible.errors[:base]).to include(error_message)
         end
 
         it 'prevents duplicate when another awaiting_authorities ingestible proposes same volume' do
           # Create first ingestible proposing a volume
-          first_ingestible = create(:ingestible,
-                                    no_volume: false,
-                                    status: :awaiting_authorities,
-                                    prospective_volume_title: 'New Volume',
-                                    collection_authorities: collection_auths_json)
+          create(:ingestible,
+                 no_volume: false,
+                 status: :awaiting_authorities,
+                 prospective_volume_title: 'New Volume',
+                 collection_authorities: collection_auths_json)
 
           # Try to create second ingestible with same volume info
           second_ingestible = build(:ingestible,
@@ -317,16 +319,17 @@ describe Ingestible do
                                     prospective_volume_title: 'New Volume',
                                     collection_authorities: collection_auths_json)
           expect(second_ingestible).not_to be_valid
-          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
+          error_message = I18n.t('ingestible.errors.another_ingestible_proposing_volume')
+          expect(second_ingestible.errors[:base]).to include(error_message)
         end
 
         it 'allows duplicate when other ingestible is already ingested' do
           # Create ingested ingestible
-          first_ingestible = create(:ingestible,
-                                    no_volume: false,
-                                    status: :ingested,
-                                    prospective_volume_title: 'New Volume',
-                                    collection_authorities: collection_auths_json)
+          create(:ingestible,
+                 no_volume: false,
+                 status: :ingested,
+                 prospective_volume_title: 'New Volume',
+                 collection_authorities: collection_auths_json)
 
           # Should allow second ingestible since first is already ingested
           second_ingestible = build(:ingestible,
@@ -360,7 +363,8 @@ describe Ingestible do
                              prospective_volume_id: "P#{publication.id}",
                              collection_authorities: collection_auths_json)
           expect(ingestible).not_to be_valid
-          expect(ingestible.errors[:prospective_volume_id]).to include(I18n.t('ingestible.errors.duplicate_volume_for_publication'))
+          error_message = I18n.t('ingestible.errors.duplicate_volume_for_publication')
+          expect(ingestible.errors[:prospective_volume_id]).to include(error_message)
         end
 
         it 'allows volume for same publication but different authorities' do
@@ -378,11 +382,11 @@ describe Ingestible do
 
         it 'prevents duplicate when another ingestible proposes same publication volume' do
           # Create first ingestible proposing a volume from publication
-          first_ingestible = create(:ingestible,
-                                    no_volume: false,
-                                    status: :draft,
-                                    prospective_volume_id: "P#{publication.id}",
-                                    collection_authorities: collection_auths_json)
+          create(:ingestible,
+                 no_volume: false,
+                 status: :draft,
+                 prospective_volume_id: "P#{publication.id}",
+                 collection_authorities: collection_auths_json)
 
           # Try to create second ingestible for same publication
           second_ingestible = build(:ingestible,
@@ -390,7 +394,8 @@ describe Ingestible do
                                     prospective_volume_id: "P#{publication.id}",
                                     collection_authorities: collection_auths_json)
           expect(second_ingestible).not_to be_valid
-          expect(second_ingestible.errors[:base]).to include(I18n.t('ingestible.errors.another_ingestible_proposing_volume'))
+          error_message = I18n.t('ingestible.errors.another_ingestible_proposing_volume')
+          expect(second_ingestible.errors[:base]).to include(error_message)
         end
       end
 
@@ -547,7 +552,7 @@ describe Ingestible do
       end
     end
 
-    context 'edge cases' do
+    context 'when handling edge cases' do
       it 'returns copyrighted when no authorities are specified' do
         text_authorities = ''
         ingestible.default_authorities = ''

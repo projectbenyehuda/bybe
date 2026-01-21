@@ -95,7 +95,7 @@
             - select_opts = { class: 'toc-intellectual-property' }
             = select_tag :intellectual_property, options_for_select(copyrighted_ip_options, default_ip), select_opts
           - else
-            %div{style: 'background-color: #d4edda; padding: 5px; border-radius: 3px;'}
+            .public-domain-notice
               = t('ingestible.all_authorities_public_domain')
       - else
         %td
@@ -104,7 +104,7 @@
 
 :javascript
   $(document).ready(function() {
-    function update_toc(e, new_authority_id, new_name, new_role, new_person_tbd) {
+    function update_toc(e, new_authority_id, new_name, new_role, new_person_tbd, reload_toc) {
       startModal('spinnerdiv');
       var title = e.closest('tr').find('.toc-title').text();
       var genre = e.closest('tr').find('.toc-genre').val();
@@ -126,6 +126,10 @@
         success: function(data) {
           e.parent().append("<span id='checkmark_fader' style='color:green;'>✓</span>");
           $('#checkmark_fader').fadeOut(2000);
+          // Reload TOC if requested (after authority changes)
+          if (reload_toc) {
+            $('#generalDlg').load("#{edit_toc_ingestible_path(@ingestible)}");
+          }
         }
       });
     }
@@ -155,11 +159,7 @@
       var new_role = $(this).closest('tr').find('select[name=role]').val();
       var new_person_tbd = $(this).closest('tr').find('input[name=new_person]').val();
 
-      update_toc($(this), new_au, new_name, new_role, new_person_tbd);
-      // Reload TOC after authority change to update copyright status
-      setTimeout(function() {
-        $('#generalDlg').load("#{edit_toc_ingestible_path(@ingestible)}");
-      }, 500);
+      update_toc($(this), new_au, new_name, new_role, new_person_tbd, true);
     });
     $('.replace_authority').click(function(e) {
       e.preventDefault();
