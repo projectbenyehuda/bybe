@@ -49,7 +49,7 @@ module BybeUtils
   def boilerplate(title)
     '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
     <!DOCTYPE html>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="he" lang="he"><head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /><title>' + title + '</title></head><body dir="rtl" style="text-align:right">'
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="he" lang="he"><head><meta http-equiv="content-type" content="text/html; charset=UTF-8" /><title>' + title + '</title></head><body dir="rtl" style="text-align:justify">'
   end
 
   def textify_authority_role(role)
@@ -111,6 +111,57 @@ module BybeUtils
     return buf.gsub('<br>', '<br />') # W3C epubcheck doesn't like <br> without closing
   end
 
+  # Extract and embed images from HTML into EPUB
+  def embed_images_in_epub(book, html, image_counter = 0)
+    # Find all ActiveStorage image URLs in the HTML
+    modified_html = html.dup
+    image_map = {}
+
+    # Match ActiveStorage URLs in img tags
+    html.scan(%r{<img[^>]*src=["'](/rails/active_storage/[^"']+)["'][^>]*>}i).each do |matches|
+      storage_url = matches[0]
+      next if image_map[storage_url] # Already processed
+
+      begin
+        # Extract the blob signed ID from the URL
+        # Format: /rails/active_storage/blobs/redirect/{signed_id}/{filename}
+        if storage_url =~ %r{/rails/active_storage/(?:blobs|representations)/(?:redirect|proxy)/([^/]+)/(.+)}
+          signed_id = ::Regexp.last_match(1)
+          filename = ::Regexp.last_match(2)
+
+          # Get the blob and download it
+          blob = ActiveStorage::Blob.find_signed(signed_id)
+          next unless blob
+
+          # Generate a unique filename for the EPUB
+          extension = File.extname(filename)
+          epub_filename = "images/image_#{image_counter}#{extension}"
+          image_counter += 1
+
+          # Download the blob data into memory
+          image_data = String.new
+          blob.download { |chunk| image_data << chunk }
+
+          # Add image to EPUB using StringIO (keeps data in memory for GEPUB to access during generation)
+          book.add_item(epub_filename, content: StringIO.new(image_data))
+
+          # Map old URL to new EPUB-local path
+          image_map[storage_url] = epub_filename
+        end
+      rescue StandardError => e
+        Rails.logger.warn("Failed to embed image #{storage_url}: #{e.message}")
+        # Skip this image, leave original URL
+      end
+    end
+
+    # Replace all image URLs in the HTML
+    image_map.each do |old_url, new_path|
+      modified_html.gsub!(old_url, new_path)
+    end
+
+    [modified_html, image_counter]
+  end
+
   def make_epub(identifier, title, involved_authorities, section_titles, section_texts, tmpid, purl)
     book = GEPUB::Book.new
     book.primary_identifier(identifier, 'BookID', 'URL')
@@ -158,11 +209,19 @@ module BybeUtils
 
     # add front page instead of graphical cover, for now
     authorities_html = textify_authorities_and_roles(involved_authorities, true) # full URLs for epub
-    front_page = boilerplate_start + "<h1>#{title}</h1>\n<p/><h2>#{authorities_html}</h2><p/><p/><p/><p/>מעודכן לתאריך: #{Date.today}<p/><p/>#{I18n.t(:from_pby_and_available_at)} #{purl} <p/><h3><a href='https://benyehuda.org/page/volunteer'>(רוצים לעזור?)</a></h3>" + boilerplate_end
+    front_page = boilerplate_start + "<h1>#{title}</h1>\n<p/><h2>#{authorities_html}</h2><p/><p/><p/><p/>מעודכן לתאריך: #{Time.zone.today}<p/><p/>#{I18n.t(:from_pby_and_available_at)} #{purl} <p/><h3><a href='https://benyehuda.org/page/volunteer'>(רוצים לעזור?)</a></h3>" + boilerplate_end
+
+    # Process and embed images from section texts
+    image_counter = 0
+    processed_sections = section_texts.map do |section_text|
+      processed_html, image_counter = embed_images_in_epub(book, section_text, image_counter)
+      processed_html
+    end
+
     book.ordered do
       book.add_item('0_front.xhtml').add_content(StringIO.new(front_page)).toc_text(title)
       section_titles.each_with_index do |stitle, i|
-        book.add_item((i + 1).to_s + '_text.xhtml').add_content(StringIO.new("#{boilerplate(title)}<h1>#{stitle}</h1>\n#{epub_sanitize_html(section_texts[i])}#{boilerplate_end}")).toc_text(stitle)
+        book.add_item((i + 1).to_s + '_text.xhtml').add_content(StringIO.new("#{boilerplate(title)}<h1>#{stitle}</h1>\n#{epub_sanitize_html(processed_sections[i])}#{boilerplate_end}")).toc_text(stitle)
       end
     end
     # fname = cover_file.path + '.epub'
@@ -173,39 +232,124 @@ module BybeUtils
   end
 
   def make_epub_from_collection(collection)
-    section_titles = []
-    section_texts = []
-    collection.flatten_items.each do |ci|
-      section_titles << ci.title
+    book = GEPUB::Book.new
+    book.primary_identifier("https://benyehuda.org/collection/#{collection.id}", 'BookID', 'URL')
+    book.language = 'he'
+    book.add_title(collection.title, nil, title_type: GEPUB::TITLE_TYPE::MAIN)
 
-      # Build section text with authority information
-      section_html = ''
-
-      # Add involved authorities (plain text, no links for EPUB)
-      if ci.involved_authorities.present?
-        InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
-          ras = ci.involved_authorities.select { |ia| ia.role == role }
-          next if ras.empty?
-
-          role_text = I18n.t(role, scope: 'involved_authority.abstract_roles')
-          names = ras.map { |ra| ra.authority.name }.join(', ')
-          section_html += "<h3>#{role_text}: #{names}</h3>\n"
-        end
+    # Add collection-level authorities
+    aus = []
+    contributors = []
+    collection.authorities.each do |ia|
+      if ia.role == 'author'
+        aus << ia.authority.name
+      else
+        contributors << [ia.authority.name, epub_role_from_ia_role(ia.role)]
       end
-
-      # Add the actual content
-      section_html += (ci.collection? ? '<p/>' : ci.to_html)
-
-      section_texts << section_html
     end
-    make_epub('https://benyehuda.org/collection/' + collection.id.to_s, collection.title,
-              collection.authorities, section_titles, section_texts, "coll_#{collection.id}", "#{Rails.application.routes.url_helpers.root_url}#{Rails.application.routes.url_helpers.collection_path(collection)}")
+    aus.each { |a| book.add_creator(a) }
+    contributors.each { |c, r| book.add_contributor(c, role: r) }
+
+    book.page_progression_direction = 'rtl'
+
+    boilerplate_start = boilerplate(collection.title)
+    boilerplate_end = '</body></html>'
+
+    # Add front page
+    authorities_html = textify_authorities_and_roles(collection.authorities, true)
+    purl = "#{Rails.application.routes.url_helpers.root_url}#{Rails.application.routes.url_helpers.collection_path(collection)}"
+
+    # Build structured title page
+    front_page_content = "<h1>#{collection.title}</h1>\n"
+    front_page_content += "<h2>#{authorities_html}</h2>\n" if authorities_html.present?
+
+    # Add publication date if available
+    if collection.pub_year.present?
+      front_page_content += "<p><strong>#{I18n.t(:publication_date)}:</strong> #{collection.pub_year}</p>\n"
+    end
+
+    # Add EPUB generation date
+    front_page_content += "<p><strong>#{I18n.t(:updated_at)}:</strong> #{Time.zone.today}</p>\n"
+
+    # Add PBY credit and link
+    front_page_content += "<p/><p/>#{I18n.t(:from_pby_and_available_at)} #{purl}</p>\n"
+    front_page_content += "<p><a href='https://benyehuda.org/page/volunteer'>(רוצים לעזור?)</a></p>\n"
+
+    front_page = boilerplate_start + front_page_content + boilerplate_end
+
+    # Prepare TOC data for hierarchical structure
+    toc_data = []
+    item_index = 1 # Start from 1 since 0 is front page
+    image_counter = 0
+
+    book.ordered do
+      book.add_item('0_front.xhtml').add_content(StringIO.new(front_page))
+
+      collection.flatten_items.each_with_index do |ci, idx|
+        # Build section HTML with authority information
+        section_html = ''
+
+        # Add involved authorities for this manifestation
+        if ci.involved_authorities.present?
+          InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+            ras = ci.involved_authorities.select { |ia| ia.role == role }
+            next if ras.empty?
+
+            role_text = I18n.t(role, scope: 'involved_authority.abstract_roles')
+            names = ras.map { |ra| ra.authority.name }.join(', ')
+            section_html += "<h3>#{role_text}: #{names}</h3>\n"
+          end
+        end
+
+        # Add the actual content
+        content_html = ci.collection? ? '<p/>' : ci.to_html
+        section_html += content_html
+
+        # Process and embed images
+        section_html, image_counter = embed_images_in_epub(book, section_html, image_counter)
+
+        # Add item to EPUB
+        filename = "#{item_index}_text.xhtml"
+        book.add_item(filename).add_content(StringIO.new(boilerplate_start + section_html + boilerplate_end))
+
+        # Add top-level TOC entry for this item
+        # Use I18n for paratext titles (items with markdown content)
+        toc_title = ci.markdown.present? ? I18n.t(:paratext_description) : ci.title
+        toc_data << { link: filename, text: toc_title, level: 1 }
+
+        # Extract H2 headings for nested TOC entries
+        unless ci.collection?
+          h2_headings = content_html.scan(%r{<h2[^>]*\s+id=["']([^"']+)["'][^>]*>(.*?)</h2>})
+          h2_headings.each do |id, text|
+            # Remove HTML tags from heading text
+            clean_text = text.gsub(/<[^>]+>/, '').strip
+            toc_data << { link: "#{filename}##{id}", text: clean_text, level: 2 }
+          end
+        end
+
+        item_index += 1
+      end
+    end
+
+    # Don't mark collection front page as non-linear - it should appear at the beginning
+    # (Unlike single manifestations where it might dominate progress, collections have many items)
+
+    # Add hierarchical TOC
+    book.add_tocdata(toc_data)
+    book.generate_nav_doc(collection.title)
+
+    # Generate EPUB
+    fname = "tmp/tmp_epub_coll_#{collection.id}.epub"
+    book.generate_epub(fname)
+    fname
   end
 
   def make_epub_from_user_anthology(user_anthology, html)
     section_titles = html.scan(%r{<h1.*?>(.*?)</h1}).map { |x| x[0] }
     section_texts = html.split(%r{<h1.*?</h1>})
     section_texts.shift(1) # skip the header
+
+    # Note: Image embedding is handled within make_epub for all section_texts
     make_epub('https://benyehuda.org/anthology/' + user_anthology.id.to_s, user_anthology.title, [], section_titles,
               section_texts, "anth_#{user_anthology.id}", "#{Rails.application.routes.url_helpers.root_url}#{Rails.application.routes.url_helpers.anthology_path(user_anthology)}")
   end
@@ -214,19 +358,27 @@ module BybeUtils
     fname = ''
     case entity.class.to_s
     when 'Manifestation'
-      section_titles = html.scan(%r{<h2.*?>(.*?)</h2}).map { |x| x[0] }
-      if section_titles.count < (entity.expression.translation? ? 3 : 2) # text witout chapters
-        [html]
+      # Extract H2 headings with id attributes (chapter headings only, not metadata like author/translator)
+      section_titles = html.scan(%r{<h2[^>]*\sid=[^>]*>(.*?)</h2>}).map { |x| x[0] }
+
+      # If there are enough H2 chapter headings, split the HTML into sections
+      min_sections = entity.expression.translation? ? 3 : 2
+      if section_titles.count >= min_sections
+        # Split HTML at H2 tags with id attributes to get section content
+        section_texts = html.split(%r{<h2[^>]*\sid=[^>]*>.*?</h2>})
+
+        # The first element is content before the first chapter H2 (header, metadata, author/translator info)
+        # Since we only match H2 tags with ids (chapter headings), author/translator H2s are excluded
+        # Remove the intro/header content as we don't want it as a separate chapter
+        section_texts.shift(1)
       else
-        section_texts = html.split(%r{<h2.*?</h2>})
-        offset = entity.expression.translation? ? 2 : 1
-        if section_texts.count - section_titles.count == 1
-          section_titles.unshift('*') # no title
-        end
-        section_texts.shift(offset) # skip the header and the author/translator lines
+        # Text without chapters - use entire HTML as single section
+        section_titles = [entity.title]
+        section_texts = [html]
       end
-      fname = make_epub('https://benyehuda.org/read/' + entity.id.to_s, entity.title, entity.involved_authorities, [entity.title],
-                        [html], entity.id.to_s, "#{Rails.application.routes.url_helpers.root_url}#{Rails.application.routes.url_helpers.manifestation_path(entity)}")
+
+      fname = make_epub('https://benyehuda.org/read/' + entity.id.to_s, entity.title, entity.involved_authorities, section_titles,
+                        section_texts, entity.id.to_s, "#{Rails.application.routes.url_helpers.root_url}#{Rails.application.routes.url_helpers.manifestation_path(entity)}")
     when 'Anthology'
       fname = make_epub_from_user_anthology(entity, html)
     when 'Collection'
