@@ -215,7 +215,7 @@ module BybeUtils
 
     # add front page instead of graphical cover, for now
     authorities_html = textify_authorities_and_roles(involved_authorities, true) # full URLs for epub
-    front_page = boilerplate_start + "<h1>#{title}</h1>\n<p/><h2>#{authorities_html}</h2><p/><p/><p/><p/>מעודכן לתאריך: #{Date.today}<p/><p/>#{I18n.t(:from_pby_and_available_at)} #{purl} <p/><h3><a href='https://benyehuda.org/page/volunteer'>(רוצים לעזור?)</a></h3>" + boilerplate_end
+    front_page = boilerplate_start + "<h1>#{title}</h1>\n<p/><h2>#{authorities_html}</h2><p/><p/><p/><p/>מעודכן לתאריך: #{Time.zone.today}<p/><p/>#{I18n.t(:from_pby_and_available_at)} #{purl} <p/><h3><a href='https://benyehuda.org/page/volunteer'>(רוצים לעזור?)</a></h3>" + boilerplate_end
 
     # Process and embed images from section texts
     image_counter = 0
@@ -277,7 +277,7 @@ module BybeUtils
     end
 
     # Add EPUB generation date
-    front_page_content += "<p><strong>#{I18n.t(:updated_at)}:</strong> #{Date.today}</p>\n"
+    front_page_content += "<p><strong>#{I18n.t(:updated_at)}:</strong> #{Time.zone.today}</p>\n"
 
     # Add PBY credit and link
     front_page_content += "<p/><p/>#{I18n.t(:from_pby_and_available_at)} #{purl}</p>\n"
@@ -339,8 +339,8 @@ module BybeUtils
       end
     end
 
-    # Mark front page as non-linear
-    book.spine.itemref_by_id['item_0_front']&.linear = 'no'
+    # Don't mark collection front page as non-linear - it should appear at the beginning
+    # (Unlike single manifestations where it might dominate progress, collections have many items)
 
     # Add hierarchical TOC
     book.add_tocdata(toc_data)
