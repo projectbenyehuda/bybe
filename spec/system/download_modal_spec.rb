@@ -29,9 +29,8 @@ RSpec.describe 'Download modal', :js, type: :system do
       click_button I18n.t(:download)
     end
 
-    # Modal should close after a moment
-    sleep 0.5
-    expect(page).not_to have_selector('#downloadDlg', visible: true)
+    # Modal should close (Capybara will wait for it to disappear)
+    expect(page).to have_no_selector('#downloadDlg', visible: true)
 
     # Second download attempt (without page reload)
     find('a.download[data-target="#downloadDlg"]').click
@@ -43,9 +42,8 @@ RSpec.describe 'Download modal', :js, type: :system do
       click_button I18n.t(:download)
     end
 
-    # Modal should close again
-    sleep 0.5
-    expect(page).not_to have_selector('#downloadDlg', visible: true)
+    # Modal should close again (Capybara will wait for it to disappear)
+    expect(page).to have_no_selector('#downloadDlg', visible: true)
 
     # The test passes if we get here without errors or hanging
   end
@@ -66,9 +64,8 @@ RSpec.describe 'Download modal', :js, type: :system do
       click_button I18n.t(:download)
     end
 
-    # Modal should close
-    sleep 0.5
-    expect(page).not_to have_selector('#downloadDlg', visible: true)
+    # Modal should close (Capybara will wait for it to disappear)
+    expect(page).to have_no_selector('#downloadDlg', visible: true)
 
     # Second download attempt
     find('[data-target="#downloadDlg"]').click
@@ -81,8 +78,7 @@ RSpec.describe 'Download modal', :js, type: :system do
       click_button I18n.t(:download)
     end
 
-    # Modal should close again
-    sleep 0.5
-    expect(page).not_to have_selector('#downloadDlg', visible: true)
+    # Modal should close again (Capybara will wait for it to disappear)
+    expect(page).to have_no_selector('#downloadDlg', visible: true)
   end
 end

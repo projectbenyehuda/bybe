@@ -138,21 +138,15 @@ module BybeUtils
           epub_filename = "images/image_#{image_counter}#{extension}"
           image_counter += 1
 
-          # Download the blob to a temporary file
-          tempfile = Tempfile.new(['epub_image', extension])
-          begin
-            blob.download { |chunk| tempfile.write(chunk) }
-            tempfile.rewind
+          # Download the blob data into memory
+          image_data = String.new
+          blob.download { |chunk| image_data << chunk }
 
-            # Add image to EPUB
-            book.add_item(epub_filename, content: tempfile)
+          # Add image to EPUB using StringIO (keeps data in memory for GEPUB to access during generation)
+          book.add_item(epub_filename, content: StringIO.new(image_data))
 
-            # Map old URL to new EPUB-local path
-            image_map[storage_url] = epub_filename
-          ensure
-            tempfile.close
-            tempfile.unlink
-          end
+          # Map old URL to new EPUB-local path
+          image_map[storage_url] = epub_filename
         end
       rescue StandardError => e
         Rails.logger.warn("Failed to embed image #{storage_url}: #{e.message}")
@@ -364,29 +358,19 @@ module BybeUtils
     fname = ''
     case entity.class.to_s
     when 'Manifestation'
-      # Extract H2 headings to use as section titles
-      section_titles = html.scan(%r{<h2.*?>(.*?)</h2>}).map { |x| x[0] }
+      # Extract H2 headings with id attributes (chapter headings only, not metadata like author/translator)
+      section_titles = html.scan(%r{<h2[^>]*\sid=[^>]*>(.*?)</h2>}).map { |x| x[0] }
 
-      # If there are enough H2 headings, split the HTML into sections
+      # If there are enough H2 chapter headings, split the HTML into sections
       min_sections = entity.expression.translation? ? 3 : 2
       if section_titles.count >= min_sections
-        # Split HTML at H2 tags to get section content
-        section_texts = html.split(%r{<h2.*?</h2>})
+        # Split HTML at H2 tags with id attributes to get section content
+        section_texts = html.split(%r{<h2[^>]*\sid=[^>]*>.*?</h2>})
 
-        # The first element is content before the first H2 (header, metadata, etc.)
-        # For translations, we skip 2 elements (header + translator info)
-        # For originals, we skip 1 element (just header)
-        offset = entity.expression.translation? ? 2 : 1
-
-        # If split produced one more element than titles, it means first section had no title
-        if section_texts.count - section_titles.count == 1
-          section_titles.unshift('*') # Add placeholder title
-        end
-
-        # Remove the header sections we don't want as separate chapters
-        # Must remove same number from both arrays to keep them aligned
-        section_texts.shift(offset)
-        section_titles.shift(offset)
+        # The first element is content before the first chapter H2 (header, metadata, author/translator info)
+        # Since we only match H2 tags with ids (chapter headings), author/translator H2s are excluded
+        # Remove the intro/header content as we don't want it as a separate chapter
+        section_texts.shift(1)
       else
         # Text without chapters - use entire HTML as single section
         section_titles = [entity.title]
