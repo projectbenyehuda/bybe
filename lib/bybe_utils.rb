@@ -282,44 +282,55 @@ module BybeUtils
     item_index = 1 # Start from 1 since 0 is front page
     image_counter = 0
 
+    # Pre-process all sections and embed images OUTSIDE the ordered block
+    # This ensures images are only in the manifest, not the spine
+    processed_sections = []
+    collection.flatten_items.each do |ci|
+      # Build section HTML with authority information
+      section_html = ''
+
+      # Add involved authorities for this manifestation
+      if ci.involved_authorities.present?
+        InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+          ras = ci.involved_authorities.select { |ia| ia.role == role }
+          next if ras.empty?
+
+          role_text = I18n.t(role, scope: 'involved_authority.abstract_roles')
+          names = ras.map { |ra| ra.authority.name }.join(', ')
+          section_html += "<h3>#{role_text}: #{names}</h3>\n"
+        end
+      end
+
+      # Add the actual content
+      content_html = ci.collection? ? '<p/>' : ci.to_html
+      section_html += content_html
+
+      # Process and embed images (adds images to manifest, but outside ordered block so not in spine)
+      section_html, image_counter = embed_images_in_epub(book, section_html, image_counter)
+
+      processed_sections << {
+        html: section_html,
+        content_html: content_html,
+        toc_title: ci.markdown.present? ? I18n.t(:paratext_description) : ci.title,
+        is_collection: ci.collection?
+      }
+    end
+
+    # Now add all items to spine in the ordered block
     book.ordered do
       book.add_item('0_front.xhtml').add_content(StringIO.new(front_page))
 
-      collection.flatten_items.each_with_index do |ci, idx|
-        # Build section HTML with authority information
-        section_html = ''
-
-        # Add involved authorities for this manifestation
-        if ci.involved_authorities.present?
-          InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
-            ras = ci.involved_authorities.select { |ia| ia.role == role }
-            next if ras.empty?
-
-            role_text = I18n.t(role, scope: 'involved_authority.abstract_roles')
-            names = ras.map { |ra| ra.authority.name }.join(', ')
-            section_html += "<h3>#{role_text}: #{names}</h3>\n"
-          end
-        end
-
-        # Add the actual content
-        content_html = ci.collection? ? '<p/>' : ci.to_html
-        section_html += content_html
-
-        # Process and embed images
-        section_html, image_counter = embed_images_in_epub(book, section_html, image_counter)
-
+      processed_sections.each do |section|
         # Add item to EPUB
         filename = "#{item_index}_text.xhtml"
-        book.add_item(filename).add_content(StringIO.new(boilerplate_start + section_html + boilerplate_end))
+        book.add_item(filename).add_content(StringIO.new(boilerplate_start + section[:html] + boilerplate_end))
 
         # Add top-level TOC entry for this item
-        # Use I18n for paratext titles (items with markdown content)
-        toc_title = ci.markdown.present? ? I18n.t(:paratext_description) : ci.title
-        toc_data << { link: filename, text: toc_title, level: 1 }
+        toc_data << { link: filename, text: section[:toc_title], level: 1 }
 
         # Extract H2 headings for nested TOC entries
-        unless ci.collection?
-          h2_headings = content_html.scan(%r{<h2[^>]*\s+id=["']([^"']+)["'][^>]*>(.*?)</h2>})
+        unless section[:is_collection]
+          h2_headings = section[:content_html].scan(%r{<h2[^>]*\s+id=["']([^"']+)["'][^>]*>(.*?)</h2>})
           h2_headings.each do |id, text|
             # Remove HTML tags from heading text
             clean_text = text.gsub(/<[^>]+>/, '').strip
