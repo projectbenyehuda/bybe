@@ -502,6 +502,7 @@ he:
   show_text: הצג את גוף היצירה
   text: טקסט
   paratext: פאראטקסט
+  paratext_description: טקסט נלווה
   placeholder_item: פריט לא מקושר
   title_only_if_needed: "כותרת (רק אם צריך)"
   or_search_for_collection: 'או חיפוש אוסף קיים בשם: '
