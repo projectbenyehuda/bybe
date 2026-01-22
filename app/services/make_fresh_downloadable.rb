@@ -2,7 +2,9 @@
 class MakeFreshDownloadable < ApplicationService
   # @return created Downloadable object
   def call(format, filename, html, download_entity, author_string, kwic_text: nil)
-    html = images_to_absolute_url(html)
+    # Convert images to absolute URLs for formats that need them (PDF, DOCX, etc.)
+    # EPUBs handle images internally by embedding them
+    html = images_to_absolute_url(html) unless %w[epub mobi].include?(format)
     dl = download_entity.downloadables.where(doctype: format).first
     if dl.nil?
       dl = Downloadable.new(doctype: format)

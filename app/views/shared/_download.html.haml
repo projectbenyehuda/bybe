@@ -75,8 +75,12 @@
   if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
   $('#os').val(OSName);
   $(document).ready(function(){
-    dlgid = "##{dlgid}";
-    $(dlgid+'_do_download').click(function() {
-      $(dlgid).modal('hide');
+    var formid = "##{formid}";
+    var dlgid = "##{dlgid}";
+    $(formid).on('submit', function() {
+      // Hide modal after a short delay to allow form submission to complete
+      setTimeout(function() {
+        $(dlgid).modal('hide');
+      }, 300);
     });
   });
