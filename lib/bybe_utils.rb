@@ -230,8 +230,6 @@ module BybeUtils
         book.add_item((i + 1).to_s + '_text.xhtml').add_content(StringIO.new("#{boilerplate(title)}<h1>#{stitle}</h1>\n#{epub_sanitize_html(processed_sections[i])}#{boilerplate_end}")).toc_text(stitle)
       end
     end
-    # Mark front page as non-linear so it doesn't count toward reading progress
-    book.spine.itemref_by_id['item_0_front']&.linear = 'no'
     # fname = cover_file.path + '.epub'
     fname = "tmp/tmp_epub_#{tmpid}.epub"
     book.generate_epub(fname)

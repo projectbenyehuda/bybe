@@ -71,19 +71,6 @@ RSpec.describe 'BybeUtils EPUB generation' do
       File.delete(epub_file)
     end
 
-    it 'marks front page as non-linear (linear="no") for manifestations' do
-      epub_file = make_epub_from_single_html(html, manifestation, '')
-
-      Zip::File.open(epub_file) do |zip_file|
-        opf_content = zip_file.read('OEBPS/package.opf')
-        # Front page should have linear="no" in spine for manifestations
-        # (to prevent it from dominating progress in short texts)
-        expect(opf_content).to match(/<itemref[^>]*idref="item_0_front"[^>]*linear="no"/)
-      end
-
-      File.delete(epub_file)
-    end
-
     it 'uses justified text alignment in all sections' do
       epub_file = make_epub_from_single_html(html, manifestation, '')
 
