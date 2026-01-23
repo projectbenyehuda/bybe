@@ -11,17 +11,18 @@
         = label_tag t(:nonpd_only)
         = submit_tag t(:filter)
     .row
+      .col-md-12
+        = page_entries_info @holdings
+        = paginate @holdings
+    .row
       %table
         %tr
           %th= t(:title)
           %th= t(:author)
           %th= t(:recno)
           %th= t(:location)
-        - displayed_pubs = []
         - @holdings.each do |h|
           - pub = h.publication
-          - next if displayed_pubs.include?(pub)
-          - displayed_pubs << pub
           %tr
             %td
               = link_to pub.title, h.source_id
@@ -38,7 +39,12 @@
               = link_to t(:mark_as_scanned)+' | ', holding_status_path(id: h.id, status: 'scanned'), remote: true, id: "scn#{h.id}"
               = link_to t(:mark_as_missing), holding_status_path(id: h.id, status: 'missing'), remote: true, id: "msng#{h.id}"
               = button_tag t(:copy_to_clipboard), id: "copy_#{h.id}", 'class' => 'holding_copybutton'
-      = link_to t(:back), action: :index
+    .row
+      .col-md-12
+        = paginate @holdings
+    .row
+      .col-md-12
+        = link_to t(:back), action: :index
 
 :javascript
   $(document).ready(function(){
