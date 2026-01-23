@@ -240,6 +240,7 @@ en:
         alias_placeholder: New alias name...
         add_alias_button: Add
       alias_name_blank: Alias name cannot be blank
+      alias_already_exists: This alias name already exists
       alias_added: Alias added successfully
       alias_add_failed: Failed to add alias
       primary_alias_changed: "Primary name changed from %{old} to %{new}"

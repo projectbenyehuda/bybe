@@ -20,9 +20,15 @@ module Admin
         @tags = @tags.joins(:tag_names).where('tag_names.name LIKE ?', search_term).distinct
       end
 
-      # Filter by status (default to approved)
-      status_filter = params[:status].presence || 'approved'
-      @tags = @tags.where(status: status_filter) unless status_filter == ''
+      # Filter by status (default to approved if not specified)
+      if params.key?(:status)
+        # User explicitly specified a status filter (even if empty)
+        status_filter = params[:status].presence
+        @tags = @tags.where(status: status_filter) if status_filter.present?
+      else
+        # No status parameter provided, default to approved
+        @tags = @tags.where(status: 'approved')
+      end
 
       @tags = @tags.page(params[:page]).per(25)
       @page_title = t('.title')
@@ -68,7 +74,9 @@ module Admin
         # Add new alias if alias_name parameter is provided
         if params[:alias_name].present?
           alias_name = params[:alias_name].to_s.strip
-          @tag.tag_names.create(name: alias_name) if alias_name.present?
+          if alias_name.present? && !TagName.exists?(name: alias_name)
+            @tag.tag_names.create(name: alias_name)
+          end
         end
 
         redirect_to admin_tag_path(@tag), notice: t(:updated_successfully)
@@ -106,6 +114,11 @@ module Admin
 
       if alias_name.blank?
         redirect_to edit_admin_tag_path(@tag), alert: t('admin.tags.alias_name_blank')
+        return
+      end
+
+      if TagName.exists?(name: alias_name)
+        redirect_to edit_admin_tag_path(@tag), alert: t('admin.tags.alias_already_exists')
         return
       end
 

@@ -1658,6 +1658,7 @@ he:
         alias_placeholder: שם כינוי חדש...
         add_alias_button: הוסף
       alias_name_blank: שם הכינוי לא יכול להיות ריק
+      alias_already_exists: שם כינוי זה כבר קיים במערכת
       alias_added: הכינוי נוסף בהצלחה
       alias_add_failed: הוספת הכינוי נכשלה
       primary_alias_changed: "השם המועדף שונה מ-%{old} ל-%{new}"
