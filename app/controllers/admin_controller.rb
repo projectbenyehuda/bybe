@@ -481,8 +481,12 @@ class AdminController < ApplicationController
     new_value = params[:intellectual_property]
 
     if Authority.intellectual_properties.keys.include?(new_value)
-      authority.update(intellectual_property: new_value)
-      render json: { success: true, message: t(:updated_successfully) }
+      if authority.update(intellectual_property: new_value)
+        render json: { success: true, message: t(:updated_successfully) }
+      else
+        render json: { success: false, message: authority.errors.full_messages.to_sentence },
+               status: :unprocessable_entity
+      end
     else
       render json: { success: false, message: t(:invalid_value) }, status: :unprocessable_content
     end
