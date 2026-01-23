@@ -2,6 +2,7 @@ include BybeUtils
 
 class Manifestation < ApplicationRecord
   include TrackingEvents
+  include DownloadLink
 
   paginates_per 100
   belongs_to :expression, inverse_of: :manifestations
