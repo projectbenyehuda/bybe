@@ -31,6 +31,15 @@ describe Admin::TagsController do
       end
     end
 
+    context 'when status filter is empty string' do
+      let(:params) { { status: '' } }
+
+      it 'shows all tags regardless of status' do
+        subject
+        expect(assigns(:tags).count).to eq(5) # 3 approved + 2 pending
+      end
+    end
+
     context 'when searching by name' do
       let!(:searchable_tag) do
         tag = create(:tag, name: "פואטיקה-#{SecureRandom.hex(4)}")
@@ -125,7 +134,7 @@ describe Admin::TagsController do
   end
 
   describe '#update' do
-    subject(:call) { patch :update, params: { id: tag.id, tag: tag_params } }
+    subject(:call) { patch :update, params: { id: tag.id, tag: tag_params }.merge(extra_params) }
 
     let(:tag) do
       name = "Old Name #{SecureRandom.hex(4)}"
@@ -139,6 +148,8 @@ describe Admin::TagsController do
         status: 'rejected'
       }
     end
+
+    let(:extra_params) { {} }
 
     context 'when params are valid' do
       it 'updates tag' do
@@ -155,6 +166,49 @@ describe Admin::TagsController do
         expect { call }.not_to(change { tag.reload.name })
         expect(call).to have_http_status(:unprocessable_content)
         expect(call).to render_template(:edit)
+      end
+    end
+
+    context 'when alias_name is provided' do
+      let(:extra_params) { { alias_name: 'פויאטיקה' } }
+
+      it 'adds the new alias even when primary_tag_name exists' do
+        # Verify primary tag_name exists before the update
+        expect(tag.tag_names.find_by(name: tag.name)).to be_present
+
+        # Should add a new alias
+        expect { call }.to change { tag.tag_names.count }.by(1)
+
+        # Verify the new alias was created
+        expect(tag.tag_names.reload.pluck(:name)).to include('פויאטיקה')
+
+        # Should still update the tag
+        expect(tag.reload.name).to eq('New Name')
+      end
+
+      context 'when alias_name is blank' do
+        let(:extra_params) { { alias_name: '   ' } }
+
+        it 'does not add an alias' do
+          expect { call }.not_to(change { tag.tag_names.count })
+        end
+      end
+
+      context 'when alias_name already exists' do
+        let!(:existing_tag_name) { create(:tag_name, name: 'פויאטיקה') }
+        let(:extra_params) { { alias_name: 'פויאטיקה' } }
+
+        it 'does not create a duplicate TagName' do
+          expect { call }.not_to(change { tag.tag_names.count })
+          expect(call).to redirect_to admin_tag_path(tag)
+          # NOTE: update action shows success for the tag update, alias addition is silent
+          # The duplicate is not added, which is the correct behavior
+        end
+
+        it 'does not add the duplicate to this tag' do
+          call
+          expect(tag.tag_names.reload.pluck(:name)).not_to include('פויאטיקה')
+        end
       end
     end
   end
@@ -201,6 +255,35 @@ describe Admin::TagsController do
         expect(call).to redirect_to edit_admin_tag_path(tag)
       end
     end
+
+    context 'with duplicate alias name' do
+      let!(:existing_tag_name) { create(:tag_name, name: 'דופליקט') }
+      let(:alias_name) { 'דופליקט' }
+
+      it 'does not create duplicate tag_name and shows error message' do
+        # Force tag creation before checking initial count
+        tag.id
+
+        initial_count = TagName.count
+        call
+
+        expect(TagName.count).to eq(initial_count)
+        expect(response).to redirect_to edit_admin_tag_path(tag)
+        expect(flash[:alert]).to eq(I18n.t('admin.tags.alias_already_exists'))
+      end
+
+      it 'handles race conditions gracefully' do
+        # Simulate race condition: TagName doesn't exist during check but does during create
+        allow(TagName).to receive(:find_by).with(name: alias_name).and_return(nil)
+        allow_any_instance_of(ActiveRecord::Associations::CollectionProxy)
+          .to receive(:create).and_raise(ActiveRecord::RecordNotUnique.new('Duplicate key'))
+
+        call
+
+        expect(response).to redirect_to edit_admin_tag_path(tag)
+        expect(flash[:alert]).to eq(I18n.t('admin.tags.alias_already_exists'))
+      end
+    end
   end
 
   describe '#make_primary_alias' do
@@ -214,6 +297,21 @@ describe Admin::TagsController do
     it 'changes the primary name' do
       expect { call }.to change { tag.reload.name }.to(new_primary.name)
       expect(call).to redirect_to edit_admin_tag_path(tag)
+    end
+
+    it 'persists the name change to the database' do
+      old_name = tag.name
+      call
+      # Verify in database by loading a fresh instance
+      fresh_tag = Tag.find(tag.id)
+      expect(fresh_tag.name).to eq(new_primary.name)
+      expect(fresh_tag.name).not_to eq(old_name)
+    end
+
+    it 'maintains all existing tag_names' do
+      initial_count = tag.tag_names.count
+      call
+      expect(tag.tag_names.count).to eq(initial_count)
     end
   end
 
