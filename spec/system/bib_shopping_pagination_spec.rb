@@ -41,7 +41,7 @@ RSpec.describe 'Bib Shopping List Pagination', :js, type: :system do
       expect(page).to have_css('.pagination')
 
       # Should have page entries info (works in both Hebrew and English)
-      expect(page).to have_css('.pagination')
+      expect(page).to have_css('.page_entries_info')
       # Check for pagination links
       expect(page).to have_link(I18n.t('views.pagination.next'))
     end
