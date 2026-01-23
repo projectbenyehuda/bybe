@@ -12,7 +12,8 @@
         = submit_tag t(:filter)
     .row
       .col-md-12
-        = page_entries_info @holdings
+        .page_entries_info
+          = page_entries_info @holdings
         = paginate @holdings
     .row
       %table
