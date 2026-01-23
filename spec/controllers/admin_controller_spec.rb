@@ -1049,4 +1049,80 @@ describe AdminController do
       end
     end
   end
+
+  describe '#suspicious_intellectual_property' do
+    subject(:call) { get :suspicious_intellectual_property }
+
+    include_context 'when editor logged in'
+
+    let!(:recent_death_author) do
+      person = create(:person, deathdate: '2000-01-01')
+      create(:authority, person: person, intellectual_property: :public_domain)
+    end
+
+    let!(:old_death_author) do
+      person = create(:person, deathdate: '1940-01-01')
+      create(:authority, person: person, intellectual_property: :copyrighted)
+    end
+
+    let!(:no_death_date_author) do
+      person = create(:person, deathdate: nil)
+      create(:authority, person: person, intellectual_property: :public_domain)
+    end
+
+    before do
+      allow(Rails.cache).to receive(:write)
+    end
+
+    it 'is successful' do
+      expect(call).to be_successful
+    end
+
+    it 'caches the total count' do
+      call
+      expect(Rails.cache).to have_received(:write).with('report_suspicious_intellectual_property', 2)
+    end
+
+    it 'assigns wrongly public domain authorities' do
+      call
+      expect(assigns(:wrongly_pd).to_a).to include(recent_death_author)
+      expect(assigns(:wrongly_pd).to_a).not_to include(old_death_author)
+      expect(assigns(:wrongly_pd).to_a).not_to include(no_death_date_author)
+    end
+
+    it 'assigns wrongly not public domain authorities' do
+      call
+      expect(assigns(:wrongly_not_pd).to_a).to include(old_death_author)
+      expect(assigns(:wrongly_not_pd).to_a).not_to include(recent_death_author)
+    end
+  end
+
+  describe '#update_authority_intellectual_property' do
+    include_context 'when editor logged in'
+
+    let!(:authority) { create(:authority, intellectual_property: :public_domain) }
+
+    it 'updates intellectual property to a valid value' do
+      post :update_authority_intellectual_property, params: { id: authority.id, intellectual_property: 'copyrighted' }
+
+      expect(response).to be_successful
+      expect(authority.reload.intellectual_property).to eq('copyrighted')
+    end
+
+    it 'rejects invalid intellectual property value' do
+      post :update_authority_intellectual_property, params: { id: authority.id, intellectual_property: 'invalid' }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(authority.reload.intellectual_property).to eq('public_domain')
+    end
+
+    it 'returns 404 for non-existent authority' do
+      post :update_authority_intellectual_property, params: { id: 999_999, intellectual_property: 'copyrighted' }
+
+      expect(response).to have_http_status(:not_found)
+      json_response = response.parsed_body
+      expect(json_response['success']).to be false
+      expect(json_response['message']).to be_present
+    end
+  end
 end
