@@ -201,6 +201,13 @@ describe Admin::TagsController do
         it 'does not create a duplicate TagName' do
           expect { call }.not_to(change { tag.tag_names.count })
           expect(call).to redirect_to admin_tag_path(tag)
+          # NOTE: update action shows success for the tag update, alias addition is silent
+          # The duplicate is not added, which is the correct behavior
+        end
+
+        it 'does not add the duplicate to this tag' do
+          call
+          expect(tag.tag_names.reload.pluck(:name)).not_to include('פויאטיקה')
         end
       end
     end
@@ -253,7 +260,7 @@ describe Admin::TagsController do
       let!(:existing_tag_name) { create(:tag_name, name: 'דופליקט') }
       let(:alias_name) { 'דופליקט' }
 
-      it 'does not create duplicate tag_name' do
+      it 'does not create duplicate tag_name and shows error message' do
         # Force tag creation before checking initial count
         tag.id
 
@@ -261,6 +268,18 @@ describe Admin::TagsController do
         call
 
         expect(TagName.count).to eq(initial_count)
+        expect(response).to redirect_to edit_admin_tag_path(tag)
+        expect(flash[:alert]).to eq(I18n.t('admin.tags.alias_already_exists'))
+      end
+
+      it 'handles race conditions gracefully' do
+        # Simulate race condition: TagName doesn't exist during check but does during create
+        allow(TagName).to receive(:find_by).with(name: alias_name).and_return(nil)
+        allow_any_instance_of(ActiveRecord::Associations::CollectionProxy)
+          .to receive(:create).and_raise(ActiveRecord::RecordNotUnique.new('Duplicate key'))
+
+        call
+
         expect(response).to redirect_to edit_admin_tag_path(tag)
         expect(flash[:alert]).to eq(I18n.t('admin.tags.alias_already_exists'))
       end

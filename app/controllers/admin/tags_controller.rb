@@ -74,9 +74,7 @@ module Admin
         # Add new alias if alias_name parameter is provided
         if params[:alias_name].present?
           alias_name = params[:alias_name].to_s.strip
-          if alias_name.present? && !TagName.exists?(name: alias_name)
-            @tag.tag_names.create(name: alias_name)
-          end
+          add_tag_name_alias(alias_name) if alias_name.present?
         end
 
         redirect_to admin_tag_path(@tag), notice: t(:updated_successfully)
@@ -117,17 +115,12 @@ module Admin
         return
       end
 
-      if TagName.exists?(name: alias_name)
-        redirect_to edit_admin_tag_path(@tag), alert: t('admin.tags.alias_already_exists')
-        return
-      end
+      result = add_tag_name_alias(alias_name)
 
-      tag_name = @tag.tag_names.build(name: alias_name)
-
-      if tag_name.save
+      if result[:success]
         redirect_to edit_admin_tag_path(@tag), notice: t('admin.tags.alias_added')
       else
-        redirect_to edit_admin_tag_path(@tag), alert: t('admin.tags.alias_add_failed')
+        redirect_to edit_admin_tag_path(@tag), alert: result[:error]
       end
     end
 
@@ -180,6 +173,35 @@ module Admin
 
     def tag_params
       params.expect(tag: %i(name status))
+    end
+
+    # Add a TagName alias to the tag with race condition protection
+    # Returns hash with :success boolean and :error message if failed
+    def add_tag_name_alias(alias_name)
+      # Check if TagName exists globally (could belong to another tag)
+      existing_tag_name = TagName.find_by(name: alias_name)
+
+      if existing_tag_name
+        if existing_tag_name.tag_id == @tag.id
+          # Already exists on this tag, treat as success (idempotent)
+          { success: true }
+        else
+          # Belongs to another tag
+          { success: false, error: t('admin.tags.alias_already_exists') }
+        end
+      else
+        # Try to create it
+        tag_name = @tag.tag_names.create(name: alias_name)
+        if tag_name.persisted?
+          { success: true }
+        else
+          # Validation failed
+          { success: false, error: t('admin.tags.alias_add_failed') }
+        end
+      end
+    rescue ActiveRecord::RecordNotUnique
+      # Race condition: another request created it between our check and create
+      { success: false, error: t('admin.tags.alias_already_exists') }
     end
   end
 end
