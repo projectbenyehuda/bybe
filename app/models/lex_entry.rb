@@ -38,10 +38,10 @@ class LexEntry < ApplicationRecord
     attachments.find_by(id: profile_image_id)
   end
 
-
   # Should be called if we want to re-ingest the lex file
   def reset_ingestion!
     return if lex_file.nil? # Should not be called for entries without lex_file
+
     Chewy.strategy(:atomic) do
       lex_item&.destroy!
       legacy_links.each(&:destroy!)
@@ -54,6 +54,12 @@ class LexEntry < ApplicationRecord
   def self.cached_count
     Rails.cache.fetch('lex_entry_count', expires_in: 24.hours) do
       LexEntry.count
+    end
+  end
+
+  def self.cached_published_count
+    Rails.cache.fetch('lex_entry_published_count', expires_in: 24.hours) do
+      LexEntry.where(status: :published).count
     end
   end
 
