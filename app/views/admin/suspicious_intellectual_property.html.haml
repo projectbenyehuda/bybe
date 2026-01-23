@@ -1,0 +1,81 @@
+.backend
+  %h2= t(:suspicious_intellectual_property_report)
+  %h3= t(:total) + ': ' + @total.to_s
+
+  %h4= t(:wrongly_public_domain_section)
+  %p= t(:wrongly_public_domain_explanation)
+  %table{ style: 'cell-spacing: 10;' }
+    %tr
+      %th= t(:name)
+      %th= t(:life_years)
+      %th= t(:years_since_death)
+      %th= t(:works_count)
+      %th= t(:current_ip_status)
+      %th= t(:actions)
+    - @wrongly_pd.each do |au|
+      %tr{ id: "authority_#{au.id}" }
+        %td= link_to au.name, authors_show_path(id: au.id)
+        %td!= au.person&.life_years
+        %td= au.person.died_years_ago
+        %td= au.cached_works_count
+        %td= textify_intellectual_property(au.intellectual_property)
+        %td
+          = select_tag "ip_select_#{au.id}", options_for_select([[t(:select_status), '']] + Authority.intellectual_properties.keys.reject { |k| k == 'public_domain' }.map { |ip| [textify_intellectual_property(ip), ip] }), class: 'ip-selector', data: { authority_id: au.id }, prompt: false
+  != paginate @wrongly_pd, param_name: :wrongly_pd_page
+
+  %h4= t(:wrongly_not_public_domain_section)
+  %p= t(:wrongly_not_public_domain_explanation)
+  %table{ style: 'cell-spacing: 10;' }
+    %tr
+      %th= t(:name)
+      %th= t(:life_years)
+      %th= t(:years_since_death)
+      %th= t(:works_count)
+      %th= t(:current_ip_status)
+      %th= t(:actions)
+    - @wrongly_not_pd.each do |au|
+      %tr{ id: "authority_#{au.id}" }
+        %td= link_to au.name, authors_show_path(id: au.id)
+        %td!= au.person&.life_years
+        %td= au.person.died_years_ago
+        %td= au.cached_works_count
+        %td= textify_intellectual_property(au.intellectual_property)
+        %td
+          = button_to t(:make_public_domain), update_authority_intellectual_property_path(id: au.id), method: :post, params: { intellectual_property: 'public_domain' }, remote: true, class: 'make-pd-button btn btn-sm btn-primary', data: { authority_id: au.id }
+  != paginate @wrongly_not_pd, param_name: :wrongly_not_pd_page
+
+:javascript
+  $(document).ready(function() {
+    // Handle dropdown change for wrongly_pd authorities
+    $('.ip-selector').change(function() {
+      var $select = $(this);
+      var authorityId = $select.data('authority-id');
+      var newValue = $select.val();
+
+      // Only proceed if a non-empty value is selected
+      if (!newValue) {
+        return;
+      }
+
+      $.ajax({
+        url: '/admin/update_authority_intellectual_property/' + authorityId,
+        method: 'POST',
+        data: {
+          intellectual_property: newValue,
+          authenticity_token: $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+          $('#authority_' + authorityId).fadeOut(500);
+        },
+        error: function(xhr) {
+          alert('Error: ' + xhr.responseJSON.message);
+        }
+      });
+    });
+
+    // Handle button click for wrongly_not_pd authorities (using remote: true)
+    $('.make-pd-button').on('ajax:success', function(event) {
+      var authorityId = $(this).data('authority-id');
+      $('#authority_' + authorityId).fadeOut(500);
+    });
+  });
