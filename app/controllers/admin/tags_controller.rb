@@ -20,9 +20,15 @@ module Admin
         @tags = @tags.joins(:tag_names).where('tag_names.name LIKE ?', search_term).distinct
       end
 
-      # Filter by status (default to approved)
-      status_filter = params[:status].presence || 'approved'
-      @tags = @tags.where(status: status_filter) unless status_filter == ''
+      # Filter by status (default to approved if not specified)
+      if params.key?(:status)
+        # User explicitly specified a status filter (even if empty)
+        status_filter = params[:status].presence
+        @tags = @tags.where(status: status_filter) if status_filter.present?
+      else
+        # No status parameter provided, default to approved
+        @tags = @tags.where(status: 'approved')
+      end
 
       @tags = @tags.page(params[:page]).per(25)
       @page_title = t('.title')
@@ -65,6 +71,12 @@ module Admin
           @tag.tag_names.first.update(name: @tag.name)
         end
 
+        # Add new alias if alias_name parameter is provided
+        if params[:alias_name].present?
+          alias_name = params[:alias_name].to_s.strip
+          add_tag_name_alias(alias_name) if alias_name.present?
+        end
+
         redirect_to admin_tag_path(@tag), notice: t(:updated_successfully)
       else
         @tag_names = @tag.tag_names.order(created_at: :asc)
@@ -103,12 +115,12 @@ module Admin
         return
       end
 
-      tag_name = @tag.tag_names.build(name: alias_name)
+      result = add_tag_name_alias(alias_name)
 
-      if tag_name.save
+      if result[:success]
         redirect_to edit_admin_tag_path(@tag), notice: t('admin.tags.alias_added')
       else
-        redirect_to edit_admin_tag_path(@tag), alert: t('admin.tags.alias_add_failed')
+        redirect_to edit_admin_tag_path(@tag), alert: result[:error]
       end
     end
 
@@ -161,6 +173,35 @@ module Admin
 
     def tag_params
       params.expect(tag: %i(name status))
+    end
+
+    # Add a TagName alias to the tag with race condition protection
+    # Returns hash with :success boolean and :error message if failed
+    def add_tag_name_alias(alias_name)
+      # Check if TagName exists globally (could belong to another tag)
+      existing_tag_name = TagName.find_by(name: alias_name)
+
+      if existing_tag_name
+        if existing_tag_name.tag_id == @tag.id
+          # Already exists on this tag, treat as success (idempotent)
+          { success: true }
+        else
+          # Belongs to another tag
+          { success: false, error: t('admin.tags.alias_already_exists') }
+        end
+      else
+        # Try to create it
+        tag_name = @tag.tag_names.create(name: alias_name)
+        if tag_name.persisted?
+          { success: true }
+        else
+          # Validation failed
+          { success: false, error: t('admin.tags.alias_add_failed') }
+        end
+      end
+    rescue ActiveRecord::RecordNotUnique
+      # Race condition: another request created it between our check and create
+      { success: false, error: t('admin.tags.alias_already_exists') }
     end
   end
 end
