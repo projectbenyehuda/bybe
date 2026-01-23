@@ -190,15 +190,27 @@ class BibController < ApplicationController
                     Authority.intellectual_properties[:public_domain]
                   ).to_a
     else
-      hh = Holding.to_obtain(params[:source_id]).to_a
+      hh = Holding.to_obtain(params[:source_id])
+                  .includes(publication: :holdings)
+                  .to_a
     end
 
-    @holdings = hh.sort_by! do |h|
+    # Sort holdings by location
+    sorted_holdings = hh.sort_by! do |h|
       loc = h.location || ''
       s = loc.sub(/\(.*\)/, '').tr('[א-ת]', '')
       pos = s.index('.') || -1
       s[0..pos]
     end
+
+    # De-duplicate by publication (keep first holding for each publication)
+    unique_holdings = sorted_holdings.uniq(&:publication_id)
+
+    # Paginate (50 items per page)
+    @holdings = Kaminari.paginate_array(unique_holdings)
+                        .page(params[:page])
+                        .per(50)
+
     @source = BibSource.find(params[:source_id])
   end
 

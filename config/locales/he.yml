@@ -2131,3 +2131,12 @@ he:
   whatsnew_in_periodicals: מה חדש בכתבי עת?
   periodical_genres: סוגות בכתבי עת
   works_from_periodicals: יצירות מכתבי עת שהועלו למאגר
+  helpers:
+    page_entries_info:
+      one_page:
+        display_entries:
+          zero: "לא נמצאו %{entry_name}"
+          one: "מוצג <b>1</b> %{entry_name}"
+          other: "מוצגים <b>כל %{count}</b> %{entry_name}"
+      more_pages:
+        display_entries: "מוצגים %{entry_name} <b>%{first}&nbsp;-&nbsp;%{last}</b> מתוך <b>%{total}</b> סה\"כ"
