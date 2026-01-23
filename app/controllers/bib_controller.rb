@@ -190,7 +190,9 @@ class BibController < ApplicationController
                     Authority.intellectual_properties[:public_domain]
                   ).to_a
     else
-      hh = Holding.to_obtain(params[:source_id]).to_a
+      hh = Holding.to_obtain(params[:source_id])
+                  .includes(publication: :holdings)
+                  .to_a
     end
 
     # Sort holdings by location
