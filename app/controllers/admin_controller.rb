@@ -452,6 +452,42 @@ class AdminController < ApplicationController
     Rails.cache.write('report_incongruous_copyright', @incong.length)
   end
 
+  def suspicious_intellectual_property
+    # Category 1: Wrongly PD (died < 71 years ago)
+    wrongly_pd_authorities = Authority.joins(:person)
+                                      .where(intellectual_property: :public_domain)
+                                      .preload(:person)
+                                      .to_a
+                                      .select { |au| au.person.died_years_ago > 0 && au.person.died_years_ago < 71 }
+
+    # Category 2: Wrongly NOT PD (died >= 71 years ago)
+    wrongly_not_pd_authorities = Authority.joins(:person)
+                                          .where.not(intellectual_property: :public_domain)
+                                          .where.not(intellectual_property: :unknown)
+                                          .preload(:person)
+                                          .to_a
+                                          .select { |au| au.person.died_years_ago >= 71 }
+
+    @wrongly_pd = Kaminari.paginate_array(wrongly_pd_authorities).page(params[:wrongly_pd_page]).per(50)
+    @wrongly_not_pd = Kaminari.paginate_array(wrongly_not_pd_authorities).page(params[:wrongly_not_pd_page]).per(50)
+    @total = wrongly_pd_authorities.count + wrongly_not_pd_authorities.count
+    @page_title = t(:suspicious_intellectual_property_report)
+
+    Rails.cache.write('report_suspicious_intellectual_property', @total)
+  end
+
+  def update_authority_intellectual_property
+    authority = Authority.find(params[:id])
+    new_value = params[:intellectual_property]
+
+    if Authority.intellectual_properties.keys.include?(new_value)
+      authority.update(intellectual_property: new_value)
+      render json: { success: true, message: t(:updated_successfully) }
+    else
+      render json: { success: false, message: t(:invalid_value) }, status: :unprocessable_content
+    end
+  end
+
   def texts_between_dates
     return unless params[:from].present? && params[:to].present?
 

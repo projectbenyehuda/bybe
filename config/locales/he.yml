@@ -477,6 +477,7 @@ he:
   false: לא
   user_list: רשימת משתמשים
   make_editor: הפוך לעורך/ת!
+  make_public_domain: הפוך לנחלת הכלל
   convs_processed_so_far: טיפלת ב-%{done} יצירות עד כה.  בסך הכל, כ-%{percent_done} מהמאגר מטויב.
   make_admin: הפוך למנהל/ת מערכת!
   activate_bit: הוסף תפקיד
@@ -595,6 +596,7 @@ he:
   profile_image: תמונת פרופיל
   upload_new_image: העלאת תמונה חדשה
   current_image: תמונה נוכחית
+  current_ip_status: מצב זכויות יוצרים נוכחי
   download_footer_html: "את הטקסט[ים] לעיל הפיקו מתנדבי <a href=\"https://benyehuda.org/\">פרויקט בן־יהודה באינטרנט</a>.  <br />הכל זמין תמיד בכתובת הבאה:<br /><a href=\"%{url}\">%{url}</a>"
   like: אהבתי
   our_own_content: 'תוכן משלנו:'
@@ -696,6 +698,7 @@ he:
   suspicious_titles_report: "דו\"ח שמות חשודים ליצירות"
   slash_in_titles_report: "דו\"ח כותרות המכילות קו נטוי (/או\\)"
   similar_titles_report: "דו\"ח כותרות דומות ליצירות (שאולי הן פרקים של יצירה אחת שיש לאחד)"
+  suspicious_intellectual_property_report: דוח מצב זכויות יוצרים חשוד
   suspicious_translations_report: "דו\"ח יצירות עם מחבר שווה למתרגם"
   duplicate_works_report: "דו\"ח יצירות כפולות - תרגומים שונים שצריכים להתמזג תחת יצירה אחת"
   duplicate_works_explanation: "הדו\"ח הבא מציג ביטויים של מתרגמים שונים עם אותה כותרת, שהיצירות שלהם הן מאותו יוצר. ביטויים אלה הם ככל הנראה תרגומים שונים שצריכים להתמזג תחת רשומת יצירה אחת."
@@ -913,6 +916,7 @@ he:
   recommendations: המלצות
   more_recommendations_in_the_blog: המלצות נוספות ביומן הרשת
   works: יצירות
+  works_count: מספר יצירות
   expressions: ביטויים
   manifestations: מימושים
   collections: אוספים
@@ -1157,6 +1161,7 @@ he:
   record_source: מקור הרשומה
   select_person_first: יש לשייך יוצר/ת לפני שיוך פריטים
   select_publication_first: יש ללחוץ על שורת פריט משמאל לפני שיוך עותק
+  select_status: בחר מצב...
   item_pattern: "תבנית קישורית לפריט בקטלוג (המזהה יישתל במקום שבו תכתבו __ID__)"
   add_publication: '+פריט --->'
   add_holding: '+עותק --->'
@@ -1420,6 +1425,11 @@ he:
   finnish: פינית
   french: צרפתית
   russian: רוסית
+  wrongly_not_public_domain_explanation: "היוצרים הבאים נפטרו לפני 71 שנה או יותר, ולכן צריכים להיות מסומנים כנחלת הכלל. לחצו על הכפתור כדי לעדכן."
+  wrongly_not_public_domain_section: "צריכים להיות נחלת הכלל (נפטרו לפני 71 שנה או יותר)"
+  wrongly_public_domain_explanation: "היוצרים הבאים נפטרו לפני פחות מ-71 שנה ולכן לא צריכים להיות מסומנים כנחלת הכלל. בחרו את מצב זכויות היוצרים הנכון מהתפריט הנפתח."
+  wrongly_public_domain_section: "מסומנים כנחלת הכלל בטעות (נפטרו לפני פחות מ-71 שנה)"
+  years_since_death: שנים מאז הפטירה
   yiddish: יידיש
   sumerian: שומרית
   tamil: טמילית
@@ -2085,6 +2095,7 @@ he:
   save_preferences: שמירת העדפות
   preferences_updated: ההעדפות עודכנו בהצלחה
   invalid_preference: העדפה לא חוקית
+  invalid_value: ערך לא תקין
   manage_email_preferences: ניהול העדפות דואל
   email_footer_signup_invitation: אם תרצה/י לשלוט בתדירות קבלת הודעות הדואל, תוכל/י להירשם לאתר ולהגדיר את ההעדפות שלך.
   notification_digest_intro: להלן סיכום ההודעות שצברנו עבורך

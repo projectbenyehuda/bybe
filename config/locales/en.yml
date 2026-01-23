@@ -690,6 +690,7 @@ en:
   save_preferences: Save Preferences
   preferences_updated: Preferences updated successfully
   invalid_preference: Invalid preference
+  invalid_value: Invalid value
   manage_email_preferences: Manage Email Preferences
   email_footer_signup_invitation: If you would like to control the frequency of email
     notifications, you can sign up for the site and set your preferences.
@@ -1181,6 +1182,7 @@ en:
   curated_text_title: Text Section Name
   current_editing_files: Current Technical Edits
   current_image: Current Image
+  current_ip_status: Current IP Status
   current_toc: Current Author Page
   currently_reading: Currently Reading
   czech: Czech
@@ -2212,11 +2214,16 @@ en:
   write: Write
   writer: Writer
   writers: Writers
+  wrongly_not_public_domain_explanation: "These authors died 71 or more years ago and should be marked as public domain. Click the button to update."
+  wrongly_not_public_domain_section: "Should Be Public Domain (died >= 71 years ago)"
+  wrongly_public_domain_explanation: "These authors died less than 71 years ago and should NOT be marked as public domain. Select the correct intellectual property status from the dropdown."
+  wrongly_public_domain_section: "Wrongly Marked as Public Domain (died < 71 years ago)"
   year: Year
   year_of_death: Year of Death
   year_published: Year Published
   yearly: Yearly
   years: Years
+  years_since_death: Years Since Death
   yiddish: Yiddish
   sumerian: Sumerian
   you: You
@@ -2307,6 +2314,7 @@ en:
   make_corrections_below: Make Corrections Below
   make_crowdsourcer: Make Crowdsourcer
   make_editor: Make Editor
+  make_public_domain: Make Public Domain
   make_published: Make Published
   malformed_line: Malformed Line
   manage_bib_sources: Manage Bib Sources
@@ -2685,6 +2693,7 @@ en:
   surprise_author_in_genre: Surprise Author In Genre
   surprise_me_again: Surprise Me Again
   suspicious_headings_report: Suspicious Headings Report
+  suspicious_intellectual_property_report: Suspicious Intellectual Property Report
   suspicious_titles_report: Suspicious Titles Report
   suspicious_translations_report: Suspicious Translations Report
   tag_approved_intro: Tag Approved Intro
