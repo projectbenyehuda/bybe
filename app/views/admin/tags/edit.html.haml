@@ -13,29 +13,29 @@
           = f.label :status, t('admin.tags.form.status_label'), class: 'headline-3-v02'
           = f.select :status, Tag.statuses.keys.map { |s| [t("admin.tags.status_#{s}"), s] }, {}, class: 'form-control'
 
-        / TagNames / Aliases Section
-        %div{style: 'margin-top: 25px;'}
-          .headline-3-v02= t('admin.tags.form.aliases_section')
-          %ul.tag-names-list
-            - @tag_names.each do |tag_name|
-              %li
-                = tag_name.name
-                - if tag_name.name == @tag.name
-                  %small= t('admin.tags.form.primary_alias')
-                - else
-                  .action-buttons
-                    = button_to t('admin.tags.form.make_primary'), make_primary_alias_admin_tag_path(@tag, tag_name_id: tag_name.id), method: :post, class: 'ghost-btn'
-                    = button_to t('admin.tags.form.delete_alias'), remove_alias_admin_tag_path(@tag, tag_name_id: tag_name.id), method: :delete, data: { confirm: t('admin.tags.delete_alias_confirm') }, class: 'ghost-btn'
-
-        / Add New Alias
-        %div{style: 'margin-top: 20px;'}
-          .headline-3-v02= t('admin.tags.form.add_alias_section')
-          = form_with url: add_alias_admin_tag_path(@tag), method: :post, local: true do |af|
-            .input-group{style: 'max-width: 500px;'}
-              = text_field_tag :alias_name, nil, class: 'form-control', placeholder: t('admin.tags.form.alias_placeholder')
-              = submit_tag t('admin.tags.form.add_alias_button'), class: 'by-button-v02'
-
         / Save Buttons
         %div{style: 'margin-top: 25px;'}
           = f.submit t(:save_changes), class: 'by-button-v02'
           = link_to t(:back_to_list), admin_tags_path, class: 'by-button-secondary-v02'
+
+      / TagNames / Aliases Section (outside the main form)
+      %div{style: 'margin-top: 25px;'}
+        .headline-3-v02= t('admin.tags.form.aliases_section')
+        %ul.tag-names-list
+          - @tag_names.each do |tag_name|
+            %li
+              = tag_name.name
+              - if tag_name.name == @tag.name
+                %small= t('admin.tags.form.primary_alias')
+              - else
+                .action-buttons
+                  = button_to t('admin.tags.form.make_primary'), make_primary_alias_admin_tag_path(@tag), method: :post, params: { tag_name_id: tag_name.id }, class: 'ghost-btn'
+                  = button_to t('admin.tags.form.delete_alias'), remove_alias_admin_tag_path(@tag), method: :delete, params: { tag_name_id: tag_name.id }, data: { confirm: t('admin.tags.delete_alias_confirm') }, class: 'ghost-btn'
+
+      / Add New Alias
+      %div{style: 'margin-top: 20px;'}
+        .headline-3-v02= t('admin.tags.form.add_alias_section')
+        = form_with url: add_alias_admin_tag_path(@tag), method: :post, local: true do |af|
+          .input-group{style: 'max-width: 500px;'}
+            = text_field_tag :alias_name, nil, class: 'form-control', placeholder: t('admin.tags.form.alias_placeholder')
+            = submit_tag t('admin.tags.form.add_alias_button'), class: 'by-button-v02'
