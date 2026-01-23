@@ -65,6 +65,12 @@ module Admin
           @tag.tag_names.first.update(name: @tag.name)
         end
 
+        # Add new alias if alias_name parameter is provided
+        if params[:alias_name].present?
+          alias_name = params[:alias_name].to_s.strip
+          @tag.tag_names.create(name: alias_name) if alias_name.present?
+        end
+
         redirect_to admin_tag_path(@tag), notice: t(:updated_successfully)
       else
         @tag_names = @tag.tag_names.order(created_at: :asc)

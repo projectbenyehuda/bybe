@@ -125,7 +125,7 @@ describe Admin::TagsController do
   end
 
   describe '#update' do
-    subject(:call) { patch :update, params: { id: tag.id, tag: tag_params } }
+    subject(:call) { patch :update, params: { id: tag.id, tag: tag_params }.merge(extra_params) }
 
     let(:tag) do
       name = "Old Name #{SecureRandom.hex(4)}"
@@ -139,6 +139,8 @@ describe Admin::TagsController do
         status: 'rejected'
       }
     end
+
+    let(:extra_params) { {} }
 
     context 'when params are valid' do
       it 'updates tag' do
@@ -155,6 +157,32 @@ describe Admin::TagsController do
         expect { call }.not_to(change { tag.reload.name })
         expect(call).to have_http_status(:unprocessable_content)
         expect(call).to render_template(:edit)
+      end
+    end
+
+    context 'when alias_name is provided' do
+      let(:extra_params) { { alias_name: 'פויאטיקה' } }
+
+      it 'adds the new alias even when primary_tag_name exists' do
+        # Verify primary tag_name exists before the update
+        expect(tag.tag_names.find_by(name: tag.name)).to be_present
+
+        # Should add a new alias
+        expect { call }.to change { tag.tag_names.count }.by(1)
+
+        # Verify the new alias was created
+        expect(tag.tag_names.reload.pluck(:name)).to include('פויאטיקה')
+
+        # Should still update the tag
+        expect(tag.reload.name).to eq('New Name')
+      end
+
+      context 'when alias_name is blank' do
+        let(:extra_params) { { alias_name: '   ' } }
+
+        it 'does not add an alias' do
+          expect { call }.not_to(change { tag.tag_names.count })
+        end
       end
     end
   end
