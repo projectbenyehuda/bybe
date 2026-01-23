@@ -2,7 +2,7 @@
   .header-nav-area
     %nav#nav
       %ul#menu
-        - authors_total = "#{Authority.cached_count} #{t(:authors_in_the_project)}"
+        - authors_total = t(:x_authors_in_the_project_and_y_in_the_lexicon, x: Authority.cached_count, y: LexEntry.cached_published_count)
         %li.topMenuItem-v02
           .by-dropdown-v02.dropdown#ddauthors
             %a.by-nav-item-v02#nav-authors{'data-toggle' =>'dropdown', 'data-boundary' => 'viewport', tabindex: '1'}= t(:authors)
@@ -18,6 +18,12 @@
               %a{href: authors_path}
                 %span.by-icon-v02 T
                 = t(:list_all_authors)
+              .by-dropdown-divider
+              -# TODO: update link below to public lexicon root path
+              %a{href: lexicon_entries_path}
+                -# ICON TBD # %span.by-icon-v02 L
+                = t(:lexicon_name)
+                %span{style:'color:black'}= " - #{LexEntry.cached_published_count} #{t(:authors)}"
         - works_total = "#{t(:x_volumes_and, x: Collection.cached_volume_and_issue_count)}#{Manifestation.cached_count} #{t(:works_in_the_project)}"
         %li.topMenuItem-v02
           .by-dropdown-v02.dropdown#ddworks
@@ -146,6 +152,11 @@
               %a{href: authors_path}
                 %span.by-icon-v02.iconInMenu T
                 = t(:list_all_authors)
+            .by-dropdown-divider
+            %li
+              %a{href: lexicon_entries_path}
+                -# ICON TBD # %span.by-icon-v02.iconInMenu L
+                = t(:lexicon_name)
         %li.topMenuItemMobile-v02
           %span.caret= t(:works)
           %ul.nested
