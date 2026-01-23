@@ -915,6 +915,7 @@ he:
   mobile_totals: "%{authors} יוצרים, %{works} יצירות"
   authors_in_the_project: יוצרים במאגר
   works_in_the_project: יצירות במאגר
+  x_authors_in_the_project_and_y_in_the_lexicon: "%{x} יוצרים במאגר ו־%{y} יוצרים בלקסיקון"
   escalated: הועבר לבדיקה נוספת
   the_blog: יומן הרשת
   to_the_blog: ליומן הרשת
