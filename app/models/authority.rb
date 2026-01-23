@@ -103,6 +103,8 @@ class Authority < ApplicationRecord
     end
   end
 
+  before_save :update_other_designation, if: :name_changed?
+
   after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
 
   def update_manifestation_responsibility_statements
@@ -118,6 +120,14 @@ class Authority < ApplicationRecord
 
     # Enqueue background job to update responsibility statements in bulk
     UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
+  end
+
+  def update_other_designation
+    existingstr = other_designation || ''
+    existing = existingstr.split(';').map(&:strip)
+    newforms = AlternateHebrewForms.call(name)
+    combined = (existing + newforms).uniq
+    self.other_designation = combined.join('; ')
   end
 
   # return all collections of type volume that are associated with this authority

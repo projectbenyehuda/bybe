@@ -506,5 +506,72 @@ describe Authority do
         expect(manifestation.responsibility_statement).to include('Updated Name')
       end
     end
+
+    describe '#update_other_designation' do
+      let(:authority) { create(:authority, name: 'פִּתְאֹם') }
+
+      it 'updates other_designation with forms from AlternateHebrewForms service' do
+        authority.update_column(:other_designation, nil)
+        authority.update_other_designation
+        expect(authority.other_designation).to eq('פתאם; פיתאום')
+      end
+
+      it 'preserves existing other designation and adds new ones' do
+        authority.update_column(:other_designation, 'עוד משהו')
+        authority.update_other_designation
+        expect(authority.other_designation).to eq('עוד משהו; פתאם; פיתאום')
+      end
+
+      it 'removes duplicates when combining existing and new alternate forms' do
+        authority.update_column(:other_designation, 'פיתאום')
+        authority.update_other_designation
+        expect(authority.other_designation).to eq('פיתאום; פתאם')
+      end
+
+      it 'handles empty existing other_designation' do
+        authority.update_column(:other_designation, '')
+        authority.update_other_designation
+        expect(authority.other_designation).to eq('פתאם; פיתאום')
+      end
+
+      it 'handles nil existing other_designation' do
+        authority.update_column(:other_designation, nil)
+        authority.update_other_designation
+        expect(authority.other_designation).to eq('פתאם; פיתאום')
+      end
+
+      context 'when other_designation has some other (user-provided) names' do
+        it 'preserves existing other_designation' do
+          authority.update_column(:other_designation, 'משהו אחר')
+          authority.update_other_designation
+          expect(authority.other_designation).to eq('משהו אחר; פתאם; פיתאום')
+        end
+      end
+    end
+
+    describe 'before_save callbacks' do
+      let(:authority) { build(:authority, name: 'מִבְחַר שִירִים') }
+
+      describe 'update_other_designation callback' do
+        it 'is triggered when name changes' do
+          expect(authority).to receive(:update_other_designation)
+          authority.save!
+        end
+
+        it 'is not triggered when name does not change' do
+          authority.save!
+          authority.reload
+          expect(authority).not_to receive(:update_other_designation)
+          authority.update!(other_designation: 'new designation')
+        end
+
+        it 'is triggered when name changes on update' do
+          authority.save!
+          authority.reload
+          expect(authority).to receive(:update_other_designation)
+          authority.update!(name: 'שם חדש')
+        end
+      end
+    end
   end
 end
