@@ -2096,6 +2096,7 @@ he:
   preferences_updated: ההעדפות עודכנו בהצלחה
   invalid_preference: העדפה לא חוקית
   invalid_value: ערך לא תקין
+  record_not_found: רשומה לא נמצאה
   manage_email_preferences: ניהול העדפות דואל
   email_footer_signup_invitation: אם תרצה/י לשלוט בתדירות קבלת הודעות הדואל, תוכל/י להירשם לאתר ולהגדיר את ההעדפות שלך.
   notification_digest_intro: להלן סיכום ההודעות שצברנו עבורך

@@ -477,7 +477,13 @@ class AdminController < ApplicationController
   end
 
   def update_authority_intellectual_property
-    authority = Authority.find(params[:id])
+    authority = Authority.find_by(id: params[:id])
+
+    unless authority
+      render json: { success: false, message: t(:record_not_found) }, status: :not_found
+      return
+    end
+
     new_value = params[:intellectual_property]
 
     if Authority.intellectual_properties.keys.include?(new_value)
@@ -485,7 +491,7 @@ class AdminController < ApplicationController
         render json: { success: true, message: t(:updated_successfully) }
       else
         render json: { success: false, message: authority.errors.full_messages.to_sentence },
-               status: :unprocessable_entity
+               status: :unprocessable_content
       end
     else
       render json: { success: false, message: t(:invalid_value) }, status: :unprocessable_content

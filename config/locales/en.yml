@@ -691,6 +691,7 @@ en:
   preferences_updated: Preferences updated successfully
   invalid_preference: Invalid preference
   invalid_value: Invalid value
+  record_not_found: Record not found
   manage_email_preferences: Manage Email Preferences
   email_footer_signup_invitation: If you would like to control the frequency of email
     notifications, you can sign up for the site and set your preferences.

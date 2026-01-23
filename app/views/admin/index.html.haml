@@ -153,7 +153,7 @@
         (#{Rails.cache.read('report_incongruous_copyright')})
       %p
         %b= link_to t(:suspicious_intellectual_property_report), admin_suspicious_intellectual_property_path
-        = ' ('+Rails.cache.read('report_suspicious_intellectual_property').to_s+')'
+        = ' (' + Rails.cache.read('report_suspicious_intellectual_property').to_s + ')'
       %p
         = link_to t(:missing_images), admin_missing_images_path
         = ' ('+Rails.cache.read('report_missing_images').to_s+')'

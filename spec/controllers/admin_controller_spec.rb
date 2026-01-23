@@ -1115,5 +1115,14 @@ describe AdminController do
       expect(response).to have_http_status(:unprocessable_content)
       expect(authority.reload.intellectual_property).to eq('public_domain')
     end
+
+    it 'returns 404 for non-existent authority' do
+      post :update_authority_intellectual_property, params: { id: 999_999, intellectual_property: 'copyrighted' }
+
+      expect(response).to have_http_status(:not_found)
+      json_response = response.parsed_body
+      expect(json_response['success']).to be false
+      expect(json_response['message']).to be_present
+    end
   end
 end
