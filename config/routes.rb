@@ -39,7 +39,7 @@ Bybeconv::Application.routes.draw do
     root to: 'entries#index'
 
     # Public list of published entries
-    get 'list', to: 'entries#list', as: :entries_list
+    match 'list', to: 'entries#list', as: :entries_list, via: %i(get post)
 
     resources :people, only: %i(edit update new create) do
       collection do
