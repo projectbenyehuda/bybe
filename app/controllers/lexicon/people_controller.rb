@@ -63,7 +63,6 @@ module Lexicon
           :birthdate,
           :deathdate,
           :bio,
-          :works,
           { entry_attributes: [:title] }
         ]
       )
