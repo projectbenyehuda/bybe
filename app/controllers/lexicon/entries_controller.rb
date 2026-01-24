@@ -50,6 +50,9 @@ module Lexicon
       # Start with base scope
       @lex_entries = LexEntry.where.not(lex_item: nil).where(status: :published)
 
+      # Calculate gender facets (before applying gender filter)
+      @gender_facet = calculate_gender_facets
+
       # Apply filters
       @lex_entries = apply_filters(@lex_entries)
 
@@ -212,6 +215,51 @@ module Lexicon
       end
 
       filters
+    end
+
+    def calculate_gender_facets
+      # Build a scope with all filters EXCEPT gender
+      scope = LexEntry.where.not(lex_item: nil).where(status: :published)
+                      .where(lex_item_type: 'LexPerson')
+                      .joins('INNER JOIN lex_people ON lex_entries.lex_item_id = lex_people.id')
+
+      # Apply name filter
+      if @name_filter.present?
+        scope = scope.where('LOWER(lex_entries.title) LIKE LOWER(?)', "%#{@name_filter}%")
+      end
+
+      # Apply birth year filters
+      if @birth_year_from.present? || @birth_year_to.present?
+        scope = scope.where.not(lex_people: { birthdate: nil })
+        if @birth_year_from.present?
+          scope = scope.where('CAST(SUBSTRING(lex_people.birthdate, 1, 4) AS SIGNED) >= ?', @birth_year_from)
+        end
+        if @birth_year_to.present?
+          scope = scope.where('CAST(SUBSTRING(lex_people.birthdate, 1, 4) AS SIGNED) <= ?', @birth_year_to)
+        end
+      end
+
+      # Apply death year filters
+      if @death_year_from.present? || @death_year_to.present?
+        scope = scope.where.not(lex_people: { deathdate: nil })
+        if @death_year_from.present?
+          scope = scope.where('CAST(SUBSTRING(lex_people.deathdate, 1, 4) AS SIGNED) >= ?', @death_year_from)
+        end
+        if @death_year_to.present?
+          scope = scope.where('CAST(SUBSTRING(lex_people.deathdate, 1, 4) AS SIGNED) <= ?', @death_year_to)
+        end
+      end
+
+      # Group by gender and count
+      counts = scope.group('lex_people.gender').count
+
+      # Convert integer keys to string keys and return as hash
+      facet = {}
+      LexPerson.genders.each do |gender_name, gender_value|
+        facet[gender_name] = counts[gender_value] || 0
+      end
+
+      facet
     end
   end
 end

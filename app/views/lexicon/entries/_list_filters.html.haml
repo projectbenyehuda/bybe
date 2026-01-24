@@ -17,7 +17,7 @@
                    field_name: :ckb_genders,
                    all_values: %w(male female other unknown),
                    selected_values: @genders,
-                   facet: {} }
+                   facet: @gender_facet }
 
 = render layout: 'shared/collapsible_block',
          locals: { container_name: 'collf_birth',
