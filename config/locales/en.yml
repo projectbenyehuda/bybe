@@ -3037,6 +3037,17 @@ en:
 
   # Lexicon
   lexicon:
+    entries:
+      list:
+        page_title: New Hebrew Literature Lexicon Entries List
+        page_header: Entries List - New Hebrew Literature Lexicon
+        entries_list_breadcrumb: Lexicon Entries List
+        welcome_title: Welcome to the New Hebrew Literature Lexicon Entries List
+        intro_html: The New Hebrew Literature Lexicon database contains <strong>%{count} published entries</strong>. This list displays all publicly available entries.
+        description: The lexicon contains bio-bibliographic information about Hebrew literature authors and creators, as well as historical publications and newspapers.
+        entries_count:
+          one: 1 entry
+          other: "%{count} entries"
     person_works:
       index:
         add_work: Add Work
