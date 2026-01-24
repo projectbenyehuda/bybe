@@ -1,4 +1,6 @@
-%link{ rel:'stylesheet', href:'https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css'}
+%link{ rel: 'stylesheet',
+       href: 'https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/' \
+             '5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css' }
 -# Public list of published lexicon entries
 %main
   .top-element
@@ -17,67 +19,7 @@
           = form_tag(lexicon_entries_list_path, remote: true, method: :post, id: form_id, autocomplete: :off) do
             = hidden_field_tag(:sort_by, @sort)
             .by-card-content-v02#filters_panel
-              .headline-2-v02= t(:filter_by)
-              %span.reset.linkcolor.pointer= t(:reset_filter)
+              = render partial: 'list_filters'
 
-
-      .col-12.col-lg-8
-        .by-card-v02
-          .by-card-header-v02
-            .headline-2-v02
-              = t('lexicon.entries.list.entries_count', count: @total)
-              - permalink_url = url_for(sort_by: @sort, only_path: false)
-              %a.permalink-btn{ href: '#', title: t(:permalink), data: { url: permalink_url } }
-                = t(:permalink)
-          .by-card-content-v02
-            .select-all-with-buttons
-              .headline-4-v02= t(:sort_by)
-              #sort-by
-                #custom-select{ title: t(:worklist_sort_tt) }
-                  %select#sort_by_select
-                    %optgroup{ label: t(:alefbet) }
-                      %option{ value: 'alphabetical_asc', selected: @sort == 'alphabetical_asc' }= t(:alefbet_asc)
-                      %option{ value: 'alphabetical_desc', selected: @sort == 'alphabetical_desc' }= t(:alefbet_desc)
-                    %optgroup{ label: t(:dates) }
-                      %option{ value: 'birth_year_asc', selected: @sort == 'birth_year_asc' }= t(:birthdate_asc)
-                      %option{ value: 'birth_year_desc', selected: @sort == 'birth_year_desc' }= t(:birthdate_desc)
-                      %option{ value: 'death_year_asc', selected: @sort == 'death_year_asc' }= t(:deathdate_asc)
-                      %option{ value: 'death_year_desc', selected: @sort == 'death_year_desc' }= t(:deathdate_desc)
-
-            .mainlist#browse_mainlist
-              %ol
-                - @lex_entries.each do |entry|
-                  %li
-                    = link_to entry.title, lexicon_entry_path(entry)
-                    - if entry.lex_item.is_a?(LexPerson) && entry.lex_item.life_years.present?
-                      .authors-list-years!= " (#{entry.lex_item.life_years})"
-            != paginate @lex_entries
-
-:javascript
-  $(document).ready(function() {
-    // Handle sort dropdown change
-    $('#sort_by_select').change(function() {
-      const sortValue = $(this).val();
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set('sort_by', sortValue);
-      currentUrl.searchParams.delete('page'); // Reset to page 1 when sorting
-      window.location.href = currentUrl.toString();
-    });
-
-    // Handle permalink copy
-    $('.permalink-btn').click(function(e) {
-      e.preventDefault();
-      const url = $(this).data('url');
-      const originalText = $(this).text();
-      const $btn = $(this);
-
-      navigator.clipboard.writeText(url).then(function() {
-        $btn.text('#{I18n.t(:permalink_copied)}');
-        setTimeout(function() {
-          $btn.text(originalText);
-        }, 2000);
-      }).catch(function(err) {
-        console.error('Failed to copy: ', err);
-      });
-    });
-  });
+      .col-12.col-lg-8#list_results
+        = render partial: 'list_results'

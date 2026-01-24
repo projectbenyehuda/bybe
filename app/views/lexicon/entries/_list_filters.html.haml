@@ -1,0 +1,79 @@
+.headline-2-v02= t(:filter_by)
+%span.reset.linkcolor.pointer= t(:reset_filter)
+
+= render layout: 'shared/collapsible_block',
+         locals: { container_name: 'collf_name',
+                   title: t('lexicon.entries.list.filters.entry_name') } do
+  %input.field-v02.field-without-label#name_filter{
+    name: 'name_filter',
+    placeholder: t('lexicon.entries.list.filters.name_placeholder'),
+    type: :text,
+    value: @name_filter
+  }
+
+= render partial: 'shared/filters/checkbox_group',
+         locals: { group_name: :gender,
+                   title: t('lexicon.entries.list.filters.gender_title'),
+                   field_name: :ckb_genders,
+                   all_values: %w(male female other unknown),
+                   selected_values: @genders,
+                   facet: {} }
+
+= render layout: 'shared/collapsible_block',
+         locals: { container_name: 'collf_birth',
+                   title: t('lexicon.entries.list.filters.birth_years') } do
+  .form-row
+    .col-md-6
+      %label.small= t('lexicon.entries.list.filters.from_year')
+      %input.field-v02#birth_year_from{ name: 'birth_year_from',
+                                        type: 'number',
+                                        value: @birth_year_from,
+                                        placeholder: t('lexicon.entries.list.filters.year_placeholder') }
+    .col-md-6
+      %label.small= t('lexicon.entries.list.filters.to_year')
+      %input.field-v02#birth_year_to{ name: 'birth_year_to',
+                                      type: 'number',
+                                      value: @birth_year_to,
+                                      placeholder: t('lexicon.entries.list.filters.year_placeholder') }
+
+= render layout: 'shared/collapsible_block',
+         locals: { container_name: 'collf_death',
+                   title: t('lexicon.entries.list.filters.death_years') } do
+  .form-row
+    .col-md-6
+      %label.small= t('lexicon.entries.list.filters.from_year')
+      %input.field-v02#death_year_from{ name: 'death_year_from',
+                                        type: 'number',
+                                        value: @death_year_from,
+                                        placeholder: t('lexicon.entries.list.filters.year_placeholder') }
+    .col-md-6
+      %label.small= t('lexicon.entries.list.filters.to_year')
+      %input.field-v02#death_year_to{ name: 'death_year_to',
+                                      type: 'number',
+                                      value: @death_year_to,
+                                      placeholder: t('lexicon.entries.list.filters.year_placeholder') }
+
+:javascript
+  $(document).ready(function() {
+    let filterTimeout;
+
+    function submit_filters() {
+      clearTimeout(filterTimeout);
+      filterTimeout = setTimeout(function() {
+        startModal('spinnerdiv');
+        $('#authors_filters').submit();
+      }, 300);
+    }
+
+    // Desktop: auto-submit on filter change
+    if (!isMobile()) {
+      $('#filters_panel input, #filters_panel select').on('change keyup', submit_filters);
+    }
+
+    // Reset button
+    $('.reset').click(function() {
+      $('#filters_panel input[type="text"], #filters_panel input[type="number"]').val('');
+      $('#filters_panel input[type="checkbox"]').prop('checked', false);
+      submit_filters();
+    });
+  });

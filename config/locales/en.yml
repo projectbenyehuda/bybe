@@ -2840,6 +2840,24 @@ en:
         entries_count:
           one: 1 entry
           other: "%{count} entries"
+        filters:
+          entry_name: "Entry Name"
+          name_placeholder: "Search by name"
+          name_contains: "Name contains: %{name}"
+          gender_title: "Gender"
+          gender_male: "Male"
+          gender_female: "Female"
+          gender_other: "Other"
+          gender_unknown: "Unknown"
+          birth_years: "Birth Years"
+          death_years: "Death Years"
+          from_year: "From year"
+          to_year: "To year"
+          year_placeholder: "Year"
+          birth_from: "Born from: %{year}"
+          birth_to: "Born to: %{year}"
+          death_from: "Died from: %{year}"
+          death_to: "Died to: %{year}"
     person_works:
       index:
         add_work: Add Work
