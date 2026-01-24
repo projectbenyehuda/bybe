@@ -37,7 +37,7 @@
           %li
             = link_to entry.title, lexicon_entry_path(entry)
             - if entry.lex_item.is_a?(LexPerson) && entry.lex_item.life_years.present?
-              .authors-list-years (#{entry.lex_item.life_years})
+              .authors-list-years!= " (#{entry.lex_item.life_years})"
     != paginate @lex_entries
 
 :javascript

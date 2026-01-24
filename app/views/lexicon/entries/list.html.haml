@@ -12,14 +12,15 @@
             .work-content
               .headline-1-v02= t('lexicon.entries.list.welcome_title')
               %p= t('lexicon.entries.list.description')
+              - form_id = 'authors_filters'
+              = form_tag(lexicon_entries_list_path, remote: true, method: :post, id: form_id, autocomplete: :off) do
+                = hidden_field_tag(:sort_by, @sort)
+                .by-card-content-v02#filters_panel
+                  = render partial: 'list_filters'
+
             .work-side-color
               .lexicon-logo
               .work-genre.author-side-default-picture
-          - form_id = 'authors_filters'
-          = form_tag(lexicon_entries_list_path, remote: true, method: :post, id: form_id, autocomplete: :off) do
-            = hidden_field_tag(:sort_by, @sort)
-            .by-card-content-v02#filters_panel
-              = render partial: 'list_filters'
 
       .col-12.col-lg-8#list_results
         = render partial: 'list_results'
