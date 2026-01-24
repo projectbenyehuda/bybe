@@ -132,12 +132,12 @@ module Lexicon
       if @genders.any?
         # Convert gender strings to enum integer values
         gender_values = @genders.map { |g| LexPerson.genders[g] }.compact
-        scope = scope.where(lex_people: { gender: gender_values }) if gender_values.any?
+        scope = scope.where('lex_people.gender IN (?)', gender_values) if gender_values.any?
       end
 
       # Birth year range filter (person-specific)
       if @birth_year_from.present? || @birth_year_to.present?
-        scope = scope.where.not(lex_people: { birthdate: nil })
+        scope = scope.where('lex_people.birthdate IS NOT NULL')
         if @birth_year_from.present?
           scope = scope.where('CAST(SUBSTRING(lex_people.birthdate, 1, 4) AS SIGNED) >= ?', @birth_year_from)
         end
@@ -148,7 +148,7 @@ module Lexicon
 
       # Death year range filter (person-specific)
       if @death_year_from.present? || @death_year_to.present?
-        scope = scope.where.not(lex_people: { deathdate: nil })
+        scope = scope.where('lex_people.deathdate IS NOT NULL')
         if @death_year_from.present?
           scope = scope.where('CAST(SUBSTRING(lex_people.deathdate, 1, 4) AS SIGNED) >= ?', @death_year_from)
         end
@@ -230,7 +230,7 @@ module Lexicon
 
       # Apply birth year filters
       if @birth_year_from.present? || @birth_year_to.present?
-        scope = scope.where.not(lex_people: { birthdate: nil })
+        scope = scope.where('lex_people.birthdate IS NOT NULL')
         if @birth_year_from.present?
           scope = scope.where('CAST(SUBSTRING(lex_people.birthdate, 1, 4) AS SIGNED) >= ?', @birth_year_from)
         end
@@ -241,7 +241,7 @@ module Lexicon
 
       # Apply death year filters
       if @death_year_from.present? || @death_year_to.present?
-        scope = scope.where.not(lex_people: { deathdate: nil })
+        scope = scope.where('lex_people.deathdate IS NOT NULL')
         if @death_year_from.present?
           scope = scope.where('CAST(SUBSTRING(lex_people.deathdate, 1, 4) AS SIGNED) >= ?', @death_year_from)
         end
