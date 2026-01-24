@@ -2290,6 +2290,24 @@ he:
         entries_count:
           one: ערך אחד
           other: "%{count} ערכים"
+        filters:
+          entry_name: "שם הערך"
+          name_placeholder: "חיפוש לפי שם"
+          name_contains: "שם מכיל: %{name}"
+          gender_title: "מגדר"
+          gender_male: "זכר"
+          gender_female: "נקבה"
+          gender_other: "אחר"
+          gender_unknown: "לא ידוע"
+          birth_years: "שנות לידה"
+          death_years: "שנות פטירה"
+          from_year: "משנת"
+          to_year: "עד שנת"
+          year_placeholder: "שנה"
+          birth_from: "נולד משנת: %{year}"
+          birth_to: "נולד עד שנת: %{year}"
+          death_from: "נפטר משנת: %{year}"
+          death_to: "נפטר עד שנת: %{year}"
     person_works:
       index:
         add_work: הוספת יצירה
