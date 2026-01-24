@@ -1,3 +1,4 @@
+%link{ rel:'stylesheet', href:'https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css'}
 -# Public list of published lexicon entries
 %main
   .top-element
@@ -8,11 +9,17 @@
           .work-area
             .work-content
               .headline-1-v02= t('lexicon.entries.list.welcome_title')
-              %p!= t('lexicon.entries.list.intro_html', count: @total)
               %p= t('lexicon.entries.list.description')
             .work-side-color
               .lexicon-logo
               .work-genre.author-side-default-picture
+          - form_id = 'authors_filters'
+          = form_tag(lexicon_entries_list_path, remote: true, method: :post, id: form_id, autocomplete: :off) do
+            = hidden_field_tag(:sort_by, @sort)
+            .by-card-content-v02#filters_panel
+              .headline-2-v02= t(:filter_by)
+              %span.reset.linkcolor.pointer= t(:reset_filter)
+
 
       .col-12.col-lg-8
         .by-card-v02
@@ -43,7 +50,7 @@
                   %li
                     = link_to entry.title, lexicon_entry_path(entry)
                     - if entry.lex_item.is_a?(LexPerson) && entry.lex_item.life_years.present?
-                      .authors-list-years (#{entry.lex_item.life_years})
+                      .authors-list-years!= " (#{entry.lex_item.life_years})"
             != paginate @lex_entries
 
 :javascript
