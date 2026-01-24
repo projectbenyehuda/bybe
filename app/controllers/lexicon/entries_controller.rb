@@ -8,7 +8,7 @@ module Lexicon
     end
     before_action :set_lex_entry, only: %i(show edit update destroy)
 
-    layout 'lexicon_backend', except: %i(show)
+    layout 'lexicon_backend', except: %i(show list)
 
     # GET /lex_entries or /lex_entries.json
     def index
@@ -28,14 +28,62 @@ module Lexicon
     end
 
     def list
-      @lex_entries = LexEntry.where.not(lex_item: nil).where(status: :published).order(:title)
+      @page_title = "#{t('.page_title')} - #{t(:project_ben_yehuda)}"
+      @pagetype = :lex_entries
+      @header_partial = 'lexicon/entries/list_top'
+
+      # Handle sorting
+      @sort = params[:sort_by].presence || 'alphabetical_asc'
+
+      @lex_entries = LexEntry.where.not(lex_item: nil).where(status: :published)
+
+      # Apply sorting based on the sort parameter
+      @lex_entries = case @sort
+                     when 'alphabetical_asc'
+                       @lex_entries.order('lex_entries.title ASC')
+                     when 'alphabetical_desc'
+                       @lex_entries.order('lex_entries.title DESC')
+                     when 'birth_year_asc'
+                       # Join only LexPerson entries and sort by birthdate, NULLS LAST
+                       @lex_entries
+                     .joins("LEFT JOIN lex_people ON lex_entries.lex_item_type = 'LexPerson' " \
+                            'AND lex_entries.lex_item_id = lex_people.id')
+                     .order(Arel.sql('CASE WHEN lex_people.birthdate IS NULL THEN 1 ELSE 0 END, ' \
+                                     'lex_people.birthdate ASC'))
+                     when 'birth_year_desc'
+                       # Join only LexPerson entries and sort by birthdate descending, NULLS LAST
+                       @lex_entries
+                     .joins("LEFT JOIN lex_people ON lex_entries.lex_item_type = 'LexPerson' " \
+                            'AND lex_entries.lex_item_id = lex_people.id')
+                     .order(Arel.sql('CASE WHEN lex_people.birthdate IS NULL THEN 1 ELSE 0 END, ' \
+                                     'lex_people.birthdate DESC'))
+                     when 'death_year_asc'
+                       # Join only LexPerson entries and sort by deathdate, NULLS LAST
+                       @lex_entries
+                     .joins("LEFT JOIN lex_people ON lex_entries.lex_item_type = 'LexPerson' " \
+                            'AND lex_entries.lex_item_id = lex_people.id')
+                     .order(Arel.sql('CASE WHEN lex_people.deathdate IS NULL THEN 1 ELSE 0 END, ' \
+                                     'lex_people.deathdate ASC'))
+                     when 'death_year_desc'
+                       # Join only LexPerson entries and sort by deathdate descending, NULLS LAST
+                       @lex_entries
+                     .joins("LEFT JOIN lex_people ON lex_entries.lex_item_type = 'LexPerson' " \
+                            'AND lex_entries.lex_item_id = lex_people.id')
+                     .order(Arel.sql('CASE WHEN lex_people.deathdate IS NULL THEN 1 ELSE 0 END, ' \
+                                     'lex_people.deathdate DESC'))
+                     else
+                       # Default to alphabetical ascending
+                       @lex_entries.order('lex_entries.title ASC')
+                     end
+
       @lex_entries = @lex_entries.page(params[:page])
+      @total = @lex_entries.total_count
     end
 
     def show
-      unless @lex_entry.status_published?
-        require_editor('edit_lexicon')
-      end
+      return if @lex_entry.status_published?
+
+      require_editor('edit_lexicon')
     end
 
     def edit
@@ -74,6 +122,5 @@ module Lexicon
     def lex_entry_params
       params.expect(lex_entry: %i(title status lex_person_id lex_publication_id))
     end
-    
   end
 end
