@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
+RSpec.describe 'Lexicon entries navbar', :js, type: :system do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
@@ -29,9 +29,7 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
              person: person,
              title: 'Test Citation',
              from_publication: 'Test Publication',
-             pages: '123-145',
-             raw: '<p>Test citation markup</p>',
-             status: :approved)
+             pages: '123-145')
     end
 
     let!(:link) do
@@ -53,13 +51,13 @@ RSpec.describe 'Lexicon entries navbar', type: :system, js: true do
 
         # The "about" section should show with gender suffix
         about_text = I18n.t('activerecord.attributes.lex_person.about',
-                           gender_suffix: person.female? ? 'ת' : '',
-                           gender_letter: person.gender_letter)
+                            gender_suffix: person.female? ? 'ת' : '',
+                            gender_letter: person.gender_letter)
         expect(page).to have_content(about_text)
       end
     end
 
-    # Note: The current implementation uses a single responsive navbar
+    # NOTE: The current implementation uses a single responsive navbar
     # without separate desktop/mobile variants
 
     it 'scrolls to biography section when biography nav item is clicked' do
