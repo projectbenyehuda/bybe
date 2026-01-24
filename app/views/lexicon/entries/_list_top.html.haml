@@ -1,0 +1,39 @@
+.container-fluid#header-author
+  .top-space
+  #breadcrumbs
+    .breadcrumbs-text
+      = link_to t(:homepage), root_path
+    .breadcrumbs-arrow 1
+    .breadcrumbs-text
+      = link_to t('lexicon.entries.list.entries_list_breadcrumb'), lexicon_entries_list_path
+
+  .texts-list-top.peach2-lexicon
+    .texts-list-top-info-card.left-side-card-v02
+      .flex-container
+        .headline-1-v02= t('lexicon.entries.list.page_header')
+
+        .author-page-top-icons-desktop
+          .top-left-icons-group
+            %a.by-icon-v02{ href: '#', title: t(:print) }= '9'
+            %a.by-icon-v02{ href: '#', title: t(:download) }= '3'
+        .author-page-top-icons-mobile
+          .top-left-icons-group
+            .by-dropdown-v02#moreMobile-author
+              %span#nav-more-icon
+                %a{ href: '#' }
+                  %span.by-icon-top-v02 Y
+              .by-dropdown-content-v02#menu-more-mobile{ style: 'left: 0; margin-top: 4px' }
+                %a{ href: '#' }
+                  %span.by-icon-v02.iconNearText-v02 3
+                  = t(:download)
+                %a{ href: '#' }
+                  %span.by-icon-v02.iconNearText-v02 9
+                  = t(:print)
+
+    .row.error-found-row
+      .col-4
+      .col-8.error-found-col
+        %button.error-found-btn.notyet
+          .error-found
+            .error-found-text!= t(:found_br_mistake_html)
+            .error-found-icon g
