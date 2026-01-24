@@ -48,7 +48,7 @@ module Lexicon
                                @death_year_from.present? || @death_year_to.present?
 
       # Start with base scope
-      @lex_entries = LexEntry.where.not(lex_item: nil).where(status: :published)
+      @lex_entries = LexEntry.includes(:lex_item).where.not(lex_item: nil).where(status: :published)
 
       # Calculate gender facets (before applying gender filter)
       @gender_facet = calculate_gender_facets
