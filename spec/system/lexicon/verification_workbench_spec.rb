@@ -10,10 +10,8 @@ def webdriver_available?
     driver = Capybara.current_session.driver
     if driver.respond_to?(:browser)
       driver.browser
-      true
-    else
-      true
     end
+    true
   rescue Selenium::WebDriver::Error::WebDriverError,
          Selenium::WebDriver::Error::UnknownError,
          Net::ReadTimeout,
@@ -74,9 +72,7 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
            person: person,
            title: 'Test Citation',
            from_publication: 'Test Publication',
-           pages: '123-145',
-           raw: '<p>Test citation markup</p>',
-           status: :approved)
+           pages: '123-145')
   end
 
   let!(:link) do
@@ -88,14 +84,14 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
 
   after do
     # Clean up temp file
-    File.delete(lex_file.full_path) if File.exist?(lex_file.full_path)
+    FileUtils.rm_f(lex_file.full_path)
   end
 
   describe 'Verification Queue' do
     it 'displays the verification queue page' do
       visit '/lex/verification/queue'
 
-      expect(page).to have_content('תור אימות הגירה')
+      expect(page).to have_content('רשימת הסבות לבדיקה')
       expect(page).to have_content('Test Person')
     end
 
@@ -123,7 +119,7 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
       visit '/lex/verification/queue'
 
       within('tbody') do
-        expect(page).to have_link('התחל אימות')
+        expect(page).to have_link('התחל בדיקה')
       end
     end
 
@@ -131,7 +127,7 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
       visit '/lex/verification/queue'
 
       within('tbody') do
-        click_link 'התחל אימות'
+        click_link 'התחל בדיקה'
       end
 
       expect(page).to have_current_path("/lex/verification/#{entry.id}")
@@ -211,9 +207,7 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
       within('.verification-checklist') do
         checkboxes = all('input[type="checkbox"]')
         expect(checkboxes.count).to be > 0
-        checkboxes.each do |checkbox|
-          expect(checkbox).to be_disabled
-        end
+        expect(checkboxes).to all(be_disabled)
       end
     end
 
@@ -266,7 +260,7 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
     it 'displays citation author names in view' do
       # Add an author to the citation first
       author_person = create(:lex_person)
-      author_entry = create(:lex_entry, title: 'Citation Author', lex_item: author_person)
+      create(:lex_entry, title: 'Citation Author', lex_item: author_person)
       citation.authors.create!(person: author_person)
 
       visit "/lex/verification/#{entry.id}"
@@ -284,7 +278,7 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
           # Find the quick verify button for the citation
           verify_button = find('button[data-action="click->verification#quickVerify"]')
           expect(verify_button).to be_present
-          expect(verify_button.text).to include('סמן כמאומת')
+          expect(verify_button.text).to include('סמן כבדוק')
         end
       end
     end
@@ -295,7 +289,7 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
           # Find the quick verify button for the attachments section
           verify_button = find('button[data-action="click->verification#quickVerify"]')
           expect(verify_button).to be_present
-          expect(verify_button.text).to include('סמן כמאומת')
+          expect(verify_button.text).to include('סמן כבדוק')
         end
       end
     end
@@ -388,7 +382,7 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
     it 'displays the hide verified toggle checkbox' do
       within('.verification-header') do
         expect(page).to have_css('#hide-verified-toggle')
-        expect(page).to have_content('הסתר פריטים מאומתים')
+        expect(page).to have_content('הסתר פריטים בדוקים')
       end
     end
 

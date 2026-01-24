@@ -16,7 +16,7 @@ RSpec.describe 'Author LexCitations card', :js, type: :system do
   let(:lex_person) { lex_entry.lex_item }
 
   context 'with general citations' do
-    let!(:citation) { create(:lex_citation, person: lex_person, item: nil, title: 'About the Author') }
+    let!(:citation) { create(:lex_citation, person: lex_person, person_work: nil, title: 'About the Author') }
 
     it 'displays citations card with general citations' do
       visit authority_path(author)
@@ -29,7 +29,9 @@ RSpec.describe 'Author LexCitations card', :js, type: :system do
 
   context 'with work-specific citation only' do
     let(:lex_person_work) { create(:lex_person_work, person: lex_person) }
-    let!(:work_citation) { create(:lex_citation, person: lex_person, item: lex_person_work, title: 'About a Work') }
+    let!(:work_citation) do
+      create(:lex_citation, person: lex_person, person_work: lex_person_work, title: 'About a Work')
+    end
 
     it 'does not display citations card' do
       visit authority_path(author)
