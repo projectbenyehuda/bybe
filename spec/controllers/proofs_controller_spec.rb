@@ -6,9 +6,9 @@ describe ProofsController do
   include_context 'when editor logged in', :handle_proofs
 
   describe '#index' do
-    subject!(:call) { get :index, params: filter }
-
     let(:manifestation) { create(:manifestation, title: 'Search Term') }
+
+    subject(:call) { get :index, params: filter }
 
     let!(:new_proof) { create(:proof, status: :new, item: manifestation) }
     let!(:escalated_proof) { create(:proof, status: :escalated) }
