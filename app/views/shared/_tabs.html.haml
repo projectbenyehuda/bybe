@@ -335,9 +335,6 @@
               %span.by-icon-v02 Z
               = t(:sign_in)
 
-#resultsDlg{title: t(:search_results)}
-  .container-fluid
-    #results
 :javascript
 
   var toggler = document.getElementsByClassName("caret");
@@ -363,13 +360,6 @@
     });
   }
   $(document).ready(function(){
-    $('#resultsDlg').dialog({
-      autoOpen: false,
-      height: 600,
-      width: 800,
-      modal: true,
-      buttons: { "#{t(:cancel)}": function() { $('#resultsDlg').dialog("close");} }
-      });
     $('#q').keypress(function (e) {
       var key = e.which;
       if(key == 13) { // the enter key code

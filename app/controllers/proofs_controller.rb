@@ -84,7 +84,8 @@ class ProofsController < ApplicationController
       @proof.status = 'fixed'
       unless params[:email] == 'no' || @proof.from.nil? || @proof.from !~ /\w+@\w+\.\w+/
         explanation = params[:fixed_explanation]
-        if @proof.item.is_a?(Manifestation)
+        case @proof.item
+        when Manifestation
           Notifications.send_or_queue(
             :proof_fixed,
             @proof.from,
@@ -93,12 +94,21 @@ class ProofsController < ApplicationController
             @proof.item,
             explanation
           )
-        elsif @proof.item.is_a?(Authority)
+        when Authority
           Notifications.send_or_queue(
             :proof_fixed,
             @proof.from,
             @proof,
             authority_path(@proof.item),
+            @proof.item,
+            explanation
+          )
+        when LexEntry
+          Notifications.send_or_queue(
+            :proof_fixed,
+            @proof.from,
+            @proof,
+            lexicon_entry_path(@proof.item),
             @proof.item,
             explanation
           )
@@ -117,7 +127,8 @@ class ProofsController < ApplicationController
         @proof.status = 'wontfix'
         @explanation = params[:wontfix_explanation]
         unless params[:email] == 'no' || @proof.from.nil? || @proof.from !~ /\w+@\w+\.\w+/
-          if @proof.item.is_a?(Manifestation)
+          case @proof.item
+          when Manifestation
             Notifications.send_or_queue(
               :proof_wontfix,
               @proof.from,
@@ -126,12 +137,21 @@ class ProofsController < ApplicationController
               @proof.item,
               @explanation
             )
-          elsif @proof.item.is_a?(Authority)
+          when Authority
             Notifications.send_or_queue(
               :proof_wontfix,
               @proof.from,
               @proof,
               authority_path(@proof.item),
+              @proof.item,
+              @explanation
+            )
+          when LexEntry
+            Notifications.send_or_queue(
+              :proof_wontfix,
+              @proof.from,
+              @proof,
+              lexicon_entry_path(@proof.item),
               @proof.item,
               @explanation
             )
