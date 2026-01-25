@@ -49,26 +49,27 @@
             %span{ style: 'font-weight: bold' }= t(:cancel)
 
   #proof_status
-#proofSent{ style: 'display:none' }
-  %span{ style: 'color:green' }= t('.thanks_html')
+
+-# Success message modal
+.modal#proofSentDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h5.modal-title= t(:thanks)
+        %button.close{ type: 'button', data: { dismiss: 'modal' }, 'aria-label' => t(:close) }
+          %span{ 'aria-hidden' => 'true' } &times;
+      .modal-body
+        %p{ style: 'color:green' }= t('.thanks_html')
+      .modal-footer
+        %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }= t(:close)
 
 :javascript
   $(function(){
-    $('#proofSent').dialog({
-      autoOpen: false,
-      height: 200,
-      width: 200,
-      modal: true,
-      buttons: {
-        "#{t(:close)}": function() { $('#proofSent').dialog('close'); }
-      }
-    });
-
     $('#proof_form').on('ajax:success', function(e, data, status, xhr) {
       $('#prooftext').val('');
       $('#proof_status').html('');
       $('#proofDlg').modal("hide");
-      $('#proofSent').dialog('open');
+      $('#proofSentDlg').modal('show');
     }).on('ajax:error', function(e, xhr, status, error) {
       var errorMessages = [];
       try {

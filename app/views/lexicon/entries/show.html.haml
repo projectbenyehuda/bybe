@@ -11,16 +11,6 @@
     = render partial: 'show_person', locals: { lex_person: lex_item }
   - elsif lex_item.is_a?(LexPublication)
     = render partial: 'show_publication', locals: { lex_publication: lex_item }
-.row.error-found-row
-  .col.side-menu-area
-  .col{ style: 'z-index:-1;height:0;' }
-  .col-4.error-found-col
-    %button.error-found-btn#found_mistake{ title: t(:report_error_tt) }
-      .error-found
-        .error-found-text
-          = t(:found_br_mistake_html)
-        .error-found-icon g
-  .col-lg-4{ style: 'height:min-content' }
 
 - if current_user&.editor? && current_user.has_bit?('edit_lexicon')
   = link_to t(:edit), edit_lexicon_entry_path(@lex_entry)

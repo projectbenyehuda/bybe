@@ -2,9 +2,18 @@
   .col-12.col-lg-8
     .logo-for-print
       %img.logoBY-v02{ src: '/assets/logo-byp-mobile.svg' }
-    .row
+    .row.error-found-row
       .col.side-menu-area
         = render partial: 'navbar'
+      .col{ style: 'z-index:-1;height:0;' }
+      .col-4.error-found-col
+        %button.error-found-btn#found_mistake{ title: t(:report_error_tt) }
+          .error-found
+            .error-found-text
+              = t(:found_br_mistake_html)
+            .error-found-icon g
+      .col-lg-4{ style: 'height:min-content' }
+    .row
       .col
         = render layout: 'lexicon/header' do
           .lexicon-author-details
