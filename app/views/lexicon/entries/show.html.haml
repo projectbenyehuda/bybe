@@ -1,5 +1,18 @@
 = render partial: 'shared/breadcrumbs'
+- unless @lex_entry.status_published?
+  .alert.alert-warning
+    = t('lexicon.entries.show.unpublished_warning', status: LexEntry.human_enum_name(:status, @lex_entry.status))
+    = link_to t('lexicon.verification.queue.actions.start_or_continue'),
+              lexicon_verification_path(@lex_entry),
+              class: 'btn btn-sm btn-outline-primary ms-2'
+.peach2-lexicon.proofable{ data: { item_id: @lex_entry.id, item_type: 'LexEntry' } }
+  - lex_item = @lex_entry.lex_item
+  - if lex_item.is_a?(LexPerson)
+    = render partial: 'show_person', locals: { lex_person: lex_item }
+  - elsif lex_item.is_a?(LexPublication)
+    = render partial: 'show_publication', locals: { lex_publication: lex_item }
 .row.error-found-row
+  .col.side-menu-area
   .col{ style: 'z-index:-1;height:0;' }
   .col-4.error-found-col
     %button.error-found-btn#found_mistake{ title: t(:report_error_tt) }
@@ -8,18 +21,6 @@
           = t(:found_br_mistake_html)
         .error-found-icon g
   .col-lg-4{ style: 'height:min-content' }
-.peach2-lexicon.proofable{ data: { item_id: @lex_entry.id, item_type: 'LexEntry' } }
-  - lex_item = @lex_entry.lex_item
-  - unless @lex_entry.status_published?
-    .alert.alert-warning
-      = t('lexicon.entries.show.unpublished_warning', status: LexEntry.human_enum_name(:status, @lex_entry.status))
-      = link_to t('lexicon.verification.queue.actions.start_or_continue'),
-                lexicon_verification_path(@lex_entry),
-                class: 'btn btn-sm btn-outline-primary ms-2'
-  - if lex_item.is_a?(LexPerson)
-    = render partial: 'show_person', locals: { lex_person: lex_item }
-  - elsif lex_item.is_a?(LexPublication)
-    = render partial: 'show_publication', locals: { lex_publication: lex_item }
 
 - if current_user&.editor? && current_user.has_bit?('edit_lexicon')
   = link_to t(:edit), edit_lexicon_entry_path(@lex_entry)
