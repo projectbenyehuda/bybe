@@ -52,16 +52,24 @@
 
 -# Success message modal
 .modal#proofSentDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
-  .modal-dialog
-    .modal-content
-      .modal-header
-        %h5.modal-title= t(:thanks)
-        %button.close{ type: 'button', data: { dismiss: 'modal' }, 'aria-label' => t(:close) }
-          %span{ 'aria-hidden' => 'true' } &times;
-      .modal-body
+  .flex-popup
+    .popup-top
+      %button.btn-small-outline-v02{ data: { dismiss: :modal } }
+        .btn-text-v02
+          %span.right-arrow 2
+          %span= t(:close)
+      .headline-2-v02{ style: 'text-align: center;margin: 0; padding-top: 3px;' }
+        = t(:thanks)
+      .button-placeholder
+    .by-popup-v02
+      .by-card-header-v02.desktop-only
+        %span.headline-1-v02= t(:thanks)
+        %a.popup-x-v02{ data: { dismiss: :modal } } -
+      .by-card-content-v02
         %p{ style: 'color:green' }= t('.thanks_html')
-      .modal-footer
-        %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }= t(:close)
+      .bottom-button-area.left-buttons
+        %button.by-button-v02{ data: { dismiss: :modal } }
+          %span= t(:close)
 
 :javascript
   $(function(){
