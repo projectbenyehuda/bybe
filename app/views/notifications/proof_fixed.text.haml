@@ -2,8 +2,12 @@
 
 - if @m.nil?
   = t(:proof_fixed, :url => @url)
-- else
+- elsif @m.is_a?(Manifestation)
   = t(:proof_fixed_m, :url => @url, :title => @m.title_and_authors)
+- elsif @m.is_a?(Authority)
+  = t(:proof_fixed_authority, :url => @url, :name => @m.name)
+- else
+  = t(:proof_fixed, :url => @url)
 
 - if @explanation.present?
   != t(:additional_proof_explanation, explanation: @explanation)

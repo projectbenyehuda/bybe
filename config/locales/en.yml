@@ -2524,6 +2524,7 @@ en:
   proof_file: Proof File
   proof_fixed: Proof Fixed
   proof_fixed_m: Proof Fixed M
+  proof_fixed_authority: "Thank you for the correction you sent for the author page %{name} at:\n\n%{url}\n\nAfter review, we have fixed the text on the site. We would be happy to receive correction suggestions in the future!"
   proof_for: Proof For
   proof_for_missing_item: Proof For Missing Item
   proof_heading: Proof Heading
@@ -2532,6 +2533,7 @@ en:
   proof_when: Proof When
   proof_wontfix: Proof Wontfix
   proof_wontfix_m: Proof Wontfix M
+  proof_wontfix_authority: "Thank you for the correction you sent for the author page %{name} at:\n\n%{url}\n\nAfter review, we decided to keep the text as it appears on the site. Sometimes this is because it's an uncommon usage, or because we're not certain if it's actually an error, so we prefer to stick with the printed source. We would be happy to receive correction suggestions in the future!"
   proofed: Proofed
   proofing: Proofing
   proofstatus_assigned: Proofstatus Assigned
