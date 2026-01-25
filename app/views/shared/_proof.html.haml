@@ -70,7 +70,20 @@
       $('#proofDlg').modal("hide");
       $('#proofSent').dialog('open');
     }).on('ajax:error', function(e, xhr, status, error) {
-      alert(JSON.parse(xhr.responseText).join('\n'));
+      var errorMessages = [];
+      try {
+        if (xhr.responseText) {
+          errorMessages = JSON.parse(xhr.responseText);
+        }
+      } catch (parseError) {
+        errorMessages = ['#{t(:proof_failed)}'];
+      }
+
+      if (Array.isArray(errorMessages) && errorMessages.length > 0) {
+        alert(errorMessages.join('\n'));
+      } else {
+        alert('#{t(:proof_failed)}');
+      }
       $('#proof_status').html("<span style='color:red'>#{t(:proof_failed)}</span>");
     });
     $('#copy_proof').click(function() {
@@ -96,7 +109,7 @@
       // First, check if selection is within a nested manifestation marker (for sub-collections)
       let startMarker = $(startElement).closest('.nested-manifestation-marker')[0];
       let endMarker = $(endElement).closest('.nested-manifestation-marker')[0];
-      
+
       // If we found nested markers, check they're the same (selection doesn't span manifestations)
       if (startMarker && endMarker) {
         if (startMarker !== endMarker) {
@@ -110,7 +123,7 @@
         // Fall back to checking the proofable div (for top-level items)
         const startProofable = $(startElement).closest('.proofable')[0];
         const endProofable = $(endElement).closest('.proofable')[0];
-        
+
         if (startProofable == null || startProofable == undefined) {
           e.preventDefault();
           alert("#{t('.select_proper_text')}");
@@ -123,7 +136,7 @@
           alert("#{t('.selection_spans_multiple_texts')}");
           return;
         }
-        
+
         var itemElement = startProofable;
       }
 

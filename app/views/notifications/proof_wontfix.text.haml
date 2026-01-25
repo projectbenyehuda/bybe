@@ -2,8 +2,12 @@
 
 - if @m.nil?
   = t(:proof_wontfix, :url => @url)
-- else
+- elsif @m.is_a?(Manifestation)
   = t(:proof_wontfix_m, :url => @url, :title => @m.title_and_authors)
+- elsif @m.is_a?(Authority)
+  = t(:proof_wontfix_authority, :url => @url, :name => @m.name)
+- else
+  = t(:proof_wontfix, :url => @url)
 
 - unless @explanation.nil?
   != t(:additional_proof_explanation, explanation: @explanation)

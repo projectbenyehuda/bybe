@@ -17,6 +17,11 @@
     - elsif @proof.item.is_a?(Collection)
       - c = @proof.item
       = link_to c.title, collection_path(c), target: '_blank', rel: 'noopener'
+    - elsif @proof.item.is_a?(Authority)
+      - a = @proof.item
+      = link_to a.name, authority_path(a), target: '_blank', rel: 'noopener'
+      %br
+      = "(#{t(:author_table_of_contents)})"
     - else
       = t(:legacy_text_from_url) + ': ' + @proof.try(:about)
   %p
