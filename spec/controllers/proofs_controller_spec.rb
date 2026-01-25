@@ -78,6 +78,13 @@ describe ProofsController do
 
       it { is_expected.to be_successful }
     end
+
+    context 'when proof is for lexicon entry' do
+      let!(:lex_entry) { create(:lex_entry) }
+      let!(:proof) { create(:proof, item: lex_entry) }
+
+      it { is_expected.to be_successful }
+    end
   end
 
   describe '#create' do
@@ -169,6 +176,34 @@ describe ProofsController do
           what: 'error in toc',
           highlight: 'highlight text from toc',
           item: authority
+        )
+      end
+    end
+
+    context 'when creating proof for lexicon entry' do
+      let(:lex_entry) { create(:lex_entry) }
+
+      let(:params) do
+        {
+          from: email,
+          highlight: 'highlight text from lexicon entry',
+          what: 'error in lexicon entry',
+          item_type: 'LexEntry',
+          item_id: lex_entry.id,
+          ziburit: ziburit
+        }
+      end
+
+      it { is_expected.to be_successful }
+
+      it 'creates new Proof record with LexEntry as item' do
+        expect { call }.to change(Proof, :count).by(1)
+        expect(Proof.order(id: :desc).first).to have_attributes(
+          status: 'new',
+          from: email,
+          what: 'error in lexicon entry',
+          highlight: 'highlight text from lexicon entry',
+          item: lex_entry
         )
       end
     end
@@ -305,6 +340,53 @@ describe ProofsController do
             proof,
             authority_path(authority),
             authority,
+            'EXPLANATION'
+          )
+          proof.reload
+          expect(proof.status).to eq 'wontfix'
+        end
+      end
+    end
+
+    context 'when resolving lexicon entry proof' do
+      let!(:lex_entry) { create(:lex_entry) }
+      let!(:proof) { create(:proof, status: :new, item: lex_entry, from: 'test@test.com') }
+
+      context 'when fixed with email' do
+        let(:additional_params) { { email: 'yes', fixed_explanation: 'FIXED' } }
+        let(:fixed) { 'yes' }
+
+        before do
+          allow(Notifications).to receive(:proof_fixed).and_call_original
+        end
+
+        it 'marks proof as fixed and sends notification with lexicon entry path' do
+          expect(call).to redirect_to admin_index_path
+          expect(Notifications).to have_received(:proof_fixed).with(
+            proof,
+            lexicon_entry_path(lex_entry),
+            lex_entry,
+            'FIXED'
+          )
+          proof.reload
+          expect(proof.status).to eq 'fixed'
+        end
+      end
+
+      context 'when wontfix with email' do
+        let(:additional_params) { { escalate: 'no', email: 'yes', wontfix_explanation: 'EXPLANATION' } }
+        let(:fixed) { 'no' }
+
+        before do
+          allow(Notifications).to receive(:proof_wontfix).and_call_original
+        end
+
+        it 'marks proof as wontfix and sends notification with lexicon entry path' do
+          expect(call).to redirect_to admin_index_path
+          expect(Notifications).to have_received(:proof_wontfix).with(
+            proof,
+            lexicon_entry_path(lex_entry),
+            lex_entry,
             'EXPLANATION'
           )
           proof.reload
