@@ -34,6 +34,10 @@
         %td
           - if p.item.is_a?(Manifestation)
             = link_to p.item.title, proof_path(p)
+          - elsif p.item.is_a?(Authority)
+            = link_to p.item.name, proof_path(p)
+          - elsif p.item.is_a?(Collection)
+            = link_to p.item.title, proof_path(p)
           - else
             = link_to p.about, proof_path(p)
         %td= p.from

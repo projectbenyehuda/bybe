@@ -79,7 +79,7 @@
               %button.btn-small-outline-v02#multiselect_btn{title: t(:worklist_multi_tt)}
                 .by-icon-v02.purple-v02 \
           -# table of contents
-          .toc#maintext
+          .toc.proofable#maintext{ data: { item_id: @author.id, item_type: @author.class.name } }
             .add-to-anthology{style:'display:none'}
               .left-pointing-arrow= t(:perform_add)
               %button.by-button-v02#add-to-anth-btn
@@ -167,6 +167,8 @@
 - if current_user
   = render partial: 'shared/anth_stuff'
 = render partial: 'shared/propose_link'
+-# found mistake popup
+= render partial: 'shared/proof'
 
 :javascript
   $(function() {

@@ -84,9 +84,7 @@ class ProofsController < ApplicationController
       @proof.status = 'fixed'
       unless params[:email] == 'no' || @proof.from.nil? || @proof.from !~ /\w+@\w+\.\w+/
         explanation = params[:fixed_explanation]
-        unless @proof.item.is_a?(Manifestation)
-          Notifications.send_or_queue(:proof_fixed, @proof.from, @proof, @proof.about, nil, @explanation)
-        else
+        if @proof.item.is_a?(Manifestation)
           Notifications.send_or_queue(
             :proof_fixed,
             @proof.from,
@@ -95,6 +93,17 @@ class ProofsController < ApplicationController
             @proof.item,
             explanation
           )
+        elsif @proof.item.is_a?(Authority)
+          Notifications.send_or_queue(
+            :proof_fixed,
+            @proof.from,
+            @proof,
+            authority_path(@proof.item),
+            @proof.item,
+            explanation
+          )
+        else
+          Notifications.send_or_queue(:proof_fixed, @proof.from, @proof, @proof.about, nil, @explanation)
         end
         fix_text = 'תוקן (ונשלח דואל)'
       else
@@ -108,9 +117,7 @@ class ProofsController < ApplicationController
         @proof.status = 'wontfix'
         @explanation = params[:wontfix_explanation]
         unless params[:email] == 'no' || @proof.from.nil? || @proof.from !~ /\w+@\w+\.\w+/
-          unless @proof.item.is_a?(Manifestation)
-            Notifications.send_or_queue(:proof_wontfix, @proof.from, @proof, @proof.about, nil, @explanation)
-          else
+          if @proof.item.is_a?(Manifestation)
             Notifications.send_or_queue(
               :proof_wontfix,
               @proof.from,
@@ -119,6 +126,17 @@ class ProofsController < ApplicationController
               @proof.item,
               @explanation
             )
+          elsif @proof.item.is_a?(Authority)
+            Notifications.send_or_queue(
+              :proof_wontfix,
+              @proof.from,
+              @proof,
+              authority_path(@proof.item),
+              @proof.item,
+              @explanation
+            )
+          else
+            Notifications.send_or_queue(:proof_wontfix, @proof.from, @proof, @proof.about, nil, @explanation)
           end
           fix_text = 'כבר תקין (ונשלח דואל)'
         else
