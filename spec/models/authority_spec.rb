@@ -245,7 +245,7 @@ describe Authority do
         before do
           Manifestation.where(id: [poetry_as_author, poetry_as_author2, memoir_as_translator,
                                    article_as_translator, fables_as_illustrator, prose_as_editor].map(&:id))
-                      .update_all(status: Manifestation.statuses[:unpublished])
+                       .update_all(status: Manifestation.statuses[:unpublished])
         end
 
         it 'returns empty hash' do
@@ -472,7 +472,8 @@ describe Authority do
         expect(first_result).to eq 3
 
         # Second call should return cached result
-        expect(Rails.cache).to receive(:fetch).with("au_#{authority.id}_collections_count", expires_in: 12.hours).and_call_original
+        expect(Rails.cache).to receive(:fetch).with("au_#{authority.id}_collections_count",
+                                                    expires_in: 12.hours).and_call_original
         second_result = authority.cached_collections_count
         expect(second_result).to eq first_result
       end
@@ -726,6 +727,10 @@ describe Authority do
           authority.reload
           expect(authority).to receive(:update_other_designation)
           authority.update!(name: 'שם חדש')
+        end
+      end
+    end
+
     describe '.sorted_comparison_names' do
       context 'when authority has only a name' do
         let(:authority) { create(:authority, name: 'James Smith', other_designation: nil) }
