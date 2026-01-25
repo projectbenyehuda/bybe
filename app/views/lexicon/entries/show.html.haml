@@ -1,10 +1,3 @@
-= render partial: 'shared/breadcrumbs'
-- unless @lex_entry.status_published?
-  .alert.alert-warning
-    = t('lexicon.entries.show.unpublished_warning', status: LexEntry.human_enum_name(:status, @lex_entry.status))
-    = link_to t('lexicon.verification.queue.actions.start_or_continue'),
-              lexicon_verification_path(@lex_entry),
-              class: 'btn btn-sm btn-outline-primary ms-2'
 .peach2-lexicon.proofable{ data: { item_id: @lex_entry.id, item_type: 'LexEntry' } }
   - lex_item = @lex_entry.lex_item
   - if lex_item.is_a?(LexPerson)
