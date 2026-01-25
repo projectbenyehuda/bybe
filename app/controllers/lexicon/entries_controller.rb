@@ -74,6 +74,10 @@ module Lexicon
     end
 
     def show
+      @header_partial = 'lexicon/entries/entry_top'
+      @page_title = "#{@lex_entry.title} - #{t(:project_ben_yehuda)}"
+      @pagetype = :lex_entry
+
       return if @lex_entry.status_published?
 
       require_editor('edit_lexicon')
