@@ -1,5 +1,14 @@
 = render partial: 'shared/breadcrumbs'
-.peach2-lexicon
+.row.error-found-row
+  .col{ style: 'z-index:-1;height:0;' }
+  .col-4.error-found-col
+    %button.error-found-btn#found_mistake{ title: t(:report_error_tt) }
+      .error-found
+        .error-found-text
+          = t(:found_br_mistake_html)
+        .error-found-icon g
+  .col-lg-4{ style: 'height:min-content' }
+.peach2-lexicon.proofable{ data: { item_id: @lex_entry.id, item_type: 'LexEntry' } }
   - lex_item = @lex_entry.lex_item
   - unless @lex_entry.status_published?
     .alert.alert-warning
@@ -16,3 +25,6 @@
   = link_to t(:edit), edit_lexicon_entry_path(@lex_entry)
   \|
 = link_to t(:back), lexicon_entries_path
+
+-# found mistake popup
+= render partial: 'shared/proof'
