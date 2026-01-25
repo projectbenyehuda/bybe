@@ -1,0 +1,18 @@
+.container-fluid#header-lexicon-entry
+  = render partial: 'shared/breadcrumbs'
+  - unless @lex_entry.status_published?
+    .alert.alert-warning
+      = t('lexicon.entries.show.unpublished_warning', status: LexEntry.human_enum_name(:status, @lex_entry.status))
+      = link_to t('lexicon.verification.queue.actions.start_or_continue'),
+                lexicon_verification_path(@lex_entry),
+                class: 'btn btn-sm btn-outline-primary ms-2'
+  .row.error-found-row
+    .col.side-menu-area
+    .col{ style: 'z-index:-1;height:0;' }
+    .col-4.error-found-col
+      %button.error-found-btn#found_mistake{ title: t(:report_error_tt) }
+        .error-found
+          .error-found-text
+            = t(:found_br_mistake_html)
+          .error-found-icon g
+    .col-lg-4{ style: 'height:min-content' }

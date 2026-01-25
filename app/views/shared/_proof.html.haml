@@ -49,26 +49,37 @@
             %span{ style: 'font-weight: bold' }= t(:cancel)
 
   #proof_status
-#proofSent{ style: 'display:none' }
-  %span{ style: 'color:green' }= t('.thanks_html')
+
+-# Success message modal
+.modal#proofSentDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
+  .flex-popup
+    .popup-top
+      %button.btn-small-outline-v02{ data: { dismiss: :modal } }
+        .btn-text-v02
+          %span.right-arrow 2
+          %span= t(:close)
+      .headline-2-v02{ style: 'text-align: center;margin: 0; padding-top: 3px;' }
+        = t(:thanks)
+      .button-placeholder
+    .by-popup-v02
+      .by-card-header-v02.desktop-only
+        %span.headline-1-v02= t(:thanks)
+        %a.popup-x-v02{ data: { dismiss: :modal } } -
+      .by-card-content-v02
+        %p{ style: 'color:green' }= t('.thanks_html')
+      .bottom-button-area.left-buttons
+        %button.by-button-v02{ data: { dismiss: :modal } }
+          %span= t(:close)
 
 :javascript
   $(function(){
-    $('#proofSent').dialog({
-      autoOpen: false,
-      height: 200,
-      width: 200,
-      modal: true,
-      buttons: {
-        "#{t(:close)}": function() { $('#proofSent').dialog('close'); }
-      }
-    });
-
     $('#proof_form').on('ajax:success', function(e, data, status, xhr) {
       $('#prooftext').val('');
       $('#proof_status').html('');
       $('#proofDlg').modal("hide");
-      $('#proofSent').dialog('open');
+
+      // Show success modal
+      $('#proofSentDlg').modal('show');
     }).on('ajax:error', function(e, xhr, status, error) {
       var errorMessages = [];
       try {

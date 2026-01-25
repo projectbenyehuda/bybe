@@ -22,6 +22,11 @@
       = link_to a.name, authority_path(a), target: '_blank', rel: 'noopener'
       %br
       = "(#{t(:author_table_of_contents)})"
+    - elsif @proof.item.is_a?(LexEntry)
+      - entry = @proof.item
+      = link_to entry.title, lexicon_entry_path(entry), target: '_blank', rel: 'noopener'
+      %br
+      = "(#{LexEntry.model_name.human})"
     - else
       = t(:legacy_text_from_url) + ': ' + @proof.try(:about)
   %p
