@@ -65,10 +65,17 @@
 
 :javascript
   $(function(){
+    // Ensure Bootstrap modal is available
+    if (typeof $.fn.modal === 'undefined') {
+      console.error('Bootstrap modal is not loaded');
+    }
+
     $('#proof_form').on('ajax:success', function(e, data, status, xhr) {
       $('#prooftext').val('');
       $('#proof_status').html('');
       $('#proofDlg').modal("hide");
+
+      // Show success modal
       $('#proofSentDlg').modal('show');
     }).on('ajax:error', function(e, xhr, status, error) {
       var errorMessages = [];
