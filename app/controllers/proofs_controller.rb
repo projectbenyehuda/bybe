@@ -103,7 +103,7 @@ class ProofsController < ApplicationController
             explanation
           )
         else
-          Notifications.send_or_queue(:proof_fixed, @proof.from, @proof, @proof.about, nil, @explanation)
+          Notifications.send_or_queue(:proof_fixed, @proof.from, @proof, @proof.about, nil, explanation)
         end
         fix_text = 'תוקן (ונשלח דואל)'
       else
