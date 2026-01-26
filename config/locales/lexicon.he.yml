@@ -49,7 +49,7 @@ he:
         pages: p.
     attachments:
       create:
-        file_exists: "A file with this name already exists: %{filename}"
+        file_exists: "קובץ בשם זה כבר קיים: %{filename}"
       index:
         attach_new_file: צרף קובץ חדש
         filename: שם הקובץ
