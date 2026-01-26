@@ -6,12 +6,13 @@
 
 desc 'Transition authorities and manifestations to public domain based on copyright expiration (death + 71 years)'
 task :copyright_expiration, %i(execute output target_year) => :environment do |_task, args|
-  # travel_to(Time.zone.local(2026, 1, 1, 10, 0, 0)) do
-  puts Time.current
   # Default to dry-run mode unless --execute is passed
   execute_mode = args[:execute] == 'execute'
   # Allow output redirection for testing (defaults to $stdout)
   output = args[:output] || $stdout
+
+  # travel_to(Time.zone.local(2026, 1, 1, 10, 0, 0)) do
+  output.puts Time.current
 
   if execute_mode
     output.puts 'Running in EXECUTE mode - changes will be saved to database'
@@ -52,12 +53,12 @@ task :copyright_expiration, %i(execute output target_year) => :environment do |_
     stats[:authorities_checked] += 1
 
     if execute_mode
-      print "Publishing authority #{authority.name} (ID: #{authority.id})... "
+      output.print "Publishing authority #{authority.name} (ID: #{authority.id})... "
       Chewy.strategy(:atomic) do
         authority.publish! unless authority.published?
       end
       Rails.cache.delete("au_#{authority.id}_work_count")
-      puts 'done.'
+      output.puts 'done.'
     end
 
     # Skip if already public domain
