@@ -18,7 +18,14 @@ module Lexicon
     end
 
     def create
-      @lex_entry.attachments.attach(params[:attachment])
+      file = params[:attachment]
+      filename = file.original_filename.to_s
+
+      if @lex_entry.attachments.any? { |att| att.blob.filename.to_s == filename }
+        @error = t('.file_exists', filename: filename)
+      else
+        @lex_entry.attachments.attach(file)
+      end
     end
 
     def destroy
