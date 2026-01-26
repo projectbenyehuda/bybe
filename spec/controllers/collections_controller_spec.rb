@@ -163,8 +163,12 @@ describe CollectionsController do
     it 'displays work-specific translators in the TOC' do
       get :show, params: { id: collection.id }
       expect(response).to be_successful
-      expect(response.body).to include('Translated Work')
-      expect(response.body).to include('Work Translator')
+
+      # Extract the TOC section to verify content appears in the right place
+      toc_section = response.body.match(/binder-texts-list.*?<\/div>/m).to_s
+
+      expect(toc_section).to include('Translated Work')
+      expect(toc_section).to include('Work Translator')
     end
 
     it 'filters out collection-level translators from individual works' do
