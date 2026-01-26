@@ -1,15 +1,17 @@
-%div#suggestion_heuristics
-  %ul{style: 'display: flex; flex-wrap: wrap;font-size:80%'}
-    - @tag_suggestions.keys.each do |key|
-      %li
-        %a{href: '#'+key.to_s}
+#suggestion_heuristics
+  %ul.nav.nav-tabs{ role: 'tablist', style: 'flex-wrap: wrap;font-size:80%' }
+    - @tag_suggestions.keys.each_with_index do |key, index|
+      %li.nav-item
+        %a.nav-link{ class: (index == 0 ? 'active' : ''), 'data-toggle': 'tab', href: '#' + key.to_s, role: 'tab' }
           .heuristic-label= t(key)
 
-  - @tag_suggestions.each_pair do |heuristic, tags|
-    .list-group.scrolling-200-list{style: 'margin-bottom: 20px;', id: heuristic.to_s}
-      - tags.each do |tag|
-        %button.pointer.list-group-item.indented{style: 'padding: 0.5rem 0.75rem;', id: tag.id}
-          = tag.name
+  .tab-content
+    - @tag_suggestions.each_pair.with_index do |(heuristic, tags), index|
+      .tab-pane.fade{ class: (index == 0 ? 'show active' : ''), id: heuristic.to_s, role: 'tabpanel' }
+        .list-group.scrolling-200-list{ style: 'margin-bottom: 20px;' }
+          - tags.each do |tag|
+            %button.pointer.list-group-item.indented{ style: 'padding: 0.5rem 0.75rem;', id: tag.id }
+              = tag.name
 
 :javascript
   $(document).ready(function() {
@@ -19,5 +21,4 @@
       $('#tag').val($(this).text());
       $('#tag').trigger('input');
     });
-    $('#suggestion_heuristics').tabs();
   });
