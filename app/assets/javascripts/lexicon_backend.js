@@ -1,6 +1,5 @@
 //= require jquery3
 //= require rails-ujs
-//= require jquery-ui
 //= require autocomplete_init
 //= require verification
 
