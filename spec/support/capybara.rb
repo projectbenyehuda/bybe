@@ -20,18 +20,6 @@ RSpec.configure do |config|
     # If both browsers fail, skip JS tests with a warning
     skip "Skipping JS test - Browser/Selenium not properly configured: #{e.message}"
   end
-
-  # Helper to check if Firefox is available
-  def firefox_available?
-    return @firefox_available if defined?(@firefox_available)
-
-    @firefox_available = begin
-      # Check if firefox/geckodriver is in PATH
-      system('which firefox > /dev/null 2>&1') && system('which geckodriver > /dev/null 2>&1')
-    rescue SystemCallError
-      false
-    end
-  end
 end
 
 # Firefox driver (preferred for stability)
@@ -41,12 +29,7 @@ Capybara.register_driver :selenium_firefox_headless do |app|
   options.add_argument('--width=1400')
   options.add_argument('--height=1400')
 
-  begin
-    Capybara::Selenium::Driver.new(app, browser: :firefox, options: options)
-  rescue Webdrivers::NetworkError, Selenium::WebDriver::Error::WebDriverError => e
-    Rails.logger.warn "Firefox/Selenium driver setup failed: #{e.message}. Firefox driver will not be registered."
-    nil
-  end
+  Capybara::Selenium::Driver.new(app, browser: :firefox, options: options)
 end
 
 # Chrome driver (fallback)
@@ -59,14 +42,7 @@ Capybara.register_driver :selenium_chrome_headless do |app|
   options.add_argument('--window-size=1400,1400')
   options.add_argument('--disable-search-engine-choice-screen')
 
-  # Use Chrome for Testing to avoid chromedriver version issues
-  begin
-    Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
-  rescue Webdrivers::NetworkError, Selenium::WebDriver::Error::WebDriverError => e
-    # Fallback: try without webdrivers gem managing the driver
-    Rails.logger.warn "Chrome/Selenium driver setup failed: #{e.message}. Tests requiring JavaScript will be skipped."
-    nil
-  end
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
 end
 
 Capybara.server = :puma, { Silent: true }
