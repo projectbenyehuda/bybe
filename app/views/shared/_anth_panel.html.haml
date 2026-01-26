@@ -133,9 +133,14 @@
           var element_id = evt.item.id.replace('anth_text_', '');
 
           if (newIndex !== oldIndex) {
-            $.post('#{anthology_seq_path('999')}'.replace('999', cur_anth.toString()),
-              { id: cur_anth, anth_text_id: element_id, old_pos: oldIndex, new_pos: newIndex }
-            );
+            $.ajax({
+              url: '#{anthology_seq_path('999')}'.replace('999', cur_anth.toString()),
+              type: 'POST',
+              headers: {
+                'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+              },
+              data: { id: cur_anth, anth_text_id: element_id, old_pos: oldIndex, new_pos: newIndex }
+            });
           }
         }
       });
