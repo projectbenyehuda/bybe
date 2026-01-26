@@ -11,7 +11,6 @@ class FilesController < ApplicationController
     record_id = params.fetch(:record_id)
     filename = [params.fetch(:filename), params[:format]].compact.join('.')
 
-    attachments_field = nil
     # We use short codes for entry types in the URL for brevity
     if record_type == 'lex'
       record_type = LexEntry
