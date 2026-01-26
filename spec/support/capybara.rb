@@ -8,16 +8,48 @@ RSpec.configure do |config|
     driven_by :rack_test
   end
 
-  config.before(:each, type: :system, js: true) do
-    begin
-      driven_by :selenium_chrome_headless
-    rescue StandardError => e
-      # If Chrome/Selenium setup fails, skip JS tests with a warning
-      skip "Skipping JS test - Chrome/Selenium not properly configured: #{e.message}"
+  config.before(:each, :js, type: :system) do
+    # Try Firefox first, fall back to Chrome if not available
+    driver = if firefox_available?
+               :selenium_firefox_headless
+             else
+               :selenium_chrome_headless
+             end
+    driven_by driver
+  rescue StandardError => e
+    # If both browsers fail, skip JS tests with a warning
+    skip "Skipping JS test - Browser/Selenium not properly configured: #{e.message}"
+  end
+
+  # Helper to check if Firefox is available
+  def firefox_available?
+    return @firefox_available if defined?(@firefox_available)
+
+    @firefox_available = begin
+      # Check if firefox/geckodriver is in PATH
+      system('which firefox > /dev/null 2>&1') && system('which geckodriver > /dev/null 2>&1')
+    rescue StandardError
+      false
     end
   end
 end
 
+# Firefox driver (preferred for stability)
+Capybara.register_driver :selenium_firefox_headless do |app|
+  options = Selenium::WebDriver::Firefox::Options.new
+  options.add_argument('--headless')
+  options.add_argument('--width=1400')
+  options.add_argument('--height=1400')
+
+  begin
+    Capybara::Selenium::Driver.new(app, browser: :firefox, options: options)
+  rescue Webdrivers::NetworkError, Selenium::WebDriver::Error::WebDriverError => e
+    Rails.logger.warn "Firefox/Selenium driver setup failed: #{e.message}. Falling back to Chrome."
+    nil
+  end
+end
+
+# Chrome driver (fallback)
 Capybara.register_driver :selenium_chrome_headless do |app|
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument('--headless=new')
