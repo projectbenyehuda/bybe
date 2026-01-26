@@ -10,6 +10,7 @@
 //= require jquery-ui/widgets/dialog
 //= require jquery-ui/widgets/tabs
 //= require jquery-ui/widgets/sortable
+//= require sortable.min
 //= require jquery.slick
 //= require jquery.mark.min
 //= require jquery.caret
