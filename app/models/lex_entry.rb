@@ -2,6 +2,8 @@
 
 # Lexicon Entry (Person, Publication, etc.)
 class LexEntry < ApplicationRecord
+  include DownloadLink
+
   has_one :lex_file, dependent: :nullify
 
   # this can be LexPerson or LexPublication (or...?)
