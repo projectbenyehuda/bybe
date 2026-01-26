@@ -28,8 +28,9 @@ module Lexicon
         end
 
         full_url = 'https://benyehuda.org/lexicon/' + src
-        attachments = file_entry.attachments.attach(io: URI.parse(full_url).open, filename: File.basename(src))
-        new_path = Rails.application.routes.url_helpers.rails_blob_path(attachments.last, only_path: true)
+        filename = File.basename(src)
+        file_entry.attachments.attach(io: URI.parse(full_url).open, filename: filename)
+        new_path = file_entry.download_path(filename)
         link = file_entry.legacy_links.create(old_path: src, new_path: new_path)
       end
 

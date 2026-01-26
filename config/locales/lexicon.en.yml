@@ -43,6 +43,8 @@ en:
       show_person:
         pages: p.
     attachments:
+      create:
+        file_exists: "A file with this name already exists: %{filename}"
       index:
         attach_new_file: Attach new file
         filename: Filename

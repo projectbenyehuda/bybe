@@ -55,6 +55,23 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
 
       expect(attached_filenames).to eq(%w(image.png lorem.pdf lorem_ipsum.png))
     end
+
+    context 'when file with the same name already exists' do
+      let!(:image) do
+        lex_entry.attachments.attach(
+          io: Rails.root.join(*%w(spec data lexicon attachments lorem_ipsum.png)).open,
+          filename: 'lorem_ipsum.png'
+        ).last
+      end
+
+      it 'does not create attachment and shows alert message' do
+        expect { call }.not_to(change { lex_entry.attachments.count })
+        expect(call).to eq(200)
+        expect(response.body).to include(
+          "alert('#{I18n.t('lexicon.attachments.create.file_exists', filename: 'lorem_ipsum.png')}');"
+        )
+      end
+    end
   end
 
   describe 'DELETE /lexicon/entries/<ENTRY_ID>/attachments/<ATTACHMENT_ID>' do
