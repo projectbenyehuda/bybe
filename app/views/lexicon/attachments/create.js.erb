@@ -1,3 +1,7 @@
 $('#submit_new_attachment').removeAttr('disabled');
 $('#attachment').val('');
+
+<% if @error.present? %>
+    alert('<%= j @error %>');
+<% end %>
 reloadContent($('#attachments'));
