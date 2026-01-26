@@ -17,32 +17,35 @@
           .by-card-header-v02.desktop-only
             %span.headline-1-v02.desktop-only= t(:add_tag)
             %a.popup-x-v02{'data-dismiss'=>'modal'} -
-          %div#add_tagging_tabs
-            %ul{style: 'display: flex;'}
-              %li
-                %a{href: "#add-tag-form"}= t(:i_want_to_suggest_a_tag)
-              %li
-                %a{href: "#tag_list"}= t(:select_from_full_list)
+          #add_tagging_tabs
+            %ul.nav.nav-tabs{ role: 'tablist', style: 'display: flex;' }
+              %li.nav-item
+                %a.nav-link.active{ href: '#add-tag-form', 'data-toggle': 'tab', role: 'tab' }
+                  = t(:i_want_to_suggest_a_tag)
+              %li.nav-item
+                %a.nav-link{ href: '#tag_list', 'data-toggle': 'tab', role: 'tab' }
+                  = t(:select_from_full_list)
             .by-card-content-v02
               = form_for @tagging, remote: true do
-                #add-tag-form
-                  %div{style: 'display:inline;margin-top:0.6rem;'}
-                    %h2.field-label= t(:suggested_tag_name)
-                    = autocomplete_field_tag :tag, '', autocomplete_tag_name_path, { class: 'field-v02' }
-                    = hidden_field_tag :taggable_id, @tagging.taggable_id
-                    = hidden_field_tag :taggable_type, @tagging.taggable_type
-                    = hidden_field_tag :tag_id, '', id: 'tag_id'
-                  %hr
-                  -#%h2.field-label= t(:autosuggest_tags)
-                  -#= select :tagging, :tag_id, @recent_tags_by_user.map{|tag| [tag.name, tag.id]}, {include_blank: t(:click_to_select)}, {class: 'field-v02', style: 'min-height: 12px;'}
-                  -#.auto-complete-area.list-group
-                  .suggested-tags-list{style:'margin-top: 20px;'}= t(:loading)
-                  -#.recent-tags-list.list-group
-                  -#  - @recent_tags_by_user.each do |tag|
-                  -#    %button.pointer.list-group-item{style: 'padding: 0.5rem 0.75rem;'}= tag.name
-                #tag_list
-                  .field-label= t(:select_tag_from_list)
-                  .full-tags-list-area
+                .tab-content
+                  .tab-pane.fade.show.active#add-tag-form{ role: 'tabpanel' }
+                    %div{style: 'display:inline;margin-top:0.6rem;'}
+                      %h2.field-label= t(:suggested_tag_name)
+                      = autocomplete_field_tag :tag, '', autocomplete_tag_name_path, { class: 'field-v02' }
+                      = hidden_field_tag :taggable_id, @tagging.taggable_id
+                      = hidden_field_tag :taggable_type, @tagging.taggable_type
+                      = hidden_field_tag :tag_id, '', id: 'tag_id'
+                    %hr
+                    -#%h2.field-label= t(:autosuggest_tags)
+                    -#= select :tagging, :tag_id, @recent_tags_by_user.map{|tag| [tag.name, tag.id]}, {include_blank: t(:click_to_select)}, {class: 'field-v02', style: 'min-height: 12px;'}
+                    -#.auto-complete-area.list-group
+                    .suggested-tags-list{style:'margin-top: 20px;'}= t(:loading)
+                    -#.recent-tags-list.list-group
+                    -#  - @recent_tags_by_user.each do |tag|
+                    -#    %button.pointer.list-group-item{style: 'padding: 0.5rem 0.75rem;'}= tag.name
+                  .tab-pane.fade#tag_list{ role: 'tabpanel' }
+                    .field-label= t(:select_tag_from_list)
+                    .full-tags-list-area
                 .no-header
                 = link_to 'https://benyehuda.org/page/tagging', target: '_blank' do
                   %b.linkcolor= t(:to_tagging_instructions)
@@ -66,12 +69,11 @@
     $('#tag').keyup(function(){
       $(this).change();
     });
-    $( "#add_tagging_tabs" ).tabs({
-      activate: function( event, ui ) {
-        if(ui.newPanel.attr('id') == 'tag_list') {
-          if($('.full-tags-list-area').children().length == 0) {
-            $('.full-tags-list-area').load("/tags/listall");
-          }
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      var target = $(e.target).attr("href");
+      if(target == '#tag_list') {
+        if($('.full-tags-list-area').children().length == 0) {
+          $('.full-tags-list-area').load("/tags/listall");
         }
       }
     });
