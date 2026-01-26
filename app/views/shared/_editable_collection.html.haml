@@ -110,14 +110,18 @@
             if (newIndex !== oldIndex) {
               $mask.show();
               var collectionId = evt.to.id.replace('#{nonce}_coll_', '');
-              $.post(
-                '/collection_items/' + itemId + '/drag_item',
-                {
+              $.ajax({
+                url: '/collection_items/' + itemId + '/drag_item',
+                type: 'POST',
+                headers: {
+                  'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
                   collection_id: collectionId,
                   old_index: oldIndex,
                   new_index: newIndex
                 }
-              ).fail(onError)
+              }).fail(onError)
               .always(function() {
                 $mask.hide();
               });
@@ -127,15 +131,19 @@
             $mask.show();
             var destCollId = evt.to.id.replace('#{nonce}_coll_', '');
             var srcCollId = evt.from.id.replace('#{nonce}_coll_', '');
-            $.post(
-              '/collection_items/' + itemId + '/transplant_item',
-              {
+            $.ajax({
+              url: '/collection_items/' + itemId + '/transplant_item',
+              type: 'POST',
+              headers: {
+                'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+              },
+              data: {
                 src_collection_id: srcCollId,
                 dest_collection_id: destCollId,
                 old_index: evt.oldDraggableIndex,
                 new_index: evt.newDraggableIndex
               }
-            ).fail(onError)
+            }).fail(onError)
             .always(function() {
               $mask.hide();
             });
