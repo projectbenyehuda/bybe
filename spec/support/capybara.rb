@@ -8,16 +8,31 @@ RSpec.configure do |config|
     driven_by :rack_test
   end
 
-  config.before(:each, type: :system, js: true) do
-    begin
-      driven_by :selenium_chrome_headless
-    rescue StandardError => e
-      # If Chrome/Selenium setup fails, skip JS tests with a warning
-      skip "Skipping JS test - Chrome/Selenium not properly configured: #{e.message}"
-    end
+  config.before(:each, :js, type: :system) do
+    # Try Firefox first, fall back to Chrome if not available
+    driver = if firefox_available?
+               :selenium_firefox_headless
+             else
+               :selenium_chrome_headless
+             end
+    driven_by driver
+  rescue StandardError => e
+    # If both browsers fail, skip JS tests with a warning
+    skip "Skipping JS test - Browser/Selenium not properly configured: #{e.message}"
   end
 end
 
+# Firefox driver (preferred for stability)
+Capybara.register_driver :selenium_firefox_headless do |app|
+  options = Selenium::WebDriver::Firefox::Options.new
+  options.add_argument('--headless')
+  options.add_argument('--width=1400')
+  options.add_argument('--height=1400')
+
+  Capybara::Selenium::Driver.new(app, browser: :firefox, options: options)
+end
+
+# Chrome driver (fallback)
 Capybara.register_driver :selenium_chrome_headless do |app|
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument('--headless=new')
@@ -27,14 +42,7 @@ Capybara.register_driver :selenium_chrome_headless do |app|
   options.add_argument('--window-size=1400,1400')
   options.add_argument('--disable-search-engine-choice-screen')
 
-  # Use Chrome for Testing to avoid chromedriver version issues
-  begin
-    Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
-  rescue Webdrivers::NetworkError, Selenium::WebDriver::Error::WebDriverError => e
-    # Fallback: try without webdrivers gem managing the driver
-    Rails.logger.warn "Chrome/Selenium driver setup failed: #{e.message}. Tests requiring JavaScript will be skipped."
-    nil
-  end
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
 end
 
 Capybara.server = :puma, { Silent: true }
