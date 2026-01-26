@@ -28,7 +28,7 @@ RSpec.configure do |config|
     @firefox_available = begin
       # Check if firefox/geckodriver is in PATH
       system('which firefox > /dev/null 2>&1') && system('which geckodriver > /dev/null 2>&1')
-    rescue StandardError
+    rescue SystemCallError
       false
     end
   end
