@@ -278,18 +278,36 @@
     $('#periodical_issues').on('change', function() {
       if($('#periodical_issues').val() == '!new') {
         // show pop-up asking for new periodical issue title
-        $('<form>#{t("ingestible.new_issue_title")}<input type="text" style="z-index:10000" name="issue_title"><br></form>').dialog({
-          modal: true,
-          buttons: {
-            'OK': function () {
-              var name = $('input[name="issue_title"]').val();
-              $.post("#{collection_add_periodical_issue_path(999)}".replace('999', $('#ingestible_periodical_id').val()), {title: name});
-              $(this).dialog('close');
-            },
-            'Cancel': function () {
-              $(this).dialog('close');
-            }
-          }
+        var formHtml = '<form>#{t("ingestible.new_issue_title")}<input type="text" style="z-index:10000" name="issue_title"><br></form>';
+        var modalHtml = '<div class="modal fade" id="newIssueModal" tabindex="-1" role="dialog">' +
+          '<div class="modal-dialog" role="document">' +
+          '<div class="modal-content">' +
+          '<div class="modal-header">' +
+          '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+          '<span aria-hidden="true">&times;</span>' +
+          '</button>' +
+          '</div>' +
+          '<div class="modal-body">' + formHtml + '</div>' +
+          '<div class="modal-footer">' +
+          '<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+          '<button type="button" class="btn btn-primary" id="newIssueOkBtn">OK</button>' +
+          '</div>' +
+          '</div>' +
+          '</div>' +
+          '</div>';
+
+        var $modal = $(modalHtml);
+        $('body').append($modal);
+        $modal.modal('show');
+
+        $('#newIssueOkBtn').on('click', function() {
+          var name = $('input[name="issue_title"]').val();
+          $.post("#{collection_add_periodical_issue_path(999)}".replace('999', $('#ingestible_periodical_id').val()), {title: name});
+          $modal.modal('hide');
+        });
+
+        $modal.on('hidden.bs.modal', function() {
+          $modal.remove();
         });
       } else {
         var issueId = $('#periodical_issues').val();
@@ -389,56 +407,70 @@
         '<input type="text" name="issue_title" id="new_issue_title" style="width:100%;">' +
         '</form>';
 
-      $(dialogHtml).dialog({
-        modal: true,
-        title: '#{t('ingestible.create_new_periodical')}',
-        width: 500,
-        buttons: {
-          '#{t(:ok)}': function () {
-            var periodicalTitle = $('#new_periodical_title').val().trim();
-            var issueTitle = $('#new_issue_title').val().trim();
+      var modalHtml2 = '<div class="modal fade" id="newPeriodicalModal" tabindex="-1" role="dialog">' +
+        '<div class="modal-dialog" role="document" style="max-width: 500px;">' +
+        '<div class="modal-content">' +
+        '<div class="modal-header">' +
+        '<h5 class="modal-title">#{t('ingestible.create_new_periodical')}</h5>' +
+        '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+        '<span aria-hidden="true">&times;</span>' +
+        '</button>' +
+        '</div>' +
+        '<div class="modal-body">' + dialogHtml + '</div>' +
+        '<div class="modal-footer">' +
+        '<button type="button" class="btn btn-secondary" data-dismiss="modal">#{t(:cancel)}</button>' +
+        '<button type="button" class="btn btn-primary" id="newPeriodicalOkBtn">#{t(:ok)}</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
 
-            if (!periodicalTitle || !issueTitle) {
-              alert('#{t('ingestible.both_titles_required')}');
-              return;
-            }
+      var $modal2 = $(modalHtml2);
+      $('body').append($modal2);
+      $modal2.modal('show');
 
-            var dialog = $(this);
+      $('#newPeriodicalOkBtn').on('click', function() {
+        var periodicalTitle = $('#new_periodical_title').val().trim();
+        var issueTitle = $('#new_issue_title').val().trim();
 
-            $.post("#{create_periodical_with_issue_path}", {
-              periodical_title: periodicalTitle,
-              issue_title: issueTitle
-            })
-            .done(function(data) {
-              if (data.success) {
-                // Populate the periodical dropdown with the new periodical
-                $('#ingestible_periodical_id').append($('<option>', {
-                  value: data.periodical_id,
-                  text: data.periodical_title,
-                  selected: true
-                }));
-
-                // Trigger the periodical selection to load issues
-                $('#ingestible_periodical_id').trigger('change');
-
-                // Store the newly created issue ID to select after issues are loaded
-                window.pendingIssueId = data.issue_id;
-                // The AJAX handler that populates #periodical_issues should check window.pendingIssueId
-                // and select the issue if present, then clear window.pendingIssueId.
-
-                dialog.dialog('close');
-              } else {
-                alert('#{t('ingestible.creation_failed')}: ' + data.error);
-              }
-            })
-            .fail(function() {
-              alert('#{t('ingestible.creation_failed')}');
-            });
-          },
-          '#{t(:cancel)}': function () {
-            $(this).dialog('close');
-          }
+        if (!periodicalTitle || !issueTitle) {
+          alert('#{t('ingestible.both_titles_required')}');
+          return;
         }
+
+        $.post("#{create_periodical_with_issue_path}", {
+          periodical_title: periodicalTitle,
+          issue_title: issueTitle
+        })
+        .done(function(data) {
+          if (data.success) {
+            // Populate the periodical dropdown with the new periodical
+            $('#ingestible_periodical_id').append($('<option>', {
+              value: data.periodical_id,
+              text: data.periodical_title,
+              selected: true
+            }));
+
+            // Trigger the periodical selection to load issues
+            $('#ingestible_periodical_id').trigger('change');
+
+            // Store the newly created issue ID to select after issues are loaded
+            window.pendingIssueId = data.issue_id;
+            // The AJAX handler that populates #periodical_issues should check window.pendingIssueId
+            // and select the issue if present, then clear window.pendingIssueId.
+
+            $modal2.modal('hide');
+          } else {
+            alert('#{t('ingestible.creation_failed')}: ' + data.error);
+          }
+        })
+        .fail(function() {
+          alert('#{t('ingestible.creation_failed')}');
+        });
+      });
+
+      $modal2.on('hidden.bs.modal', function() {
+        $modal2.remove();
       });
     });
     $('#edit_toc').on('click', function(e) {

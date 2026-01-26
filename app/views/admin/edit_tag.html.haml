@@ -45,14 +45,25 @@
         url: '/admin/merge_tag/' + tagId,
         type: 'GET',
         success: function(data) {
-          var dialog = $('<div>').html(data);
-          dialog.dialog({
-            modal: true,
-            width: 600,
-            title: '#{t(:merge_tag)}',
-            close: function() {
-              $(this).remove();
-            }
+          var modalHtml = '<div class="modal fade" id="mergeTagModal" tabindex="-1" role="dialog">' +
+            '<div class="modal-dialog" style="max-width: 600px;" role="document">' +
+            '<div class="modal-content">' +
+            '<div class="modal-header">' +
+            '<h5 class="modal-title">#{t(:merge_tag)}</h5>' +
+            '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+            '<span aria-hidden="true">&times;</span>' +
+            '</button>' +
+            '</div>' +
+            '<div class="modal-body">' + data + '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+          var $modal = $(modalHtml);
+          $('body').append($modal);
+          $modal.modal('show');
+          $modal.on('hidden.bs.modal', function() {
+            $modal.remove();
           });
         }
       });
