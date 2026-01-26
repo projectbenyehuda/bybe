@@ -44,7 +44,7 @@ Capybara.register_driver :selenium_firefox_headless do |app|
   begin
     Capybara::Selenium::Driver.new(app, browser: :firefox, options: options)
   rescue Webdrivers::NetworkError, Selenium::WebDriver::Error::WebDriverError => e
-    Rails.logger.warn "Firefox/Selenium driver setup failed: #{e.message}. Falling back to Chrome."
+    Rails.logger.warn "Firefox/Selenium driver setup failed: #{e.message}. Firefox driver will not be registered."
     nil
   end
 end
