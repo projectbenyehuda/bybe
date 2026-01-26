@@ -108,6 +108,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "impressions_count", default: 0
+    t.index ["user_id", "title"], name: "index_anthologies_on_user_id_and_title", unique: true
     t.index ["user_id"], name: "index_anthologies_on_user_id"
   end
 
