@@ -8,9 +8,10 @@
       %td
   - @lex_entry.attachments.preload(:blob).each do |a|
     %tr
-      %td= a.blob.filename
+      - filename = a.blob.filename.to_s
+      %td= filename
       %td
-        .attachment-link= url_for(a)
+        .attachment-link= @lex_entry.download_path(filename)
         = link_to t('.copy_link'), '#', class: 'copy-attachment-link'
       %td= format_filesize(a.blob.byte_size)
       %td
