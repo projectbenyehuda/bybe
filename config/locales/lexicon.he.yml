@@ -48,6 +48,8 @@ he:
       show_person:
         pages: p.
     attachments:
+      create:
+        file_exists: "קובץ בשם זה כבר קיים: %{filename}"
       index:
         attach_new_file: צרף קובץ חדש
         filename: שם הקובץ
