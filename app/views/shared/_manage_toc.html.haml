@@ -105,82 +105,100 @@
         guessed_publisher = '';
         guessed_year = '';
       }
-      $('<form><h2>'+the_title+'</h2>#{t(".choose_between_author_pubs")}<select id="publication"><option></option>#{options_for_select(@pub_options).gsub("\n","")}</select> <p/> #{t(:or)} #{t(:title)} <input id="pub_title" name="pub_title" style="background-color: #cccccc;"> <p />#{t(:collection_item_type)}<select id="ctype">#{options_for_select(collection_types_options).gsub("\n","")}</select> <p/>#{t(:in_role)}<select id="prole" style="z-index:10000">#{options_for_select(role_options).gsub("\n","")}</select><p/>#{t(".verify_publisher_line")}: <p/>#{t(".city_and_publisher")}<input id="guessed_publisher" name="guessed_publisher" style="background-color: #cccccc; width:50%;">#{t(".year")}<input id="guessed_year" name="guessed_year" style="background-color: #cccccc; width: 150px;"></form>').dialog({
-        modal: true,
-        width: '100%',
-        position: { my: 'top+15', at: 'top', of: window },
-        open: function() {
-          $('#guessed_publisher').val(guessed_publisher);
-          $('#guessed_year').val(guessed_year);
-          $('#publication').on('change',function() {
-            idx = this.selectedIndex;
-            if(idx > 0) {
-              $('#guessed_publisher').val(pub_details[idx - 1].publisher);
-              $('#guessed_year').val(pub_details[idx - 1].year);
-            }
-          });
-        },
-        buttons: {
-          'OK': function () {
-            var author = "#{@author.id}";
-            var role = $('#prole').val();
-            var ctype = $('#ctype').val();
-            var publication = $('#publication').val();
-            $(this).dialog('close');
-            var volume = vol.parent();
-            var texts = volume.nextUntil('h3');
-            $(vol).remove();
-            var title = volume.text();
-            var text_ids = [];
-            var links = 0;
-            texts.each(function() {
-              var text = $(this);
-              var link = text.find('a');
-              if(link.length == 0) { // placeholder
-                txt = text.text().trim();
-                if (txt.length > 0) {
-                  text_ids.push(txt);
-                }
-              } else {
-                var text_id = link.attr('href').split('/').pop();
-                text_ids.push('ZZID:'+text_id);
-                links += 1;
-              }
-            });
-            if(links == 0) {
-              text = volume.find('a');
-              if(text.length > 0) {
-                var text_id = text.attr('href').split('/').pop();
-                text_ids.push('ZZID:'+text_id);
-              }
-            }
+      var formHtml = '<form><h2>'+the_title+'</h2>#{t(".choose_between_author_pubs")}<select id="publication"><option></option>#{options_for_select(@pub_options).gsub("\n","")}</select> <p/> #{t(:or)} #{t(:title)} <input id="pub_title" name="pub_title" style="background-color: #cccccc;"> <p />#{t(:collection_item_type)}<select id="ctype">#{options_for_select(collection_types_options).gsub("\n","")}</select> <p/>#{t(:in_role)}<select id="prole" style="z-index:10000">#{options_for_select(role_options).gsub("\n","")}</select><p/>#{t(".verify_publisher_line")}: <p/>#{t(".city_and_publisher")}<input id="guessed_publisher" name="guessed_publisher" style="background-color: #cccccc; width:50%;">#{t(".year")}<input id="guessed_year" name="guessed_year" style="background-color: #cccccc; width: 150px;"></form>';
 
-            startModal('spinnerDiv');
-            $.ajax({
-              url: "#{collections_migration_create_collection_path}",
-              type: 'POST',
-              data: {
-                authority: author,
-                collection_type: ctype,
-                publication_id: publication,
-                title: title,
-                text_ids: text_ids,
-                role: role,
-                pub_title: $('#pub_title').val(),
-                guessed_publisher: $('#guessed_publisher').val(),
-                guessed_year: $('#guessed_year').val()
-              }
-            }).done(function(data) {
-              location.reload();
-            }).fail(function(data) {
-              stopModal('spinnerDiv');
-              alert('Collection creation failed');
-            });
-          },
-          'Cancel': function () {
-            $(this).dialog('close');
+      var modalHtml = '<div class="modal fade" id="makeVolumeModal" tabindex="-1" role="dialog">' +
+        '<div class="modal-dialog modal-lg" role="document" style="margin-top: 15px;">' +
+        '<div class="modal-content">' +
+        '<div class="modal-header">' +
+        '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+        '<span aria-hidden="true">&times;</span>' +
+        '</button>' +
+        '</div>' +
+        '<div class="modal-body">' + formHtml + '</div>' +
+        '<div class="modal-footer">' +
+        '<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>' +
+        '<button type="button" class="btn btn-primary" id="makeVolumeOkBtn">OK</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+
+      var $modal = $(modalHtml);
+      $('body').append($modal);
+      $modal.modal('show');
+
+      // Open callback logic
+      $('#guessed_publisher').val(guessed_publisher);
+      $('#guessed_year').val(guessed_year);
+      $('#publication').on('change', function() {
+        idx = this.selectedIndex;
+        if(idx > 0) {
+          $('#guessed_publisher').val(pub_details[idx - 1].publisher);
+          $('#guessed_year').val(pub_details[idx - 1].year);
+        }
+      });
+
+      // OK button handler
+      $('#makeVolumeOkBtn').on('click', function() {
+        var author = "#{@author.id}";
+        var role = $('#prole').val();
+        var ctype = $('#ctype').val();
+        var publication = $('#publication').val();
+        $modal.modal('hide');
+        var volume = vol.parent();
+        var texts = volume.nextUntil('h3');
+        $(vol).remove();
+        var title = volume.text();
+        var text_ids = [];
+        var links = 0;
+        texts.each(function() {
+          var text = $(this);
+          var link = text.find('a');
+          if(link.length == 0) { // placeholder
+            txt = text.text().trim();
+            if (txt.length > 0) {
+              text_ids.push(txt);
+            }
+          } else {
+            var text_id = link.attr('href').split('/').pop();
+            text_ids.push('ZZID:'+text_id);
+            links += 1;
+          }
+        });
+        if(links == 0) {
+          text = volume.find('a');
+          if(text.length > 0) {
+            var text_id = text.attr('href').split('/').pop();
+            text_ids.push('ZZID:'+text_id);
           }
         }
+
+        startModal('spinnerDiv');
+        $.ajax({
+          url: "#{collections_migration_create_collection_path}",
+          type: 'POST',
+          data: {
+            authority: author,
+            collection_type: ctype,
+            publication_id: publication,
+            title: title,
+            text_ids: text_ids,
+            role: role,
+            pub_title: $('#pub_title').val(),
+            guessed_publisher: $('#guessed_publisher').val(),
+            guessed_year: $('#guessed_year').val()
+          }
+        }).done(function(data) {
+          location.reload();
+        }).fail(function(data) {
+          stopModal('spinnerDiv');
+          alert('Collection creation failed');
+        });
+      });
+
+      $modal.on('hidden.bs.modal', function() {
+        $modal.remove();
       });
     });
     $('body').on('click', '.newcoll_insert_button', function(){
