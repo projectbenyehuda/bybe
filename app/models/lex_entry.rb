@@ -33,6 +33,8 @@ class LexEntry < ApplicationRecord
   scope :in_verification, -> { where(status: :verifying) }
   scope :verified_pending_publish, -> { where(status: :verified) }
 
+  update_index('lex_entries') { self }
+
   # Returns the attachment selected as the profile image, or nil if none selected
   def profile_image
     return nil unless profile_image_id
