@@ -61,38 +61,42 @@
             = button_to escalate_tag_path(@tag.id), class: 'by-button-v02', style: 'background-color:lightblue' do
               .by-icon-v02> -
               = t(:escalate_to_editor)
-            %p
-            = button_to warn_user_path(@tag.creator.id, return_url: tag_review_path(@tag.id)), class: 'by-button-v02 confirmable', style: 'background-color:orange', id: 'warn_user_btn', data: { 'confirm-title': t(:confirm_warn), p1: t(:confirm_warn), 'with-comment': false, element_id: 'warn_user_btn' } do
-              .by-icon-v02> -
-              = t(:warn_user)
-            %p
-            = button_to block_user_path(@tag.creator.id, return_url: tag_review_path(@tag.id)), class: 'by-button-v02 confirmable', style: 'background-color:red', id: 'block_user_btn', data: { 'confirm-title': t(:confirm_block), p1: t(:confirm_block), 'with-comment': false, element_id: 'block_user_btn' } do
-              .by-icon-v02> -
-              = t(:block_user)
+            - if @tag.creator.present?
+              %p
+              = button_to warn_user_path(@tag.creator.id, return_url: tag_review_path(@tag.id)), class: 'by-button-v02 confirmable', style: 'background-color:orange', id: 'warn_user_btn', data: { 'confirm-title': t(:confirm_warn), p1: t(:confirm_warn), 'with-comment': false, element_id: 'warn_user_btn' } do
+                .by-icon-v02> -
+                = t(:warn_user)
+              %p
+              = button_to block_user_path(@tag.creator.id, return_url: tag_review_path(@tag.id)), class: 'by-button-v02 confirmable', style: 'background-color:red', id: 'block_user_btn', data: { 'confirm-title': t(:confirm_block), p1: t(:confirm_block), 'with-comment': false, element_id: 'block_user_btn' } do
+                .by-icon-v02> -
+                = t(:block_user)
 
         .by-card-content-v02{style: "width: 50%;"}
           .headline-3-v02= t(:suggested_by)
           .offered-by
-            - if @tag.creator.warned?
-              %a.pointer.red{href: '#'}
-                %span.by2-icon> P
-                = @tag.creator.name
+            - if @tag.creator.present?
+              - if @tag.creator.warned?
+                %a.pointer.red{href: '#'}
+                  %span.by2-icon> P
+                  = @tag.creator.name
+              - else
+                %a.pointer{href: '#'}
+                  = @tag.creator.name
+              %p
+                = t(:suggested_tags)+':'
+                - tag_count = Tag.by_user(@tag.creator).count
+                %a{href: "#"}= tag_count
+              %p
+                = t(:acceptance_rate)+':'
+                - additional_class = ''
+                - acceptance_rate = @tag.creator.tag_acceptance_rate
+                - if acceptance_rate && tag_count > 3 && acceptance_rate < 25
+                  - additional_class = 'low-approval-rate'
+                - elsif acceptance_rate && tag_count > 3 && acceptance_rate > 75
+                  - additional_class = 'high-approval-rate'
+                %span{class: additional_class}= acceptance_rate ? "%.1f%%" % acceptance_rate : '--'
             - else
-              %a.pointer{href: '#'}
-                = @tag.creator.name
-            %p
-              = t(:suggested_tags)+':'
-              - tag_count = Tag.by_user(@tag.creator).count
-              %a{href: "#"}= tag_count
-            %p
-              = t(:acceptance_rate)+':'
-              - additional_class = ''
-              - acceptance_rate = @tag.creator.tag_acceptance_rate
-              - if acceptance_rate && tag_count > 3 && acceptance_rate < 25
-                - additional_class = 'low-approval-rate'
-              - elsif acceptance_rate && tag_count > 3 && acceptance_rate > 75
-                - additional_class = 'high-approval-rate'
-              %span{class: additional_class}= acceptance_rate ? "%.1f%%" % acceptance_rate : '--'
+              = t('admin.tags.unknown_creator')
           .headline-2-v02
             = t(:items_pending_for_this_tag, tag: @tag.name)
             %span= "(#{@tag.taggings_count})"

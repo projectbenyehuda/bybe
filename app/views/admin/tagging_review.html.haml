@@ -16,25 +16,28 @@
       %br/
       .headline-3-v02= t(:suggested_by)
       .offered-by
-        - if @tagging.suggester.warned?
-          %a.pointer.red{href: '#'}
-            %span.by2-icon> P
-            = @tagging.suggester.name
+        - if @tagging.suggester.present?
+          - if @tagging.suggester.warned?
+            %a.pointer.red{href: '#'}
+              %span.by2-icon> P
+              = @tagging.suggester.name
+          - else
+            %a.pointer{href: '#'}
+              = @tagging.suggester.name
+          %p
+            = t(:tagging_suggestions_count)+':'
+            %a{href: "#"}= @suggester_taggings_count
+          %p
+            - additional_class = ''
+            - acceptance_rate = @tagging.suggester.tagging_acceptance_rate
+            - if acceptance_rate && @suggester_taggings_count > 3 && acceptance_rate < 25
+              - additional_class = 'low-approval-rate'
+            - elsif acceptance_rate && @suggester_taggings_count > 3 && acceptance_rate > 75
+              - additional_class = 'high-approval-rate'
+            = t(:acceptance_rate)
+            %span{class: "%-approved #{additional_class}"}= acceptance_rate ? "%.1f%%" % acceptance_rate : '--'
         - else
-          %a.pointer{href: '#'}
-            = @tagging.suggester.name
-        %p
-          = t(:tagging_suggestions_count)+':'
-          %a{href: "#"}= @suggester_taggings_count
-        %p
-          - additional_class = ''
-          - acceptance_rate = @tagging.suggester.tagging_acceptance_rate
-          - if acceptance_rate && @suggester_taggings_count > 3 && acceptance_rate < 25
-            - additional_class = 'low-approval-rate'
-          - elsif acceptance_rate && @suggester_taggings_count > 3 && acceptance_rate > 75
-            - additional_class = 'high-approval-rate'
-          = t(:acceptance_rate)
-          %span{class: "%-approved #{additional_class}"}= acceptance_rate ? "%.1f%%" % acceptance_rate : '--'
+          = t('admin.taggings.unknown_suggester')
       .headline-3-v02= t(:actions)
       .tag-actions-buttons-group
         = button_to approve_tagging_path(@tagging), method: :post, class: 'by-button-v02 approve-tagging-btn confirmable', form_class: 'approve-tagging-form', id: 'approve_tagging_btn', data: { 'confirm-title': t(:confirm_approve), p1: t(:confirm_approve), 'with-comment': false, element_id: 'approve_tagging_btn' } do
@@ -54,14 +57,15 @@
         = button_to escalate_tagging_path(@tagging), method: :post, class: 'by-button-v02 escalate-tagging-btn', style: 'background-color:lightblue', form_class: 'escalate-tagging-form' do
           .by-icon-v02> -
           = t(:escalate_to_editor)
-        %p
-        = button_to warn_user_path(@tagging.suggested_by, return_url: tagging_review_path(@tagging.id)), class: 'by-button-v02 confirmable', style: 'background-color:orange', id: 'warn_user2_btn', data: { 'confirm-title': t(:confirm_warn), p1: t(:confirm_warn), 'with-comment': false, element_id: 'warn_user2_btn' } do
-          .by-icon-v02> -
-          = t(:warn_user)
-        %p
-        = button_to block_user_path(@tagging.suggested_by, return_url: tagging_review_path(@tagging.id)), class: 'by-button-v02 confirmable', style: 'background-color:red', id: 'block_user2_btn', data: { 'confirm-title': t(:confirm_block), p1: t(:confirm_block), 'with-comment': false, element_id: 'block_user2_btn' } do
-          .by-icon-v02> -
-          = t(:block_user)
+        - if @tagging.suggester.present?
+          %p
+          = button_to warn_user_path(@tagging.suggested_by, return_url: tagging_review_path(@tagging.id)), class: 'by-button-v02 confirmable', style: 'background-color:orange', id: 'warn_user2_btn', data: { 'confirm-title': t(:confirm_warn), p1: t(:confirm_warn), 'with-comment': false, element_id: 'warn_user2_btn' } do
+            .by-icon-v02> -
+            = t(:warn_user)
+          %p
+          = button_to block_user_path(@tagging.suggested_by, return_url: tagging_review_path(@tagging.id)), class: 'by-button-v02 confirmable', style: 'background-color:red', id: 'block_user2_btn', data: { 'confirm-title': t(:confirm_block), p1: t(:confirm_block), 'with-comment': false, element_id: 'block_user2_btn' } do
+            .by-icon-v02> -
+            = t(:block_user)
 
     .offered-tags-nav
       - if @prev_tagging_id.present?

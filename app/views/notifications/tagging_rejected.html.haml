@@ -1,7 +1,7 @@
 %div{align: 'right', dir: 'rtl'}
-  %p= "#{@tagging.suggester.name}, #{@greeting}"
+  %p= "#{@tagging.suggester&.name || t('admin.taggings.unknown_suggester')}, #{@greeting}"
   %p= t(:tagging_rejected_email_html, tag: @tagging.tag.name, taggable: @tagging.taggable.title, url: url_for(@tagging.taggable))
 
   %hr
 
-  != email_footer_html(@tagging.suggester.email)
+  != email_footer_html(@tagging.suggester&.email)

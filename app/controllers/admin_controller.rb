@@ -995,8 +995,13 @@ class AdminController < ApplicationController
       flash[:error] = I18n.t(:no_such_item)
       redirect_to url_for(action: :tag_moderation)
     else
-      @suggester_taggings_count = @tagging.suggester.taggings.count
-      @suggester_acceptance_rate = @tagging.suggester.taggings.where(status: :approved).count.to_f / @suggester_taggings_count
+      if @tagging.suggester.present?
+        @suggester_taggings_count = @tagging.suggester.taggings.count
+        @suggester_acceptance_rate = @tagging.suggester.taggings.where(status: :approved).count.to_f / @suggester_taggings_count
+      else
+        @suggester_taggings_count = 0
+        @suggester_acceptance_rate = nil
+      end
       calculate_editor_tagging_stats
       @next_tagging_id = Tagging.joins(:tag).where(status: :pending, tag: { status: :approved }).where(
         'taggings.created_at > ?', @tagging.created_at
@@ -1539,7 +1544,8 @@ class AdminController < ApplicationController
           FileUtils.touch(TAGGING_LOCK) # refresh the lock
           session[:tagging_lock] = true
         else
-          @tagging_lock_owner = User.find(lock_owner).name
+          lock_owner_user = User.find_by(id: lock_owner)
+          @tagging_lock_owner = lock_owner_user&.name || I18n.t('admin.tags.unknown_creator')
           @tagging_lock_refreshed = ((Time.current - mtime) / 60).floor
           session[:tagging_lock] = false
         end
