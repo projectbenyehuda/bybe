@@ -1050,15 +1050,15 @@ class AdminController < ApplicationController
           with_tag = Tag.find(params[:with_tag].to_i)
           if with_tag.present?
             t.merge_into(with_tag)
-            Notifications.send_or_queue(:tag_merged, t.creator.email, t.name, t.creator, with_tag.name) unless t.creator.blocked? # don't send email if user is blocked
+            Notifications.send_or_queue(:tag_merged, t.creator.email, t.name, t.creator, with_tag.name) if t.creator.present? && !t.creator.blocked? # don't send email if user is blocked or deleted
             flash[:notice] = t(:tag_merged)
           end
         elsif params[:tag].present?
           t.update(name: params[:tag], status: :approved)
           tn = t.tag_names.first
           tn.update(name: params[:tag]) # also change the TagName that was created for the proposed tag
-          # Notifications.tag_renamed_and_approved(t.name, t.creator, params[:tag]).deliver unless t.creator.blocked? # don't send email if user is blocked
-          Notifications.send_or_queue(:tag_rejected, t.creator.email, t, params[:reason], params[:orig_tag_name]) unless t.creator.blocked? # don't send email if user is blocked
+          # Notifications.tag_renamed_and_approved(t.name, t.creator, params[:tag]).deliver if t.creator.present? && !t.creator.blocked? # don't send email if user is blocked or deleted
+          Notifications.send_or_queue(:tag_rejected, t.creator.email, t, params[:reason], params[:orig_tag_name]) if t.creator.present? && !t.creator.blocked? # don't send email if user is blocked or deleted
           flash[:notice] = t(:tag_approved_with_different_name)
         else
           flash[:error] = t(:no_such_item)
@@ -1199,7 +1199,7 @@ class AdminController < ApplicationController
         with_tag = Tag.find(params[:with_tag].to_i)
         if with_tag.present?
           t.update(tag_id: with_tag.id, status: :approved)
-          Notifications.send_or_queue(:tag_merged, t.suggester.email, t, orig_name, t.suggester) unless t.suggester.blocked? # don't send email if user is blocked
+          Notifications.send_or_queue(:tag_merged, t.suggester.email, t, orig_name, t.suggester) if t.suggester.present? && !t.suggester.blocked? # don't send email if user is blocked or deleted
           flash[:notice] = t(:tagging_merged)
         else
           flash[:error] = t(:no_such_item)
@@ -1221,7 +1221,7 @@ class AdminController < ApplicationController
         t.approve!(current_user)
         # Invalidate whatsnew page cache when a tag is approved
         invalidate_whatsnew_cache
-        Notifications.send_or_queue(:tag_approved, t.creator.email, t) unless t.creator.blocked? # don't send email if user is blocked
+        Notifications.send_or_queue(:tag_approved, t.creator.email, t) if t.creator.present? && !t.creator.blocked? # don't send email if user is blocked or deleted
         flash[:notice] = t(:tag_approved)
         redirect_to url_for(action: :tag_moderation, tag_id: t.id)
       else
@@ -1240,7 +1240,7 @@ class AdminController < ApplicationController
         t.approve!(current_user)
         # Invalidate whatsnew page cache when a tag is approved
         invalidate_whatsnew_cache
-        Notifications.send_or_queue(:tag_approved, t.creator.email, t) unless t.creator.blocked? # don't send email if user is blocked
+        Notifications.send_or_queue(:tag_approved, t.creator.email, t) if t.creator.present? && !t.creator.blocked? # don't send email if user is blocked or deleted
         next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
                                                                                                 t.created_at).order(:created_at).limit(1)
         if next_items.first.present?
@@ -1264,7 +1264,7 @@ class AdminController < ApplicationController
       if t.present?
         t.reject!(current_user)
         # if params[:reason].present?
-        Notifications.send_or_queue(:tag_rejected, t.creator.email, t, params[:reason]) unless t.creator.blocked? # don't send email if user is already blocked
+        Notifications.send_or_queue(:tag_rejected, t.creator.email, t, params[:reason]) if t.creator.present? && !t.creator.blocked? # don't send email if user is already blocked or deleted
         # end
         next_items = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
                                                                                                 t.created_at).order(:created_at).limit(1)
@@ -1290,7 +1290,7 @@ class AdminController < ApplicationController
       if t.present?
         t.reject!(current_user)
         # if params[:reason].present?
-        Notifications.send_or_queue(:tag_rejected, t.creator.email, t, params[:reason]) unless t.creator.blocked? # don't send email if user is already blocked
+        Notifications.send_or_queue(:tag_rejected, t.creator.email, t, params[:reason]) if t.creator.present? && !t.creator.blocked? # don't send email if user is already blocked or deleted
         # end
         return render json: { tag_id: t.id, tag_name: t.name }
       else
@@ -1354,7 +1354,7 @@ class AdminController < ApplicationController
       t = Tagging.find(params[:id])
       if t.present?
         t.approve!(current_user)
-        Notifications.send_or_queue(:tagging_approved, t.suggester.email, t) unless t.suggester.blocked? # don't send email if user is blocked
+        Notifications.send_or_queue(:tagging_approved, t.suggester.email, t) if t.suggester.present? && !t.suggester.blocked? # don't send email if user is blocked or deleted
         respond_to do |format|
           format.html { redirect_to_next_tagging(t, I18n.t(:tagging_approved)) }
           format.json { head :ok }
@@ -1373,7 +1373,7 @@ class AdminController < ApplicationController
       t = Tagging.find(params[:id])
       if t.present?
         t.reject!(current_user)
-        Notifications.send_or_queue(:tagging_rejected, t.suggester.email, t, params[:explanation]) unless t.suggester.blocked? # don't send email if user is blocked
+        Notifications.send_or_queue(:tagging_rejected, t.suggester.email, t, params[:explanation]) if t.suggester.present? && !t.suggester.blocked? # don't send email if user is blocked or deleted
         respond_to do |format|
           format.html { redirect_to_next_tagging(t, I18n.t(:tagging_rejected)) }
           format.json { head :ok }

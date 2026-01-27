@@ -45,6 +45,8 @@ class Notifications < ActionMailer::Base
   #
   #   he.notifications.tag_merged.subject
   def tag_merged(orig_name, suggester, destination_tag)
+    return if suggester.nil?
+
     @greeting = t(:hello_anon)
     @orig_tag_name = orig_name
     @suggester = suggester.name
@@ -71,6 +73,8 @@ class Notifications < ActionMailer::Base
   end
 
   def tagging_merged(tagging, original_tagname, suggester) # is this used?
+    return if suggester.nil?
+
     @greeting = t(:hello_anon)
     @original_tagname = original_tagname
     @tagging_suggester = suggester.name
