@@ -11,6 +11,7 @@ describe SearchController do
   let(:collection) { create(:collection, collection_type: :volume, title: 'Test Collection') }
   let(:collection_by_authority) { create(:collection, collection_type: :periodical, authors: [authority]) }
   let(:dict) { create(:dictionary_entry, defhead: 'Test Dictionary Entry', manifestation: create(:manifestation)) }
+  let(:lex_entry) { create(:lex_entry, :person, status: :published, title: 'Test Lexicon Entry') }
 
   before do
     clean_tables
@@ -20,11 +21,14 @@ describe SearchController do
       collection
       collection_by_authority
       dict
+      lex_entry
+
 
       # some data not matching search query
-      create_list(:manifestation, 5)
-      create_list(:collection, 5)
-      create_list(:dictionary_entry, 5)
+      create_list(:manifestation, 2)
+      create_list(:collection, 2)
+      create_list(:dictionary_entry, 2)
+      create_list(:lex_entry, 2, :person)
     end
   end
 
@@ -34,7 +38,7 @@ describe SearchController do
     it 'completes successfully' do
       expect(call).to be_successful
 
-      expect(assigns(:total)).to eq 5
+      expect(assigns(:total)).to eq 6
 
       expect(assigns(:results).map(&:class).map(&:name)).to eq %w(
         AuthoritiesIndex
@@ -42,10 +46,11 @@ describe SearchController do
         CollectionsIndex
         CollectionsIndex
         DictIndex
+        LexEntriesIndex
       )
 
       expect(assigns(:results).map(&:id)).to eq(
-        [authority.id, manifestation.id, collection.id, collection_by_authority.id, dict.id]
+        [authority.id, manifestation.id, collection.id, collection_by_authority.id, dict.id, lex_entry.id]
       )
     end
 
@@ -90,6 +95,17 @@ describe SearchController do
         expect(assigns(:total)).to eq 2
         expect(assigns(:results).map(&:class).map(&:name)).to eq %w(CollectionsIndex CollectionsIndex)
         expect(assigns(:results).map(&:id)).to eq([collection.id, collection_by_authority.id])
+      end
+    end
+
+    context 'when filtering by lexicon entries only' do
+      subject(:call) { get :results, params: { q: 'Test', index_types: ['lex_entries'] } }
+
+      it 'returns only lexicon entries' do
+        expect(call).to be_successful
+        expect(assigns(:total)).to eq 1
+        expect(assigns(:results).map(&:class).map(&:name)).to eq %w(LexEntriesIndex)
+        expect(assigns(:results).map(&:id)).to eq([lex_entry.id])
       end
     end
 
@@ -148,19 +164,20 @@ describe SearchController do
         # Rails will send index_types as [''] from the hidden field
         get :results, params: { q: 'Test', index_types: [''] }
         expect(response).to be_successful
-        expect(assigns(:total)).to eq 5 # All types should be returned
+        expect(assigns(:total)).to eq 6 # All types should be returned
         expect(assigns(:results).map(&:class).map(&:name)).to eq %w(
           AuthoritiesIndex
           ManifestationsIndex
           CollectionsIndex
           CollectionsIndex
           DictIndex
+          LexEntriesIndex
         )
 
         # Subsequent search without params should use "all types" from session
         get :results, params: { q: 'Test' }
         expect(response).to be_successful
-        expect(assigns(:total)).to eq 5
+        expect(assigns(:total)).to eq 6
       end
     end
   end
