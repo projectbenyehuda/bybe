@@ -16,7 +16,6 @@ describe Lexicon::LexPersonContent do
   end
 
   it 'completes successfully' do
-    puts result
     expect(result).to be_present
   end
 end
