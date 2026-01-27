@@ -13,17 +13,40 @@
       .form-group.mr-3
         %label.mr-2= "#{t(:filter_by_type)}:"
         .form-check.form-check-inline
-          = check_box_tag 'index_types[]', 'manifestations', @search.index_types.blank? || @search.index_types.include?('manifestations'), class: 'form-check-input', id: 'index_type_manifestations'
+          = check_box_tag 'index_types[]',
+                          'manifestations',
+                          @search.index_types.blank? || @search.index_types.include?('manifestations'),
+                          class: 'form-check-input',
+                          id: 'index_type_manifestations'
           = label_tag 'index_type_manifestations', t(:works), class: 'form-check-label'
         .form-check.form-check-inline
-          = check_box_tag 'index_types[]', 'collections', @search.index_types.blank? || @search.index_types.include?('collections'), class: 'form-check-input', id: 'index_type_collections'
+          = check_box_tag 'index_types[]',
+                          'collections',
+                          @search.index_types.blank? || @search.index_types.include?('collections'),
+                          class: 'form-check-input',
+                          id: 'index_type_collections'
           = label_tag 'index_type_collections', t(:volumes), class: 'form-check-label'
         .form-check.form-check-inline
-          = check_box_tag 'index_types[]', 'authorities', @search.index_types.blank? || @search.index_types.include?('authorities'), class: 'form-check-input', id: 'index_type_authorities'
+          = check_box_tag 'index_types[]',
+                          'authorities',
+                          @search.index_types.blank? || @search.index_types.include?('authorities'),
+                          class: 'form-check-input',
+                          id: 'index_type_authorities'
           = label_tag 'index_type_authorities', t(:authorities), class: 'form-check-label'
         .form-check.form-check-inline
-          = check_box_tag 'index_types[]', 'dict', @search.index_types.blank? || @search.index_types.include?('dict'), class: 'form-check-input', id: 'index_type_dict'
+          = check_box_tag 'index_types[]',
+                          'dict',
+                          @search.index_types.blank? || @search.index_types.include?('dict'),
+                          class: 'form-check-input',
+                          id: 'index_type_dict'
           = label_tag 'index_type_dict', t(:dictionary_entries), class: 'form-check-label'
+        .form-check.form-check-inline
+          = check_box_tag 'index_types[]',
+                          'lex_entries',
+                          @search.index_types.blank? || @search.index_types.include?('lex_entries'),
+                          class: 'form-check-input',
+                          id: 'index_type_lex_entries'
+          = label_tag 'index_type_lex_entries', LexEntry.model_name.human.pluralize, class: 'form-check-label'
       = submit_tag t(:filter), class: 'btn btn-primary btn-sm', style: 'width: 70%;'
     
     %p
@@ -71,6 +94,12 @@
             - unless result._data.nil? or result._data['highlight'].nil?
               %br
               != result._data['highlight']['deftext'].join("<br />").gsub('<em>','<b>').gsub('</em>','</b>')
+          - elsif result.instance_of?(LexEntriesIndex)
+            %b= LexEntry.model_name.human
+            %br
+            %b= link_to attrs['title'], lexicon_entry_path(attrs['id'])
+            - unless result._data.nil? || result._data['highlight'].nil?
+              .snippet!= result._data['highlight']['fulltext'].join('<br />').gsub('<em>', '<b>').gsub('</em>', '</b>')
 
     != paginate @results
 = form_tag tag_by_name_path, method: :post, id: 'tag_by_name' do
