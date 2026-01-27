@@ -33,6 +33,8 @@ class Notifications < ActionMailer::Base
   #
   #   he.notifications.tag_approved.subject
   def tag_approved(tag)
+    return if tag.creator.nil?
+
     @greeting = t(:hello_anon)
     @tag = tag
     mail to: tag.creator.email
@@ -43,6 +45,8 @@ class Notifications < ActionMailer::Base
   #
   #   he.notifications.tag_merged.subject
   def tag_merged(orig_name, suggester, destination_tag)
+    return if suggester.nil?
+
     @greeting = t(:hello_anon)
     @orig_tag_name = orig_name
     @suggester = suggester.name
@@ -52,12 +56,16 @@ class Notifications < ActionMailer::Base
   end
 
   def tagging_approved(tagging)
+    return if tagging.suggester.nil?
+
     @greeting = t(:hello_anon)
     @tagging = tagging
     mail to: tagging.suggester.email
   end
 
   def tagging_rejected(tagging, explanation)
+    return if tagging.suggester.nil?
+
     @greeting = t(:hello_anon)
     @tagging = tagging
     @explanation = explanation
@@ -65,6 +73,8 @@ class Notifications < ActionMailer::Base
   end
 
   def tagging_merged(tagging, original_tagname, suggester) # is this used?
+    return if suggester.nil?
+
     @greeting = t(:hello_anon)
     @original_tagname = original_tagname
     @tagging_suggester = suggester.name
@@ -79,6 +89,8 @@ class Notifications < ActionMailer::Base
   #
   #   he.notifications.tag_rejected.subject
   def tag_rejected(tag, explanation, orig_name = nil)
+    return if tag.creator.nil?
+
     @greeting = t(:hello_anon)
     @tag = tag
     @explanation = explanation

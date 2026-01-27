@@ -1,5 +1,5 @@
 %div{align: 'right', dir: 'rtl'}
-  %p= "#{@tag.creator.name}, #{@greeting}"
+  %p= "#{@tag.creator&.name || t('admin.tags.unknown_creator')}, #{@greeting}"
 
   %p= t(:tag_rejected_intro, tag: @name)
 
@@ -8,4 +8,4 @@
 
   %hr
 
-  != email_footer_html(@tag.creator.email)
+  != email_footer_html(@tag.creator&.email)
