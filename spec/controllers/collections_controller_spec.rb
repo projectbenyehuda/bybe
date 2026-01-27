@@ -152,7 +152,7 @@ describe CollectionsController do
     let(:other_manifestation) { create(:manifestation, title: 'Other Work', markdown: 'Test content for other work.') }
 
     let(:collection) do
-      create(:collection, title: 'Test Collection').tap do |coll|
+      create(:collection, title: 'Test Collection', collection_type: 'volume').tap do |coll|
         coll.involved_authorities.create!(authority: collection_author, role: 'author')
         coll.involved_authorities.create!(authority: collection_translator, role: 'translator')
         coll.collection_items.create!(item: manifestation, seqno: 1)
@@ -163,6 +163,7 @@ describe CollectionsController do
     it 'displays work-specific translators in the TOC' do
       get :show, params: { id: collection.id }
       expect(response).to be_successful
+
       expect(response.body).to include('Translated Work')
       expect(response.body).to include('Work Translator')
     end
