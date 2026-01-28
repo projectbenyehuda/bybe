@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Lexicon entry proof submission', js: true do
+describe 'Lexicon entry proof submission', :js do
   let!(:lex_entry) { create(:lex_entry, :person, status: :published) }
 
   it 'allows users to submit error reports for lexicon entries' do

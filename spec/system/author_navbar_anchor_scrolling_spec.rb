@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Author navbar anchor scrolling', js: true do
+describe 'Author navbar anchor scrolling', :js do
   let!(:author) do
     create(:authority, name: 'Test Author', gender: 'male')
   end

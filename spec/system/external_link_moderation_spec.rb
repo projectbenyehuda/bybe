@@ -84,7 +84,7 @@ describe 'External Link Moderation' do
     end
   end
 
-  describe 'approving a link', js: true do
+  describe 'approving a link', :js do
     before do
       # Log in as moderator
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
@@ -117,7 +117,7 @@ describe 'External Link Moderation' do
     end
   end
 
-  describe 'rejecting a link', js: true do
+  describe 'rejecting a link', :js do
     before do
       # Log in as moderator
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
@@ -171,7 +171,7 @@ describe 'External Link Moderation' do
     end
   end
 
-  describe 'escalating a link', js: true do
+  describe 'escalating a link', :js do
     before do
       # Log in as moderator
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)

@@ -30,7 +30,7 @@ describe 'Ingestible autocomplete scrollable' do
     Chewy.massacre
   end
 
-  describe 'authority autocomplete', js: true do
+  describe 'authority autocomplete', :js do
     it 'returns all matching results (more than 10)' do
       visit new_ingestible_path
 
@@ -70,7 +70,7 @@ describe 'Ingestible autocomplete scrollable' do
   end
 
   describe 'collection autocomplete' do
-    it 'returns all matching results (more than 10)', js: true do
+    it 'returns all matching results (more than 10)', :js do
       visit new_ingestible_path
 
       # Click to expand volume details if hidden

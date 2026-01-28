@@ -41,7 +41,7 @@ describe 'Collection image alignment' do
     Chewy.massacre
   end
 
-  describe 'image centering in collection show view', js: true do
+  describe 'image centering in collection show view', :js do
     it 'applies center-alignment styles to images' do
       visit collection_path(collection)
 

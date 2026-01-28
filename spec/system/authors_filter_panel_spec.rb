@@ -28,7 +28,7 @@ describe 'Authors filter panel behavior' do
     end
   end
 
-  context 'when a filter is applied', js: true do
+  context 'when a filter is applied', :js do
     it 'hides the intro panel and shows the filter panel', :aggregate_failures do
       visit authors_path
 
@@ -53,7 +53,7 @@ describe 'Authors filter panel behavior' do
     end
   end
 
-  context 'when filters are reset', js: true do
+  context 'when filters are reset', :js do
     it 'shows the intro panel and hides the filter panel', :aggregate_failures do
       visit authors_path
 

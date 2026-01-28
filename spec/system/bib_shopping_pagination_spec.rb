@@ -161,7 +161,7 @@ describe 'Bib Shopping List Pagination' do
     end
   end
 
-  describe 'filters work with pagination', js: true do
+  describe 'filters work with pagination', :js do
     before do
       login_as_editor
 

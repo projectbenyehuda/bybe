@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Collection involved authority UI update', js: true do
+describe 'Collection involved authority UI update', :js do
   let!(:authority) do
     Chewy.strategy(:atomic) do
       create(:authority, name: 'Test Author')

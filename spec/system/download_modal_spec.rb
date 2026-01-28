@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Download modal', js: true do
+describe 'Download modal', :js do
   let(:work) { create(:work) }
   let(:expression) { create(:expression, work: work) }
   let(:manifestation) do

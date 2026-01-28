@@ -79,7 +79,7 @@ describe 'Anthology browse page' do
       expect(anthology_titles.first).to eq('AAA Anthology')
     end
 
-    it 'can sort alphabetically descending', js: true do
+    it 'can sort alphabetically descending', :js do
       visit '/anthologies/browse'
 
       # Use the Hebrew or English option text
@@ -109,7 +109,7 @@ describe 'Anthology browse page' do
       expect(page).to have_content(/עמוד.*מתוך|Page.*of/)
     end
 
-    it 'can navigate to next page', js: true do
+    it 'can navigate to next page', :js do
       visit '/anthologies/browse'
 
       # Find and click the next page link
@@ -135,7 +135,7 @@ describe 'Anthology browse page' do
       expect(permalink_btn[:href]).to include('/anthologies/browse')
     end
 
-    it 'copies URL to clipboard when clicked and shows feedback', js: true do
+    it 'copies URL to clipboard when clicked and shows feedback', :js do
       visit '/anthologies/browse'
 
       permalink_btn = find('a.permalink-btn')

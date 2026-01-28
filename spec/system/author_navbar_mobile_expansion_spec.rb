@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Author navbar mobile expansion', js: true do
+describe 'Author navbar mobile expansion', :js do
   let!(:author) do
     create(:authority, name: 'Test Author')
   end

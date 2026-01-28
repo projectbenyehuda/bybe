@@ -28,7 +28,7 @@ describe 'Browse permalink button' do
       expect(permalink_btn[:href]).to include('/authors')
     end
 
-    it 'copies URL to clipboard when clicked and shows feedback', js: true do
+    it 'copies URL to clipboard when clicked and shows feedback', :js do
       visit '/authors'
 
       permalink_btn = find('a.permalink-btn')
@@ -86,7 +86,7 @@ describe 'Browse permalink button' do
       expect(permalink_btn[:href]).to include('/works')
     end
 
-    it 'copies URL to clipboard when clicked and shows feedback', js: true do
+    it 'copies URL to clipboard when clicked and shows feedback', :js do
       visit '/works'
 
       permalink_btn = find('a.permalink-btn')
