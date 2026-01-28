@@ -36,17 +36,15 @@ module Admin
       @fc.user = current_user if @fc.user.nil?
 
       if @fc.update(fa_params)
-        flash.notice = I18n.t(:updated_successfully)
-        redirect_to admin_featured_author_path(@fc)
+        redirect_to admin_featured_author_path(@fc), notice: I18n.t(:updated_successfully)
       else
         render :edit, status: :unprocessable_content
       end
     end
 
     def destroy
-      @fc.destroy!
-      flash.notice = I18n.t(:deleted_successfully)
-      redirect_to admin_featured_authors_path
+      @fc.destroy
+      redirect_to admin_featured_authors_path, notice: I18n.t(:deleted_successfully)
     end
 
     private

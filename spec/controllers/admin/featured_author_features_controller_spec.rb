@@ -13,7 +13,7 @@ describe Admin::FeaturedAuthorFeaturesController do
     end
 
     context 'when params are invalid' do
-      let(:feature_params) { { from_date: nil, to_date: nil } }
+      let(:feature_params) { { fromdate: nil, todate: nil } }
 
       it 'displays alert and redirects to featured author page' do
         expect { call }.not_to change(FeaturedAuthorFeature, :count)
