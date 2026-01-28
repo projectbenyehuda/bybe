@@ -479,33 +479,23 @@ class AdminController < ApplicationController
   def doubly_contained_works
     uncollected_type = Collection.collection_types[:uncollected]
 
-    # Get IDs of qualifying manifestations
+    # Build relation for qualifying manifestations
     # CRITICAL: Explicit polymorphic filter to avoid wrong matches
-    doubly_contained_ids = Manifestation
-      .joins('INNER JOIN collection_items ON collection_items.item_id = manifestations.id
+    qualifying_manifestations = Manifestation
+                                .joins('INNER JOIN collection_items ON collection_items.item_id = manifestations.id
               AND collection_items.item_type = \'Manifestation\'')
-      .joins('INNER JOIN collections ON collections.id = collection_items.collection_id')
-      .group('manifestations.id')
-      .having('COUNT(DISTINCT collection_items.collection_id) > 1')
-      .having('SUM(CASE WHEN collections.collection_type = ? THEN 1 ELSE 0 END) > 0', uncollected_type)
-      .pluck(:id)
+                                .joins('INNER JOIN collections ON collections.id = collection_items.collection_id')
+                                .group('manifestations.id')
+                                .having('COUNT(DISTINCT collection_items.collection_id) > 1')
+                                .having('SUM(CASE WHEN collections.collection_type = ? THEN 1 ELSE 0 END) > 0', uncollected_type)
 
-    @total = doubly_contained_ids.count
+    @total = qualifying_manifestations.count
 
-    # Paginate IDs first (performance optimization - don't load all to memory)
-    paginated_ids = Kaminari.paginate_array(doubly_contained_ids)
-                            .page(params[:page])
-                            .per(50)
-
-    # Load manifestations with preloading
-    manifestations = Manifestation.where(id: paginated_ids.map(&:to_i))
-                                   .preload(collection_items: :collection)
-                                   .to_a
-
-    # Wrap in Kaminari array to preserve pagination info
-    @manifestations = Kaminari.paginate_array(manifestations, total_count: @total)
-                              .page(params[:page])
-                              .per(50)
+    # Paginate at database level with preloading (avoids loading all IDs into memory)
+    @manifestations = qualifying_manifestations
+                      .page(params[:page])
+                      .per(50)
+                      .preload(collection_items: :collection)
 
     # Preload authorities for uncollected collections (prevent N+1)
     # CRITICAL: Authority doesn't belong_to Collection, it's the reverse!

@@ -1213,7 +1213,7 @@ describe AdminController do
 
       it 'paginates results - page 1 has 50 items' do
         call
-        expect(assigns(:manifestations).count).to eq(50)
+        expect(assigns(:manifestations).size).to eq(50)
       end
 
       context 'when on page 2' do
@@ -1221,7 +1221,7 @@ describe AdminController do
 
         it 'has remaining 10 items' do
           call
-          expect(assigns(:manifestations).count).to eq(10)
+          expect(assigns(:manifestations).size).to eq(10)
         end
       end
     end

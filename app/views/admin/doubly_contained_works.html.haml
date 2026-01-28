@@ -23,7 +23,8 @@
                   (#{t("activerecord.attributes.collection.collection_types.#{ci.collection.collection_type}")})
                   - if ci.collection.uncollected? && @authorities_by_collection[ci.collection.id]
                     - authority = @authorities_by_collection[ci.collection.id]
-                    = " - #{link_to authority.name, authors_show_path(id: authority.id)}"
+                    = ' - '
+                    = link_to authority.name, authors_show_path(id: authority.id)
                   %br
                   = t(:created_on) + ': ' + l(ci.collection.created_at.to_date, format: :long)
   != paginate @manifestations
