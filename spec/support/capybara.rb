@@ -26,10 +26,13 @@ end
 Capybara.register_driver :selenium_firefox_headless do |app|
   options = Selenium::WebDriver::Firefox::Options.new
   options.add_argument('--headless')
-  options.add_argument('--width=1400')
-  options.add_argument('--height=1400')
 
-  Capybara::Selenium::Driver.new(app, browser: :firefox, options: options)
+  driver = Capybara::Selenium::Driver.new(app, browser: :firefox, options: options)
+
+  # Set window size after driver initialization (Firefox ignores --width/--height in headless mode)
+  driver.browser.manage.window.resize_to(1400, 1400)
+
+  driver
 end
 
 # Chrome driver (fallback)
