@@ -1,18 +1,21 @@
 .backend
   %h1= t(:featured_author)
   %a{ href: edit_admin_featured_author_path(@fc) }
-    .btn{style:'float:none'}
+    .btn{ style: 'float:none' }
       %b= t(:edit)
   %br
   %br
   %p
-    %b= t(:title)+': '
+    %b
+      = t(:title) + ': '
     = @fc.title
   %p
-    %b= t(:featured_content_body)+': '
+    %b
+      = t(:featured_content_body) + ': '
     != @fc.body
   %p
-    %b= t(:linked_author)+': '
+    %b
+      = t(:linked_author) + ': '
     = @fc.person.nil? ? t(:none) : link_to(@fc.person.authority.name, authority_path(@fc.person.authority))
 
   %h3= t(:feature_on)
