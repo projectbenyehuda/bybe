@@ -3,9 +3,6 @@
 require 'rails_helper'
 
 describe 'Manifestation scrollspy' do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
   let(:markdown_with_chapters) do
     <<~MARKDOWN
       ## Chapter 1
