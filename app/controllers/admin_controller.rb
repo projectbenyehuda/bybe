@@ -847,102 +847,6 @@ class AdminController < ApplicationController
   end
 
   ########################################################
-  ## featured author
-  def featured_author_list
-    @fcs = FeaturedAuthor.page(params[:page])
-  end
-
-  def featured_author_new
-    @fc = FeaturedAuthor.new
-    respond_to do |format|
-      format.html
-      format.json { render json: @fc }
-    end
-  end
-
-  def featured_author_create
-    @fc = FeaturedAuthor.new(fa_params)
-    @fc.person_id = params[:person_id]
-    @fc.user = current_user
-    respond_to do |format|
-      if @fc.save
-        format.html { redirect_to url_for(action: :featured_author_show, id: @fc.id), notice: t(:updated_successfully) }
-        format.json { render json: @fc, status: :created, location: @fc }
-      else
-        format.html { render action: 'featured_author_new' }
-        format.json { render json: @fc.errors, status: :unprocessable_content }
-      end
-    end
-  end
-
-  def featured_author_show
-    @fc = FeaturedAuthor.find(params[:id])
-    return unless @fc.nil?
-
-    flash[:error] = I18n.t(:no_such_item)
-    redirect_to url_for(action: :index)
-  end
-
-  def featured_author_edit
-    @fc = FeaturedAuthor.find(params[:id])
-  end
-
-  def featured_author_destroy
-    @fa = FeaturedAuthor.find(params[:id])
-    unless @fa.nil?
-      @fa.destroy
-    end
-    flash[:notice] = I18n.t(:deleted_successfully)
-    redirect_to action: :featured_author_list
-  end
-
-  def featured_author_update
-    @fc = FeaturedAuthor.find(params[:id])
-    if @fc.nil?
-      flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
-    elsif @fc.update(fa_params)
-      flash[:notice] = I18n.t(:updated_successfully)
-      redirect_to action: :featured_author_show, id: @fc.id
-    else
-      format.html { render action: 'featured_author_edit' }
-      format.json { render json: @fc.errors, status: :unprocessable_content }
-    end
-  end
-
-  def featured_author_add_feature
-    return if params[:fromdate].nil? or params[:todate].nil?
-
-    fc = FeaturedAuthor.find(params[:fcid])
-    unless fc.nil?
-      fcf = FeaturedAuthorFeature.new(fromdate: Date.new(params[:fromdate][:year].to_i, params[:fromdate][:month].to_i, params[:fromdate][:day].to_i),
-                                      todate: Date.new(params[:todate][:year].to_i,
-                                                       params[:todate][:month].to_i, params[:todate][:day].to_i))
-      fcf.featured_author = fc
-      fcf.save!
-
-      flash[:notice] = I18n.t(:created_successfully)
-      redirect_to url_for(action: :featured_author_show, id: fc.id)
-    else
-      flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
-    end
-  end
-
-  def featured_author_delete_feature
-    fcf = FeaturedAuthorFeature.find(params[:id])
-    unless fcf.nil?
-      fcid = fcf.featured_author_id
-      fcf.destroy!
-      flash[:notice] = I18n.t(:deleted_successfully)
-      redirect_to url_for(action: :featured_author_show, id: fcid)
-    else
-      flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
-    end
-  end
-
-  ########################################################
   # user content moderation
   def tag_moderation
     require_editor('moderate_tags')
@@ -1518,10 +1422,6 @@ class AdminController < ApplicationController
 
   def vp_params
     params[:volunteer_profile].permit(:name, :bio, :about, :profile_image)
-  end
-
-  def fa_params
-    params[:featured_author].permit(:title, :body)
   end
 
   def sp_params

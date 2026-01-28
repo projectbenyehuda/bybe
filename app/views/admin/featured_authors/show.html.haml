@@ -1,0 +1,39 @@
+.backend
+  %h1= t(:featured_author)
+  %a{ href: edit_admin_featured_author_path(@fc) }
+    .btn{style:'float:none'}
+      %b= t(:edit)
+  %br
+  %br
+  %p
+    %b= t(:title)+': '
+    = @fc.title
+  %p
+    %b= t(:featured_content_body)+': '
+    != @fc.body
+  %p
+    %b= t(:linked_author)+': '
+    = @fc.person.nil? ? t(:none) : link_to(@fc.person.authority.name, authority_path(@fc.person.authority))
+
+  %h3= t(:feature_on)
+  %table
+    %tr
+      %th= FeaturedAuthorFeature.human_attribute_name(:fromdate)
+      %th= FeaturedAuthorFeature.human_attribute_name(:todate)
+      %th
+    - @fc.featurings.each do |fcf|
+      %tr
+        %td= fcf.fromdate&.strftime('%d-%m-%Y')
+        %td= fcf.todate&.strftime('%d-%m-%Y')
+        %td
+          = link_to t(:destroy),
+                    admin_featured_author_feature_path(fcf),
+                    data: { confirm: t(:are_you_sure) },
+                    method: :delete
+  .row
+    .col-sm-6
+      = simple_form_for @fc.featurings.build, url: admin_featured_author_features_path(@fc) do |f|
+        = f.input :fromdate, as: :date, html5: true
+        = f.input :todate, as: :date, html5: true
+        = f.submit t(:add_feature_date), class: 'btn btn-sm btn-primary'
+  = link_to t(:back), admin_featured_authors_path
