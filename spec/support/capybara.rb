@@ -12,6 +12,10 @@ RSpec.configure do |config|
     # Try Firefox first, fall back to Chrome if not available
     driver = :selenium_firefox_headless
     driven_by driver
+
+    if page.driver.browser.respond_to?(:manage)
+      page.driver.browser.manage.window.resize_to(1400, 900)
+    end
   rescue StandardError => e
     # If both browsers fail, skip JS tests with a warning
     skip "Skipping JS test - Browser/Selenium not properly configured: #{e.message}"
@@ -22,8 +26,6 @@ end
 Capybara.register_driver :selenium_firefox_headless do |app|
   options = Selenium::WebDriver::Firefox::Options.new
   options.add_argument('--headless')
-  options.add_argument('--width=1920')
-  options.add_argument('--height=1080')
   driver = Capybara::Selenium::Driver.new(app, browser: :firefox, options: options)
   driver
 end
