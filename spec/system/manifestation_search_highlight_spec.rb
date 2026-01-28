@@ -26,6 +26,29 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
       More filler text. More filler text. More filler text.
       Even more filler text to create enough vertical space.
 
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
+      tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+      quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+      consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+      cillum dolore eu fugiat nulla pariatur.
+
+      Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+      deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste
+      natus error sit voluptatem accusantium doloremque laudantium, totam rem
+      aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto
+      beatae vitae dicta sunt explicabo.
+
+      Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit,
+      sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+      Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur,
+      adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore
+      et dolore magnam aliquam quaerat voluptatem.
+
+      Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit
+      laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum
+      iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae
+      consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
+
       This is some sample text with the word sample appearing multiple times.
       Here is another paragraph with more content.
 
@@ -151,6 +174,22 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
           היא תהיה באופן משמעותי מתחת לחלק העליון של העמוד. מוסיפים עוד טקסט כאן
           כדי ליצור מרחק. עוד טקסט מילוי. עוד טקסט מילוי. עוד טקסט מילוי.
           אפילו עוד טקסט מילוי כדי ליצור מספיק מרווח אנכי.
+
+          טקסט נוסף בעברית כדי למלא את העמוד ולדחוף את התוכן למטה. אנחנו צריכים
+          הרבה יותר תוכן כדי להבטיח שהעמוד יהיה ארוך מספיק לגלילה. בואו נוסיף
+          עוד כמה פסקאות של טקסט מילוי בעברית.
+
+          זהו טקסט ארוך נוסף שמטרתו למלא מקום ולהבטיח שיהיה מספיק תוכן בעמוד
+          כדי שנצטרך לגלול כלפי מטה כדי לראות את כל המידע. אנחנו ממשיכים להוסיף
+          עוד ועוד טקסט כדי להגיע לאורך מתאים.
+
+          פסקה נוספת של טקסט מילוי בעברית. אנחנו ממשיכים להוסיף תוכן כדי להבטיח
+          שהמסמך יהיה ארוך מספיק. זה חשוב כדי שהבדיקה תוכל לוודא שהגלילה עובדת
+          כמו שצריך. עוד טקסט ועוד טקסט ועוד טקסט.
+
+          ממשיכים עם עוד תוכן בעברית. אנחנו רוצים להבטיח שיש מספיק חומר כאן
+          כדי שהדף יצטרך גלילה. זה נראה טוב עכשיו עם כל הטקסט הזה שאנחנו מוסיפים
+          לכאן. בואו נוסיף עוד קצת יותר כדי להיות בטוחים.
 
           זה טקסט לדוגמה עם המילה דוגמה שמופיעה מספר פעמים.
           זה פסקה נוספת עם תוכן נוסף.
