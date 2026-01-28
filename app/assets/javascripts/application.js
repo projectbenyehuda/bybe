@@ -5,10 +5,10 @@
 // the compiled file.
 //
 //= require jquery
+//= require jquery-ui/widgets/autocomplete
 //= require rails-ujs
 //= require sortable.min
 //= require jquery.slick
-//= require jquery.mark.min
 //= require jquery.caret
 //= require wikidata-sdk.min
 //= require activestorage

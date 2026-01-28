@@ -2,6 +2,9 @@
 - if @m.sefaria_linker
   %script{ type: 'text/javascript', charset:'utf-8', src:'https://www.sefaria.org/linker.v3.js'}
 
+-# Load Mark.js for search highlighting
+%script{ src: 'https://cdn.jsdelivr.net/npm/mark.js@8.11.1/dist/jquery.mark.min.js' }
+
 = render partial: 'shared/search_highlight_controls',
          locals: { search_query: params[:q], entity_title: @m.title }
 
