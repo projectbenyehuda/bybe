@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Author navbar mobile expansion', :js, type: :system do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Author navbar mobile expansion', js: true do
   let!(:author) do
     create(:authority, name: 'Test Author')
   end

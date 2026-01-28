@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Admin Tags Management', :js, type: :system do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Admin Tags Management' do
   let(:tag) { create(:tag, status: :approved, name: 'Original Tag Name') }
   let!(:primary_tag_name) { tag.tag_names.first } # Created automatically by callback
   let!(:alternative_tag_name) { create(:tag_name, tag: tag, name: 'Alternative Tag Name') }

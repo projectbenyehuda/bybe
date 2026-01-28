@@ -2,16 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Collection image alignment', type: :system, js: true do
-  # Skip if WebDriver not available
-  before do
-    begin
-      Capybara.current_session.driver.browser if Capybara.current_session.driver.respond_to?(:browser)
-    rescue StandardError
-      skip 'WebDriver not available or misconfigured'
-    end
-  end
-
+describe 'Collection image alignment' do
   # Use a properly-sized test image (300x200 solid blue PNG) as data URI
   # This is large enough to meaningfully test alignment and centering
   let(:test_image_data_uri) do
@@ -50,7 +41,7 @@ RSpec.describe 'Collection image alignment', type: :system, js: true do
     Chewy.massacre
   end
 
-  describe 'image centering in collection show view' do
+  describe 'image centering in collection show view', js: true do
     it 'applies center-alignment styles to images' do
       visit collection_path(collection)
 

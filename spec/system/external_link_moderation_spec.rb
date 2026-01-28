@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe 'External Link Moderation', type: :system, js: true do
+describe 'External Link Moderation' do
   let(:moderator) { create(:user, :moderate_links) }
   let(:regular_user) { create(:user) }
   let(:authority) { create(:authority) }
@@ -84,7 +84,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
     end
   end
 
-  describe 'approving a link' do
+  describe 'approving a link', js: true do
     before do
       # Log in as moderator
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
@@ -117,7 +117,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
     end
   end
 
-  describe 'rejecting a link' do
+  describe 'rejecting a link', js: true do
     before do
       # Log in as moderator
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)
@@ -171,7 +171,7 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
     end
   end
 
-  describe 'escalating a link' do
+  describe 'escalating a link', js: true do
     before do
       # Log in as moderator
       allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(moderator)

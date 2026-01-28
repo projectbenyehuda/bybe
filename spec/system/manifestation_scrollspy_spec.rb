@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Manifestation scrollspy', type: :system, js: true do
+describe 'Manifestation scrollspy' do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
@@ -57,7 +57,7 @@ RSpec.describe 'Manifestation scrollspy', type: :system, js: true do
   end
 
   describe 'chapter navigation highlighting' do
-    context 'chapter titles with escaped characters' do
+    describe 'chapter titles with escaped characters' do
       let(:markdown_with_escaped_chars) do
         <<~MARKDOWN
           ## Chapter \\[Part 1\\] Introduction
@@ -95,7 +95,7 @@ RSpec.describe 'Manifestation scrollspy', type: :system, js: true do
       end
     end
 
-    context 'chapter navigation structure' do
+    describe 'chapter navigation structure' do
       it 'renders chapter navigation with correct structure' do
         visit manifestation_path(manifestation)
 
@@ -117,7 +117,7 @@ RSpec.describe 'Manifestation scrollspy', type: :system, js: true do
         end
       end
 
-      it 'adjusts highlighting correctly when header height changes' do
+      it 'adjusts highlighting correctly when header height changes', :js do
         visit manifestation_path(manifestation)
 
         # Wait for page to load
@@ -145,7 +145,7 @@ RSpec.describe 'Manifestation scrollspy', type: :system, js: true do
       end
     end
 
-    context 'scrollspy offset calculation' do
+    describe 'scrollspy offset calculation', :js do
       it 'uses the correct header height as offset' do
         visit manifestation_path(manifestation)
 

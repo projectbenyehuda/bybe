@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Bib Shopping List Pagination', :js, type: :system do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Bib Shopping List Pagination' do
   let(:editor_user) { create(:user, :bib_workshop) }
   let(:bib_source) { create(:bib_source) }
 
@@ -165,7 +161,7 @@ RSpec.describe 'Bib Shopping List Pagination', :js, type: :system do
     end
   end
 
-  describe 'filters work with pagination' do
+  describe 'filters work with pagination', js: true do
     before do
       login_as_editor
 

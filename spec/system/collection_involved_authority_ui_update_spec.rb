@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Collection involved authority UI update', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Collection involved authority UI update', js: true do
   let!(:authority) do
     Chewy.strategy(:atomic) do
       create(:authority, name: 'Test Author')
