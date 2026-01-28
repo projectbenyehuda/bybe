@@ -489,7 +489,7 @@ class AdminController < ApplicationController
                                 .having('COUNT(DISTINCT collection_items.collection_id) > 1')
                                 .having('SUM(CASE WHEN collections.collection_type = ? THEN 1 ELSE 0 END) > 0', uncollected_type)
 
-    @total = qualifying_manifestations.count
+    @total = qualifying_manifestations.count.size
 
     # Paginate at database level with preloading (avoids loading all IDs into memory)
     @manifestations = qualifying_manifestations
