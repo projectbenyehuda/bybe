@@ -2,18 +2,6 @@
 
 require 'rails_helper'
 
-# Check if vips is available for image processing
-def vips_available?
-  return @vips_available if defined?(@vips_available)
-
-  @vips_available = begin
-    require 'vips'
-    true
-  rescue LoadError
-    false
-  end
-end
-
 describe 'Lexicon Verification Workbench' do
   before do
     login_as_lexicon_editor
@@ -440,19 +428,22 @@ describe 'Lexicon Verification Workbench' do
 
   describe 'Profile Image Selection', :js do
     before do
-      skip 'Vips library not available for image processing' unless vips_available?
-
       # Attach some test images to the entry
-      entry.attachments.attach(
-        io: StringIO.new('test image 1'),
-        filename: 'test1.jpg',
-        content_type: 'image/jpeg'
-      )
-      entry.attachments.attach(
-        io: StringIO.new('test image 2'),
-        filename: 'test2.jpg',
-        content_type: 'image/jpeg'
-      )
+      File.open("#{Rails.root}/spec/fixtures/images/male.png", 'rb') do |io|
+        entry.attachments.attach(
+          io:,
+          filename: 'male.png',
+          content_type: 'image/png'
+        )
+      end
+
+      File.open("#{Rails.root}/spec/fixtures/images/female.png", 'rb') do |io|
+        entry.attachments.attach(
+          io:,
+          filename: 'female.png',
+          content_type: 'image/png'
+        )
+      end
       visit "/lex/verification/#{entry.id}"
     end
 
