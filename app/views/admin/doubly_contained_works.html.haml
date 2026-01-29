@@ -1,0 +1,30 @@
+.backend
+  %h2= t(:doubly_contained_works_report)
+  %h3= t(:total) + ': ' + @total.to_s
+
+  %table.table
+    %thead
+      %tr
+        %th= t(:manifestation_title)
+        %th= t(:authors)
+        %th= t(:collections)
+    %tbody
+      - @manifestations.each do |m|
+        %tr
+          %td= link_to m.title, manifestation_path(m.id)
+          %td= m.authors_string.presence || t(:unknown_author)
+          %td
+            %ul
+              - m.collection_items.each do |ci|
+                - next if ci.collection.nil?
+
+                %li
+                  = link_to ci.collection.title, collection_path(ci.collection.id)
+                  (#{t("activerecord.attributes.collection.collection_types.#{ci.collection.collection_type}")})
+                  - if ci.collection.uncollected? && @authorities_by_collection[ci.collection.id]
+                    - authority = @authorities_by_collection[ci.collection.id]
+                    = ' - '
+                    = link_to authority.name, authors_show_path(id: authority.id)
+                  %br
+                  = t(:created_on) + ': ' + l(ci.collection.created_at.to_date, format: :long)
+  != paginate @manifestations

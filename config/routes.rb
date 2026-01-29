@@ -173,6 +173,7 @@ Bybeconv::Application.routes.draw do
   get 'admin/suspicious_translations'
   get 'admin/duplicate_works'
   get 'admin/suspicious_intellectual_property'
+  get 'admin/doubly_contained_works'
   post 'admin/update_authority_intellectual_property/:id' => 'admin#update_authority_intellectual_property',
        as: 'update_authority_intellectual_property'
   post 'admin/merge_works' => 'admin#merge_works', as: 'merge_works'

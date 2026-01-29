@@ -155,6 +155,9 @@
         %b= link_to t(:suspicious_intellectual_property_report), admin_suspicious_intellectual_property_path
         = ' (' + Rails.cache.read('report_suspicious_intellectual_property').to_s + ')'
       %p
+        %b= link_to t(:doubly_contained_works_report), admin_doubly_contained_works_path
+        = ' (' + Rails.cache.read('report_doubly_contained_works').to_s + ')'
+      %p
         = link_to t(:missing_images), admin_missing_images_path
         = ' ('+Rails.cache.read('report_missing_images').to_s+')'
     .admin_dashboard_item

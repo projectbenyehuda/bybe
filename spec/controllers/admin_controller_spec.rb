@@ -1036,4 +1036,106 @@ describe AdminController do
       expect(json_response['message']).to be_present
     end
   end
+
+  describe '#doubly_contained_works' do
+    subject(:call) { get :doubly_contained_works, params: params }
+
+    let(:params) { {} }
+    let(:authority_for_uncollected) { create(:authority) }
+    let(:uncollected_collection) do
+      collection = build(:collection, collection_type: :uncollected)
+      collection.allow_system_type_change! # Allow creating uncollected collection for test
+      collection.save!
+      # Link the collection to the authority
+      authority_for_uncollected.update(uncollected_works_collection: collection)
+      collection
+    end
+    let(:regular_collection) { create(:collection, collection_type: :volume) }
+
+    include_context 'when editor logged in'
+
+    it 'returns successful response' do
+      expect(call).to be_successful
+    end
+
+    context 'with qualifying manifestation' do
+      let(:manifestation) { create(:manifestation) }
+
+      before do
+        # Create collection_items linking manifestation to both collections
+        create(:collection_item, collection: uncollected_collection, item: manifestation)
+        create(:collection_item, collection: regular_collection, item: manifestation)
+      end
+
+      it 'shows manifestation in 2+ collections with at least one uncollected' do
+        call
+        expect(assigns(:manifestations)).to include(manifestation)
+      end
+
+      it 'preloads authorities for uncollected collections' do
+        call
+        expect(assigns(:authorities_by_collection)[uncollected_collection.id]).to eq(authority_for_uncollected)
+      end
+    end
+
+    context 'with non-qualifying manifestations' do
+      let(:single_collection_manifestation) { create(:manifestation) }
+      let(:double_regular_manifestation) { create(:manifestation) }
+
+      before do
+        # Only in one collection
+        create(:collection_item, collection: regular_collection, item: single_collection_manifestation)
+
+        # In two collections, but neither uncollected
+        regular2 = create(:collection, collection_type: :volume)
+        create(:collection_item, collection: regular_collection, item: double_regular_manifestation)
+        create(:collection_item, collection: regular2, item: double_regular_manifestation)
+      end
+
+      it 'does not show single-collection manifestation' do
+        call
+        expect(assigns(:manifestations)).not_to include(single_collection_manifestation)
+      end
+
+      it 'does not show double-regular manifestation (no uncollected)' do
+        call
+        expect(assigns(:manifestations)).not_to include(double_regular_manifestation)
+      end
+    end
+
+    it 'caches the report count' do
+      allow(Rails.cache).to receive(:write)
+      call
+      expect(Rails.cache).to have_received(:write).with('report_doubly_contained_works', anything)
+    end
+
+    context 'with pagination' do
+      let(:params) { { page: page_number } }
+      let(:page_number) { 1 }
+
+      before do
+        # Create 60 qualifying manifestations
+        60.times do
+          m = create(:manifestation)
+          create(:collection_item, collection: uncollected_collection, item: m)
+          create(:collection_item, collection: regular_collection, item: m)
+        end
+      end
+
+      it 'paginates results - page 1 has 50 items' do
+        call
+        expect(assigns(:manifestations).size).to eq(50)
+      end
+
+      context 'when on page 2' do
+        let(:page_number) { 2 }
+
+        it 'has remaining 10 items' do
+          call
+          expect(assigns(:manifestations).size).to eq(10)
+        end
+      end
+    end
+
+  end
 end
