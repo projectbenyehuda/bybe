@@ -2,9 +2,8 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Author LexCitations card', :js, type: :system do
+describe 'Author LexCitations card' do
   before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
     author.update(lex_person: lex_person)
   end
 

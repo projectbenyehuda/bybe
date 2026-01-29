@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Lexicon entries navbar', :js, type: :system do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Lexicon entries navbar' do
   describe 'Person entry navbar' do
     let!(:person) do
       create(:lex_person,
@@ -60,7 +56,7 @@ RSpec.describe 'Lexicon entries navbar', :js, type: :system do
     # NOTE: The current implementation uses a single responsive navbar
     # without separate desktop/mobile variants
 
-    it 'scrolls to biography section when biography nav item is clicked' do
+    it 'scrolls to biography section when biography nav item is clicked', :js do
       visit lexicon_entry_path(entry)
 
       # Verify the navbar and biography section exist
@@ -80,7 +76,7 @@ RSpec.describe 'Lexicon entries navbar', :js, type: :system do
       expect(biography_element).to be_present
     end
 
-    it 'scrolls to works section when works nav item is clicked' do
+    it 'scrolls to works section when works nav item is clicked', :js do
       visit lexicon_entry_path(entry)
 
       # Scroll to top first
@@ -95,7 +91,7 @@ RSpec.describe 'Lexicon entries navbar', :js, type: :system do
       expect(page).to have_css('#lexicon-works')
     end
 
-    it 'scrolls to about section when about nav item is clicked' do
+    it 'scrolls to about section when about nav item is clicked', :js do
       visit lexicon_entry_path(entry)
 
       # Scroll to top first
@@ -110,7 +106,7 @@ RSpec.describe 'Lexicon entries navbar', :js, type: :system do
       expect(page).to have_css('#lexicon-about')
     end
 
-    it 'scrolls to links section when links nav item is clicked' do
+    it 'scrolls to links section when links nav item is clicked', :js do
       visit lexicon_entry_path(entry)
 
       # Scroll to top first
@@ -125,7 +121,7 @@ RSpec.describe 'Lexicon entries navbar', :js, type: :system do
       expect(page).to have_css('#lexicon-links')
     end
 
-    it 'updates selected state when clicking navbar items' do
+    it 'updates selected state when clicking navbar items', :js do
       visit lexicon_entry_path(entry)
 
       within('#genrenav') do
@@ -184,7 +180,7 @@ RSpec.describe 'Lexicon entries navbar', :js, type: :system do
       end
     end
 
-    it 'scrolls to description section when description nav item is clicked' do
+    it 'scrolls to description section when description nav item is clicked', :js do
       visit lexicon_entry_path(entry)
 
       # Scroll to top first
@@ -199,7 +195,7 @@ RSpec.describe 'Lexicon entries navbar', :js, type: :system do
       expect(page).to have_css('#lexicon-description')
     end
 
-    it 'scrolls to TOC section when TOC nav item is clicked' do
+    it 'scrolls to TOC section when TOC nav item is clicked', :js do
       visit lexicon_entry_path(entry)
 
       # Scroll to top first

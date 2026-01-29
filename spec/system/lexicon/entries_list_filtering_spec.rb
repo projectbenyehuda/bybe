@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Lexicon entries list filtering' do
   let!(:person_male) do
     entry = create(:lex_entry, :person, status: :published, title: 'אברהם')
     entry.lex_item.update!(gender: :male, birthdate: '1850', deathdate: '1920')
@@ -38,7 +34,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'name filter' do
+  describe 'name filter', :js do
     it 'filters entries by name via AJAX' do
       # Initial state: all entries visible
       expect(page).to have_content('אברהם')
@@ -61,7 +57,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'gender filter' do
+  describe 'gender filter', :js do
     it 'filters by gender via AJAX' do
       # Check female gender checkbox
       check 'gender_female'
@@ -90,7 +86,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'birth year filter' do
+  describe 'birth year filter', :js do
     it 'filters by birth year range via AJAX' do
       fill_in 'birth_year_from', with: '1875'
       fill_in 'birth_year_to', with: '1925'
@@ -110,7 +106,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'death year filter' do
+  describe 'death year filter', :js do
     it 'filters by death year range via AJAX' do
       fill_in 'death_year_from', with: '1950'
       fill_in 'death_year_to', with: '1990'
@@ -128,7 +124,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'filter pill removal' do
+  describe 'filter pill removal', :js do
     it 'removes filter when clicking pill X' do
       # Apply filter
       fill_in 'name_filter', with: 'שרה'
@@ -145,7 +141,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'reset button' do
+  describe 'reset button', :js do
     it 'clears all filters when clicked' do
       # Apply multiple filters
       fill_in 'name_filter', with: 'שרה'
@@ -166,7 +162,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'sorting with filters' do
+  describe 'sorting with filters', :js do
     it 'preserves filters when changing sort order' do
       # Apply filter
       check 'gender_female'
@@ -183,7 +179,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'combined filters' do
+  describe 'combined filters', :js do
     it 'applies multiple filters together' do
       # Apply name, gender, and year filters
       fill_in 'name_filter', with: 'שרה'
@@ -200,7 +196,7 @@ RSpec.describe 'Lexicon entries list filtering', type: :system, js: true do
     end
   end
 
-  describe 'permalink' do
+  describe 'permalink', :js do
     it 'includes all active filters in permalink URL' do
       # Apply filters
       fill_in 'name_filter', with: 'שרה'
