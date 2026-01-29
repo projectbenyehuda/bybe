@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Ingestible public domain intellectual property', :js, :system do
+describe 'Ingestible public domain intellectual property' do
   let!(:public_domain_author) do
     Chewy.strategy(:atomic) do
       create(:authority, name: 'Public Domain Author',

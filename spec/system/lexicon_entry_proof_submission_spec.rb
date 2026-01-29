@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Lexicon entry proof submission', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Lexicon entry proof submission', :js do
   let!(:lex_entry) { create(:lex_entry, :person, status: :published) }
 
   it 'allows users to submit error reports for lexicon entries' do
