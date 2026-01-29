@@ -2,15 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Collection show page - authority display', :js, type: :system do
-  before do
-    begin
-      Capybara.current_session.driver.browser if Capybara.current_session.driver.respond_to?(:browser)
-    rescue StandardError
-      skip 'WebDriver not available or misconfigured'
-    end
-  end
-
+describe 'Collection show page - authority display' do
   # Create authorities for each role
   let!(:author) { create(:authority, name: 'Author Name') }
   let!(:translator) { create(:authority, name: 'Translator Name') }

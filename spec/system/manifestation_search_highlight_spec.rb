@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Manifestation search highlighting', :js, type: :system do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Manifestation search highlighting' do
   # Scroll position thresholds for validation
   # MAX_NO_SCROLL: Maximum scroll position if page stayed at top (header height + margin)
   # MIN_SCROLLED: Minimum scroll position if page scrolled to first match in text
@@ -95,7 +91,7 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
   end
 
   describe 'search highlighting behavior' do
-    context 'when search term matches the title' do
+    context 'when search term matches the title', :js do
       it 'does not auto-scroll to first occurrence in text' do
         visit manifestation_path(manifestation_with_title_match, q: 'sample')
 
@@ -122,7 +118,7 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
       end
     end
 
-    context 'when search term does not match the title' do
+    context 'when search term does not match the title', :js do
       it 'auto-scrolls to first occurrence in text as usual' do
         visit manifestation_path(manifestation_without_title_match, q: 'sample')
 
@@ -149,7 +145,7 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
       end
     end
 
-    context 'when search term partially matches the title' do
+    context 'when search term partially matches the title', :js do
       it 'does not auto-scroll when title contains the search term (case-insensitive)' do
         visit manifestation_path(manifestation_with_title_match, q: 'Sample')
 
@@ -164,7 +160,7 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
       end
     end
 
-    context 'with Hebrew text' do
+    context 'with Hebrew text', :js do
       let(:hebrew_markdown) do
         <<~MARKDOWN
           ## פרק ראשון

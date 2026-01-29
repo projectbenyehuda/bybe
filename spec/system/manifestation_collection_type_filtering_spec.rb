@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Manifestation collection type filtering', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Manifestation collection type filtering' do
   before(:all) do
     clean_tables
     Chewy.strategy(:atomic) do

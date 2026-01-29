@@ -2,9 +2,8 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Lexicon entries filtering', type: :system, js: true do
+describe 'Lexicon entries filtering', :js do
   before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
     login_as_lexicon_editor
   end
 
