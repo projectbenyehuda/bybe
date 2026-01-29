@@ -14,6 +14,6 @@
                                  autocomplete_person_name_path,
                                  id_element: '#person_id',
                                  data: { noMatchesLabel: t(:no_matches_found) }
-        = hidden_field_tag :person_id, fc.person&.id
+        = hidden_field_tag 'featured_author[person_id]', fc.person&.id, id: 'person_id'
       .actions
         = f.submit t(:save)
