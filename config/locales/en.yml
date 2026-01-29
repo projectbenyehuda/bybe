@@ -185,6 +185,9 @@ en:
     featured_content_features:
       create:
         failed: Failed to create feature period, ensure dates are provided
+    featured_author_features:
+      create:
+        failed: Failed to create feature period, ensure dates are provided
     tags:
       management_link: Tags Management
       no_permission: You don't have permission to manage tags
