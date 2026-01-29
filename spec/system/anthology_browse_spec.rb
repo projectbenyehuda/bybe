@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Anthology browse page', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Anthology browse page' do
   let(:user) { create(:user) }
   let!(:public_anthology) do
     create(:anthology, title: 'Public Anthology Test', access: :pub, user: user)
@@ -83,7 +79,7 @@ RSpec.describe 'Anthology browse page', type: :system, js: true do
       expect(anthology_titles.first).to eq('AAA Anthology')
     end
 
-    it 'can sort alphabetically descending' do
+    it 'can sort alphabetically descending', :js do
       visit '/anthologies/browse'
 
       # Use the Hebrew or English option text
@@ -113,7 +109,7 @@ RSpec.describe 'Anthology browse page', type: :system, js: true do
       expect(page).to have_content(/עמוד.*מתוך|Page.*of/)
     end
 
-    it 'can navigate to next page' do
+    it 'can navigate to next page', :js do
       visit '/anthologies/browse'
 
       # Find and click the next page link
@@ -139,7 +135,7 @@ RSpec.describe 'Anthology browse page', type: :system, js: true do
       expect(permalink_btn[:href]).to include('/anthologies/browse')
     end
 
-    it 'copies URL to clipboard when clicked and shows feedback' do
+    it 'copies URL to clipboard when clicked and shows feedback', :js do
       visit '/anthologies/browse'
 
       permalink_btn = find('a.permalink-btn')
