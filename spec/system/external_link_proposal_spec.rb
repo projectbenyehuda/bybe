@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe 'External Link Proposal', type: :system, js: true do
+describe 'External Link Proposal' do
   let(:user) { create(:user) }
   let(:authority) { create(:authority) }
 
@@ -23,7 +23,7 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
       expect(page.html).to include(I18n.t('propose_link.title'))
     end
 
-    it 'validates required URL field' do
+    it 'validates required URL field', :js do
       # Test validation by submitting with missing URL - should show alert
       alert_message = accept_alert do
         # Submit form with missing URL via JavaScript
@@ -42,7 +42,7 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
       expect(alert_message).to include(I18n.t('propose_link.missing_url'))
     end
 
-    it 'validates ziburit spam check field' do
+    it 'validates ziburit spam check field', :js do
       # Test ziburit validation by submitting without it - should show alert
       alert_message = accept_alert do
         # Submit form with missing ziburit via JavaScript
@@ -61,7 +61,7 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
       expect(alert_message).to include(I18n.t('propose_link.missing_ziburit'))
     end
 
-    it 'successfully submits a link proposal and shows it as pending' do
+    it 'successfully submits a link proposal and shows it as pending', :js do
       # Click on the parent div that has the Bootstrap data-toggle attribute
       within('#external_links_panel') do
         find('.metadata-link[data-toggle="modal"]').click
@@ -106,7 +106,7 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
       expect(link.linkable).to eq(authority)
     end
 
-    it 'allows user to cancel their own pending link' do
+    it 'allows user to cancel their own pending link', :js do
       # Create a pending link
       link = create(:external_link,
                     linkable: authority,
@@ -206,7 +206,7 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
     end
   end
 
-  describe 'link proposal on different linkable types' do
+  describe 'link proposal on different linkable types', :js do
     let(:manifestation) { create(:manifestation) }
     let(:collection) { create(:collection) }
 
@@ -243,7 +243,7 @@ RSpec.describe 'External Link Proposal', type: :system, js: true do
       expect(link.linkable_id).to eq(manifestation.id)
     end
 
-    it 'works for collections' do
+    it 'works for collections', :js do
       visit collection_path(collection)
 
       # Click on the parent div that has the Bootstrap data-toggle attribute
