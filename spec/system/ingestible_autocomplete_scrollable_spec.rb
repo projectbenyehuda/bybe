@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Ingestible autocomplete scrollable', :js, :system do
+describe 'Ingestible autocomplete scrollable' do
   let!(:authorities) do
     Chewy.strategy(:atomic) do
       # Create more than 10 authorities to test that all are returned
@@ -30,7 +30,7 @@ RSpec.describe 'Ingestible autocomplete scrollable', :js, :system do
     Chewy.massacre
   end
 
-  describe 'authority autocomplete' do
+  describe 'authority autocomplete', :js do
     it 'returns all matching results (more than 10)' do
       visit new_ingestible_path
 
@@ -70,7 +70,7 @@ RSpec.describe 'Ingestible autocomplete scrollable', :js, :system do
   end
 
   describe 'collection autocomplete' do
-    it 'returns all matching results (more than 10)' do
+    it 'returns all matching results (more than 10)', :js do
       visit new_ingestible_path
 
       # Click to expand volume details if hidden
