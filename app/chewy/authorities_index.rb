@@ -4,7 +4,7 @@
 class AuthoritiesIndex < Chewy::Index
   settings index: {
     number_of_shards: 1,
-    number_of_replicas: 0
+    number_of_replicas: 1
   }
 
   index_scope Authority.published.preload(:person, :corporate_body)
