@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Author navbar collapse arrows', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Author navbar collapse arrows' do
   let!(:author) do
     create(:authority, name: 'Test Author')
   end

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Whatsnew Page', :js, type: :system do
+describe 'Whatsnew Page' do
   let!(:old_author) do
     author = create(:authority, created_at: 3.months.ago)
     # Create a published manifestation so author is not filtered out

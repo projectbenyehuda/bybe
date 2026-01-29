@@ -2,40 +2,8 @@
 
 require 'rails_helper'
 
-# Check if WebDriver is available before loading the suite
-def webdriver_available?
-  return @webdriver_available if defined?(@webdriver_available)
-
-  @webdriver_available = begin
-    driver = Capybara.current_session.driver
-    if driver.respond_to?(:browser)
-      driver.browser
-    end
-    true
-  rescue Selenium::WebDriver::Error::WebDriverError,
-         Selenium::WebDriver::Error::UnknownError,
-         Net::ReadTimeout,
-         Errno::ECONNREFUSED,
-         StandardError
-    false
-  end
-end
-
-# Check if vips is available for image processing
-def vips_available?
-  return @vips_available if defined?(@vips_available)
-
-  @vips_available = begin
-    require 'vips'
-    true
-  rescue LoadError
-    false
-  end
-end
-
-RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
+describe 'Lexicon Verification Workbench' do
   before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
     login_as_lexicon_editor
   end
 
@@ -460,19 +428,22 @@ RSpec.describe 'Lexicon Verification Workbench', :js, type: :system do
 
   describe 'Profile Image Selection', :js do
     before do
-      skip 'Vips library not available for image processing' unless vips_available?
-
       # Attach some test images to the entry
-      entry.attachments.attach(
-        io: StringIO.new('test image 1'),
-        filename: 'test1.jpg',
-        content_type: 'image/jpeg'
-      )
-      entry.attachments.attach(
-        io: StringIO.new('test image 2'),
-        filename: 'test2.jpg',
-        content_type: 'image/jpeg'
-      )
+      File.open("#{Rails.root}/spec/fixtures/images/male.png", 'rb') do |io|
+        entry.attachments.attach(
+          io:,
+          filename: 'male.png',
+          content_type: 'image/png'
+        )
+      end
+
+      File.open("#{Rails.root}/spec/fixtures/images/female.png", 'rb') do |io|
+        entry.attachments.attach(
+          io:,
+          filename: 'female.png',
+          content_type: 'image/png'
+        )
+      end
       visit "/lex/verification/#{entry.id}"
     end
 

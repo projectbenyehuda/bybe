@@ -1,15 +1,17 @@
 require 'rails_helper'
 
-RSpec.describe 'Authors filter panel behavior', type: :system, js: true do
+describe 'Authors filter panel behavior' do
   before do
-    skip 'WebDriver not available or misconfigured, skipping JS system specs' if Capybara.current_driver == :rack_test
-    clean_tables
     Chewy.strategy(:atomic) do
       # Create authors with different characteristics for filtering
       create(:manifestation, author: create(:authority, gender: 'female'))
       create(:manifestation, author: create(:authority, gender: 'male'))
       create(:manifestation, author: create(:authority, gender: 'male', period: 'modern'))
     end
+  end
+
+  after do
+    Chewy.massacre
   end
 
   context 'when no filters are applied' do
@@ -26,7 +28,7 @@ RSpec.describe 'Authors filter panel behavior', type: :system, js: true do
     end
   end
 
-  context 'when a filter is applied' do
+  context 'when a filter is applied', :js do
     it 'hides the intro panel and shows the filter panel', :aggregate_failures do
       visit authors_path
 
@@ -51,7 +53,7 @@ RSpec.describe 'Authors filter panel behavior', type: :system, js: true do
     end
   end
 
-  context 'when filters are reset' do
+  context 'when filters are reset', :js do
     it 'shows the intro panel and hides the filter panel', :aggregate_failures do
       visit authors_path
 
