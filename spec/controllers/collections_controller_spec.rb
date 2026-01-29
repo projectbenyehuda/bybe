@@ -152,7 +152,7 @@ describe CollectionsController do
     let(:other_manifestation) { create(:manifestation, title: 'Other Work', markdown: 'Test content for other work.') }
 
     let(:collection) do
-      create(:collection, title: 'Test Collection').tap do |coll|
+      create(:collection, title: 'Test Collection', collection_type: 'volume').tap do |coll|
         coll.involved_authorities.create!(authority: collection_author, role: 'author')
         coll.involved_authorities.create!(authority: collection_translator, role: 'translator')
         coll.collection_items.create!(item: manifestation, seqno: 1)
@@ -176,7 +176,7 @@ describe CollectionsController do
 
       # The TOC should not show collection_translator name in the item listing
       # since it's already shown at the collection level
-      toc_section = response.body.match(/binder-texts-list.*?<\/div>/m).to_s
+      toc_section = response.body.match(%r{binder-texts-list.*?</div>}m).to_s
       expect(toc_section).not_to include("/ #{collection_translator.name}")
     end
 
@@ -189,7 +189,7 @@ describe CollectionsController do
       expect(response).to be_successful
 
       # Extract the TOC section to verify format
-      toc_section = response.body.match(/binder-texts-list.*?<\/div>/m).to_s
+      toc_section = response.body.match(%r{binder-texts-list.*?</div>}m).to_s
 
       # Should display both author and translator in the TOC
       expect(toc_section).to include('Translated Work')

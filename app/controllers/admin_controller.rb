@@ -476,6 +476,46 @@ class AdminController < ApplicationController
     Rails.cache.write('report_suspicious_intellectual_property', @total)
   end
 
+  def doubly_contained_works
+    uncollected_type = Collection.collection_types[:uncollected]
+
+    # Build relation for qualifying manifestations
+    # CRITICAL: Explicit polymorphic filter to avoid wrong matches
+    qualifying_manifestations = Manifestation
+                                .joins('INNER JOIN collection_items ON collection_items.item_id = manifestations.id
+              AND collection_items.item_type = \'Manifestation\'')
+                                .joins('INNER JOIN collections ON collections.id = collection_items.collection_id')
+                                .group('manifestations.id')
+                                .having('COUNT(DISTINCT collection_items.collection_id) > 1')
+                                .having('SUM(CASE WHEN collections.collection_type = ? THEN 1 ELSE 0 END) > 0', uncollected_type)
+
+    @total = qualifying_manifestations.count.size
+
+    # Paginate at database level with preloading (avoids loading all IDs into memory)
+    @manifestations = qualifying_manifestations
+                      .page(params[:page])
+                      .per(50)
+                      .preload(collection_items: :collection)
+
+    # Preload authorities for uncollected collections (prevent N+1)
+    # CRITICAL: Authority doesn't belong_to Collection, it's the reverse!
+    # Authority.uncollected_works_collection_id points to Collection
+    uncollected_collection_ids = @manifestations
+      .flat_map(&:collection_items)
+      .map(&:collection)
+      .compact
+      .select(&:uncollected?)
+      .map(&:id)
+      .uniq
+
+    @authorities_by_collection = Authority
+      .where(uncollected_works_collection_id: uncollected_collection_ids)
+      .index_by(&:uncollected_works_collection_id)
+
+    @page_title = t(:doubly_contained_works_report)
+    Rails.cache.write('report_doubly_contained_works', @total)
+  end
+
   def update_authority_intellectual_property
     authority = Authority.find_by(id: params[:id])
 
