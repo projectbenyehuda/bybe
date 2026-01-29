@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Tag Editing', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Tag Editing' do
   let(:tag) { create(:tag, status: :approved, name: 'Original Tag Name') }
   let!(:tag_name1) { tag.tag_names.first } # Created automatically
   let!(:tag_name2) { create(:tag_name, tag: tag, name: 'Alternative Name') }
@@ -29,7 +25,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
         expect(page).to have_link(I18n.t(:edit), href: edit_tag_path(tag))
       end
 
-      it 'shows edit link in admin tag review for approved tags' do
+      it 'shows edit link in admin tag review for approved tags', :js do
         # tag_review requires tagging lock
         File.write('/tmp/tagging.lock', "#{@current_test_user.id}")
         visit tag_review_path(tag)
@@ -79,7 +75,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
       login_as_moderator
     end
 
-    it 'displays tag information and form fields' do
+    it 'displays tag information and form fields', :js do
       visit edit_tag_path(tag)
 
       expect(page).to have_content("#{I18n.t(:edit_tag)}: #{tag.name}")
@@ -106,7 +102,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
       expect(page).to have_button(I18n.t(:remove), count: 2)
     end
 
-    it 'shows add TagName form' do
+    it 'shows add TagName form', :js do
       visit edit_tag_path(tag)
 
       expect(page).to have_content(I18n.t(:add_tag_name_alias))
@@ -114,7 +110,7 @@ RSpec.describe 'Tag Editing', type: :system, js: true do
       expect(page).to have_button(I18n.t(:add))
     end
 
-    it 'shows merge and save buttons' do
+    it 'shows merge and save buttons', :js do
       visit edit_tag_path(tag)
 
       expect(page).to have_button(I18n.t(:save_changes))

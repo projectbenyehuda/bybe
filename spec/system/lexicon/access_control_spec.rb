@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Lexicon access control', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Lexicon access control' do
   let!(:published_person) do
     create(:lex_person, bio: 'Published bio')
   end

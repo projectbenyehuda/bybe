@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Anthology access level restriction', type: :system, js: true do
+describe 'Anthology access level restriction' do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
