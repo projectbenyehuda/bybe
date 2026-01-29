@@ -4,7 +4,7 @@
 class ManifestationsAutocompleteIndex < Chewy::Index
   settings index: {
     number_of_shards: 1,
-    number_of_replicas: 1
+    number_of_replicas: 0
   }
 
   index_scope Manifestation.with_involved_authorities
