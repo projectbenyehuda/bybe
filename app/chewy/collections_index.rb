@@ -2,6 +2,11 @@
 
 # Index representing all published Collections
 class CollectionsIndex < Chewy::Index
+  settings index: {
+    number_of_shards: 1,
+    number_of_replicas: 0
+  }
+
   index_scope Collection.where.not(collection_type: %w(periodical_issue uncollected))
                         .preload(involved_authorities: :authority)
   field :id, type: :integer
