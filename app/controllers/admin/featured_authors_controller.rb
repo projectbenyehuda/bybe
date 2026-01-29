@@ -16,7 +16,6 @@ module Admin
 
     def create
       @fc = FeaturedAuthor.new(fa_params)
-      @fc.person_id = params[:person_id]
       @fc.user = current_user
 
       if @fc.save
@@ -54,7 +53,7 @@ module Admin
     end
 
     def fa_params
-      params[:featured_author].permit(:title, :body)
+      params[:featured_author].permit(:title, :body, :person_id)
     end
   end
 end

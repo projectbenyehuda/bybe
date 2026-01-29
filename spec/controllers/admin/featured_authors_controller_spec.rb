@@ -22,14 +22,15 @@ describe Admin::FeaturedAuthorsController do
   end
 
   describe '#create' do
-    subject(:call) { post :create, params: { person_id: person.id, featured_author: featured_author_params } }
+    subject(:call) { post :create, params: { featured_author: featured_author_params } }
 
     let(:person) { create(:authority).person }
 
     let(:featured_author_params) do
       {
         title: title,
-        body: Faker::Lorem.paragraph
+        body: Faker::Lorem.paragraph,
+        person_id: person.id
       }
     end
 
