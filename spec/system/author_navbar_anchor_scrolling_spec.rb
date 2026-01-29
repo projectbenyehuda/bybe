@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Author navbar anchor scrolling', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Author navbar anchor scrolling', :js do
   let!(:author) do
     create(:authority, name: 'Test Author', gender: 'male')
   end

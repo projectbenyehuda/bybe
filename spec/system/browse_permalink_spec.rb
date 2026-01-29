@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Browse permalink button', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Browse permalink button' do
   after do
     Chewy.massacre
   end
@@ -32,7 +28,7 @@ RSpec.describe 'Browse permalink button', type: :system, js: true do
       expect(permalink_btn[:href]).to include('/authors')
     end
 
-    it 'copies URL to clipboard when clicked and shows feedback' do
+    it 'copies URL to clipboard when clicked and shows feedback', :js do
       visit '/authors'
 
       permalink_btn = find('a.permalink-btn')
@@ -90,7 +86,7 @@ RSpec.describe 'Browse permalink button', type: :system, js: true do
       expect(permalink_btn[:href]).to include('/works')
     end
 
-    it 'copies URL to clipboard when clicked and shows feedback' do
+    it 'copies URL to clipboard when clicked and shows feedback', :js do
       visit '/works'
 
       permalink_btn = find('a.permalink-btn')

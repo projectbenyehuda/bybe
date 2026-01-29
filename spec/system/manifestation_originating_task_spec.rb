@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Manifestation originating task link', type: :system, js: true do
+describe 'Manifestation originating task link' do
   let(:user) { create(:user) }
   let(:editor) { create(:user, :edit_catalog) }
   let!(:work) { create(:work) }
@@ -37,7 +37,7 @@ RSpec.describe 'Manifestation originating task link', type: :system, js: true do
         expect(page).to have_content(I18n.t(:find_originating_task))
       end
 
-      it 'displays the originating task link after clicking the button' do
+      it 'displays the originating task link after clicking the button', :js do
         find('#originating-task-btn a').click
 
         # Wait for AJAX to complete
@@ -70,7 +70,7 @@ RSpec.describe 'Manifestation originating task link', type: :system, js: true do
     end
   end
 
-  context 'when manifestation was not created through an Ingestible' do
+  context 'when manifestation was not created through an Ingestible', :js do
     before do
       login_as_editor
       visit manifestation_path(id: manifestation.id)
@@ -100,7 +100,7 @@ RSpec.describe 'Manifestation originating task link', type: :system, js: true do
       visit manifestation_path(id: manifestation.id)
     end
 
-    it 'shows the button but displays "not found" message when clicked' do
+    it 'shows the button but displays "not found" message when clicked', :js do
       expect(page).to have_css('#originating-task-btn')
 
       find('#originating-task-btn a').click

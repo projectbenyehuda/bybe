@@ -2,9 +2,8 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Lexicon Verification Auto-Matching', :js, type: :system do
+describe 'Lexicon Verification Auto-Matching', :js do
   before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
     login_as_lexicon_editor
   end
 
