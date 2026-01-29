@@ -123,6 +123,7 @@ he:
     other: "%{count} פריטים מתויגים"
   all_involved_authorities: כל היוצרים המעורבים
   created: נוצר
+  created_on: נוצר ב
   created_with_date: "נוצר: %{date}"
   updated_with_date: "עודכן: %{date}"
   surprise: יצירה בהפתעה
@@ -631,6 +632,7 @@ he:
   female: נקבה
   other: אחר
   unknown: לא ידוע
+  unknown_author: מחבר לא ידוע
   status: סטטוס
   email: דואל
   catalogue: קטלוג
@@ -700,6 +702,7 @@ he:
   similar_titles_report: "דו\"ח כותרות דומות ליצירות (שאולי הן פרקים של יצירה אחת שיש לאחד)"
   suspicious_intellectual_property_report: דוח מצב זכויות יוצרים חשוד
   suspicious_translations_report: "דו\"ח יצירות עם מחבר שווה למתרגם"
+  doubly_contained_works_report: דוח יצירות המופיעות במספר אוספים
   duplicate_works_report: "דו\"ח יצירות כפולות - תרגומים שונים שצריכים להתמזג תחת יצירה אחת"
   duplicate_works_explanation: "הדו\"ח הבא מציג ביטויים של מתרגמים שונים עם אותה כותרת, שהיצירות שלהם הן מאותו יוצר. ביטויים אלה הם ככל הנראה תרגומים שונים שצריכים להתמזג תחת רשומת יצירה אחת."
   no_duplicate_works_found: "לא נמצאו יצירות כפולות"
@@ -998,6 +1001,7 @@ he:
   title_filter_label: "שם: %{title}"
   author_filter_label: "יוצר: %{author}"
   manifestation_filter_label: "יצירה: %{title}"
+  manifestation_title: כותרת יצירה
   owner_filter_label: "בעל: %{owner}"
   page_of_pages: עמוד %{page} מתוך %{total}
   previous_page: עמוד קודם
@@ -2145,6 +2149,17 @@ he:
   whatsnew_in_periodicals: מה חדש בכתבי עת?
   periodical_genres: סוגות בכתבי עת
   works_from_periodicals: יצירות מכתבי עת שהועלו למאגר
+  activerecord:
+    attributes:
+      collection:
+        collection_types:
+          volume: כרך
+          periodical: כתב עת
+          periodical_issue: גיליון כתב עת
+          series: סדרה
+          volume_series: סדרת כרכים
+          other: אחר
+          uncollected: יצירות לא באוסף
   helpers:
     page_entries_info:
       one_page:

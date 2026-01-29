@@ -720,6 +720,7 @@ en:
   whatsnew_in_periodicals: What's new in periodicals?
   periodical_genres: Genres in periodicals
   and_n_more: and %{n} more
+  doubly_contained_works_report: Doubly-Contained Works Report
   duplicate_works_report: Duplicate Works Report - Different Translations to be Merged
     Under a Single Work
   duplicate_works_explanation: The following report shows expressions by different
@@ -2420,6 +2421,7 @@ en:
     other: "%{count} tagged items"
   all_involved_authorities: All Involved Authors
   created: Created
+  created_on: Created on
   created_with_date: "Created: %{date}"
   updated_with_date: "Updated: %{date}"
   newest_authors: Newest Authors
@@ -2915,6 +2917,17 @@ en:
   you_can: You Can
   you_can_create_lists: You Can Create Lists
   youtube_url: Youtube Url
+  activerecord:
+    attributes:
+      collection:
+        collection_types:
+          volume: Volume
+          periodical: Periodical
+          periodical_issue: Periodical Issue
+          series: Series
+          volume_series: Volume Series
+          other: Other
+          uncollected: Uncollected Works
   helpers:
     page_entries_info:
       one_page:
