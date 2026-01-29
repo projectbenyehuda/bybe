@@ -73,5 +73,66 @@ describe RefreshUncollectedWorksCollection do
         expect(collection.collection_items.map(&:item_id)).to match_array(uncollected_manifestation_ids)
       end
     end
+
+    context 'when called concurrently for the same authority' do
+      let(:uncollected_works) { nil }
+
+      it 'creates only one collection without orphans' do
+        authority.reload
+
+        # Count collections before concurrent execution
+        initial_collection_count = Collection.where(collection_type: :uncollected).count
+
+        # Simulate concurrent execution using threads
+        # Use bypass strategy for Elasticsearch to avoid indexing errors in threads
+        threads = 2.times.map do
+          Thread.new do
+            ActiveRecord::Base.connection_pool.with_connection do
+              Chewy.strategy(:bypass) do
+                described_class.call(authority)
+              end
+            end
+          end
+        end
+
+        threads.each(&:join)
+
+        # Verify: Only 1 new collection created
+        expect(Collection.where(collection_type: :uncollected).count).to eq(initial_collection_count + 1)
+
+        # Verify: Authority is properly linked
+        authority.reload
+        expect(authority.uncollected_works_collection).to be_present
+        expect(authority.uncollected_works_collection.collection_type).to eq('uncollected')
+
+        # Verify: No orphaned collections exist (collections not linked to any authority)
+        orphaned = Collection.where(collection_type: :uncollected)
+                             .where.not(id: Authority.where.not(uncollected_works_collection_id: nil)
+                                                     .select(:uncollected_works_collection_id))
+        expect(orphaned.count).to eq(0)
+      end
+
+      it 'handles lock contention gracefully without raising errors' do
+        authority.reload
+
+        # Test that concurrent calls don't raise deadlock or other locking errors
+        expect do
+          threads = 3.times.map do
+            Thread.new do
+              ActiveRecord::Base.connection_pool.with_connection do
+                Chewy.strategy(:bypass) do
+                  described_class.call(authority)
+                end
+              end
+            end
+          end
+          threads.each(&:join)
+        end.not_to raise_error
+
+        # Verify authority has a valid collection
+        authority.reload
+        expect(authority.uncollected_works_collection).to be_present
+      end
+    end
   end
 end
