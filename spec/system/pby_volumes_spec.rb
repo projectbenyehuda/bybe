@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'PBY Volumes page', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'PBY Volumes page' do
   let(:authority) { create(:authority, id: Authority::PBY_AUTHORITY_ID) }
   let!(:pby_volume1) do
     create(:collection, collection_type: 'volume', title: 'Project Ben-Yehuda Volume 1').tap do |vol|
@@ -50,7 +46,7 @@ RSpec.describe 'PBY Volumes page', type: :system, js: true do
     end
   end
 
-  describe 'navigating from homepage' do
+  describe 'navigating from homepage', :js do
     it 'allows navigation to pby volumes from homepage link' do
       visit '/'
 
