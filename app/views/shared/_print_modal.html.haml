@@ -1,9 +1,9 @@
-.modal-dialog.modal-lg
+.modal-dialog.modal-lg{style: 'margin-top: 2vh;'}
   .modal-content
     - formurl = print_url_by_entity(entity)
     - formid = "print_form_#{entity.class.name.downcase}_#{entity.id}"
     = form_tag(formurl, method: :get, id: formid, target: '_blank') do
-      .flex-popup{style: 'height: 75vh;'}
+      .flex-popup{style: 'height: 90vh;'}
         .modal-header
           .popup-top
             %button.btn-small-outline-v02{'data-dismiss'=>'modal'}
@@ -34,7 +34,7 @@
                         .select-all-checkbox
                           %input#print-select-all-checkbox{type: 'checkbox', value: 'selectall'}
                       .headline-3-v02= t(:included_items)
-                    .mainlist.multiselect#texts-to-print{style: 'max-height: 40vh; overflow-y: auto; overflow-x: hidden;'}
+                    .mainlist.multiselect#texts-to-print
                       %ol{style: 'background-color: #f5f3f4;'}
                         - entity.flatten_items.select { |ci| ci.item_type == 'Manifestation' && ci.item.present? }.each do |ci|
                           %li
