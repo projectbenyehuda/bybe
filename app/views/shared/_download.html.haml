@@ -4,7 +4,7 @@
     - dlgid = download_dialog_id(entity)
     - formid = download_form_id(entity)
     = form_tag(formurl, id: formid) do
-      .flex-popup
+      .flex-popup{style: 'height: 75vh;'}
         .modal-header
           .popup-top
             %button.btn-small-outline-v02{'data-dismiss'=>'modal'}

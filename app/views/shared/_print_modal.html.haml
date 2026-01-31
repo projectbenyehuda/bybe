@@ -3,7 +3,7 @@
     - formurl = print_url_by_entity(entity)
     - formid = "print_form_#{entity.class.name.downcase}_#{entity.id}"
     = form_tag(formurl, method: :get, id: formid, target: '_blank') do
-      .flex-popup
+      .flex-popup{style: 'height: 75vh;'}
         .modal-header
           .popup-top
             %button.btn-small-outline-v02{'data-dismiss'=>'modal'}
