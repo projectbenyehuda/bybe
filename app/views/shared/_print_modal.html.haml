@@ -17,7 +17,7 @@
             .by-card-header-v02.desktop-only
               %span.headline-1-v02= t(:print)
               %a.popup-x-v02.linkcolor.pointer{'data-dismiss'=>'modal'} -
-            .by-card-content-v02
+            .by-card-content-v02{style: 'min-height: 60vh;'}
               - if entity.is_a?(Collection)
                 %p= t(:print_choose_scope)
                 .search-mobile-switch
@@ -34,7 +34,7 @@
                         .select-all-checkbox
                           %input#print-select-all-checkbox{type: 'checkbox', value: 'selectall'}
                       .headline-3-v02= t(:included_items)
-                    .mainlist.multiselect#texts-to-print{style: 'max-height: 400px; overflow-y: auto;'}
+                    .mainlist.multiselect#texts-to-print{style: 'max-height: 50vh; overflow-y: auto; overflow-x: hidden;'}
                       %ol
                         - entity.flatten_items.select { |ci| ci.item_type == 'Manifestation' && ci.item.present? }.each do |ci|
                           %li
