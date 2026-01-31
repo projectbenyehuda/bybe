@@ -36,7 +36,7 @@
                           %input#select-all-checkbox{type: 'checkbox', value: 'selectall'}
                       .headline-3-v02= t(:included_items)
                     .mainlist.multiselect#texts-to-save{style: 'max-height: 40vh; overflow-y: auto; overflow-x: hidden;'}
-                      %ol
+                      %ol{style: 'background-color: #f5f3f4;'}
                         - entity.flatten_items.select { |ci| ci.item_type == 'Manifestation' && ci.item.present? }.each do |ci|
                           %li
                             %input.multiselect_checkbox{type: 'checkbox', name: 'manifestation_ids[]', value: ci.item_id}
@@ -44,6 +44,7 @@
                             - text = author_names.present? ? "#{ci.title} / #{author_names}" : ci.title
                             = text
 
+              %hr
               %p= t(:download_instructions)
               .headline-3-v02= t(:format_to_save) rescue 'פורמט לשמירה'
               %p

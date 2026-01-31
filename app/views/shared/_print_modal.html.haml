@@ -35,7 +35,7 @@
                           %input#print-select-all-checkbox{type: 'checkbox', value: 'selectall'}
                       .headline-3-v02= t(:included_items)
                     .mainlist.multiselect#texts-to-print{style: 'max-height: 40vh; overflow-y: auto; overflow-x: hidden;'}
-                      %ol
+                      %ol{style: 'background-color: #f5f3f4;'}
                         - entity.flatten_items.select { |ci| ci.item_type == 'Manifestation' && ci.item.present? }.each do |ci|
                           %li
                             %input.print-multiselect_checkbox{type: 'checkbox', name: 'manifestation_ids[]', value: ci.item_id}
