@@ -1,4 +1,4 @@
-.modal-dialog
+.modal-dialog.modal-lg
   .modal-content
     - formurl = print_url_by_entity(entity)
     - formid = "print_form_#{entity.class.name.downcase}_#{entity.id}"
@@ -34,7 +34,7 @@
                         .select-all-checkbox
                           %input#print-select-all-checkbox{type: 'checkbox', value: 'selectall'}
                       .headline-3-v02= t(:included_items)
-                    .mainlist.multiselect#texts-to-print
+                    .mainlist.multiselect#texts-to-print{style: 'max-height: 400px; overflow-y: auto;'}
                       %ol
                         - entity.flatten_items.select { |ci| ci.item_type == 'Manifestation' && ci.item.present? }.each do |ci|
                           %li
