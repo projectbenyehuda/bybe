@@ -1291,6 +1291,19 @@ en:
   download_instructions: Please select the desired file format. The file will download
     immediately upon clicking the download button and will be saved in the download
     folder defined in your browser.
+  download_or_print_choose_scope: Please choose what to save - the entire collection or selected items.
+  print_choose_scope: Please choose what to print - the entire collection or selected items.
+  full_collection: The entire collection
+  selected_items: Selected items
+  items_to_save: Items to save
+  items_to_print: Items to print
+  included_items: Included items
+  download_full_collection: Save the collection in the selected format
+  download_n_selected_items: Save %{count} items in the selected format
+  print_full_collection: Print the collection
+  print_n_selected_items: Print %{count} selected items
+  select_all: Select all
+  format_to_save: Format to save
   download_to_file: Save Text to File
   dpublished: Published
   duploaded: Uploaded to Site

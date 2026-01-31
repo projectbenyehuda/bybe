@@ -107,7 +107,7 @@
       $('#downloadable_id').val($(this).attr('data-downloadable-id'));
     });
     $('.printbutton').click(function() {
-      window.open("#{@print_url}",'_blank');
+      $('#printDlg').modal('show');
     });
     $('#collitem_dropdown').change(function() {
       anchor = 'collitem_text_'+$('#collitem_dropdown').val();
