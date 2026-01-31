@@ -17,7 +17,7 @@
             .by-card-header-v02.desktop-only
               %span.headline-1-v02= t(:print)
               %a.popup-x-v02.linkcolor.pointer{'data-dismiss'=>'modal'} -
-            .by-card-content-v02{style: 'min-height: 60vh;'}
+            .by-card-content-v02{style: 'overflow-y: auto; flex: 1 1 auto;'}
               - if entity.is_a?(Collection)
                 %p= t(:print_choose_scope)
                 .search-mobile-switch
@@ -34,7 +34,7 @@
                         .select-all-checkbox
                           %input#print-select-all-checkbox{type: 'checkbox', value: 'selectall'}
                       .headline-3-v02= t(:included_items)
-                    .mainlist.multiselect#texts-to-print{style: 'max-height: 50vh; overflow-y: auto; overflow-x: hidden;'}
+                    .mainlist.multiselect#texts-to-print
                       %ol
                         - entity.flatten_items.select { |ci| ci.item_type == 'Manifestation' && ci.item.present? }.each do |ci|
                           %li
@@ -44,11 +44,11 @@
                             = text
 
               = hidden_field_tag 'print_scope', 'full', id: 'print_scope'
-              .bottom-button-area.left-buttons
-                .desktop-only.linkcolor.pointer{'data-dismiss'=>'modal'}
-                  %span.right-side-icon -
-                  %span{:style => "font-weight: bold"}= t(:cancel)
-                = submit_tag t(:print_full_collection), {class: 'pointer by-button-v02 link-to-all-v02 print_submitter', id: 'print_do_print'}
+            .bottom-button-area.left-buttons{style: 'flex: 0 0 auto; margin-top: auto;'}
+              .desktop-only.linkcolor.pointer{'data-dismiss'=>'modal'}
+                %span.right-side-icon -
+                %span{:style => "font-weight: bold"}= t(:cancel)
+              = submit_tag t(:print_full_collection), {class: 'pointer by-button-v02 link-to-all-v02 print_submitter', id: 'print_do_print'}
 
 :javascript
   $(document).ready(function(){
