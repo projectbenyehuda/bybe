@@ -473,7 +473,7 @@ describe AdminController do
       it 'returns JSON with tag info' do
         call
         expect(response).to be_successful
-        expect(JSON.parse(response.body)).to include('tag_id' => tag.id, 'tag_name' => tag.name)
+        expect(response.parsed_body).to include('tag_id' => tag.id, 'tag_name' => tag.name)
       end
     end
 
@@ -504,7 +504,7 @@ describe AdminController do
       it 'returns JSON with tagging info' do
         call
         expect(response).to be_successful
-        expect(JSON.parse(response.body)).to include('tagging_id' => tagging.id)
+        expect(response.parsed_body).to include('tagging_id' => tagging.id)
       end
     end
 
@@ -535,7 +535,7 @@ describe AdminController do
       it 'returns JSON with tagging info' do
         call
         expect(response).to be_successful
-        expect(JSON.parse(response.body)).to include('tagging_id' => tagging.id)
+        expect(response.parsed_body).to include('tagging_id' => tagging.id)
       end
     end
   end
@@ -1137,5 +1137,66 @@ describe AdminController do
       end
     end
 
+  end
+
+  describe '#autocomplete_person_name' do
+    subject(:call) { get :autocomplete_person_name, params: { term: search_term } }
+
+    include_context 'when editor logged in'
+
+    let!(:person1) { create(:person) }
+    let!(:authority1) { create(:authority, person: person1, name: 'אברהם מאפו') }
+    let!(:person2) { create(:person) }
+    let!(:authority2) { create(:authority, person: person2, name: 'שלום עליכם') }
+    let!(:authority_without_person) { create(:authority, name: 'ארגון ללא אדם') }
+
+    context 'when searching for a person' do
+      let(:search_term) { 'אברהם' }
+
+      it 'returns matching persons with their authority names' do
+        call
+        json_response = response.parsed_body
+
+        expect(json_response.length).to eq(1)
+        expect(json_response.first['id']).to eq(person1.id)
+        expect(json_response.first['label']).to eq('אברהם מאפו')
+        expect(json_response.first['value']).to eq('אברהם מאפו')
+      end
+    end
+
+    context 'when search term matches multiple people' do
+      let(:search_term) { 'ם' }
+
+      it 'returns all matching persons including our test data' do
+        call
+        json_response = response.parsed_body
+
+        person_ids = json_response.pluck('id')
+        expect(person_ids).to include(person1.id, person2.id)
+        expect(json_response.length).to be >= 2
+      end
+    end
+
+    context 'when search term is empty' do
+      let(:search_term) { '' }
+
+      it 'returns empty array' do
+        call
+        json_response = response.parsed_body
+
+        expect(json_response).to eq([])
+      end
+    end
+
+    context 'when no matches found' do
+      let(:search_term) { 'zzz' }
+
+      it 'returns empty array' do
+        call
+        json_response = response.parsed_body
+
+        expect(json_response).to eq([])
+      end
+    end
   end
 end

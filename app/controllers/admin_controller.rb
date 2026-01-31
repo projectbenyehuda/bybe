@@ -11,7 +11,6 @@ class AdminController < ApplicationController
                          undo_reject_tag undo_approve_tagging undo_reject_tagging)
   before_action :require_admin, only: %i(manifestation_batch_tools destroy_manifestation unpublish_manifestation)
   # before_action :require_admin, only: [:missing_languages, :missing_genres, :incongruous_copyright, :missing_copyright, :similar_titles]
-  autocomplete :person, :name, scopes: :with_name, full: true
   autocomplete :collection, :title, full: true, display_value: :title_and_authors
   autocomplete :publication, :title
 
@@ -64,6 +63,31 @@ class AdminController < ApplicationController
     )
 
     render json: json_for_autocomplete(items, :title_and_authors, [:expression_id])
+  end
+
+  def autocomplete_person_name
+    term = params[:term].to_s.strip
+
+    if term.blank?
+      render json: []
+      return
+    end
+
+    authorities = Authority.where.not(person_id: nil)
+                           .where('name LIKE ?', "%#{term}%")
+                           .order(:name)
+                           .limit(10)
+
+    # Build autocomplete response matching expected format
+    items = authorities.map do |authority|
+      {
+        id: authority.person_id,
+        label: authority.name,
+        value: authority.name
+      }
+    end
+
+    render json: items
   end
 
   ##############################################
