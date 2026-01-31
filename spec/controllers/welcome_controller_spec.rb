@@ -17,6 +17,25 @@ describe WelcomeController do
 
       it { is_expected.to be_successful }
     end
+
+    context 'when authorities with do_not_feature exist' do
+      render_views false
+
+      before do
+        create(:authority, :with_image, do_not_feature: true)
+        create_list(:authority, 5, :with_image, do_not_feature: false)
+        get :index
+      end
+
+      it 'excludes authorities with do_not_feature from random authors carousel' do
+        random_authors = assigns(:random_authors)
+        non_featurable_ids = Authority.where(do_not_feature: true).pluck(:id)
+
+        random_authors.each do |author|
+          expect(non_featurable_ids).not_to include(author.id)
+        end
+      end
+    end
   end
 
   describe '#featured_author_popup' do

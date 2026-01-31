@@ -19,5 +19,9 @@ FactoryBot.define do
     trait :corporate_body do
       corporate_body { create(:corporate_body) }
     end
+
+    trait :with_image do
+      profile_image_file_name { 'test_image.jpg' }
+    end
   end
 end

@@ -63,6 +63,7 @@ class Authority < ApplicationRecord
                         joins(:taggings).where(taggings: { tag_id: tag_id, status: Tagging.statuses[:approved] })
                                         .distinct
                       }
+  scope :featurable, -> { where(do_not_feature: false) }
 
   # features
   has_paper_trail ignore: %i(impressions_count created_at updated_at)
@@ -392,7 +393,12 @@ class Authority < ApplicationRecord
                        .order(Arel.sql('count(*) desc'))
                        .limit(10)
                        .pluck(:item_id)
-      preload(:person, :corporate_body).find(ids)
+      # Filter out non-featurable authorities while preserving order
+      featurable_ids_set = featurable.where(id: ids).pluck(:id).to_set
+      ordered_featurable_ids = ids.select { |id| featurable_ids_set.include?(id) }
+      authorities = preload(:person, :corporate_body).find(ordered_featurable_ids)
+      # Sort authorities by the original order
+      authorities.sort_by { |a| ordered_featurable_ids.index(a.id) }
     end
   end
 
