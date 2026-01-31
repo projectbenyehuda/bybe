@@ -75,7 +75,7 @@
       %div
         %h2= t(:featured_content_heading)
         %p= link_to t('admin.featured_contents.index.title'), admin_featured_contents_path
-        %p= link_to t(:featured_authors_management), url_for(action: :featured_author_list)
+        %p= link_to t(:featured_authors_management), admin_featured_authors_path
         %p= link_to t(:volunteer_profiles), url_for(action: :volunteer_profiles_list)
         %p= link_to t(:static_pages), url_for(action: :static_pages_list)
   - if current_user.admin?

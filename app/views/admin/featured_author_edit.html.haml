@@ -1,5 +1,0 @@
-.backend
-  %h1= "#{@fc.title}: #{t(:edit)}"
-  = render partial: 'featured_author_form', locals: {action: :featured_author_update, fc: @fc}
-  %p
-  = link_to t(:back), featured_author_show_path(id: @fc.id)
