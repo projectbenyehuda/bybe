@@ -4,6 +4,7 @@
 class RandomAuthor < ApplicationService
   def call(genre = nil)
     relation = Authority.has_toc
+                     .featurable
                      .where(
                        <<~SQL.squish,
                          exists (

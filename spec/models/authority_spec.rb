@@ -574,4 +574,53 @@ describe Authority do
       end
     end
   end
+
+  describe 'scopes' do
+    describe '.featurable' do
+      let!(:featurable_authority) { create(:authority, do_not_feature: false) }
+      let!(:non_featurable_authority) { create(:authority, do_not_feature: true) }
+
+      it 'includes authorities with do_not_feature false' do
+        expect(described_class.featurable).to include(featurable_authority)
+      end
+
+      it 'excludes authorities with do_not_feature true' do
+        expect(described_class.featurable).not_to include(non_featurable_authority)
+      end
+    end
+  end
+
+  describe '.popular_authors' do
+    before do
+      # Clear cache before test
+      Rails.cache.delete('m_popular_authors')
+    end
+
+    let!(:popular_authority) { create(:authority) }
+    let!(:popular_non_featurable) { create(:authority, do_not_feature: true) }
+    let!(:unpopular_authority) { create(:authority) }
+
+    before do
+      # Create view events for popular authorities
+      20.times do
+        create(:ahoy_event, :with_item, name: 'view', item: popular_authority, time: 1.week.ago)
+      end
+      15.times do
+        create(:ahoy_event, :with_item, name: 'view', item: popular_non_featurable, time: 1.week.ago)
+      end
+      5.times do
+        create(:ahoy_event, :with_item, name: 'view', item: unpopular_authority, time: 1.week.ago)
+      end
+    end
+
+    it 'includes popular authorities that are featurable' do
+      result = described_class.popular_authors
+      expect(result).to include(popular_authority)
+    end
+
+    it 'excludes popular authorities with do_not_feature flag' do
+      result = described_class.popular_authors
+      expect(result).not_to include(popular_non_featurable)
+    end
+  end
 end

@@ -9,6 +9,7 @@
     = f.input :intellectual_property,
               collection: Authority.intellectual_properties.keys.map { |ip| [textify_intellectual_property(ip), ip] }
     = f.input :bib_done, as: :radio_buttons, collection: [[t(:no), false], [t(:yes), true]]
+    = f.input :do_not_feature, as: :boolean
     = f.input :country, as: :string
     = f.input :comment, as: :text
     = f.input :viaf_id
