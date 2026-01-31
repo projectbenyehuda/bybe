@@ -49,6 +49,7 @@ en:
         wikidata_uri: Wikidata URI
         comment: Comment
         bib_done: Is bibliography done?
+        do_not_feature: Do not feature in homepage carousels
         nli_id: ID in National Library
         viaf_id: ID in VIAF database
         blog_category_url: Link to category about the creator in blog

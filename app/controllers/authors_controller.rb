@@ -701,6 +701,7 @@ class AuthorsController < ApplicationController
       :blog_category_url,
       :profile_image,
       :bib_done,
+      :do_not_feature,
       :sort_name,
       :status,
       :legacy_credits,
