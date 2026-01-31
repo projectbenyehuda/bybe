@@ -1619,6 +1619,9 @@ he:
     featured_content_features:
       create:
         failed: קליטת טווח תאריכי תצוגה נכשלה. יש לבדוק את התאריכים.
+    featured_author_features:
+      create:
+        failed: קליטת טווח תאריכי תצוגה נכשלה. יש לבדוק את התאריכים.
     tags:
       management_link: ניהול תגיות
       no_permission: אין לך הרשאה לנהל תגיות

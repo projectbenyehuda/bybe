@@ -16,6 +16,11 @@ Bybeconv::Application.routes.draw do
     end
     resources :featured_content_features, only: %i(destroy)
 
+    resources :featured_authors do
+      resources :features, controller: 'featured_author_features', only: %i(create)
+    end
+    resources :featured_author_features, only: %i(destroy)
+
     resources :projects
 
     resources :authorities, only: [] do
@@ -231,16 +236,6 @@ Bybeconv::Application.routes.draw do
 
   get 'autocomplete_tag_name' => 'application#autocomplete_tag_name_name', as: 'autocomplete_tag_name'
   get 'autocomplete_dict_entry' => 'manifestation#autocomplete_dict_entry', as: 'autocomplete_dict_entry'
-  get 'admin/featured_author_list'
-  get 'admin/featured_author/new' => 'admin#featured_author_new', as: 'featured_author_new'
-  post 'admin/featured_author/create' => 'admin#featured_author_create', as: 'featured_author_create'
-  get 'admin/featured_author/edit/:id' => 'admin#featured_author_edit', as: 'featured_author_edit'
-  patch 'admin/featured_author/update' => 'admin#featured_author_update', as: 'featured_author_update'
-  get 'admin/featured_author/destroy/:id' => 'admin#featured_author_destroy', as: 'featured_author_destroy'
-  post 'admin/featured_author/add_feature' => 'admin#featured_author_add_feature', as: 'featured_author_add_feature'
-  get 'admin/featured_author/delete_feature/:id' => 'admin#featured_author_delete_feature',
-      as: 'featured_author_delete_feature'
-  get 'admin/featured_author/:id' => 'admin#featured_author_show', as: 'featured_author_show'
   get 'admin/sitenotice_list'
   get 'admin/sitenotice/new' => 'admin#sitenotice_new', as: 'sitenotice_new'
   post 'admin/sitenotice/create' => 'admin#sitenotice_create', as: 'sitenotice_create'

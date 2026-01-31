@@ -368,95 +368,6 @@ describe AdminController do
     end
   end
 
-  describe 'Featured author functionality' do
-    include_context 'Admin user logged in'
-
-    describe '#featured_author_list' do
-      subject { get :featured_author_list }
-
-      before do
-        create_list(:featured_author, 3)
-      end
-
-      it { is_expected.to be_successful }
-    end
-
-    describe '#featured_author_new' do
-      subject { get :featured_author_new }
-
-      it { is_expected.to be_successful }
-    end
-
-    describe '#featured_author_create' do
-      subject(:call) { post :featured_author_create, params: create_params }
-
-      let(:person) { create(:authority).person }
-
-      context 'when params are valid' do
-        let(:create_params) do
-          {
-            featured_author: {
-              title: 'Title',
-              body: 'Body'
-            },
-            person_id: person.id
-          }
-        end
-
-        it 'creates record' do
-          expect { call }.to change(FeaturedAuthor, :count).by(1)
-          fa = FeaturedAuthor.order(id: :desc).first
-          expect(fa).to have_attributes(title: 'Title', body: 'Body', person_id: person.id, user: admin)
-          expect(call).to redirect_to featured_author_show_path(fa)
-        end
-      end
-    end
-
-    describe 'Member actions' do
-      let!(:featured_author) { create(:featured_author) }
-
-      describe '#featured_author_show' do
-        subject { get :featured_author_show, params: { id: featured_author.id } }
-
-        it { is_expected.to be_successful }
-      end
-
-      describe '#featured_author_edit' do
-        subject { get :featured_author_edit, params: { id: featured_author.id } }
-
-        it { is_expected.to be_successful }
-      end
-
-      describe '#featured_author_update' do
-        subject(:call) do
-          post :featured_author_update, params: { id: featured_author.id, featured_author: update_params }
-        end
-
-        let(:update_params) do
-          {
-            title: 'New Title',
-            body: 'New Body'
-          }
-        end
-
-        it 'updates record' do
-          expect(call).to redirect_to featured_author_show_path(featured_author)
-          featured_author.reload
-          expect(featured_author).to have_attributes(update_params)
-        end
-      end
-
-      describe '#featured_author_destroy' do
-        subject(:call) { delete :featured_author_destroy, params: { id: featured_author.id } }
-
-        it 'deletes record' do
-          expect { call }.to change(FeaturedAuthor, :count).by(-1)
-          expect(call).to redirect_to admin_featured_author_list_path
-        end
-      end
-    end
-  end
-
   describe 'Tagging functionality' do
     include_context 'when editor logged in', :moderate_tags
 
@@ -562,7 +473,7 @@ describe AdminController do
       it 'returns JSON with tag info' do
         call
         expect(response).to be_successful
-        expect(JSON.parse(response.body)).to include('tag_id' => tag.id, 'tag_name' => tag.name)
+        expect(response.parsed_body).to include('tag_id' => tag.id, 'tag_name' => tag.name)
       end
     end
 
@@ -593,7 +504,7 @@ describe AdminController do
       it 'returns JSON with tagging info' do
         call
         expect(response).to be_successful
-        expect(JSON.parse(response.body)).to include('tagging_id' => tagging.id)
+        expect(response.parsed_body).to include('tagging_id' => tagging.id)
       end
     end
 
@@ -624,7 +535,7 @@ describe AdminController do
       it 'returns JSON with tagging info' do
         call
         expect(response).to be_successful
-        expect(JSON.parse(response.body)).to include('tagging_id' => tagging.id)
+        expect(response.parsed_body).to include('tagging_id' => tagging.id)
       end
     end
   end
@@ -1226,5 +1137,66 @@ describe AdminController do
       end
     end
 
+  end
+
+  describe '#autocomplete_person_name' do
+    subject(:call) { get :autocomplete_person_name, params: { term: search_term } }
+
+    include_context 'when editor logged in'
+
+    let!(:person1) { create(:person) }
+    let!(:authority1) { create(:authority, person: person1, name: 'אברהם מאפו') }
+    let!(:person2) { create(:person) }
+    let!(:authority2) { create(:authority, person: person2, name: 'שלום עליכם') }
+    let!(:authority_without_person) { create(:authority, name: 'ארגון ללא אדם') }
+
+    context 'when searching for a person' do
+      let(:search_term) { 'אברהם' }
+
+      it 'returns matching persons with their authority names' do
+        call
+        json_response = response.parsed_body
+
+        expect(json_response.length).to eq(1)
+        expect(json_response.first['id']).to eq(person1.id)
+        expect(json_response.first['label']).to eq('אברהם מאפו')
+        expect(json_response.first['value']).to eq('אברהם מאפו')
+      end
+    end
+
+    context 'when search term matches multiple people' do
+      let(:search_term) { 'ם' }
+
+      it 'returns all matching persons including our test data' do
+        call
+        json_response = response.parsed_body
+
+        person_ids = json_response.pluck('id')
+        expect(person_ids).to include(person1.id, person2.id)
+        expect(json_response.length).to be >= 2
+      end
+    end
+
+    context 'when search term is empty' do
+      let(:search_term) { '' }
+
+      it 'returns empty array' do
+        call
+        json_response = response.parsed_body
+
+        expect(json_response).to eq([])
+      end
+    end
+
+    context 'when no matches found' do
+      let(:search_term) { 'zzz' }
+
+      it 'returns empty array' do
+        call
+        json_response = response.parsed_body
+
+        expect(json_response).to eq([])
+      end
+    end
   end
 end

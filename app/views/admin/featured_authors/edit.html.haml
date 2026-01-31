@@ -1,0 +1,6 @@
+.backend
+  %h1
+    #{@fc.title}: #{t(:edit)}
+  = render partial: 'form', locals: { fc: @fc }
+  %p
+  = link_to t(:back), admin_featured_author_path(@fc)
