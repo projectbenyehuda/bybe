@@ -18,7 +18,7 @@
             .by-card-header-v02.desktop-only
               %span.headline-1-v02= t(:save_to_file)
               %a.popup-x-v02.linkcolor.pointer{'data-dismiss'=>'modal'} -
-            .by-card-content-v02{style: 'overflow-y: hidden; flex: 1 1 auto;'}
+            .by-card-content-v02{style: 'overflow-y: auto; flex: 1 1 auto;'}
               - if entity.is_a?(Collection)
                 %p= t(:download_or_print_choose_scope)
                 .search-mobile-switch
