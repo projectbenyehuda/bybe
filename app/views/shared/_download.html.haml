@@ -44,7 +44,7 @@
                             - text = author_names.present? ? "#{ci.title} / #{author_names}" : ci.title
                             = text
 
-              %hr
+              %hr#list-separator{style: 'display: none;'}
               %p= t(:download_instructions)
               .headline-3-v02= t(:format_to_save) rescue 'פורמט לשמירה'
               %p
@@ -116,9 +116,11 @@
 
       if (scope === 'partial') {
         $('#manifestation-selection-area').show();
+        $('#list-separator').show();
         updateDownloadButton();
       } else {
         $('#manifestation-selection-area').hide();
+        $('#list-separator').hide();
         $('##{dlgid}_do_download').text("#{t(:download_full_collection)}");
       }
     });
