@@ -17,7 +17,7 @@
             .by-card-header-v02.desktop-only
               %span.headline-1-v02= t(:print)
               %a.popup-x-v02.linkcolor.pointer{'data-dismiss'=>'modal'} -
-            .by-card-content-v02{style: 'overflow-y: auto; flex: 1 1 auto;'}
+            .by-card-content-v02{style: 'overflow-y: hidden; flex: 1 1 auto;'}
               - if entity.is_a?(Collection)
                 %p= t(:print_choose_scope)
                 .search-mobile-switch
@@ -28,7 +28,7 @@
                   .headline-3-v02
                     = t(:items_to_print)
                     %span#print-selected-count 0
-                  .field-v02.texts-list{style: 'height: auto;'}
+                  .field-v02.texts-list{style: 'height: auto; background-color: #eeeced; border: none;'}
                     .select-all-with-buttons
                       .select-text-checkbox-area
                         .select-all-checkbox
