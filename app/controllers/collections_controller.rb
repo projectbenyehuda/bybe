@@ -454,8 +454,10 @@ class CollectionsController < ApplicationController
       html.sub!('</head>',
                 '<style>html, body {width: 20cm !important;} p{max-width: 20cm;} div {max-width:20cm;} img {max-width: 100%;}</style></head>')
       pdfname = HtmlFile.pdf_from_any_html(html)
-      send_file pdfname, filename: filename, type: 'application/pdf', disposition: 'attachment'
-      File.delete(pdfname) # Cleanup after sending
+      # Read file content before deleting
+      pdf_content = File.binread(pdfname)
+      File.delete(pdfname)
+      send_data pdf_content, filename: filename, type: 'application/pdf', disposition: 'attachment'
     when 'docx'
       content = PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :docx).force_encoding('UTF-8')
       send_data content, filename: filename, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -470,16 +472,20 @@ class CollectionsController < ApplicationController
       send_data txt, filename: filename, type: 'text/plain; charset=utf-8'
     when 'epub'
       epubname = make_epub_from_single_html(html, @collection, author_string)
-      send_file epubname, filename: filename, type: 'application/epub+zip', disposition: 'attachment'
-      File.delete(epubname) # Cleanup after sending
+      # Read file content before deleting
+      epub_content = File.binread(epubname)
+      File.delete(epubname)
+      send_data epub_content, filename: filename, type: 'application/epub+zip', disposition: 'attachment'
     when 'mobi'
       epubname = make_epub_from_single_html(html, @collection, author_string)
       mobiname = epubname[epubname.rindex('/') + 1..-6] + '.mobi'
       `kindlegen #{epubname} -c1 -o #{mobiname}`
       mobiname = epubname[0..-6] + '.mobi'
-      send_file mobiname, filename: filename, type: 'application/x-mobipocket-ebook', disposition: 'attachment'
+      # Read file content before deleting
+      mobi_content = File.binread(mobiname)
       File.delete(epubname)
       File.delete(mobiname)
+      send_data mobi_content, filename: filename, type: 'application/x-mobipocket-ebook', disposition: 'attachment'
     else
       raise ArgumentError, "Unrecognized format: #{format}"
     end
