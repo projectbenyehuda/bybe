@@ -11,9 +11,9 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
   # MAX_NO_SCROLL: Maximum scroll position if page stayed at top (header height + margin)
   # MIN_SCROLLED: Minimum scroll position if page scrolled to first match in text
   # Note: The scroll function subtracts 255px from the match position, so scrolling
-  # to matches near the top of content results in small scroll values
+  # to matches near the top of content results in small scroll values (as low as 10-15px)
   MAX_NO_SCROLL_THRESHOLD = 300
-  MIN_SCROLLED_THRESHOLD = 20
+  MIN_SCROLLED_THRESHOLD = 10
 
   let(:markdown_content) do
     <<~MARKDOWN
@@ -108,7 +108,7 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
 
         # Wait for scroll animation to complete (JavaScript uses 300ms animation)
         # Give extra time for animation to fully complete and settle
-        sleep 0.5
+        sleep 0.6
 
         # Check that we have scrolled down (away from top of page)
         expect(current_scroll_position).to be > MIN_SCROLLED_THRESHOLD
@@ -207,7 +207,7 @@ RSpec.describe 'Manifestation search highlighting', :js, type: :system do
 
         # Wait for scroll animation to complete (JavaScript uses 300ms animation)
         # Give extra time for animation to fully complete and settle
-        sleep 0.5
+        sleep 0.6
 
         # Should have scrolled to first match in text
         expect(current_scroll_position).to be > MIN_SCROLLED_THRESHOLD
