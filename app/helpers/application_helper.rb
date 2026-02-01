@@ -286,6 +286,19 @@ module ApplicationHelper
     end
   end
 
+  def print_url_by_entity(entity)
+    return '#' if entity.blank?
+
+    case entity.class.to_s
+    when 'Manifestation'
+      return "/print/#{entity.id}"
+    when 'Collection'
+      return collection_print_path(entity.id)
+    when 'Anthology'
+      return anthology_print_path(entity.id)
+    end
+  end
+
   def download_dialog_id(entity)
     return '' if entity.blank?
 
