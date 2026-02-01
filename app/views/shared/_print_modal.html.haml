@@ -56,38 +56,6 @@
     var formid = "##{formid}";
     var dlgid = "#printDlg";
 
-    // Handle scope toggle
-    $('.search-mobile-switch button', dlgid).click(function() {
-      $(this).siblings().removeClass('active');
-      $(this).addClass('active');
-
-      var scope = $(this).data('scope');
-      $('#print_scope').val(scope);
-
-      if (scope === 'partial') {
-        $('#print-manifestation-selection-area').show();
-        updatePrintButton();
-      } else {
-        $('#print-manifestation-selection-area').hide();
-        $('#print_do_print').text("#{t(:print_full_collection)}");
-      }
-    });
-
-    // Handle select all checkbox
-    $('#print-select-all-checkbox').change(function() {
-      $('.print-multiselect_checkbox').prop('checked', this.checked);
-      updatePrintButton();
-    });
-
-    // Handle individual checkbox changes
-    $('.print-multiselect_checkbox').change(function() {
-      updatePrintButton();
-
-      // Update select-all checkbox state
-      var allChecked = $('.print-multiselect_checkbox').length === $('.print-multiselect_checkbox:checked').length;
-      $('#print-select-all-checkbox').prop('checked', allChecked);
-    });
-
     function updatePrintButton() {
       var count = $('.print-multiselect_checkbox:checked').length;
       $('#print-selected-count').text(count);
@@ -98,6 +66,68 @@
       } else {
         $('#print_do_print').text("#{t(:print_full_collection)}");
       }
+    }
+
+    function initializePrintModal() {
+      // Reset to full scope
+      $('#print_scope').val('full');
+      $('.search-mobile-switch button[data-scope="full"]', dlgid).addClass('active');
+      $('.search-mobile-switch button[data-scope="partial"]', dlgid).removeClass('active');
+      $('#print-manifestation-selection-area').hide();
+
+      // Uncheck all checkboxes
+      $('.print-multiselect_checkbox').prop('checked', false);
+      $('#print-select-all-checkbox').prop('checked', false);
+
+      // Reset button text
+      $('#print_do_print').text("#{t(:print_full_collection)}");
+
+      // Unbind previous handlers to avoid duplicates
+      $('.search-mobile-switch button', dlgid).off('click');
+      $('#print-select-all-checkbox').off('change');
+      $('.print-multiselect_checkbox').off('change');
+
+      // Handle scope toggle
+      $('.search-mobile-switch button', dlgid).on('click', function() {
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+
+        var scope = $(this).data('scope');
+        $('#print_scope').val(scope);
+
+        if (scope === 'partial') {
+          $('#print-manifestation-selection-area').show();
+          updatePrintButton();
+        } else {
+          $('#print-manifestation-selection-area').hide();
+          $('#print_do_print').text("#{t(:print_full_collection)}");
+        }
+      });
+
+      // Handle select all checkbox
+      $('#print-select-all-checkbox').on('change', function() {
+        $('.print-multiselect_checkbox').prop('checked', this.checked);
+        updatePrintButton();
+      });
+
+      // Handle individual checkbox changes
+      $('.print-multiselect_checkbox').on('change', function() {
+        updatePrintButton();
+
+        // Update select-all checkbox state
+        var allChecked = $('.print-multiselect_checkbox').length === $('.print-multiselect_checkbox:checked').length;
+        $('#print-select-all-checkbox').prop('checked', allChecked);
+      });
+    }
+
+    // Initialize when modal is shown
+    $(dlgid).on('show.bs.modal', function() {
+      initializePrintModal();
+    });
+
+    // Initialize on page load if modal is already visible
+    if ($(dlgid).is(':visible')) {
+      initializePrintModal();
     }
 
     $(formid).on('submit', function() {

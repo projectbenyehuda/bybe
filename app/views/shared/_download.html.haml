@@ -107,40 +107,6 @@
     var formid = "##{formid}";
     var dlgid = "##{dlgid}";
 
-    // Handle scope toggle
-    $('.search-mobile-switch button', dlgid).click(function() {
-      $(this).siblings().removeClass('active');
-      $(this).addClass('active');
-
-      var scope = $(this).data('scope');
-      $('#download_scope').val(scope);
-
-      if (scope === 'partial') {
-        $('#manifestation-selection-area').show();
-        $('#list-separator').show();
-        updateDownloadButton();
-      } else {
-        $('#manifestation-selection-area').hide();
-        $('#list-separator').hide();
-        $('##{dlgid}_do_download').text("#{t(:download_full_collection)}");
-      }
-    });
-
-    // Handle select all checkbox
-    $('#select-all-checkbox').change(function() {
-      $('.multiselect_checkbox').prop('checked', this.checked);
-      updateDownloadButton();
-    });
-
-    // Handle individual checkbox changes
-    $('.multiselect_checkbox').change(function() {
-      updateDownloadButton();
-
-      // Update select-all checkbox state
-      var allChecked = $('.multiselect_checkbox').length === $('.multiselect_checkbox:checked').length;
-      $('#select-all-checkbox').prop('checked', allChecked);
-    });
-
     function updateDownloadButton() {
       var count = $('.multiselect_checkbox:checked').length;
       $('#selected-count').text(count);
@@ -151,6 +117,71 @@
       } else {
         $('##{dlgid}_do_download').text("#{t(:download_full_collection)}");
       }
+    }
+
+    function initializeDownloadModal() {
+      // Reset to full scope
+      $('#download_scope').val('full');
+      $('.search-mobile-switch button[data-scope="full"]', dlgid).addClass('active');
+      $('.search-mobile-switch button[data-scope="partial"]', dlgid).removeClass('active');
+      $('#manifestation-selection-area').hide();
+      $('#list-separator').hide();
+
+      // Uncheck all checkboxes
+      $('.multiselect_checkbox').prop('checked', false);
+      $('#select-all-checkbox').prop('checked', false);
+
+      // Reset button text
+      $('##{dlgid}_do_download').text("#{t(:download_full_collection)}");
+
+      // Unbind previous handlers to avoid duplicates
+      $('.search-mobile-switch button', dlgid).off('click');
+      $('#select-all-checkbox').off('change');
+      $('.multiselect_checkbox').off('change');
+
+      // Handle scope toggle
+      $('.search-mobile-switch button', dlgid).on('click', function() {
+        $(this).siblings().removeClass('active');
+        $(this).addClass('active');
+
+        var scope = $(this).data('scope');
+        $('#download_scope').val(scope);
+
+        if (scope === 'partial') {
+          $('#manifestation-selection-area').show();
+          $('#list-separator').show();
+          updateDownloadButton();
+        } else {
+          $('#manifestation-selection-area').hide();
+          $('#list-separator').hide();
+          $('##{dlgid}_do_download').text("#{t(:download_full_collection)}");
+        }
+      });
+
+      // Handle select all checkbox
+      $('#select-all-checkbox').on('change', function() {
+        $('.multiselect_checkbox').prop('checked', this.checked);
+        updateDownloadButton();
+      });
+
+      // Handle individual checkbox changes
+      $('.multiselect_checkbox').on('change', function() {
+        updateDownloadButton();
+
+        // Update select-all checkbox state
+        var allChecked = $('.multiselect_checkbox').length === $('.multiselect_checkbox:checked').length;
+        $('#select-all-checkbox').prop('checked', allChecked);
+      });
+    }
+
+    // Initialize when modal is shown
+    $(dlgid).on('show.bs.modal', function() {
+      initializeDownloadModal();
+    });
+
+    // Initialize on page load if modal is already visible
+    if ($(dlgid).is(':visible')) {
+      initializeDownloadModal();
     }
 
     $(formid).on('submit', function() {
