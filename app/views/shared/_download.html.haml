@@ -93,7 +93,8 @@
               .desktop-only.linkcolor.pointer{'data-dismiss'=>'modal'}
                 %span.right-side-icon -
                 %span{:style => "font-weight: bold"}= t(:cancel)
-              = submit_tag t(:download_full_collection), {class: 'pointer by-button-v02 link-to-all-v02 download_submitter', id: dlgid+'_do_download'}
+              - button_text = entity.is_a?(Collection) ? t(:download_full_collection) : t(:download)
+              = submit_tag button_text, {class: 'pointer by-button-v02 link-to-all-v02 download_submitter', id: dlgid+'_do_download'}
 
 :javascript
   var OSName="Unknown OS";

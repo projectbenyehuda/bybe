@@ -48,7 +48,8 @@
               .desktop-only.linkcolor.pointer{'data-dismiss'=>'modal'}
                 %span.right-side-icon -
                 %span{:style => "font-weight: bold"}= t(:cancel)
-              = submit_tag t(:print_full_collection), {class: 'pointer by-button-v02 link-to-all-v02 print_submitter', id: 'print_do_print'}
+              - button_text = entity.is_a?(Collection) ? t(:print_full_collection) : t(:print)
+              = submit_tag button_text, {class: 'pointer by-button-v02 link-to-all-v02 print_submitter', id: 'print_do_print'}
 
 :javascript
   $(document).ready(function(){
