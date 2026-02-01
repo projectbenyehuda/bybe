@@ -137,19 +137,16 @@ class CollectionsController < ApplicationController
     # Check if we're doing selective download
     manifestation_ids = params[:manifestation_ids]
     download_scope = params[:download_scope] || 'full'
+    is_partial = manifestation_ids.present? && download_scope == 'partial'
 
     # For selective downloads, we can't use cached downloadables
-    dl = if manifestation_ids.present? && download_scope == 'partial'
-           nil
-         else
-           @collection.fresh_downloadable_for(format)
-         end
+    dl = is_partial ? nil : @collection.fresh_downloadable_for(format)
 
     if dl.nil?
       prep_for_show # TODO
 
       # Filter @htmls if selective download
-      if manifestation_ids.present? && download_scope == 'partial'
+      if is_partial
         selected_ids = manifestation_ids.map(&:to_i)
         @htmls = @htmls.select do |_title, _ias, _html, _is_curated, _genre, _i, ci, _nesting_level, _parent_authorities,
                                    _title_footnote|
@@ -181,7 +178,15 @@ class CollectionsController < ApplicationController
           </div></body></html>
         WRAPPER
         austr = textify_authorities_and_roles(@collection.involved_authorities)
-        dl = MakeFreshDownloadable.call(params[:format], filename, html, @collection, austr)
+
+        # For partial downloads, generate file on-the-fly without caching
+        if is_partial
+          track_download(@collection, format)
+          send_generated_file(format, filename, html, austr)
+          return
+        else
+          dl = MakeFreshDownloadable.call(params[:format], filename, html, @collection, austr)
+        end
       end
     end
 
@@ -436,6 +441,53 @@ class CollectionsController < ApplicationController
   def collection_params
     params.require(:collection).permit(:title, :sort_title, :subtitle, :issn, :collection_type, :inception,
                                        :inception_year, :publisher_line, :pub_year, :publication_id, :toc_id, :toc_strategy, :alternate_titles, :description)
+  end
+
+  # Generate and send file directly without caching (for selective downloads)
+  def send_generated_file(format, filename, html, author_string)
+    # Convert images to absolute URLs for formats that need them
+    html = images_to_absolute_url(html) unless %w[epub mobi].include?(format)
+
+    case format
+    when 'pdf'
+      html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
+      html.sub!('</head>',
+                '<style>html, body {width: 20cm !important;} p{max-width: 20cm;} div {max-width:20cm;} img {max-width: 100%;}</style></head>')
+      pdfname = HtmlFile.pdf_from_any_html(html)
+      send_file pdfname, filename: filename, type: 'application/pdf', disposition: 'attachment'
+      File.delete(pdfname) # Cleanup after sending
+    when 'docx'
+      content = PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :docx).force_encoding('UTF-8')
+      send_data content, filename: filename, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    when 'odt'
+      content = PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :odt).force_encoding('UTF-8')
+      send_data content, filename: filename, type: 'application/vnd.oasis.opendocument.text'
+    when 'html'
+      send_data html, filename: filename, type: 'text/html; charset=utf-8'
+    when 'txt'
+      txt = html2txt(html)
+      txt.gsub!("\n", "\r\n") # windows linebreaks
+      send_data txt, filename: filename, type: 'text/plain; charset=utf-8'
+    when 'epub'
+      epubname = make_epub_from_single_html(html, @collection, author_string)
+      send_file epubname, filename: filename, type: 'application/epub+zip', disposition: 'attachment'
+      File.delete(epubname) # Cleanup after sending
+    when 'mobi'
+      epubname = make_epub_from_single_html(html, @collection, author_string)
+      mobiname = epubname[epubname.rindex('/') + 1..-6] + '.mobi'
+      `kindlegen #{epubname} -c1 -o #{mobiname}`
+      mobiname = epubname[0..-6] + '.mobi'
+      send_file mobiname, filename: filename, type: 'application/x-mobipocket-ebook', disposition: 'attachment'
+      File.delete(epubname)
+      File.delete(mobiname)
+    else
+      raise ArgumentError, "Unrecognized format: #{format}"
+    end
+  end
+
+  def images_to_absolute_url(buf)
+    buf.gsub('<img src="/rails/active_storage',
+             "<img src=\"#{Rails.application.routes.url_helpers.root_url}/rails/active_storage")
   end
 
   def prep_for_show

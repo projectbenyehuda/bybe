@@ -233,6 +233,76 @@ describe CollectionsController do
     end
   end
 
+  describe '#download' do
+    let(:manifestation1) { create(:manifestation, title: 'Manifestation 1', markdown: 'Content 1') }
+    let(:manifestation2) { create(:manifestation, title: 'Manifestation 2', markdown: 'Content 2') }
+    let(:manifestation3) { create(:manifestation, title: 'Manifestation 3', markdown: 'Content 3') }
+
+    let(:collection) do
+      create(:collection, title: 'Test Collection').tap do |coll|
+        coll.collection_items.create!(item: manifestation1, seqno: 1)
+        coll.collection_items.create!(item: manifestation2, seqno: 2)
+        coll.collection_items.create!(item: manifestation3, seqno: 3)
+      end
+    end
+
+    context 'with full collection download' do
+      it 'generates downloadable with all manifestations' do
+        get :download, params: { collection_id: collection.id, format: 'html', download_scope: 'full' }
+
+        expect(response).to be_redirect
+        expect(response.location).to include('rails/active_storage')
+
+        # Verify a downloadable was created and cached
+        downloadable = collection.downloadables.find_by(doctype: 'html')
+        expect(downloadable).to be_present
+        expect(downloadable.stored_file).to be_attached
+      end
+    end
+
+    context 'with selective download (partial scope)' do
+      it 'generates file without caching' do
+        # Request download with only manifestation1 and manifestation3
+        get :download, params: {
+          collection_id: collection.id,
+          format: 'html',
+          download_scope: 'partial',
+          manifestation_ids: [manifestation1.id, manifestation3.id]
+        }
+
+        expect(response).to be_successful
+        expect(response.content_type).to eq('text/html; charset=utf-8')
+        expect(response.body).to include(collection.title)
+
+        # Verify NO downloadable was created or updated (no caching for partial downloads)
+        expect(collection.downloadables.where(doctype: 'html')).to be_empty
+      end
+
+      it 'does not overwrite existing full collection cache' do
+        # First, create a full collection downloadable
+        get :download, params: { collection_id: collection.id, format: 'html', download_scope: 'full' }
+        full_downloadable = collection.downloadables.find_by(doctype: 'html')
+        expect(full_downloadable).to be_present
+        full_downloadable_id = full_downloadable.id
+        original_blob_id = full_downloadable.stored_file.blob.id
+
+        # Now do a partial download
+        get :download, params: {
+          collection_id: collection.id,
+          format: 'html',
+          download_scope: 'partial',
+          manifestation_ids: [manifestation1.id]
+        }
+
+        # Verify the cached full downloadable still exists with the same blob (wasn't overwritten)
+        collection.reload
+        cached_downloadable = collection.downloadables.find_by(doctype: 'html')
+        expect(cached_downloadable.id).to eq(full_downloadable_id)
+        expect(cached_downloadable.stored_file.blob.id).to eq(original_blob_id)
+      end
+    end
+  end
+
   describe 'editor actions' do
     include_context 'when editor logged in'
 

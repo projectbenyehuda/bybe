@@ -93,10 +93,7 @@
       $('#print-selected-count').text(count);
 
       if (count > 0) {
-        // Hebrew: "הדפסת X יצירות שנבחרו"
-        var buttonText = '#{I18n.locale}' === 'he' ?
-          "הדפסת " + count + " יצירות שנבחרו" :
-          "Print " + count + " selected items";
+        var buttonText = "#{I18n.t(:print_n_selected_items, count: '__COUNT__')}".replace('__COUNT__', count);
         $('#print_do_print').text(buttonText);
       } else {
         $('#print_do_print').text("#{t(:print_full_collection)}");

@@ -146,10 +146,7 @@
       $('#selected-count').text(count);
 
       if (count > 0) {
-        // Hebrew: "שמירת X יצירות בפורמט הנבחר"
-        var buttonText = '#{I18n.locale}' === 'he' ?
-          "שמירת " + count + " יצירות בפורמט הנבחר" :
-          "Save " + count + " items in the selected format";
+        var buttonText = "#{I18n.t(:download_n_selected_items, count: '__COUNT__')}".replace('__COUNT__', count);
         $('##{dlgid}_do_download').text(buttonText);
       } else {
         $('##{dlgid}_do_download').text("#{t(:download_full_collection)}");
