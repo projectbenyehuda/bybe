@@ -1,10 +1,10 @@
-.modal-dialog
+.modal-dialog.modal-lg{style: 'margin-top: 2vh;'}
   .modal-content
     - formurl = download_url_by_entity(entity)
     - dlgid = download_dialog_id(entity)
     - formid = download_form_id(entity)
     = form_tag(formurl, id: formid) do
-      .flex-popup
+      .flex-popup{style: 'height: 90vh;'}
         .modal-header
           .popup-top
             %button.btn-small-outline-v02{'data-dismiss'=>'modal'}
@@ -14,12 +14,39 @@
             .headline-2-v02{:style => "text-align: center;margin: 0; padding-top: 3px;"}= t(:download_to_file)
             .button-placeholder
         .modal-body
-          .by-popup-v02
+          .by-popup-v02{style: 'height: 100%; display: flex; flex-direction: column;'}
             .by-card-header-v02.desktop-only
               %span.headline-1-v02= t(:save_to_file)
               %a.popup-x-v02.linkcolor.pointer{'data-dismiss'=>'modal'} -
-            .by-card-content-v02
+            .by-card-content-v02{style: 'overflow-y: auto; flex: 1 1 auto;'}
+              - if entity.is_a?(Collection)
+                %p= t(:download_or_print_choose_scope)
+                .search-mobile-switch
+                  %button.search-mobile-option.active{type: 'button', 'data-scope' => 'full'}= t(:full_collection)
+                  %button.search-mobile-option{type: 'button', 'data-scope' => 'partial'}= t(:selected_items)
+
+                #manifestation-selection-area{style: 'display: none;'}
+                  .headline-3-v02
+                    = t(:items_to_save)
+                    %span#selected-count 0
+                  .field-v02.texts-list{style: 'height: auto; background-color: #eeeced; border: none;'}
+                    .select-all-with-buttons
+                      .select-text-checkbox-area
+                        .select-all-checkbox
+                          %input#select-all-checkbox{type: 'checkbox', value: 'selectall'}
+                      .headline-3-v02= t(:included_items)
+                    .mainlist.multiselect#texts-to-save
+                      %ol{style: 'background-color: #f5f3f4;'}
+                        - entity.flatten_items.select { |ci| ci.item_type == 'Manifestation' && ci.item.present? }.each do |ci|
+                          %li
+                            %input.multiselect_checkbox{type: 'checkbox', name: 'manifestation_ids[]', value: ci.item_id}
+                            - author_names = ci.involved_authorities.select { |ia| ia.role == 'author' }.map { |ia| ia.authority.name }.join(', ')
+                            - text = author_names.present? ? "#{ci.title} / #{author_names}" : ci.title
+                            = text
+
+              %hr#list-separator{style: 'display: none; height: 1px; border: none; border-top: 1px solid #999; margin: 15px 0;'}
               %p= t(:download_instructions)
+              .headline-3-v02= t(:format_to_save) rescue 'פורמט לשמירה'
               %p
                 %label
                   = radio_button_tag 'format', 'pdf', true
@@ -61,11 +88,13 @@
                   %b= 'KWIC'
                   = t(:kwic_format)
               %p
-              .bottom-button-area.left-buttons
-                .desktop-only.linkcolor.pointer{'data-dismiss'=>'modal'}
-                  %span.right-side-icon -
-                  %span{:style => "font-weight: bold"}= t(:cancel)
-                = submit_tag t(:download), {class: 'pointer by-button-v02 link-to-all-v02 download_submitter', id: dlgid+'_do_download'}
+              = hidden_field_tag 'download_scope', 'full', id: 'download_scope'
+            .bottom-button-area.left-buttons{style: 'flex: 0 0 auto; margin-top: auto;'}
+              .desktop-only.linkcolor.pointer{'data-dismiss'=>'modal'}
+                %span.right-side-icon -
+                %span{:style => "font-weight: bold"}= t(:cancel)
+              - button_text = entity.is_a?(Collection) ? t(:download_full_collection) : t(:download)
+              = submit_tag button_text, {class: 'pointer by-button-v02 link-to-all-v02 download_submitter', id: dlgid+'_do_download'}
 
 :javascript
   var OSName="Unknown OS";
@@ -77,6 +106,53 @@
   $(document).ready(function(){
     var formid = "##{formid}";
     var dlgid = "##{dlgid}";
+
+    // Handle scope toggle
+    $('.search-mobile-switch button', dlgid).click(function() {
+      $(this).siblings().removeClass('active');
+      $(this).addClass('active');
+
+      var scope = $(this).data('scope');
+      $('#download_scope').val(scope);
+
+      if (scope === 'partial') {
+        $('#manifestation-selection-area').show();
+        $('#list-separator').show();
+        updateDownloadButton();
+      } else {
+        $('#manifestation-selection-area').hide();
+        $('#list-separator').hide();
+        $('##{dlgid}_do_download').text("#{t(:download_full_collection)}");
+      }
+    });
+
+    // Handle select all checkbox
+    $('#select-all-checkbox').change(function() {
+      $('.multiselect_checkbox').prop('checked', this.checked);
+      updateDownloadButton();
+    });
+
+    // Handle individual checkbox changes
+    $('.multiselect_checkbox').change(function() {
+      updateDownloadButton();
+
+      // Update select-all checkbox state
+      var allChecked = $('.multiselect_checkbox').length === $('.multiselect_checkbox:checked').length;
+      $('#select-all-checkbox').prop('checked', allChecked);
+    });
+
+    function updateDownloadButton() {
+      var count = $('.multiselect_checkbox:checked').length;
+      $('#selected-count').text(count);
+
+      if (count > 0) {
+        var buttonText = "#{I18n.t(:download_n_selected_items, count: '__COUNT__')}".replace('__COUNT__', count);
+        $('##{dlgid}_do_download').text(buttonText);
+      } else {
+        $('##{dlgid}_do_download').text("#{t(:download_full_collection)}");
+      }
+    }
+
     $(formid).on('submit', function() {
       // Hide modal after a short delay to allow form submission to complete
       setTimeout(function() {
