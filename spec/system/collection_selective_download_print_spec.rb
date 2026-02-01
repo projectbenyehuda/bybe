@@ -4,11 +4,9 @@ require 'rails_helper'
 
 RSpec.describe 'Collection selective download and print', :js, type: :system do
   before do
-    begin
-      Capybara.current_session.driver.browser if Capybara.current_session.driver.respond_to?(:browser)
-    rescue StandardError
-      skip 'WebDriver not available or misconfigured'
-    end
+    Capybara.current_session.driver.browser if Capybara.current_session.driver.respond_to?(:browser)
+  rescue StandardError
+    skip 'WebDriver not available or misconfigured'
   end
 
   let!(:author) { create(:authority, name: 'Test Author') }
