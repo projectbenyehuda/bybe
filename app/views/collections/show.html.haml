@@ -161,9 +161,9 @@
                     - link = url_for_collection_item(ci)
                     %span.by-icon-v02{title: textify_genre(genre)}= glyph_for_genre(genre)
                     - if link.present?
-                      = link_to title, link
+                      = link_to '‏' + title, link # RLM character to help with LTR elements in title. Fixes #664
                     - else
-                      = title
+                      = '‏' + title # RLM character to help with LTR elements in title. Fixes #664
                     - if title_footnote.present?
                       != ' ' + title_footnote
                   -# Show all authorities with their roles (already filtered)
@@ -193,9 +193,9 @@
                       - tstr = eauthors[title].present? ? "#{title} / #{eauthors[title]}" : title
                       - if link.present?
                         %span.by-icon-v02{title: textify_genre(genre)}= glyph_for_genre(genre)
-                        = link_to tstr, link
+                        = link_to '‏' + tstr, link # RLM character to help with LTR elements in title. Fixes #664
                       - else
-                        = tstr
+                        = '‏' + tstr # RLM character to help with LTR elements in title. Fixes #664
                       - if title_footnote.present?
                         != ' ' + title_footnote
                       - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
