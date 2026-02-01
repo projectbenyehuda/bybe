@@ -278,6 +278,9 @@
 #downloadDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
   = render partial: 'shared/download', locals: {entity: @collection}
 
+#printDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
+  = render partial: 'shared/print_modal', locals: {entity: @collection}
+
 = render partial: 'shared/proof'
 = render partial: 'shared/propose_link'
 

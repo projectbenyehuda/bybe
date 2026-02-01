@@ -134,9 +134,29 @@ class CollectionsController < ApplicationController
       return
     end
 
-    dl = @collection.fresh_downloadable_for(format)
+    # Check if we're doing selective download
+    manifestation_ids = params[:manifestation_ids]
+    download_scope = params[:download_scope] || 'full'
+
+    # For selective downloads, we can't use cached downloadables
+    dl = if manifestation_ids.present? && download_scope == 'partial'
+           nil
+         else
+           @collection.fresh_downloadable_for(format)
+         end
+
     if dl.nil?
       prep_for_show # TODO
+
+      # Filter @htmls if selective download
+      if manifestation_ids.present? && download_scope == 'partial'
+        selected_ids = manifestation_ids.map(&:to_i)
+        @htmls = @htmls.select do |_title, _ias, _html, _is_curated, _genre, _i, ci, _nesting_level, _parent_authorities,
+                                   _title_footnote|
+          ci.item_type == 'Manifestation' && selected_ids.include?(ci.item_id)
+        end
+      end
+
       filename = "#{@collection.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}.#{format}"
 
       if format == 'kwic'
@@ -179,7 +199,22 @@ class CollectionsController < ApplicationController
       redirect_to @collection
       return
     end
+
+    # Check if we're doing selective print
+    manifestation_ids = params[:manifestation_ids]
+    print_scope = params[:print_scope] || 'full'
+
     prep_for_show
+
+    # Filter @htmls if selective print
+    if manifestation_ids.present? && print_scope == 'partial'
+      selected_ids = manifestation_ids.map(&:to_i)
+      @htmls = @htmls.select do |_title, _ias, _html, _is_curated, _genre, _i, ci, _nesting_level, _parent_authorities,
+                                 _title_footnote|
+        ci.item_type == 'Manifestation' && selected_ids.include?(ci.item_id)
+      end
+    end
+
     track_view(@collection)
     @footer_url = url_for(@collection)
   end
