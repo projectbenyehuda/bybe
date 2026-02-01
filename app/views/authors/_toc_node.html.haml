@@ -10,7 +10,7 @@
     %span.by-icon-v02{ title: textify_genre(genre) }>= glyph_for_genre(genre)
     &nbsp;&rlm;
     :ruby
-      label = m.title
+      label = '‏' + m.title # RLM character to help with LTR elements in title. Fixes #664
       case role
       when :editor
         label += " / #{m.author_string}"
