@@ -3,6 +3,9 @@
 # We want to group all works author was involved into but not belonging to any colleciton into a special
 # 'Uncollected works' collection
 class RefreshUncollectedWorksCollection < ApplicationService
+  # Uncollected works collection should only contain works where authority is involved as author, translator or editor
+  ROLES = %i(author translator editor).freeze
+
   # rubocop:disable Style/GuardClause
   def call(authority)
     collection = authority.uncollected_works_collection
@@ -22,8 +25,8 @@ class RefreshUncollectedWorksCollection < ApplicationService
 
     nextseqno = (collection.collection_items.maximum(:seqno) || 0) + 1
 
-    # Checking all manifestations given authority is involved into as author or translator
-    authority.published_manifestations(:author, :translator, :editor) # TODO: consider other roles?
+    # Checking all manifestations given authority is involved into with required roles
+    authority.published_manifestations(*ROLES)
              .preload(collection_items: :collection)
              .find_each do |m|
       # skipping if manifestation is included in some other collection or already included in uncollected works
