@@ -55,7 +55,7 @@ describe 'PBY Volumes page' do
       visit '/'
 
       # Find the first visible link and use JavaScript to click it to avoid scroll issues
-      link = first('a[href="' + pby_volumes_path + '"]', visible: :visible)
+      link = first(%(a[href="#{pby_volumes_path}"]), visible: :visible)
       page.execute_script('arguments[0].click()', link)
 
       expect(page).to have_current_path(pby_volumes_path)
