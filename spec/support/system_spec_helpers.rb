@@ -5,13 +5,27 @@ module SystemSpecHelpers
   def webdriver_available?
     return false unless defined?(Capybara::Selenium)
 
+    session = nil
+
     begin
-      # Try to get the current driver
-      Capybara.current_driver
+      driver = Capybara.current_driver
+      return false if driver.nil?
+
+      # Instantiate a session and perform a simple operation to ensure the driver works
+      session = Capybara::Session.new(driver, Capybara.app)
+      session.visit('about:blank')
+
       true
     rescue StandardError => e
-      Rails.logger.warn("WebDriver check failed: #{e.message}")
+      Rails.logger.warn("WebDriver check failed: #{e.class}: #{e.message}")
       false
+    ensure
+      # Best-effort cleanup so we don't leave stray browser instances running
+      begin
+        session.driver.quit if session && session.driver.respond_to?(:quit)
+      rescue StandardError => cleanup_error
+        Rails.logger.debug("WebDriver cleanup failed: #{cleanup_error.class}: #{cleanup_error.message}") if defined?(Rails)
+      end
     end
   end
 end
