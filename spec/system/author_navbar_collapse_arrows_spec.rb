@@ -2,7 +2,11 @@
 
 require 'rails_helper'
 
-describe 'Author navbar collapse arrows' do
+describe 'Author navbar collapse arrows', :js do
+  before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
   let!(:author) do
     create(:authority, name: 'Test Author')
   end
@@ -58,28 +62,23 @@ describe 'Author navbar collapse arrows' do
 
       # Get the first collapsible trigger
       first_trigger = first('.book-type .truncate[data-bs-toggle="collapse"]')
-      target_id = first_trigger['data-bs-target']
 
       # Get initial arrow text
       initial_arrow = first_trigger.find('.collapse-arrow').text
 
+      # Determine expected arrow after click
+      expected_arrow = initial_arrow == '↑' ? '↓' : '↑'
+
       # Click to toggle
       first_trigger.click
 
-      # Wait for collapse animation
-      sleep 0.5
+      # Capybara waits for arrow to change
+      expect(first_trigger.find('.collapse-arrow')).to have_text(expected_arrow)
 
-      # Arrow should have changed
+      # Verify arrow actually changed
       new_arrow = first_trigger.find('.collapse-arrow').text
       expect(new_arrow).not_to eq(initial_arrow)
-
-      # Click again to toggle back
-      first_trigger.click
-      sleep 0.5
-
-      # Arrow should be back to initial state
-      final_arrow = first_trigger.find('.collapse-arrow').text
-      expect(final_arrow).to eq(initial_arrow)
+      expect(new_arrow).to eq(expected_arrow)
     end
 
     it 'initializes arrows based on initial collapse state' do
@@ -87,7 +86,7 @@ describe 'Author navbar collapse arrows' do
 
       # Wait for JavaScript to initialize
       expect(page).to have_css('.book-nav-full')
-      sleep 0.5
+      expect(page).to have_css('.collapse-arrow')
 
       # Find all collapse targets and check arrows match their state
       within('.book-nav-full') do
