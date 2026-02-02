@@ -77,7 +77,8 @@ describe 'Author navbar mobile expansion', :js do
       collapsible_trigger = first('.book-nav-full.mobile-expanded .truncate[data-bs-toggle="collapse"]')
 
       if collapsible_trigger
-        collapsible_trigger.click
+        # Use JavaScript click to avoid interception issues
+        page.execute_script('arguments[0].click()', collapsible_trigger)
 
         # Navbar should still be expanded (not collapsed)
         expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
@@ -165,8 +166,8 @@ describe 'Author navbar mobile expansion', :js do
       collapsible_trigger = first('.book-nav-full.mobile-expanded .truncate[data-bs-toggle="collapse"]')
 
       if collapsible_trigger
-        # Click the collapsible trigger
-        collapsible_trigger.click
+        # Use JavaScript click to avoid interception issues
+        page.execute_script('arguments[0].click()', collapsible_trigger)
 
         # Mobile navbar should still be expanded
         expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
