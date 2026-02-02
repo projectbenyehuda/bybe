@@ -760,6 +760,7 @@ class IngestiblesController < ApplicationController
           else
             @collection.append_item(m) # append the new text to the (current) end of the collection if there were no placeholders already
           end
+          @collection.invalidate_cached_credits!
         end
       end
     end
@@ -777,9 +778,9 @@ class IngestiblesController < ApplicationController
 
   def invalidate_whatsnew_cache
     # Delete cache for all sort orders and locales
-    %w[alpha recent].each do |sort_order|
+    %w(alpha recent).each do |sort_order|
       I18n.available_locales.each do |locale|
-        Rails.cache.delete(%w[whatsnew_data] + [sort_order, locale.to_s])
+        Rails.cache.delete(%w(whatsnew_data) + [sort_order, locale.to_s])
       end
     end
   end
