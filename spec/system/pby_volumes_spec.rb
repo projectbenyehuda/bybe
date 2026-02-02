@@ -47,12 +47,16 @@ describe 'PBY Volumes page' do
   end
 
   describe 'navigating from homepage', :js do
+    before do
+      skip 'WebDriver not available or misconfigured' unless webdriver_available?
+    end
+
     it 'allows navigation to pby volumes from homepage link' do
       visit '/'
 
-      # Click the link to pby volumes (it's in the "works" partial)
-      # The link text is from i18n key :pby_publications
-      click_link href: pby_volumes_path
+      # Find the first visible link and use JavaScript to click it to avoid scroll issues
+      link = first('a[href="' + pby_volumes_path + '"]', visible: :visible)
+      page.execute_script('arguments[0].click()', link)
 
       expect(page).to have_current_path(pby_volumes_path)
       expect(page).to have_content('Project Ben-Yehuda Volume 1')
