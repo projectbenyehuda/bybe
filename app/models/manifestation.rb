@@ -150,19 +150,6 @@ class Manifestation < ApplicationRecord
     )
   end
 
-  # async update the uncollected collection this text was still in
-  def trigger_uncollected_recalculation
-    return if collection_items.empty?
-
-    collection_items.joins(:collection).where(collection: { collection_type: 'uncollected' }).each do |ci|
-      au = Authority.where(uncollected_works_collection_id: ci.collection.id)
-      if au.present?
-        # RefreshUncollectedWorksJob.perform_async(au.first.id) # must be at most one
-        RefreshUncollectedWorksCollection.call(au.first)
-      end
-    end
-  end
-
   # return containing collections of collection_type volume or periodical_issue
   def volumes
     ret = []

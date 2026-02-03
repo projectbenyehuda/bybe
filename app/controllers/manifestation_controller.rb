@@ -1189,7 +1189,9 @@ class ManifestationController < ApplicationController
     @volumes = @m.volumes
     if !@volumes.empty? && @containments.any? { |ci| ci.collection.uncollected? }
       # if the text is in a volume, its inclusion in an uncollected collection is stale
-      @m.trigger_uncollected_recalculation # async update the uncollected collection this text was still in
+      uncollected_collection_ids = @m.collection_items.select { |ci| ci.collection.uncollected? }.map(&:collection_id)
+      # async update the uncollected collection this text was still in
+      RefreshUncollectedWorksCollectionJob.perform_async(uncollected_collection_ids)
       @containments.reject! { |ci| ci.collection.uncollected? }
     end
     @single_text_volume = @containments.size == 1 && !@containments.first.collection.has_multiple_manifestations?
