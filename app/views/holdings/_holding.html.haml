@@ -1,5 +1,10 @@
 %li
-  = link_to(textify_bib_source(h.bib_source.id), h.source_id)
+  - if h.bib_source.manual_entry?
+    = textify_bib_source(h.bib_source.id)
+    - if h.source_id.present?
+      = " (#{link_to(h.source_id, h.source_id, target: '_blank', rel: :noopener)})"
+  - else
+    = link_to(textify_bib_source(h.bib_source.id), h.source_id)
   = " #{h.location}"
   - if with_actions == :pubs
     = ' '
