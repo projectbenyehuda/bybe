@@ -92,6 +92,15 @@ describe '/lexicon/entries' do
   describe '#show' do
     subject { get "/lex/entries/#{entry.id}" }
 
+    context 'when entry is not migrated yet' do
+      let(:entry) { create(:lex_entry, :person, status: :raw) }
+      let!(:lex_file) { create(:lex_file, lex_entry: entry, fname: '00021.php') }
+
+      it 'redirects to old_file' do
+        expect(subject).to redirect_to('https://benyehuda.org/lexicon/00021.php')
+      end
+    end
+
     context 'when entry is a Person' do
       let(:entry) { create(:lex_entry, :person) }
       let(:authority) { create(:authority) }

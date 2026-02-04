@@ -10,6 +10,9 @@ class LexEntry < ApplicationRecord
   # TODO: make relation mandatory after all PHP files will be migrated
   belongs_to :lex_item, polymorphic: true, optional: true, dependent: :destroy, inverse_of: :entry
 
+  # Statuses related to migration process
+  MIGRATION_STATUSES = %w(raw migrating error verifying verified).freeze
+
   enum :status, {
     draft: 0,       # entry created but not ready for public access
     published: 1,   # entry approved for public access
