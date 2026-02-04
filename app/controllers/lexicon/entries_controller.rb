@@ -27,6 +27,8 @@ module Lexicon
       @lex_entries = @lex_entries.page(params[:page])
     end
 
+    # Public listing of lexicon entries with filtering and sorting
+    # Available to all users (including non-logged-in)
     def list
       @page_title = "#{t('.page_title')} - #{t(:project_ben_yehuda)}"
       @pagetype = :lex_entries
@@ -48,7 +50,8 @@ module Lexicon
                                @death_year_from.present? || @death_year_to.present?
 
       # Start with base scope
-      @lex_entries = LexEntry.includes(:lex_item).where.not(lex_item: nil).where(status: :published)
+      # We render all not-completed migrations (they will redirected to old site) plus published entries
+      @lex_entries = LexEntry.includes(:lex_item).where(status: LexEntry::MIGRATION_STATUSES + %w(published))
 
       # Calculate gender facets (before applying gender filter)
       @gender_facet = calculate_gender_facets
@@ -74,6 +77,15 @@ module Lexicon
     end
 
     def show
+      # If we've not yet migrated this entry, redirect to old site
+      if LexEntry::MIGRATION_STATUSES.include?(@lex_entry.status)
+        lex_file = @lex_entry.lex_file
+        if lex_file.present?
+          redirect_to "https://benyehuda.org/lexicon/#{lex_file.fname}", allow_other_host: true
+          return
+        end
+      end
+
       @header_partial = 'lexicon/entries/entry_top'
       @page_title = "#{@lex_entry.title} - #{t(:project_ben_yehuda)}"
       @pagetype = :lex_entry
@@ -123,7 +135,7 @@ module Lexicon
     def apply_filters(scope)
       # Name substring filter
       if @name_filter.present?
-        scope = scope.where('LOWER(lex_entries.title) LIKE LOWER(?)', "%#{@name_filter}%")
+        scope = scope.where('lex_entries.title LIKE ?', "%#{@name_filter}%")
       end
 
       # If person filters active, only show LexPerson entries
