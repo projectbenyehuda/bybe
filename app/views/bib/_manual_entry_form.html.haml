@@ -47,7 +47,7 @@
           .row
             .col-md-12
               = hidden_field_tag 'publication[authority_id]', '', id: 'manual-authority-id'
-              = hidden_field_tag 'publication[bib_source]', 'Manual Entry'
+              = hidden_field_tag 'publication[bib_source]', 'manual_entry'
               = hidden_field_tag 'publication[status]', 'todo'
               = hidden_field_tag 'from_manual_form', 'true'
               = button_tag t(:add_manual_publication), type: 'submit',

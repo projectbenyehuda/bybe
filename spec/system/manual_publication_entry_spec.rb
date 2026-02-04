@@ -12,7 +12,7 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
   let(:user) { create(:user, :bib_workshop) }
   let(:authority) { create(:authority, bib_done: false) }
   let!(:manual_bib_source) do
-    BibSource.find_or_create_by!(title: 'Manual Entry', source_type: :manual_entry, status: :enabled)
+    BibSource.find_or_create_by!(title: 'manual_entry', source_type: :manual_entry, status: :enabled)
   end
 
   def login_as_bib_editor
@@ -92,7 +92,7 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
         expect(publication.publisher_line).to eq('Test Publisher')
         expect(publication.pub_year).to eq('1950')
         expect(publication.authority_id).to eq(authority.id)
-        expect(publication.bib_source.title).to eq('Manual Entry')
+        expect(publication.bib_source.title).to eq('manual_entry')
         expect(publication.status).to eq('todo')
 
         # Verify the publication appears in the #pubs table
@@ -119,7 +119,7 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
         # Verify holding was created
         expect(Holding.count).to eq(1)
         holding = Holding.last
-        expect(holding.bib_source.title).to eq('Manual Entry')
+        expect(holding.bib_source.title).to eq('manual_entry')
         expect(holding.status).to eq('todo')
       end
     end

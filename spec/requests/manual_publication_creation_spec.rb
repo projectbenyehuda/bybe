@@ -6,7 +6,7 @@ RSpec.describe 'Manual Publication Creation', type: :request do
   let(:user) { create(:user, :bib_workshop) }
   let(:authority) { create(:authority, bib_done: false) }
   let!(:manual_bib_source) do
-    BibSource.find_or_create_by!(title: 'Manual Entry', source_type: :manual_entry, status: :enabled)
+    BibSource.find_or_create_by!(title: 'manual_entry', source_type: :manual_entry, status: :enabled)
   end
 
   before do
@@ -26,7 +26,7 @@ RSpec.describe 'Manual Publication Creation', type: :request do
           source_id: 'https://example.com/manual/123',
           callnum: 'Manual-Shelf-001',
           authority_id: authority.id,
-          bib_source: 'Manual Entry',
+          bib_source: 'manual_entry',
           status: 'todo'
         }
       }
@@ -77,7 +77,7 @@ RSpec.describe 'Manual Publication Creation', type: :request do
             publisher_line: 'Minimal Publisher',
             pub_year: '1950',
             authority_id: authority.id,
-            bib_source: 'Manual Entry',
+            bib_source: 'manual_entry',
             status: 'todo'
           }
         }
@@ -105,7 +105,7 @@ RSpec.describe 'Manual Publication Creation', type: :request do
           publisher_line: 'Test Publisher',
           pub_year: '1960',
           authority_id: authority.id,
-          bib_source: 'Manual Entry',
+          bib_source: 'manual_entry',
           status: 'todo'
         }
       }

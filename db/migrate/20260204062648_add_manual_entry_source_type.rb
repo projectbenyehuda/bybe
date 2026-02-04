@@ -6,7 +6,8 @@ class AddManualEntrySourceType < ActiveRecord::Migration[8.0]
     # Create or update the manual_entry bib source
     # source_type 6 corresponds to :manual_entry (added to enum)
     # Using find_or_create_by to make migration idempotent
-    bib_source = BibSource.find_or_create_by!(title: 'Manual Entry', source_type: 6) do |bs|
+    # Store i18n key 'manual_entry' as title for translation lookup
+    bib_source = BibSource.find_or_create_by!(title: 'manual_entry', source_type: 6) do |bs|
       bs.status = 0 # enabled
       bs.comments = 'Publications entered manually by editors'
     end
@@ -19,6 +20,6 @@ class AddManualEntrySourceType < ActiveRecord::Migration[8.0]
   end
 
   def down
-    BibSource.find_by(title: 'Manual Entry', source_type: 6)&.destroy
+    BibSource.find_by(title: 'manual_entry', source_type: 6)&.destroy
   end
 end

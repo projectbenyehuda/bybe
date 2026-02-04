@@ -40,8 +40,9 @@ If you accidentally pushed to master/main:
 * we use HAML for views, not ERB
 * we use RSpec for testing, not minitest
 * we use Capybara for integration tests of real usage scenarios
-* we use Rails I18n for all user-visible messages and UI labels. If you add a new message, make sure to create appropriatee entries in both config/locales/he.yml and config/locales/en.yml
-* remember the site is in Hebrew, and the view should be oriented right-to-left (if you use the Bootsrap grid, it is *already* right-to-left by default, so that the first column would be shown on the RIGHT)
+* we use Rails I18n for all user-visible messages and UI labels. If you add a new message, make sure to create appropriate entries in both config/locales/he.yml and config/locales/en.yml
+* **CRITICAL**: When storing user-visible text in the database (e.g., names, titles), store the I18n key (lowercase with underscores like `manual_entry`), NOT the translated text. Then use `I18n.t()` when displaying. This ensures the text appears in the correct language based on the user's locale.
+* remember the site is in Hebrew, and the view should be oriented right-to-left (if you use the Bootstrap grid, it is *already* right-to-left by default, so that the first column would be shown on the RIGHT)
 
 ### Project architecture
 
