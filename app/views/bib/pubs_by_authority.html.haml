@@ -19,6 +19,7 @@
       .col-md-6.bib-column
         .bib-column-content
           = render partial: 'find_bibs', locals: {remote: true}
+          = render partial: 'manual_entry_form'
           %h3#total_pubs= t(:total)
           #bibs.pubs-container
             = render partial: 'pubs', locals: {pubs: @pubs}
