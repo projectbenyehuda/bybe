@@ -619,6 +619,8 @@ module BybeUtils
       return I18n.t(:italian)
     when 'grc'
       return I18n.t(:ancient_greek)
+    when 'egy'
+      return I18n.t(:ancient_egyptian)
     when 'hu'
       return I18n.t(:hungarian)
     when 'cs'
@@ -901,7 +903,7 @@ module BybeUtils
 
   def get_langs
     return %w(he en fr de ru yi pl ar el la grc hu cs da no sv nl it pt fa fi
-              is es ro arc lad zh ka bg sa ta sux unk)
+              is es ro arc lad zh ka bg sa ta sux egy unk)
   end
 
   def get_genres_by_row(row) # just one row at a time
