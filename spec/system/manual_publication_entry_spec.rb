@@ -77,11 +77,14 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
           fill_in I18n.t(:publisher), with: 'Test Publisher'
           fill_in I18n.t(:year_published), with: '1950'
 
-          expect do
-            click_button I18n.t(:add_manual_publication)
-            sleep 1 # Wait for AJAX
-          end.to change(Publication, :count).by(1)
+          click_button I18n.t(:add_manual_publication)
         end
+
+        # Wait for AJAX success - new publication should appear in #pubs
+        expect(page).to have_css('#pubs', text: 'Test Publication Title', wait: 5)
+
+        # Verify publication was created in database
+        expect(Publication.count).to eq(1)
 
         publication = Publication.last
         expect(publication.title).to eq('Test Publication Title')
@@ -107,12 +110,14 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
           fill_in I18n.t(:publisher), with: 'Test Publisher'
           fill_in I18n.t(:year_published), with: '1950'
 
-          expect do
-            click_button I18n.t(:add_manual_publication)
-            sleep 1
-          end.to change(Holding, :count).by(1)
+          click_button I18n.t(:add_manual_publication)
         end
 
+        # Wait for AJAX success - new publication should appear
+        expect(page).to have_css('#pubs', text: 'Test Publication', wait: 5)
+
+        # Verify holding was created
+        expect(Holding.count).to eq(1)
         holding = Holding.last
         expect(holding.bib_source.title).to eq('Manual Entry')
         expect(holding.status).to eq('todo')
@@ -132,8 +137,10 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
           fill_in I18n.t(:comments), with: 'Test notes about this publication'
 
           click_button I18n.t(:add_manual_publication)
-          sleep 1
         end
+
+        # Wait for AJAX success - new publication should appear
+        expect(page).to have_css('#pubs', text: 'Test Publication', wait: 5)
 
         publication = Publication.last
         expect(publication.language).to eq('Hebrew')

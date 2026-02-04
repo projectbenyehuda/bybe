@@ -2,6 +2,7 @@
   // Manual form submission - append to the authority's publications table
   var pubsContainer = $("#pubs");
   var tableExists = pubsContainer.find('table').length > 0;
+  var hasHeader = tableExists && pubsContainer.find('tbody tr th').length > 0;
 
   if (!tableExists) {
     // Create table structure if it doesn't exist
@@ -11,8 +12,13 @@
     markup += "</tbody></table>";
     markup += "<%= escape_javascript(render partial: 'shared/note_saving') %>";
     pubsContainer.html(markup);
+  } else if (!hasHeader) {
+    // Table exists but no header - prepend header before appending data
+    var headerMarkup = "<%= escape_javascript(render partial: 'publications/pub_th') %>";
+    var rowMarkup = "<%= escape_javascript(render partial: 'pub', locals: { pub: @pub, with_person: false, with_actions: :none } ) %>";
+    pubsContainer.find('tbody').prepend(headerMarkup).append(rowMarkup);
   } else {
-    // Append to existing table
+    // Table and header exist - just append the row
     var rowMarkup = "<%= escape_javascript(render partial: 'pub', locals: { pub: @pub, with_person: false, with_actions: :none } ) %>";
     pubsContainer.find('tbody').append(rowMarkup);
   }

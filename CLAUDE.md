@@ -90,6 +90,47 @@ Before considering ANY work complete, you MUST:
 - **System specs** (`spec/system/`, requires `js: true`): Test full user interactions with JavaScript using Capybara
 - **Service specs** (`spec/services/`): Test service objects and business logic
 
+### ⚠️ CRITICAL: Never Use `sleep` in System Specs
+
+**ALWAYS use Capybara's built-in waiting mechanisms instead of `sleep` to avoid flaky tests.**
+
+❌ **WRONG** - Using sleep causes flaky tests:
+```ruby
+click_button 'Submit'
+sleep 1  # BAD: Arbitrary wait time, causes flakiness
+expect(page).to have_content('Success')
+```
+
+✅ **CORRECT** - Use Capybara's automatic waiting:
+```ruby
+click_button 'Submit'
+expect(page).to have_content('Success', wait: 5)  # Capybara waits up to 5 seconds
+```
+
+✅ **CORRECT** - Wait for element visibility changes:
+```ruby
+click_button 'Submit'
+expect(page).to have_css('.success-message', visible: true, wait: 5)
+expect(page).to have_css('.loading-spinner', visible: false, wait: 5)
+```
+
+✅ **CORRECT** - Wait for AJAX by checking for updated content:
+```ruby
+click_button 'Add Item'
+expect(page).to have_css('#items-list', text: 'New Item', wait: 5)
+```
+
+**Why this matters:**
+- `sleep` uses fixed time delays that are either too short (flaky) or too long (slow tests)
+- Capybara's `wait:` parameter polls for conditions and continues as soon as they're met
+- This makes tests both faster AND more reliable
+
+**Common patterns:**
+- `have_content(text, wait: 5)` - Wait for text to appear
+- `have_css(selector, visible: true/false, wait: 5)` - Wait for element visibility
+- `have_selector(selector, wait: 5)` - Wait for element to exist
+- Default wait time is 2 seconds; increase with `wait:` parameter for AJAX operations
+
 ### Example: Testing a UI Bug Fix
 
 When fixing a UI bug like scrollspy highlighting:

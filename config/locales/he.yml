@@ -1188,6 +1188,7 @@ he:
   manual_entry_form_header: הזנת פריט באופן ידני
   manual_entry_instructions: מלא את פרטי הפריט להלן. שדות המסומנים ב-* הם שדות חובה.
   toggle_manual_entry_form: פתח/סגור טופס הזנה ידני
+  url_placeholder: קישורית
   add_holding: '+עותק --->'
   enabled: מופעל
   disabled: מושבת

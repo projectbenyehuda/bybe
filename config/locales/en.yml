@@ -855,6 +855,7 @@ en:
   manual_entry_form_header: Manually Enter a Publication
   manual_entry_instructions: Fill in the publication details below. Fields marked with * are required.
   toggle_manual_entry_form: Toggle Manual Entry Form
+  url_placeholder: URL
   add_recommendation: Add Recommendation
   add_stanza_break: Add Stanza Break
   add_tag: Add Tag

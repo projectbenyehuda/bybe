@@ -33,7 +33,8 @@
             .col-md-6
               .form-group
                 = label_tag :source_id, t(:record_source), class: 'form-label'
-                = text_field_tag 'publication[source_id]', '', class: 'form-control', placeholder: 'URL'
+                = text_field_tag 'publication[source_id]', '', class: 'form-control',
+                  placeholder: t(:url_placeholder)
           .row
             .col-md-6
               .form-group
@@ -90,8 +91,8 @@
     // Handle manual form submission
     $('#manual-publication-form').on('ajax:success', function(event) {
       var [data, status, xhr] = event.detail;
-      // Clear the form
-      this.reset();
+      // Clear only user-editable fields, preserve hidden fields
+      $('#manual-publication-form input[type="text"], #manual-publication-form textarea').val('');
       // Hide the form
       $('#manual-entry-form').hide();
       // Disable submit button again
