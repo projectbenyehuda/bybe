@@ -203,6 +203,8 @@ he:
   paste_to_selected: הדבק בפריטים המסומנים
   todo_x_out_of_y_pct: נותרו %{todo} פריטים מתוך %{total}, כלומר סיימנו %{pct} אחוזים.
   error: שגיאה
+  error_creating_publication: שגיאה ביצירת הפריט
+  publication_created_successfully: הפריט נוצר בהצלחה
   file_error: שגיאת קובץ
   bad_encoding: שגיאת קידוד
   parsed: הוסב
@@ -1181,6 +1183,11 @@ he:
   select_status: בחר מצב...
   item_pattern: "תבנית קישורית לפריט בקטלוג (המזהה יישתל במקום שבו תכתבו __ID__)"
   add_publication: '+פריט --->'
+  add_manual_publication: הוסף פריט ידני
+  manual_entry: הקלדה ידנית
+  manual_entry_form_header: הזנת פריט באופן ידני
+  manual_entry_instructions: מלא את פרטי הפריט להלן. שדות המסומנים ב-* הם שדות חובה.
+  toggle_manual_entry_form: פתח/סגור טופס הזנה ידני
   add_holding: '+עותק --->'
   enabled: מופעל
   disabled: מושבת

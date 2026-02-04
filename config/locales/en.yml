@@ -850,6 +850,11 @@ en:
   add_person: Add Person from Database as Topic
   add_person_in_role: 'Add %{author} in role: '
   add_publication: "+Item --->"
+  add_manual_publication: Add Manual Publication
+  manual_entry: Manual Entry
+  manual_entry_form_header: Manually Enter a Publication
+  manual_entry_instructions: Fill in the publication details below. Fields marked with * are required.
+  toggle_manual_entry_form: Toggle Manual Entry Form
   add_recommendation: Add Recommendation
   add_stanza_break: Add Stanza Break
   add_tag: Add Tag
@@ -1341,6 +1346,8 @@ en:
   epub_format: For E-readers Including Kindle
   error: Error
   error_loading_context: Error Loading Context
+  error_creating_publication: Error creating publication
+  publication_created_successfully: Publication created successfully
   escalate_to_editor: Escalate to Chief Editor for Decision
   escalated: Escalated for Additional Review
   etext: E-book

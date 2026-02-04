@@ -1,0 +1,110 @@
+.manual-entry-section
+  %button.btn.btn-sm.btn-info#toggle-manual-form{ type: 'button' }
+    = t(:toggle_manual_entry_form)
+  #manual-entry-form{ style: 'display:none; margin-top: 1rem;' }
+    .card
+      .card-body
+        %h3= t(:manual_entry_form_header)
+        %p.text-muted= t(:manual_entry_instructions)
+        = form_with url: publications_path, method: :post, local: false, html: { id: 'manual-publication-form' } do
+          .row
+            .col-md-6
+              .form-group
+                = label_tag :title, "#{t(:title)} *", class: 'form-label'
+                = text_field_tag 'publication[title]', '', class: 'form-control', required: true
+            .col-md-6
+              .form-group
+                = label_tag :author_line, "#{t(:author)} *", class: 'form-label'
+                = text_field_tag 'publication[author_line]', '', class: 'form-control', required: true
+          .row
+            .col-md-6
+              .form-group
+                = label_tag :publisher_line, "#{t(:publisher)} *", class: 'form-label'
+                = text_field_tag 'publication[publisher_line]', '', class: 'form-control', required: true
+            .col-md-6
+              .form-group
+                = label_tag :pub_year, "#{t(:year_published)} *", class: 'form-label'
+                = text_field_tag 'publication[pub_year]', '', class: 'form-control', required: true
+          .row
+            .col-md-6
+              .form-group
+                = label_tag :language, t(:language), class: 'form-label'
+                = text_field_tag 'publication[language]', '', class: 'form-control'
+            .col-md-6
+              .form-group
+                = label_tag :source_id, t(:record_source), class: 'form-label'
+                = text_field_tag 'publication[source_id]', '', class: 'form-control', placeholder: 'URL'
+          .row
+            .col-md-6
+              .form-group
+                = label_tag :callnum, t(:location), class: 'form-label'
+                = text_field_tag 'publication[callnum]', '', class: 'form-control'
+            .col-md-6
+              .form-group
+                = label_tag :notes, t(:comments), class: 'form-label'
+                = text_area_tag 'publication[notes]', '', class: 'form-control', rows: 2
+          .row
+            .col-md-12
+              = hidden_field_tag 'publication[authority_id]', '', id: 'manual-authority-id'
+              = hidden_field_tag 'publication[bib_source]', 'Manual Entry'
+              = hidden_field_tag 'publication[status]', 'todo'
+              = hidden_field_tag 'from_manual_form', 'true'
+              = button_tag t(:add_manual_publication), type: 'submit',
+                                                       class: 'btn btn-primary',
+                                                       id: 'manual-submit-btn',
+                                                       disabled: true
+
+:javascript
+  $(document).ready(function() {
+    // Function to check if authority is selected and enable/disable submit button
+    function updateManualSubmitButton() {
+      var authorityId = $('#authority_id').val();
+      if (authorityId && authorityId !== '') {
+        $('#manual-submit-btn').prop('disabled', false);
+        $('#manual-authority-id').val(authorityId);
+      } else {
+        $('#manual-submit-btn').prop('disabled', true);
+        $('#manual-authority-id').val('');
+      }
+    }
+
+    // Toggle form visibility
+    $('#toggle-manual-form').click(function() {
+      $('#manual-entry-form').toggle();
+      // Update submit button state when form is shown
+      if ($('#manual-entry-form').is(':visible')) {
+        updateManualSubmitButton();
+      }
+    });
+
+    // Update manual form authority_id when main authority is selected
+    $('#authority_id').on('change', function() {
+      updateManualSubmitButton();
+    });
+
+    // Also listen for autocomplete selection
+    $('#authority').on('railsAutocomplete.select', function(event, data) {
+      updateManualSubmitButton();
+    });
+
+    // Handle manual form submission
+    $('#manual-publication-form').on('ajax:success', function(event) {
+      var [data, status, xhr] = event.detail;
+      // Clear the form
+      this.reset();
+      // Hide the form
+      $('#manual-entry-form').hide();
+      // Disable submit button again
+      $('#manual-submit-btn').prop('disabled', true);
+      // The response should append the new publication to #pubs table
+      // No need to reload - the server will handle rendering the new row
+      alert("#{t(:publication_created_successfully)}");
+    }).on('ajax:error', function(event) {
+      var [data, status, xhr] = event.detail;
+      alert("#{t(:error_creating_publication)}");
+      $('#manual-submit-btn').prop('disabled', false);
+    });
+
+    // Initialize button state on page load
+    updateManualSubmitButton();
+  });

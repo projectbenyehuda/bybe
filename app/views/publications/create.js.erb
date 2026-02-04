@@ -1,2 +1,23 @@
-var markup = "<%= escape_javascript(render partial: 'pub', locals: { pub: @pub, with_person: false, with_actions: :none } ) %>";
-$("#pubs tbody").append(markup);
+<% if params[:from_manual_form] == 'true' %>
+  // Manual form submission - append to the authority's publications table
+  var pubsContainer = $("#pubs");
+  var tableExists = pubsContainer.find('table').length > 0;
+
+  if (!tableExists) {
+    // Create table structure if it doesn't exist
+    var markup = "<table class='table table-sm'><tbody>";
+    markup += "<%= escape_javascript(render partial: 'publications/pub_th') %>";
+    markup += "<%= escape_javascript(render partial: 'pub', locals: { pub: @pub, with_person: false, with_actions: :none } ) %>";
+    markup += "</tbody></table>";
+    markup += "<%= escape_javascript(render partial: 'shared/note_saving') %>";
+    pubsContainer.html(markup);
+  } else {
+    // Append to existing table
+    var rowMarkup = "<%= escape_javascript(render partial: 'pub', locals: { pub: @pub, with_person: false, with_actions: :none } ) %>";
+    pubsContainer.find('tbody').append(rowMarkup);
+  }
+<% else %>
+  // Default behavior - for other publication creation contexts
+  var markup = "<%= escape_javascript(render partial: 'pub', locals: { pub: @pub, with_person: false, with_actions: :none } ) %>";
+  $("#pubs tbody").append(markup);
+<% end %>
