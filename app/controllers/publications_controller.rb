@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class PublicationsController < ApplicationController
   before_action :require_editor
   before_action :set_publication, only: %i(show edit update destroy)
@@ -27,8 +29,7 @@ class PublicationsController < ApplicationController
 
   # GET /publications/1
   # GET /publications/1.json
-  def show
-  end
+  def show; end
 
   # GET /publications/new
   def new
@@ -36,8 +37,7 @@ class PublicationsController < ApplicationController
   end
 
   # GET /publications/1/edit
-  def edit
-  end
+  def edit; end
 
   # POST /publications
   # POST /publications.json
@@ -45,7 +45,7 @@ class PublicationsController < ApplicationController
     pub_params = publication_params
     location = pub_params.delete(:callnum)
     @pub = Publication.new(pub_params)
-    sid = (@pub.source_id.class == Array ? @pub.source_id[0] : @pub.source_id)
+    sid = (@pub.source_id.instance_of?(Array) ? @pub.source_id[0] : @pub.source_id)
     @pub.source_id = sid
     @holding = Holding.new(source_id: sid)
     @holding.location = location
@@ -115,7 +115,7 @@ class PublicationsController < ApplicationController
   end
 
   def publication_params
-    params.require(:publication).permit(:title, :publisher_line, :author_line, :notes, :source_id, :authority_id,
-                                        :status, :pub_year, :language, :callnum)
+    params.expect(publication: %i(title publisher_line author_line notes source_id authority_id
+                                  status pub_year language callnum))
   end
 end

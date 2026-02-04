@@ -40,8 +40,9 @@ If you accidentally pushed to master/main:
 * we use HAML for views, not ERB
 * we use RSpec for testing, not minitest
 * we use Capybara for integration tests of real usage scenarios
-* we use Rails I18n for all user-visible messages and UI labels. If you add a new message, make sure to create appropriatee entries in both config/locales/he.yml and config/locales/en.yml
-* remember the site is in Hebrew, and the view should be oriented right-to-left (if you use the Bootsrap grid, it is *already* right-to-left by default, so that the first column would be shown on the RIGHT)
+* we use Rails I18n for all user-visible messages and UI labels. If you add a new message, make sure to create appropriate entries in both config/locales/he.yml and config/locales/en.yml
+* **CRITICAL**: When storing user-visible text in the database (e.g., names, titles), store the I18n key (lowercase with underscores like `manual_entry`), NOT the translated text. Then use `I18n.t()` when displaying. This ensures the text appears in the correct language based on the user's locale.
+* remember the site is in Hebrew, and the view should be oriented right-to-left (if you use the Bootstrap grid, it is *already* right-to-left by default, so that the first column would be shown on the RIGHT)
 
 ### Project architecture
 
@@ -89,6 +90,47 @@ Before considering ANY work complete, you MUST:
 - **Request specs** (`spec/requests/`): Test HTTP requests/responses, API endpoints
 - **System specs** (`spec/system/`, requires `js: true`): Test full user interactions with JavaScript using Capybara
 - **Service specs** (`spec/services/`): Test service objects and business logic
+
+### ⚠️ CRITICAL: Never Use `sleep` in System Specs
+
+**ALWAYS use Capybara's built-in waiting mechanisms instead of `sleep` to avoid flaky tests.**
+
+❌ **WRONG** - Using sleep causes flaky tests:
+```ruby
+click_button 'Submit'
+sleep 1  # BAD: Arbitrary wait time, causes flakiness
+expect(page).to have_content('Success')
+```
+
+✅ **CORRECT** - Use Capybara's automatic waiting:
+```ruby
+click_button 'Submit'
+expect(page).to have_content('Success', wait: 5)  # Capybara waits up to 5 seconds
+```
+
+✅ **CORRECT** - Wait for element visibility changes:
+```ruby
+click_button 'Submit'
+expect(page).to have_css('.success-message', visible: true, wait: 5)
+expect(page).to have_css('.loading-spinner', visible: false, wait: 5)
+```
+
+✅ **CORRECT** - Wait for AJAX by checking for updated content:
+```ruby
+click_button 'Add Item'
+expect(page).to have_css('#items-list', text: 'New Item', wait: 5)
+```
+
+**Why this matters:**
+- `sleep` uses fixed time delays that are either too short (flaky) or too long (slow tests)
+- Capybara's `wait:` parameter polls for conditions and continues as soon as they're met
+- This makes tests both faster AND more reliable
+
+**Common patterns:**
+- `have_content(text, wait: 5)` - Wait for text to appear
+- `have_css(selector, visible: true/false, wait: 5)` - Wait for element visibility
+- `have_selector(selector, wait: 5)` - Wait for element to exist
+- Default wait time is 2 seconds; increase with `wait:` parameter for AJAX operations
 
 ### Example: Testing a UI Bug Fix
 

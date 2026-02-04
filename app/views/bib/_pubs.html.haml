@@ -41,7 +41,7 @@
           .pub-field-row
             .pub-field.pub-field-full
               %strong= t(:comments) + ':'
-              %span= pub.notes.sub("\n", "<br />").html_safe
+              %span= simple_format(pub.notes, {}, sanitize: true)
 
 :javascript
   $(document).ready(function() {
