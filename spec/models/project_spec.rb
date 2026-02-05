@@ -38,4 +38,22 @@ RSpec.describe Project, type: :model do
       expect(described_class.active).to include(today_project)
     end
   end
+
+  describe 'tasks_project_id' do
+    it 'can be set and retrieved' do
+      project = create(:project, tasks_project_id: 456)
+      expect(project.tasks_project_id).to eq(456)
+    end
+
+    it 'is optional' do
+      project = build(:project, tasks_project_id: nil)
+      expect(project).to be_valid
+    end
+
+    it 'can be used to find projects' do
+      project = create(:project, tasks_project_id: 789)
+      found = described_class.find_by(tasks_project_id: 789)
+      expect(found).to eq(project)
+    end
+  end
 end

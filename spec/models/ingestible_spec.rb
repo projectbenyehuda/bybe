@@ -588,4 +588,47 @@ describe Ingestible do
       end
     end
   end
+
+  describe 'auto-population of project_id from tasks_project_id' do
+    let!(:project) { create(:project, tasks_project_id: 123) }
+
+    context 'when tasks_project_id matches a project' do
+      it 'auto-populates project_id on create' do
+        ingestible = create(:ingestible, tasks_project_id: 123)
+        expect(ingestible.project_id).to eq(project.id)
+      end
+
+      it 'auto-populates project_id on update' do
+        ingestible = create(:ingestible)
+        expect(ingestible.project_id).to be_nil
+
+        ingestible.update!(tasks_project_id: 123)
+        expect(ingestible.project_id).to eq(project.id)
+      end
+    end
+
+    context 'when tasks_project_id does not match any project' do
+      it 'does not set project_id' do
+        ingestible = create(:ingestible, tasks_project_id: 999)
+        expect(ingestible.project_id).to be_nil
+      end
+    end
+
+    context 'when project_id is already set' do
+      let(:other_project) { create(:project) }
+
+      it 'does not override existing project_id' do
+        ingestible = create(:ingestible, project_id: other_project.id)
+        ingestible.update!(tasks_project_id: 123)
+        expect(ingestible.project_id).to eq(other_project.id)
+      end
+    end
+
+    context 'when tasks_project_id is not set' do
+      it 'does not set project_id' do
+        ingestible = create(:ingestible)
+        expect(ingestible.project_id).to be_nil
+      end
+    end
+  end
 end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'pandoc-ruby' # for generic DOCX-to-HTML conversions
-require 'set'
 
 # Ingestible is a set of text being prepared for inclusion into a main database
 class Ingestible < ApplicationRecord
@@ -30,6 +29,7 @@ class Ingestible < ApplicationRecord
   has_one_attached :docx # ActiveStorage
 
   before_save :update_timestamps
+  before_save :populate_project_from_tasks_project_id
   before_create :init_timestamps
 
   # after_commit :update_parsing # this results in ActiveStorage::FileNotFoundError in dev/local storage
@@ -123,14 +123,14 @@ class Ingestible < ApplicationRecord
     end
 
     # Check for other Ingestibles with same prospective volume
-    other_ingestibles = Ingestible.where(status: [:draft, :awaiting_authorities])
-                                   .where.not(id: id) # Exclude current ingestible
+    other_ingestibles = Ingestible.where(status: %i(draft awaiting_authorities))
+                                  .where.not(id: id) # Exclude current ingestible
 
-    if prospective_volume_id.present? && prospective_volume_id[0] == 'P'
-      other_ingestibles = other_ingestibles.where(prospective_volume_id: prospective_volume_id)
-    else
-      other_ingestibles = other_ingestibles.where(prospective_volume_title: prospective_volume_title)
-    end
+    other_ingestibles = if prospective_volume_id.present? && prospective_volume_id[0] == 'P'
+                          other_ingestibles.where(prospective_volume_id: prospective_volume_id)
+                        else
+                          other_ingestibles.where(prospective_volume_title: prospective_volume_title)
+                        end
 
     other_ingestibles.each do |ingestible|
       if authorities_match_json?(ingestible.collection_authorities, collection_authorities)
@@ -486,6 +486,15 @@ class Ingestible < ApplicationRecord
 
   private
 
+  # Auto-populate project_id when tasks_project_id matches a Project's tasks_project_id
+  def populate_project_from_tasks_project_id
+    return if tasks_project_id.blank?
+    return if project_id.present? # Don't override existing project_id
+
+    matching_project = Project.find_by(tasks_project_id: tasks_project_id)
+    self.project_id = matching_project.id if matching_project.present?
+  end
+
   # Merge work-specific authorities with defaults per role
   # If a role is specified in work authorities, it overrides the default for that role
   # If a role is not specified in work authorities, the default for that role is used
@@ -501,7 +510,7 @@ class Ingestible < ApplicationRecord
     return work_auths if default_auths.empty?
 
     # Get roles present in work authorities
-    work_roles = work_auths.map { |a| a['role'] }.uniq
+    work_roles = work_auths.pluck('role').uniq
 
     # Start with work authorities, then add defaults for roles not present in work authorities
     result = work_auths.dup
@@ -517,10 +526,10 @@ class Ingestible < ApplicationRecord
   # Check if a collection's involved_authorities match the provided JSON authorities
   def authorities_match?(involved_authorities, json_authorities)
     # Convert involved_authorities to comparable format (set of [authority_id, role] pairs)
-    ia_set = involved_authorities.map { |ia| [ia.authority_id, ia.role] }.to_set
+    ia_set = involved_authorities.to_set { |ia| [ia.authority_id, ia.role] }
 
     # Convert JSON authorities to comparable format
-    json_set = json_authorities.map { |a| [a['authority_id'], a['role']] }.to_set
+    json_set = json_authorities.to_set { |a| [a['authority_id'], a['role']] }
 
     ia_set == json_set
   end
@@ -533,8 +542,8 @@ class Ingestible < ApplicationRecord
 
     # Parse and compare
     begin
-      auths1 = JSON.parse(json_authorities1).map { |a| [a['authority_id'], a['role']] }.to_set
-      auths2 = JSON.parse(json_authorities2).map { |a| [a['authority_id'], a['role']] }.to_set
+      auths1 = JSON.parse(json_authorities1).to_set { |a| [a['authority_id'], a['role']] }
+      auths2 = JSON.parse(json_authorities2).to_set { |a| [a['authority_id'], a['role']] }
 
       auths1 == auths2
     rescue JSON::ParserError => e

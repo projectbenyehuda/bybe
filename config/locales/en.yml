@@ -2546,6 +2546,7 @@ en:
     new:
       title: Projects New Title
     no_end_date: Projects No End Date
+    tasks_project_id_hint: Project ID in the tasks system (benyehuda-cases-server). Ingestibles with this ID will be automatically linked to this project
   proof_contact_html: Proof Contact Html
   proof_failed: Proof Failed
   proof_file: Proof File
