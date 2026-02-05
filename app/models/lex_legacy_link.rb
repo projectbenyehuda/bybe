@@ -7,7 +7,7 @@ class LexLegacyLink < ApplicationRecord
   before_validation do
     old_path&.strip!
     old_path&.downcase!
-    old_path.gsub!(%r{\Ahttp(s)?://(www\.)?benyehuda.org/lexicon/}, '')
+    old_path.gsub!(%r{\Ahttp(s)?://(www\.)?#{Lexicon::OLD_LEXICON_PATH}/}, '')
     old_path[1..] if old_path&.start_with?('/')
   end
 

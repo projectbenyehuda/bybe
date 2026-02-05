@@ -77,11 +77,13 @@ module Lexicon
     end
 
     def show
-      # If we've not yet migrated this entry, redirect to old site
-      if LexEntry::MIGRATION_STATUSES.include?(@lex_entry.status)
-        lex_file = @lex_entry.lex_file
-        if lex_file.present?
-          redirect_to "https://benyehuda.org/lexicon/#{lex_file.fname}", allow_other_host: true
+      # If we've not yet migrated this entry and user is not a lexicon editor, redirect to old site
+      # Lexicon editors are allowed to view migrated but not-yet-published entries on the new site
+      if LexEntry::MIGRATION_STATUSES.include?(@lex_entry.status) &&
+           !(@lex_entry.lex_item.present? && current_user&.editor? && current_user&.has_bit?('edit_lexicon'))
+        old_path = @lex_entry.old_lexicon_url
+        if old_path.present?
+          redirect_to old_path, allow_other_host: true
           return
         end
       end
