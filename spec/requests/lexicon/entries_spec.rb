@@ -3,19 +3,16 @@
 require 'rails_helper'
 
 describe '/lexicon/entries' do
-  before do
-    login_as_lexicon_editor
-  end
-
   describe '#index' do
     subject { get '/lex/entries', params: params }
 
-    let(:params) { {} }
-
     before do
+      login_as_lexicon_editor
       create_list(:lex_entry, 2, :person)
       create_list(:lex_entry, 2, :publication)
     end
+
+    let(:params) { {} }
 
     it { is_expected.to eq(200) }
 
@@ -75,6 +72,10 @@ describe '/lexicon/entries' do
   describe '#edit' do
     subject { get "/lex/entries/#{entry.id}/edit" }
 
+    before do
+      login_as_lexicon_editor
+    end
+
     context 'when entry is a Person' do
       let(:entry) { create(:lex_entry, :person) }
       let(:authority) { create(:authority) }
@@ -90,20 +91,40 @@ describe '/lexicon/entries' do
   end
 
   describe '#show' do
-    subject { get "/lex/entries/#{entry.id}" }
+    subject(:call) { get "/lex/entries/#{entry.id}" }
 
     context 'when entry is not migrated yet' do
       let(:entry) { create(:lex_entry, :person, status: :raw) }
       let!(:lex_file) { create(:lex_file, lex_entry: entry, fname: '00021.php') }
 
       it 'redirects to old_file' do
-        expect(subject).to redirect_to('https://benyehuda.org/lexicon/00021.php')
+        expect(call).to redirect_to('https://benyehuda.org/lexicon/00021.php')
+      end
+    end
+
+    context 'when entry is migrated but not published' do
+      let(:entry) { create(:lex_entry, :person, status: :verifying) }
+      let!(:lex_file) { create(:lex_file, lex_entry: entry, fname: '00022.php') }
+
+      context 'when user is not logged in' do
+        it 'redirects to old lexicon' do
+          expect(call).to redirect_to('https://benyehuda.org/lexicon/00022.php')
+        end
+      end
+
+      context 'when user is a lexicon editor' do
+        before do
+          login_as_lexicon_editor
+        end
+
+        it 'renders page' do
+          expect(call).to eq(200)
+        end
       end
     end
 
     context 'when entry is a Person' do
-      let(:entry) { create(:lex_entry, :person) }
-      let(:authority) { create(:authority) }
+      let(:entry) { create(:lex_entry, :person, status: :published) }
 
       it { is_expected.to eq(200) }
 
@@ -112,12 +133,14 @@ describe '/lexicon/entries' do
           entry.lex_item.update!(authority_id: authority.id)
         end
 
+        let(:authority) { create(:authority) }
+
         it { is_expected.to eq(200) }
       end
     end
 
     context 'when entry is a Publication' do
-      let(:entry) { create(:lex_entry, :publication) }
+      let(:entry) { create(:lex_entry, :publication, status: :published) }
 
       it { is_expected.to eq(200) }
     end
@@ -125,6 +148,10 @@ describe '/lexicon/entries' do
 
   describe 'DELETE /destroy' do
     subject(:call) { delete "/lex/entries/#{entry.id}" }
+
+    before do
+      login_as_lexicon_editor
+    end
 
     context 'when entry is a Person' do
       let!(:entry) { create(:lex_entry, :person) }

@@ -38,6 +38,14 @@ class LexEntry < ApplicationRecord
 
   update_index('lex_entries') { self }
 
+  # returns link to page representing this entry in old lexicon system
+  # TODO: remove after migration is complete
+  def old_lexicon_url
+    return nil unless lex_file
+
+    "#{Lexicon::OLD_LEXICON_URL}/#{lex_file.fname}"
+  end
+
   # Returns the attachment selected as the profile image, or nil if none selected
   def profile_image
     return nil unless profile_image_id
