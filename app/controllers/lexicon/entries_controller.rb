@@ -189,9 +189,9 @@ module Lexicon
 
       case @sort
       when 'alphabetical_asc'
-        scope.order('lex_entries.title ASC')
+        scope.order('lex_entries.sort_title ASC')
       when 'alphabetical_desc'
-        scope.order('lex_entries.title DESC')
+        scope.order('lex_entries.sort_title DESC')
       when 'birth_year_asc'
         scope.order(Arel.sql('CASE WHEN lex_people.birthdate IS NULL THEN 1 ELSE 0 END, lex_people.birthdate ASC'))
       when 'birth_year_desc'
