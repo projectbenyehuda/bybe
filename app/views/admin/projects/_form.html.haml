@@ -5,6 +5,7 @@
     = f.input :description, as: :text, input_html: { rows: 5, cols: 100 }
     = f.input :start_date, as: :date, html5: true
     = f.input :end_date, as: :date, html5: true, hint: t('projects.end_date_hint')
+    = f.input :tasks_project_id, hint: t('projects.tasks_project_id_hint')
     %hr
     %h4= t('projects.contact_information')
     = f.input :contact_person_name

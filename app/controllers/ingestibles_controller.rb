@@ -482,7 +482,8 @@ class IngestiblesController < ApplicationController
                      toc_buffer
                      credits
                      originating_task
-                     project_id)
+                     project_id
+                     tasks_project_id)
     )
   end
 

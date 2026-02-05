@@ -74,3 +74,17 @@ en:
         birthdate: Birthdate
         deathdate: Deathdate
         gender: Gender
+      project:
+        one: Project
+        other: Projects
+        name: Project Name
+        description: Description
+        start_date: Start Date
+        end_date: End Date
+        contact_person_name: Contact Person Name
+        contact_person_phone: Contact Person Phone
+        contact_person_email: Contact Person Email
+        comments: Comments
+        default_external_link: Default External Link
+        default_link_description: Default Link Description
+        tasks_project_id: Tasks System Project ID
