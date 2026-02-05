@@ -136,5 +136,50 @@ describe ExtractFirstFootnoteReference do
         expect(result[:cleaned_html].strip).to eq(expected_cleaned_html)
       end
     end
+
+    context 'when footnote reference is immediately followed by text without blank line' do
+      let(:markdown) do
+        <<~MD
+          [^1]
+          The quick brown fox jumps over the lazy dog.
+
+          [^1]: Footnote text here
+        MD
+      end
+      let(:html) do
+        <<~HTML
+          <p><a href="#fn:1" id="fnref:1" title="see footnote" class="footnote"><sup>1</sup></a>The quick brown fox jumps over the lazy dog.</p>
+
+          <div class="footnotes">
+          <hr />
+          <ol>
+          <li id="fn:1">
+          <span>Footnote text here</span>
+          </li>
+          </ol>
+          </div>
+        HTML
+      end
+      let(:expected_cleaned_html) do
+        <<~HTML.strip
+          <p>The quick brown fox jumps over the lazy dog.</p>
+
+          <div class="footnotes">
+          <hr />
+          <ol>
+          <li id="fn:1">
+          <span>Footnote text here</span>
+          </li>
+          </ol>
+          </div>
+        HTML
+      end
+
+      it 'extracts the footnote link and preserves the following text' do
+        expected_link = '<a href="#fn:1" id="fnref:1" title="see footnote" class="footnote"><sup>1</sup></a>'
+        expect(result[:footnote_html]).to eq(expected_link)
+        expect(result[:cleaned_html].strip).to eq(expected_cleaned_html)
+      end
+    end
   end
 end
