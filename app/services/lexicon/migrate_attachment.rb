@@ -7,7 +7,7 @@ module Lexicon
 
     def call(src, lex_entry)
       # removing website prefix if provided (legacy files should use relative paths only but who knows...)
-      src = src.gsub(%r{\Ahttp(s)?://benyehuda.org/lexicon/}, '')
+      src = src.gsub(%r{\Ahttp(s)?://#{Lexicon::OLD_LEXICON_PATH}/}, '')
 
       match = src.match(LEXICON_FILES_REGEX)
       return nil unless match
