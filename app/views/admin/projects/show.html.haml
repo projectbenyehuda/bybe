@@ -10,6 +10,10 @@
   %p
     %b= Project.human_attribute_name(:end_date) + ':'
     = @project.end_date&.strftime('%d-%m-%Y') || t('projects.no_end_date')
+  - if @project.tasks_project_id.present?
+    %p
+      %b= Project.human_attribute_name(:tasks_project_id) + ':'
+      = @project.tasks_project_id
   %p
     %b= t(:status) + ':'
     - if @project.end_date.nil? || @project.end_date >= Date.current
@@ -52,7 +56,7 @@
       %b= Project.human_attribute_name(:comments) + ':'
       %br
       = @project.comments
-  
+
   %p
   = link_to t(:edit), edit_admin_project_path(@project), class: 'btn btn-primary'
   = link_to t(:back), admin_projects_path

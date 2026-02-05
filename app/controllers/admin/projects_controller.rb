@@ -57,17 +57,20 @@ module Admin
     end
 
     def project_params
-      params.require(:project).permit(
-        :name,
-        :description,
-        :start_date,
-        :end_date,
-        :contact_person_name,
-        :contact_person_phone,
-        :contact_person_email,
-        :comments,
-        :default_external_link,
-        :default_link_description
+      params.expect(
+        project: %i(
+          name
+          description
+          start_date
+          end_date
+          contact_person_name
+          contact_person_phone
+          contact_person_email
+          comments
+          default_external_link
+          default_link_description
+          tasks_project_id
+        )
       )
     end
   end
