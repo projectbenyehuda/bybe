@@ -10,40 +10,44 @@
           .row
             .col-md-6
               .form-group
-                = label_tag :title, "#{t(:title)} *", class: 'form-label'
-                = text_field_tag 'publication[title]', '', class: 'form-control', required: true
+                = label_tag :manual_title, "#{t(:title)} *", class: 'form-label'
+                = text_field_tag 'publication[title]', '', id: 'manual_title', class: 'form-control', required: true
             .col-md-6
               .form-group
-                = label_tag :author_line, "#{t(:author)} *", class: 'form-label'
-                = text_field_tag 'publication[author_line]', '', class: 'form-control', required: true
+                = label_tag :manual_author_line, "#{t(:author)} *", class: 'form-label'
+                = text_field_tag 'publication[author_line]', '',
+                                 id: 'manual_author_line', class: 'form-control', required: true
           .row
             .col-md-6
               .form-group
-                = label_tag :publisher_line, "#{t(:publisher)} *", class: 'form-label'
-                = text_field_tag 'publication[publisher_line]', '', class: 'form-control', required: true
+                = label_tag :manual_publisher_line, "#{t(:publisher)} *", class: 'form-label'
+                = text_field_tag 'publication[publisher_line]', '',
+                                 id: 'manual_publisher_line', class: 'form-control', required: true
             .col-md-6
               .form-group
-                = label_tag :pub_year, "#{t(:year_published)} *", class: 'form-label'
-                = text_field_tag 'publication[pub_year]', '', class: 'form-control', required: true
+                = label_tag :manual_pub_year, "#{t(:year_published)} *", class: 'form-label'
+                = text_field_tag 'publication[pub_year]', '',
+                                 id: 'manual_pub_year', class: 'form-control', required: true
           .row
             .col-md-6
               .form-group
-                = label_tag :language, t(:language), class: 'form-label'
-                = text_field_tag 'publication[language]', '', class: 'form-control'
+                = label_tag :manual_language, t(:language), class: 'form-label'
+                = text_field_tag 'publication[language]', '', id: 'manual_language', class: 'form-control'
             .col-md-6
               .form-group
-                = label_tag :source_id, t(:record_source), class: 'form-label'
-                = text_field_tag 'publication[source_id]', '', class: 'form-control',
-                  placeholder: t(:url_placeholder)
+                = label_tag :manual_source_id, t(:record_source), class: 'form-label'
+                = text_field_tag 'publication[source_id]', '',
+                                 id: 'manual_source_id', class: 'form-control',
+                                 placeholder: t(:url_placeholder)
           .row
             .col-md-6
               .form-group
-                = label_tag :callnum, t(:location), class: 'form-label'
-                = text_field_tag 'publication[callnum]', '', class: 'form-control'
+                = label_tag :manual_callnum, t(:location), class: 'form-label'
+                = text_field_tag 'publication[callnum]', '', id: 'manual_callnum', class: 'form-control'
             .col-md-6
               .form-group
-                = label_tag :notes, t(:comments), class: 'form-label'
-                = text_area_tag 'publication[notes]', '', class: 'form-control', rows: 2
+                = label_tag :manual_notes, t(:comments), class: 'form-label'
+                = text_area_tag 'publication[notes]', '', id: 'manual_notes', class: 'form-control', rows: 2
           .row
             .col-md-12
               = hidden_field_tag 'publication[authority_id]', '', id: 'manual-authority-id'
