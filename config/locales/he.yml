@@ -2238,6 +2238,7 @@ he:
     person_works:
       index:
         add_work: הוספת יצירה
+        drag_to_reorder: גרור לשינוי סדר
       form:
         no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
         select_publication: בחר פרסום...

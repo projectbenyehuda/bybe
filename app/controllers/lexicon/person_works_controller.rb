@@ -8,7 +8,7 @@ module Lexicon
     end
     before_action :set_work, only: %i(edit update destroy)
     before_action :set_person, only: %i(new create index)
-    after_action :sync_verification_checklist, only: %i(create update destroy)
+    after_action :sync_verification_checklist, only: %i(create update destroy reorder)
 
     layout false
 
@@ -38,6 +38,15 @@ module Lexicon
 
     def destroy
       @work.destroy!
+    end
+
+    def reorder
+      work_id = params[:work_id]
+      new_position = params[:new_pos].to_i - 1 # Convert from 1-based to 0-based
+
+      LexPersonWork.reorder_work(work_id, new_position)
+
+      head :ok
     end
 
     private
