@@ -51,7 +51,9 @@ task :ingest_lexicon, [:dirname] => :environment do |_taskname, args|
   files.each do |fname|
     next if IGNORE_LIST.include?(fname[(fname.rindex('/') + 1)..])
 
-    process_legacy_lexicon_entry(fname)
+    Chewy.strategy(:atomic) do
+      process_legacy_lexicon_entry(fname)
+    end
     i += 1
     print "\n...#{i} " if i % 20 == 0
   rescue ArgumentError => e
