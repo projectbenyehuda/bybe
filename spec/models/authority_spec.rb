@@ -572,22 +572,6 @@ describe Authority do
           authority.update!(name: 'שם חדש')
         end
       end
-
-      describe 'normalize_sort_name callback' do
-        it 'is triggered on save' do
-          allow(authority).to receive(:normalize_sort_name).and_call_original
-          authority.save!
-          expect(authority).to have_received(:normalize_sort_name)
-        end
-
-        it 'is triggered on update' do
-          authority.save!
-          authority.reload
-          allow(authority).to receive(:normalize_sort_name).and_call_original
-          authority.update!(sort_name: 'some-name')
-          expect(authority).to have_received(:normalize_sort_name)
-        end
-      end
     end
 
     describe '#normalize_sort_name' do

@@ -58,14 +58,13 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
       click_button I18n.t(:toggle_manual_entry_form)
       expect(find('#manual-submit-btn')).to be_disabled
 
-      # Now select an authority
+      # Now select an authority by setting value and triggering change event
+      # This simulates the actual autocomplete selection behavior
       page.execute_script(<<~JS)
-        $('#authority_id').val(#{authority.id});
-        $('#manual-submit-btn').prop('disabled', false);
-        $('#manual-authority-id').val(#{authority.id});
+        $('#authority_id').val(#{authority.id}).trigger('change');
       JS
 
-      # Verify button is now enabled
+      # Verify button is now enabled (via the JavaScript change handler)
       expect(find('#manual-submit-btn')).not_to be_disabled
     end
 
@@ -74,11 +73,10 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
         # Open the manual entry form
         click_button I18n.t(:toggle_manual_entry_form)
 
-        # Set up authority selection (bypass event complexity, set final state)
+        # Set up authority selection and trigger change event
+        # This simulates actual autocomplete behavior and tests the JavaScript handler
         page.execute_script(<<~JS)
-          $('#authority_id').val(#{authority.id});
-          $('#manual-authority-id').val(#{authority.id});
-          $('#manual-submit-btn').prop('disabled', false);
+          $('#authority_id').val(#{authority.id}).trigger('change');
         JS
       end
 
