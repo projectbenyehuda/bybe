@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_21_214929) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -754,6 +754,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_21_214929) do
     t.integer "work_type", null: false
     t.integer "publication_id"
     t.integer "collection_id"
+    t.integer "seqno", null: false
     t.index ["collection_id"], name: "index_lex_person_works_on_collection_id"
     t.index ["lex_person_id"], name: "index_lex_person_works_on_lex_person_id"
     t.index ["lex_publication_id"], name: "index_lex_person_works_on_lex_publication_id"
