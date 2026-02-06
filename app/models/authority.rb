@@ -105,6 +105,7 @@ class Authority < ApplicationRecord
   end
 
   before_save :update_other_designation, if: :name_changed?
+  before_save :normalize_sort_name
 
   after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
 
@@ -129,6 +130,14 @@ class Authority < ApplicationRecord
     newforms = AlternateHebrewForms.call(name)
     combined = (existing + newforms).uniq
     self.other_designation = combined.join('; ')
+  end
+
+  def normalize_sort_name
+    return if sort_name.blank?
+
+    # Replace Hebrew maqaf (U+05BE), regular hyphen-minus (U+002D),
+    # en dash (U+2013), and em dash (U+2014) with spaces
+    self.sort_name = sort_name.gsub(/[\u05BE\u002D\u2013\u2014]/, ' ')
   end
 
   # return all collections of type volume that are associated with this authority
