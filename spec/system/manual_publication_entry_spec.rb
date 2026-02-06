@@ -53,102 +53,123 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
   end
 
   describe 'creating a manual publication' do
-    before do
-      # Select an authority first
-      fill_in 'authority', with: authority.name
-      # Simulate autocomplete selection
-      page.execute_script("$('#authority_id').val(#{authority.id});")
-      page.execute_script("$('#authority').trigger('railsAutocomplete.select', [{item: {id: #{authority.id}}}]);")
-
-      # Open the manual entry form
-      click_button I18n.t(:toggle_manual_entry_form)
-    end
-
     it 'enables submit button when authority is selected' do
-      submit_btn = find('#manual-submit-btn')
-      expect(submit_btn).not_to be_disabled
+      # First, verify button is disabled when form is opened without authority
+      click_button I18n.t(:toggle_manual_entry_form)
+      expect(find('#manual-submit-btn')).to be_disabled
+
+      # Now select an authority by setting value and triggering change event
+      # This simulates the actual autocomplete selection behavior
+      page.execute_script(<<~JS)
+        $('#authority_id').val(#{authority.id}).trigger('change');
+      JS
+
+      # Verify button is now enabled (via the JavaScript change handler)
+      expect(find('#manual-submit-btn')).not_to be_disabled
     end
 
-    context 'with valid required fields' do
-      it 'creates a new publication with manual_entry bib_source and displays it in the publications list' do
-        within '#manual-entry-form' do
-          fill_in I18n.t(:title), with: 'Test Publication Title'
-          fill_in I18n.t(:author), with: 'Test Author'
-          fill_in I18n.t(:publisher), with: 'Test Publisher'
-          fill_in I18n.t(:year_published), with: '1950'
+    context 'with form ready to submit' do
+      before do
+        # Open the manual entry form
+        click_button I18n.t(:toggle_manual_entry_form)
 
-          click_button I18n.t(:add_manual_publication)
+        # Set up authority selection and trigger change event
+        # This simulates actual autocomplete behavior and tests the JavaScript handler
+        page.execute_script(<<~JS)
+          $('#authority_id').val(#{authority.id}).trigger('change');
+        JS
+      end
+
+      context 'with valid required fields' do
+        it 'creates a new publication with manual_entry bib_source and displays it in the publications list' do
+          within '#manual-entry-form' do
+            fill_in 'manual_title', with: 'Test Publication Title'
+            fill_in 'manual_author_line', with: 'Test Author'
+            fill_in 'manual_publisher_line', with: 'Test Publisher'
+            fill_in 'manual_pub_year', with: '1950'
+
+            # Accept alert when it appears after clicking submit
+            accept_alert do
+              click_button I18n.t(:add_manual_publication)
+            end
+          end
+
+          # Wait for AJAX success - new publication should appear in #pubs
+          expect(page).to have_css('#pubs', text: 'Test Publication Title', wait: 5)
+
+          # Verify publication was created in database
+          expect(Publication.count).to eq(1)
+
+          publication = Publication.last
+          expect(publication.title).to eq('Test Publication Title')
+          expect(publication.author_line).to eq('Test Author')
+          expect(publication.publisher_line).to eq('Test Publisher')
+          expect(publication.pub_year).to eq('1950')
+          expect(publication.authority_id).to eq(authority.id)
+          expect(publication.bib_source.title).to eq('manual_entry')
+          expect(publication.status).to eq('todo')
+
+          # Verify the publication appears in the #pubs table
+          within '#pubs' do
+            expect(page).to have_content('Test Publication Title')
+            expect(page).to have_content('Test Author')
+            expect(page).to have_content('Test Publisher')
+          end
         end
 
-        # Wait for AJAX success - new publication should appear in #pubs
-        expect(page).to have_css('#pubs', text: 'Test Publication Title', wait: 5)
+        it 'creates a holding for the publication' do
+          within '#manual-entry-form' do
+            fill_in 'manual_title', with: 'Test Publication'
+            fill_in 'manual_author_line', with: 'Test Author'
+            fill_in 'manual_publisher_line', with: 'Test Publisher'
+            fill_in 'manual_pub_year', with: '1950'
 
-        # Verify publication was created in database
-        expect(Publication.count).to eq(1)
+            # Accept alert when it appears after clicking submit
+            accept_alert do
+              click_button I18n.t(:add_manual_publication)
+            end
+          end
 
-        publication = Publication.last
-        expect(publication.title).to eq('Test Publication Title')
-        expect(publication.author_line).to eq('Test Author')
-        expect(publication.publisher_line).to eq('Test Publisher')
-        expect(publication.pub_year).to eq('1950')
-        expect(publication.authority_id).to eq(authority.id)
-        expect(publication.bib_source.title).to eq('manual_entry')
-        expect(publication.status).to eq('todo')
+          # Wait for AJAX success - new publication should appear
+          expect(page).to have_css('#pubs', text: 'Test Publication', wait: 5)
 
-        # Verify the publication appears in the #pubs table
-        within '#pubs' do
-          expect(page).to have_content('Test Publication Title')
-          expect(page).to have_content('Test Author')
-          expect(page).to have_content('Test Publisher')
+          # Verify holding was created
+          expect(Holding.count).to eq(1)
+          holding = Holding.last
+          expect(holding.bib_source.title).to eq('manual_entry')
+          expect(holding.status).to eq('todo')
         end
       end
 
-      it 'creates a holding for the publication' do
-        within '#manual-entry-form' do
-          fill_in I18n.t(:title), with: 'Test Publication'
-          fill_in I18n.t(:author), with: 'Test Author'
-          fill_in I18n.t(:publisher), with: 'Test Publisher'
-          fill_in I18n.t(:year_published), with: '1950'
+      context 'with optional fields filled' do
+        it 'saves optional fields correctly' do
+          within '#manual-entry-form' do
+            fill_in 'manual_title', with: 'Test Publication'
+            fill_in 'manual_author_line', with: 'Test Author'
+            fill_in 'manual_publisher_line', with: 'Test Publisher'
+            fill_in 'manual_pub_year', with: '1950'
+            fill_in 'manual_language', with: 'Hebrew'
+            fill_in 'manual_source_id', with: 'https://example.com/record/123'
+            fill_in 'manual_callnum', with: 'Shelf A-42'
+            fill_in 'manual_notes', with: 'Test notes about this publication'
 
-          click_button I18n.t(:add_manual_publication)
+            # Accept alert when it appears after clicking submit
+            accept_alert do
+              click_button I18n.t(:add_manual_publication)
+            end
+          end
+
+          # Wait for AJAX success - new publication should appear
+          expect(page).to have_css('#pubs', text: 'Test Publication', wait: 5)
+
+          publication = Publication.last
+          expect(publication.language).to eq('Hebrew')
+          expect(publication.source_id).to eq('https://example.com/record/123')
+          expect(publication.notes).to eq('Test notes about this publication')
+
+          holding = Holding.last
+          expect(holding.location).to eq('Shelf A-42')
         end
-
-        # Wait for AJAX success - new publication should appear
-        expect(page).to have_css('#pubs', text: 'Test Publication', wait: 5)
-
-        # Verify holding was created
-        expect(Holding.count).to eq(1)
-        holding = Holding.last
-        expect(holding.bib_source.title).to eq('manual_entry')
-        expect(holding.status).to eq('todo')
-      end
-    end
-
-    context 'with optional fields filled' do
-      it 'saves optional fields correctly' do
-        within '#manual-entry-form' do
-          fill_in I18n.t(:title), with: 'Test Publication'
-          fill_in I18n.t(:author), with: 'Test Author'
-          fill_in I18n.t(:publisher), with: 'Test Publisher'
-          fill_in I18n.t(:year_published), with: '1950'
-          fill_in I18n.t(:language), with: 'Hebrew'
-          fill_in I18n.t(:record_source), with: 'https://example.com/record/123'
-          fill_in I18n.t(:location), with: 'Shelf A-42'
-          fill_in I18n.t(:comments), with: 'Test notes about this publication'
-
-          click_button I18n.t(:add_manual_publication)
-        end
-
-        # Wait for AJAX success - new publication should appear
-        expect(page).to have_css('#pubs', text: 'Test Publication', wait: 5)
-
-        publication = Publication.last
-        expect(publication.language).to eq('Hebrew')
-        expect(publication.source_id).to eq('https://example.com/record/123')
-        expect(publication.notes).to eq('Test notes about this publication')
-
-        holding = Holding.last
-        expect(holding.location).to eq('Shelf A-42')
       end
     end
 
@@ -163,10 +184,10 @@ RSpec.describe 'Manual Publication Entry', :js, type: :system do
           expect(submit_btn).to be_disabled
 
           # Try to fill the form
-          fill_in I18n.t(:title), with: 'Test Publication'
-          fill_in I18n.t(:author), with: 'Test Author'
-          fill_in I18n.t(:publisher), with: 'Test Publisher'
-          fill_in I18n.t(:year_published), with: '1950'
+          fill_in 'manual_title', with: 'Test Publication'
+          fill_in 'manual_author_line', with: 'Test Author'
+          fill_in 'manual_publisher_line', with: 'Test Publisher'
+          fill_in 'manual_pub_year', with: '1950'
 
           # Button should still be disabled
           expect(submit_btn).to be_disabled
