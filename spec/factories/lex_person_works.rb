@@ -8,5 +8,11 @@ FactoryBot.define do
     publisher { Faker::Name.name }
     title { Faker::Book.title }
     work_type { LexPersonWork.work_types.keys.sample }
+
+    # Assign seqno automatically in factory
+    seqno do
+      max_seqno = LexPersonWork.where(lex_person_id: person.id, work_type: work_type).maximum(:seqno) || 0
+      max_seqno + 1
+    end
   end
 end
