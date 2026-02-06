@@ -8,7 +8,7 @@ module Lexicon
     end
     before_action :set_work, only: %i(edit update destroy)
     before_action :set_person, only: %i(new create index)
-    after_action :sync_verification_checklist, only: %i(create update destroy)
+    after_action :sync_verification_checklist, only: %i(create update destroy reorder)
 
     layout false
 
@@ -22,6 +22,10 @@ module Lexicon
 
     def create
       @work = @person.works.build(lex_person_work_params)
+
+      # Assign seqno as the last position in the work_type group
+      max_seqno = @person.works.where(work_type: @work.work_type).maximum(:seqno) || 0
+      @work.seqno = max_seqno + 1
 
       return if @work.save
 
@@ -38,6 +42,34 @@ module Lexicon
 
     def destroy
       @work.destroy!
+    end
+
+    def reorder
+      work_id = params[:work_id]
+      new_position = params[:new_pos].to_i - 1 # Convert from 1-based to 0-based
+
+      work = LexPersonWork.find(work_id)
+      @person = work.person
+
+      # Get all works for the same person and work_type
+      works = LexPersonWork.where(lex_person_id: work.lex_person_id, work_type: work.work_type)
+                           .order(:seqno)
+                           .to_a
+
+      old_position = works.index(work)
+      return head :ok if old_position.nil? || old_position == new_position
+
+      # Remove from old position
+      works.delete_at(old_position)
+      # Insert at new position
+      works.insert(new_position, work)
+
+      # Reassign seqno values
+      works.each_with_index do |w, index|
+        w.update_column(:seqno, index + 1)
+      end
+
+      head :ok
     end
 
     private
