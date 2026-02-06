@@ -26,8 +26,8 @@ class LexPersonWork < ApplicationRecord
   def self.reorder_work(work_id, new_position)
     work = find(work_id)
     works = where(lex_person_id: work.lex_person_id, work_type: work.work_type)
-                .order(:seqno)
-                .to_a
+            .order(:seqno)
+            .to_a
 
     old_position = works.index(work)
     return if old_position.nil? || old_position == new_position

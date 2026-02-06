@@ -44,6 +44,9 @@ module Lexicon
       work_id = params[:work_id]
       new_position = params[:new_pos].to_i - 1 # Convert from 1-based to 0-based
 
+      work = LexPersonWork.find(work_id)
+      @person = work.person
+
       LexPersonWork.reorder_work(work_id, new_position)
 
       head :ok
