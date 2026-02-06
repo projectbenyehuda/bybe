@@ -573,6 +573,64 @@ describe Authority do
         end
       end
     end
+
+    describe '#normalize_sort_name' do
+      let(:authority) { build(:authority) }
+
+      it 'replaces Hebrew maqaf (־) with space' do
+        authority.sort_name = 'חנה־לאה'
+        authority.normalize_sort_name
+        expect(authority.sort_name).to eq('חנה לאה')
+      end
+
+      it 'replaces regular hyphen (-) with space' do
+        authority.sort_name = 'Smith-Jones'
+        authority.normalize_sort_name
+        expect(authority.sort_name).to eq('Smith Jones')
+      end
+
+      it 'replaces en dash (–) with space' do
+        authority.sort_name = 'Name–Other'
+        authority.normalize_sort_name
+        expect(authority.sort_name).to eq('Name Other')
+      end
+
+      it 'replaces em dash (—) with space' do
+        authority.sort_name = 'Name—Other'
+        authority.normalize_sort_name
+        expect(authority.sort_name).to eq('Name Other')
+      end
+
+      it 'replaces multiple types of dashes in one string' do
+        authority.sort_name = 'חנה־לאה–Smith-Jones—Test'
+        authority.normalize_sort_name
+        expect(authority.sort_name).to eq('חנה לאה Smith Jones Test')
+      end
+
+      it 'does nothing when sort_name is nil' do
+        authority.sort_name = nil
+        expect { authority.normalize_sort_name }.not_to raise_error
+        expect(authority.sort_name).to be_nil
+      end
+
+      it 'does nothing when sort_name is empty' do
+        authority.sort_name = ''
+        authority.normalize_sort_name
+        expect(authority.sort_name).to eq('')
+      end
+
+      it 'normalizes sort_name on save' do
+        authority.sort_name = 'Test-Name'
+        authority.save!
+        expect(authority.sort_name).to eq('Test Name')
+      end
+
+      it 'normalizes sort_name on update' do
+        authority.save!
+        authority.update!(sort_name: 'חנה־לאה')
+        expect(authority.reload.sort_name).to eq('חנה לאה')
+      end
+    end
   end
 
   describe 'scopes' do
