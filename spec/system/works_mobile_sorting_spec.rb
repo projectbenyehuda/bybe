@@ -33,11 +33,7 @@ RSpec.describe 'Works mobile sorting', :js, type: :system do
   end
 
   it 'displays mobile sorting dropdown on mobile viewport' do
-    # Open the filter panel
-    find('#sort_filter_toggle', wait: 5).click
-    expect(page).to have_css('#filters_panel', visible: true, wait: 5)
-
-    # Mobile sorting dropdown should be visible
+    # Mobile sorting dropdown should be visible at top of list (no need to open filter panel)
     expect(page).to have_css('#sort_by_dd_mobile', visible: true, wait: 5)
   end
 
@@ -47,31 +43,21 @@ RSpec.describe 'Works mobile sorting', :js, type: :system do
   end
 
   it 'applies sort order immediately when dropdown changes' do
-    # Open the filter panel
-    find('#sort_filter_toggle', wait: 5).click
-    expect(page).to have_css('#filters_panel', visible: true, wait: 5)
-
-    # Select popularity descending
+    # Select popularity descending (dropdown is always visible on mobile)
     select I18n.t(:popularity_desc), from: 'sort_by_mobile'
 
     # Verify the hidden field was updated
     expect(page).to have_field('sort_by', with: 'popularity_desc', type: 'hidden', wait: 5)
 
-    # Wait for AJAX to complete (should happen automatically without clicking Apply)
+    # Wait for AJAX to complete (should happen automatically)
     expect(page).to have_css('.mainlist', wait: 5)
 
-    # Verify the sort is maintained in the dropdown after reopening
-    find('#sort_filter_toggle', wait: 5).click
-    expect(page).to have_css('#filters_panel', visible: true, wait: 5)
+    # Verify the sort is still selected in the dropdown
     expect(page).to have_select('sort_by_mobile', selected: I18n.t(:popularity_desc), wait: 5)
   end
 
-  it 'maintains sort selection when reopening filter panel' do
-    # Open the filter panel
-    find('#sort_filter_toggle', wait: 5).click
-    expect(page).to have_css('#filters_panel', visible: true, wait: 5)
-
-    # Change to alphabetical descending
+  it 'maintains sort selection across page interactions' do
+    # Change to alphabetical descending (dropdown is always visible)
     select I18n.t(:alefbet_desc), from: 'sort_by_mobile'
 
     # Verify the hidden field was updated
@@ -80,11 +66,7 @@ RSpec.describe 'Works mobile sorting', :js, type: :system do
     # Wait for AJAX to complete (should happen automatically)
     expect(page).to have_css('.mainlist', wait: 5)
 
-    # Open filter panel again
-    find('#sort_filter_toggle', wait: 5).click
-    expect(page).to have_css('#filters_panel', visible: true, wait: 5)
-
-    # The previously selected sort should still be selected
+    # The previously selected sort should still be selected in the dropdown
     expect(page).to have_select('sort_by_mobile', selected: I18n.t(:alefbet_desc), wait: 5)
   end
 end
