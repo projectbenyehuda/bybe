@@ -43,14 +43,19 @@ RSpec.describe 'Works mobile sorting', :js, type: :system do
   end
 
   it 'applies sort order immediately when dropdown changes' do
+    # Default should be alphabetical ascending: Alpha, Beta, Gamma
+    initial_order = page.all('.mainlist ol li a').map { |link| link.text.split(' / ').first }
+    expect(initial_order).to eq(['Alpha Work', 'Beta Work', 'Gamma Work'])
+
     # Select popularity descending (dropdown is always visible on mobile)
     select I18n.t(:popularity_desc), from: 'sort_by_mobile'
 
-    # Verify the hidden field was updated
-    expect(page).to have_field('sort_by', with: 'popularity_desc', type: 'hidden', wait: 5)
+    # Wait for AJAX to complete and verify order changed
+    # Beta (500), Gamma (200), Alpha (100)
+    expect(page).to have_css('.mainlist ol li:first-child', text: 'Beta Work', wait: 5)
 
-    # Wait for AJAX to complete (should happen automatically)
-    expect(page).to have_css('.mainlist', wait: 5)
+    sorted_order = page.all('.mainlist ol li a').map { |link| link.text.split(' / ').first }
+    expect(sorted_order).to eq(['Beta Work', 'Gamma Work', 'Alpha Work'])
 
     # Verify the sort is still selected in the dropdown
     expect(page).to have_select('sort_by_mobile', selected: I18n.t(:popularity_desc), wait: 5)
@@ -60,11 +65,11 @@ RSpec.describe 'Works mobile sorting', :js, type: :system do
     # Change to alphabetical descending (dropdown is always visible)
     select I18n.t(:alefbet_desc), from: 'sort_by_mobile'
 
-    # Verify the hidden field was updated
-    expect(page).to have_field('sort_by', with: 'alphabetical_desc', type: 'hidden', wait: 5)
+    # Wait for AJAX to complete and verify order reversed: Gamma, Beta, Alpha
+    expect(page).to have_css('.mainlist ol li:first-child', text: 'Gamma Work', wait: 5)
 
-    # Wait for AJAX to complete (should happen automatically)
-    expect(page).to have_css('.mainlist', wait: 5)
+    sorted_order = page.all('.mainlist ol li a').map { |link| link.text.split(' / ').first }
+    expect(sorted_order).to eq(['Gamma Work', 'Beta Work', 'Alpha Work'])
 
     # The previously selected sort should still be selected in the dropdown
     expect(page).to have_select('sort_by_mobile', selected: I18n.t(:alefbet_desc), wait: 5)
