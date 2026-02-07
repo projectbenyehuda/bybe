@@ -138,6 +138,7 @@
                 .list-no-bullets
                   %ul
                     - @htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities, title_footnote|
+                      - next if genre == 'paratext' # don't include paratext items in the side menu
                       - li_attrs = {}
                       - li_attrs[:style] = "padding-right: #{nesting_level * 10}px;" if nesting_level > 0
                       %li{ li_attrs }
