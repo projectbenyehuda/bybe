@@ -33,7 +33,12 @@ module CollectionsHelper
 
     # Normalize the base URL (remove trailing slash)
     normalized_base = base_url.chomp('/')
-    base_uri = URI.parse(normalized_base)
+    begin
+      base_uri = URI.parse(normalized_base)
+    rescue URI::InvalidURIError
+      # If the base URL itself is malformed, return the original HTML unchanged
+      return html_string
+    end
 
     # Find all anchor tags with href attributes
     doc.css('a[href]').each do |link|
