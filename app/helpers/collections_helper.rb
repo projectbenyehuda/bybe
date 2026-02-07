@@ -28,24 +28,26 @@ module CollectionsHelper
   def convert_internal_links_to_relative(base_url, html_string)
     return html_string if html_string.blank? || base_url.blank?
 
-    # Parse the HTML
-    doc = Nokogiri::HTML.fragment(html_string)
-
-    # Normalize the base URL (remove trailing slash)
+    # Normalize the base URL (remove trailing slash) and parse
     normalized_base = base_url.chomp('/')
-    # Normalize the base URL (remove trailing slash)
-    normalized_base = base_url.chomp('/')
-    base_uri = URI.parse(normalized_base)
+    begin
+      base_uri = URI.parse(normalized_base)
+    rescue URI::InvalidURIError
+      # If the base URL itself is malformed, return the original HTML unchanged
+      return html_string
+    end
 
     # Cheap pre-check: if there are no anchor tags or no occurrence of the base URL / host,
     # skip Nokogiri parsing entirely for performance on large HTML fragments.
     host_str = base_uri.host.to_s
-    unless html_string.include?('<a') && (html_string.include?(normalized_base) || (!host_str.empty? && html_string.include?(host_str)))
-      return html_string
-    end
+    has_anchor_tags = html_string.include?('<a')
+    has_base_or_host = html_string.include?(normalized_base) ||
+                       (!host_str.empty? && html_string.include?(host_str))
+    return html_string unless has_anchor_tags && has_base_or_host
 
     # Parse the HTML
     doc = Nokogiri::HTML.fragment(html_string)
+
     # Find all anchor tags with href attributes
     doc.css('a[href]').each do |link|
       href = link['href']
@@ -58,7 +60,8 @@ module CollectionsHelper
         # Check if it's an absolute URL pointing to our base URL
         if href_uri.absolute? && href_uri.host == base_uri.host && href_uri.scheme == base_uri.scheme
           # Convert to relative path (include path, query, and fragment)
-          relative_path = href_uri.path
+          # Normalize empty paths to '/' to avoid href=""
+          relative_path = href_uri.path.presence || '/'
           relative_path += "?#{href_uri.query}" if href_uri.query.present?
           relative_path += "##{href_uri.fragment}" if href_uri.fragment.present?
 

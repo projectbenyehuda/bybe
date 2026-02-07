@@ -30,6 +30,24 @@ RSpec.describe CollectionsHelper, type: :helper do
         result = helper.convert_internal_links_to_relative(base_url, html)
         expect(result).to include('href="/path?param=value#section"')
       end
+
+      it 'converts URLs with no path to root path' do
+        html = '<a href="https://example.com">Link</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html)
+        expect(result).to include('href="/"')
+      end
+
+      it 'converts URLs with no path but with query string' do
+        html = '<a href="https://example.com?query=value">Link</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html)
+        expect(result).to include('href="/?query=value"')
+      end
+
+      it 'converts URLs with no path but with fragment' do
+        html = '<a href="https://example.com#section">Link</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html)
+        expect(result).to include('href="/#section"')
+      end
     end
 
     context 'when html contains external links' do
@@ -97,6 +115,13 @@ RSpec.describe CollectionsHelper, type: :helper do
       it 'returns the original html when base_url is blank' do
         html = '<a href="https://example.com/path">Link</a>'
         result = helper.convert_internal_links_to_relative('', html)
+        expect(result).to eq(html)
+      end
+
+      it 'returns the original html when base_url is malformed' do
+        html = '<a href="https://example.com/path">Link</a>'
+        malformed_base = 'not a valid url at all'
+        result = helper.convert_internal_links_to_relative(malformed_base, html)
         expect(result).to eq(html)
       end
     end
