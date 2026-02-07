@@ -33,13 +33,19 @@ module CollectionsHelper
 
     # Normalize the base URL (remove trailing slash)
     normalized_base = base_url.chomp('/')
-    begin
-      base_uri = URI.parse(normalized_base)
-    rescue URI::InvalidURIError
-      # If the base URL itself is malformed, return the original HTML unchanged
+    # Normalize the base URL (remove trailing slash)
+    normalized_base = base_url.chomp('/')
+    base_uri = URI.parse(normalized_base)
+
+    # Cheap pre-check: if there are no anchor tags or no occurrence of the base URL / host,
+    # skip Nokogiri parsing entirely for performance on large HTML fragments.
+    host_str = base_uri.host.to_s
+    unless html_string.include?('<a') && (html_string.include?(normalized_base) || (!host_str.empty? && html_string.include?(host_str)))
       return html_string
     end
 
+    # Parse the HTML
+    doc = Nokogiri::HTML.fragment(html_string)
     # Find all anchor tags with href attributes
     doc.css('a[href]').each do |link|
       href = link['href']
