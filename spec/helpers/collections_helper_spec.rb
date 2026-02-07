@@ -48,6 +48,20 @@ RSpec.describe CollectionsHelper, type: :helper do
         result = helper.convert_internal_links_to_relative(base_url, html)
         expect(result).to include('href="/#section"')
       end
+
+      it 'removes target attribute from internal links' do
+        html = '<a href="https://example.com/path" target="_blank">Link</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html)
+        expect(result).to include('href="/path"')
+        expect(result).not_to include('target=')
+      end
+
+      it 'removes target attribute from root path links' do
+        html = '<a href="https://example.com" target="_blank">Home</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html)
+        expect(result).to include('href="/"')
+        expect(result).not_to include('target=')
+      end
     end
 
     context 'when html contains external links' do
@@ -61,6 +75,13 @@ RSpec.describe CollectionsHelper, type: :helper do
         html = '<a href="http://example.com/path">HTTP Link</a>'
         result = helper.convert_internal_links_to_relative('https://example.com', html)
         expect(result).to include('href="http://example.com/path"')
+      end
+
+      it 'preserves target attribute on external links' do
+        html = '<a href="https://other-domain.com/path" target="_blank">External Link</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html)
+        expect(result).to include('href="https://other-domain.com/path"')
+        expect(result).to include('target="_blank"')
       end
     end
 

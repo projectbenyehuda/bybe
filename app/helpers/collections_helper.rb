@@ -66,6 +66,8 @@ module CollectionsHelper
           relative_path += "##{href_uri.fragment}" if href_uri.fragment.present?
 
           link['href'] = relative_path
+          # Remove target attribute since internal links should not open in new tabs
+          link.remove_attribute('target')
         end
       rescue URI::InvalidURIError
         # Skip malformed URIs
