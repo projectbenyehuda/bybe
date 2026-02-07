@@ -22,7 +22,7 @@
 .by-card-content-v02
   = render partial: 'shared/filters/pagination', locals: { form_id: 'works_filters', add_js: false }
   %hr
-  .mobile-only
+  .mobile-only{style: 'margin-bottom: 1.5rem;'}
     .headline-4-v02= t(:sort_by)
     %select.field-v02.field-without-label#sort_by_dd_mobile{name: 'sort_by_mobile'}
       %optgroup{ label: t(:alefbet) }
