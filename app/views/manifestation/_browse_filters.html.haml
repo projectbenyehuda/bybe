@@ -7,6 +7,32 @@
   .by-card-content-v02#filters_panel
     .headline-2-v02= t(:filter_by)
     %span.reset.linkcolor.pointer= t(:reset_filter)
+    .mobile-only
+      = render layout: 'shared/collapsible_block', locals: { container_name: 'collfsort', title: t(:sort_by) } do
+        %select.field-v02.field-without-label#sort_by_dd_mobile{name: 'sort_by_mobile'}
+          %optgroup{ label: t(:alefbet) }
+            %option{ value: 'alphabetical_asc', selected: @sort == 'alphabetical_asc' }
+              = t(:alefbet_asc)
+            %option{ value: 'alphabetical_desc', selected: @sort == 'alphabetical_desc' }
+              = t(:alefbet_desc)
+          %optgroup{ label: t(:popularity_group) }
+            %option{ value: 'popularity_desc', selected: @sort == 'popularity_desc' }
+              = t(:popularity_desc)
+            %option{ value: 'popularity_asc', selected: @sort == 'popularity_asc' }
+              = t(:popularity_asc)
+          %optgroup{ label: t(:dates) }
+            %option{ value: 'publication_date_asc', selected: @sort == 'publication_date_asc' }
+              = t(:pubdate_asc)
+            %option{ value: 'publication_date_desc', selected: @sort == 'publication_date_desc' }
+              = t(:pubdate_desc)
+            %option{ value: 'creation_date_asc', selected: @sort == 'creation_date_asc' }
+              = t(:creation_date_asc)
+            %option{ value: 'creation_date_desc', selected: @sort == 'creation_date_desc' }
+              = t(:creation_date_desc)
+            %option{ value: 'upload_date_asc', selected: @sort == 'upload_date_asc' }
+              = t(:uploaddate_asc)
+            %option{ value: 'upload_date_desc', selected: @sort == 'upload_date_desc' }
+              = t(:uploaddate_desc)
     = render layout: 'shared/collapsible_block', locals: { container_name: 'collfauthor', title: t(:name) } do
       .search-mobile-switch
         %button.search-mobile-option.opt_workname= t(:work_title)
@@ -147,6 +173,13 @@
 
   $(document).ready(function() {
     $('#sort_by_dd').val("#{@sort}");
+    $('#sort_by_dd_mobile').val("#{@sort}");
+
+    // Handle mobile sort dropdown change - apply immediately
+    $('#sort_by_dd_mobile').on('change', function() {
+      $('input[name=sort_by]').val($(this).val());
+      submit_filters();
+    });
 
     toggleSearchType('#{@search_type}');
 
