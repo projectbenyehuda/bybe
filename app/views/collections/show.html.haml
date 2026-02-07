@@ -203,7 +203,7 @@
                       - if translators.present?
                         %p= "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
                 .by-card-content-v02.textcard#actualtext
-                  != html
+                  != convert_internal_links_to_relative(request.base_url, html)
           - credit_lines = @collection.fetch_credits.lines
           - if credit_lines.present?
             .by-card-v02
