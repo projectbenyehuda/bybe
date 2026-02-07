@@ -22,6 +22,32 @@
 .by-card-content-v02
   = render partial: 'shared/filters/pagination', locals: { form_id: 'works_filters', add_js: false }
   %hr
+  .mobile-only{style: 'margin-bottom: 1.5rem;'}
+    .headline-4-v02= t(:sort_by)
+    %select.field-v02.field-without-label#sort_by_dd_mobile{name: 'sort_by_mobile'}
+      %optgroup{ label: t(:alefbet) }
+        %option{ value: 'alphabetical_asc', selected: @sort == 'alphabetical_asc' }
+          = t(:alefbet_asc)
+        %option{ value: 'alphabetical_desc', selected: @sort == 'alphabetical_desc' }
+          = t(:alefbet_desc)
+      %optgroup{ label: t(:popularity_group) }
+        %option{ value: 'popularity_desc', selected: @sort == 'popularity_desc' }
+          = t(:popularity_desc)
+        %option{ value: 'popularity_asc', selected: @sort == 'popularity_asc' }
+          = t(:popularity_asc)
+      %optgroup{ label: t(:dates) }
+        %option{ value: 'publication_date_asc', selected: @sort == 'publication_date_asc' }
+          = t(:pubdate_asc)
+        %option{ value: 'publication_date_desc', selected: @sort == 'publication_date_desc' }
+          = t(:pubdate_desc)
+        %option{ value: 'creation_date_asc', selected: @sort == 'creation_date_asc' }
+          = t(:creation_date_asc)
+        %option{ value: 'creation_date_desc', selected: @sort == 'creation_date_desc' }
+          = t(:creation_date_desc)
+        %option{ value: 'upload_date_asc', selected: @sort == 'upload_date_asc' }
+          = t(:uploaddate_asc)
+        %option{ value: 'upload_date_desc', selected: @sort == 'upload_date_desc' }
+          = t(:uploaddate_desc)
   .select-all-with-buttons.desktop-only
     - if current_user
       .select-text-checkbox-area
@@ -180,6 +206,12 @@
 
     $('#sort_by_dd').change(function(){
       $('input[name=sort_by]').val($('#sort_by_dd option:selected').val());
+      submit_filters();
+    });
+
+    // Handle mobile sort dropdown change - apply immediately
+    $('#sort_by_dd_mobile').change(function(){
+      $('input[name=sort_by]').val($('#sort_by_dd_mobile option:selected').val());
       submit_filters();
     });
 
