@@ -1194,7 +1194,7 @@ class ManifestationController < ApplicationController
       RefreshUncollectedWorksCollectionJob.perform_async(uncollected_collection_ids)
       @containments.reject! { |ci| ci.collection.uncollected? }
     end
-    @single_text_volume = @containments.size == 1 && !@containments.first.collection.has_multiple_manifestations?
+    @single_text_volume = @containments.size == 1 && @containments.first.collection.collection_type == 'volume' && !@containments.first.collection.has_multiple_manifestations?
   end
 
   private
