@@ -8,7 +8,7 @@ class ManifestationController < ApplicationController
   include BybeUtils
   include KwicConcordanceConcern
 
-  before_action only: %i(list show remove_link edit_metadata add_aboutnesses) do |c|
+  before_action only: %i(list show remove_link edit_metadata add_aboutnesses versions version_diff restore_version) do |c|
     c.require_editor('edit_catalog')
   end
   before_action only: %i(edit update) do |c|
@@ -192,6 +192,84 @@ class ManifestationController < ApplicationController
     @new_texts = cached_data[:texts]
     @new_collections = cached_data[:collections]
     @new_tags = cached_data[:tags]
+  end
+
+  def versions
+    @m = Manifestation.find(params[:id])
+    @page_title = "#{t(:version_history_for)} #{@m.title}"
+    @versions = @m.versions.reorder('versions.id DESC')
+
+    # Pre-calculate which versions have markdown changes
+    @markdown_changes = {}
+    @versions.each do |version|
+      # Use changeset if available, otherwise assume first version has markdown
+      @markdown_changes[version.id] =
+        if version.changeset&.key?('markdown')
+          true
+        elsif version.changeset.nil?
+          # First version (create) doesn't have changeset, so assume markdown present
+          true
+        else
+          false
+        end
+    end
+
+    # Lookup user names
+    whodunnit_ids = @versions.map(&:whodunnit).compact.uniq
+    @users = whodunnit_ids.any? ? User.where(id: whodunnit_ids).index_by(&:id) : {}
+  end
+
+  def version_diff
+    @m = Manifestation.find(params[:id])
+    version = @m.versions.find(params[:version_id])
+
+    # Get the version before this change (stored in version.object)
+    if version.object.present?
+      old_attrs = Psych.unsafe_load(version.object)
+      @previous_markdown = old_attrs['markdown'] || ''
+    else
+      # This is the create event, no previous version
+      @previous_markdown = ''
+    end
+
+    # Get the version after this change by finding the next version
+    next_version = @m.versions.where('created_at > ?', version.created_at).order(created_at: :asc).first
+    if next_version && next_version.object.present?
+      new_attrs = Psych.unsafe_load(next_version.object)
+      @current_markdown = new_attrs['markdown'] || ''
+    else
+      # This is the last version, use current state
+      @current_markdown = @m.markdown || ''
+    end
+
+    # Generate the diff HTML
+    require 'diffy'
+    @diff_html = Diffy::Diff.new(@previous_markdown, @current_markdown,
+                                  include_plus_and_minus_in_html: true,
+                                  include_diff_info: true).to_s(:html)
+
+    render layout: false
+  end
+
+  def restore_version
+    @m = Manifestation.find(params[:id])
+    version = @m.versions.find(params[:version_id])
+
+    # Get the old version's attributes from the stored object
+    if version.object.present?
+      old_attrs = Psych.unsafe_load(version.object)
+      old_markdown = old_attrs['markdown']
+
+      # Update the manifestation with old content, which creates a new version
+      PaperTrail.request.whodunnit = current_user.id.to_s
+      @m.update!(markdown: old_markdown)
+
+      flash[:notice] = t(:version_restored)
+    else
+      flash[:error] = t(:version_restore_failed)
+    end
+
+    redirect_to manifestation_versions_path(@m)
   end
 
   private

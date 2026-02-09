@@ -2963,3 +2963,30 @@ en:
           other: "Displaying <b>all %{count}</b> %{entry_name}"
       more_pages:
         display_entries: "Displaying %{entry_name} <b>%{first}&nbsp;-&nbsp;%{last}</b> of <b>%{total}</b> in total"
+  # Version history
+  version_history: Version History
+  version_history_for: Version History for
+  version_number: Version Number
+  version_date: Date of Change
+  version_editor: Editor Who Made Change
+  markdown_changed: Markdown Changed
+  view_diff: View Diff
+  restore_version: Restore This Version
+  restore_version_confirm: Are you sure you want to restore this version? This will create a new version with the content of this old version.
+  version_restored: Version restored successfully
+  recent_manifestation_changes: Recent Changes to Manifestations
+  all_changes: All Changes
+  changes_by_editor: Changes by %{editor}
+  no_versions_found: No versions found
+  yes_markdown: Yes
+  no_markdown: No
+  unknown_editor: Unknown
+  diff_between_versions: Diff Between Versions
+  previous_version: Previous Version
+  selected_version: Selected Version
+  no_previous_version: No previous version
+  no_diff_available: No diff available
+  back_to_work: Back to Work
+  version_restore_failed: Failed to restore version
+  work: Work
+  author: Author

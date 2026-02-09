@@ -174,6 +174,8 @@ Bybeconv::Application.routes.draw do
   get 'admin/duplicate_works'
   get 'admin/suspicious_intellectual_property'
   get 'admin/doubly_contained_works'
+  get 'admin/recent_manifestation_changes' => 'admin#recent_manifestation_changes',
+      as: 'admin_recent_manifestation_changes'
   post 'admin/update_authority_intellectual_property/:id' => 'admin#update_authority_intellectual_property',
        as: 'update_authority_intellectual_property'
   post 'admin/merge_works' => 'admin#merge_works', as: 'merge_works'
@@ -328,6 +330,12 @@ Bybeconv::Application.routes.draw do
       as: 'manifestation_autocomplete_authority_name'
   get 'work/show/:id' => 'manifestation#workshow', as: 'work_show' # temporary, until we have a works controller
   get 'manifestation/add_aboutnesses/:id' => 'manifestation#add_aboutnesses'
+  get 'manifestation/:id/versions' => 'manifestation#versions',
+      as: 'manifestation_versions'
+  get 'manifestation/:id/versions/:version_id/diff' => 'manifestation#version_diff',
+      as: 'manifestation_version_diff'
+  post 'manifestation/:id/versions/:version_id/restore' => 'manifestation#restore_version',
+       as: 'manifestation_restore_version'
   resources :api_keys, except: :show
   get 'taggings/render_tags', as: 'render_tags'
   get 'tag_suggest' => 'taggings#suggest', as: 'tag_suggest'

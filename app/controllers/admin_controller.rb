@@ -1461,6 +1461,46 @@ class AdminController < ApplicationController
     end
   end
 
+  def recent_manifestation_changes
+    @page_title = t(:recent_manifestation_changes)
+
+    # Get all versions for Manifestation items, ordered by created_at descending
+    @versions = PaperTrail::Version
+                .where(item_type: 'Manifestation')
+                .order(created_at: :desc)
+
+    # Filter by editor if requested
+    if params[:editor].present?
+      @versions = @versions.where(whodunnit: params[:editor])
+      @filtered_editor = params[:editor]
+    end
+
+    # Apply pagination
+    @versions = @versions.page(params[:page]).per(50)
+
+    # Pre-load manifestations
+    manifestation_ids = @versions.map(&:item_id).compact.uniq
+    @manifestations = manifestation_ids.any? ? Manifestation.where(id: manifestation_ids).index_by(&:id) : {}
+
+    # Pre-calculate which versions have markdown changes
+    @markdown_changes = {}
+    @versions.each do |version|
+      @markdown_changes[version.id] =
+        if version.changeset&.key?('markdown')
+          true
+        elsif version.changeset.nil?
+          # First version doesn't have changeset, assume markdown present
+          true
+        else
+          false
+        end
+    end
+
+    # Lookup user names
+    whodunnit_ids = @versions.map(&:whodunnit).compact.uniq
+    @users = whodunnit_ids.any? ? User.where(id: whodunnit_ids).index_by(&:id) : {}
+  end
+
   private
 
   def parse_manifestation_ids(input)

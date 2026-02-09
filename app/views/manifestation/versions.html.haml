@@ -1,0 +1,67 @@
+.backend.admin_container
+  %h1= t(:version_history_for) + ': ' + @m.title
+  %p
+    = link_to t(:back_to_work), manifestation_path(@m)
+    |
+    = link_to t(:edit_metadata), manifestation_edit_metadata_path(@m)
+    |
+    = link_to t(:edit_markdown), manifestation_edit_path(@m)
+
+  - if @versions.blank?
+    %p= t(:no_versions_found)
+  - else
+    %table.table.table-striped
+      %thead
+        %tr
+          %th= t(:version_number)
+          %th= t(:version_date)
+          %th= t(:version_editor)
+          %th= t(:markdown_changed)
+          %th= t(:actions)
+      %tbody
+        - @versions.each do |version|
+          %tr
+            %td= version.id
+            %td= version.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            %td
+              - if version.whodunnit.present? && @users[version.whodunnit.to_i]
+                - user = @users[version.whodunnit.to_i]
+                = link_to user.name, admin_recent_manifestation_changes_path(editor: version.whodunnit)
+              - elsif version.whodunnit.present?
+                = link_to version.whodunnit, admin_recent_manifestation_changes_path(editor: version.whodunnit)
+              - else
+                = t(:unknown_editor)
+            %td
+              - if @markdown_changes[version.id]
+                %span.badge.bg-success= t(:yes_markdown)
+              - else
+                %span.badge.bg-secondary= t(:no_markdown)
+            %td
+              - if @markdown_changes[version.id]
+                %a.btn.btn-sm.btn-info.view-diff{
+                  href: '#',
+                  data: { version_id: version.id,
+                          manifestation_id: @m.id } }
+                  = t(:view_diff)
+              = button_to t(:restore_version),
+                          manifestation_restore_version_path(@m, version),
+                          method: :post,
+                          class: 'btn btn-sm btn-warning',
+                          data: { confirm: t(:restore_version_confirm) }
+
+  #diff-container{ style: 'margin-top: 20px;' }
+
+:javascript
+  $(document).ready(function() {
+    $('.view-diff').click(function(e) {
+      e.preventDefault();
+      var versionId = $(this).data('version-id');
+      var manifestationId = $(this).data('manifestation-id');
+      var url = '/manifestation/' + manifestationId + '/versions/' + versionId + '/diff';
+
+      $.get(url, function(data) {
+        $('#diff-container').html(data);
+        $('#diff-container')[0].scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  });
