@@ -84,10 +84,16 @@ describe ManifestationController do
   end
 
   describe '#restore_version' do
-    let!(:old_version) do
+    before do
+      # Create a history: Original -> Version 2 -> Version 3
       manifestation.update!(markdown: 'Version 2 content')
       manifestation.update!(markdown: 'Version 3 content')
-      manifestation.versions.where(id: ...manifestation.versions.last.id).order(created_at: :desc).first
+    end
+
+    let(:old_version) do
+      # Get the version that was created when moving from "Original content" to "Version 2"
+      # This version's object contains "Original content"
+      manifestation.versions.order(created_at: :asc).second
     end
 
     context 'when user is not an editor' do
@@ -105,10 +111,12 @@ describe ManifestationController do
 
     context 'when user is an editor' do
       it 'restores the old version' do
-        expect do
-          post :restore_version, params: { id: manifestation.id, version_id: old_version.id }
-        end.to change { manifestation.reload.markdown }.to('Version 2 content')
+        # The old_version's object field contains "Original content"
+        expect(manifestation.reload.markdown).to eq('Version 3 content')
 
+        post :restore_version, params: { id: manifestation.id, version_id: old_version.id }
+
+        expect(manifestation.reload.markdown).to eq('Original content')
         expect(response).to redirect_to(manifestation_versions_path(manifestation))
         expect(flash[:notice]).to eq(I18n.t(:version_restored))
       end
@@ -118,7 +126,7 @@ describe ManifestationController do
 
         post :restore_version, params: { id: manifestation.id, version_id: old_version.id }
 
-        expect(manifestation.versions.count).to be > initial_version_count
+        expect(manifestation.reload.versions.count).to be > initial_version_count
       end
     end
   end
