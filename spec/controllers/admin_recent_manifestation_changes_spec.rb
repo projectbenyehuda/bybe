@@ -72,14 +72,30 @@ describe AdminController do
         expect(manifestations[manifestation1.id]).to eq(manifestation1)
       end
 
-      it 'calculates markdown changes' do
+      it 'calculates markdown changes correctly' do
+        # Update markdown - should be marked as markdown change
         manifestation1.update!(markdown: 'Changed markdown')
+        markdown_version_id = manifestation1.versions.last.id
+
+        # Update title only - should NOT be marked as markdown change
         manifestation1.update!(title: 'Changed title only')
+        title_version_id = manifestation1.versions.last.id
 
         get :recent_manifestation_changes
 
         markdown_changes = assigns(:markdown_changes)
         expect(markdown_changes).to be_a(Hash)
+        expect(markdown_changes[markdown_version_id]).to be(true)
+        expect(markdown_changes[title_version_id]).to be(false)
+      end
+
+      it 'requires edit_catalog bit' do
+        # Remove the edit_catalog bit
+        ListItem.where(listkey: 'edit_catalog', item: user).delete_all
+
+        get :recent_manifestation_changes
+
+        expect(response).to redirect_to('/')
       end
     end
   end

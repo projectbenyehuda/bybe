@@ -40,13 +40,42 @@ describe ManifestationController do
       end
 
       it 'marks versions with markdown changes' do
+        # Update markdown - should be marked as markdown change
         manifestation.update!(markdown: 'Changed markdown')
+        markdown_version_id = manifestation.versions.last.id
+
+        # Update title only - should NOT be marked as markdown change
         manifestation.update!(title: 'Changed title only')
+        title_version_id = manifestation.versions.last.id
 
         get :versions, params: { id: manifestation.id }
 
         markdown_changes = assigns(:markdown_changes)
         expect(markdown_changes).to be_a(Hash)
+        expect(markdown_changes[markdown_version_id]).to be(true)
+        expect(markdown_changes[title_version_id]).to be(false)
+      end
+
+      it 'paginates version history' do
+        # Create many versions to test pagination
+        60.times do |i|
+          manifestation.update!(markdown: "Content #{i}")
+        end
+
+        get :versions, params: { id: manifestation.id }
+
+        versions = assigns(:versions)
+        expect(versions).to respond_to(:current_page)
+        expect(versions.count).to be <= 50
+      end
+
+      it 'requires edit_catalog bit' do
+        # Remove the edit_catalog bit
+        ListItem.where(listkey: 'edit_catalog', item: user).delete_all
+
+        get :versions, params: { id: manifestation.id }
+
+        expect(response).to redirect_to('/')
       end
     end
   end

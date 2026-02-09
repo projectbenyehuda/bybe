@@ -8,7 +8,8 @@ class ManifestationController < ApplicationController
   include BybeUtils
   include KwicConcordanceConcern
 
-  before_action only: %i(list show remove_link edit_metadata add_aboutnesses versions version_diff restore_version) do |c|
+  before_action only: %i(list show remove_link edit_metadata add_aboutnesses versions version_diff
+                         restore_version) do |c|
     c.require_editor('edit_catalog')
   end
   before_action only: %i(edit update) do |c|
@@ -197,21 +198,13 @@ class ManifestationController < ApplicationController
   def versions
     @m = Manifestation.find(params[:id])
     @page_title = "#{t(:version_history_for)} #{@m.title}"
-    @versions = @m.versions.reorder('versions.id DESC')
+    @versions = @m.versions.reorder('versions.id DESC').page(params[:page]).per(50)
 
     # Pre-calculate which versions have markdown changes
     @markdown_changes = {}
     @versions.each do |version|
-      # Use changeset if available, otherwise assume first version has markdown
-      @markdown_changes[version.id] =
-        if version.changeset&.key?('markdown')
-          true
-        elsif version.changeset.nil?
-          # First version (create) doesn't have changeset, so assume markdown present
-          true
-        else
-          false
-        end
+      # Check if markdown was changed by comparing object_changes
+      @markdown_changes[version.id] = markdown_changed_in_version?(version)
     end
 
     # Lookup user names
@@ -225,7 +218,7 @@ class ManifestationController < ApplicationController
 
     # Get the version before this change (stored in version.object)
     if version.object.present?
-      old_attrs = Psych.unsafe_load(version.object)
+      old_attrs = deserialize_version_object(version.object)
       @previous_markdown = old_attrs['markdown'] || ''
     else
       # This is the create event, no previous version
@@ -235,7 +228,7 @@ class ManifestationController < ApplicationController
     # Get the version after this change by finding the next version
     next_version = @m.versions.where('created_at > ?', version.created_at).order(created_at: :asc).first
     if next_version && next_version.object.present?
-      new_attrs = Psych.unsafe_load(next_version.object)
+      new_attrs = deserialize_version_object(next_version.object)
       @current_markdown = new_attrs['markdown'] || ''
     else
       # This is the last version, use current state
@@ -245,8 +238,8 @@ class ManifestationController < ApplicationController
     # Generate the diff HTML
     require 'diffy'
     @diff_html = Diffy::Diff.new(@previous_markdown, @current_markdown,
-                                  include_plus_and_minus_in_html: true,
-                                  include_diff_info: true).to_s(:html)
+                                 include_plus_and_minus_in_html: true,
+                                 include_diff_info: true).to_s(:html)
 
     render layout: false
   end
@@ -257,7 +250,7 @@ class ManifestationController < ApplicationController
 
     # Get the old version's attributes from the stored object
     if version.object.present?
-      old_attrs = Psych.unsafe_load(version.object)
+      old_attrs = deserialize_version_object(version.object)
       old_markdown = old_attrs['markdown']
 
       # Update the manifestation with old content, which creates a new version
@@ -273,6 +266,41 @@ class ManifestationController < ApplicationController
   end
 
   private
+
+  # Safe deserialization of PaperTrail version objects
+  def deserialize_version_object(object_yaml)
+    # Use safe_load with allowed classes for ActiveRecord objects
+    Psych.safe_load(
+      object_yaml,
+      permitted_classes: [
+        ActiveSupport::TimeWithZone,
+        ActiveSupport::TimeZone,
+        Time,
+        Symbol
+      ],
+      aliases: true
+    )
+  end
+
+  # Check if markdown field was changed in a version
+  def markdown_changed_in_version?(version)
+    # If object_changes is available, check if markdown key exists
+    return version.changeset&.key?('markdown') || false if version.object_changes.present?
+
+    # Fallback: Check by comparing deserialized objects
+    # First version (create event) always has markdown
+    return true if version.event == 'create'
+
+    # For updates without object_changes, check if object contains markdown
+    return false if version.object.blank?
+
+    begin
+      old_attrs = deserialize_version_object(version.object)
+      old_attrs.key?('markdown')
+    rescue StandardError
+      false
+    end
+  end
 
   def fetch_new_authors(since)
     # Authorities created recently with published manifestations
