@@ -6,6 +6,8 @@ PROGRESS_SERIES = [5, 10, 25, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1
                    10_000].freeze
 
 class AdminController < ApplicationController
+  include PaperTrailHelpers
+
   before_action :require_editor
   before_action :obtain_tagging_lock,
                 only: %i(approve_tag approve_tag_and_next reject_tag escalate_tag reject_tag_and_next merge_tag
@@ -210,7 +212,7 @@ class AdminController < ApplicationController
 
     # Get all expressions that are translations
     # We need to include involved_authorities for translators
-    # Using .each instead of .find_each since we're materializing all results in memory
+    # Using .find_each for efficient batch processing with preloaded associations
     Expression.includes(:work, :involved_authorities, work: [:involved_authorities])
               .where(translation: true)
               .find_each do |expr|
@@ -1495,41 +1497,6 @@ class AdminController < ApplicationController
   end
 
   private
-
-  # Safe deserialization of PaperTrail version objects
-  def deserialize_version_object(object_yaml)
-    # Use safe_load with allowed classes for ActiveRecord objects
-    Psych.safe_load(
-      object_yaml,
-      permitted_classes: [
-        ActiveSupport::TimeWithZone,
-        ActiveSupport::TimeZone,
-        Time,
-        Symbol
-      ],
-      aliases: true
-    )
-  end
-
-  # Check if markdown field was changed in a version
-  def markdown_changed_in_version?(version)
-    # If object_changes is available, check if markdown key exists
-    return version.changeset&.key?('markdown') || false if version.object_changes.present?
-
-    # Fallback: Check by comparing deserialized objects
-    # First version (create event) always has markdown
-    return true if version.event == 'create'
-
-    # For updates without object_changes, check if object contains markdown
-    return false if version.object.blank?
-
-    begin
-      old_attrs = deserialize_version_object(version.object)
-      old_attrs.key?('markdown')
-    rescue StandardError
-      false
-    end
-  end
 
   def parse_manifestation_ids(input)
     ids = []

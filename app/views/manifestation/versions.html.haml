@@ -38,10 +38,8 @@
                 %span.badge.bg-secondary= t(:no_markdown)
             %td
               - if @markdown_changes[version.id]
-                %a.btn.btn-sm.btn-info.view-diff{
-                  href: '#',
-                  data: { version_id: version.id,
-                          manifestation_id: @m.id } }
+                - diff_url = manifestation_version_diff_path(@m, version)
+                %a.btn.btn-sm.btn-info.view-diff{ href: '#', data: { diff_url: diff_url } }
                   = t(:view_diff)
               = button_to t(:restore_version),
                           manifestation_restore_version_path(@m, version),
@@ -55,9 +53,7 @@
   $(document).ready(function() {
     $('.view-diff').click(function(e) {
       e.preventDefault();
-      var versionId = $(this).data('version-id');
-      var manifestationId = $(this).data('manifestation-id');
-      var url = '/manifestation/' + manifestationId + '/versions/' + versionId + '/diff';
+      var url = $(this).data('diff-url');
 
       $.get(url, function(data) {
         $('#diff-container').html(data);
