@@ -104,14 +104,19 @@ module V1
                  default: nil,
                  type: [String],
                  desc: <<~DESC,
-                   special param to fetch next page of results, to get first page skip it,
-                   to get next page use value returned in `next_page_search_after` attribute of previous page response.
-                   Must be an array with exactly 2 string values (sort field value and document ID).
+                   Pagination cursor for fetching subsequent pages of results.
+
+                   IMPORTANT: Do NOT provide this parameter for the first page request.
+
+                   For subsequent pages, use the exact value returned in the `next_page_search_after`
+                   field from the previous page response. This is an opaque cursor value that must not
+                   be manually constructed.
+
+                   The value is always an array with exactly 2 string elements (sort field value and
+                   document ID), but the format and values depend on the sort order and must be obtained
+                   from a previous response.
                  DESC
-                 documentation: {
-                   param_type: 'body',
-                   example: %w(sort_field_value 12345)
-                 }
+                 documentation: { param_type: 'body' }
         optional :genres,
                  type: [String],
                  values: Work::GENRES,
