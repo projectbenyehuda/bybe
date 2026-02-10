@@ -397,6 +397,30 @@ describe V1::TextsApi do
           expect(data_ids).to eq asc_order[5..29].reverse
         end
       end
+
+      context 'when search_after has wrong number of elements' do
+        let(:sort_dir) { :asc }
+
+        context 'when search_after has only 1 element' do
+          let(:search_after) { ['single_value'] }
+
+          it 'fails with bad_request status and clear error message' do
+            expect(subject).to eq 400
+            expect(error_message).to include('search_after must contain exactly 2 values')
+            expect(error_message).to include('got 1')
+          end
+        end
+
+        context 'when search_after has 3 elements' do
+          let(:search_after) { %w[value1 value2 value3] }
+
+          it 'fails with bad_request status and clear error message' do
+            expect(subject).to eq 400
+            expect(error_message).to include('search_after must contain exactly 2 values')
+            expect(error_message).to include('got 3')
+          end
+        end
+      end
     end
   end
 
