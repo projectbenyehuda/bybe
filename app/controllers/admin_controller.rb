@@ -1,9 +1,13 @@
+# frozen_string_literal: true
+
 TAGGING_LOCK = '/tmp/tagging.lock'
 TAGGING_LOCK_TIMEOUT = 15 # 15 minutes
 PROGRESS_SERIES = [5, 10, 25, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 2000, 3000, 4000, 5000,
-                   10_000]
+                   10_000].freeze
 
 class AdminController < ApplicationController
+  include PaperTrailHelpers
+
   before_action :require_editor
   before_action :obtain_tagging_lock,
                 only: %i(approve_tag approve_tag_and_next reject_tag escalate_tag reject_tag_and_next merge_tag
@@ -18,7 +22,7 @@ class AdminController < ApplicationController
   layout 'backend', only: %i(tag_moderation tag_review tagging_review edit_tag) # eventually change to except: [<popups>]
 
   def index
-    return unless current_user && current_user.editor?
+    return unless current_user&.editor?
 
     if current_user.has_bit?('handle_proofs')
       @open_proofs = Proof.where(status: 'new').count.to_s
@@ -101,7 +105,7 @@ class AdminController < ApplicationController
 
   def messy_tocs
     @authors = []
-    Person.has_toc.joins(:toc).includes(:toc).each do |p|
+    Person.has_toc.joins(:toc).includes(:toc).find_each do |p|
       unless p.toc.structure_okay?
         @authors << p
       end
@@ -129,7 +133,7 @@ class AdminController < ApplicationController
   end
 
   def missing_images
-    @authors = Person.where(profile_image_file_name: nil).order('name asc')
+    @authors = Person.where(profile_image_file_name: nil).order(:name)
     @page_title = t(:missing_images)
     Rails.cache.write('report_missing_images', @authors.count)
   end
@@ -147,7 +151,7 @@ class AdminController < ApplicationController
     prefixes = {}
     @similarities = {}
     whitelisted_ids = ListItem.where(listkey: 'similar_title_whitelist').pluck(:item_id)
-    Manifestation.all.each do |m|
+    Manifestation.find_each do |m|
       next if whitelisted_ids.include?(m.id) # skip whitelisted works
 
       prefix = [m.cached_people, m.title[0..(m.title.length > 8 ? 8 : -1)]]
@@ -160,7 +164,7 @@ class AdminController < ApplicationController
     prefixes.each_pair do |k, v|
       next if v.length < 2
 
-      @similarities[k] = v.sort_by { |m| m.title }
+      @similarities[k] = v.sort_by(&:title)
     end
     Rails.cache.write('report_similar_titles', @similarities.keys.length)
   end
@@ -208,10 +212,10 @@ class AdminController < ApplicationController
 
     # Get all expressions that are translations
     # We need to include involved_authorities for translators
-    # Using .each instead of .find_each since we're materializing all results in memory
+    # Using .find_each for efficient batch processing with preloaded associations
     Expression.includes(:work, :involved_authorities, work: [:involved_authorities])
               .where(translation: true)
-              .each do |expr|
+              .find_each do |expr|
       # Skip if work has no author or expression has no translators
       next if expr.work.authors.empty? || expr.translators.empty?
 
@@ -228,7 +232,7 @@ class AdminController < ApplicationController
       next false if expressions.length < 2
 
       # Check that expressions belong to DIFFERENT Works (not already merged)
-      work_ids = expressions.map { |e| e.work_id }.uniq
+      work_ids = expressions.map(&:work_id).uniq
       next false if work_ids.length < 2
 
       # Check that at least two distinct translator sets exist across expressions
@@ -258,7 +262,7 @@ class AdminController < ApplicationController
     @target_work_id = params[:target_work_id]
 
     source_work = Work.find(@source_work_id)
-    target_work = Work.find(@target_work_id)
+    Work.find(@target_work_id)
 
     # Use a transaction to ensure atomicity
     ActiveRecord::Base.transaction do
@@ -388,11 +392,11 @@ class AdminController < ApplicationController
       p.original_works.each do |m|
         @tocs_missing_links[p.id][:orig] << m unless toc_items.include?(m)
       end
-      p.translations.includes(expression: :work).each do |m|
+      p.translations.includes(expression: :work).find_each do |m|
         @tocs_missing_links[p.id][:xlat] << m unless toc_items.include?(m)
         # additionally, make sure they appear in the original author's ToC, if it's a manual one (relevant for translated authors who *also* wrote in Hebrew, e.g. Y. L. Perets)
         m.expression.work.authors.each do |au|
-          if !au.toc.nil? && !au.toc.linked_item_ids.include?(m.id)
+          if !au.toc.nil? && au.toc.linked_item_ids.exclude?(m.id)
             @tocs_missing_links[au.id] = { orig: [], xlat: [] } if @tocs_missing_links[au.id].nil?
             @tocs_missing_links[au.id][:orig] << m
           end
@@ -525,16 +529,16 @@ class AdminController < ApplicationController
     # CRITICAL: Authority doesn't belong_to Collection, it's the reverse!
     # Authority.uncollected_works_collection_id points to Collection
     uncollected_collection_ids = @manifestations
-      .flat_map(&:collection_items)
-      .map(&:collection)
-      .compact
-      .select(&:uncollected?)
-      .map(&:id)
-      .uniq
+                                 .flat_map(&:collection_items)
+                                 .map(&:collection)
+                                 .compact
+                                 .select(&:uncollected?)
+                                 .map(&:id)
+                                 .uniq
 
     @authorities_by_collection = Authority
-      .where(uncollected_works_collection_id: uncollected_collection_ids)
-      .index_by(&:uncollected_works_collection_id)
+                                 .where(uncollected_works_collection_id: uncollected_collection_ids)
+                                 .index_by(&:uncollected_works_collection_id)
 
     @page_title = t(:doubly_contained_works_report)
     Rails.cache.write('report_doubly_contained_works', @total)
@@ -586,7 +590,7 @@ class AdminController < ApplicationController
 
     # Step 1: Get all published manifestations within the date range
     manifestations_in_range = Manifestation.published
-                                           .where('created_at >= ? AND created_at <= ?', from_date, to_date)
+                                           .where(created_at: from_date..to_date)
                                            .includes(expression: { work: :involved_authorities,
                                                                    involved_authorities: :authority })
 
@@ -800,7 +804,7 @@ class AdminController < ApplicationController
   end
 
   def volunteer_profile_add_feature
-    return if params[:fromdate].nil? or params[:todate].nil?
+    return if params[:fromdate].nil? || params[:todate].nil?
 
     vp = VolunteerProfile.find(params[:vpid])
     unless vp.nil?
@@ -833,9 +837,7 @@ class AdminController < ApplicationController
 
   def volunteer_profile_destroy
     @vp = VolunteerProfile.find(params[:id])
-    unless @vp.nil?
-      @vp.destroy
-    end
+    @vp&.destroy
     flash[:notice] = I18n.t(:deleted_successfully)
     redirect_to action: :volunteer_profile_list
   end
@@ -946,12 +948,11 @@ class AdminController < ApplicationController
       stags = ListItem.where(listkey: 'tag_similarity', item: @tag).pluck(:extra).map do |x|
                 x.split(':')
               end.sort_by { |score, _tag| score }.reverse
-      @similar_tags = Tag.where(id: stags.map { |x| x[1] })
+      @similar_tags = Tag.where(id: stags.pluck(1))
       calculate_editor_tagging_stats
       @next_tag_id = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at > ?',
-                                                                                                @tag.created_at).order(:created_at).limit(1).pluck(:id).first
-      @prev_tag_id = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where('created_at < ?',
-                                                                                                @tag.created_at).order('created_at desc').limit(1).pluck(:id).first
+                                                                                                @tag.created_at).order(:created_at).limit(1).pick(:id)
+      @prev_tag_id = Tag.where(status: :pending).where('COALESCE(taggings_count, 0) > 0').where(created_at: ...@tag.created_at).order(created_at: :desc).limit(1).pick(:id)
     end
   end
 
@@ -973,10 +974,9 @@ class AdminController < ApplicationController
       calculate_editor_tagging_stats
       @next_tagging_id = Tagging.joins(:tag).where(status: :pending, tag: { status: :approved }).where(
         'taggings.created_at > ?', @tagging.created_at
-      ).order('taggings.created_at').limit(1).pluck(:id).first
-      @prev_tagging_id = Tagging.joins(:tag).where(status: :pending, tag: { status: :approved }).where(
-        'taggings.created_at < ?', @tagging.created_at
-      ).order('taggings.created_at desc').limit(1).pluck(:id).first
+      ).order('taggings.created_at').limit(1).pick(:id)
+      @prev_tagging_id = Tagging.joins(:tag).where(status: :pending,
+                                                   tag: { status: :approved }).where(taggings: { created_at: ...@tagging.created_at }).order('taggings.created_at desc').limit(1).pick(:id)
       if @tagging.taggable_type == 'Authority'
         @author = @tagging.taggable
         unless @author.toc.nil?
@@ -1048,7 +1048,7 @@ class AdminController < ApplicationController
 
   def update_tag
     require_editor('moderate_tags')
-    unless params[:id].present?
+    if params[:id].blank?
       flash[:error] = t(:no_such_item)
       redirect_to tag_moderation_path
       return
@@ -1086,7 +1086,7 @@ class AdminController < ApplicationController
     else
       # Collect validation errors from Tag and primary TagName (if present)
       error_messages = @tag.errors.full_messages
-      if primary_tag_name && primary_tag_name.errors.any?
+      if primary_tag_name&.errors&.any?
         error_messages.concat(primary_tag_name.errors.full_messages)
       end
       flash.now[:error] = error_messages.uniq.to_sentence
@@ -1097,7 +1097,7 @@ class AdminController < ApplicationController
 
   def add_tag_name
     require_editor('moderate_tags')
-    unless params[:id].present?
+    if params[:id].blank?
       flash[:error] = t(:no_such_item)
       redirect_to tag_moderation_path
       return
@@ -1181,7 +1181,8 @@ class AdminController < ApplicationController
     redirect_to url_for(action: :tag_moderation)
   end
 
-  def approve_tag # approve tag and proceed to review taggings
+  # approve tag and proceed to review taggings
+  def approve_tag
     require_editor('moderate_tags')
     if session[:tagging_lock]
       t = Tag.find(params[:id])
@@ -1200,7 +1201,8 @@ class AdminController < ApplicationController
     end
   end
 
-  def approve_tag_and_next # to be called from tag review page (non-AJAX)
+  # to be called from tag review page (non-AJAX)
+  def approve_tag_and_next
     require_editor('moderate_tags')
     if session[:tagging_lock]
       t = Tag.find(params[:id])
@@ -1433,7 +1435,7 @@ class AdminController < ApplicationController
   end
 
   def manifestation_batch_tools
-    return unless params[:ids].present?
+    return if params[:ids].blank?
 
     ids = parse_manifestation_ids(params[:ids])
     @manifestations = Manifestation.where(id: ids)
@@ -1459,6 +1461,39 @@ class AdminController < ApplicationController
       end
       format.json { render json: { success: true, message: t(:updated_successfully), id: params[:id] } }
     end
+  end
+
+  def recent_manifestation_changes
+    require_editor('edit_catalog')
+    @page_title = t(:recent_manifestation_changes)
+
+    # Get all versions for Manifestation items, ordered by created_at descending
+    @versions = PaperTrail::Version
+                .where(item_type: 'Manifestation')
+                .order(created_at: :desc)
+
+    # Filter by editor if requested
+    if params[:editor].present?
+      @versions = @versions.where(whodunnit: params[:editor])
+      @filtered_editor = params[:editor]
+    end
+
+    # Apply pagination
+    @versions = @versions.page(params[:page]).per(50)
+
+    # Pre-load manifestations
+    manifestation_ids = @versions.map(&:item_id).compact.uniq
+    @manifestations = manifestation_ids.any? ? Manifestation.where(id: manifestation_ids).index_by(&:id) : {}
+
+    # Pre-calculate which versions have markdown changes
+    @markdown_changes = {}
+    @versions.each do |version|
+      @markdown_changes[version.id] = markdown_changed_in_version?(version)
+    end
+
+    # Lookup user names
+    whodunnit_ids = @versions.map(&:whodunnit).compact.uniq
+    @users = whodunnit_ids.any? ? User.where(id: whodunnit_ids).index_by(&:id) : {}
   end
 
   private
@@ -1500,7 +1535,7 @@ class AdminController < ApplicationController
     if File.exist?(TAGGING_LOCK)
       mtime = File.mtime(TAGGING_LOCK)
       if mtime.to_i < TAGGING_LOCK_TIMEOUT.minutes.ago.to_i
-        File.write(TAGGING_LOCK, "#{current_user.id}")
+        File.write(TAGGING_LOCK, current_user.id.to_s)
         session[:tagging_lock] = true
       else
         lock_owner = File.read(TAGGING_LOCK).to_i
@@ -1515,7 +1550,7 @@ class AdminController < ApplicationController
         end
       end
     else
-      File.write(TAGGING_LOCK, "#{current_user.id}")
+      File.write(TAGGING_LOCK, current_user.id.to_s)
       session[:tagging_lock] = true
     end
     return true
@@ -1532,7 +1567,7 @@ class AdminController < ApplicationController
 
   def redirect_to_next_tagging(t, msg)
     @next_tagging_id = Tagging.where(status: :pending).where('created_at > ?',
-                                                             t.created_at).order(:created_at).limit(1).pluck(:id).first
+                                                             t.created_at).order(:created_at).limit(1).pick(:id)
     redirect_to(
       @next_tagging_id.present? ? url_for(tagging_review_path(@next_tagging_id)) : url_for(action: :tag_moderation), notice: msg
     )
@@ -1544,9 +1579,9 @@ class AdminController < ApplicationController
 
   def invalidate_whatsnew_cache
     # Delete cache for all sort orders and locales
-    %w[alpha recent].each do |sort_order|
+    %w(alpha recent).each do |sort_order|
       I18n.available_locales.each do |locale|
-        Rails.cache.delete(%w[whatsnew_data] + [sort_order, locale.to_s])
+        Rails.cache.delete(%w(whatsnew_data) + [sort_order, locale.to_s])
       end
     end
   end

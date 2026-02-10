@@ -1,0 +1,67 @@
+.card
+  .card-header
+    %h3= t(:diff_between_versions)
+  .card-body
+    - if @diff_html.blank?
+      %p= t(:no_diff_available)
+    - else
+      .diff-view
+        :css
+          .diff {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            background: #f5f5f5;
+            max-height: 600px;
+            overflow-y: auto;
+          }
+          .diff ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+          }
+          .diff li {
+            padding: 2px 8px;
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border-bottom: 1px solid #eee;
+            line-height: 1.4;
+          }
+          .diff ins {
+            background-color: #d4edda;
+            color: #155724;
+            text-decoration: none;
+            font-weight: bold;
+          }
+          .diff del {
+            background-color: #f8d7da;
+            color: #721c24;
+            text-decoration: line-through;
+          }
+          .diff .ins {
+            background-color: #e6ffed;
+            border-left: 3px solid #28a745;
+          }
+          .diff .del {
+            background-color: #ffeef0;
+            border-left: 3px solid #dc3545;
+          }
+          .diff .unchanged {
+            background-color: #fff;
+          }
+          .diff-header {
+            background-color: #e9ecef;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+            font-weight: bold;
+            text-align: center;
+          }
+        .diff-header
+          %span{ style: 'color: #dc3545;' }= '- ' + t(:previous_version)
+          &nbsp;&nbsp;&nbsp;
+          %span{ style: 'color: #28a745;' }= '+ ' + t(:selected_version)
+        .diff
+          != @diff_html

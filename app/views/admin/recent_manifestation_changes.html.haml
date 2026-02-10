@@ -1,0 +1,53 @@
+.backend.admin_container
+  %h1= t(:recent_manifestation_changes)
+  %p
+    = link_to t(:dashboard), admin_index_path
+
+  - if @filtered_editor.present?
+    %h3= t(:changes_by_editor, editor: @filtered_editor)
+    %p= link_to t(:all_changes), admin_recent_manifestation_changes_path
+
+  - if @versions.blank?
+    %p= t(:no_versions_found)
+  - else
+    %table.table.table-striped
+      %thead
+        %tr
+          %th= t(:work)
+          %th= t(:author)
+          %th= t(:version_date)
+          %th= t(:version_editor)
+          %th= t(:markdown_changed)
+          %th= t(:actions)
+      %tbody
+        - @versions.each do |version|
+          - m = @manifestations[version.item_id]
+          - next if m.nil?
+
+          %tr
+            %td= link_to m.title, manifestation_path(m)
+            %td= m.author_string
+            %td= version.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            %td
+              - if version.whodunnit.present? && @users[version.whodunnit.to_i]
+                - user = @users[version.whodunnit.to_i]
+                - if version.whodunnit != @filtered_editor
+                  = link_to user.name, admin_recent_manifestation_changes_path(editor: version.whodunnit)
+                - else
+                  = user.name
+              - elsif version.whodunnit.present?
+                - if version.whodunnit != @filtered_editor
+                  = link_to version.whodunnit, admin_recent_manifestation_changes_path(editor: version.whodunnit)
+                - else
+                  = version.whodunnit
+              - else
+                = t(:unknown_editor)
+            %td
+              - if @markdown_changes[version.id]
+                %span.badge.bg-success= t(:yes_markdown)
+              - else
+                %span.badge.bg-secondary= t(:no_markdown)
+            %td
+              = link_to t(:version_history), manifestation_versions_path(m), class: 'btn btn-sm btn-primary'
+
+    = paginate @versions
