@@ -2200,11 +2200,11 @@ he:
   version_history_for: היסטוריית גרסאות עבור
   version_number: מספר גרסה
   version_date: תאריך שינוי
-  version_editor: עורך ביצע שינוי
+  version_editor: בוצע על ידי
   markdown_changed: שינוי בטקסט
   view_diff: צפייה בהבדלים
   restore_version: שחזור גרסה זו
-  restore_version_confirm: האם אתה בטוח שברצונך לשחזר גרסה זו? פעולה זו תיצור גרסה חדשה עם התוכן של הגרסה הישנה.
+  restore_version_confirm: לשחזר גרסה זו? פעולה זו תיצור גרסה חדשה עם התוכן של הגרסה הישנה.
   version_restored: הגרסה שוחזרה בהצלחה
   recent_manifestation_changes: שינויים אחרונים ביצירות
   all_changes: כל השינויים
