@@ -1468,8 +1468,11 @@ class AdminController < ApplicationController
     @page_title = t(:recent_manifestation_changes)
 
     # Get all versions for Manifestation items, ordered by created_at descending
+    # Suppress changes made on the same day as the Manifestation was created (noise)
     @versions = PaperTrail::Version
+                .joins('INNER JOIN manifestations ON manifestations.id = versions.item_id')
                 .where(item_type: 'Manifestation')
+                .where('DATE(versions.created_at) != DATE(manifestations.created_at)')
                 .order(created_at: :desc)
 
     # Filter by editor if requested
