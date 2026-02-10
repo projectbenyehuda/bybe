@@ -103,11 +103,15 @@ module V1
         optional :search_after,
                  default: nil,
                  type: [String],
-                 desc: <<~DESC
+                 desc: <<~DESC,
                    special param to fetch next page of results, to get first page skip it,
                    to get next page use value returned in `next_page_search_after` attribute of previous page response.
                    Must be an array with exactly 2 string values (sort field value and document ID).
                  DESC
+                 documentation: {
+                   param_type: 'body',
+                   example: %w(sort_field_value 12345)
+                 }
         optional :genres,
                  type: [String],
                  values: Work::GENRES,
