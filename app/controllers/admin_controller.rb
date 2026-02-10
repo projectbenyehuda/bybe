@@ -1472,7 +1472,10 @@ class AdminController < ApplicationController
     @versions = PaperTrail::Version
                 .joins('INNER JOIN manifestations ON manifestations.id = versions.item_id')
                 .where(item_type: 'Manifestation')
-                .where('DATE(versions.created_at) != DATE(manifestations.created_at)')
+                .where(
+                  'versions.created_at < DATE(manifestations.created_at) ' \
+                  'OR versions.created_at >= DATE(manifestations.created_at) + INTERVAL 1 DAY'
+                )
                 .order(created_at: :desc)
 
     # Filter by editor if requested
