@@ -105,7 +105,8 @@ module V1
                  type: [String],
                  desc: <<~DESC
                    special param to fetch next page of results, to get first page skip it,
-                   to get next page use value returned in `next_page_search_after` attribute of previous page response
+                   to get next page use value returned in `next_page_search_after` attribute of previous page response.
+                   Must be an array with exactly 2 string values (sort field value and document ID).
                  DESC
         optional :genres,
                  type: [String],
@@ -199,6 +200,14 @@ module V1
 
         search_after = params[:search_after]
         if search_after.present?
+          # Validate search_after has exactly 2 elements (sort field value + document ID)
+          if search_after.size != 2
+            error!(
+              'search_after must contain exactly 2 values (sort field value and document ID), ' \
+              "got #{search_after.size}",
+              400
+            )
+          end
           records = records.search_after(search_after)
         end
 
