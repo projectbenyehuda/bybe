@@ -2195,3 +2195,30 @@ he:
           other: "מוצגים <b>כל %{count}</b> %{entry_name}"
       more_pages:
         display_entries: "מוצגים %{entry_name} <b>%{first}&nbsp;-&nbsp;%{last}</b> מתוך <b>%{total}</b> סה\"כ"
+  # Version history
+  version_history: היסטוריית גרסאות
+  version_history_for: היסטוריית גרסאות עבור
+  version_number: מספר גרסה
+  version_date: תאריך שינוי
+  version_editor: עורך ביצע שינוי
+  markdown_changed: שינוי בטקסט
+  view_diff: צפייה בהבדלים
+  restore_version: שחזור גרסה זו
+  restore_version_confirm: האם אתה בטוח שברצונך לשחזר גרסה זו? פעולה זו תיצור גרסה חדשה עם התוכן של הגרסה הישנה.
+  version_restored: הגרסה שוחזרה בהצלחה
+  recent_manifestation_changes: שינויים אחרונים ביצירות
+  all_changes: כל השינויים
+  changes_by_editor: שינויים של %{editor}
+  no_versions_found: לא נמצאו גרסאות
+  yes_markdown: כן
+  no_markdown: לא
+  unknown_editor: לא ידוע
+  diff_between_versions: הבדלים בין גרסאות
+  previous_version: גרסה קודמת
+  selected_version: גרסה נבחרת
+  no_previous_version: אין גרסה קודמת
+  no_diff_available: לא זמינים הבדלים
+  back_to_work: חזרה ליצירה
+  version_restore_failed: שגיאה בשחזור הגרסה
+  work: יצירה
+  author: יוצר

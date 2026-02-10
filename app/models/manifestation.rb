@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 include BybeUtils
 
 class Manifestation < ApplicationRecord
@@ -18,7 +20,7 @@ class Manifestation < ApplicationRecord
   has_many :list_items, as: :item, dependent: :destroy
   has_many :downloadables, as: :object, dependent: :destroy
 
-  has_paper_trail ignore: %i(impressions_count created_at updated_at)
+  has_paper_trail ignore: %i(impressions_count created_at updated_at), skip: [:touch]
   has_many :external_links, as: :linkable, dependent: :destroy
   has_many :proofs, as: :item, dependent: :destroy
   has_many :anthology_texts, dependent: :destroy
@@ -108,11 +110,11 @@ class Manifestation < ApplicationRecord
     if cached_heading_lines.nil?
       recalc_heading_lines!
     end
-    cached_heading_lines.split('|').map { |line| line.to_i }
+    cached_heading_lines.split('|').map(&:to_i)
   end
 
   def chapters?
-    return false if cached_heading_lines.nil? || cached_heading_lines.empty? || cached_heading_lines[1..5].index('|').nil?
+    return false if cached_heading_lines.blank? || cached_heading_lines[1..5].index('|').nil?
 
     return true
   end
@@ -135,7 +137,7 @@ class Manifestation < ApplicationRecord
 
   def as_prose?
     # TODO: implement more generically
-    return %w(poetry drama).include?(expression.work.genre) ? false : true
+    return %w(poetry drama).exclude?(expression.work.genre)
   end
 
   def safe_filename
@@ -297,7 +299,6 @@ class Manifestation < ApplicationRecord
   end
 
   def author_and_translator_ids
-    ret = []
     au = authors
     au = [] if au.nil?
     tra = translators
@@ -402,11 +403,12 @@ class Manifestation < ApplicationRecord
   def self.randomize_in_genre_except(except, genre)
     list = []
     i = 0
-    begin
+    loop do
       candidates = Manifestation.all_published.genre(genre).order('RAND()').limit(15)
-      candidates.each { |au| list << au unless (except.include? au) or (list.include? au) or (list.length == 10) }
+      candidates.each { |au| list << au unless (except.include? au) || (list.include? au) || (list.length == 10) }
       i += 1
-    end until list.size >= 10 or i > 10
+      break if (list.size >= 10) || (i > 10)
+    end
     return list
   end
 

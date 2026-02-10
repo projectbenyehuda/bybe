@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_06_214951) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -915,6 +915,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_214951) do
     t.string "whodunnit"
     t.text "object", size: :long
     t.datetime "created_at", precision: nil
+    t.json "object_changes"
+    t.index ["item_type", "created_at"], name: "index_versions_on_item_type_and_created_at"
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 

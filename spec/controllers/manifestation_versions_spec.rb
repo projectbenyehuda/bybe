@@ -1,0 +1,162 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+describe ManifestationController do
+  let(:user) { create(:user, editor: true) }
+  let(:manifestation) { create(:manifestation, markdown: 'Original content') }
+
+  before do
+    # Create editor bit for user
+    ListItem.create!(listkey: 'edit_catalog', item: user)
+    session[:user_id] = user.id
+    PaperTrail.request.whodunnit = user.id.to_s
+  end
+
+  describe '#versions' do
+    context 'when user is not an editor' do
+      let(:non_editor_user) { create(:user, editor: false) }
+
+      before do
+        session[:user_id] = non_editor_user.id
+      end
+
+      it 'redirects to home page' do
+        get :versions, params: { id: manifestation.id }
+        expect(response).to redirect_to('/')
+      end
+    end
+
+    context 'when user is an editor with edit_catalog bit' do
+      it 'shows version history' do
+        # Create a version by updating the manifestation
+        manifestation.update!(markdown: 'Updated content', title: 'Updated Title')
+
+        get :versions, params: { id: manifestation.id }
+
+        expect(response).to be_successful
+        expect(assigns(:m)).to eq(manifestation)
+        expect(assigns(:versions)).not_to be_empty
+      end
+
+      it 'marks versions with markdown changes' do
+        # Update markdown - should be marked as markdown change
+        manifestation.update!(markdown: 'Changed markdown')
+        markdown_version_id = manifestation.versions.last.id
+
+        # Update title only - should NOT be marked as markdown change
+        manifestation.update!(title: 'Changed title only')
+        title_version_id = manifestation.versions.last.id
+
+        get :versions, params: { id: manifestation.id }
+
+        markdown_changes = assigns(:markdown_changes)
+        expect(markdown_changes).to be_a(Hash)
+        expect(markdown_changes[markdown_version_id]).to be(true)
+        expect(markdown_changes[title_version_id]).to be(false)
+      end
+
+      it 'paginates version history' do
+        # Create many versions to test pagination
+        60.times do |i|
+          manifestation.update!(markdown: "Content #{i}")
+        end
+
+        get :versions, params: { id: manifestation.id }
+
+        versions = assigns(:versions)
+        expect(versions).to respond_to(:current_page)
+        expect(versions.count).to be <= 50
+      end
+
+      it 'requires edit_catalog bit' do
+        # Remove the edit_catalog bit
+        ListItem.where(listkey: 'edit_catalog', item: user).delete_all
+
+        get :versions, params: { id: manifestation.id }
+
+        expect(response).to redirect_to('/')
+      end
+    end
+  end
+
+  describe '#version_diff' do
+    before do
+      manifestation.update!(markdown: 'New content')
+    end
+
+    context 'when user is not an editor' do
+      let(:non_editor_user) { create(:user, editor: false) }
+
+      before do
+        session[:user_id] = non_editor_user.id
+      end
+
+      it 'redirects to home page' do
+        version = manifestation.versions.last
+        get :version_diff, params: { id: manifestation.id, version_id: version.id }
+        expect(response).to redirect_to('/')
+      end
+    end
+
+    context 'when user is an editor' do
+      it 'shows diff between versions' do
+        version = manifestation.versions.last
+
+        get :version_diff, params: { id: manifestation.id, version_id: version.id }
+
+        expect(response).to be_successful
+        expect(assigns(:current_markdown)).to eq('New content')
+        expect(assigns(:previous_markdown)).to eq('Original content')
+      end
+    end
+  end
+
+  describe '#restore_version' do
+    before do
+      # Create a history: Original -> Version 2 -> Version 3
+      manifestation.update!(markdown: 'Version 2 content')
+      manifestation.update!(markdown: 'Version 3 content')
+    end
+
+    let(:old_version) do
+      # Get the version that was created when moving from "Original content" to "Version 2"
+      # This version's object contains "Original content"
+      manifestation.versions.order(created_at: :asc).second
+    end
+
+    context 'when user is not an editor' do
+      let(:non_editor_user) { create(:user, editor: false) }
+
+      before do
+        session[:user_id] = non_editor_user.id
+      end
+
+      it 'redirects to home page' do
+        post :restore_version, params: { id: manifestation.id, version_id: old_version.id }
+        expect(response).to redirect_to('/')
+      end
+    end
+
+    context 'when user is an editor' do
+      it 'restores the old version' do
+        # The old_version's object field contains "Original content"
+        expect(manifestation.reload.markdown).to eq('Version 3 content')
+
+        post :restore_version, params: { id: manifestation.id, version_id: old_version.id }
+
+        expect(manifestation.reload.markdown).to eq('Original content')
+        expect(response).to redirect_to(manifestation_versions_path(manifestation))
+        expect(flash[:notice]).to eq(I18n.t(:version_restored))
+      end
+
+      it 'creates a new version when restoring' do
+        initial_version_count = manifestation.versions.count
+
+        post :restore_version, params: { id: manifestation.id, version_id: old_version.id }
+
+        expect(manifestation.reload.versions.count).to be > initial_version_count
+      end
+    end
+  end
+end

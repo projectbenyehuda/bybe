@@ -11,6 +11,8 @@
     %span.static-btn= link_to t(:show), manifestation_show_path(@m.id)
     - if current_user.has_bit?(:edit_catalog)
       != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+      %span.static-btn= link_to t(:version_history), manifestation_versions_path(@m.id)
+      != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
       %span.static-btn#originating-task-btn
         %a.pointer.originating-task-btn{ data: { 'manifestation-id': @m.id } }= t(:find_originating_task)
       %span#originating-task-result
