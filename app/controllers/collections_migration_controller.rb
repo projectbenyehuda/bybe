@@ -25,7 +25,11 @@ class CollectionsMigrationController < ApplicationController
       pub_line = params[:guessed_publisher]
       pub_line = pub_line.gsub(' :', ':').gsub(' ;',';').gsub(/\p{Space}*$/, '') if pub_line.present? # ditto
       # Don't set publisher_line/pub_year for series collections
-      collection_attrs = { title: title, collection_type: params[:collection_type], publication_id: params[:publication_id] }
+      collection_attrs = {
+        title: title,
+        collection_type: params[:collection_type],
+        publication_id: params[:publication_id]
+      }
       unless params[:collection_type] == 'series'
         collection_attrs[:publisher_line] = pub_line
         collection_attrs[:pub_year] = params[:guessed_year]

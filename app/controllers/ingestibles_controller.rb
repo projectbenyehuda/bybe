@@ -511,7 +511,8 @@ class IngestiblesController < ApplicationController
       created_volume = true
     end
     # Populate publisher info if not already set (e.g. in new periodical issue)
-    # Don't set publisher_line/pub_year for series collections (series are groups of manifestations within a volume, not publications themselves)
+    # Don't set publisher_line/pub_year for series collections (series are groups of
+    # manifestations within a volume, not publications themselves)
     if @ingestible.publisher.present? && @collection.publisher_line.blank? && @collection.collection_type != 'series'
       @collection.publisher_line = @ingestible.publisher
       @collection.pub_year = @ingestible.year_published
