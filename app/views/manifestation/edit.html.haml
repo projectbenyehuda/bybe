@@ -145,7 +145,7 @@
       var ddData = $('#images').data('ddslick');
       if (ddData) {
         var currentIndex = ddData.selectedIndex;
-        var totalOptions = ddData.settings.data.length;
+        var totalOptions = $('#images option').length;
         if (currentIndex < totalOptions - 1) {
           $('#images').ddslick('select', {index: currentIndex + 1});
         }
