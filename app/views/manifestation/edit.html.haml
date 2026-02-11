@@ -143,11 +143,14 @@
 
       // Auto-select next image in the dropdown
       var ddData = $('#images').data('ddslick');
-      if (ddData) {
+      if (ddData && ddData.settings && ddData.settings.data) {
         var currentIndex = ddData.selectedIndex;
-        var totalOptions = $('#images option').length;
+        var totalOptions = ddData.settings.data.length;
         if (currentIndex < totalOptions - 1) {
-          $('#images').ddslick('select', {index: currentIndex + 1});
+          // Use setTimeout to ensure DOM is ready for the selection change
+          setTimeout(function() {
+            $('#images').ddslick('select', {index: currentIndex + 1});
+          }, 0);
         }
       }
     });

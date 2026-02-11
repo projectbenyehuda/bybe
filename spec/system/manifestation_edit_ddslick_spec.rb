@@ -149,19 +149,18 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       visit manifestation_edit_path(manifestation)
       expect(page).to have_css('.dd-select', wait: 5)
 
+      # Wait for initial selection to be set (ddslick initializes asynchronously)
+      expect(page).to have_css('.dd-selected-text', text: 'test_image_1.jpg', wait: 5)
+
       # Get the initial selected index (should be 0)
       initial_index = page.evaluate_script("$('#images').data('ddslick').selectedIndex")
       expect(initial_index).to eq(0)
 
-      # Get the initial selected filename
-      initial_filename = page.evaluate_script("$('#images').data('ddslick').selectedData.text")
-      expect(initial_filename).to eq('test_image_1.jpg')
-
       # Click the add image button
       find('#add_image').click
 
-      # Wait for the selection to change
-      expect(page).to have_css('.dd-select', wait: 5)
+      # Wait for the selection to change by checking the selected text
+      expect(page).to have_css('.dd-selected-text', text: 'test_image_2.jpg', wait: 5)
 
       # Verify the next image is now selected
       new_index = page.evaluate_script("$('#images').data('ddslick').selectedIndex")
@@ -183,8 +182,8 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       # Select the last image (index 1, since we have 2 images)
       page.execute_script("$('#images').ddslick('select', {index: 1})")
 
-      # Wait for selection to update
-      expect(page).to have_css('.dd-select', wait: 5)
+      # Wait for selection to update by checking the selected text
+      expect(page).to have_css('.dd-selected-text', text: 'test_image_2.jpg', wait: 5)
 
       # Verify we're on the last image
       current_index = page.evaluate_script("$('#images').data('ddslick').selectedIndex")
@@ -193,9 +192,11 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       # Click the add image button
       find('#add_image').click
 
+      # Verify we're still on the last image by checking the text hasn't changed
+      # (it should remain test_image_2.jpg)
+      expect(page).to have_css('.dd-selected-text', text: 'test_image_2.jpg', wait: 5)
+
       # Verify we're still on the last image (didn't wrap around or error)
-      # Use a wait condition instead of sleep
-      expect(page).to have_css('.dd-select', wait: 5)
       final_index = page.evaluate_script("$('#images').data('ddslick').selectedIndex")
       expect(final_index).to eq(1)
 
