@@ -93,7 +93,7 @@ RSpec.describe LexEntry, type: :model do
           expect(entry.verification_progress.dig('checklist', 'works', 'items').size).to eq(2)
 
           work1.destroy!
-          entry.sync_works_checklist!
+          entry.reload.sync_works_checklist!
 
           updated_items = entry.verification_progress.dig('checklist', 'works', 'items')
           expect(updated_items.size).to eq(1)
