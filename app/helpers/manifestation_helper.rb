@@ -9,9 +9,10 @@ module ManifestationHelper
         !img.variable?
       end
     return actual_images.map do |img|
-      "<option value=\"#{url_for(img)}\" data-imagesrc=\"#{request.base_url + url_for(img.variant(resize_to_fill: [150,
-                                                                                                                   nil]))}\">#{img.blob.filename}</option>"
-    end.join('')
+      thumbnail_url = request.base_url + url_for(img.variant(resize_to_fill: [150, nil]))
+      "<option value=\"#{url_for(img)}\" data-imagesrc=\"#{thumbnail_url}\" " \
+        "data-description=\"&nbsp;\">#{img.blob.filename}</option>"
+    end.join
   end
 
   def all_images_markdown(images)

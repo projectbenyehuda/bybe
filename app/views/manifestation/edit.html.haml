@@ -97,14 +97,17 @@
     //$('.markdown').css('height', newsize);
     //$('.textarea100').css('height', newsize);
     //$('#images').iconselectmenu();
-    $('#images').ddslick({
-      width: 550,
-      onSelected: function(selectedData){
-        //callback function: do something with selectedData;
-        selected_filename = selectedData.selectedData.text;
-        selected_image_url = selectedData.selectedData.value;
-      }
-    });
+    // Check if ddslick is already initialized to prevent double initialization on page reload
+    if (!$('#images').data('ddslick')) {
+      $('#images').ddslick({
+        width: 550,
+        onSelected: function(selectedData){
+          //callback function: do something with selectedData;
+          selected_filename = selectedData.selectedData.text;
+          selected_image_url = selectedData.selectedData.value;
+        }
+      });
+    }
     $('#vised').click(function() {
       const el = document.querySelector('#markdown');
       const pv = document.querySelector('#preview');
