@@ -734,6 +734,35 @@ describe IngestiblesController do
           end
         end
       end
+
+      context 'when ingesting into a series collection' do
+        let(:series_collection) { create(:collection, collection_type: :series, title: 'Test Series') }
+        let(:series_ingestible) do
+          create(:ingestible,
+                 markdown: markdown,
+                 toc_buffer: toc_buffer,
+                 prospective_volume_id: series_collection.id.to_s,
+                 publisher: 'Test Publisher',
+                 year_published: '2024',
+                 no_volume: false)
+        end
+
+        before do
+          series_ingestible.update_parsing
+        end
+
+        it 'does not set publisher_line and pub_year on the series collection' do
+          # Ensure collection starts with blank publisher info
+          expect(series_collection.publisher_line).to be_nil
+          expect(series_collection.pub_year).to be_nil
+
+          post :ingest, params: { id: series_ingestible.id }
+
+          series_collection.reload
+          expect(series_collection.publisher_line).to be_nil
+          expect(series_collection.pub_year).to be_nil
+        end
+      end
     end
   end
 end
