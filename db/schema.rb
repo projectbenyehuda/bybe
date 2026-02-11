@@ -166,6 +166,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
     t.integer "legacy_toc_id"
     t.text "legacy_credits"
     t.text "cached_credits"
+    t.boolean "do_not_feature", default: false, null: false
     t.index ["corporate_body_id"], name: "index_authorities_on_corporate_body_id", unique: true
     t.index ["impressions_count"], name: "index_authorities_on_impressions_count"
     t.index ["intellectual_property"], name: "index_authorities_on_intellectual_property"
@@ -700,7 +701,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
     t.string "new_path", null: false
     t.bigint "lex_entry_id", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
