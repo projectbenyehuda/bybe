@@ -140,6 +140,16 @@
       $txt.focus();
       $txt.caretTo(caretPos+txtToAdd.length);
       $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
+
+      // Auto-select next image in the dropdown
+      var ddData = $('#images').data('ddslick');
+      if (ddData) {
+        var currentIndex = ddData.selectedIndex;
+        var totalOptions = ddData.settings.data.length;
+        if (currentIndex < totalOptions - 1) {
+          $('#images').ddslick('select', {index: currentIndex + 1});
+        }
+      }
     });
     $('#add_all_images').click(function(e) {
       e.preventDefault();

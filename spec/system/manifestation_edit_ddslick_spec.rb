@@ -139,4 +139,69 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       expect(page).to have_css('#images', visible: false)
     end
   end
+
+  context 'when inserting images' do
+    before do
+      login_as_editor
+    end
+
+    it 'auto-selects the next image after inserting an image' do
+      visit manifestation_edit_path(manifestation)
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Get the initial selected index (should be 0)
+      initial_index = page.evaluate_script("$('#images').data('ddslick').selectedIndex")
+      expect(initial_index).to eq(0)
+
+      # Get the initial selected filename
+      initial_filename = page.evaluate_script("$('#images').data('ddslick').selectedData.text")
+      expect(initial_filename).to eq('test_image_1.jpg')
+
+      # Click the add image button
+      find('#add_image').click
+
+      # Wait for the selection to change
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Verify the next image is now selected
+      new_index = page.evaluate_script("$('#images').data('ddslick').selectedIndex")
+      expect(new_index).to eq(1)
+
+      # Verify the selected filename changed
+      new_filename = page.evaluate_script("$('#images').data('ddslick').selectedData.text")
+      expect(new_filename).to eq('test_image_2.jpg')
+
+      # Verify the image was inserted in the markdown textarea
+      markdown_content = page.evaluate_script("$('#markdown').val()")
+      expect(markdown_content).to include('![test_image_1.jpg]')
+    end
+
+    it 'does not advance beyond the last image' do
+      visit manifestation_edit_path(manifestation)
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Select the last image (index 1, since we have 2 images)
+      page.execute_script("$('#images').ddslick('select', {index: 1})")
+
+      # Wait for selection to update
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Verify we're on the last image
+      current_index = page.evaluate_script("$('#images').data('ddslick').selectedIndex")
+      expect(current_index).to eq(1)
+
+      # Click the add image button
+      find('#add_image').click
+
+      # Verify we're still on the last image (didn't wrap around or error)
+      # Use a wait condition instead of sleep
+      expect(page).to have_css('.dd-select', wait: 5)
+      final_index = page.evaluate_script("$('#images').data('ddslick').selectedIndex")
+      expect(final_index).to eq(1)
+
+      # Verify the image was still inserted
+      markdown_content = page.evaluate_script("$('#markdown').val()")
+      expect(markdown_content).to include('![test_image_2.jpg]')
+    end
+  end
 end
