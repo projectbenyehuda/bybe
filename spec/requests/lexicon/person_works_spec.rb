@@ -87,7 +87,7 @@ describe '/lexicon/person_works' do
     subject(:call) { patch "/lex/works/#{work.id}", params: { lex_person_work: work_params }, xhr: true }
 
     context 'when valid params' do
-      let(:work_params) { attributes_for(:lex_person_work).except(:person) }
+      let(:work_params) { attributes_for(:lex_person_work).except(:person, :seqno) }
 
       it 'updates record' do
         expect(call).to eq(200)
@@ -96,7 +96,7 @@ describe '/lexicon/person_works' do
     end
 
     context 'when invalid params' do
-      let(:work_params) { attributes_for(:lex_person_work, title: '') }
+      let(:work_params) { attributes_for(:lex_person_work, title: '').except(:person, :seqno) }
 
       it 're-renders edit form' do
         expect(call).to eq(422)
@@ -124,6 +124,38 @@ describe '/lexicon/person_works' do
         expect(work.collection).to eq(collection)
       end
     end
+
+    context 'when work_type is changed' do
+      let!(:works) do
+        [
+          create(:lex_person_work, person: person, work_type: 'original', seqno: 2),
+          create(:lex_person_work, person: person, work_type: 'original', seqno: 1),
+          create(:lex_person_work, person: person, work_type: 'translated', seqno: 4)
+        ]
+      end
+
+      let(:work_params) do
+        attributes_for(:lex_person_work).except(:person, :seqno, :work_type).merge(work_type: new_work_type)
+      end
+
+      context 'when we have works with a new work_type' do
+        let(:new_work_type) { 'translated' }
+
+        it 'adds item to the bottom of the new work_type list' do
+          expect(call).to eq(200)
+          expect(work.reload).to have_attributes(work_type: 'translated', seqno: 5)
+        end
+      end
+
+      context 'when we have not works with an new work_type' do
+        let(:new_work_type) { 'edited' }
+
+        it 'sets seqno to 1' do
+          expect(call).to eq(200)
+          expect(work.reload).to have_attributes(work_type: 'edited', seqno: 1)
+        end
+      end
+    end
   end
 
   describe 'DELETE /lex/works/:id' do
@@ -137,27 +169,21 @@ describe '/lexicon/person_works' do
 
   describe 'POST /lex/works/:id/reorder' do
     subject(:call) do
-      post "/lex/works/#{work_to_move.id}/reorder",
-           params: { work_id: work_to_move.id, new_pos: 3, old_pos: 1 },
+      post "/lex/works/#{work.id}/reorder",
+           params: { new_pos: 3, old_pos: 1 },
            xhr: true
     end
 
-    let!(:works_same_type) do
-      # Create works with the same work_type
+    let!(:works) do
       create_list(:lex_person_work, 4, person: person, work_type: 'original')
     end
 
-    let(:work_to_move) { works_same_type[0] }
-
     it 'reorders the work' do
-      # Store initial order
-      works_same_type.map { |w| [w.id, w.seqno] }
-
       expect(call).to eq(200)
 
       # Verify work was moved to new position
-      reordered_works = person.works.where(work_type: 'original').order(:seqno)
-      expect(reordered_works[2].id).to eq(work_to_move.id)
+      reordered_works = person.works.work_type_original.order(:seqno)
+      expect(reordered_works[2].id).to eq(work.id)
 
       # Verify all seqno values are sequential starting from 1
       seqnos = reordered_works.pluck(:seqno)
@@ -206,8 +232,8 @@ describe '/lexicon/person_works' do
 
       it 'maintains separate seqno sequences per work_type' do
         # Create works of type 'original'
-        create(:lex_person_work, person: test_person, work_type: 'original')
-        create(:lex_person_work, person: test_person, work_type: 'original')
+        create(:lex_person_work, person: test_person, work_type: 'original', seqno: 1)
+        create(:lex_person_work, person: test_person, work_type: 'original', seqno: 2)
 
         # Create first work of type 'translated' - should start from 1
         work_params = attributes_for(:lex_person_work, work_type: 'translated').except(:person, :seqno)

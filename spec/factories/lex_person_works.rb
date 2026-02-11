@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
+  sequence(:lex_person_work_seqno) { |n| n }
+
   factory :lex_person_work do
     person { create(:lex_entry, :person).lex_item }
     publication_date { Random.rand(1950..2026).to_s }
@@ -11,8 +13,7 @@ FactoryBot.define do
 
     # Assign seqno automatically in factory
     seqno do
-      max_seqno = LexPersonWork.where(lex_person_id: person.id, work_type: work_type).maximum(:seqno) || 0
-      max_seqno + 1
+      generate(:lex_person_work_seqno)
     end
   end
 end
