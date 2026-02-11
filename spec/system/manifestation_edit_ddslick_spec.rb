@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
+  # NOTE: This test depends on the ddslick jQuery plugin loaded from CDN in the view.
+  # If CI/offline flakiness becomes an issue, consider vendoring the ddslick asset.
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
@@ -11,14 +13,16 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
   let!(:manifestation) do
     create(:manifestation, status: :published).tap do |m|
       # Attach some test images to test the ddslick dropdown
+      # Use binread + StringIO to avoid leaking file descriptors
       test_image_path = Rails.root.join('spec/fixtures/files/test_image.jpg')
+      image_data = File.binread(test_image_path)
       m.images.attach(
-        io: File.open(test_image_path),
+        io: StringIO.new(image_data),
         filename: 'test_image_1.jpg',
         content_type: 'image/jpeg'
       )
       m.images.attach(
-        io: File.open(test_image_path),
+        io: StringIO.new(image_data),
         filename: 'test_image_2.jpg',
         content_type: 'image/jpeg'
       )
@@ -26,7 +30,10 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
   end
 
   def login_as_editor
+    # System specs require stubbing at the controller level
+    # rubocop:disable RSpec/AnyInstance
     allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    # rubocop:enable RSpec/AnyInstance
     user
   end
 
