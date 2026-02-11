@@ -140,6 +140,19 @@
       $txt.focus();
       $txt.caretTo(caretPos+txtToAdd.length);
       $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
+
+      // Auto-select next image in the dropdown
+      var ddData = $('#images').data('ddslick');
+      if (ddData && ddData.settings && ddData.settings.data) {
+        var currentIndex = ddData.selectedIndex;
+        var totalOptions = ddData.settings.data.length;
+        if (currentIndex < totalOptions - 1) {
+          // Use setTimeout to ensure DOM is ready for the selection change
+          setTimeout(function() {
+            $('#images').ddslick('select', {index: currentIndex + 1});
+          }, 0);
+        }
+      }
     });
     $('#add_all_images').click(function(e) {
       e.preventDefault();
