@@ -24,7 +24,13 @@ class CollectionsMigrationController < ApplicationController
       title = title.strip.gsub(/\p{Space}*$/, '') # strip is insufficient as it doesn't remove nbsps, which are sometimes coming from bibliographic data
       pub_line = params[:guessed_publisher]
       pub_line = pub_line.gsub(' :', ':').gsub(' ;',';').gsub(/\p{Space}*$/, '') if pub_line.present? # ditto
-      @collection = Collection.create!(title: title.strip, collection_type: params[:collection_type], publication_id: params[:publication_id], publisher_line: pub_line, pub_year: params[:guessed_year])
+      # Don't set publisher_line/pub_year for series collections
+      collection_attrs = { title: title.strip, collection_type: params[:collection_type], publication_id: params[:publication_id] }
+      unless params[:collection_type] == 'series'
+        collection_attrs[:publisher_line] = pub_line
+        collection_attrs[:pub_year] = params[:guessed_year]
+      end
+      @collection = Collection.create!(collection_attrs)
       @collection.involved_authorities.create!(authority_id: au.id, role: params[:role])
       # associate specified manifestation IDs with the collection
       if params[:text_ids].present?
