@@ -1,0 +1,135 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
+  before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  let(:user) { create(:user, :edit_catalog) }
+  let!(:manifestation) do
+    create(:manifestation, status: :published).tap do |m|
+      # Attach some test images to test the ddslick dropdown
+      test_image_path = Rails.root.join('spec/fixtures/files/test_image.jpg')
+      m.images.attach(
+        io: File.open(test_image_path),
+        filename: 'test_image_1.jpg',
+        content_type: 'image/jpeg'
+      )
+      m.images.attach(
+        io: File.open(test_image_path),
+        filename: 'test_image_2.jpg',
+        content_type: 'image/jpeg'
+      )
+    end
+  end
+
+  def login_as_editor
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    user
+  end
+
+  context 'when visiting edit page multiple times' do
+    before do
+      login_as_editor
+    end
+
+    it 'does not grow the dd-select container on repeated visits' do
+      # Visit the edit page for the first time
+      visit manifestation_edit_path(manifestation)
+      expect(page).to have_css('#images', wait: 5)
+
+      # Wait for ddslick to initialize
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Get the initial height of the dd-select
+      initial_height = page.evaluate_script("$('.dd-select').outerHeight()")
+
+      # Visit the page again (simulate page reload)
+      visit manifestation_edit_path(manifestation)
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Get the height after reload
+      second_height = page.evaluate_script("$('.dd-select').outerHeight()")
+
+      # The height should remain the same
+      expect(second_height).to eq(initial_height)
+
+      # Visit one more time to be sure
+      visit manifestation_edit_path(manifestation)
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Get the height after second reload
+      third_height = page.evaluate_script("$('.dd-select').outerHeight()")
+
+      # The height should still be the same
+      expect(third_height).to eq(initial_height)
+    end
+  end
+
+  context 'when opening the dropdown multiple times' do
+    before do
+      login_as_editor
+    end
+
+    it 'does not grow the dd-select container on repeated opens' do
+      visit manifestation_edit_path(manifestation)
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Get the initial height
+      initial_height = page.evaluate_script("$('.dd-select').outerHeight()")
+
+      # Open the dropdown
+      find('.dd-select').click
+      expect(page).to have_css('.dd-options', visible: true, wait: 5)
+
+      # Close it by clicking elsewhere
+      find('body').click
+
+      # Check height after first open/close
+      first_height = page.evaluate_script("$('.dd-select').outerHeight()")
+      expect(first_height).to eq(initial_height)
+
+      # Open again
+      find('.dd-select').click
+      expect(page).to have_css('.dd-options', visible: true, wait: 5)
+
+      # Close it
+      find('body').click
+
+      # Check height after second open/close
+      second_height = page.evaluate_script("$('.dd-select').outerHeight()")
+      expect(second_height).to eq(initial_height)
+
+      # Open one more time
+      find('.dd-select').click
+      expect(page).to have_css('.dd-options', visible: true, wait: 5)
+
+      # Close it
+      find('body').click
+
+      # Check height after third open/close
+      third_height = page.evaluate_script("$('.dd-select').outerHeight()")
+      expect(third_height).to eq(initial_height)
+    end
+  end
+
+  context 'when ddslick is properly initialized' do
+    before do
+      login_as_editor
+    end
+
+    it 'only initializes once' do
+      visit manifestation_edit_path(manifestation)
+      expect(page).to have_css('.dd-select', wait: 5)
+
+      # Check that dd-container only exists once
+      container_count = page.evaluate_script("$('.dd-container').length")
+      expect(container_count).to eq(1)
+
+      # Check that the original select is properly replaced
+      expect(page).to have_css('#images', visible: false)
+    end
+  end
+end
