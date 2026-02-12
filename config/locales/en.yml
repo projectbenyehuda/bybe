@@ -2997,6 +2997,7 @@ en:
     person_works:
       index:
         add_work: Add Work
+        drag_to_reorder: Drag to reorder
       form:
         no_authority_warning: Cannot associate works with publications without first associating this person with an Authority in the Ben-Yehuda database
         select_publication: Select publication...

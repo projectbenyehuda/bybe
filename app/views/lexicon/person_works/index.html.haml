@@ -4,15 +4,18 @@
   %table.table.table-sm
     %thead
       %tr
+        %th
         %th= LexPersonWork.human_attribute_name(:title)
         %th= LexPersonWork.human_attribute_name(:publisher)
         %th= LexPersonWork.human_attribute_name(:publication_place)
         %th= LexPersonWork.human_attribute_name(:publication_date)
         %th= LexPersonWork.human_attribute_name(:comment)
         %th= t(:actions)
-    %tbody
-      - works.each do |w|
-        %tr
+    %tbody{ id: "works_#{work_type}", data: { work_type: work_type } }
+      - works.sort_by(&:seqno).each do |w|
+        %tr{ id: "work_#{w.id}", data: { work_id: w.id } }
+          %td.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
+            .handle ☰
           %td= w.title
           %td= w.publisher
           %td= w.publication_place
@@ -32,4 +35,35 @@
   });
   $('a.add-person-work').click(function() {
     openModal('/lex/people/#{@person.id}/works/new');
+  });
+
+  // Initialize Sortable for each work type table
+  document.querySelectorAll('[id^="works_"]').forEach(function(tbody) {
+    const workType = tbody.dataset.workType;
+    Sortable.create(
+      tbody,
+      {
+        handle: '.drag-handle',
+        animation: 150,
+        onEnd: function(evt) {
+          const oldIndex = evt.oldIndex; // zero-based
+          const newIndex = evt.newIndex; // zero-based
+          if (newIndex !== oldIndex) {
+            $.post({
+              url: `/lex/works/${evt.item.dataset.workId}/reorder`,
+              data: {
+                new_index: newIndex,
+                old_index: oldIndex,
+                work_type: workType
+              },
+              error: function(xhr, status, error) {
+                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+                alert('#{t('.reordering_failed')}\n' + errorMsg);
+                reloadContent($('#works'));
+              }
+            });
+          }
+        }
+      }
+    );
   });
