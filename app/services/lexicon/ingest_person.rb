@@ -79,18 +79,22 @@ module Lexicon
         next_elem = next_elem.first_element_child
       end
 
+      index = 0
       work_type = :original
       while next_elem.present? && !header?(next_elem)
         if next_elem.name == 'p'
           if next_elem.text.strip == EDITED_HEADER
             work_type = :edited
+            index = 0
           elsif next_elem.text.strip == TRANSLATED_HEADER
             work_type = :translated
+            index = 0
           end
         elsif next_elem.name == 'ul'
           next_elem.css('li').each do |li|
             work = ParsePersonWork.call(li.text)
             work.work_type = work_type
+            work.seqno = index += 1
             lex_person.works << work
           end
         else

@@ -57,7 +57,9 @@ Bybeconv::Application.routes.draw do
       resources :citations, shallow: true, except: %i(show) do
         resources :authors, controller: 'citation_authors', only: %i(index create)
       end
-      resources :works, controller: 'person_works', shallow: true, except: %i(show)
+      resources :works, controller: 'person_works', shallow: true, except: %i(show) do
+        post :reorder, on: :member
+      end
     end
 
     resources :citation_authors, only: %i(update destroy)
