@@ -64,6 +64,7 @@ en:
     person_works:
       index:
         add_work: Add work
+        reordering_failed: Reordering failed. Works list will be reloaded.
     links:
       index:
         add_link: Add link
