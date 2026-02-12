@@ -6,9 +6,9 @@ module Lexicon
     before_action do
       require_editor('edit_lexicon')
     end
-    before_action :set_work, only: %i(edit update destroy)
+    before_action :set_work, only: %i(edit update destroy reorder)
     before_action :set_person, only: %i(new create index)
-    after_action :sync_verification_checklist, only: %i(create update destroy)
+    after_action :sync_verification_checklist, only: %i(create update destroy reorder)
 
     layout false
 
@@ -21,7 +21,15 @@ module Lexicon
     end
 
     def create
-      @work = @person.works.build(lex_person_work_params)
+      @work = LexPersonWork.new(lex_person_work_params)
+
+      # Assign seqno as the last position in the work_type group
+      if @work.work_type.present?
+        max_seqno = @person.max_work_seqno_by_type(@work.work_type)
+        @work.seqno = max_seqno + 1
+      end
+
+      @work.person = @person
 
       return if @work.save
 
@@ -31,6 +39,13 @@ module Lexicon
     def edit; end
 
     def update
+      work_type = lex_person_work_params[:work_type]
+      if work_type != @work.work_type && work_type.present?
+        # if work type was changed we move item to the bottom of new work_type list
+        max_seqno = @person.max_work_seqno_by_type(work_type)
+        @work.seqno = max_seqno + 1
+      end
+
       return if @work.update(lex_person_work_params)
 
       render :edit, status: :unprocessable_content
@@ -38,6 +53,39 @@ module Lexicon
 
     def destroy
       @work.destroy!
+    end
+
+    def reorder
+      new_index = params.fetch(:new_index).to_i # zero-based
+      old_index = params.fetch(:old_index).to_i # zero-based
+      work_type = params.fetch(:work_type)
+
+      if @work.work_type != work_type
+        render plain: "work_type mismatch, actual: '#{@work.work_type}', got: '#{work_type}'", status: :bad_request
+        return
+      end
+
+      # Get all works for the same person and work_type
+      works = @person.works_by_type(work_type).sort_by(&:seqno)
+
+      real_old_index = works.index(@work)
+      if old_index != real_old_index
+        render plain: "old_index mismatch, actual: #{real_old_index}, got: #{old_index}", status: :bad_request
+        return
+      end
+
+      return head :ok if old_index == new_index
+
+      works.delete_at(old_index)
+      works.insert(new_index, @work)
+
+      # Reassign seqno values
+      works.each_with_index do |w, index|
+        w.seqno = index + 1
+        w.save(validate: false) if w.attribute_changed?(:seqno)
+      end
+
+      head :ok
     end
 
     private
@@ -54,8 +102,11 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_person_work_params
-      params.expect(lex_person_work: %i(title work_type publisher publication_date publication_place comment
-                                        publication_id collection_id))
+      @lex_person_work_params ||= params.expect(
+        lex_person_work: %i(
+          title work_type publisher publication_date publication_place comment publication_id collection_id
+        )
+      )
     end
 
     # Sync verification checklist when works are added/updated/deleted

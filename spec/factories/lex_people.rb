@@ -11,8 +11,14 @@ FactoryBot.define do
     deathdate { Faker::Date.birthday(min_age: 80, max_age: 0).to_fs }
     bio { Faker::Lorem.paragraph }
 
-    after(:create) do |lex_person, evaluator|
-      create_list(:lex_person_work, evaluator.works_count, person: lex_person) if evaluator.works_count.positive?
+    works do
+      next_seqno = 1
+      result = []
+      works_count.times do
+        result << build(:lex_person_work, person: nil, seqno: next_seqno)
+        next_seqno += 1
+      end
+      result
     end
   end
 end
