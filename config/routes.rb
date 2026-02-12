@@ -55,6 +55,7 @@ Bybeconv::Application.routes.draw do
     collection do
       get :autocomplete_authority_full
       get :autocomplete_collection_full
+      get :advanced_collection_search
     end
     member do
       get :review

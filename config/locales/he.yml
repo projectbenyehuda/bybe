@@ -2047,6 +2047,16 @@ he:
     current_file: קובץ נוכחי
     or_replace_file: 'או החלפת הקובץ בהעלאה מחדש:'
     any_volume: איתור כותר מכלל המאגר
+    advanced_collection_search: חיפוש מתקדם
+    advanced_search_title: חיפוש כותרים – מתקדם
+    search_by_title: חיפוש לפי כותרת
+    search_by_authority: חיפוש לפי יוצר מקושר
+    search_by_type: חיפוש לפי סוג כותר
+    collection_type_filter: סוגי כותרים
+    search_button: חפש
+    search_results: תוצאות חיפוש
+    no_results: לא נמצאו תוצאות
+    select_collection: בחר כותר
     no_volume: לא מתוך כותר
     volume: כותר
     included_in_upload: נכלל בהעלאה?

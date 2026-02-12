@@ -632,6 +632,16 @@ en:
     need_to_save: Please save the ingestible after updating the collection
     already_being_ingested: Ingestible Already Being Ingested
     any_volume: Ingestible Any Volume
+    advanced_collection_search: Advanced Search
+    advanced_search_title: Advanced Collection Search
+    search_by_title: Search by title
+    search_by_authority: Search by associated authority
+    search_by_type: Search by collection type
+    collection_type_filter: Collection types
+    search_button: Search
+    search_results: Search results
+    no_results: No results found
+    select_collection: Select collection
     attach_photos: Ingestible Attach Photos
     attach_photos_explanation: Ingestible Attach Photos Explanation
     author_missing: Ingestible Author Missing

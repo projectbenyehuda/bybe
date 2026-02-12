@@ -314,7 +314,70 @@ class IngestiblesController < ApplicationController
     render json: items.map { |c| { id: c.id, label: c.title_and_authors, value: c.title } }
   end
 
+  # Advanced collection search - filters by authority, type, and title
+  def advanced_collection_search
+    collections = Collection.all
+
+    # Filter by title substring if provided
+    if params[:title].present?
+      collections = collections.where('title LIKE ?', "%#{params[:title]}%")
+    end
+
+    # Filter by collection type(s) if provided
+    if params[:types].present?
+      types = params[:types].is_a?(Array) ? params[:types] : [params[:types]]
+      collections = collections.where(collection_type: types)
+    end
+
+    # Filter by authority if provided (including inherited from parent collections)
+    if params[:authority_id].present?
+      authority_id = params[:authority_id].to_i
+      # Find collections that have this authority directly or inherit from parents
+      collections = collections.select do |collection|
+        collection_has_authority?(collection, authority_id)
+      end
+    end
+
+    # Limit results and prepare response
+    results = collections.first(100).map do |c|
+      {
+        id: c.id,
+        title: c.title,
+        title_and_authors: c.title_and_authors,
+        type: c.collection_type,
+        type_label: I18n.t("activerecord.attributes.collection.collection_types.#{c.collection_type}")
+      }
+    end
+
+    render json: results
+  end
+
   private
+
+  # Check if a collection has a specific authority (directly or inherited from parents)
+  def collection_has_authority?(collection, authority_id)
+    # Check direct authorities
+    return true if collection.involved_authorities.exists?(authority_id: authority_id)
+
+    # Check inherited from parent collections (walk up the tree)
+    visited = Set.new([collection.id])
+    queue = collection.parent_collections.to_a
+
+    while queue.any?
+      parent = queue.shift
+      next if visited.include?(parent.id)
+
+      visited.add(parent.id)
+
+      # Check if parent has this authority
+      return true if parent.involved_authorities.exists?(authority_id: authority_id)
+
+      # Add parent's parents to queue
+      queue.concat(parent.parent_collections.to_a)
+    end
+
+    false
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_ingestible
