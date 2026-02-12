@@ -2049,11 +2049,13 @@ he:
     any_volume: איתור כותר מכלל המאגר
     advanced_collection_search: חיפוש מתקדם
     advanced_search_title: חיפוש כותרים – מתקדם
+    search_filters: מסננים
     search_by_title: חיפוש לפי כותרת
     search_by_authority: חיפוש לפי יוצר מקושר
     search_by_type: חיפוש לפי סוג כותר
     collection_type_filter: סוגי כותרים
     search_button: חפש
+    matching_collections: כותרים תואמים
     search_results: תוצאות חיפוש
     no_results: לא נמצאו תוצאות
     select_collection: בחר כותר

@@ -634,11 +634,13 @@ en:
     any_volume: Ingestible Any Volume
     advanced_collection_search: Advanced Search
     advanced_search_title: Advanced Collection Search
+    search_filters: Filters
     search_by_title: Search by title
     search_by_authority: Search by associated authority
     search_by_type: Search by collection type
     collection_type_filter: Collection types
     search_button: Search
+    matching_collections: Matching Collections
     search_results: Search results
     no_results: No results found
     select_collection: Select collection
