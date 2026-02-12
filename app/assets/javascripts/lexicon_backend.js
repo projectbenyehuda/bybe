@@ -1,6 +1,7 @@
 //= require jquery3
 //= require rails-ujs
 //= require autocomplete_init
+//= require sortable.min
 //= require verification
 
 $(function() {

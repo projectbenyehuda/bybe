@@ -69,6 +69,7 @@ he:
     person_works:
       index:
         add_work: הוספת יצירה
+        reordering_failed: Reordering failed. Works list will be reloaded.
     links:
       index:
         add_link: הוספת קישורית
