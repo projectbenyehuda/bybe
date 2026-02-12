@@ -31,4 +31,13 @@ class LexPerson < ApplicationRecord
   def lex_entry
     entry
   end
+
+  def works_by_type(work_type)
+    work_type = work_type.to_s
+    works.select { |w| w.work_type == work_type }
+  end
+
+  def max_work_seqno_by_type(work_type)
+    works_by_type(work_type).map(&:seqno).max || 0
+  end
 end
