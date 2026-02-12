@@ -256,9 +256,14 @@ RSpec.describe 'Ingestible advanced collection search', :js, :system do
       # Widget should hide
       expect(page).to have_css('#advanced_collection_search', visible: false, wait: 5)
 
-      # Hidden fields should be set
+      # Autocomplete field should be populated with selected collection title
+      expect(find('#cterm', wait: 5).value).to eq('שירי הלל')
+
+      # Hidden prospective_volume_id should be set
       expect(find('#prospective_volume_id', visible: false).value).to eq(volume1.id.to_s)
-      expect(find('#ingestible_prospective_volume_title', visible: false).value).to eq('שירי הלל')
+
+      # The "create new volume" field should be EMPTY (we're selecting existing, not creating new)
+      expect(find('#ingestible_prospective_volume_title', visible: false).value).to be_empty
 
       # no_volume checkbox should be unchecked
       expect(find('#ingestible_no_volume', visible: false)).not_to be_checked

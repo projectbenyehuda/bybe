@@ -35,9 +35,14 @@ $(document).ready(function() {
     var collectionId = $(this).data('collection-id');
     var collectionTitle = $(this).data('collection-title');
 
-    // Set the prospective_volume_id and title
+    // Set the autocomplete field (for existing collections)
+    $('#cterm').val(collectionTitle);
+
+    // Set the hidden prospective_volume_id
     $('#prospective_volume_id').val(collectionId);
-    $('#ingestible_prospective_volume_title').val(collectionTitle);
+
+    // Clear the "create new volume" text field (we're selecting existing, not creating new)
+    $('#ingestible_prospective_volume_title').val('');
 
     // Update volume title if element exists
     if ($('#volume_title').length > 0) {
