@@ -332,14 +332,13 @@ class IngestiblesController < ApplicationController
     # Filter by authority if provided (including inherited from parent collections)
     if params[:authority_id].present?
       authority_id = params[:authority_id].to_i
-      # Find collections that have this authority directly or inherit from parents
-      collections = collections.select do |collection|
-        collection_has_authority?(collection, authority_id)
-      end
+      collections = collections_with_authority(collections, authority_id)
     end
 
-    # Limit results and prepare response
-    results = collections.first(100).map do |c|
+    # Limit results and prepare response (eager load authors for title_and_authors)
+    results = collections.includes(:involved_authorities)
+                        .limit(100)
+                        .map do |c|
       {
         id: c.id,
         title: c.title,
@@ -354,29 +353,60 @@ class IngestiblesController < ApplicationController
 
   private
 
-  # Check if a collection has a specific authority (directly or inherited from parents)
-  def collection_has_authority?(collection, authority_id)
-    # Check direct authorities
-    return true if collection.involved_authorities.exists?(authority_id: authority_id)
+  # Find collections that have this authority directly or inherit from parent collections
+  # Uses efficient SQL queries instead of iterating through all collections
+  def collections_with_authority(scope, authority_id)
+    # Find collections with direct authority association
+    direct_collection_ids = scope.joins(:involved_authorities)
+                                 .where(involved_authorities: { authority_id: authority_id })
+                                 .pluck(:id)
 
-    # Check inherited from parent collections (walk up the tree)
-    visited = Set.new([collection.id])
-    queue = collection.parent_collections.to_a
+    # Find parent collections that have this authority
+    # Then find all child collections (descendants) of those parents
+    parent_ids_with_authority = Collection.joins(:involved_authorities)
+                                          .where(involved_authorities: { authority_id: authority_id })
+                                          .pluck(:id)
 
-    while queue.any?
-      parent = queue.shift
-      next if visited.include?(parent.id)
+    # Get all descendant collection IDs (children inherit from parents)
+    descendant_ids = find_descendant_collection_ids(parent_ids_with_authority)
 
-      visited.add(parent.id)
+    # Combine direct and inherited collection IDs
+    all_collection_ids = (direct_collection_ids + descendant_ids).uniq
 
-      # Check if parent has this authority
-      return true if parent.involved_authorities.exists?(authority_id: authority_id)
+    # Return scope filtered to matching collections
+    scope.where(id: all_collection_ids)
+  end
 
-      # Add parent's parents to queue
-      queue.concat(parent.parent_collections.to_a)
+  # Recursively find all descendant collections of the given parent IDs
+  # Uses efficient SQL queries with iterative breadth-first search
+  def find_descendant_collection_ids(parent_ids)
+    return [] if parent_ids.empty?
+
+    all_descendants = []
+    current_level = parent_ids
+    visited = Set.new(parent_ids)
+
+    # Breadth-first search through collection hierarchy
+    10.times do # Safety limit to prevent infinite loops
+      break if current_level.empty?
+
+      # Find direct children of current level
+      children = CollectionItem.where(collection_id: current_level)
+                               .where(item_type: 'Collection')
+                               .pluck(:item_id)
+                               .uniq
+
+      # Filter out already visited to avoid cycles
+      new_children = children - visited.to_a
+
+      break if new_children.empty?
+
+      all_descendants.concat(new_children)
+      visited.merge(new_children)
+      current_level = new_children
     end
 
-    false
+    all_descendants
   end
 
   # Use callbacks to share common setup or constraints between actions.
