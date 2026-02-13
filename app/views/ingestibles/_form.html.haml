@@ -93,6 +93,13 @@
                     - no_results_data = { no_results_text: t('ingestible.no_results') }
                     .search-results-column#advanced_search_results{ data: no_results_data }
             %br
+            #sub_collection_selector{ style: 'display:none; margin-top: 10px; margin-bottom: 10px;' }
+              = label_tag :sub_collection_id, t('ingestible.sub_collection_within')
+              = select_tag :sub_collection_id,
+                           options_for_select([]),
+                           include_blank: t('ingestible.select_sub_collection'),
+                           style: 'width:400px;',
+                           data: { blank_text: t('ingestible.select_sub_collection') }
             = t(:or)
             %br
             = f.label t('ingestible.create_new_volume')
@@ -274,7 +281,8 @@
       });
     });
     $('#authority_volumes').on('change', function() {
-      $('#prospective_volume_id').val($('#authority_volumes').val());
+      var volumeId = $('#authority_volumes').val();
+      $('#prospective_volume_id').val(volumeId);
       new_title = $('#authority_volumes option:selected').text();
       // For publications, use the actual title without the prefix
       actual_title = $('#authority_volumes option:selected').data('actual-title');
@@ -286,6 +294,8 @@
       $('#volume_title').text(new_title);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
+      // Trigger sub-collections loading
+      $(document).trigger('collection:selected', [volumeId]);
     });
     $('#periodical_issues').on('change', function() {
       if($('#periodical_issues').val() == '!new') {
@@ -304,10 +314,13 @@
           }
         });
       } else {
-        $('#prospective_volume_id').val($('#periodical_issues').val());
+        var issueId = $('#periodical_issues').val();
+        $('#prospective_volume_id').val(issueId);
         new_title = $('#periodical_issues option:selected').text();
         $('#volume_title').text(new_title);
         $('#ingestible_prospective_volume_title').val(new_title);
+        // Trigger sub-collections loading
+        $(document).trigger('collection:selected', [issueId]);
     }
       $('#need_to_save').show();
       $('#ingestible_no_volume').prop('checked', false);
@@ -354,6 +367,8 @@
       $('#volume_title').text(data.item.value);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
+      // Trigger sub-collections loading
+      $(document).trigger('collection:selected', [data.item.id]);
     });
     $('#change_volume').on('click', function(e) {
       e.preventDefault();
@@ -369,6 +384,9 @@
         $('#ingestible_periodical_id').val('');
         $('#ingestible_prospective_volume_title').val('');
         $('#need_to_save').show();
+        // Hide sub-collections dropdown
+        $('#sub_collection_selector').hide();
+        $('#sub_collection_id').empty();
       } else {
         $('#authority_volumes').show();
       }

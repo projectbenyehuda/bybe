@@ -56,6 +56,7 @@ Bybeconv::Application.routes.draw do
       get :autocomplete_authority_full
       get :autocomplete_collection_full
       get :advanced_collection_search
+      get 'collection_descendants/:id', action: :collection_descendants, as: :collection_descendants
     end
     member do
       get :review

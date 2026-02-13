@@ -897,4 +897,59 @@ describe IngestiblesController do
       expect(result).to have_key('type_label')
     end
   end
+
+  describe '#collection_descendants' do
+    let!(:parent_collection) { create(:collection, collection_type: :volume, title: 'Parent Volume') }
+    let!(:child_series) { create(:collection, collection_type: :series, title: 'Series 1') }
+    let!(:grandchild_series) { create(:collection, collection_type: :series, title: 'Subseries 1.1') }
+
+    before do
+      # Create hierarchy: parent_collection -> child_series -> grandchild_series
+      create(:collection_item, collection: parent_collection, item: child_series)
+      create(:collection_item, collection: child_series, item: grandchild_series)
+    end
+
+    it 'returns all descendants at any level' do
+      get :collection_descendants, params: { id: parent_collection.id }
+
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+      titles = json.map { |c| c['title'] }
+
+      expect(titles).to contain_exactly('Series 1', 'Subseries 1.1')
+    end
+
+    it 'returns descendants ordered by title' do
+      get :collection_descendants, params: { id: parent_collection.id }
+
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+      titles = json.map { |c| c['title'] }
+
+      expect(titles).to eq(['Series 1', 'Subseries 1.1'])
+    end
+
+    it 'returns empty array when collection has no descendants' do
+      get :collection_descendants, params: { id: grandchild_series.id }
+
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+
+      expect(json).to be_empty
+    end
+
+    it 'includes proper metadata in response' do
+      get :collection_descendants, params: { id: parent_collection.id }
+
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+      result = json.first
+
+      expect(result).to have_key('id')
+      expect(result).to have_key('title')
+      expect(result).to have_key('title_and_authors')
+      expect(result).to have_key('type')
+      expect(result).to have_key('type_label')
+    end
+  end
 end

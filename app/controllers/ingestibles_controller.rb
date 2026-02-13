@@ -351,6 +351,27 @@ class IngestiblesController < ApplicationController
     render json: results
   end
 
+  # Get all sub-collections (descendants at any level) of a given collection
+  def collection_descendants
+    collection = Collection.find(params[:id])
+    descendant_ids = find_descendant_collection_ids([collection.id])
+
+    descendants = Collection.where(id: descendant_ids)
+                           .includes(:involved_authorities)
+                           .order(:title)
+                           .map do |c|
+      {
+        id: c.id,
+        title: c.title,
+        title_and_authors: c.title_and_authors,
+        type: c.collection_type,
+        type_label: I18n.t("activerecord.attributes.collection.collection_types.#{c.collection_type}")
+      }
+    end
+
+    render json: descendants
+  end
+
   private
 
   # Find collections that have this authority directly or inherit from parent collections

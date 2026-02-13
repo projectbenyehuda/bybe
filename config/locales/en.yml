@@ -644,6 +644,10 @@ en:
     search_results: Search results
     no_results: No results found
     select_collection: Select collection
+    select_sub_collection: Select sub-collection
+    sub_collection_within: Sub-collection within selected collection
+    loading_sub_collections: Loading sub-collections...
+    no_sub_collections: No sub-collections
     attach_photos: Ingestible Attach Photos
     attach_photos_explanation: Ingestible Attach Photos Explanation
     author_missing: Ingestible Author Missing

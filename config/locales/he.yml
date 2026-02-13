@@ -2059,6 +2059,10 @@ he:
     search_results: תוצאות חיפוש
     no_results: לא נמצאו תוצאות
     select_collection: בחר כותר
+    select_sub_collection: בחר תת-כותר
+    sub_collection_within: תת-כותר מתוך הכותר הנבחר
+    loading_sub_collections: טוען תת-כותרים...
+    no_sub_collections: אין תת-כותרים
     no_volume: לא מתוך כותר
     volume: כותר
     included_in_upload: נכלל בהעלאה?
