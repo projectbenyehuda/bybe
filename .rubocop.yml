@@ -49,6 +49,9 @@ Layout/LineLength:
 Lint/DuplicateBranch:
   Enabled: false
 
+Style/GuardClause:
+  Enabled: false
+
 Style/HashSyntax:
   EnforcedShorthandSyntax: never
 
