@@ -4,6 +4,7 @@ include BybeUtils
 
 class Manifestation < ApplicationRecord
   include TrackingEvents
+  include SortedTitle
 
   paginates_per 100
   belongs_to :expression, inverse_of: :manifestations
@@ -26,7 +27,6 @@ class Manifestation < ApplicationRecord
   has_many :anthology_texts, dependent: :destroy
   has_many_attached :images, dependent: :destroy
   has_many :collection_items, as: :item, dependent: :destroy
-  before_save :update_sort_title!
   before_save :update_alternate_titles, if: :title_changed?
   before_save :recalc_cached_people, if: :expression_id_changed?
   before_save :recalc_responsibility_statement, if: :expression_id_changed?
