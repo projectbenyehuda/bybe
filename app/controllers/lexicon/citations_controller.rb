@@ -6,7 +6,7 @@ module Lexicon
     before_action do
       require_editor('edit_lexicon')
     end
-    before_action :set_citation, only: %i(edit update destroy approve)
+    before_action :set_citation, only: %i(edit update destroy approve reorder)
     before_action :set_person, only: %i(new create index)
 
     layout false
@@ -22,6 +22,13 @@ module Lexicon
     def create
       @citation = @person.citations.build(lex_citation_params)
 
+      # Assign seqno as the last position in the subject_title group
+      subject_title = @citation.subject_title
+      if subject_title.present?
+        max_seqno = @person.max_citation_seqno_by_subject_title(subject_title)
+        @citation.seqno = max_seqno + 1
+      end
+
       return if @citation.save
 
       render :new, status: :unprocessable_content
@@ -30,13 +37,61 @@ module Lexicon
     def edit; end
 
     def update
-      return if @citation.update(lex_citation_params)
+      # Check if subject_title will change (via subject or person_work change)
+      new_params = lex_citation_params
+      old_subject_title = @citation.subject_title
+
+      # Apply params temporarily to check new subject_title
+      @citation.assign_attributes(new_params)
+      new_subject_title = @citation.subject_title
+
+      # If subject_title changed, move item to the bottom of new subject_title group
+      if new_subject_title != old_subject_title && new_subject_title.present?
+        max_seqno = @person.max_citation_seqno_by_subject_title(new_subject_title)
+        @citation.seqno = max_seqno + 1
+      end
+
+      return if @citation.save
 
       render :edit, status: :unprocessable_content
     end
 
     def destroy
       @citation.destroy!
+    end
+
+    def reorder
+      new_index = params.fetch(:new_index).to_i # zero-based
+      old_index = params.fetch(:old_index).to_i # zero-based
+      subject_title = params.fetch(:subject_title)
+
+      if @citation.subject_title != subject_title
+        render plain: "subject_title mismatch, actual: '#{@citation.subject_title}', got: '#{subject_title}'",
+               status: :bad_request
+        return
+      end
+
+      # Get all citations for the same person and subject_title
+      citations = @person.citations_by_subject_title(subject_title).sort_by(&:seqno)
+
+      real_old_index = citations.index(@citation)
+      if old_index != real_old_index
+        render plain: "old_index mismatch, actual: #{real_old_index}, got: #{old_index}", status: :bad_request
+        return
+      end
+
+      return head :ok if old_index == new_index
+
+      citations.delete_at(old_index)
+      citations.insert(new_index, @citation)
+
+      # Reassign seqno values
+      citations.each_with_index do |c, index|
+        c.seqno = index + 1
+        c.save(validate: false) if c.attribute_changed?(:seqno)
+      end
+
+      head :ok
     end
 
     private
