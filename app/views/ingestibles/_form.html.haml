@@ -286,11 +286,14 @@
       new_title = $('#authority_volumes option:selected').text();
       // For publications, use the actual title without the prefix
       actual_title = $('#authority_volumes option:selected').data('actual-title');
-      if (actual_title) {
-        $('#ingestible_prospective_volume_title').val(actual_title);
-      } else {
-        $('#ingestible_prospective_volume_title').val(new_title);
-      }
+      var display_title = actual_title || new_title;
+
+      // Set the autocomplete field (for existing collections)
+      $('#cterm').val(display_title);
+
+      // Clear the "create new volume" field (we're selecting existing, not creating new)
+      $('#ingestible_prospective_volume_title').val('');
+
       $('#volume_title').text(new_title);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
@@ -317,8 +320,14 @@
         var issueId = $('#periodical_issues').val();
         $('#prospective_volume_id').val(issueId);
         new_title = $('#periodical_issues option:selected').text();
+
+        // Set the autocomplete field (for existing collections)
+        $('#cterm').val(new_title);
+
+        // Clear the "create new volume" field (we're selecting existing, not creating new)
+        $('#ingestible_prospective_volume_title').val('');
+
         $('#volume_title').text(new_title);
-        $('#ingestible_prospective_volume_title').val(new_title);
         // Trigger sub-collections loading
         $(document).trigger('collection:selected', [issueId]);
     }
