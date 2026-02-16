@@ -2047,6 +2047,8 @@ he:
     current_file: קובץ נוכחי
     or_replace_file: 'או החלפת הקובץ בהעלאה מחדש:'
     any_volume: איתור כותר מכלל המאגר
+    filter_by_type: סינון לפי סוג
+    all_types: כל הסוגים
     advanced_collection_search: חיפוש מתקדם
     advanced_search_title: חיפוש כותרים – מתקדם
     search_filters: מסננים

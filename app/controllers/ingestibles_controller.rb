@@ -306,49 +306,18 @@ class IngestiblesController < ApplicationController
   end
 
   # Autocomplete for collections in ingestibles#edit form - returns ALL matching results
+  # Optionally filtered by collection_type if provided
   def autocomplete_collection_full
     items = Collection.where('title LIKE ?', "%#{params[:term]}%")
-                      .order(:title)
-                      .limit(10_000)
+
+    # Filter by collection type if provided
+    if params[:collection_type].present? && params[:collection_type] != 'all'
+      items = items.where(collection_type: params[:collection_type])
+    end
+
+    items = items.order(:title).limit(10_000)
 
     render json: items.map { |c| { id: c.id, label: c.title_and_authors, value: c.title } }
-  end
-
-  # Advanced collection search - filters by authority, type, and title
-  def advanced_collection_search
-    collections = Collection.all
-
-    # Filter by title substring if provided
-    if params[:title].present?
-      collections = collections.where('title LIKE ?', "%#{params[:title]}%")
-    end
-
-    # Filter by collection type(s) if provided
-    if params[:types].present?
-      types = params[:types].is_a?(Array) ? params[:types] : [params[:types]]
-      collections = collections.where(collection_type: types)
-    end
-
-    # Filter by authority if provided (including inherited from parent collections)
-    if params[:authority_id].present?
-      authority_id = params[:authority_id].to_i
-      collections = collections_with_authority(collections, authority_id)
-    end
-
-    # Limit results and prepare response (eager load authors for title_and_authors)
-    results = collections.includes(:involved_authorities)
-                        .limit(100)
-                        .map do |c|
-      {
-        id: c.id,
-        title: c.title,
-        title_and_authors: c.title_and_authors,
-        type: c.collection_type,
-        type_label: I18n.t("activerecord.attributes.collection.collection_types.#{c.collection_type}")
-      }
-    end
-
-    render json: results
   end
 
   # Get all sub-collections (descendants at any level) of a given collection
@@ -373,30 +342,6 @@ class IngestiblesController < ApplicationController
   end
 
   private
-
-  # Find collections that have this authority directly or inherit from parent collections
-  # Uses efficient SQL queries instead of iterating through all collections
-  def collections_with_authority(scope, authority_id)
-    # Find collections with direct authority association
-    direct_collection_ids = scope.joins(:involved_authorities)
-                                 .where(involved_authorities: { authority_id: authority_id })
-                                 .pluck(:id)
-
-    # Find parent collections that have this authority
-    # Then find all child collections (descendants) of those parents
-    parent_ids_with_authority = Collection.joins(:involved_authorities)
-                                          .where(involved_authorities: { authority_id: authority_id })
-                                          .pluck(:id)
-
-    # Get all descendant collection IDs (children inherit from parents)
-    descendant_ids = find_descendant_collection_ids(parent_ids_with_authority)
-
-    # Combine direct and inherited collection IDs
-    all_collection_ids = (direct_collection_ids + descendant_ids).uniq
-
-    # Return scope filtered to matching collections
-    scope.where(id: all_collection_ids)
-  end
 
   # Recursively find all descendant collections of the given parent IDs
   # Uses efficient SQL queries with iterative breadth-first search

@@ -632,6 +632,8 @@ en:
     need_to_save: Please save the ingestible after updating the collection
     already_being_ingested: Ingestible Already Being Ingested
     any_volume: Ingestible Any Volume
+    filter_by_type: Filter by type
+    all_types: All types
     advanced_collection_search: Advanced Search
     advanced_search_title: Advanced Collection Search
     search_filters: Filters

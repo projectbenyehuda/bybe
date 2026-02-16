@@ -55,43 +55,17 @@
             %br
 
             = f.label t('ingestible.any_volume')
+            %br
+            = label_tag :collection_type_filter, t('ingestible.filter_by_type')
+            - type_options = [[t('ingestible.all_types'), 'all']]
+            - Collection.collection_types.keys.reject { |t| t == 'uncollected' }.each do |type|
+              - type_options << [t("activerecord.attributes.collection.collection_types.#{type}"), type]
+            = select_tag :collection_type_filter, options_for_select(type_options), style: 'width:200px;'
+            %br
             = autocomplete_field_tag :volume, '', autocomplete_collection_full_ingestibles_path,
                                      id: 'cterm', style: 'width:400px;', id_element: '#prospective_volume_id',
                                      class: 'ingestible-autocomplete-volume',
                                      data: { loading_text: t(:loading) }
-            %button.btn-small-outline-v02#toggle_advanced_search{ type: 'button', style: 'display: unset;' }
-              %b.btn-text-v02= t('ingestible.advanced_collection_search')
-            #advanced_collection_search{ style: 'display: none; border: 1px solid #ccc; padding: 10px;' }
-              %h4= t('ingestible.advanced_search_title')
-              #advanced_search_form{ data: { search_url: advanced_collection_search_ingestibles_path } }
-                .row
-                  .col-md-6
-                    %h5= t('ingestible.search_filters')
-                    .field
-                      = label_tag :advanced_search_title, t('ingestible.search_by_title')
-                      = text_field_tag :advanced_search_title, '', style: 'width: 100%;'
-                    .field{ style: 'margin-top: 10px;' }
-                      = label_tag :advanced_search_authority, t('ingestible.search_by_authority')
-                      = text_field_tag :advanced_search_authority,
-                                       '',
-                                       style: 'width: 100%;',
-                                       data: { autocomplete_url: autocomplete_authority_full_ingestibles_path }
-                      = hidden_field_tag :advanced_search_authority_id, ''
-                    .field{ style: 'margin-top: 10px;' }
-                      = label_tag :collection_types, t('ingestible.collection_type_filter')
-                      %br
-                      - Collection.collection_types.keys.reject { |t| t == 'uncollected' }.each do |type|
-                        = check_box_tag "collection_type_#{type}", type, false, class: 'collection-type-checkbox'
-                        = label_tag "collection_type_#{type}",
-                                    t("activerecord.attributes.collection.collection_types.#{type}"),
-                                    style: 'font-weight: normal; margin-left: 5px; margin-left: 15px;'
-                        %br
-                    .field{ style: 'margin-top: 15px;' }
-                      %button.btn.btn-primary#advanced_search_button{ type: 'button' }= t('ingestible.search_button')
-                  .col-md-6
-                    %h5= t('ingestible.matching_collections')
-                    - no_results_data = { no_results_text: t('ingestible.no_results') }
-                    .search-results-column#advanced_search_results{ data: no_results_data }
             %br
             #sub_collection_selector{ style: 'display:none; margin-top: 10px; margin-bottom: 10px;' }
               = label_tag :sub_collection_id, t('ingestible.sub_collection_within')
