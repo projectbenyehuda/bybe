@@ -7,7 +7,8 @@
         %th
         %th= LexCitation.human_attribute_name(:title)
         %th= t(:actions)
-    %tbody{ id: "citations_#{subject_title.present? ? subject_title.parameterize : 'no-subject'}", data: { subject_title: subject_title || '' } }
+    - tbody_id = "citations_#{subject_title.present? ? subject_title.parameterize : 'no-subject'}"
+    %tbody{ id: tbody_id, data: { subject_title: subject_title || '' } }
       - entries.sort_by(&:seqno).each do |c|
         %tr{ id: "citation_#{c.id}", data: { citation_id: c.id } }
           %td.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
