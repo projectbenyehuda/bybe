@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_16_084459) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -108,7 +108,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "impressions_count", default: 0
-    t.index ["user_id", "title"], name: "index_anthologies_on_user_id_and_title", unique: true
     t.index ["user_id"], name: "index_anthologies_on_user_id"
   end
 
@@ -581,6 +580,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
     t.integer "last_editor_id"
     t.text "collection_authorities"
     t.bigint "project_id"
+    t.integer "tasks_project_id"
     t.index ["last_editor_id"], name: "index_ingestibles_on_last_editor_id"
     t.index ["locked_by_user_id"], name: "index_ingestibles_on_locked_by_user_id"
     t.index ["originating_task"], name: "index_ingestibles_on_originating_task"
@@ -641,6 +641,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
     t.string "subject"
     t.bigint "lex_person_id", null: false
     t.bigint "lex_person_work_id"
+    t.integer "seqno", null: false
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
     t.index ["lex_person_work_id"], name: "index_lex_citations_on_lex_person_work_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
@@ -701,7 +702,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
     t.string "new_path", null: false
     t.bigint "lex_entry_id", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -889,6 +890,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
     t.string "default_link_description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "tasks_project_id"
   end
 
   create_table "proofs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1082,6 +1084,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_06_122715) do
     t.string "whodunnit"
     t.text "object", size: :long
     t.datetime "created_at", precision: nil
+    t.json "object_changes"
+    t.index ["item_type", "created_at"], name: "index_versions_on_item_type_and_created_at"
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
