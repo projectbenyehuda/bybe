@@ -8,7 +8,11 @@ class AddSeqnoToLexPersonWorks < ActiveRecord::Migration[8.0]
         create temporary table temp_lex_person_works_seqno as 
         select id,
                (
-                 select count(*) from lex_person_works w2 where w2.lex_person_id = w.lex_person_id and w2.id < w.id
+                 select count(*) from lex_person_works w2
+                 where
+                   w2.lex_person_id = w.lex_person_id
+                   and w2.work_type = w.work_type
+                   and w2.id < w.id
                ) + 1 as seqno
         from lex_person_works w
     SQL
