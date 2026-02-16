@@ -1,13 +1,13 @@
 %a.btn.btn-primary.add-citation= t('.add_citation')
 - @lex_citations.group_by(&:subject_title).each do |subject_title, entries|
-  %h4= subject_title
+  %h4= subject_title || t('lexicon.citations.index.no_subject')
   %table.table.table-sm
     %thead
       %tr
         %th
         %th= LexCitation.human_attribute_name(:title)
         %th= t(:actions)
-    %tbody{ id: "citations_#{subject_title.parameterize}", data: { subject_title: subject_title } }
+    %tbody{ id: "citations_#{subject_title.present? ? subject_title.parameterize : 'no-subject'}", data: { subject_title: subject_title || '' } }
       - entries.sort_by(&:seqno).each do |c|
         %tr{ id: "citation_#{c.id}", data: { citation_id: c.id } }
           %td.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
