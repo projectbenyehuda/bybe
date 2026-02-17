@@ -306,15 +306,76 @@ class IngestiblesController < ApplicationController
   end
 
   # Autocomplete for collections in ingestibles#edit form - returns ALL matching results
+  # Optionally filtered by collection_type if provided
   def autocomplete_collection_full
     items = Collection.where('title LIKE ?', "%#{params[:term]}%")
-                      .order(:title)
-                      .limit(10_000)
+
+    # Filter by collection type if provided
+    if params[:collection_type].present? && params[:collection_type] != 'all'
+      items = items.where(collection_type: params[:collection_type])
+    end
+
+    items = items.order(:title).limit(10_000)
 
     render json: items.map { |c| { id: c.id, label: c.title_and_authors, value: c.title } }
   end
 
+  # Get all sub-collections (descendants at any level) of a given collection
+  def collection_descendants
+    collection = Collection.find_by(id: params[:id])
+    return render json: [], status: :not_found unless collection
+
+    descendant_ids = find_descendant_collection_ids([collection.id])
+
+    descendants = Collection.where(id: descendant_ids)
+                            .includes(:involved_authorities)
+                            .order(:title)
+                            .map do |c|
+      {
+        id: c.id,
+        title: c.title,
+        title_and_authors: c.title_and_authors,
+        type: c.collection_type,
+        type_label: I18n.t("activerecord.attributes.collection.collection_types.#{c.collection_type}")
+      }
+    end
+
+    render json: descendants
+  end
+
   private
+
+  # Recursively find all descendant collections of the given parent IDs
+  # Uses efficient SQL queries with iterative breadth-first search
+  def find_descendant_collection_ids(parent_ids)
+    return [] if parent_ids.empty?
+
+    all_descendants = []
+    current_level = parent_ids
+    visited = Set.new(parent_ids)
+
+    # Breadth-first search through collection hierarchy
+    10.times do # Safety limit to prevent infinite loops
+      break if current_level.empty?
+
+      # Find direct children of current level
+      children = CollectionItem.where(collection_id: current_level)
+                               .where(item_type: 'Collection')
+                               .pluck(:item_id)
+                               .uniq
+
+      # Filter out already visited to avoid cycles
+      new_children = children - visited.to_a
+
+      break if new_children.empty?
+
+      all_descendants.concat(new_children)
+      visited.merge(new_children)
+      current_level = new_children
+    end
+
+    all_descendants
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_ingestible

@@ -2,6 +2,7 @@
 
 # Heterogeneous collection
 class Collection < ApplicationRecord
+  include SortedTitle
   include TrackingEvents
 
   SYSTEM_TYPES = %w(uncollected).freeze
@@ -10,7 +11,6 @@ class Collection < ApplicationRecord
 
   update_index('collections') { self }
 
-  before_save :update_sort_title!
   before_save :norm_dates
   before_save :prevent_uncollected_type_change
 
