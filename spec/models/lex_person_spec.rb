@@ -42,71 +42,108 @@ describe LexPerson do
   end
 
   describe '.citations_by_subject_title' do
+    subject(:result) { person.citations_by_subject_title(subject_title) }
+
     let(:person) { create(:lex_person) }
-    let(:work1) { create(:lex_person_work, person: person, title: 'Work A') }
-    let(:work2) { create(:lex_person_work, person: person, title: 'Work B') }
-    let!(:citations_work1) { create_list(:lex_citation, 2, person: person, person_work: work1) }
-    let!(:citation_work2) { create(:lex_citation, person: person, person_work: work2) }
-    let!(:citation_subject) { create(:lex_citation, person: person, subject: 'Subject C', lex_person_work_id: nil) }
+    let(:work_1) { create(:lex_person_work, person: person, title: 'Work A') }
+    let(:work_2) { create(:lex_person_work, person: person, title: 'Work B') }
+    let!(:citation_1) { create(:lex_citation, person: person, person_work: work_1) }
+    let!(:citation_2) { create(:lex_citation, person: person, person_work: work_2) }
+    let!(:citation_3) { create(:lex_citation, person: person, subject: 'Work B', person_work: nil) }
+    let!(:citation_general) { create(:lex_citation, person: person, subject: nil, person_work: nil) }
 
-    it 'returns citations with the given subject_title from person_work' do
-      expect(person.citations_by_subject_title('Work A')).to match_array(citations_work1)
-      expect(person.citations_by_subject_title('Work B')).to eq([citation_work2])
+    context 'when subject_title matches person_work title' do
+      let(:subject_title) { 'Work A' }
+
+      it 'returns citations with the given title from person_work' do
+        expect(result).to eq([citation_1])
+      end
     end
 
-    it 'returns citations with the given subject_title from subject field' do
-      expect(person.citations_by_subject_title('Subject C')).to eq([citation_subject])
+    context 'when subject_title matches both person_work title and subject field' do
+      let(:subject_title) { 'Work B' }
+
+      it 'returns citations with the given subject_title from person_work and subject field' do
+        expect(result).to match_array([citation_2, citation_3])
+      end
     end
 
-    it 'returns empty array if no citations with given subject_title found' do
-      expect(person.citations_by_subject_title('Nonexistent')).to eq([])
+    context 'when subject_title is a nil' do
+      let(:subject_title) { nil }
+
+      it 'returns general citations not tied to specific work' do
+        expect(result).to eq([citation_general])
+      end
     end
 
-    it 'handles nil subject_title' do
-      citation_nil = create(:lex_citation, person: person, subject: nil, lex_person_work_id: nil)
-      expect(person.citations_by_subject_title(nil)).to eq([citation_nil])
+    context 'when subject_title is not found in any citation' do
+      let(:subject_title) { 'Bambarbia Kirgudu' }
+
+      it 'returns empty array' do
+        expect(result).to eq([])
+      end
     end
   end
 
   describe '.max_citation_seqno_by_subject_title' do
+    subject(:result) do
+      person.max_citation_seqno_by_subject_title(subject_title, exclude_citation_id: exclude_citation_id)
+    end
+
     let(:person) { create(:lex_person) }
-    let(:work1) { create(:lex_person_work, person: person, title: 'Work A') }
-    let(:work2) { create(:lex_person_work, person: person, title: 'Work B') }
+    let(:exclude_citation_id) { nil }
 
-    let!(:citations_work1) do
-      [
-        create(:lex_citation, person: person, person_work: work1, seqno: 3),
-        create(:lex_citation, person: person, person_work: work1, seqno: 1)
-      ]
-    end
-    let!(:citation_work2) { create(:lex_citation, person: person, person_work: work2, seqno: 5) }
+    let!(:citation_A1) { create(:lex_citation, person: person, subject: 'Work A', seqno: 1) }
+    let!(:citation_A2) { create(:lex_citation, person: person, subject: 'Work A', seqno: 2) }
+    let!(:citation_A3) { create(:lex_citation, person: person, subject: 'Work A', seqno: 4) }
 
-    it 'returns max citation seqno for given subject_title' do
-      expect(person.max_citation_seqno_by_subject_title('Work A')).to eq(3)
-      expect(person.max_citation_seqno_by_subject_title('Work B')).to eq(5)
-    end
+    context 'when there are citations with the given subject_title' do
+      let(:subject_title) { 'Work A' }
 
-    it 'returns 0 if no citations with given subject_title exist' do
-      expect(person.max_citation_seqno_by_subject_title('Nonexistent')).to eq(0)
-    end
-
-    context 'with exclude_citation_id parameter' do
-      let!(:citation_to_exclude) { create(:lex_citation, person: person, person_work: work1, seqno: 10) }
-
-      it 'excludes the specified citation from max calculation' do
-        expect(person.max_citation_seqno_by_subject_title('Work A', exclude_citation_id: citation_to_exclude.id))
-          .to eq(3)
+      it 'returns the maximum seqno among those citations' do
+        expect(result).to eq(4)
       end
 
-      it 'includes all citations if exclude_citation_id is nil' do
-        expect(person.max_citation_seqno_by_subject_title('Work A', exclude_citation_id: nil)).to eq(10)
+      context 'when exclude_citation_id is provided' do
+        let(:exclude_citation_id) { citation_A3.id }
+
+        it 'excludes the specified citation from the calculation' do
+          expect(result).to eq(2)
+        end
       end
 
-      it 'returns 0 when only excluded citation exists for subject_title' do
-        work3 = create(:lex_person_work, person: person, title: 'Work C')
-        only_citation = create(:lex_citation, person: person, person_work: work3, seqno: 7)
-        expect(person.max_citation_seqno_by_subject_title('Work C', exclude_citation_id: only_citation.id))
-          .to eq(0)
+      context 'when non-existent exclude_citation_id is provided' do
+        let(:exclude_citation_id) { -1 }
+
+        it 'ignores the non-existent ID and returns max seqno as usual' do
+          expect(result).to eq(4)
+        end
+      end
+    end
+
+    context 'when given subject_title has no citations' do
+      let(:subject_title) { 'Work X' }
+
+      it 'returns 0' do
+        expect(result).to eq(0)
+      end
+    end
+
+    context 'when nil subject_title is passed' do
+      let(:subject_title) { nil }
+
+      context 'when there are general citations exists' do
+        let!(:general_citation_1) { create(:lex_citation, person: person, seqno: 1) }
+
+        it 'returns max seqno among general citations' do
+          expect(result).to eq(1)
+        end
+      end
+
+      context 'when no general citations exists' do
+        it 'returns 0' do
+          expect(result).to eq(0)
+        end
       end
     end
   end
