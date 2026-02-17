@@ -47,7 +47,9 @@ class LexPerson < ApplicationRecord
     citations.select { |c| c.subject_title == subject_title }
   end
 
-  def max_citation_seqno_by_subject_title(subject_title)
-    citations_by_subject_title(subject_title).map(&:seqno).max || 0
+  def max_citation_seqno_by_subject_title(subject_title, exclude_citation_id: nil)
+    cits = citations_by_subject_title(subject_title)
+    cits = cits.reject { |c| c.id == exclude_citation_id } if exclude_citation_id.present?
+    cits.map(&:seqno).compact.max || 0
   end
 end

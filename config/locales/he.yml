@@ -2239,7 +2239,14 @@ he:
       index:
         add_work: הוספת יצירה
         drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
       form:
         no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
         select_publication: בחר פרסום...
         select_collection: בחר אוסף...
+    citations:
+      index:
+        add_citation: הוספת מראה מקום
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+        no_subject: כללי
