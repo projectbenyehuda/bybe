@@ -2,6 +2,7 @@
 
 # Lexicon Entry (Person, Publication, etc.)
 class LexEntry < ApplicationRecord
+  include SortedTitle
   include DownloadLink
 
   has_one :lex_file, dependent: :nullify
@@ -28,8 +29,6 @@ class LexEntry < ApplicationRecord
   has_many :legacy_links, class_name: 'LexLegacyLink', dependent: :destroy, inverse_of: :lex_entry
 
   validates :title, :sort_title, :status, presence: true
-
-  before_validation :update_sort_title!
 
   # Scopes for verification queue
   scope :needs_verification, -> { where(status: %i(draft verifying error)) }

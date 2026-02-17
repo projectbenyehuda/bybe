@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_16_084459) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -108,7 +108,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "impressions_count", default: 0
-    t.index ["user_id", "title"], name: "index_anthologies_on_user_id_and_title", unique: true
     t.index ["user_id"], name: "index_anthologies_on_user_id"
   end
 
@@ -587,6 +586,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.index ["originating_task"], name: "index_ingestibles_on_originating_task"
     t.index ["project_id"], name: "index_ingestibles_on_project_id"
     t.index ["status"], name: "index_ingestibles_on_status"
+    t.index ["tasks_project_id"], name: "index_ingestibles_on_tasks_project_id"
     t.index ["title"], name: "index_ingestibles_on_title"
     t.index ["user_id"], name: "index_ingestibles_on_user_id"
     t.index ["volume_id"], name: "index_ingestibles_on_volume_id"
@@ -634,19 +634,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.string "title"
     t.string "from_publication"
     t.string "pages"
-    t.string "link"
-    t.string "item_type"
-    t.bigint "item_id"
+    t.string "link", limit: 300
     t.integer "manifestation_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.text "raw"
-    t.integer "status", null: false
     t.text "notes"
     t.string "subject"
     t.bigint "lex_person_id", null: false
-    t.index ["item_type", "item_id"], name: "index_lex_citations_on_item_type_and_item_id"
+    t.bigint "lex_person_work_id"
+    t.integer "seqno", null: false
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
+    t.index ["lex_person_work_id"], name: "index_lex_citations_on_lex_person_work_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
     t.index ["title"], name: "index_lex_citations_on_title"
   end
@@ -705,7 +703,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.string "new_path", null: false
     t.bigint "lex_entry_id", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -725,7 +723,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.string "birthdate"
     t.string "deathdate"
     t.text "bio"
-    t.text "works"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "authority_id"
@@ -745,6 +742,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.datetime "updated_at", precision: nil, null: false
     t.index ["item_type", "item_id"], name: "index_lex_people_items_on_item_type_and_item_id"
     t.index ["lex_person_id"], name: "index_lex_people_items_on_lex_person_id"
+  end
+
+  create_table "lex_person_works", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "lex_person_id", null: false
+    t.bigint "lex_publication_id"
+    t.string "title", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "publisher"
+    t.string "publication_date"
+    t.string "publication_place"
+    t.string "comment"
+    t.integer "work_type", null: false
+    t.integer "publication_id"
+    t.integer "collection_id"
+    t.integer "seqno", null: false
+    t.index ["collection_id"], name: "index_lex_person_works_on_collection_id"
+    t.index ["lex_person_id"], name: "index_lex_person_works_on_lex_person_id"
+    t.index ["lex_publication_id"], name: "index_lex_person_works_on_lex_publication_id"
+    t.index ["publication_id"], name: "index_lex_person_works_on_publication_id"
   end
 
   create_table "lex_publications", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -875,6 +892,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "tasks_project_id"
+    t.index ["tasks_project_id"], name: "index_projects_on_tasks_project_id", unique: true
   end
 
   create_table "proofs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1169,6 +1187,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
   add_foreign_key "lex_citation_authors", "lex_citations"
   add_foreign_key "lex_citation_authors", "lex_people"
   add_foreign_key "lex_citations", "lex_people"
+  add_foreign_key "lex_citations", "lex_person_works"
   add_foreign_key "lex_citations", "manifestations"
   add_foreign_key "lex_entries", "active_storage_attachments", column: "profile_image_id", on_delete: :nullify
   add_foreign_key "lex_files", "lex_entries"
@@ -1176,6 +1195,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_000000) do
   add_foreign_key "lex_legacy_links", "lex_entries"
   add_foreign_key "lex_people", "authorities"
   add_foreign_key "lex_people_items", "lex_people"
+  add_foreign_key "lex_person_works", "collections"
+  add_foreign_key "lex_person_works", "lex_people"
+  add_foreign_key "lex_person_works", "lex_publications"
+  add_foreign_key "lex_person_works", "publications"
   add_foreign_key "lex_texts", "lex_issues"
   add_foreign_key "lex_texts", "lex_publications"
   add_foreign_key "lex_texts", "manifestations"
