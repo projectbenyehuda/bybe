@@ -69,7 +69,7 @@ PROMPT
       json_response = JSON.parse(response.content)
       json_response['result'].each do |subject_works|
         subject = subject_works['subject']
-        subject_works['works'].each do |work|
+        subject_works['works'].each.with_index do |work, index|
           citation = LexCitation.new(
             subject: sanitize_smart_quotes(subject),
             title: sanitize_smart_quotes(work['title']),
@@ -77,6 +77,7 @@ PROMPT
             pages: sanitize_smart_quotes(work['pages']),
             link: work['link'],
             notes: sanitize_smart_quotes(work['notes']),
+            seqno: index + 1
           )
 
           work['authors'].each do |author|
