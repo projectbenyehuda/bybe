@@ -1,9 +1,11 @@
 %a.btn.btn-primary.add-citation= t('.add_citation')
-- @lex_citations.group_by(&:subject_title).each do |subject, entries|
-  %h4= subject
-  %ul
-    - entries.each do |c|
-      %li
+- @lex_citations.each do |subject_title, entries|
+  %h4= (subject_title.presence || t('lexicon.citations.index.no_subject'))
+  %ul.citations-group{ data: { subject_title: subject_title } }
+    - entries.sort_by(&:seqno).each do |c|
+      %li{ data: { citation_id: c.id } }
+        %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
+          %span.handle ☰
         = raw render_citation(c)
         = link_to t(:edit), nil, class: 'edit-citation', data: { id: c.id }
         = link_to t(:delete),
@@ -18,4 +20,35 @@
   });
   $('a.add-citation').click(function() {
     openModal('/lex/people/#{@person.id}/citations/new');
+  });
+
+  // Initialize Sortable for each subject_title table
+  document.querySelectorAll('ul.citations-group').forEach(function(list) {
+    const subjectTitle = list.dataset.subjectTitle;
+    Sortable.create(
+      list,
+      {
+        handle: '.drag-handle',
+        animation: 150,
+        onEnd: function(evt) {
+          const oldIndex = evt.oldIndex; // zero-based
+          const newIndex = evt.newIndex; // zero-based
+          if (newIndex !== oldIndex) {
+            $.post({
+              url: `/lex/citations/${evt.item.dataset.citationId}/reorder`,
+              data: {
+                new_index: newIndex,
+                old_index: oldIndex,
+                subject_title: subjectTitle
+              },
+              error: function(xhr, _status, _error) {
+                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+                alert('#{t('.reordering_failed')}\n' + errorMsg);
+                reloadContent($('#citations'));
+              }
+            });
+          }
+        }
+      }
+    );
   });

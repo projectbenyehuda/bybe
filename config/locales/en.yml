@@ -3070,7 +3070,14 @@ en:
       index:
         add_work: Add Work
         drag_to_reorder: Drag to reorder
+        reordering_failed: Reordering failed
       form:
         no_authority_warning: Cannot associate works with publications without first associating this person with an Authority in the Ben-Yehuda database
         select_publication: Select publication...
         select_collection: Select collection...
+    citations:
+      index:
+        add_citation: Add Citation
+        drag_to_reorder: Drag to reorder
+        reordering_failed: Reordering failed
+        no_subject: General

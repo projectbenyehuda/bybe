@@ -27,6 +27,11 @@ class LexCitation < ApplicationRecord
   # After Legacy data migration is done, we can drop subject field entirely.
   validates :subject, absence: true, if: -> { person_work.present? }
 
+  before_validation do
+    subject&.strip!
+    self.subject = nil if subject.blank?
+  end
+
   def subject_title
     return person_work&.title || subject
   end
