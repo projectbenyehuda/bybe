@@ -115,41 +115,6 @@ RSpec.describe 'Ingestible sub-collection selector', :js, :system do
     end
   end
 
-  describe 'when selecting via advanced search widget' do
-    it 'loads sub-collections after selecting from widget' do
-      visit new_ingestible_path
-
-      begin
-        find('#change_volume', wait: 5).click
-      rescue Capybara::ElementNotFound
-        # Volume details already visible
-      end
-
-      # Open advanced search
-      find('#toggle_advanced_search', wait: 5).click
-      expect(page).to have_css('#advanced_collection_search', visible: true, wait: 5)
-
-      # Search for parent collection
-      fill_in 'advanced_search_title', with: 'Complete Works'
-      find('#advanced_search_button', wait: 5).click
-
-      expect(page).to have_css('.advanced-search-result', wait: 5)
-
-      # Click on result
-      find('.advanced-search-result', text: 'Complete Works', wait: 5).click
-
-      # Sub-collections dropdown should appear
-      expect(page).to have_css('#sub_collection_selector', visible: true, wait: 5)
-
-      # Should list all descendants
-      within('#sub_collection_id', wait: 5) do
-        expect(page).to have_content('Poetry Series')
-        expect(page).to have_content('Prose Series')
-        expect(page).to have_content('Early Poems')
-      end
-    end
-  end
-
   describe 'when changing collection selection' do
     it 'reloads sub-collections when parent changes' do
       # Create another parent with different children

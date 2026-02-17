@@ -69,11 +69,12 @@
             %br
             #sub_collection_selector{ style: 'display:none; margin-top: 10px; margin-bottom: 10px;' }
               = label_tag :sub_collection_id, t('ingestible.sub_collection_within')
-              = select_tag :sub_collection_id,
-                           options_for_select([]),
-                           include_blank: t('ingestible.select_sub_collection'),
-                           style: 'width:400px;',
-                           data: { blank_text: t('ingestible.select_sub_collection') }
+              - sc_blank = t('ingestible.select_sub_collection')
+              - sc_load = t('ingestible.loading_sub_collections')
+              - sc_err = t('ingestible.error_loading_sub_collections')
+              - sc_data = { blank_text: sc_blank, loading_text: sc_load, error_text: sc_err }
+              = select_tag :sub_collection_id, options_for_select([]), include_blank: sc_blank, style: 'width:400px;',
+                data: sc_data
             = t(:or)
             %br
             = f.label t('ingestible.create_new_volume')

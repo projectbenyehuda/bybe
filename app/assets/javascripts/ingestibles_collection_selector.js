@@ -30,9 +30,11 @@ $(document).ready(function() {
     }
 
     // Show loading state
-    $('#sub_collection_id').empty().append($('<option>', {
+    var $select = $('#sub_collection_id');
+    var loadingText = $select.data('loading-text') || 'Loading...';
+    $select.empty().append($('<option>', {
       value: '',
-      text: 'Loading...'
+      text: loadingText
     }));
     $('#sub_collection_selector').show();
 
@@ -44,9 +46,11 @@ $(document).ready(function() {
         populateSubCollections(descendants);
       },
       error: function() {
-        $('#sub_collection_id').empty().append($('<option>', {
+        var $select = $('#sub_collection_id');
+        var errorText = $select.data('error-text') || 'Error loading sub-collections';
+        $select.empty().append($('<option>', {
           value: '',
-          text: 'Error loading sub-collections'
+          text: errorText
         }));
       }
     });

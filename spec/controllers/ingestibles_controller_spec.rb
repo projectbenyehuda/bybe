@@ -781,8 +781,8 @@ describe IngestiblesController do
       get :collection_descendants, params: { id: parent_collection.id }
 
       expect(response).to be_successful
-      json = JSON.parse(response.body)
-      titles = json.map { |c| c['title'] }
+      json = response.parsed_body
+      titles = json.pluck('title')
 
       expect(titles).to contain_exactly('Series 1', 'Subseries 1.1')
     end
@@ -791,8 +791,8 @@ describe IngestiblesController do
       get :collection_descendants, params: { id: parent_collection.id }
 
       expect(response).to be_successful
-      json = JSON.parse(response.body)
-      titles = json.map { |c| c['title'] }
+      json = response.parsed_body
+      titles = json.pluck('title')
 
       expect(titles).to eq(['Series 1', 'Subseries 1.1'])
     end
@@ -801,7 +801,7 @@ describe IngestiblesController do
       get :collection_descendants, params: { id: grandchild_series.id }
 
       expect(response).to be_successful
-      json = JSON.parse(response.body)
+      json = response.parsed_body
 
       expect(json).to be_empty
     end
@@ -810,7 +810,7 @@ describe IngestiblesController do
       get :collection_descendants, params: { id: parent_collection.id }
 
       expect(response).to be_successful
-      json = JSON.parse(response.body)
+      json = response.parsed_body
       result = json.first
 
       expect(result).to have_key('id')

@@ -322,13 +322,15 @@ class IngestiblesController < ApplicationController
 
   # Get all sub-collections (descendants at any level) of a given collection
   def collection_descendants
-    collection = Collection.find(params[:id])
+    collection = Collection.find_by(id: params[:id])
+    return render json: [], status: :not_found unless collection
+
     descendant_ids = find_descendant_collection_ids([collection.id])
 
     descendants = Collection.where(id: descendant_ids)
-                           .includes(:involved_authorities)
-                           .order(:title)
-                           .map do |c|
+                            .includes(:involved_authorities)
+                            .order(:title)
+                            .map do |c|
       {
         id: c.id,
         title: c.title,
