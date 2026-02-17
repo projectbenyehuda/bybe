@@ -17,7 +17,7 @@ module Lexicon
                               .sort_by do|subject_title, _entries |
         [
           subject_title.present? ? 1 : 0, # sort General (empty subject) first
-          subject_title
+          subject_title || ''
         ]
       end
     end
@@ -62,7 +62,7 @@ module Lexicon
     def reorder
       new_index = params.fetch(:new_index).to_i # zero-based
       old_index = params.fetch(:old_index).to_i # zero-based
-      subject_title = params.fetch(:subject_title)
+      subject_title = params[:subject_title]
 
       if @citation.subject_title != subject_title
         render plain: "subject_title mismatch, actual: '#{@citation.subject_title}', got: '#{subject_title}'",
