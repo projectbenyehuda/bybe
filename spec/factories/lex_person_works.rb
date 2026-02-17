@@ -11,7 +11,7 @@ FactoryBot.define do
     title { Faker::Book.title }
     work_type { LexPersonWork.work_types.keys.sample }
 
-    # Assign seqno automatically in factory (it only guranteesuniqieness of values)
+    # Assign seqno automatically in factory (it only guarantees uniqueness of values)
     seqno do
       generate(:lex_person_work_seqno)
     end

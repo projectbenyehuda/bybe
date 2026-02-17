@@ -132,7 +132,7 @@ describe LexPerson do
     context 'when nil subject_title is passed' do
       let(:subject_title) { nil }
 
-      context 'when there are general citations exists' do
+      context 'when there are general citations' do
         let!(:general_citation_1) { create(:lex_citation, person: person, seqno: 1) }
 
         it 'returns max seqno among general citations' do
@@ -140,7 +140,7 @@ describe LexPerson do
         end
       end
 
-      context 'when no general citations exists' do
+      context 'when no general citations exist' do
         it 'returns 0' do
           expect(result).to eq(0)
         end
