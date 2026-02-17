@@ -21,7 +21,9 @@ module Lexicon
       puts e.backtrace.join("\n")
       lex_file&.error_message = e.message
       lex_file&.save!
-      lex_file&.lex_entry&.status_error!
-    end
+      Chewy.strategy(:atomic) do
+        lex_file&.lex_entry&.status_error!
+      end
+      end
   end
 end
