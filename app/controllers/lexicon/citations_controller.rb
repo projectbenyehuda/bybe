@@ -23,9 +23,7 @@ module Lexicon
       @citation = @person.citations.build(lex_citation_params)
 
       # Assign seqno as the last position in the subject_title group
-      subject_title = @citation.subject_title
-      max_seqno = subject_title.present? ? @person.max_citation_seqno_by_subject_title(subject_title) : 0
-      @citation.seqno = max_seqno + 1
+      @citation.seqno = @person.max_citation_seqno_by_subject_title(@citation.subject_title) + 1
 
       return if @citation.save
 
@@ -35,21 +33,13 @@ module Lexicon
     def edit; end
 
     def update
-      # Check if subject_title will change (via subject or person_work change)
-      new_params = lex_citation_params
       old_subject_title = @citation.subject_title
-
-      # Apply params temporarily to check new subject_title
-      @citation.assign_attributes(new_params)
+      @citation.assign_attributes(lex_citation_params)
       new_subject_title = @citation.subject_title
 
       # If subject_title changed, move item to the bottom of new subject_title group
       if new_subject_title != old_subject_title
-        max_seqno = if new_subject_title.present?
-                      @person.max_citation_seqno_by_subject_title(new_subject_title, exclude_citation_id: @citation.id)
-                    else
-                      0
-                    end
+        max_seqno = @person.max_citation_seqno_by_subject_title(new_subject_title, exclude_citation_id: @citation.id)
         @citation.seqno = max_seqno + 1
       end
 
