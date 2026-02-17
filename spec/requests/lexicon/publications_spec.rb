@@ -41,7 +41,7 @@ describe '/lexicon/publications' do
         expect(lex_publication.entry).to have_attributes(
           title: 'Test (test)',
           status: 'draft',
-          sort_title: 'Test test'
+          sort_title: 'תתתת_Test test'
         )
         expect(flash.notice).to eq(I18n.t('lexicon.publications.create.success'))
       end
@@ -73,7 +73,7 @@ describe '/lexicon/publications' do
       expect(lex_publication.reload).to have_attributes(valid_publication_attributes)
       expect(lex_publication.entry).to have_attributes(
         title: 'Test (test)',
-        sort_title: 'Test test'
+        sort_title: 'תתתת_Test test'
       )
     end
   end
