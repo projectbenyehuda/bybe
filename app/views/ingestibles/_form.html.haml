@@ -55,11 +55,26 @@
             %br
 
             = f.label t('ingestible.any_volume')
+            %br
+            = label_tag :collection_type_filter, t('ingestible.filter_by_type')
+            - type_options = [[t('ingestible.all_types'), 'all']]
+            - Collection.collection_types.keys.reject { |t| t == 'uncollected' }.each do |type|
+              - type_options << [t("activerecord.attributes.collection.collection_types.#{type}"), type]
+            = select_tag :collection_type_filter, options_for_select(type_options), style: 'width:200px;'
+            %br
             = autocomplete_field_tag :volume, '', autocomplete_collection_full_ingestibles_path,
                                      id: 'cterm', style: 'width:400px;', id_element: '#prospective_volume_id',
                                      class: 'ingestible-autocomplete-volume',
                                      data: { loading_text: t(:loading) }
             %br
+            #sub_collection_selector{ style: 'display:none; margin-top: 10px; margin-bottom: 10px;' }
+              = label_tag :sub_collection_id, t('ingestible.sub_collection_within')
+              - sc_blank = t('ingestible.select_sub_collection')
+              - sc_load = t('ingestible.loading_sub_collections')
+              - sc_err = t('ingestible.error_loading_sub_collections')
+              - sc_data = { blank_text: sc_blank, loading_text: sc_load, error_text: sc_err }
+              = select_tag :sub_collection_id, options_for_select([]), include_blank: sc_blank, style: 'width:400px;',
+                data: sc_data
             = t(:or)
             %br
             = f.label t('ingestible.create_new_volume')
@@ -241,18 +256,24 @@
       });
     });
     $('#authority_volumes').on('change', function() {
-      $('#prospective_volume_id').val($('#authority_volumes').val());
+      var volumeId = $('#authority_volumes').val();
+      $('#prospective_volume_id').val(volumeId);
       new_title = $('#authority_volumes option:selected').text();
       // For publications, use the actual title without the prefix
       actual_title = $('#authority_volumes option:selected').data('actual-title');
-      if (actual_title) {
-        $('#ingestible_prospective_volume_title').val(actual_title);
-      } else {
-        $('#ingestible_prospective_volume_title').val(new_title);
-      }
+      var display_title = actual_title || new_title;
+
+      // Set the autocomplete field (for existing collections)
+      $('#cterm').val(display_title);
+
+      // Clear the "create new volume" field (we're selecting existing, not creating new)
+      $('#ingestible_prospective_volume_title').val('');
+
       $('#volume_title').text(new_title);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
+      // Trigger sub-collections loading
+      $(document).trigger('collection:selected', [volumeId]);
     });
     $('#periodical_issues').on('change', function() {
       if($('#periodical_issues').val() == '!new') {
@@ -271,10 +292,19 @@
           }
         });
       } else {
-        $('#prospective_volume_id').val($('#periodical_issues').val());
+        var issueId = $('#periodical_issues').val();
+        $('#prospective_volume_id').val(issueId);
         new_title = $('#periodical_issues option:selected').text();
+
+        // Set the autocomplete field (for existing collections)
+        $('#cterm').val(new_title);
+
+        // Clear the "create new volume" field (we're selecting existing, not creating new)
+        $('#ingestible_prospective_volume_title').val('');
+
         $('#volume_title').text(new_title);
-        $('#ingestible_prospective_volume_title').val(new_title);
+        // Trigger sub-collections loading
+        $(document).trigger('collection:selected', [issueId]);
     }
       $('#need_to_save').show();
       $('#ingestible_no_volume').prop('checked', false);
@@ -321,6 +351,8 @@
       $('#volume_title').text(data.item.value);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
+      // Trigger sub-collections loading
+      $(document).trigger('collection:selected', [data.item.id]);
     });
     $('#change_volume').on('click', function(e) {
       e.preventDefault();
@@ -336,6 +368,9 @@
         $('#ingestible_periodical_id').val('');
         $('#ingestible_prospective_volume_title').val('');
         $('#need_to_save').show();
+        // Hide sub-collections dropdown
+        $('#sub_collection_selector').hide();
+        $('#sub_collection_id').empty();
       } else {
         $('#authority_volumes').show();
       }
