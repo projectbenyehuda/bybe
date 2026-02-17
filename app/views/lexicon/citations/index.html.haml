@@ -1,24 +1,16 @@
 %a.btn.btn-primary.add-citation= t('.add_citation')
-- @lex_citations.group_by(&:subject_title).each do |subject_title, entries|
-  %h4= subject_title || t('lexicon.citations.index.no_subject')
-  %table.table.table-sm
-    %thead
-      %tr
-        %th
-        %th= LexCitation.human_attribute_name(:title)
-        %th= t(:actions)
-    - tbody_id = "citations_#{subject_title.present? ? subject_title.parameterize : 'no-subject'}"
-    %tbody{ id: tbody_id, data: { subject_title: subject_title || '' } }
-      - entries.sort_by(&:seqno).each do |c|
-        %tr{ id: "citation_#{c.id}", data: { citation_id: c.id } }
-          %td.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
-            .handle ☰
-          %td= raw render_citation(c)
-          %td
-            = link_to t(:edit), '#', class: 'edit-citation', data: { id: c.id }
-            = link_to t(:delete),
-                      lexicon_citation_path(c),
-                      remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-citation'
+- @lex_citations.each do |subject_title, entries|
+  %h4= subject_title.present? ? subject_title : t('lexicon.citations.index.no_subject')
+  %ul.citations-group{ data: { subject_title: subject_title } }
+    - entries.sort_by(&:seqno).each do |c|
+      %li{ data: { citation_id: c.id } }
+        %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
+          %span.handle ☰
+        = raw render_citation(c)
+        = link_to t(:edit), nil, class: 'edit-citation', data: { id: c.id }
+        = link_to t(:delete),
+                  lexicon_citation_path(c),
+                  remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-citation'
 
 :javascript
   $('.edit-citation').click(function(e) {
@@ -31,10 +23,10 @@
   });
 
   // Initialize Sortable for each subject_title table
-  document.querySelectorAll('[id^="citations_"]').forEach(function(tbody) {
-    const subjectTitle = tbody.dataset.subjectTitle;
+  document.querySelectorAll('ul.citations-group').forEach(function(list) {
+    const subjectTitle = list.dataset.subjectTitle;
     Sortable.create(
-      tbody,
+      list,
       {
         handle: '.drag-handle',
         animation: 150,
@@ -49,7 +41,7 @@
                 old_index: oldIndex,
                 subject_title: subjectTitle
               },
-              error: function(xhr, status, error) {
+              error: function(xhr, _status, _error) {
                 const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
                 alert('#{t('.reordering_failed')}\n' + errorMsg);
                 reloadContent($('#citations'));
