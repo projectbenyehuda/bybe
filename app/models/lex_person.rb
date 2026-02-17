@@ -40,4 +40,16 @@ class LexPerson < ApplicationRecord
   def max_work_seqno_by_type(work_type)
     works_by_type(work_type).map(&:seqno).max || 0
   end
+
+  # TODO: after finishing Lexicon migration and removal of Lex_Citations.subject column
+  #   we should pass lex_person_work_id here and rename method appropriately
+  def citations_by_subject_title(subject_title)
+    citations.select { |c| c.subject_title == subject_title }
+  end
+
+  def max_citation_seqno_by_subject_title(subject_title, exclude_citation_id: nil)
+    cits = citations_by_subject_title(subject_title)
+    cits = cits.reject { |c| c.id == exclude_citation_id } if exclude_citation_id.present?
+    cits.map(&:seqno).compact.max || 0
+  end
 end
