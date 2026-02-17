@@ -42,7 +42,7 @@ describe '/lexicon/people' do
         lex_person = LexPerson.order(id: :desc).first
         expect(call).to eq(200)
         expect(lex_person).to have_attributes(valid_person_attributes)
-        expect(lex_person.entry).to have_attributes(title: 'Test (test)', sort_title: 'Test test')
+        expect(lex_person.entry).to have_attributes(title: 'Test (test)', sort_title: 'תתתת_Test test')
         expect(flash.notice).to eq(I18n.t('lexicon.people.create.success'))
       end
     end
@@ -69,7 +69,7 @@ describe '/lexicon/people' do
     it 'updates the record' do
       expect(call).to eq(200)
       expect(lex_person.reload).to have_attributes(valid_person_attributes)
-      expect(lex_person.entry).to have_attributes(title: 'Test (test)', sort_title: 'Test test')
+      expect(lex_person.entry).to have_attributes(title: 'Test (test)', sort_title: 'תתתת_Test test')
     end
   end
 end
