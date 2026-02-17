@@ -63,7 +63,8 @@ describe Lexicon::ParseCitations do
         from_publication: "בספרו: פרקי חיים וספרות / ליקט וכינס זאב וויינר (ירושלים : קרית-ספר, תש\"ך 1960)",
         link: nil,
         pages: '89־90',
-        notes: "פורסם לראשונה ב'הדואר', 7 בפברואר 1930"
+        notes: "פורסם לראשונה ב'הדואר', 7 בפברואר 1930",
+        seqno: 1
       }
     end
 
@@ -75,7 +76,8 @@ describe Lexicon::ParseCitations do
         link: 'http://jpress2.tau.ac.il/Repository/getFiles.asp?Style=OliveXLib:LowLevelEntityToSaveGifMSIE_TAUHE&'\
               'Type=text/html&Locale=hebrew-skin-custom&Path=DAV/1947/08/08&ChunkNum=-1&ID=Ar00702',
         pages: '7',
-        notes: nil
+        notes: nil,
+        seqno: 1
       }
     end
 
