@@ -632,6 +632,12 @@ en:
     need_to_save: Please save the ingestible after updating the collection
     already_being_ingested: Ingestible Already Being Ingested
     any_volume: Ingestible Any Volume
+    filter_by_type: Filter by type
+    all_types: All types
+    select_sub_collection: Select sub-collection
+    sub_collection_within: Sub-collection within selected collection
+    loading_sub_collections: Loading sub-collections...
+    error_loading_sub_collections: Error loading sub-collections
     attach_photos: Ingestible Attach Photos
     attach_photos_explanation: Ingestible Attach Photos Explanation
     author_missing: Ingestible Author Missing

@@ -2047,6 +2047,12 @@ he:
     current_file: קובץ נוכחי
     or_replace_file: 'או החלפת הקובץ בהעלאה מחדש:'
     any_volume: איתור כותר מכלל המאגר
+    filter_by_type: סינון לפי סוג
+    all_types: כל הסוגים
+    select_sub_collection: בחר תת-כותר
+    sub_collection_within: תת-כותר מתוך הכותר הנבחר
+    loading_sub_collections: טוען תת-כותרים...
+    error_loading_sub_collections: שגיאה בטעינת תת-כותרים
     no_volume: לא מתוך כותר
     volume: כותר
     included_in_upload: נכלל בהעלאה?
