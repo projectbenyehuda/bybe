@@ -347,7 +347,7 @@
     });
     $('#cterm').on('railsAutocomplete.select', function(event, data){
       $('#prospective_volume_id').val(data.item.id);
-      $('#ingestible_prospective_volume_title').val(data.item.value);
+      $('#ingestible_prospective_volume_title').val('');
       $('#volume_title').text(data.item.value);
       $('#ingestible_no_volume').prop('checked', false);
       $('#need_to_save').show();
