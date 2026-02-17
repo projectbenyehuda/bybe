@@ -64,7 +64,7 @@ describe LexPerson do
       let(:subject_title) { 'Work B' }
 
       it 'returns citations with the given subject_title from person_work and subject field' do
-        expect(result).to match_array([citation_2, citation_3])
+        expect(result).to contain_exactly(citation_2, citation_3)
       end
     end
 
@@ -93,9 +93,9 @@ describe LexPerson do
     let(:person) { create(:lex_person) }
     let(:exclude_citation_id) { nil }
 
-    let!(:citation_A1) { create(:lex_citation, person: person, subject: 'Work A', seqno: 1) }
-    let!(:citation_A2) { create(:lex_citation, person: person, subject: 'Work A', seqno: 2) }
-    let!(:citation_A3) { create(:lex_citation, person: person, subject: 'Work A', seqno: 4) }
+    let!(:citation_A_1) { create(:lex_citation, person: person, subject: 'Work A', seqno: 1) }
+    let!(:citation_A_2) { create(:lex_citation, person: person, subject: 'Work A', seqno: 2) }
+    let!(:citation_A_3) { create(:lex_citation, person: person, subject: 'Work A', seqno: 4) }
 
     context 'when there are citations with the given subject_title' do
       let(:subject_title) { 'Work A' }
@@ -105,7 +105,7 @@ describe LexPerson do
       end
 
       context 'when exclude_citation_id is provided' do
-        let(:exclude_citation_id) { citation_A3.id }
+        let(:exclude_citation_id) { citation_A_3.id }
 
         it 'excludes the specified citation from the calculation' do
           expect(result).to eq(2)

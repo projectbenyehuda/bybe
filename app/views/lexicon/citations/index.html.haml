@@ -1,6 +1,6 @@
 %a.btn.btn-primary.add-citation= t('.add_citation')
 - @lex_citations.each do |subject_title, entries|
-  %h4= subject_title.present? ? subject_title : t('lexicon.citations.index.no_subject')
+  %h4= (subject_title.presence || t('lexicon.citations.index.no_subject'))
   %ul.citations-group{ data: { subject_title: subject_title } }
     - entries.sort_by(&:seqno).each do |c|
       %li{ data: { citation_id: c.id } }

@@ -6,7 +6,8 @@ module Lexicon
     before_action do
       require_editor('edit_lexicon')
     end
-    before_action :set_citation, only: %i(edit update destroy approve reorder)
+
+    before_action :set_citation, only: %i(edit update destroy reorder)
     before_action :set_person, only: %i(new create index)
 
     layout false
@@ -14,7 +15,7 @@ module Lexicon
     def index
       @lex_citations = @person.citations.preload(authors: { person: :entry })
                               .group_by(&:subject_title)
-                              .sort_by do|subject_title, _entries |
+                              .sort_by do |subject_title, _entries|
         [
           subject_title.present? ? 1 : 0, # sort General (empty subject) first
           subject_title || ''
