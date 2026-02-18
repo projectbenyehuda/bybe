@@ -92,7 +92,7 @@ RSpec.describe 'Ingestible sub-collection selector', :js, :system do
 
     it 'hides dropdown when no sub-collections exist' do
       # Create a collection with no children
-      empty_collection = create(:collection, collection_type: :volume, title: 'Empty Volume')
+      create(:collection, collection_type: :volume, title: 'Empty Volume')
 
       visit new_ingestible_path
 
@@ -184,6 +184,40 @@ RSpec.describe 'Ingestible sub-collection selector', :js, :system do
 
       # Dropdown should be hidden
       expect(page).to have_css('#sub_collection_selector', visible: false, wait: 5)
+    end
+
+    it 'does not populate prospective_volume_title when selecting existing collection' do
+      visit new_ingestible_path
+
+      begin
+        find('#change_volume', wait: 5).click
+      rescue Capybara::ElementNotFound
+        # Volume details already visible
+      end
+
+      # Check no_volume first
+      check 'ingestible_no_volume', wait: 5
+
+      # Verify prospective_volume_title is empty
+      expect(find('#ingestible_prospective_volume_title', wait: 5).value).to eq('')
+
+      # Now select a collection via autocomplete
+      fill_in 'volume', with: 'Complete Works'
+      expect(page).to have_css('.ui-autocomplete', visible: true, wait: 5)
+
+      within('.ui-autocomplete', wait: 5) do
+        find('li', text: 'Complete Works', wait: 5).click
+      end
+
+      # The prospective_volume_title field should remain empty
+      # (it's for creating NEW volumes, not selecting existing ones)
+      expect(find('#ingestible_prospective_volume_title', wait: 5).value).to eq('')
+
+      # But the autocomplete field should show the selection
+      expect(find('#cterm', wait: 5).value).to eq('Complete Works')
+
+      # And the no_volume checkbox should be unchecked
+      expect(find('#ingestible_no_volume', wait: 5)).not_to be_checked
     end
   end
 end
