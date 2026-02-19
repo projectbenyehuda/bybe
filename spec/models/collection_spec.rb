@@ -624,6 +624,72 @@ describe Collection do
     end
   end
 
+  describe '#update_alternate_titles' do
+    let(:collection) { create(:collection, title: 'פִּתְאֹם') }
+
+    it 'updates alternate_titles with forms from AlternateHebrewForms service' do
+      collection.update_alternate_titles
+      expect(collection.alternate_titles).to eq('פתאם; פיתאום')
+    end
+
+    it 'preserves existing alternate titles and adds new ones' do
+      collection.update_column(:alternate_titles, 'עוד משהו')
+      collection.update_alternate_titles
+      expect(collection.alternate_titles).to eq('עוד משהו; פתאם; פיתאום')
+    end
+
+    it 'removes duplicates when combining existing and new alternate forms' do
+      collection.update_column(:alternate_titles, 'פיתאום')
+      collection.update_alternate_titles
+      expect(collection.alternate_titles).to eq('פיתאום; פתאם')
+    end
+
+    it 'handles empty existing alternate_titles' do
+      collection.update_column(:alternate_titles, '')
+      collection.update_alternate_titles
+      expect(collection.alternate_titles).to eq('פתאם; פיתאום')
+    end
+
+    it 'handles nil existing alternate_titles' do
+      collection.update_column(:alternate_titles, nil)
+      collection.update_alternate_titles
+      expect(collection.alternate_titles).to eq('פתאם; פיתאום')
+    end
+
+    context 'when alternate_titles has some other (user-provided) names' do
+      it 'preserves existing alternate_titles' do
+        collection.update_column(:alternate_titles, 'משהו אחר')
+        collection.update_alternate_titles
+        expect(collection.alternate_titles).to eq('משהו אחר; פתאם; פיתאום')
+      end
+    end
+  end
+
+  describe 'before_save callbacks' do
+    let(:collection) { build(:collection, title: 'מִבְחַר שִירִים') }
+
+    describe 'update_alternate_titles callback' do
+      it 'is triggered when title changes on create' do
+        expect(collection).to receive(:update_alternate_titles)
+        collection.save!
+      end
+
+      it 'is not triggered when title does not change' do
+        collection.save!
+        collection.reload
+        expect(collection).not_to receive(:update_alternate_titles)
+        collection.update!(subtitle: 'new subtitle')
+      end
+
+      it 'is triggered when title changes on update' do
+        collection.save!
+        collection.reload
+        expect(collection).to receive(:update_alternate_titles)
+        collection.update!(title: 'כותר חדש')
+      end
+    end
+  end
+
   describe '.uncollected_more_than_once' do
     it 'returns items that appear in more than one uncollected collection' do
       # Create uncollected collections (bypass validation using update_column)

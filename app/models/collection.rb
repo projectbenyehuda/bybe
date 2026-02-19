@@ -13,6 +13,7 @@ class Collection < ApplicationRecord
 
   before_save :norm_dates
   before_save :prevent_uncollected_type_change
+  before_save :update_alternate_titles, if: :title_changed?
 
   validates :collection_type, presence: true
 
@@ -563,6 +564,14 @@ class Collection < ApplicationRecord
       ci.item.status = new_status
       ci.item.save!
     end
+  end
+
+  def update_alternate_titles
+    existingstr = alternate_titles || ''
+    existing = existingstr.split(';').map(&:strip)
+    newforms = AlternateHebrewForms.call(title)
+    combined = (existing + newforms).uniq
+    self.alternate_titles = combined.join('; ')
   end
 
   protected
