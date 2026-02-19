@@ -31,15 +31,16 @@
               - if work_type != 'original'
                 %h4= LexPersonWork.human_enum_name(:work_type, work_type)
               %ul
-                - works_of_type.each do |work|
+                - works_of_type.sort_by(&:seqno).each do |work|
                   %li!= render_person_work(work)
 
         #lexicon-about
           = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
             - lex_person.citations.group_by(&:subject_title).each do |subject, list|
-              %h4= t(:subject_line, subject: subject)
+              - if subject.present?
+                %h4= t(:subject_line, subject: subject)
               %ul
-                - list.each do |c|
+                - list.sort_by(&:seqno).each do |c|
                   - cit_text = render_citation(c)
                   %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
         #lexicon-links
