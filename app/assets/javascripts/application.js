@@ -7,6 +7,7 @@
 //= require jquery3
 //= require jquery-ui/widgets/autocomplete
 //= require rails-ujs
+//= require jquery-ui
 //= require sortable.min
 //= require jquery.slick
 //= require jquery.caret
