@@ -100,6 +100,7 @@ class IngestiblesController < ApplicationController
     else
       @failures = []
       @changes = { placeholders: [], texts: [], collections: [] }
+      @uncollected_authorities = Set.new
       create_or_load_collection unless @ingestible.no_volume # no_volume means we don't want to ingest into a Collection, and @collection would be nil.
       # - loop over whole TOC
       i = 0
@@ -124,6 +125,8 @@ class IngestiblesController < ApplicationController
         @ingestible.save!
         # - email (whom?) with news about the ingestion, and links to all the created entities
         # - show post-ingestion screen, with links to all created entities and affected authorities
+        # Refresh uncollected works collections for authorities whose texts were not placed in a volume
+        @uncollected_authorities.each { |a| RefreshUncollectedWorksCollection.call(a) }
         # Invalidate whatsnew page cache after successful ingestion
         invalidate_whatsnew_cache
         redirect_to ingestible_url(@ingestible), notice: t('.success')
@@ -826,6 +829,10 @@ class IngestiblesController < ApplicationController
             @collection.append_item(m) # append the new text to the (current) end of the collection if there were no placeholders already
           end
           @collection.invalidate_cached_credits!
+        else
+          # Manifestation was not placed in any collection — track its authorities for
+          # uncollected works collection refresh at the end of ingestion
+          @uncollected_authorities.merge(auths.uniq)
         end
       end
     end
