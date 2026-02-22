@@ -763,6 +763,54 @@ describe IngestiblesController do
           expect(series_collection.pub_year).to be_nil
         end
       end
+
+      context 'when ingesting without a volume (no_volume: true)' do
+        let(:no_volume_ingestible) do
+          create(:ingestible,
+                 markdown: markdown,
+                 toc_buffer: toc_buffer,
+                 no_volume: true,
+                 default_authorities: [{ seqno: 1, authority_id: translator.id, authority_name: translator.name,
+                                         role: 'translator' }].to_json)
+        end
+
+        before do
+          no_volume_ingestible.update_parsing
+          allow(RefreshUncollectedWorksCollection).to receive(:call)
+        end
+
+        it 'calls RefreshUncollectedWorksCollection for each involved authority' do
+          post :ingest, params: { id: no_volume_ingestible.id }
+
+          expect(RefreshUncollectedWorksCollection).to have_received(:call).with(author)
+          expect(RefreshUncollectedWorksCollection).to have_received(:call).with(translator)
+        end
+
+        it 'does not call RefreshUncollectedWorksCollection when ingestion fails validation' do
+          # Remove required fields so ingestion redirects back to review
+          toc = ' yes || Missing From Markdown || || prose || fr || public_domain'
+          no_volume_ingestible.update_columns(toc_buffer: toc)
+          no_volume_ingestible.reload
+
+          post :ingest, params: { id: no_volume_ingestible.id }
+
+          expect(response).to redirect_to(review_ingestible_path(no_volume_ingestible))
+          expect(RefreshUncollectedWorksCollection).not_to have_received(:call)
+        end
+      end
+
+      context 'when ingesting with a volume (no_volume: false)' do
+        before do
+          ingestible.update_parsing
+          allow(RefreshUncollectedWorksCollection).to receive(:call)
+        end
+
+        it 'does not call RefreshUncollectedWorksCollection' do
+          post :ingest, params: { id: ingestible.id }
+
+          expect(RefreshUncollectedWorksCollection).not_to have_received(:call)
+        end
+      end
     end
   end
 
