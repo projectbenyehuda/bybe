@@ -12,16 +12,7 @@ module Lexicon
 
     layout false
 
-    def index
-      @lex_citations = @person.citations.preload(authors: { person: :entry })
-                              .group_by(&:subject_title)
-                              .sort_by do |subject_title, _entries|
-        [
-          subject_title.present? ? 1 : 0, # sort General (empty subject) first
-          subject_title || ''
-        ]
-      end
-    end
+    def index; end
 
     def new
       @citation = @person.citations.build
