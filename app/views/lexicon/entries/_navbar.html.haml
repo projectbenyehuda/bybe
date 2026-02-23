@@ -1,35 +1,43 @@
--# Navbar for lexicon entry show pages
--# Shows navigation to different sections within the entry (biography, works, links, etc.)
+-# Navbar for lexicon entry show pages: biography, works, links, etc.
 
 - lex_item = @lex_entry.lex_item
 - is_person = lex_item.is_a?(LexPerson)
 
-%nav#genrenav.navbar
-  %ul#genre-nav.navbar-nav.flex-column.by-card-v02{"aria-orientation" => "vertical"}
+%nav.navbar#genrenav
+  %ul.navbar-nav.flex-column.by-card-v02#genre-nav{ 'aria-orientation' => 'vertical' }
     - if is_person
       %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-biography' }
-        %a#translations_button.nav-link.active{"aria-selected" => "false", :href => "#"}
+        %a.nav-link.active#translations_button{ 'aria-selected' => 'true', href: '#' }
           .side-menu-icon
           .side-menu-name= t('lexicon.verification.sections.biography')
       %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-works' }
-        %a#works_button.nav-link{"aria-selected" => "true", :href => "#"}
-          .side-menu-icon K
+        %a.nav-link#works_button{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
           .side-menu-name= t('lexicon.verification.sections.works_section')
       %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-about' }
-        %a#about_author_button.nav-link{"aria-selected" => "false", :href => "#"}
-          .side-menu-icon M
-          .side-menu-name= t('activerecord.attributes.lex_person.about', gender_suffix: lex_item.female? ? 'ת' : '', gender_letter: lex_item.gender_letter)
+        - about_title = t('activerecord.attributes.lex_person.about',
+                          gender_suffix: lex_item.female? ? 'ת' : '',
+                          gender_letter: lex_item.gender_letter)
+        %a.nav-link#about_author_button{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
+          .side-menu-name= about_title
       %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
-        %a#links_button.nav-link{"aria-selected" => "false", :href => "#"}
-          .side-menu-icon +
+        %a.nav-link#links_button{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
           .side-menu-name= t('lexicon.verification.sections.links_section')
     - else
-      %li.nav-item.selected.pointer{ 'data-scroll-target' => '#lexicon-description' }
-        .truncate= t('lexicon.verification.sections.description_section')
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-description' }
+        %a.nav-link.active{ 'aria-selected' => 'true', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.description_section')
       %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-toc' }
-        .truncate= t('lexicon.verification.sections.toc_section')
+        %a.nav-link{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.toc_section')
       %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
-        .truncate= t('lexicon.verification.sections.links_section')
+        %a.nav-link{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.links_section')
 
 
 :javascript
@@ -39,8 +47,8 @@
       var scrollTarget = $(this).data('scroll-target');
 
       // Remove .active from all .nav-link elements and add to the clicked one
-      $('.nav-link').removeClass('active');
-      $(this).find('.nav-link').addClass('active');
+      $('.nav-link').removeClass('active').attr('aria-selected', 'false');
+      $(this).find('.nav-link').addClass('active').attr('aria-selected', 'true');
       if (scrollTarget && $(scrollTarget).length > 0) {
         var offset = $(scrollTarget).offset().top - 120;
         $('html, body').animate({

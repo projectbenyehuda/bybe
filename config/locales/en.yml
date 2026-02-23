@@ -3066,6 +3066,8 @@ en:
           birth_to: "Born to: %{year}"
           death_from: "Died from: %{year}"
           death_to: "Died to: %{year}"
+          show_filters: "Show Filters"
+          hide_filters: "Hide Filters"
     person_works:
       index:
         add_work: Add Work

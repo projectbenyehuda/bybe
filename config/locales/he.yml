@@ -2309,6 +2309,8 @@ he:
           birth_to: "נולד עד שנת: %{year}"
           death_from: "נפטר משנת: %{year}"
           death_to: "נפטר עד שנת: %{year}"
+          show_filters: "הצגת סינון"
+          hide_filters: "הסתרת סינון"
     person_works:
       index:
         add_work: הוספת יצירה
