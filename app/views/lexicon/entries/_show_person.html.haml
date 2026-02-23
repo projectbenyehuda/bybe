@@ -36,11 +36,11 @@
 
         #lexicon-about
           = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
-            - lex_person.citations.group_by(&:subject_title).each do |subject, list|
+            - grouped_and_ordered_citations(lex_person).each do |subject, list|
               - if subject.present?
-                %h4= t(:subject_line, subject: subject)
+                %h4= citations_subject_header(subject)
               %ul
-                - list.sort_by(&:seqno).each do |c|
+                - list.each do |c|
                   - cit_text = render_citation(c)
                   %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
         #lexicon-links
