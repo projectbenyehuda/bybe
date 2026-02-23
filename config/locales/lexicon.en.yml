@@ -1,5 +1,9 @@
 en:
+  file: File
+  entry: Entry
   lexicon_migration: Absorbing Lexicon Galron
+  lexicon_name: Lexicon Galron
+  to_lexicon_entries: to Lexicon entries
   lexicon_show_person: View
   lex_prev_entry: Previous entry
   lex_next_entry: Next entry
@@ -13,7 +17,6 @@ en:
   bib: Bibliography
   classified: Classified
   unclassified: Unclassified
-  subject_line: About "%{subject}"
   lexicon:
     entries:
       destroy:
@@ -35,11 +38,40 @@ en:
         all_statuses: All statuses
         filter: Filter
         clear_filters: Clear filters
+      list:
+        page_title: New Hebrew Literature Lexicon Entries List
+        page_header: Entries List - New Hebrew Literature Lexicon
+        entries_list_breadcrumb: Lexicon Entries List
+        welcome_title: Welcome to the New Hebrew Literature Lexicon Entries List
+        intro_html: The New Hebrew Literature Lexicon database contains <strong>%{count} published entries</strong>. This list displays all publicly available entries.
+        description: The lexicon contains bio-bibliographic information about Hebrew literature authors and creators, as well as historical publications and newspapers.
+        entries_count:
+          one: 1 entry
+          other: "%{count} entries"
+        filters:
+          entry_name: "Entry Name"
+          name_placeholder: "Search by name"
+          name_contains: "Name contains: %{name}"
+          gender_title: "Gender"
+          gender_male: "Male"
+          gender_female: "Female"
+          gender_other: "Other"
+          gender_unknown: "Unknown"
+          birth_years: "Birth Years"
+          death_years: "Death Years"
+          from_year: "From year"
+          to_year: "To year"
+          year_placeholder: "Year"
+          birth_from: "Born from: %{year}"
+          birth_to: "Born to: %{year}"
+          death_from: "Died from: %{year}"
+          death_to: "Died to: %{year}"
       show:
         to_pby_person: To the creator's page on Ben-Yehuda Project
         unsupported_entry_type: Unsupported entry type
         profile_image_alt: Profile image
         profile_image_badge: Profile Image
+        unpublished_warning: This entry has status '%{status}' and is not available to public
       show_person:
         pages: p.
     attachments:
@@ -55,16 +87,24 @@ en:
       form:
         add_author: Add author
     citations:
+      header:
+        subject_line: About "%{subject}"
+        general: General
       index:
-        add_citation: Add citation
-      edit:
-        approve: Approve Citation
+        add_citation: Add Citation
+        drag_to_reorder: Drag to reorder
+        reordering_failed: Reordering failed
       form:
         save_before_adding_authors: Please save the citation before adding authors
     person_works:
       index:
         add_work: Add work
+        drag_to_reorder: Drag to reorder
         reordering_failed: Reordering failed. Works list will be reloaded.
+      form:
+        no_authority_warning: Cannot associate works with publications without first associating this person with an Authority in the Ben-Yehuda database
+        select_publication: Select publication...
+        select_collection: Select collection...
     links:
       index:
         add_link: Add link
@@ -102,6 +142,7 @@ en:
         actions:
           start: Start Verification
           continue: Continue Verification
+          start_or_continue: Start of Continue
         filters:
           all: All
           draft: Draft
