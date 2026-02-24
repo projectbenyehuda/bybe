@@ -239,6 +239,9 @@
           .attachment-actions.mt-2
             %button.btn.btn-sm{class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: {action: 'click->verification#setProfileImage', 'attachment-id': attachment.id}}
               = entry.profile_image_id == attachment.id ? '✓ Profile Image' : 'Use as Profile'
+            %button.btn.btn-sm.btn-outline-danger.ms-1{ data: { action: 'click->verification#removeAttachment',
+                                                                'attachment-id': attachment.id } }
+              = t('lexicon.verification.migrated.remove_attachment')
     - else
       %p.text-muted (No attachments)
   .section-actions
