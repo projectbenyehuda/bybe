@@ -39,9 +39,7 @@ module Lexicon
 
       # Auto-copy copyrighted status from Authority when not set during migration
       if @item.is_a?(LexPerson) && @item.copyrighted.nil? && @item.authority.present?
-        authority_ip = @item.authority.intellectual_property
-        copyrighted = authority_copyrighted_value(authority_ip)
-        @item.update_column(:copyrighted, copyrighted) unless copyrighted.nil?
+        @item.update!(copyrighted: authority_copyrighted?(@item.authority.intellectual_property))
       end
     end
 
@@ -288,17 +286,10 @@ module Lexicon
       @entry = LexEntry.includes(:lex_item, :lex_file).find(params[:id])
     end
 
-    # Maps Authority's intellectual_property enum to the LexPerson copyrighted boolean.
-    # public_domain, permission_for_all, permission_for_selected -> false
-    # copyrighted -> true
-    # orphan, unknown -> nil (cannot determine, leave unset)
-    def authority_copyrighted_value(authority_ip)
-      case authority_ip
-      when 'public_domain', 'permission_for_all', 'permission_for_selected'
-        false
-      when 'copyrighted'
-        true
-      end
+    # Maps Authority's intellectual_property to a LexPerson copyrighted boolean.
+    # Only public_domain is not copyrighted; all other statuses default to copyrighted.
+    def authority_copyrighted?(authority_ip)
+      authority_ip != 'public_domain'
     end
 
     def load_source_php

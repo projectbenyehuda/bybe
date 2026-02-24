@@ -51,11 +51,28 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         e
       end
 
-      it 'leaves copyrighted as nil (cannot determine)' do
+      it 'sets copyrighted to true (non-public-domain defaults to copyrighted)' do
         get "/lex/verification/#{entry.id}"
 
         entry.lex_item.reload
-        expect(entry.lex_item.copyrighted).to be_nil
+        expect(entry.lex_item.copyrighted).to be true
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value and Authority has permission_for_all IP' do
+      let(:authority) { create(:authority, intellectual_property: :permission_for_all) }
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id)
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'sets copyrighted to true (non-public-domain defaults to copyrighted)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be true
       end
     end
 
@@ -121,6 +138,16 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         expect(response).to have_http_status(:success)
         entry.lex_item.reload
         expect(entry.lex_item.copyrighted).to be false
+      end
+
+      it 'keeps copyrighted=nil when blank/unknown is selected' do
+        patch url,
+              params: { section: 'title', lex_person: { copyrighted: '' } },
+              as: :json
+
+        expect(response).to have_http_status(:success)
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be_nil
       end
     end
   end
