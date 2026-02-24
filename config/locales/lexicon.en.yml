@@ -183,6 +183,7 @@ en:
         add_citation: Add Citation
         add_link: Add Link
         upload_file: Upload File
+        remove_attachment: Remove
         verified: Verified
         not_verified: Not Verified
         mark_verified: Mark as Verified
