@@ -2949,17 +2949,6 @@ en:
   you_can: You Can
   you_can_create_lists: You Can Create Lists
   youtube_url: Youtube Url
-  activerecord:
-    attributes:
-      collection:
-        collection_types:
-          volume: Volume
-          periodical: Periodical
-          periodical_issue: Periodical Issue
-          series: Series
-          volume_series: Volume Series
-          other: Other
-          uncollected: Uncollected Works
   helpers:
     page_entries_info:
       one_page:

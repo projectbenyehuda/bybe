@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :tag_name do
     tag { create(:tag) }
-    name { "MyString #{Time.now} #{rand(1000)}" }
+    sequence(:name) { |n| "Tag Name #{n}" }
   end
 end

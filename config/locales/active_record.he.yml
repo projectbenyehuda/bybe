@@ -79,6 +79,14 @@ he:
         deathdate: תאריך פטירה
         gender: מגדר
       collection:
+        collection_types:
+          volume: כרך
+          periodical: כתב עת
+          periodical_issue: גיליון כתב עת
+          series: סדרה
+          volume_series: סדרת כרכים
+          other: אחר
+          uncollected: יצירות לא באוסף
         credits: קרדיטים ידניים
       collection_item:
         item_type: סוג פריט

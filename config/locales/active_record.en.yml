@@ -55,6 +55,16 @@ en:
         blog_category_url: Link to category about the creator in blog
         wikipedia_snippet: Snippet from Wikipedia
         wikipedia_url: Link to the article in Wikipedia
+      collection:
+        collection_types:
+          volume: Volume
+          periodical: Periodical
+          periodical_issue: Periodical Issue
+          series: Series
+          volume_series: Volume Series
+          other: Other
+          uncollected: Uncollected Works
+        credits: Credits
       collection_item:
         item_type: Item Type
       corporate_body:
