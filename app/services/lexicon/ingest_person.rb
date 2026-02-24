@@ -41,6 +41,7 @@ module Lexicon
       # to avoid validation errors
       lex_person.save!
 
+      AssociateAuthority.call(lex_person, html_doc)
       link_citations_to_works(lex_person)
       lex_person
     end
