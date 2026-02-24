@@ -37,7 +37,7 @@ This is to make it easier for non-Hebrew speakers to contribute to the project. 
 [rails-18n gem](https://github.com/svenfuchs/rails-i18n) (providing translations for ActiveRecord validation messages 
 and other built-in rails messages) to support internationalization.
 
-Main language of the site is Hebrew, but we also have English locale for non-hebrew speaking developerss (latter is 
+Main language of the site is Hebrew, but we also have English locale for non-hebrew speaking developers (latter is 
 only available in development and test environments). Significant part of English locale was generated using AI
 translation, so it is not perfect and may contain some errors (feel free to fix them and submit a PR).
 
