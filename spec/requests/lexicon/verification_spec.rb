@@ -7,6 +7,51 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     login_as_lexicon_editor
   end
 
+  describe 'PATCH /lex/verification/:id/update_checklist' do
+    context 'when verifying the title section for a LexPerson' do
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.start_verification!('editor@example.com')
+        e
+      end
+      let(:url) { "/lex/verification/#{entry.id}/update_checklist" }
+
+      it 'also marks life_years as verified when title is verified' do
+        patch url, params: { path: 'title', verified: 'true' }, as: :json
+
+        expect(response).to have_http_status(:success)
+        entry.reload
+        expect(entry.verification_progress.dig('checklist', 'title', 'verified')).to be true
+        expect(entry.verification_progress.dig('checklist', 'life_years', 'verified')).to be true
+      end
+
+      it 'also unverifies life_years when title is unverified' do
+        # First verify both
+        entry.update_checklist_item('title', true)
+        entry.update_checklist_item('life_years', true)
+
+        patch url, params: { path: 'title', verified: 'false' }, as: :json
+
+        expect(response).to have_http_status(:success)
+        entry.reload
+        expect(entry.verification_progress.dig('checklist', 'title', 'verified')).to be false
+        expect(entry.verification_progress.dig('checklist', 'life_years', 'verified')).to be false
+      end
+
+      it 'allows verification_percentage to reach 100 when all items are verified via quickVerify' do
+        # Simulate user clicking quickVerify on every section (title path covers life_years)
+        patch url, params: { path: 'title', verified: 'true' }, as: :json
+        patch url, params: { path: 'bio', verified: 'true' }, as: :json
+        patch url, params: { path: 'attachments', verified: 'true' }, as: :json
+
+        # Verify all collection items (citations, links, works are empty for this entry)
+        entry.reload
+        expect(entry.verification_percentage).to eq(100)
+        expect(entry.verification_complete?).to be true
+      end
+    end
+  end
+
   describe 'PATCH /lex/verification/:id/set_profile_image' do
     let(:entry) { create(:lex_entry) }
     let(:url) { "/lex/verification/#{entry.id}/set_profile_image" }
