@@ -40,30 +40,28 @@ describe 'Lexicon entries UX improvements' do
 
     before { get "/lex/entries/#{entry.id}" }
 
-    it 'renders the publication navbar with nav-link class for consistent styling' do
-      # Publication nav items previously lacked the .nav-link class
-      expect(response.body).to include('nav-link')
+    it 'renders publication navbar items with the nav-link class for consistent hover/active styling' do
+      # Publication nav items previously lacked .nav-link, so the peach2-lexicon hover/active
+      # CSS rules never applied to them. Verify that nav-link appears inside #genre-nav.
+      expect(response.body).to match(/<ul[^>]+id="genre-nav".*?<a[^>]+class="[^"]*nav-link/m)
     end
   end
 
   describe 'Entry list page (#list)' do
     before { post '/lex/list' }
 
-    it 'renders filter pill remove buttons with × instead of -' do
-      # This tests the template default; actual filter pills only appear when filters are active.
-      # We verify that the source template no longer contains the bare hyphen pattern.
-      # The × character is U+00D7 and appears in the tag-x span.
-      # (Actual pill rendering is tested via the filter scenario below.)
-      expect(response).to have_http_status(:ok)
-    end
-
-    it 'renders the mobile filter toggle button' do
+    it 'renders the mobile filter toggle button with correct accessibility attributes' do
       expect(response.body).to include('lex-mobile-filter-toggle')
+      expect(response.body).to include('type="button"')
+      expect(response.body).to include('aria-controls="lex-filter-card"')
+      expect(response.body).to include('aria-expanded="false"')
       expect(response.body).to include(I18n.t('lexicon.entries.list.filters.show_filters'))
     end
 
-    it 'renders the filter card with an id for JS toggle' do
+    it 'renders the filter card with a role and aria-label for accessibility' do
       expect(response.body).to include('lex-filter-card')
+      expect(response.body).to include('role="region"')
+      expect(response.body).to include(I18n.t('lexicon.entries.list.filters.filter_panel'))
     end
   end
 
@@ -76,11 +74,13 @@ describe 'Lexicon entries UX improvements' do
 
     before { post '/lex/list', params: { ckb_genders: ['male'] } }
 
-    it 'renders filter pills with × as the remove symbol' do
-      # Active filters render as pill buttons with a .tag-x span
+    it 'renders filter pills with × as the remove symbol (not a bare hyphen)' do
+      # Active filters render as pill buttons with a .tag-x span.
+      # Verify the × symbol is present and the old "-" (hyphen) pattern is absent.
       expect(response.body).to include('tag-x')
       expect(response.body).to include('×')
-      expect(response.body).not_to match(/<span[^>]+class="pointer tag-x[^"]*"[^>]*>-<\/span>/)
+      expect(response.body).not_to match(%r{<span[^>]+class="pointer tag-x[^"]*"[^>]*>-</span>})
+      expect(response.body).not_to match(%r{<span[^>]+class="pointer tag-x[^"]*"[^>]*>&ndash;</span>})
     end
   end
 end

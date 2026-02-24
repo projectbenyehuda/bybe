@@ -2311,6 +2311,7 @@ he:
           death_to: "נפטר עד שנת: %{year}"
           show_filters: "הצגת סינון"
           hide_filters: "הסתרת סינון"
+          filter_panel: "פאנל סינון"
     person_works:
       index:
         add_work: הוספת יצירה

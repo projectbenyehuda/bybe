@@ -42,12 +42,12 @@
 
 :javascript
   $(document).ready(function() {
-    // Handle clicks on navbar items
-    $('.nav-item[data-scroll-target]').click(function(e) {
+    // Handle clicks on navbar items (scoped to #genre-nav to avoid affecting other navbars)
+    $('#genre-nav .nav-item[data-scroll-target]').click(function(e) {
       var scrollTarget = $(this).data('scroll-target');
 
-      // Remove .active from all .nav-link elements and add to the clicked one
-      $('.nav-link').removeClass('active').attr('aria-selected', 'false');
+      // Remove .active from all nav links in this navbar only
+      $('#genre-nav .nav-link').removeClass('active').attr('aria-selected', 'false');
       $(this).find('.nav-link').addClass('active').attr('aria-selected', 'true');
       if (scrollTarget && $(scrollTarget).length > 0) {
         var offset = $(scrollTarget).offset().top - 120;
@@ -56,7 +56,7 @@
         }, 500);
       }
     });
-    $('.nav-link').click(function(e) {
+    $('#genre-nav .nav-link').click(function(e) {
       e.preventDefault();
     });
   });

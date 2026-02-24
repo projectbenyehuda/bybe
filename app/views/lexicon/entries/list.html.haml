@@ -7,7 +7,7 @@
   .container-fluid#content
     .row.authors-list-content.peach2-lexicon
       .col-12.col-lg-4.order-2.order-lg-1
-        .by-card-v02#lex-filter-card
+        .by-card-v02#lex-filter-card{ role: 'region', 'aria-label' => t('lexicon.entries.list.filters.filter_panel') }
           .work-area
             .work-content
               .headline-1-v02= t('lexicon.entries.list.welcome_title')
@@ -31,12 +31,13 @@
 
 :javascript
   $(document).ready(function() {
-    var showLabel = '#{I18n.t('lexicon.entries.list.filters.show_filters')}';
-    var hideLabel = '#{I18n.t('lexicon.entries.list.filters.hide_filters')}';
+    var showLabel = #{I18n.t('lexicon.entries.list.filters.show_filters').to_json};
+    var hideLabel = #{I18n.t('lexicon.entries.list.filters.hide_filters').to_json};
     // Use event delegation so the handler survives AJAX list re-renders
     $(document).on('click', '#lex-mobile-filter-toggle', function() {
       $('#lex-filter-card').slideToggle(200);
       var isOpen = $('#lex-filter-card').is(':visible');
       $(this).text(isOpen ? hideLabel : showLabel);
+      $(this).attr('aria-expanded', isOpen ? 'true' : 'false');
     });
   });

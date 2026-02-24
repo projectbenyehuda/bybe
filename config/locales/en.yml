@@ -3038,7 +3038,6 @@ en:
   # Lexicon
   lexicon:
     entries:
-<<<<<<< lex_ux_review
       list:
         page_title: New Hebrew Literature Lexicon Entries List
         page_header: Entries List - New Hebrew Literature Lexicon
@@ -3069,9 +3068,7 @@ en:
           death_to: "Died to: %{year}"
           show_filters: "Show Filters"
           hide_filters: "Hide Filters"
-=======
-
->>>>>>> lexicon
+          filter_panel: "Filter Panel"
     person_works:
       index:
         add_work: Add Work
