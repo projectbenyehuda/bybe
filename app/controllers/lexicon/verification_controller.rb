@@ -36,6 +36,11 @@ module Lexicon
       @source_content = load_source_php
       @checklist = @entry.verification_progress['checklist']
       @item = @entry.lex_item # LexPerson or LexPublication
+
+      # Auto-copy copyrighted status from Authority when not set during migration
+      if @item.is_a?(LexPerson) && @item.copyrighted.nil? && @item.authority.present?
+        @item.update!(copyrighted: authority_copyrighted?(@item.authority.intellectual_property))
+      end
     end
 
     # GET /lexicon/verification/:id/source
@@ -279,6 +284,12 @@ module Lexicon
 
     def set_entry
       @entry = LexEntry.includes(:lex_item, :lex_file).find(params[:id])
+    end
+
+    # Maps Authority's intellectual_property to a LexPerson copyrighted boolean.
+    # Only public_domain is not copyrighted; all other statuses default to copyrighted.
+    def authority_copyrighted?(authority_ip)
+      authority_ip != 'public_domain'
     end
 
     def load_source_php

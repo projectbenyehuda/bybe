@@ -25,6 +25,12 @@
       - gender_options = [[t('male'), 'male'], [t('female'), 'female'], [t('other'), 'other'], [t('unknown'), 'unknown']]
       = f.select :gender, options_for_select(gender_options, @item.gender), { include_blank: true }, class: 'form-control'
 
+    .form-group
+      = f.label :copyrighted, t('activerecord.attributes.lex_person.intellectual_property'), class: 'form-label'
+      -# haml-lint:disable LineLength
+      - ip_options = [[t('public_domain', scope: 'intellectual_property'), 'false'], [t('copyrighted', scope: 'intellectual_property'), 'true']]
+      = f.select :copyrighted, options_for_select(ip_options, @item.copyrighted&.to_s), { include_blank: t('unknown') }, class: 'form-control'
+
   .form-check.mt-3
     = check_box_tag :mark_verified, '1', false, class: 'form-check-input'
     = label_tag :mark_verified, t('lexicon.verification.edit.mark_as_verified'), class: 'form-check-label'
