@@ -185,8 +185,7 @@ module Lexicon
       # If this attachment is the profile image, clear that reference first
       @entry.update!(profile_image_id: nil) if @entry.profile_image_id == attachment_id
 
-      # Delete only the join record; do not purge the blob
-      ActiveStorage::Attachment.delete(attachment_id)
+      @entry.attachments.find(attachment_id).purge
 
       render json: { success: true }
     rescue StandardError => e

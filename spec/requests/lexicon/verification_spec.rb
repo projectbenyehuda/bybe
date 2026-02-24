@@ -109,7 +109,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     end
 
     context 'when removing a valid attachment' do
-      it 'detaches the attachment from the entry without deleting the blob' do
+      it 'removes the attachment and its blob from storage' do
         attachment = entry.attachments.first
         blob = attachment.blob
 
@@ -122,8 +122,8 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         entry.reload
         expect(entry.attachments.map(&:id)).not_to include(attachment.id)
 
-        # But the blob still exists in storage
-        expect(ActiveStorage::Blob.exists?(blob.id)).to be true
+        # Blob is also purged
+        expect(ActiveStorage::Blob.exists?(blob.id)).to be false
       end
 
       it 'clears profile_image_id when removing the profile image attachment' do
