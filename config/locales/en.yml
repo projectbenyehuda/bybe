@@ -3038,6 +3038,7 @@ en:
   # Lexicon
   lexicon:
     entries:
+<<<<<<< lex_ux_review
       list:
         page_title: New Hebrew Literature Lexicon Entries List
         page_header: Entries List - New Hebrew Literature Lexicon
@@ -3068,15 +3069,14 @@ en:
           death_to: "Died to: %{year}"
           show_filters: "Show Filters"
           hide_filters: "Hide Filters"
+=======
+
+>>>>>>> lexicon
     person_works:
       index:
         add_work: Add Work
         drag_to_reorder: Drag to reorder
         reordering_failed: Reordering failed
-      form:
-        no_authority_warning: Cannot associate works with publications without first associating this person with an Authority in the Ben-Yehuda database
-        select_publication: Select publication...
-        select_collection: Select collection...
     citations:
       index:
         add_citation: Add Citation

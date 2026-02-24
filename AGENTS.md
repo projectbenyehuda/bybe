@@ -173,9 +173,7 @@ Capybara automatically waits (default 2 seconds, configurable) for:
 
    # ONLY proceed to commit after fixing ALL lint issues
    git add <files>
-   bd sync  # sync beads changes
    git commit -m "Your commit message"
-   bd sync  # sync beads changes again
    ```
    - **CRITICAL**: You MUST run linters and fix ALL issues before committing
    - Focus on fixing issues in files YOU modified, not pre-existing issues
@@ -200,7 +198,6 @@ Capybara automatically waits (default 2 seconds, configurable) for:
 6. **Close the bead** after PR is created:
    ```bash
    bd close <bead-id> --reason "Created PR #123"
-   bd sync
    ```
    - Close the bead AFTER creating the PR, not after merge
    - Include the PR number in the close reason
@@ -218,11 +215,31 @@ Before running ANY git command, verify:
 - [ ] Am I on a branch I created in this session? (`git branch --show-current`)
 - [ ] If not, have I created a new feature/fix branch?
 - [ ] Am I about to push to my own branch, not master/main?
-- [ ] Have I run `bd sync` before and after committing?
 - [ ] Will I create a PR after pushing?
 - [ ] Has the user approved the feature/fix?
 **If any answer is NO, do NOT proceed with git push!**
 
+Addressing PR code review comments:
+
+**CRITICAL**: When asked to address PR code review comments, use this two-step process:
+
+1. **Get review metadata**: Run `gh pr view <number> --json reviews,comments` to see all reviews
+2. **Fetch full review content**: If reviews exist with actual content (not just line comments from bots), use WebFetch on the review URL to get the full substantive review. The URL format is:
+   ```
+   https://github.com/projectbenyehuda/bybe/pull/<number>#pullrequestreview-<review-id>
+   ```
+
+**Why this matters**:
+- `gh api repos/.../pulls/<number>/comments` only returns individual line comments (lint issues, isolated feedback)
+- It does NOT return the full review body text or comprehensive review content
+- Bot reviews (github-actions, copilot-pull-request-reviewer) often provide detailed analysis in the review body, not just line comments
+- WebFetch on the review URL provides the complete review including summary, analysis, and all recommendations
+
+**Don't rely solely on the comments API** - it will miss substantive reviews!
+
+For more details, see README.md in the project home directory.
+
+<!-- BEGIN BEADS INTEGRATION -->
 ## Issue Tracking with bd (beads)
 
 **IMPORTANT**: This project uses **bd (beads)** for ALL issue tracking. Do NOT use markdown TODOs, task lists, or other tracking methods.
@@ -237,24 +254,27 @@ Before running ANY git command, verify:
 ### Quick Start
 
 **Check for ready work:**
+
 ```bash
 bd ready --json
 ```
 
 **Create new issues:**
+
 ```bash
-bd create "Issue title" -t bug|feature|task -p 0-4 --json
-bd create "Issue title" -p 1 --deps discovered-from:bd-123 --json
-bd create "Subtask" --parent <epic-id> --json  # Hierarchical subtask (gets ID like epic-id.1)
+bd create "Issue title" --description="Detailed context" -t bug|feature|task -p 0-4 --json
+bd create "Issue title" --description="What this issue is about" -p 1 --deps discovered-from:bd-123 --json
 ```
 
 **Claim and update:**
+
 ```bash
 bd update bd-42 --status in_progress --json
 bd update bd-42 --priority 1 --json
 ```
 
 **Complete work:**
+
 ```bash
 bd close bd-42 --reason "Completed" --json
 ```
@@ -279,128 +299,54 @@ bd close bd-42 --reason "Completed" --json
 
 1. **Check ready work**: `bd ready` shows unblocked issues
 2. **Claim your task**: `bd update <id> --status in_progress`
-3. **Create feature branch**: `git checkout -b fix/issue-name` or `feature/issue-name` (NEVER work directly on existing branches!)
-4. **Work on it**: Implement, test, document
-5. **Discover new work?** Create linked issue:
-   - `bd create "Found bug" -p 1 --deps discovered-from:<parent-id>`
-6. **Commit changes**: See "Git Workflow" section above for complete commit/push/PR process
-7. **Create PR**: Always submit work via Pull Request, never push directly
-8. **Complete**: `bd close <id>` after PR is created (not after merge)
-9. **Sync beads**: Run `bd sync` after closing bead
-
-**CRITICAL**: Always follow the Git Workflow section above. Never push to existing branches!
+3. **Work on it**: Implement, test, document
+4. **Discover new work?** Create linked issue:
+   - `bd create "Found bug" --description="Details about what was found" -p 1 --deps discovered-from:<parent-id>`
+5. **Complete**: `bd close <id> --reason "Done"`
 
 ### Auto-Sync
 
 bd automatically syncs with git:
+
 - Exports to `.beads/issues.jsonl` after changes (5s debounce)
 - Imports from JSONL when newer (e.g., after `git pull`)
 - No manual export/import needed!
 
-### GitHub Copilot Integration
-
-If using GitHub Copilot, also create `.github/copilot-instructions.md` for automatic instruction loading.
-Run `bd onboard` to get the content, or see step 2 of the onboard instructions.
-
-### MCP Server (Recommended)
-
-If using Claude or MCP-compatible clients, install the beads MCP server:
-
-```bash
-pip install beads-mcp
-```
-
-Add to MCP config (e.g., `~/.config/claude/config.json`):
-```json
-{
-  "beads": {
-    "command": "beads-mcp",
-    "args": []
-  }
-}
-```
-
-Then use `mcp__beads__*` functions instead of CLI commands.
-
-### Managing AI-Generated Planning Documents
-
-AI assistants often create planning and design documents during development:
-- PLAN.md, IMPLEMENTATION.md, ARCHITECTURE.md
-- DESIGN.md, CODEBASE_SUMMARY.md, INTEGRATION_PLAN.md
-- TESTING_GUIDE.md, TECHNICAL_DESIGN.md, and similar files
-
-**Best Practice: Use a dedicated directory for these ephemeral files**
-
-**Recommended approach:**
-- Create a `history/` directory in the project root
-- Store ALL AI-generated planning/design docs in `history/`
-- Keep the repository root clean and focused on permanent project files
-- Only access `history/` when explicitly asked to review past planning
-
-**Example .gitignore entry (optional):**
-```
-# AI planning documents (ephemeral)
-history/
-```
-
-**Benefits:**
-- ✅ Clean repository root
-- ✅ Clear separation between ephemeral and permanent documentation
-- ✅ Easy to exclude from version control if desired
-- ✅ Preserves planning history for archeological research
-- ✅ Reduces noise when browsing the project
-
-### CLI Help
-
-Run `bd <command> --help` to see all available flags for any command.
-For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
-
 ### Important Rules
 
-**Git Workflow:**
-- ✅ ALWAYS create a new feature/bug branch before starting work
-- ✅ ALWAYS submit work via Pull Requests
-- ✅ Run `bd sync` before and after commits to keep beads in sync
-- ❌ NEVER push directly to ANY existing branch (master, main, dragula, etc.)
-- ❌ NEVER skip creating a PR - all work must be reviewed
-
-**Task Tracking:**
 - ✅ Use bd for ALL task tracking
 - ✅ Always use `--json` flag for programmatic use
 - ✅ Link discovered work with `discovered-from` dependencies
 - ✅ Check `bd ready` before asking "what should I work on?"
-- ✅ Store AI planning docs in `history/` directory
-- ✅ Run `bd <cmd> --help` to discover available flags
 - ❌ Do NOT create markdown TODO lists
 - ❌ Do NOT use external issue trackers
 - ❌ Do NOT duplicate tracking systems
-- ❌ Do NOT clutter repo root with planning documents
 
+For more details, see README.md and docs/QUICKSTART.md.
 
-Important reminders:
-   • NEVER push to existing branches - ALWAYS create feature/bug branch and PR
-   • Use bd for ALL task tracking - NO markdown TODO lists
-   • Always use --json flag for programmatic bd commands
-   • Link discovered work with discovered-from dependencies
-   • Check bd ready before asking "what should I work on?"
-   • Run bd sync before and after commits
+<!-- END BEADS INTEGRATION -->
 
-Addressing PR code review comments:
+## Landing the Plane (Session Completion)
 
-**CRITICAL**: When asked to address PR code review comments, use this two-step process:
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
 
-1. **Get review metadata**: Run `gh pr view <number> --json reviews,comments` to see all reviews
-2. **Fetch full review content**: If reviews exist with actual content (not just line comments from bots), use WebFetch on the review URL to get the full substantive review. The URL format is:
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   git push
+   git status  # MUST show "up to date with origin"
    ```
-   https://github.com/projectbenyehuda/bybe/pull/<number>#pullrequestreview-<review-id>
-   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
 
-**Why this matters**:
-- `gh api repos/.../pulls/<number>/comments` only returns individual line comments (lint issues, isolated feedback)
-- It does NOT return the full review body text or comprehensive review content
-- Bot reviews (github-actions, copilot-pull-request-reviewer) often provide detailed analysis in the review body, not just line comments
-- WebFetch on the review URL provides the complete review including summary, analysis, and all recommendations
-
-**Don't rely solely on the comments API** - it will miss substantive reviews!
-
-For more details, see README.md in the project home directory.
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds

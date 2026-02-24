@@ -17,7 +17,6 @@ he:
   bib: ביבליוגרפיה
   classified: זוהה סוג הערך
   unclassified: לא זוהה סוג הערך
-  subject_line: About "%{subject}"
   lexicon:
     entries:
       destroy:
@@ -39,6 +38,34 @@ he:
         all_statuses: כל הסטטוסים
         filter: סנן
         clear_filters: נקה סינונים
+      list:
+        page_title: רשימת ערכי לקסיקון הספרות העברית החדשה
+        page_header: רשימת הערכים - לקסיקון הספרות העברית החדשה
+        entries_list_breadcrumb: רשימת ערכי הלקסיקון
+        welcome_title: ברוכים הבאים לרשימת ערכי לקסיקון הספרות העברית החדשה
+        intro_html: במאגר של לקסיקון הספרות העברית החדשה ישנם <strong>%{count} ערכים</strong> מפורסמים. הרשימה מציגה את כל הערכים הזמינים לציבור.
+        description: הלקסיקון מכיל מידע ביו-ביבליוגרפי על יוצרים ויוצרות בספרות העברית, וכן פרסומים ועיתונים היסטוריים.
+        entries_count:
+          one: ערך אחד
+          other: "%{count} ערכים"
+        filters:
+          entry_name: "שם הערך"
+          name_placeholder: "חיפוש לפי שם"
+          name_contains: "שם מכיל: %{name}"
+          gender_title: "מגדר"
+          gender_male: "זכר"
+          gender_female: "נקבה"
+          gender_other: "אחר"
+          gender_unknown: "לא ידוע"
+          birth_years: "שנות לידה"
+          death_years: "שנות פטירה"
+          from_year: "משנת"
+          to_year: "עד שנת"
+          year_placeholder: "שנה"
+          birth_from: "נולד משנת: %{year}"
+          birth_to: "נולד עד שנת: %{year}"
+          death_from: "נפטר משנת: %{year}"
+          death_to: "נפטר עד שנת: %{year}"
       show:
         to_pby_person: לדף היוצר בפרויקט בן־יהודה
         unsupported_entry_type: סוג פריט לא נתמך
@@ -60,16 +87,25 @@ he:
       form:
         add_author: הוספת יוצר/ת
     citations:
+      header:
+        subject_line: על ״%{subject}״
+        general: כללי
       index:
         add_citation: הוספת מראה מקום
-      edit:
-        approve: אישור מראה מקום
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+
       form:
         save_before_adding_authors: נא לשמור את מראה המקום לפני הוספת מחברים
     person_works:
       index:
         add_work: הוספת יצירה
-        reordering_failed: Reordering failed. Works list will be reloaded.
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+      form:
+        no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
+        select_publication: בחר פרסום...
+        select_collection: בחר אוסף...
     links:
       index:
         add_link: הוספת קישורית

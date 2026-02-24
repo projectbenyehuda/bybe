@@ -1,8 +1,8 @@
 %a.btn.btn-primary.add-citation= t('.add_citation')
-- @lex_citations.each do |subject_title, entries|
-  %h4= (subject_title.presence || t('lexicon.citations.index.no_subject'))
+- grouped_and_ordered_citations(@person).each do |subject_title, entries|
+  %h4= citations_subject_header(subject_title)
   %ul.citations-group{ data: { subject_title: subject_title } }
-    - entries.sort_by(&:seqno).each do |c|
+    - entries.each do |c|
       %li{ data: { citation_id: c.id } }
         %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
           %span.handle ☰

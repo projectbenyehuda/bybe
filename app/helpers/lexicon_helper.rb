@@ -30,4 +30,45 @@ module LexiconHelper
     end
     raw result
   end
+
+  def citations_subject_header(subject_title)
+    if subject_title.present?
+      t('lexicon.citations.header.subject_line', subject: subject_title)
+    else
+      t('lexicon.citations.header.general')
+    end
+  end
+
+  def grouped_and_ordered_citations(lex_person)
+    person_works = lex_person.works.index_by(&:title)
+    # we preload data required for citations rendering
+    grouped_citations = lex_person.citations.preload(authors: { person: :entry })
+                                  .group_by(&:subject_title).sort_by do |subject_title, _entries|
+      work = person_works[subject_title] if subject_title.present?
+      # sort General (empty subject) first, then titles associated with Person Works, then custom titles
+      ord = if subject_title.nil?
+              0 # general citations without subject first
+            elsif work.present?
+              1 # then citations associated with existing works
+            else
+              2 # then citations with manually entered subject
+            end
+      [
+        ord,
+        work&.seqno || 1_000_000,
+        subject_title || '' # if we use custom subject-title not linked to work, sort them by subject_title
+      ]
+    end
+
+    grouped_citations = grouped_citations.to_h
+
+    # sort all citations inside subject_title groups by seqno
+    grouped_citations.each_value do |entries|
+      entries.sort_by! { |citation| [citation.seqno, citation.id] }
+    end
+
+    grouped_citations
+  end
+
+
 end
