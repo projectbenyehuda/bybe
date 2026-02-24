@@ -8,6 +8,7 @@ require 'rspec/rails'
 require 'chewy'
 require 'chewy/rspec'
 Chewy.strategy(:bypass)
+Chewy.request_strategy = :bypass # prevent Chewy middleware from triggering ES indexing in request specs
 
 # Add additional requires below this line. Rails is not loaded until this point!
 
