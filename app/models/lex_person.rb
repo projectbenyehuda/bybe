@@ -19,7 +19,11 @@ class LexPerson < ApplicationRecord
     citations.where(lex_person_work_id: nil, subject: nil).includes(:authors, :manifestation)
   end
 
+  # Returns the intellectual_property string for display purposes.
+  # Maps the boolean copyrighted field: true => 'copyrighted', false => 'public_domain', nil => nil
   def intellectual_property
+    return nil if copyrighted.nil?
+
     copyrighted? ? 'copyrighted' : 'public_domain'
   end
 
