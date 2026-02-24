@@ -173,6 +173,26 @@ module Lexicon
       render json: { success: false, error: e.message }, status: :unprocessable_entity
     end
 
+    # DELETE /lexicon/verification/:id/remove_attachment
+    def remove_attachment
+      attachment_id = params[:attachment_id].to_i
+
+      unless attachment_id.positive? && @entry.attachments.exists?(id: attachment_id)
+        render json: { success: false, error: 'Attachment not found' }, status: :not_found
+        return
+      end
+
+      # If this attachment is the profile image, clear that reference first
+      @entry.update!(profile_image_id: nil) if @entry.profile_image_id == attachment_id
+
+      # Delete only the join record; do not purge the blob
+      ActiveStorage::Attachment.delete(attachment_id)
+
+      render json: { success: true }
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+
     # POST /lexicon/verification/:id/mark_verified
     def mark_verified
       @entry.mark_verified!
