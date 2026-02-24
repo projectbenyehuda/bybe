@@ -132,7 +132,7 @@ and in view use human_attribute_name method:
 #### 5. Similarly use standard approach for ActiveRecord validation messages and other built-in rails messages.
 
 #### 6. Properly internationalize enum values.
-Rails does not provides out-of-the box solution for Enum internationalization, so we use 
+Rails does not provide out-of-the box solution for Enum internationalization, so we use 
 [human_enum_name](https://github.com/jkostolansky/human_enum_name) gem for that.
 
 E.g. if we have
