@@ -67,7 +67,7 @@ describe Lexicon::AssociateAuthority do
       '<html><body><a href="https://benyehuda.org/shats">ben-yehuda</a></body></html>'
     end
 
-    before { HtmlDir.create!(path: 'shats', person_id: expected_authority.id, author: 'Shats') }
+    before { HtmlDir.create!(path: 'shats', person: expected_authority.person, author: 'Shats') }
 
     it_behaves_like 'associates authority'
   end

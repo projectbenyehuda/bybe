@@ -61,15 +61,12 @@ module Lexicon
 
       # Non-numeric slug: /shats or /shats/index
       # Extract first non-numeric path segment and look up in HtmlDir.
-      # HtmlDir.person_id stores Authority IDs (see HtmlFileController#render_by_legacy_url).
+      # HtmlDir belongs_to :person (Person model), which has_one :authority.
       segment = path.split('/').compact_blank.first
       return nil if segment.blank?
       return nil if segment.match?(/\A\d+\z/)
 
-      html_dir = HtmlDir.find_by(path: segment)
-      return nil if html_dir.nil? || html_dir.person_id.nil?
-
-      Authority.find_by(id: html_dir.person_id)
+      HtmlDir.find_by(path: segment)&.person&.authority
     end
 
     def find_by_wikidata(html_doc)
