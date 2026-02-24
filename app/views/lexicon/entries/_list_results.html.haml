@@ -1,3 +1,6 @@
+- toggle_attrs = { type: 'button', 'aria-controls' => 'lex-filter-card', 'aria-expanded' => 'false' }
+%button.mobile-only.btn-small-outline-v02.btn-text-v02#lex-mobile-filter-toggle{ toggle_attrs }
+  = t('lexicon.entries.list.filters.show_filters')
 .by-card-v02
   .by-card-header-v02
     .headline-2-v02
@@ -15,7 +18,7 @@
         - @filters.each do |label, field_id, field_type|
           %button.tag
             = label
-            %span.pointer.tag-x{ 'data-ele': field_id, 'data-which' => field_type }= '-'
+            %span.pointer.tag-x{ 'data-ele': field_id, 'data-which' => field_type } ×
 
     .select-all-with-buttons
       .headline-4-v02= t(:sort_by)
@@ -37,7 +40,8 @@
           %li
             = link_to entry.title, lexicon_entry_path(entry)
             - if entry.lex_item.is_a?(LexPerson) && entry.lex_item.life_years.present?
-              .authors-list-years!= " (#{entry.lex_item.life_years})"
+              - life_years_str = " (#{entry.lex_item.life_years})"
+              .authors-list-years!= life_years_str
     != paginate @lex_entries
 
 :javascript
