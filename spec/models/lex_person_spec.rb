@@ -85,6 +85,23 @@ describe LexPerson do
     end
   end
 
+  describe '#intellectual_property' do
+    it 'returns "copyrighted" when copyrighted is true' do
+      person = build(:lex_person, copyrighted: true)
+      expect(person.intellectual_property).to eq('copyrighted')
+    end
+
+    it 'returns "public_domain" when copyrighted is false' do
+      person = build(:lex_person, copyrighted: false)
+      expect(person.intellectual_property).to eq('public_domain')
+    end
+
+    it 'returns nil when copyrighted is nil' do
+      person = build(:lex_person, copyrighted: nil)
+      expect(person.intellectual_property).to be_nil
+    end
+  end
+
   describe '.max_citation_seqno_by_subject_title' do
     subject(:result) do
       person.max_citation_seqno_by_subject_title(subject_title, exclude_citation_id: exclude_citation_id)

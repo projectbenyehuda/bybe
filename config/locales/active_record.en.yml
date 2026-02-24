@@ -136,6 +136,7 @@ en:
         books: Books
         authority: Authority
         gender: Gender
+        intellectual_property: Copyright Status
       lex_person_work:
         title: Title
         work_type: Work Type
