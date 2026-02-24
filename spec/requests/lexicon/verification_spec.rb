@@ -7,6 +7,124 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     login_as_lexicon_editor
   end
 
+  describe 'GET /lex/verification/:id (show) - copyrighted auto-copy from Authority' do
+    context 'when LexPerson has no copyrighted value and has a public_domain Authority' do
+      let(:authority) { create(:authority, intellectual_property: :public_domain) }
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id)
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'sets copyrighted to false (public domain)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be false
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value and has a copyrighted Authority' do
+      let(:authority) { create(:authority, intellectual_property: :copyrighted) }
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id)
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'sets copyrighted to true' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be true
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value and Authority has orphan IP' do
+      let(:authority) { create(:authority, intellectual_property: :orphan) }
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id)
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'leaves copyrighted as nil (cannot determine)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be_nil
+      end
+    end
+
+    context 'when LexPerson already has copyrighted set' do
+      let(:authority) { create(:authority, intellectual_property: :public_domain) }
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.lex_item.update_columns(copyrighted: true, authority_id: authority.id)
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'does not overwrite the existing copyrighted value' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be true
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value and no Authority' do
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: nil)
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'leaves copyrighted as nil' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be_nil
+      end
+    end
+  end
+
+  describe 'PATCH /lex/verification/:id/update_section' do
+    context 'when updating the title section to change copyrighted status' do
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.lex_item.update_columns(copyrighted: nil)
+        e.start_verification!('editor@example.com')
+        e
+      end
+      let(:url) { "/lex/verification/#{entry.id}/update_section" }
+
+      it 'saves copyrighted=true when selected' do
+        patch url,
+              params: { section: 'title', lex_person: { copyrighted: 'true' } },
+              as: :json
+
+        expect(response).to have_http_status(:success)
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be true
+      end
+
+      it 'saves copyrighted=false when public domain is selected' do
+        patch url,
+              params: { section: 'title', lex_person: { copyrighted: 'false' } },
+              as: :json
+
+        expect(response).to have_http_status(:success)
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be false
+      end
+    end
+  end
+
   describe 'PATCH /lex/verification/:id/update_checklist' do
     context 'when verifying the title section for a LexPerson' do
       let(:entry) do
