@@ -27,6 +27,7 @@ describe Lexicon::IngestPerson do
       person = entry.lex_item
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1946', deathdate: nil)
+      expect(person.gender).to eq('female')
       expect(person.citations.count).to eq(53)
       expect(person.citations.select { |c| c.person_work.present? }.count).to eq(45)
       # There is a discrepancy between the book name in file and the citation subject for 3 citations
@@ -73,6 +74,7 @@ describe Lexicon::IngestPerson do
       person = entry.lex_item
       expect(person).to be_an_instance_of(LexPerson)
       expect(person).to have_attributes(birthdate: '1899', deathdate: '1949')
+      expect(person.gender).to eq('male')
       expect(person.citations.count).to eq(4)
       expect(person.citations.select { |c| c.person_work.present? }.count).to eq(1)
       # There is a discrepancy between the book name in file and the citation subject for 3 citations

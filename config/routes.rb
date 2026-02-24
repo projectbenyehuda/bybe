@@ -80,6 +80,7 @@ Bybeconv::Application.routes.draw do
       patch ':id/update_checklist', to: 'verification#update_checklist', as: :update_checklist_verification
       patch ':id/save_progress', to: 'verification#save_progress', as: :save_progress_verification
       patch ':id/set_profile_image', to: 'verification#set_profile_image', as: :set_profile_image_verification
+      delete ':id/remove_attachment', to: 'verification#remove_attachment', as: :remove_attachment_verification
       patch ':id/confirm_work_match', to: 'verification#confirm_work_match', as: :confirm_work_match_verification
       post ':id/mark_verified', to: 'verification#mark_verified', as: :mark_verified_verification
       get ':id/edit_section', to: 'verification#edit_section', as: :edit_section_verification
