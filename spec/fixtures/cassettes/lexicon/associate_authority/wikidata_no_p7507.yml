@@ -1,0 +1,26 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://www.wikidata.org/w/rest.php/wikibase/v1/entities/items/Q12404844
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=utf-8
+    body:
+      encoding: UTF-8
+      string: '{"type":"item","id":"Q12404844","statements":{"P31":[{"id":"Q12404844$test","rank":"normal","property":{"id":"P31","data-type":"wikibase-item"},"value":{"type":"value","content":{"id":"Q5"}},"qualifiers":[],"references":[]}]}}'
+recorded_at: Mon, 24 Feb 2026 01:00:00 GMT
