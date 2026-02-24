@@ -90,4 +90,86 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       end
     end
   end
+
+  describe 'DELETE /lex/verification/:id/remove_attachment' do
+    let(:entry) { create(:lex_entry) }
+    let(:url) { "/lex/verification/#{entry.id}/remove_attachment" }
+
+    before do
+      entry.attachments.attach(
+        io: StringIO.new('test image 1'),
+        filename: 'test1.jpg',
+        content_type: 'image/jpeg'
+      )
+      entry.attachments.attach(
+        io: StringIO.new('test image 2'),
+        filename: 'test2.jpg',
+        content_type: 'image/jpeg'
+      )
+    end
+
+    context 'when removing a valid attachment' do
+      it 'removes the attachment and its blob from storage' do
+        attachment = entry.attachments.first
+        blob = attachment.blob
+
+        delete url, params: { attachment_id: attachment.id }, as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['success']).to be true
+
+        # Attachment record is removed from entry
+        entry.reload
+        expect(entry.attachments.map(&:id)).not_to include(attachment.id)
+
+        # Blob is also purged
+        expect(ActiveStorage::Blob.exists?(blob.id)).to be false
+      end
+
+      it 'clears profile_image_id when removing the profile image attachment' do
+        attachment = entry.attachments.first
+        entry.update!(profile_image_id: attachment.id)
+
+        delete url, params: { attachment_id: attachment.id }, as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(entry.reload.profile_image_id).to be_nil
+      end
+
+      it 'leaves other attachments untouched' do
+        attachment = entry.attachments.first
+        other_attachment = entry.attachments.second
+
+        delete url, params: { attachment_id: attachment.id }, as: :json
+
+        expect(entry.reload.attachments.map(&:id)).to include(other_attachment.id)
+      end
+    end
+
+    context 'when attachment does not belong to entry' do
+      it 'returns not found error' do
+        other_entry = create(:lex_entry)
+        other_entry.attachments.attach(
+          io: StringIO.new('other image'),
+          filename: 'other.jpg',
+          content_type: 'image/jpeg'
+        )
+        other_attachment = other_entry.attachments.first
+
+        delete url, params: { attachment_id: other_attachment.id }, as: :json
+
+        expect(response).to have_http_status(:not_found)
+        expect(response.parsed_body['success']).to be false
+      end
+    end
+
+    context 'when attachment_id is invalid' do
+      it 'returns not found error' do
+        delete url, params: { attachment_id: 99_999 }, as: :json
+
+        expect(response).to have_http_status(:not_found)
+        expect(response.parsed_body['success']).to be false
+      end
+    end
+  end
 end
