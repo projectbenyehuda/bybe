@@ -92,6 +92,12 @@
     %p
       %strong= t('activerecord.attributes.lex_person.gender') + ':'
       = item.gender ? t(item.gender) : t('unknown')
+    %p
+      %strong= t('activerecord.attributes.lex_person.intellectual_property') + ':'
+      - if item.intellectual_property.present?
+        = t(item.intellectual_property, scope: 'intellectual_property')
+      - else
+        %span.text-muted= t('unknown')
   .section-actions
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'title')}', onSectionEditSuccess('section-title'))"}
       ✏️

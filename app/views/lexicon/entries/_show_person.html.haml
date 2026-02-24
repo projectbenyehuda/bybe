@@ -18,9 +18,10 @@
               - if lex_person.authority&.published?
                 .to-pby
                   = link_to t('lexicon.entries.show.to_pby_person'), lex_person.authority
-              .metadata
-                = render partial: 'shared/intellectual_property',
-                         locals: { intellectual_property: lex_person.intellectual_property }
+              - if lex_person.intellectual_property.present?
+                .metadata
+                  = render partial: 'shared/intellectual_property',
+                           locals: { intellectual_property: lex_person.intellectual_property }
           %p#lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
         #lexicon-works
           = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
