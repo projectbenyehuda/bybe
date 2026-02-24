@@ -176,16 +176,17 @@ module Lexicon
     # DELETE /lexicon/verification/:id/remove_attachment
     def remove_attachment
       attachment_id = params[:attachment_id].to_i
+      attachment = attachment_id.positive? ? @entry.attachments.find_by(id: attachment_id) : nil
 
-      unless attachment_id.positive? && @entry.attachments.exists?(id: attachment_id)
+      unless attachment
         render json: { success: false, error: 'Attachment not found' }, status: :not_found
         return
       end
 
       # If this attachment is the profile image, clear that reference first
-      @entry.update!(profile_image_id: nil) if @entry.profile_image_id == attachment_id
+      @entry.update!(profile_image_id: nil) if @entry.profile_image_id == attachment.id
 
-      @entry.attachments.find(attachment_id).purge
+      attachment.purge
 
       render json: { success: true }
     rescue StandardError => e
