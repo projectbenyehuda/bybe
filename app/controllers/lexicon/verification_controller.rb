@@ -71,6 +71,10 @@ module Lexicon
         @entry.mark_all_works_verified!(notes)
       else
         @entry.update_checklist_item(path, verified, notes)
+        # For LexPerson, the 'title' section encompasses life years, so keep them in sync
+        if path == 'title' && @entry.lex_item_type == 'LexPerson'
+          @entry.update_checklist_item('life_years', verified, notes)
+        end
       end
 
       @entry.reload # Ensure we have the latest data
