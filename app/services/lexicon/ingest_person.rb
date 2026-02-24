@@ -6,6 +6,12 @@ module Lexicon
     EDITED_HEADER = 'עריכה:'
     TRANSLATED_HEADER = 'תרגום:'
 
+    def call(lex_file)
+      raw = File.read(lex_file.full_path, encoding: 'UTF-8')
+      @female = raw.include?('על המחברת ויצירתה')
+      super
+    end
+
     def create_lex_item(html_doc)
       lex_person = LexPerson.new(citations: Lexicon::ExtractCitations.call(html_doc))
 
@@ -36,6 +42,8 @@ module Lexicon
 
       buf = html_doc.to_html
       parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
+
+      lex_person.gender = @female ? :female : :male
 
       # We need to save the person and its citations and works before linking citations to works
       # to avoid validation errors
