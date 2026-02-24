@@ -109,6 +109,33 @@ function initVerification() {
         });
     });
 
+    // Handle remove attachment buttons
+    $('[data-action="click->verification#removeAttachment"]').on('click', function(e) {
+        e.preventDefault();
+        const button = $(this);
+        const attachmentId = button.data('attachment-id');
+        const removeAttachmentUrl = container.data('verification-remove-attachment-url');
+
+        $.ajax({
+            url: removeAttachmentUrl,
+            type: 'DELETE',
+            dataType: 'json',
+            headers: {
+                'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: {
+                attachment_id: attachmentId
+            },
+            success: function() {
+                $('#attachment-' + attachmentId).remove();
+                showToast('Attachment removed');
+            },
+            error: function(xhr) {
+                showToast('Error removing attachment: ' + xhr.status);
+            }
+        });
+    });
+
     // Handle checklist label clicks - scroll to section
     $('.checklist-items label').on('click', function(e) {
         // Only scroll if clicked on label text, not checkbox
