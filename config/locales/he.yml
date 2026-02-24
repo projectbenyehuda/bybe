@@ -2277,3 +2277,53 @@ he:
   list_all_collections: רשימת כל הכותרים
   x_volumes_and: "%{x} כותרים ו־"
   navigation_in_page: ניווט בעמוד
+
+  # Lexicon
+  lexicon:
+    entries:
+      list:
+        page_title: רשימת ערכי לקסיקון הספרות העברית החדשה
+        page_header: רשימת הערכים - לקסיקון הספרות העברית החדשה
+        entries_list_breadcrumb: רשימת ערכי הלקסיקון
+        welcome_title: ברוכים הבאים לרשימת ערכי לקסיקון הספרות העברית החדשה
+        intro_html: במאגר של לקסיקון הספרות העברית החדשה ישנם <strong>%{count} ערכים</strong> מפורסמים. הרשימה מציגה את כל הערכים הזמינים לציבור.
+        description: הלקסיקון מכיל מידע ביו-ביבליוגרפי על יוצרים ויוצרות בספרות העברית, וכן פרסומים ועיתונים היסטוריים.
+        entries_count:
+          one: ערך אחד
+          other: "%{count} ערכים"
+        filters:
+          entry_name: "שם הערך"
+          name_placeholder: "חיפוש לפי שם"
+          name_contains: "שם מכיל: %{name}"
+          gender_title: "מגדר"
+          gender_male: "זכר"
+          gender_female: "נקבה"
+          gender_other: "אחר"
+          gender_unknown: "לא ידוע"
+          birth_years: "שנות לידה"
+          death_years: "שנות פטירה"
+          from_year: "משנת"
+          to_year: "עד שנת"
+          year_placeholder: "שנה"
+          birth_from: "נולד משנת: %{year}"
+          birth_to: "נולד עד שנת: %{year}"
+          death_from: "נפטר משנת: %{year}"
+          death_to: "נפטר עד שנת: %{year}"
+          show_filters: "הצגת סינון"
+          hide_filters: "הסתרת סינון"
+          filter_panel: "פאנל סינון"
+    person_works:
+      index:
+        add_work: הוספת יצירה
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+      form:
+        no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
+        select_publication: בחר פרסום...
+        select_collection: בחר אוסף...
+    citations:
+      index:
+        add_citation: הוספת מראה מקום
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+        no_subject: כללי

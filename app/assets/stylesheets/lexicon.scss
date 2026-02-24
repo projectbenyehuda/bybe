@@ -1,3 +1,59 @@
 ul.lex {
   list-style-type:disc;
 }
+
+/* Mobile filter toggle button */
+#lex-mobile-filter-toggle {
+  width: 100%;
+  border: solid 1px #efbfb7;
+  color: #7B1935;
+  background-color: #f9e6e0;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+#lex-mobile-filter-toggle:hover {
+  background-color: #efbfb7;
+  color: #5E1228;
+}
+
+/* On mobile, hide the filter card by default (toggled open by JS) */
+@media (max-width: 991px) {
+  #lex-filter-card {
+    display: none;
+  }
+}
+
+/* Entry top header: breadcrumbs + action buttons in one row */
+.breadcrumbs-and-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+
+.entry-top-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+#header-lexicon-entry .entry-top-actions .btn-small-outline-v02 {
+  border-color: #efbfb7;
+  color: #7B1935;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: solid 1px #efbfb7;
+  background-color: #f9e6e0;
+}
+
+#header-lexicon-entry .entry-top-actions .btn-small-outline-v02:hover {
+  background-color: #efbfb7;
+  color: #5E1228;
+}
