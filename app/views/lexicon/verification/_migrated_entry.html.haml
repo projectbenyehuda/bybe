@@ -9,4 +9,4 @@
       = render 'lexicon/verification/publication_sections', entry: entry, item: item, checklist: checklist
     - else
       .alert.alert-danger
-        Unsupported entry type: #{item.class.name}
+        = t('lexicon.verification.migrated.unsupported_type', type: item.class.name)
