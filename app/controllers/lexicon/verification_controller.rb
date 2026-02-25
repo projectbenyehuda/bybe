@@ -37,9 +37,16 @@ module Lexicon
       @checklist = @entry.verification_progress['checklist']
       @item = @entry.lex_item # LexPerson or LexPublication
 
-      # Auto-copy copyrighted status from Authority when not set during migration
-      if @item.is_a?(LexPerson) && @item.copyrighted.nil? && @item.authority.present?
-        @item.update!(copyrighted: authority_copyrighted?(@item.authority.intellectual_property))
+      # Auto-calculate copyrighted status when not set during migration.
+      # Death year takes precedence: if known, use the 71-year rule.
+      # Otherwise fall back to copying from the linked Authority.
+      if @item.is_a?(LexPerson) && @item.copyrighted.nil?
+        years_ago = @item.died_years_ago
+        if years_ago > 0
+          @item.update!(copyrighted: years_ago < 71)
+        elsif @item.authority.present?
+          @item.update!(copyrighted: authority_copyrighted?(@item.authority.intellectual_property))
+        end
       end
     end
 

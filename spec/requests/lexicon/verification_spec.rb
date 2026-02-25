@@ -12,7 +12,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       let(:authority) { create(:authority, intellectual_property: :public_domain) }
       let(:entry) do
         e = create(:lex_entry, :person, status: :verifying)
-        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id, deathdate: nil)
         e.start_verification!('editor@example.com')
         e
       end
@@ -29,7 +29,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       let(:authority) { create(:authority, intellectual_property: :copyrighted) }
       let(:entry) do
         e = create(:lex_entry, :person, status: :verifying)
-        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id, deathdate: nil)
         e.start_verification!('editor@example.com')
         e
       end
@@ -46,7 +46,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       let(:authority) { create(:authority, intellectual_property: :orphan) }
       let(:entry) do
         e = create(:lex_entry, :person, status: :verifying)
-        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id, deathdate: nil)
         e.start_verification!('editor@example.com')
         e
       end
@@ -63,7 +63,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       let(:authority) { create(:authority, intellectual_property: :permission_for_all) }
       let(:entry) do
         e = create(:lex_entry, :person, status: :verifying)
-        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id, deathdate: nil)
         e.start_verification!('editor@example.com')
         e
       end
@@ -96,7 +96,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     context 'when LexPerson has no copyrighted value and no Authority' do
       let(:entry) do
         e = create(:lex_entry, :person, status: :verifying)
-        e.lex_item.update_columns(copyrighted: nil, authority_id: nil)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: nil, deathdate: nil)
         e.start_verification!('editor@example.com')
         e
       end
@@ -106,6 +106,76 @@ RSpec.describe 'Lexicon::Verification', type: :request do
 
         entry.lex_item.reload
         expect(entry.lex_item.copyrighted).to be_nil
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value and died fewer than 71 years ago' do
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        recent_death_year = Time.zone.today.year - 50
+        e.lex_item.update_columns(copyrighted: nil, authority_id: nil, deathdate: "#{recent_death_year}-01-01")
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'sets copyrighted to true (still within copyright)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be true
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value and died 71 or more years ago' do
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        old_death_year = Time.zone.today.year - 80
+        e.lex_item.update_columns(copyrighted: nil, authority_id: nil, deathdate: "#{old_death_year}-01-01")
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'sets copyrighted to false (public domain)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be false
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value, a known death year, and an Authority with conflicting IP' do
+      let(:authority) { create(:authority, intellectual_property: :public_domain) }
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        recent_death_year = Time.zone.today.year - 50
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id,
+                                  deathdate: "#{recent_death_year}-01-01")
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'uses death year over Authority (sets copyrighted to true)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be true
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value and no death year but has an Authority' do
+      let(:authority) { create(:authority, intellectual_property: :public_domain) }
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        e.lex_item.update_columns(copyrighted: nil, authority_id: authority.id, deathdate: nil)
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'falls back to Authority (sets copyrighted to false for public_domain)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be false
       end
     end
   end
