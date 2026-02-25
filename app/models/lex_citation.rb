@@ -36,6 +36,11 @@ class LexCitation < ApplicationRecord
     return person_work&.title || subject
   end
 
+  # Returns true if the citation link was checked and returned a 4xx or 5xx status code.
+  def link_broken?
+    link_http_status.present? && link_http_status >= 400
+  end
+
   private
 
   def person_work_belongs_to_same_person
