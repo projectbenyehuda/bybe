@@ -199,6 +199,9 @@ en:
         description_section: Description
         toc_section: Table of Contents
         az_navbar_section: A-Z Navigation
+      broken_link:
+        badge: "Broken link (HTTP %{status})"
+        unchecked_badge: "Link not checked"
       messages:
         progress_saved: Progress saved successfully
         entry_verified: Entry verified successfully
