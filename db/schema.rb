@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_16_084459) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_25_003719) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -650,7 +650,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_16_084459) do
   end
 
   create_table "lex_entries", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.string "title"
+    t.string "title", limit: 1024
     t.integer "status"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
@@ -665,7 +665,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_16_084459) do
     t.index ["profile_image_id"], name: "index_lex_entries_on_profile_image_id"
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"
-    t.index ["title"], name: "index_lex_entries_on_title"
+    t.index ["title"], name: "index_lex_entries_on_title", length: 191
   end
 
   create_table "lex_files", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -703,7 +703,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_16_084459) do
     t.string "new_path", null: false
     t.bigint "lex_entry_id", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
