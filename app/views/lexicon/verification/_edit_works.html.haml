@@ -148,7 +148,7 @@
                         %span.fw-bold= proposed_match[:publication_title]
                         %span.similarity-badge #{proposed_match[:similarity]}%
                       .proposed-match-actions
-                        %button.btn-confirm-match{ title: 'Confirm match', data: { action: 'confirm' } } ✓
+                        %button.btn-confirm-match{ title: t('lexicon.verification.edit.confirm_match'), data: { action: 'confirm' } } ✓
                         %button.btn-reject-match{ title: 'Reject match', data: { action: 'reject' } } ✕
                   - elsif w.publication
                     = link_to w.publication.title, publication_path(w.publication),
@@ -158,7 +158,7 @@
                 %td{ id: "collection-cell-#{w.id}" }
                   - proposed_match = proposed_matches[w.id]
                   - if proposed_match && proposed_match[:collection_title]
-                    .text-muted.small (proposed: #{proposed_match[:collection_title]})
+                    .text-muted.small= t('lexicon.verification.edit.proposed_collection', title: proposed_match[:collection_title])
                   - elsif w.collection
                     = link_to w.collection.title, collection_path(w.collection),
                               title: w.collection.title,

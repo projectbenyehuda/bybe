@@ -153,6 +153,9 @@ he:
           draft: טיוטה
           verifying: בבדיקה
           error: שגיאה
+          person: יוצר/ת
+          publication: פרסום
+        time_updated: "לפני %{time}"
       show:
         title: "אימות: %{entry_title}"
         back_to_queue: חזור לרשימה
@@ -191,6 +194,7 @@ he:
         remove_attachment: הסר קובץ
         profile_image_badge: תמונת פרופיל
         use_as_profile: הצג כתמונת פרופיל
+        unsupported_type: "סוג פריט לא נתמך: %{type}"
         verified: בדוק
         not_verified: לא בדוק
         mark_verified: סמן כבדוק
@@ -204,6 +208,16 @@ he:
         description_section: תיאור
         toc_section: תוכן עניינים
         az_navbar_section: ניווט א-ב
+        no_biography: "(אין ביוגרפיה)"
+        no_works: "(אין יצירות)"
+        no_citations: "(אין מראי מקום)"
+        no_links: "(אין קישורים)"
+        no_attachments: "(אין קבצים מצורפים)"
+        no_description: "(אין תיאור)"
+        no_toc: "(אין תוכן עניינים)"
+        no_az_navbar: "(אין ניווט א-ב)"
+        citation_from_publication: "ממקור:"
+        citation_pages: "עמ׳:"
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
         entry_verified: הערך אומת בהצלחה
@@ -219,3 +233,5 @@ he:
         auto_matched_works:
           one: "יצירה אחת הותאמה אוטומטית לפרסומים בהתבסס על דמיון בכותרת"
           other: "%{count} יצירות הותאמו אוטומטית לפרסומים בהתבסס על דמיון בכותרת"
+        confirm_match: אשר התאמה
+        proposed_collection: "(הצעה: %{title})"
