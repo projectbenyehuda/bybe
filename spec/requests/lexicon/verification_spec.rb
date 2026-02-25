@@ -126,6 +126,40 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       end
     end
 
+    context 'when LexPerson has no copyrighted value and died exactly 70 years ago (boundary: last copyrighted year)' do
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        death_year = Time.zone.today.year - 70
+        e.lex_item.update_columns(copyrighted: nil, authority_id: nil, deathdate: "#{death_year}-01-01")
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'sets copyrighted to true (70 < 71)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be true
+      end
+    end
+
+    context 'when LexPerson has no copyrighted value and died exactly 71 years ago (boundary: first public domain year)' do
+      let(:entry) do
+        e = create(:lex_entry, :person, status: :verifying)
+        death_year = Time.zone.today.year - 71
+        e.lex_item.update_columns(copyrighted: nil, authority_id: nil, deathdate: "#{death_year}-01-01")
+        e.start_verification!('editor@example.com')
+        e
+      end
+
+      it 'sets copyrighted to false (71 is not < 71)' do
+        get "/lex/verification/#{entry.id}"
+
+        entry.lex_item.reload
+        expect(entry.lex_item.copyrighted).to be false
+      end
+    end
+
     context 'when LexPerson has no copyrighted value and died 71 or more years ago' do
       let(:entry) do
         e = create(:lex_entry, :person, status: :verifying)
