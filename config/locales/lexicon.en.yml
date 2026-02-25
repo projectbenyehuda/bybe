@@ -224,6 +224,13 @@ en:
         work_match_confirmed: Work matched to publication successfully
         attachment_removed: Attachment removed
         error_removing_attachment: Error removing attachment
+        error_saving_progress: Error saving progress
+        profile_image_set: Profile image set successfully
+        error_setting_profile_image: Error setting profile image
+        error_updating_checklist: Error updating checklist
+        saved: Saved
+        verified_badge: "✓ Verified"
+        not_verified_badge: Not Verified
       edit:
         mark_as_verified: Mark this section as verified
         mark_all_works_verified: Mark all works as verified

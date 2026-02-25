@@ -36,10 +36,11 @@ function initVerification() {
                 overall_notes: notes
             },
             success: function(data) {
-                showToast(data.message || 'התקדמות נשמרה');
+                showToast(data.message || container.data('progress-saved-text'));
             },
             error: function(xhr) {
-                alert('Error saving progress: ' + xhr.status);
+                var statusInfo = xhr && xhr.status ? ' (' + xhr.status + ')' : '';
+                showToast((container.data('error-saving-progress-text') || 'Error saving progress') + statusInfo);
             }
         });
     });
@@ -80,8 +81,9 @@ function initVerification() {
             },
             success: function(data) {
                 // Update all attachment buttons to show as not selected
+                var useAsProfileText = container.data('use-as-profile-text') || 'Use as Profile';
                 $('[data-action="click->verification#setProfileImage"]').each(function() {
-                    $(this).removeClass('btn-primary').addClass('btn-outline-primary').text('Use as Profile');
+                    $(this).removeClass('btn-primary').addClass('btn-outline-primary').text(useAsProfileText);
                 });
 
                 // Update clicked button to show as selected
@@ -100,11 +102,11 @@ function initVerification() {
                 $('#attachment-' + attachmentId + ' .attachment-info')
                     .append('<span class="badge profile-image-badge bg-primary ms-2">' + profileImageBadgeText + '</span>');
 
-                showToast('Profile image set successfully');
+                showToast(container.data('profile-image-set-text') || 'Profile image set successfully');
             },
             error: function(xhr) {
-                var statusInfo = xhr && xhr.status ? ' (status ' + xhr.status + ')' : '';
-                showToast('Error setting profile image' + statusInfo);
+                var statusInfo = xhr && xhr.status ? ' (' + xhr.status + ')' : '';
+                showToast((container.data('error-setting-profile-image-text') || 'Error setting profile image') + statusInfo);
             }
         });
     });
@@ -208,6 +210,7 @@ function initVerification() {
 }
 
 function updateChecklistItem(url, path, verified, sectionId, callback) {
+    const container = $('.verification-container');
     $.ajax({
         url: url,
         type: 'PATCH',
@@ -233,19 +236,19 @@ function updateChecklistItem(url, path, verified, sectionId, callback) {
                         section.find('.verification-badge')
                             .removeClass('not-verified')
                             .addClass('verified')
-                            .text('✓ מאומת');
+                            .text(container.data('verified-badge-text') || '✓ Verified');
                     } else {
                         section.removeClass('verified').addClass('not-verified');
                         section.find('.verification-badge')
                             .removeClass('verified')
                             .addClass('not-verified')
-                            .text('לא אומת');
+                            .text(container.data('not-verified-badge-text') || 'Not Verified');
                     }
                 }
             }
 
             // Show toast
-            showToast('נשמר');
+            showToast(container.data('saved-text') || 'Saved');
 
             // Call callback if provided
             if (callback && typeof callback === 'function') {
@@ -253,7 +256,8 @@ function updateChecklistItem(url, path, verified, sectionId, callback) {
             }
         },
         error: function(xhr) {
-            alert('Error updating checklist: ' + xhr.status);
+            var statusInfo = xhr && xhr.status ? ' (' + xhr.status + ')' : '';
+            showToast((container.data('error-updating-checklist-text') || 'Error updating checklist') + statusInfo);
         }
     });
 }
@@ -291,6 +295,7 @@ function showToast(message) {
 
 // Callback for when a section is edited and saved
 function onSectionEditSuccess(sectionId) {
+    const container = $('.verification-container');
     return function(data, status, xhr) {
         if (data.success) {
             // Update progress bar if percentage provided
@@ -306,7 +311,7 @@ function onSectionEditSuccess(sectionId) {
                 section.find('.verification-badge')
                     .removeClass('not-verified')
                     .addClass('verified')
-                    .text('✓ מאומת');
+                    .text(container.data('verified-badge-text') || '✓ Verified');
             }
 
             // Update the corresponding checklist checkbox
@@ -325,7 +330,7 @@ function onSectionEditSuccess(sectionId) {
             }
 
             // Show success message
-            showToast(data.message || 'נשמר בהצלחה');
+            showToast(data.message || container.data('section-updated-text'));
 
             // Reload the page to show updated content
             // This ensures the section content is refreshed with the new data
