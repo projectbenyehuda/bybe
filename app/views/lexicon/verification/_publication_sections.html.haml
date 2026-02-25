@@ -29,7 +29,7 @@
     - if item.description.present?
       .description-content!= MarkdownToHtml.call(item.description)
     - else
-      %p.text-muted (No description)
+      %p.text-muted= t('lexicon.verification.sections.no_description')
   .section-actions
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'description')}', onSectionEditSuccess('section-description'))"}
       ✏️
@@ -48,7 +48,7 @@
     - if item.toc.present?
       .toc-content!= MarkdownToHtml.call(item.toc)
     - else
-      %p.text-muted (No table of contents)
+      %p.text-muted= t('lexicon.verification.sections.no_toc')
   .section-actions
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'toc')}', onSectionEditSuccess('section-toc'))"}
       ✏️
@@ -67,7 +67,7 @@
     - if item.az_navbar.present?
       .az-navbar-content!= MarkdownToHtml.call(item.az_navbar)
     - else
-      %p.text-muted (No A-Z navigation)
+      %p.text-muted= t('lexicon.verification.sections.no_az_navbar')
   .section-actions
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'az_navbar')}', onSectionEditSuccess('section-az-navbar'))"}
       ✏️
@@ -104,7 +104,7 @@
               ✓
               = t('lexicon.verification.migrated.mark_verified')
     - else
-      %p.text-muted (No links)
+      %p.text-muted= t('lexicon.verification.sections.no_links')
   .section-actions
     = link_to t('lexicon.verification.migrated.add_link'), new_lexicon_entry_link_path(entry), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href);"
 
@@ -125,12 +125,15 @@
             = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank'
             %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
             - if entry.profile_image_id == attachment.id
-              %span.badge.profile-image-badge.bg-primary.ms-2 Profile Image
+              %span.badge.profile-image-badge.bg-primary.ms-2= t('lexicon.verification.migrated.profile_image_badge')
           .attachment-actions.mt-2
             %button.btn.btn-sm{class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: {action: 'click->verification#setProfileImage', 'attachment-id': attachment.id}}
-              = entry.profile_image_id == attachment.id ? '✓ Profile Image' : 'Use as Profile'
+              - if entry.profile_image_id == attachment.id
+                = '✓ ' + t('lexicon.verification.migrated.profile_image_badge')
+              - else
+                = t('lexicon.verification.migrated.use_as_profile')
     - else
-      %p.text-muted (No attachments)
+      %p.text-muted= t('lexicon.verification.sections.no_attachments')
   .section-actions
     = link_to t('lexicon.verification.migrated.upload_file'), lexicon_entry_attachments_path(entry), class: 'btn btn-sm btn-success'
     %button.btn.btn-sm{class: checklist['attachments']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: 'attachments'}}

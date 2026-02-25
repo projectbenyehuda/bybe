@@ -116,7 +116,7 @@
     - if item.bio.present?
       .bio-content!= MarkdownToHtml.call(item.bio)
     - else
-      %p.text-muted (No biography)
+      %p.text-muted= t('lexicon.verification.sections.no_biography')
   .section-actions
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'bio')}', onSectionEditSuccess('section-bio'))"}
       ✏️
@@ -138,7 +138,7 @@
           - item.works.each do |work|
             %li!= render_person_work(work)
     - else
-      %p.text-muted (No works)
+      %p.text-muted= t('lexicon.verification.sections.no_works')
   .section-actions
     %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', onSectionEditSuccess('section-works'))"}
       ✏️
@@ -159,7 +159,7 @@
     - if item.citations.any?
       - item.citations.group_by(&:subject_title).each do |subject, citations|
         .citation-group.mb-3
-          %h6.subject-header= subject.present? ? subject : 'General'
+          %h6.subject-header= subject.presence || t('lexicon.citations.header.general')
           - citations.each do |citation|
             .citation-card{ id: "citation-#{citation.id}", class: citation_card_css(citation, checklist) }
               .citation-content
@@ -173,12 +173,12 @@
                 - if citation.from_publication.present?
                   %br
                   %span.text-muted
-                    From:
+                    = t('lexicon.verification.sections.citation_from_publication')
                     = citation.from_publication
                 - if citation.pages.present?
                   %br
                   %span.text-muted
-                    Pages:
+                    = t('lexicon.verification.sections.citation_pages')
                     = citation.pages
                 - if citation.link.present?
                   %br
@@ -194,7 +194,7 @@
                   ✓
                   = t('lexicon.verification.migrated.mark_verified')
     - else
-      %p.text-muted (No citations)
+      %p.text-muted= t('lexicon.verification.sections.no_citations')
   .section-actions
     = link_to t('lexicon.verification.migrated.add_citation'), new_lexicon_person_citation_path(item), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href);"
 
@@ -226,7 +226,7 @@
               ✓
               = t('lexicon.verification.migrated.mark_verified')
     - else
-      %p.text-muted (No links)
+      %p.text-muted= t('lexicon.verification.sections.no_links')
   .section-actions
     = link_to t('lexicon.verification.migrated.add_link'), new_lexicon_entry_link_path(entry), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href);"
 
@@ -258,7 +258,7 @@
                                                                 'attachment-id': attachment.id } }
               = t('lexicon.verification.migrated.remove_attachment')
     - else
-      %p.text-muted (No attachments)
+      %p.text-muted= t('lexicon.verification.sections.no_attachments')
   .section-actions
     = link_to t('lexicon.verification.migrated.upload_file'), lexicon_entry_attachments_path(entry), class: 'btn btn-sm btn-success'
     %button.btn.btn-sm{class: checklist['attachments']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: 'attachments'}}

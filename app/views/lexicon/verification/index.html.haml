@@ -9,10 +9,10 @@
 
     .form-group.me-2
       = label_tag :type, t('lexicon.verification.queue.columns.type'), class: 'me-1'
-      - type_options = [[t('lexicon.verification.queue.filters.all'), ''], ['Person', 'LexPerson'], ['Publication', 'LexPublication']]
+      - type_options = [[t('lexicon.verification.queue.filters.all'), ''], [t('lexicon.verification.queue.filters.person'), 'LexPerson'], [t('lexicon.verification.queue.filters.publication'), 'LexPublication']]
       = select_tag :type, options_for_select(type_options, params[:type]), class: 'form-control'
 
-    = submit_tag 'Filter', class: 'btn btn-sm btn-primary'
+    = submit_tag t('lexicon.entries.index.filter'), class: 'btn btn-sm btn-primary'
 
 %table.table.table-striped.verification-queue-table
   %thead
@@ -40,8 +40,7 @@
           - else
             %span.text-muted 0%
         %td
-          = time_ago_in_words(entry.updated_at)
-          ago
+          = t('lexicon.verification.queue.time_updated', time: time_ago_in_words(entry.updated_at))
         %td
           - if entry.status_verifying?
             = link_to t('lexicon.verification.queue.actions.continue'), lexicon_verification_path(entry), class: 'btn btn-sm btn-primary'
