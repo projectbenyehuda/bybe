@@ -42,7 +42,9 @@ module Lexicon
       # Otherwise fall back to copying from the linked Authority.
       if @item.is_a?(LexPerson) && @item.copyrighted.nil?
         years_ago = @item.died_years_ago
-        if years_ago > 0
+        death_year = @item.death_year
+
+        if death_year.present?
           @item.update!(copyrighted: years_ago < 71)
         elsif @item.authority.present?
           @item.update!(copyrighted: authority_copyrighted?(@item.authority.intellectual_property))
