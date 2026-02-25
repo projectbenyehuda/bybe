@@ -213,6 +213,9 @@ en:
         no_az_navbar: "(No A-Z navigation)"
         citation_from_publication: "From:"
         citation_pages: "Pages:"
+      broken_link:
+        badge: "Broken link (HTTP %{status})"
+        unchecked_badge: "Link not checked"
       messages:
         progress_saved: Progress saved successfully
         entry_verified: Entry verified successfully

@@ -218,6 +218,9 @@ he:
         no_az_navbar: "(אין ניווט א-ב)"
         citation_from_publication: "ממקור:"
         citation_pages: "עמ׳:"
+      broken_link:
+        badge: "קישור שבור (HTTP %{status})"
+        unchecked_badge: "קישור לא נבדק"
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
         entry_verified: הערך אומת בהצלחה

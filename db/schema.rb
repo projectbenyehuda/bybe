@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_25_003719) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_25_010000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -643,6 +643,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_003719) do
     t.bigint "lex_person_id", null: false
     t.bigint "lex_person_work_id"
     t.integer "seqno", null: false
+    t.integer "link_http_status"
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
     t.index ["lex_person_work_id"], name: "index_lex_citations_on_lex_person_work_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
@@ -714,6 +715,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_003719) do
     t.bigint "item_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "http_status"
     t.index ["item_type", "item_id"], name: "index_lex_links_on_item_type_and_item_id"
   end
 
