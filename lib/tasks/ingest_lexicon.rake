@@ -171,3 +171,66 @@ task reset_lexicon_ingestion: :environment do
   end
   puts 'Done.'
 end
+
+def download_file(src, fname)
+  # removing website prefix if provided (legacy files should use relative paths only but who knows...)
+  src = src.gsub(%r{\Ahttp(s)?://#{Lexicon::OLD_LEXICON_PATH}/}, '')
+  # Adding escaping if needed
+  src = URI.uri_escape(src)
+
+  match = src.match(Lexicon::MigrateAttachment::LEXICON_FILES_REGEX)
+  unless match
+    @ignored_links << src unless src.start_with?('http')
+    return
+  end
+  full_url = Lexicon::OLD_LEXICON_URL + '/' + src
+  URI.parse(full_url).open
+rescue OpenURI::HTTPError => e
+  @failed_links << [src, fname, e.message]
+  puts "Failed to download file: #{src}, error: #{e.message}"
+end
+
+task :check_lexicon_attachments, [:dirname] => :environment do |_taskname, args|
+  puts 'Trying to download all attachments referenced in Lexicon...'
+
+  @failed_links = []
+  @ignored_links = Set.new
+
+  thedir = args.dirname
+  die "no such directory #{thedir}" unless Dir.exist?(thedir)
+  files = Dir.glob(thedir + '/*.php')
+  puts "Reading #{@total} files... "
+  files.each.with_index do |fname|
+    next if IGNORE_LIST.include?(fname[(fname.rindex('/') + 1)..])
+    puts "Processing #{fname}..."
+
+    html_doc = File.open(fname) { |f| Nokogiri::HTML(f) }
+
+    html_doc.css('img').each do |img|
+      src = img['src']
+      download_file(src, fname)
+    end
+
+    html_doc.css('a').each do |tag|
+      href = tag['href']
+      next if href.blank?
+
+      next if href[0] == '#' # local href
+
+      download_file(href, fname)
+    end
+
+  rescue ArgumentError => e
+    puts "\n#{e} unexpected error in #{fname}. "
+  end
+
+  @ignored_links.each do |link|
+    puts "Ignored: #{link}"
+  end
+  puts "Total ignored links: #{@ignored_links.size}"
+  puts '--------------'
+  @failed_links.each do |link, fname, error|
+    puts "Failed to download: #{link}, referenced in #{fname}, error: #{error}"
+  end
+  puts "Total failed links: #{@failed_links.size}"
+end
