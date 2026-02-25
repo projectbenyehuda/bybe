@@ -118,12 +118,13 @@ function initVerification() {
 
         $.ajax({
             url: removeAttachmentUrl,
-            type: 'DELETE',
+            type: 'POST',
             dataType: 'json',
             headers: {
                 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
             },
             data: {
+                _method: 'delete',
                 attachment_id: attachmentId
             },
             success: function() {
