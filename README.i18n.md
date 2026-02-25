@@ -104,7 +104,7 @@ and in view use human_attribute_name method:
 Rails does not provide out-of-the box solution for Enum internationalization, so we use
 [human_enum_name](https://github.com/jkostolansky/human_enum_name) gem for that.
 
-E.g. if we have
+E.g. if we have an `Ingestible` class with enum declared like this:
 ```ruby
 enum :status, { draft: 0, ingested: 1, failed: 2, awaiting_authorities: 3 }
 ```
@@ -113,11 +113,12 @@ We can provide translations for enum values like this:
 he:
   activerecord:
     attributes:
-      statuses:
-        awaiting_authorities: ממתינה ליצירת אישים
-        draft: טיוטה בעבודה
-        ingested: נקלטה בקטלוג
-        failed: ההעלאה נכשלה
+      ingestible:
+        statuses:
+          awaiting_authorities: ממתינה ליצירת אישים
+          draft: טיוטה בעבודה
+          ingested: נקלטה בקטלוג
+          failed: ההעלאה נכשלה
 ```
 And then use in code:
 ```ruby
