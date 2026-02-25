@@ -161,7 +161,9 @@
         .citation-group.mb-3
           %h6.subject-header= subject.present? ? subject : 'General'
           - citations.each do |citation|
-            .citation-card{id: "citation-#{citation.id}", class: checklist['citations']&.dig('items', citation.id.to_s, 'verified') ? 'verified' : 'not-verified'}
+            - citation_css = checklist['citations']&.dig('items', citation.id.to_s, 'verified') ? 'verified' : 'not-verified'
+            - citation_css = "#{citation_css} broken-link" if citation.link_broken?
+            .citation-card{id: "citation-#{citation.id}", class: citation_css}
               .citation-content
                 - if citation.title.present?
                   %strong= citation.title
@@ -182,6 +184,8 @@
                     = citation.pages
                 - if citation.link.present?
                   %br
+                  - if citation.link_broken?
+                    %span.broken-link-badge= t('lexicon.verification.broken_link.badge', status: citation.link_http_status)
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
               .citation-actions.mt-2
                 %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_citation_path(citation)}', onSectionEditSuccess('section-citations'))"}
@@ -206,8 +210,12 @@
   .section-content
     - if item.links.any?
       - item.links.each do |link|
-        .link-card{id: "link-#{link.id}", class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'verified' : 'not-verified'}
+        - link_css = checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'verified' : 'not-verified'
+        - link_css = "#{link_css} broken-link" if link.broken?
+        .link-card{id: "link-#{link.id}", class: link_css}
           .link-content
+            - if link.broken?
+              %span.broken-link-badge= t('lexicon.verification.broken_link.badge', status: link.http_status)
             = link_to link.url, link.url, target: '_blank'
             - if link.description.present?
               %br

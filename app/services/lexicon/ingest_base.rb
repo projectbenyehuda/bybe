@@ -16,6 +16,9 @@ module Lexicon
       lex_entry.status_draft!
 
       lex_file.status_ingested!
+
+      Lexicon::CheckExternalLinks.call(lex_entry)
+
       lex_entry
     end
 
