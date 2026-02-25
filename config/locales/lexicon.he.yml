@@ -18,6 +18,10 @@ he:
   classified: זוהה סוג הערך
   unclassified: לא זוהה סוג הערך
   lexicon:
+    layout:
+      entries: ערכי הלקסיקון
+      files: קבצים להסבה
+      title: לקסיקון הספרות העברית החדשה - ממשק ניהול
     entries:
       destroy:
         success: רשומת לקסיקון נמחקה
