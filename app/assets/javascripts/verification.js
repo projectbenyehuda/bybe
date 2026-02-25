@@ -129,10 +129,11 @@ function initVerification() {
             },
             success: function() {
                 $('#attachment-' + attachmentId).remove();
-                showToast('Attachment removed');
+                showToast(container.data('attachment-removed-text') || 'Attachment removed');
             },
             error: function(xhr) {
-                showToast('Error removing attachment: ' + xhr.status);
+                var statusInfo = xhr && xhr.status ? ' (' + xhr.status + ')' : '';
+                showToast((container.data('error-removing-attachment-text') || 'Error removing attachment') + statusInfo);
             }
         });
     });

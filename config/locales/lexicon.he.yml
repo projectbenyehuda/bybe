@@ -227,6 +227,8 @@ he:
         section_updated: הקטע עודכן בהצלחה
         verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
         work_match_confirmed: היצירה הותאמה לפרסום בהצלחה
+        attachment_removed: הקובץ הוסר
+        error_removing_attachment: שגיאה בהסרת הקובץ
       edit:
         mark_as_verified: סמן קטע זה כמאומת
         mark_all_works_verified: סמן את כל היצירות כמאומתות

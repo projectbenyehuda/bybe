@@ -46,7 +46,9 @@
                      'verification-save-progress-url': lexicon_save_progress_verification_path(@entry),
                      'verification-set-profile-image-url': lexicon_set_profile_image_verification_path(@entry),
                      'verification-remove-attachment-url': lexicon_remove_attachment_verification_path(@entry),
-                     'profile-image-badge-text': t('lexicon.entries.show.profile_image_badge') }
+                     'profile-image-badge-text': t('lexicon.entries.show.profile_image_badge'),
+                     'attachment-removed-text': t('lexicon.verification.messages.attachment_removed'),
+                     'error-removing-attachment-text': t('lexicon.verification.messages.error_removing_attachment') }
 .verification-container{ data: container_data }
   .verification-checklist
     = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item
