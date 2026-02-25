@@ -161,7 +161,7 @@
         .citation-group.mb-3
           %h6.subject-header= subject.present? ? subject : 'General'
           - citations.each do |citation|
-            .citation-card{id: "citation-#{citation.id}", class: checklist['citations']&.dig('items', citation.id.to_s, 'verified') ? 'verified' : 'not-verified'}
+            .citation-card{ id: "citation-#{citation.id}", class: citation_card_css(citation, checklist) }
               .citation-content
                 - if citation.title.present?
                   %strong= citation.title
@@ -182,6 +182,9 @@
                     = citation.pages
                 - if citation.link.present?
                   %br
+                  - if citation.link_broken?
+                    - broken_badge = t('lexicon.verification.broken_link.badge', status: citation.link_http_status)
+                    %span.broken-link-badge= broken_badge
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
               .citation-actions.mt-2
                 %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_citation_path(citation)}', onSectionEditSuccess('section-citations'))"}
@@ -206,8 +209,11 @@
   .section-content
     - if item.links.any?
       - item.links.each do |link|
-        .link-card{id: "link-#{link.id}", class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'verified' : 'not-verified'}
+        .link-card{ id: "link-#{link.id}", class: link_card_css(link, checklist['links']) }
           .link-content
+            - if link.broken?
+              - broken_badge = t('lexicon.verification.broken_link.badge', status: link.http_status)
+              %span.broken-link-badge= broken_badge
             = link_to link.url, link.url, target: '_blank'
             - if link.description.present?
               %br
