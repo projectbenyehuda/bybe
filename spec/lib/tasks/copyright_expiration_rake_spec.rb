@@ -16,6 +16,13 @@ RSpec.describe 'copyright_expiration rake task' do
 
   before do
     task.reenable # Allow the task to be run multiple times
+    # Bypass Chewy's :atomic strategy to avoid Elasticsearch writes in tests.
+    # The rake task explicitly uses Chewy.strategy(:atomic) { ... }, which overrides
+    # the global :bypass set in rails_helper. We intercept block-form calls and just
+    # yield the block so ActiveRecord updates still happen without hitting ES.
+    allow(Chewy).to receive(:strategy).and_wrap_original do |original, name = nil, &block|
+      block ? block.call : original.call(name)
+    end
   end
 
   describe 'dry-run mode (default)' do
