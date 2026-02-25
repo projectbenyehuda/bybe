@@ -13,6 +13,8 @@ describe Lexicon::CheckExternalLinks do
   before do
     # WebMock blocks all real HTTP connections in tests; we stub selectively below.
     WebMock.disable_net_connect!(allow_localhost: true)
+    # Default: allow Resolv to resolve stubbed hostnames to a public IP.
+    allow(Resolv).to receive(:getaddresses).and_return(['93.184.216.34'])
   end
 
   context 'when entry has no lex_item' do
@@ -127,7 +129,8 @@ describe Lexicon::CheckExternalLinks do
       stub_request(:head, 'http://unreachable.example.com/').to_raise(Errno::ECONNREFUSED)
     end
 
-    it 'leaves http_status as nil (unchecked)' do
+    it 'writes nil to http_status (clears any stale value)' do
+      link.update_column(:http_status, 200) # simulate prior check
       call
       expect(link.reload.http_status).to be_nil
     end
@@ -136,7 +139,7 @@ describe Lexicon::CheckExternalLinks do
   context 'with an invalid URL' do
     let!(:link) { create(:lex_link, item: person, url: 'not-a-url') }
 
-    it 'leaves http_status as nil and does not raise' do
+    it 'writes nil and does not raise' do
       expect { call }.not_to raise_error
       expect(link.reload.http_status).to be_nil
     end
@@ -145,9 +148,52 @@ describe Lexicon::CheckExternalLinks do
   context 'with a non-HTTP URL (e.g. mailto:)' do
     let!(:link) { create(:lex_link, item: person, url: 'mailto:someone@example.com') }
 
-    it 'leaves http_status as nil' do
+    it 'writes nil' do
       expect { call }.not_to raise_error
       expect(link.reload.http_status).to be_nil
+    end
+  end
+
+  context 'with SSRF protection against private/loopback addresses' do
+    context 'when the URL resolves to a loopback address (127.0.0.1)' do
+      let!(:link) { create(:lex_link, item: person, url: 'http://internal.example.com/secret') }
+
+      before do
+        allow(Resolv).to receive(:getaddresses).with('internal.example.com').and_return(['127.0.0.1'])
+      end
+
+      it 'does not make an HTTP request and writes nil' do
+        call
+        assert_not_requested(:any, 'http://internal.example.com/secret')
+        expect(link.reload.http_status).to be_nil
+      end
+    end
+
+    context 'when the URL resolves to a private RFC1918 address' do
+      let!(:link) { create(:lex_link, item: person, url: 'http://private.example.com/data') }
+
+      before do
+        allow(Resolv).to receive(:getaddresses).with('private.example.com').and_return(['192.168.1.100'])
+      end
+
+      it 'does not connect and writes nil' do
+        call
+        expect(link.reload.http_status).to be_nil
+      end
+    end
+
+    context 'when DNS resolution fails' do
+      let!(:link) { create(:lex_link, item: person, url: 'http://nonexistent.example.com/') }
+
+      before do
+        allow(Resolv).to receive(:getaddresses).with('nonexistent.example.com')
+                                               .and_raise(Resolv::ResolvError)
+      end
+
+      it 'does not connect and writes nil' do
+        call
+        expect(link.reload.http_status).to be_nil
+      end
     end
   end
 
@@ -189,6 +235,21 @@ describe Lexicon::CheckExternalLinks do
     let!(:citation) { create(:lex_citation, person: person, link: nil) }
 
     it 'does not check and leaves link_http_status nil' do
+      call
+      expect(citation.reload.link_http_status).to be_nil
+    end
+  end
+
+  context 'when citation check fails (network error)' do
+    let(:citation) { create(:lex_citation, person: person, link: 'http://example.com/cit-fail') }
+
+    before do
+      citation
+      stub_request(:head, 'http://example.com/cit-fail').to_raise(Errno::ECONNREFUSED)
+    end
+
+    it 'writes nil to link_http_status (clears any stale value)' do
+      citation.update_column(:link_http_status, 200) # simulate prior check
       call
       expect(citation.reload.link_http_status).to be_nil
     end

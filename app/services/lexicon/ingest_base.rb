@@ -17,7 +17,7 @@ module Lexicon
 
       lex_file.status_ingested!
 
-      Lexicon::CheckExternalLinks.call(lex_entry)
+      Lexicon::CheckExternalLinksJob.perform_async(lex_entry.id)
 
       lex_entry
     end

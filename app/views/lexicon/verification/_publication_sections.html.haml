@@ -87,12 +87,11 @@
   .section-content
     - if item.links.any?
       - item.links.each do |link|
-        - link_css = checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'verified' : 'not-verified'
-        - link_css = "#{link_css} broken-link" if link.broken?
-        .link-card{id: "link-#{link.id}", class: link_css}
+        .link-card{ id: "link-#{link.id}", class: link_card_css(link, checklist['links']) }
           .link-content
             - if link.broken?
-              %span.broken-link-badge= t('lexicon.verification.broken_link.badge', status: link.http_status)
+              - broken_badge = t('lexicon.verification.broken_link.badge', status: link.http_status)
+              %span.broken-link-badge= broken_badge
             = link_to link.url, link.url, target: '_blank'
             - if link.description.present?
               %br
