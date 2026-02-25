@@ -26,7 +26,7 @@
           = msg
 
       %nav.navbar-expand-md.navbar-light.bg-light
-        %a.navbar-brand{ href: lexicon_root_path } Lexicon
+        %a.navbar-brand{ href: lexicon_root_path }= t('lexicon.layout.title')
         %button.navbar-toggler{ type: :button,
                                 data: { toggle: :collapse, target: '#navbarNavAltMarkup' },
                                 aria: { controls: 'navbarNavAltMarkup', expanded: false, label: 'Toggle navigation' } }
@@ -34,9 +34,10 @@
         .collapse.navbar-collapse#navbarNavAltMarkup
           .navbar-nav
             %a.nav-link{ class: (:active if controller_name == 'entries' && action_name == 'index'),
-                         href: lexicon_entries_path } Entries
+                         href: lexicon_entries_path }= t('lexicon.layout.entries')
+            = ' | '
             %a.nav-link{ class: (:active if controller_name == 'files' && action_name == 'index'),
-                         href: lexicon_files_path } Files
+                         href: lexicon_files_path }= t('lexicon.layout.files')
     %main.container-fluid
       = yield
       .modal#generalDlg{ tabindex: '-1', role: 'dialog', data: { keyboard: 'true', backdrop: 'true' } }
