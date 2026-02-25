@@ -149,7 +149,7 @@
                         %span.similarity-badge #{proposed_match[:similarity]}%
                       .proposed-match-actions
                         %button.btn-confirm-match{ title: t('lexicon.verification.edit.confirm_match'), data: { action: 'confirm' } } ✓
-                        %button.btn-reject-match{ title: 'Reject match', data: { action: 'reject' } } ✕
+                        %button.btn-reject-match{ title: t('lexicon.verification.edit.reject_match'), data: { action: 'reject' } } ✕
                   - elsif w.publication
                     = link_to w.publication.title, publication_path(w.publication),
                               title: w.publication.title,

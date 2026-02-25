@@ -229,4 +229,5 @@ en:
           one: "Auto-matched 1 work to publications based on title similarity"
           other: "Auto-matched %{count} works to publications based on title similarity"
         confirm_match: Confirm match
+        reject_match: Reject match
         proposed_collection: "(proposed: %{title})"
