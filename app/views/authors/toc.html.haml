@@ -49,6 +49,7 @@
                   %a.author-in-lexicon{href: "#lexicon_entry"}
                     = t(:to_lexicon_entry_on_x, x: @author.name)
                     .lexicon-logo
+                    = image_tag 'osu-logo.jpg', class: 'osu-partner-logo', alt: 'OSU'
               .author-works-by-type
                 - @author.cached_genre_stats.each do |pair|
                   - genre = pair[0]
