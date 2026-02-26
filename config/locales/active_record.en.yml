@@ -135,8 +135,15 @@ en:
         bio: Biographical synopsis
         books: Books
         authority: Authority
+        aliases: Aliases
+        copyrighted: Copyrighted
         gender: Gender
         intellectual_property: Copyright Status
+        genders:
+          male: Male
+          female: Female
+          other: Other
+          unknown: Unknown
       lex_person_work:
         title: Title
         work_type: Work Type

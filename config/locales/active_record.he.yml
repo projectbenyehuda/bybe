@@ -142,9 +142,16 @@ he:
         works: ספרים
         about: על המחבר%{gender_suffix} ויצירת%{gender_letter}
         links: קישוריוֹת
+        aliases: כינויים
+        copyrighted: מוגן זכויות יוצרים
         gender: מגדר
         authority: ישות במאגר
         intellectual_property: מצב זכויות יוצרים
+        genders:
+          male: זכר
+          female: נקבה
+          other: אחר
+          unknown: לא ידוע
       lex_person_work:
         title: כותרת
         work_type: סוג יצירה
