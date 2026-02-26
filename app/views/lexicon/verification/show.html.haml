@@ -46,7 +46,19 @@
                      'verification-save-progress-url': lexicon_save_progress_verification_path(@entry),
                      'verification-set-profile-image-url': lexicon_set_profile_image_verification_path(@entry),
                      'verification-remove-attachment-url': lexicon_remove_attachment_verification_path(@entry),
-                     'profile-image-badge-text': t('lexicon.entries.show.profile_image_badge') }
+                     'profile-image-badge-text': t('lexicon.entries.show.profile_image_badge'),
+                     'use-as-profile-text': t('lexicon.verification.migrated.use_as_profile'),
+                     'attachment-removed-text': t('lexicon.verification.messages.attachment_removed'),
+                     'error-removing-attachment-text': t('lexicon.verification.messages.error_removing_attachment'),
+                     'error-saving-progress-text': t('lexicon.verification.messages.error_saving_progress'),
+                     'profile-image-set-text': t('lexicon.verification.messages.profile_image_set'),
+                     'error-setting-profile-image-text': t('lexicon.verification.messages.error_setting_profile_image'),
+                     'error-updating-checklist-text': t('lexicon.verification.messages.error_updating_checklist'),
+                     'saved-text': t('lexicon.verification.messages.saved'),
+                     'verified-badge-text': t('lexicon.verification.messages.verified_badge'),
+                     'not-verified-badge-text': t('lexicon.verification.messages.not_verified_badge'),
+                     'progress-saved-text': t('lexicon.verification.messages.progress_saved'),
+                     'section-updated-text': t('lexicon.verification.messages.section_updated') }
 .verification-container{ data: container_data }
   .verification-checklist
     = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item
