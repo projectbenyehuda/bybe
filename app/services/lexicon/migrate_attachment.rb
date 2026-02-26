@@ -14,11 +14,14 @@ module Lexicon
 
       # Some links may contain optional anchor to specific part of the document
       anchor = match['anchor']
-
       if anchor.present?
         # If anchor present we remove it from the URL
-        src = src.gsub("##{anchor}", '')
+        src = src.gsub(/##{anchor}\z/, '')
       end
+
+      # Sometime URI comes only partially escaped (escaped whitespaces, but not escaped Hebrew characters)
+      # So we unescape whole URI before processing to get fancy filename from it
+      src = URI.decode_www_form_component(src)
 
       link = LexLegacyLink.find_by(old_path: src)
 
@@ -36,17 +39,10 @@ module Lexicon
         end
 
         full_url = "#{Lexicon::OLD_LEXICON_URL}/#{src}"
+        filename = File.basename(File.basename(src))
 
-        filename = File.basename(src)
-
-        uri = begin
-          URI.parse(full_url)
-        rescue URI::InvalidURIError
-          # Most likely filename contains Hebrew characters we need to escape.
-          # Unfortunately sometimes such filenames can contain already escaped whitespaces, so we unescape them
-          # first and then escape whole URL
-          URI.parse(URI.uri_escape(full_url.gsub('%20', ' ')))
-        end
+        # We know URL should not contain escaped characters at this point so we can safely escape whole URL
+        uri = URI.parse(URI.uri_escape(full_url))
 
         file_entry.attachments.attach(io: uri.open, filename: filename)
         new_path = file_entry.download_path(filename)

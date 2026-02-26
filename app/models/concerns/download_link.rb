@@ -6,9 +6,12 @@ module DownloadLink
   extend ActiveSupport::Concern
 
   def download_path(filename)
-    Rails.application.routes.url_helpers.file_download_path(
+    path = Rails.application.routes.url_helpers.file_download_path(
       record_type: file_entry_type, record_id: id, filename: filename
     )
+
+    # Unescape URI, so user can see Hebrew filenames
+    URI.decode_www_form_component(path)
   end
 
   private

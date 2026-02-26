@@ -19,7 +19,7 @@ describe Lexicon::MigrateAttachment do
                              .and change { entry.legacy_links.count }.by(1)
         link = entry.legacy_links.last
         expect(link.old_path).to eq('03127-files/image002.jpg')
-        expect(link.new_path).to be_present
+        expect(link.new_path).to eq("/files/lex/#{entry.id}/image002.jpg")
         expect(call).to eq(link.new_path)
       end
 
@@ -32,7 +32,7 @@ describe Lexicon::MigrateAttachment do
                                                                .and change { entry.legacy_links.count }.by(1)
           link = entry.legacy_links.last
           expect(link.old_path).to eq('03127-files/image002.jpg') # no anchor
-          expect(link.new_path).to be_present
+          expect(link.new_path).to eq("/files/lex/#{entry.id}/image002.jpg")
           expect(call).to eq("#{link.new_path}#test_anchor") # anchor included
         end
       end
@@ -43,7 +43,7 @@ describe Lexicon::MigrateAttachment do
         expect { call }.to change { lex_entry.attachments.count }.by(1).and change { lex_entry.legacy_links.count }.by(1)
         link = lex_entry.legacy_links.last
         expect(link.old_path).to eq('03127-files/image002.jpg')
-        expect(link.new_path).to be_present
+        expect(link.new_path).to eq("/files/lex/#{lex_entry.id}/image002.jpg")
         expect(call).to eq link.new_path
       end
     end
@@ -86,7 +86,7 @@ describe Lexicon::MigrateAttachment do
 
       link = lex_entry.legacy_links.last
       expect(link.old_path).to eq('03127-files/image002.jpg')
-      expect(link.new_path).to be_present
+      expect(link.new_path).to eq("/files/lex/#{lex_entry.id}/image002.jpg")
       expect(call).to eq link.new_path
     end
   end
@@ -101,7 +101,7 @@ describe Lexicon::MigrateAttachment do
   end
 
   context 'when url with non-ASCII characters but escaped whitespaces is provided',
-          vcr: { cassette_name: 'lexicon/mirate_attachment/00693-hebrew' } do
+          vcr: { cassette_name: 'lexicon/migrate_attachment/00693-hebrew' } do
     let!(:lex_file) { create(:lex_file, fname: '00693.php') }
 
     let(:src) { '00693_files/ספרי%20דורות%20קודמים.pdf' }
@@ -111,8 +111,8 @@ describe Lexicon::MigrateAttachment do
       expect { call }.to change { entry.attachments.count }.by(1)
                                                            .and change { entry.legacy_links.count }.by(1)
       link = entry.legacy_links.last
-      expect(link.old_path).to eq('00693_files/ספרי%20דורות%20קודמים.pdf')
-      expect(link.new_path).to be_present
+      expect(link.old_path).to eq('00693_files/ספרי דורות קודמים.pdf')
+      expect(link.new_path).to eq("/files/lex/#{entry.id}/ספרי דורות קודמים.pdf")
       expect(call).to eq(link.new_path)
     end
   end
