@@ -227,6 +227,15 @@ he:
         section_updated: הקטע עודכן בהצלחה
         verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
         work_match_confirmed: היצירה הותאמה לפרסום בהצלחה
+        attachment_removed: הקובץ הוסר
+        error_removing_attachment: שגיאה בהסרת הקובץ
+        error_saving_progress: שגיאה בשמירת ההתקדמות
+        profile_image_set: תמונת הפרופיל הוגדרה בהצלחה
+        error_setting_profile_image: שגיאה בהגדרת תמונת הפרופיל
+        error_updating_checklist: שגיאה בעדכון רשימת הביקורת
+        saved: נשמר
+        verified_badge: "✓ מאומת"
+        not_verified_badge: לא אומת
       edit:
         mark_as_verified: סמן קטע זה כמאומת
         mark_all_works_verified: סמן את כל היצירות כמאומתות
