@@ -28,6 +28,8 @@ en:
         citations: Citations
         works: Works
         links: Links
+        show: Show
+        back: Back
       index:
         add_person: Add Person
         add_publication: Add Publication
