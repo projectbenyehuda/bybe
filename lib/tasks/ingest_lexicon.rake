@@ -175,16 +175,21 @@ end
 def download_file(src, fname)
   # removing website prefix if provided (legacy files should use relative paths only but who knows...)
   src = src.gsub(%r{\Ahttp(s)?://#{Lexicon::OLD_LEXICON_PATH}/}, '')
-  # Adding escaping if needed
-  src = URI.uri_escape(src)
 
   match = src.match(Lexicon::MigrateAttachment::LEXICON_FILES_REGEX)
   unless match
-    @ignored_links << src unless src.start_with?('http')
+    @ignored_links << src unless src.start_with?('http') || src.start_with?('hbe/') || src.match(/\d+\.php/)
     return
   end
   full_url = Lexicon::OLD_LEXICON_URL + '/' + src
-  URI.parse(full_url).open
+
+  uri = begin
+    URI.parse(full_url)
+  rescue URI::InvalidURIError
+    URI.parse(URI.uri_escape(full_url.gsub('%20', ' ')))
+  end
+
+  uri.open
 rescue OpenURI::HTTPError => e
   @failed_links << [src, fname, e.message]
   puts "Failed to download file: #{src}, error: #{e.message}"
@@ -200,8 +205,9 @@ task :check_lexicon_attachments, [:dirname] => :environment do |_taskname, args|
   die "no such directory #{thedir}" unless Dir.exist?(thedir)
   files = Dir.glob(thedir + '/*.php')
   puts "Reading #{@total} files... "
-  files.each.with_index do |fname|
+  files.each do |fname|
     next if IGNORE_LIST.include?(fname[(fname.rindex('/') + 1)..])
+
     puts "Processing #{fname}..."
 
     html_doc = File.open(fname) { |f| Nokogiri::HTML(f) }
@@ -219,9 +225,9 @@ task :check_lexicon_attachments, [:dirname] => :environment do |_taskname, args|
 
       download_file(href, fname)
     end
-
   rescue ArgumentError => e
     puts "\n#{e} unexpected error in #{fname}. "
+    puts e.backtrace.join("\n")
   end
 
   @ignored_links.each do |link|
