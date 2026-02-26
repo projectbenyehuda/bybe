@@ -21,9 +21,9 @@
     .tab-pane.fade#works{ data: { load_url: lexicon_person_works_path(@lex_entry.lex_item) } }
   .tab-pane.fade#links{ data: { load_url: lexicon_entry_links_path(@lex_entry) } }
 
-= link_to 'Show', lexicon_entry_path(@lex_entry)
+= link_to t('.show'), lexicon_entry_path(@lex_entry)
 \|
-= link_to 'Back', lexicon_entries_path
+= link_to t('.back'), lexicon_entries_path
 
 :javascript
   $(function() {

@@ -4,7 +4,7 @@
     = ef.input :title
     = ef.input :status do
       .form-control
-        %span.badge.badge-primary= @lex_person.entry.status
+        %span.badge.badge-primary= LexEntry.human_enum_name(:status, @lex_person.entry.status)
   = f.input :aliases, as: :text
   = f.input :authority,
             input_html: { value: @lex_person.authority&.name },
@@ -15,7 +15,8 @@
   = f.hidden_field :authority_id
 
   = f.input :copyrighted, as: :boolean
-  = f.input :gender, as: :select, collection: LexPerson.genders.keys, include_blank: false
+  - gender_options = LexPerson.genders.keys.map { |k| [LexPerson.human_enum_name(:gender, k), k] }
+  = f.input :gender, as: :select, collection: gender_options, include_blank: false
   = f.input :birthdate
   = f.input :deathdate
   = f.input :bio, as: :text, input_html: { rows: 20 }
