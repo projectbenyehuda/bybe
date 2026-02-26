@@ -45,10 +45,11 @@ Bybeconv::Application.routes.draw do
   end
 
   namespace :lexicon, path: :lex do # use path 'lex' to avoid conflict with old Lexicon hosted on benyehuda.org/lexicon
-    root to: 'entries#index'
+    root to: 'entries#list' # default to main public view
 
     # Public list of published entries
     match 'list', to: 'entries#list', as: :entries_list, via: %i(get post)
+    match 'admin', to: 'entries#index', as: :lex_backend, via: %i(get post)
 
     resources :people, only: %i(edit update new create) do
       collection do
