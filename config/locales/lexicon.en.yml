@@ -215,6 +215,7 @@ en:
         no_az_navbar: "(No A-Z navigation)"
         citation_from_publication: "From:"
         citation_pages: "Pages:"
+        count_mismatch: "Count mismatch: %{php_count} item(s) in the source file, but %{migrated_count} migrated. The mismatch may be justified and does not block verification."
       broken_link:
         badge: "Broken link (HTTP %{status})"
         unchecked_badge: "Link not checked"
