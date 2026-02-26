@@ -22,6 +22,7 @@
     .headline-books
       = t('lexicon.header.title')
       .lexicon-logo
+      = image_tag 'osu-logo.jpg', class: 'osu-partner-logo', alt: 'OSU'
     .peach2-lexicon
       .by-card-v02
         #lexicon-bio
@@ -29,9 +30,15 @@
           %p#lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
       #lexicon-works
         = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
-          %ul
-            - lex_person.works.split("\n").each do |book|
-              %li!= MarkdownToHtml.call(book)
+          - LexPersonWork.work_types.each_key do |work_type|
+            - works_of_type = lex_person.works.select { |work| work.work_type == work_type }
+            - next if works_of_type.empty?
+
+            - if work_type != 'original'
+              %h4= LexPersonWork.human_enum_name(:work_type, work_type)
+            %ul
+              - works_of_type.sort_by(&:seqno).each do |work|
+                %li!= render_person_work(work)
       #lexicon-about
         = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
           - lex_person.citations.group_by(&:subject).each do |subject, list|
