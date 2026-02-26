@@ -3,7 +3,7 @@
 module Lexicon
   # Service used to migrate attachments referenced on legacy lexicon pages into Ben Yehuda project
   class MigrateAttachment < ApplicationService
-    LEXICON_FILES_REGEX = %r{\A(?<file_id>\d+)(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png)(#(?<anchor>.*))?\z}.freeze
+    LEXICON_FILES_REGEX = %r{\A(?<file_id>\d+)(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png)(#(?<anchor>.*))?\z}
 
     def call(src, lex_entry)
       # removing website prefix if provided (legacy files should use relative paths only but who knows...)
@@ -22,7 +22,6 @@ module Lexicon
 
       link = LexLegacyLink.find_by(old_path: src)
 
-
       if link.nil?
         # Sometimes pages of publications uses images from people page, and vice versa.
         # So we try to attach file to the same entry as it was attached in the legacy system
@@ -39,7 +38,17 @@ module Lexicon
         full_url = "#{Lexicon::OLD_LEXICON_URL}/#{src}"
 
         filename = File.basename(src)
-        file_entry.attachments.attach(io: URI.parse(full_url).open, filename: filename)
+
+        uri = begin
+          URI.parse(full_url)
+        rescue URI::InvalidURIError
+          # Most likely filename contains Hebrew characters we need to escape.
+          # Unfortunately sometimes such filenames can contain already escaped whitespaces, so we unescape them
+          # first and then escape whole URL
+          URI.parse(URI.uri_escape(full_url.gsub('%20', ' ')))
+        end
+
+        file_entry.attachments.attach(io: uri.open, filename: filename)
         new_path = file_entry.download_path(filename)
         link = file_entry.legacy_links.create(old_path: src, new_path: new_path)
       end

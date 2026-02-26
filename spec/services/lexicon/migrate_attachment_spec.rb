@@ -70,7 +70,7 @@ describe Lexicon::MigrateAttachment do
 
         it 'returns new_path from existing LegacyLink with an anchor' do
           expect { call }.to not_change(ActiveStorage::Blob, :count)
-                               .and(not_change(LexLegacyLink, :count))
+            .and(not_change(LexLegacyLink, :count))
           expect(call).to eq 'https://test.com#test_anchor'
         end
       end
@@ -97,6 +97,23 @@ describe Lexicon::MigrateAttachment do
     it 'does not creates new attachments and returns nil' do
       expect { call }.to not_change { lex_entry.attachments.count }.and(not_change { lex_entry.legacy_links.count })
       expect(call).to be_nil
+    end
+  end
+
+  context 'when url with non-ASCII characters but escaped whitespaces is provided',
+          vcr: { cassette_name: 'lexicon/mirate_attachment/00693-hebrew' } do
+    let!(:lex_file) { create(:lex_file, fname: '00693.php') }
+
+    let(:src) { '00693_files/ספרי%20דורות%20קודמים.pdf' }
+
+    it 'attaches resource to the lex entry associated with the LexFile and returns path to it' do
+      entry = lex_file.lex_entry
+      expect { call }.to change { entry.attachments.count }.by(1)
+                                                           .and change { entry.legacy_links.count }.by(1)
+      link = entry.legacy_links.last
+      expect(link.old_path).to eq('00693_files/ספרי%20דורות%20קודמים.pdf')
+      expect(link.new_path).to be_present
+      expect(call).to eq(link.new_path)
     end
   end
 end
