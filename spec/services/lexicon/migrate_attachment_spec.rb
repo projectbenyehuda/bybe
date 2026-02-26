@@ -22,6 +22,20 @@ describe Lexicon::MigrateAttachment do
         expect(link.new_path).to be_present
         expect(call).to eq(link.new_path)
       end
+
+      context 'when src contains anchor' do
+        let(:src) { '03127-files/image002.jpg#test_anchor' }
+
+        it 'attaches resource to the lex entry associated with the LexFile and returns path to it with anchor' do
+          entry = lex_file.lex_entry
+          expect { call }.to change { entry.attachments.count }.by(1)
+                                                               .and change { entry.legacy_links.count }.by(1)
+          link = entry.legacy_links.last
+          expect(link.old_path).to eq('03127-files/image002.jpg') # no anchor
+          expect(link.new_path).to be_present
+          expect(call).to eq("#{link.new_path}#test_anchor") # anchor included
+        end
+      end
     end
 
     context 'when LexFile with name listed in src does not exists' do
@@ -49,6 +63,16 @@ describe Lexicon::MigrateAttachment do
         expect { call }.to not_change(ActiveStorage::Blob, :count)
                              .and(not_change(LexLegacyLink, :count))
         expect(call).to eq 'https://test.com'
+      end
+
+      context 'when src contains anchor' do
+        let(:src) { '03127-files/image002.jpg#test_anchor' }
+
+        it 'returns new_path from existing LegacyLink with an anchor' do
+          expect { call }.to not_change(ActiveStorage::Blob, :count)
+                               .and(not_change(LexLegacyLink, :count))
+          expect(call).to eq 'https://test.com#test_anchor'
+        end
       end
     end
   end

@@ -3,7 +3,7 @@
 module Lexicon
   # Service used to migrate attachments referenced on legacy lexicon pages into Ben Yehuda project
   class MigrateAttachment < ApplicationService
-    LEXICON_FILES_REGEX = %r{\A(?<file_id>\d+)(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png)\z}.freeze
+    LEXICON_FILES_REGEX = %r{\A(?<file_id>\d+)(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png)(#(?<anchor>.*))?\z}.freeze
 
     def call(src, lex_entry)
       # removing website prefix if provided (legacy files should use relative paths only but who knows...)
@@ -12,7 +12,16 @@ module Lexicon
       match = src.match(LEXICON_FILES_REGEX)
       return nil unless match
 
+      # Some links may contain optional anchor to specific part of the document
+      anchor = match['anchor']
+
+      if anchor.present?
+        # If anchor present we remove it from the URL
+        src = src.gsub("##{anchor}", '')
+      end
+
       link = LexLegacyLink.find_by(old_path: src)
+
 
       if link.nil?
         # Sometimes pages of publications uses images from people page, and vice versa.
@@ -35,7 +44,11 @@ module Lexicon
         link = file_entry.legacy_links.create(old_path: src, new_path: new_path)
       end
 
-      return link.new_path
+      if anchor.blank?
+        return link.new_path
+      else
+        return "#{link.new_path}##{anchor}"
+      end
     rescue OpenURI::HTTPError => e
       raise "Failed to download file: #{src}, error: #{e.message}"
     end
