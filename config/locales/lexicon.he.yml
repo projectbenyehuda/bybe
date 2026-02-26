@@ -32,6 +32,8 @@ he:
         citations: מראי מקום
         works: יצירות
         links: קישוריות
+        show: הצג
+        back: חזרה לרשימה
       index:
         add_person: הוספת יוצר/ת
         add_publication: הוספת פרסום
