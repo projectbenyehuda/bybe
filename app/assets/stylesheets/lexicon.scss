@@ -2,6 +2,20 @@ ul.lex {
   list-style-type:disc;
 }
 
+/* OSU partner logo - displayed alongside the lexicon logo */
+.osu-partner-logo {
+  height: 48px;
+  width: auto;
+}
+
+/* Make the link in the lexicon entry header a flex container so the
+   lexicon brand text and the OSU logo sit side-by-side */
+.lexicon-entry-header > a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Mobile filter toggle button */
 #lex-mobile-filter-toggle {
   width: 100%;
