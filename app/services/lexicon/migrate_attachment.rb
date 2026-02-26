@@ -27,7 +27,8 @@ module Lexicon
           file_entry = lex_entry
         end
 
-        full_url = 'https://benyehuda.org/lexicon/' + src
+        full_url = "#{Lexicon::OLD_LEXICON_URL}/#{src}"
+
         filename = File.basename(src)
         file_entry.attachments.attach(io: URI.parse(full_url).open, filename: filename)
         new_path = file_entry.download_path(filename)
