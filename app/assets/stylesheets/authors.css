@@ -23,6 +23,11 @@
   direction:rtl;
 }
 
+/* Override fixed width to accommodate both lexicon and OSU logos */
+.author-in-lexicon {
+  width: auto;
+}
+
 /* Genre toggle styles */
 .genre-toggle {
   cursor: pointer;
