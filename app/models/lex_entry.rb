@@ -127,17 +127,25 @@ class LexEntry < ApplicationRecord
     verification_percentage == 100
   end
 
-  # Mark entry as verified (only if verification is complete)
+  # Mark entry as verified (only if verification is complete).
+  # If the entry belongs to a LexPerson linked to an Authority, copies
+  # the Authority's other_designation into this entry's other_designation.
   def mark_verified!
     raise 'Verification not complete' unless verification_complete?
 
-    update!(
+    updates = {
       status: :verified,
       verification_progress: verification_progress.merge(
         'ready_for_publish' => true,
         'completed_at' => Time.current.iso8601
       )
-    )
+    }
+
+    if lex_item.is_a?(LexPerson) && lex_item.authority&.other_designation.present?
+      updates[:other_designation] = lex_item.authority.other_designation
+    end
+
+    update!(updates)
   end
 
   # Update a specific checklist item
