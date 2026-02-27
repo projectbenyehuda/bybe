@@ -19,7 +19,7 @@ module Lexicon
     rescue StandardError => e
       puts e.message
       puts e.backtrace.join("\n")
-      lex_file&.error_message = e.message
+      lex_file&.log_error(e.message)
       lex_file&.save!
       Chewy.strategy(:atomic) do
         lex_file&.lex_entry&.status_error!
