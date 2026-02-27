@@ -51,6 +51,32 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when a link has href as its only attribute (no target="_blank")' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Test Person',
+          fname: 'href_only_link.php',
+          full_path: Rails.root.join('spec/data/lexicon/href_only_link.php')
+        }
+      )
+    end
+
+    it 'migrates all links including href-only links' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.links.count).to eq(2)
+      expect(person.links.map(&:url)).to include(
+        'http://www.example.com/with-target',
+        'http://www.ynet.co.il/articles/0,7340,L-3132749,00.html'
+      )
+    end
+  end
+
   context 'when both birthdate and deathdate provided', vcr: { cassette_name: 'lexicon/ingest_person/00024' } do
     let(:file) do
       create(
