@@ -55,7 +55,8 @@ module Lexicon
         return "#{link.new_path}##{anchor}"
       end
     rescue OpenURI::HTTPError => e
-      raise "Failed to download file: #{src}, error: #{e.message}"
+      lex_entry.lex_file.log_error("Failed to download file: #{src}, error: #{e.message}")
+      return nil # If we failed to migrate attachment we return nil, so link will be left as-is
     end
   end
 end

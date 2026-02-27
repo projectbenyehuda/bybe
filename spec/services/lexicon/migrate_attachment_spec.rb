@@ -116,4 +116,18 @@ describe Lexicon::MigrateAttachment do
       expect(call).to eq(link.new_path)
     end
   end
+
+  context 'when we fail to download file by URI',
+          vcr: { cassette_name: 'lexicon/migrate_attachment/00050_missing' } do
+    let(:src) { '00050-files/missing.pdf' }
+
+    let!(:lex_file) { create(:lex_file, fname: '00050.php') }
+    let(:lex_entry) { lex_file.lex_entry }
+
+    it 'returns nil and logs an error in LexFile.error_message' do
+      expect { call }.to not_change(ActiveStorage::Attachment, :count).and(not_change(LexLegacyLink, :count))
+      expect(call).to be_nil
+      expect(lex_file.error_message).to eq('Failed to download file: 00050-files/missing.pdf, error: 404 Not Found')
+    end
+  end
 end
