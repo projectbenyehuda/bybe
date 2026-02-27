@@ -438,6 +438,35 @@ describe 'Lexicon Verification Workbench' do
     end
   end
 
+  describe 'Add Link modal', :js do
+    before do
+      skip 'WebDriver not available or misconfigured' unless webdriver_available?
+      visit "/lex/verification/#{entry.id}"
+    end
+
+    it 'adds a new link and refreshes the links section without JS errors' do
+      new_url = 'https://newlink.example.com'
+
+      within('#section-links') do
+        # Open the Add Link modal
+        find('a', text: I18n.t('lexicon.verification.migrated.add_link')).click
+      end
+
+      # Wait for modal to open and fill in the form
+      expect(page).to have_css('#generalDlg', visible: true, wait: 5)
+      within('#generalDlgBody') do
+        fill_in 'lex_link[url]', with: new_url
+        find('[type="submit"]').click
+      end
+
+      # Page should reload and show the new link (location.reload() callback)
+      expect(page).to have_css('#section-links', wait: 10)
+      within('#section-links') do
+        expect(page).to have_link(new_url, wait: 10)
+      end
+    end
+  end
+
   describe 'Profile Image Selection', :js do
     before do
       skip 'WebDriver not available or misconfigured' unless webdriver_available?
