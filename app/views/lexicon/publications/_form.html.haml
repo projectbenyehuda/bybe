@@ -2,6 +2,7 @@
 = simple_form_for @lex_publication, url: url, remote: true do |f|
   = f.simple_fields_for :entry do |ef|
     = ef.input :title
+    = ef.input :other_designation
     = ef.input :status do
       .form-control
         %span.badge.badge-primary= LexEntry.human_enum_name(:status, @lex_publication.entry.status)

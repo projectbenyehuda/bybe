@@ -126,6 +126,7 @@ he:
       lex_entry:
         title: כותרת
         english_title: כותרת באנגלית
+        other_designation: כינויים אחרים
         statuses:
           draft: טיוטה
           deprecated: מבוטל

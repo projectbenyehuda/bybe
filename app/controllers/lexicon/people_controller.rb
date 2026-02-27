@@ -63,7 +63,7 @@ module Lexicon
           :birthdate,
           :deathdate,
           :bio,
-          { entry_attributes: [:title] }
+          { entry_attributes: %i(title other_designation) }
         ]
       )
     end

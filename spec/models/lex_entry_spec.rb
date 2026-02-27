@@ -262,4 +262,75 @@ RSpec.describe LexEntry, type: :model do
       end
     end
   end
+
+  describe '#other_designation' do
+    it 'can be read and written' do
+      entry = create(:lex_entry, other_designation: 'alias1; alias2')
+      expect(entry.reload.other_designation).to eq('alias1; alias2')
+    end
+  end
+
+  describe '#mark_verified! other_designation copy' do
+    let(:person) { create(:lex_person) }
+    let(:entry) { create(:lex_entry, lex_item: person) }
+
+    before do
+      # Stub verification_complete? so we can test mark_verified! behaviour
+      # without going through the full checklist flow.
+      allow(entry).to receive(:verification_complete?).and_return(true)
+      entry.update!(verification_progress: { 'checklist' => {}, 'overall_notes' => '',
+                                             'ready_for_publish' => false })
+    end
+
+    context 'when the LexPerson is linked to an Authority with other_designation' do
+      let(:authority) { create(:authority, other_designation: 'שם א; שם ב') }
+
+      before { person.update!(authority: authority) }
+
+      it 'copies other_designation from the Authority onto the entry' do
+        entry.mark_verified!
+        expect(entry.reload.other_designation).to eq('שם א; שם ב')
+      end
+
+      it 'sets status to verified' do
+        entry.mark_verified!
+        expect(entry.reload).to be_status_verified
+      end
+    end
+
+    context 'when the LexPerson has no linked Authority' do
+      it 'leaves other_designation unchanged' do
+        entry.mark_verified!
+        expect(entry.reload.other_designation).to be_nil
+      end
+    end
+
+    context 'when the linked Authority has blank other_designation' do
+      let(:authority) { create(:authority, other_designation: '') }
+
+      before { person.update!(authority: authority) }
+
+      it 'does not overwrite other_designation' do
+        entry.update!(other_designation: 'existing value')
+        entry.mark_verified!
+        expect(entry.reload.other_designation).to eq('existing value')
+      end
+    end
+
+    context 'when the entry belongs to a LexPublication (not LexPerson)' do
+      let(:publication) { create(:lex_publication) }
+      let(:pub_entry) { create(:lex_entry, lex_item: publication, other_designation: nil) }
+
+      before do
+        allow(pub_entry).to receive(:verification_complete?).and_return(true)
+        pub_entry.update!(verification_progress: { 'checklist' => {}, 'overall_notes' => '',
+                                                   'ready_for_publish' => false })
+      end
+
+      it 'does not raise and leaves other_designation nil' do
+        expect { pub_entry.mark_verified! }.not_to raise_error
+        expect(pub_entry.reload.other_designation).to be_nil
+      end
+    end
+  end
 end
