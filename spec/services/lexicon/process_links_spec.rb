@@ -12,7 +12,7 @@ describe Lexicon::ProcessLinks do
         <li><a id="link_2" href="https://google.com">External Link</a></li>
         <li><a id="link_3" href="#anchor">Local Link</a></li>
         <li><a id="link_4" href="">Empty Link</a></li>
-        <li><a id="link_5" href="hbe/hbe00898.php">HBE Link</li>
+        <li><a id="link_5" href="hbe/hbe00898.php">HBE Link</a></li>
       </ul>
     HTML
   end
