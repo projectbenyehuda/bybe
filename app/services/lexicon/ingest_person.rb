@@ -125,7 +125,7 @@ module Lexicon
           ''
         end
       end.map do |linkstring|
-        next unless linkstring =~ %r{(.*?)<a .*? href="(.*?)".*?>(.*?)</a>(.*)}m
+        next unless linkstring =~ %r{(.*?)<a .*?href="(.*?)".*?>(.*?)</a>(.*)}m
 
         person.links.build(
           url: ::Regexp.last_match(2),
