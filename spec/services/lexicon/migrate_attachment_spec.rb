@@ -7,7 +7,7 @@ describe Lexicon::MigrateAttachment do
 
   let(:lex_entry) { create(:lex_entry, status: :raw) }
 
-  context 'when proper local path is provided', vcr: { cassette_name: 'lexicon/mirate_attachment/03127-image002' } do
+  context 'when proper local path is provided', vcr: { cassette_name: 'lexicon/migrate_attachment/03127-image002' } do
     let(:src) { '03127-files/image002.jpg' }
 
     context 'when LexFile with name listed in src exists' do
@@ -54,7 +54,7 @@ describe Lexicon::MigrateAttachment do
   end
 
   context 'when global url pointing to lexicon is provided',
-          vcr: { cassette_name: 'lexicon/mirate_attachment/03127-image002' } do
+          vcr: { cassette_name: 'lexicon/migrate_attachment/03127-image002' } do
     let(:src) { 'https://benyehuda.org/lexicon/03127-files/image002.jpg' }
 
     it 'loads resource in entry attachment and returns path to it' do
