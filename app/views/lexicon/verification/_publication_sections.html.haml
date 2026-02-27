@@ -85,6 +85,10 @@
       - total_count = checklist['links']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
+    - if php_counts[:links] && php_counts[:links] != item.links.size
+      .alert.alert-warning.alert-dismissible.fade.show{role: 'alert', style: 'background-color: #e87722; border-color: #c96a1a; color: white;'}
+        = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:links], migrated_count: item.links.size)
+        %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close', style: 'filter: brightness(0) invert(1);'}
     - if item.links.any?
       - item.links.each do |link|
         .link-card{ id: "link-#{link.id}", class: link_card_css(link, checklist['links']) }

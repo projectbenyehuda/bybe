@@ -220,6 +220,7 @@ he:
         no_az_navbar: "(אין ניווט א-ב)"
         citation_from_publication: "ממקור:"
         citation_pages: "עמ׳:"
+        count_mismatch: "אי-התאמה בספירה: %{php_count} פריט/ים בקובץ המקור, אך %{migrated_count} פריטים מועברים. ייתכן שאי-ההתאמה מוצדקת ואינה מונעת את אישור הערך."
       broken_link:
         badge: "קישור שבור (HTTP %{status})"
         unchecked_badge: "קישור לא נבדק"
