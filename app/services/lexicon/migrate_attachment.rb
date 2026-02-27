@@ -42,7 +42,7 @@ module Lexicon
         filename = File.basename(File.basename(src))
 
         # We know URL should not contain escaped characters at this point so we can safely escape whole URL
-        uri = URI.parse(URI.uri_escape(full_url))
+        uri = URI.parse(URI::DEFAULT_PARSER.escape(full_url))
 
         file_entry.attachments.attach(io: uri.open, filename: filename)
         new_path = file_entry.download_path(filename)
