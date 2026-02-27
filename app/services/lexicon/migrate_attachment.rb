@@ -16,7 +16,7 @@ module Lexicon
       anchor = match['anchor']
       if anchor.present?
         # If anchor present we remove it from the URL
-        src = src.gsub(/##{anchor}\z/, '')
+        src = src.delete_suffix("##{anchor}")
       end
 
       # Sometime URI comes only partially escaped (escaped whitespaces, but not escaped Hebrew characters)
