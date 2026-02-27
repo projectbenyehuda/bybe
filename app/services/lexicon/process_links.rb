@@ -12,7 +12,13 @@ module Lexicon
 
         next if href.blank?
 
-        next if href[0] == '#' # local href
+        next if href[0] == '#' # local href (anchor on the same page)
+
+        if href.start_with?('hbe/')
+          # see https://github.com/projectbenyehuda/bybe/issues/1035#issuecomment-3966763191
+          tag['href'] = "/lexicon/#{href}"
+          next
+        end
 
         new_path = MigrateAttachment.call(href, lex_entry)
         if new_path.present?
