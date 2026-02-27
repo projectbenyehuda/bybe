@@ -18,6 +18,10 @@ en:
   classified: Classified
   unclassified: Unclassified
   lexicon:
+    layout:
+      entries: Entries
+      files: Files
+      title: New Hebrew Lexicon - Management UI
     entries:
       destroy:
         success: Lexicon Entry deleted
