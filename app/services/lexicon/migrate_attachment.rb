@@ -21,7 +21,7 @@ module Lexicon
 
       # Sometime URI comes only partially escaped (escaped whitespaces, but not escaped Hebrew characters)
       # So we unescape whole URI before processing to get fancy filename from it
-      src = URI.decode_www_form_component(src)
+      src = URI::DEFAULT_PARSER.unescape(src)
 
       link = LexLegacyLink.find_by(old_path: src)
 
