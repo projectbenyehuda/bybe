@@ -11,7 +11,7 @@ module DownloadLink
     )
 
     # Unescape URI, so user can see Hebrew filenames
-    URI.decode_www_form_component(path)
+    URI::DEFAULT_PARSER.unescape(path)
   end
 
   private
