@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_25_010000) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_27_223414) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -662,6 +662,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_25_010000) do
     t.string "english_title"
     t.json "external_identifiers"
     t.bigint "profile_image_id"
+    t.string "other_designation", limit: 1024
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["profile_image_id"], name: "index_lex_entries_on_profile_image_id"
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"

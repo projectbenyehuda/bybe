@@ -120,6 +120,7 @@ en:
       lex_entry:
         title: Title
         english_title: English Title
+        other_designation: Other Designation
         statuses:
           draft: Draft
           deprecated: Deprecated
