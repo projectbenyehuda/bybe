@@ -30,7 +30,7 @@ describe Lexicon::ProcessLinks do
     call
   end
 
-  it 'Updates links where neccessary' do
+  it 'Updates links where necessary' do
     expect(html_doc.at_css('#link_1')['href']).to eq('new_attachment_link')
     expect(html_doc.at_css('#link_2')['href']).to eq('https://google.com')
     expect(html_doc.at_css('#link_3')['href']).to eq('#anchor')
