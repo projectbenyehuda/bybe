@@ -7,6 +7,7 @@ module DownloadLink
 
   # Convenient mapping of model class names to entry_type codes used in download URLs
   RECORD_TYPES = {
+    'LexEntry' => { record_type: 'lex', attachments_field: :attachments },
     'Manifestation' => { record_type: 'text', attachments_field: :images },
     'StaticPage' => { record_type: 'static', attachments_field: :images }
   }.freeze
@@ -15,9 +16,6 @@ module DownloadLink
     path = Rails.application.routes.url_helpers.file_download_path(
       record_type: file_record_type, record_id: id, filename: filename
     )
-
-    # Unescape URI, so user can see Hebrew filenames
-    URI::DEFAULT_PARSER.unescape(path)
   end
 
   def blob_by_filename(filename)

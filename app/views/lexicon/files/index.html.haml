@@ -23,7 +23,7 @@
       - @lex_files.each do |lf|
         - lex_entry = lf.lex_entry
         %tr
-          %td= lf.error_message
+          %td!= lf.error_message&.split("\n")&.join('<br/>')
           %td= lf.fname.sub('.php', '').sub('/', '')
           %td= lf.lex_entry.title
           %td #{t(lf.status)} / #{LexEntry.human_enum_name(:status, lf.lex_entry&.status)}
