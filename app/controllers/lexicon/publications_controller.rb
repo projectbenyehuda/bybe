@@ -50,7 +50,7 @@ module Lexicon
           :description,
           :toc,
           :az_navbar,
-          { entry_attributes: [:title] }
+          { entry_attributes: %i(title other_designation) }
         ]
       )
     end
