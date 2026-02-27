@@ -4,9 +4,9 @@
 
   .migrated-content
     - if item.is_a?(LexPerson)
-      = render 'lexicon/verification/person_sections', entry: entry, item: item, checklist: checklist
+      = render 'lexicon/verification/person_sections', entry: entry, item: item, checklist: checklist, php_counts: php_counts
     - elsif item.is_a?(LexPublication)
-      = render 'lexicon/verification/publication_sections', entry: entry, item: item, checklist: checklist
+      = render 'lexicon/verification/publication_sections', entry: entry, item: item, checklist: checklist, php_counts: php_counts
     - else
       .alert.alert-danger
         = t('lexicon.verification.migrated.unsupported_type', type: item.class.name)
