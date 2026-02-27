@@ -106,7 +106,7 @@
     - else
       %p.text-muted= t('lexicon.verification.sections.no_links')
   .section-actions
-    = link_to t('lexicon.verification.migrated.add_link'), new_lexicon_entry_link_path(entry), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href);"
+    = link_to t('lexicon.verification.migrated.add_link'), new_lexicon_entry_link_path(entry), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href, function() { location.reload(); });"
 
 -# Section 6: Attachments
 .section.verification-section{id: 'section-attachments', class: checklist['attachments']&.dig('verified') ? 'verified' : 'not-verified'}
