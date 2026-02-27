@@ -23,4 +23,10 @@ class LexFile < ApplicationRecord
   belongs_to :lex_entry
 
   validates :entrytype, :status, presence: true
+
+  def log_error(message)
+    self.error_message ||= ''
+    self.error_message += "\n" if self.error_message.present?
+    self.error_message += message
+  end
 end
