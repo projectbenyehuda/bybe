@@ -1,3 +1,13 @@
+:css
+  .count-mismatch-warning {
+    background-color: #e87722;
+    border-color: #c96a1a;
+    color: white;
+  }
+  .count-mismatch-warning .btn-close {
+    filter: brightness(0) invert(1);
+  }
+
 -# Section 0: Authority Association
 .section.verification-section{id: 'section-authority', class: checklist['authority']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
@@ -132,6 +142,11 @@
     .verification-badge{class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
       = checklist['works']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
+    - works_size = item.works.size
+    - if php_counts[:works] && php_counts[:works] != works_size
+      .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
+        = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:works], migrated_count: works_size)
+        %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
     - if item.works.present?
       .works-content
         %ul
@@ -156,6 +171,11 @@
       - total_count = checklist['citations']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
+    - cit_size = item.citations.size
+    - if php_counts[:citations] && php_counts[:citations] != cit_size
+      .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
+        = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:citations], migrated_count: cit_size)
+        %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
     - if item.citations.any?
       - item.citations.group_by(&:subject_title).each do |subject, citations|
         .citation-group.mb-3
@@ -207,6 +227,11 @@
       - total_count = checklist['links']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
+    - lnk_size = item.links.size
+    - if php_counts[:links] && php_counts[:links] != lnk_size
+      .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
+        = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:links], migrated_count: lnk_size)
+        %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
     - if item.links.any?
       - item.links.each do |link|
         .link-card{ id: "link-#{link.id}", class: link_card_css(link, checklist['links']) }
