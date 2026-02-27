@@ -22,7 +22,9 @@ $(function() {
 });
 
 function reloadContent(tabContent) {
+    if (!tabContent.length) return;
     const loadUrl = tabContent.data('load-url');
+    if (!loadUrl) return;
     tabContent.load(
         loadUrl,
         function( response, status, xhr ) {
