@@ -11,7 +11,7 @@ module Lexicon
       link = LexLegacyLink.find_by(old_path: old_path)
 
       if link
-        redirect_to link.new_path
+        redirect_to link.new_path, allow_other_host: true
       else
         render file: Rails.public_path.join('404.html'), status: :not_found, layout: false
       end
