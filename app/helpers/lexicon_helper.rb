@@ -5,7 +5,14 @@ module LexiconHelper
   def render_citation(lex_citation)
     author_bit = lex_citation.authors.sort_by(&:display_name)
                              .map { |author| render_citation_author(author) }.join(', ')
-    raw "#{author_bit}, #{lex_citation.title}, " \
+
+    title_bit = if lex_citation.link.blank?
+        lex_citation.title
+      else
+        link_to(lex_citation.title, lex_citation.link, target: '_blank', rel: 'noopener noreferrer')
+      end
+
+    raw "#{author_bit}, #{title_bit}, " \
         "<u>#{lex_citation.from_publication}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
   end
 
