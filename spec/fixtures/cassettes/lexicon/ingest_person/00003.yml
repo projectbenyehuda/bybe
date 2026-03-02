@@ -1,0 +1,165 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://benyehuda.org/lexicon/00000_files/almonit.jpg
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - nginx/1.24.0
+      Date:
+      - Mon, 02 Mar 2026 01:57:45 GMT
+      Content-Type:
+      - image/jpeg
+      Content-Length:
+      - '4587'
+      Last-Modified:
+      - Tue, 29 Nov 2016 15:22:26 GMT
+      Connection:
+      - keep-alive
+      Etag:
+      - '"583d9d32-11eb"'
+      Accept-Ranges:
+      - bytes
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        /9j/4AAQSkZJRgABAQEAYABgAAD/4QB6RXhpZgAASUkqAAgAAAAGADIBAgAUAAAAVgAAAAEDBQABAAAAagAAAAMDAQABAAAAAAAAABBRAQABAAAAAQAAABFRBAABAAAAxA4AABJRBAABAAAAxA4AAAAAAAAyMDA5OjA3OjE4IDA3OjQwOjA0AKCGAQCPsQAA/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEJCQkMCwwYDQ0YMiEcITIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy/8AAEQgBYAFQAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A9/ooooAKKKKACiiigAooooAKKKKACiiigAooooAau7aN2M98U7nPtWfe6kLKVU8rfld2d2O/0rPm1qdiREqxrjvyc/y/SgDfJAGSeKz9Q1EW0YWJlaUnpnOB71gtdXEy/vJnYHqCxx+VR0Aaia7MqEvCrkDjBwTT019y3z2oA9nyf5VkUUAa1xr8ka/6PZiU9w8uz+SmpbPXRMMXUAgb2k3j88CsSigDrBd27bNs8ZLnCjcMk+g96nriyiswYqpZTlSRyD7U8SOpBDsCOQQTQB2NFc1Hq13EoXeHA4+YZ/WpI9duUaRpoonjC5VUBUg98kk5/IUAdDRUNtMLi2jmAwHUHGc4qagAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooADwKzLzVRbtsjUMe+aXU77yIyiH5jxXPli7Fick0AK773ZyMbiTge9JSUUAFFFFABRRRQAtJRRQAUUUUAFHXrRRQBtWur28FtFEyyZVQCQBj+daVvdR3K7oyfoa5OrVjdtaS8H5W4NAHU0UyKRZYw6nINPoAKKKKACiikAx3JoAWiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACoriYQxFu+OKlrF1m44EanmgDKuJmnmZz37VHRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUGiigDY0i76xOee1bdcfDIYZlcdjXVW8olhV88kUATUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFHbmgBrnapb0Fctey+fdM/4Vq6hqSpmJOSe4rDPLE+tACUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABW1o1z8pjY89qxamtZvIuFftQB1tFMjcPGrDuKfQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAVSvrxbeMrn5iOlPursWxXI4Nc9e3H2m4L9hwKAIGYu7Me5pKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAOg0i48yHYx5HStOuWsJ/s9yCTwa6dWDKGzwRmgB1FICD0paACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAxddbAjHrWNWrrbZZB6VlUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAB3zWhBqUgVYz69az6PpQB18bKVXBGcU/cPWuWgvZYiBuJHfNaSXvntGkOSQfmoA2KKp29xvuZEJ+7VygAooooAKKKKACiiigAooooAKKKKACiiigAoPAoPTisy5muYWbClgentQBQ1e4SWYIBgqeTWdUkwkMrO6kE1HQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABU1tcNbMzL1NQ0UAaulXBa6dn5Zq3q5CKZ4mymc9q6i0Zmt1Z/vEc0AT0UUUAFFFFABRRRQAUUUUAFFFFABRRRQBTv7w2cauF3ZNYlxqM07ZViorQ1w5gUe9YdADnd3OWbNNoooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigApQcMCRkUlFAG/ZW9s8KyFF3VpIFCjHSuc04yyTKoY7R1FdIBtAAoAWiiigAooooAKKKKACiiigAooooAKKKKAMXW87R6ZrGroNYhMluCB05rn6ACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACg0AEkAdTWjaaU8uHk4WgCxokRUs5HB6VtVHDCsEYRRwKkoAKKKKACiiigAooooAKKKKACiiigAooooAgu2CwNnpiuVk27yV+7XU3ilrZselcoQQSD1zQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQBa0+HzrkDHA5rqFAVQBxWFpDxIxJIDVto24bu1AD6KKKACiiigAooooAKKKKACiiigAooooAKKKKAEZQykHoa5W/Ty7tlA4rq6x9Ws2f95GuT3oAxKKCCpIIINFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAVYtrOS5cAAgetT2Fg1w4dhhRXQRQpCoVVAoAqW+mRRAErlvWrwUKMDpS0UAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABSEBhgjIpaKAKdxp8MynChT6gVzlxCYJmQ9AeK6+szU7Dz18xB8w7UAc/RSsjqxUqQRRg+hoASiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKmtYDcTKg6d6hAJIA5JrotLtBBDvI+ZuaALsMSwxKijGBUlFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABR1oooAryWkUhyVGagubNBbEIoyBV+igDjSjqSCjdfSkrrXto3BBUc1jXekurlo/u+lAGXRUj28sZ5RseuKjoAKKKKACiiigAooooAKKKKACg9KKntbd7iZVA+XPNAFiz043Me89D0qf+xWzWxBCsEQRegqWgDLttJjicO/JFaYAAwKWigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAguY1eBhtGcVysq7ZWX0Ndgwyp+lcjc/8fcn+9QBHRRRQAUUUUAFFFFABRRRQAe1dFpMAS2DEcmueQZkUe9dZbJshUe1AE1FFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAI33T9K5G5/4+5P96upuX8uBm9BXKStvmZvU0ANooooAKKKKACiiigAooooAcn+tT/errojmNfpXIA4ZT6GupsZRLbKw+lAFmiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKOlISAMk8VlX+piPMcZyfWgBurXg2eUpznrWIKV3Z2LMck0lABRRRQAUUUUAFFFFABRRRQAVqaVeCNvLc4XtWXSglTkHBoA7EEMMjpS1hWGqbCI5Tx2NbaOrrlSCKAHUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFIM45xn2oAWiiigAooooAKKaQxYENgDqMdadQAUU1FKqAWJI7ms281eK1uPIQLLIqguofBUHOM8Hrg/lQBqUx5EjUkkDFclcXF1PfvcC7ljjONsKEbVAHfjn17UNLI33pGb6sTQBpXupvJlIsgd6yyrHkgn3ooyfWgACk9BS7G/umkzRk+poACMdaSlpKAFCMexpCCOopcn1ozQAbGxnBxSYOcd6XJ9aKADY2Pumkpcn1pKACiiigBcE9KuWd/JbsFJJX0qnSUAdZBcpOoKnn0qeuTsbtrO/DvvaExMpVQCd2VweT6A10dte292B5UgLYyUJww+ooAs0UhAIIIyKREVF2qMCgB1FFNx82fagB1FFGBQAUVWu/MEQ8ofMTjIHQYNWBggEUALRRRQAUUUUAFFFFABRRSE474FAC0mecYP1qlc6lFBnBDMO1Z767MfuRIP97NAG9VS41C3th8z7m/uryawrm/uLkjc5UD+FeB/9eqlAF+61aeZ/wB2xjQE4A6sPes91D3Uly3MsgVWPqFzj+ZpaKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACop7eO5ULIG+UhgyuysCDkYKkGpaKAJ4ry4ijCfaJWxnlmLHHbknJp0moXzqAl08RH8SqpJ/76BFV6TBz2xQBqWOvLIZI5G3yRttY8DnHtV6bWbK2gM08wRFGWbBIX64rmI7eOKSR1UBpG3MR3OMf0p7okkbJIu5GGGB70AdmrK6hlIIIyCOhFOrirZ7yyWOK0vXS3TpGVVgB6AkEgewNbtvrSsypMgGeCw6flQBsUgUAADgCoo7mCU4jkVj7GpqACiiigAooooAKKKZLIsSF2OAKACWVIULucAVgXuqPKxWM4X1FRX169zIQDhB096p0AKSWOScn1pKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoopaAEopc+1JQAUUtGfagBKKKWgBKKWkoAckjxNmNiv0rXsdVywjmOPesaj+dAHZKwYAg5FLWDpmolGEUh4PANboIIyKAFooooAKwtXvCzeUh6da1rqXyrdmzggcVysjmWVnPUmgBtFFFABRRQeox0xQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAAJBBHUV0OlXfnReWT8y1z1WbCcw3K4OAx5oA6qikVgygjoaWgDJ1qbZGFB69awhV3VJS90ydhVKgAooooAKKKKAAAnpRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUoJUhh1FJRQB1Gny+Zarzk45q3WLos33kY/StqgDjpXMkrOepptbn9hx+ppP7Fj9TQBiUVt/2LH6mj+xY/U0AYlFbf9ix+po/sWP1NAGJRW3/YsfqaP7Fj9TQBiUVt/wBix+po/sWP1NAGJRW3/YsfqaP7Fj9TQBiUVt/2LH6mj+xY/U0AYlFbf9ix+po/sWP1NAGJRW3/AGLH6mj+xY/U0AYlFbf9ix+po/sWP1NAGJRW3/YsfqaP7Fj9TQBiUVuf2Inqab/YiepoAxaK2v7ET1NH9iJ6mgDFora/sRPU0f2InqaAMWitr+xE9TR/YiepoAxaK2v7ET1NH9iJ6mgDFora/sRPU0f2InqaAMWitr+xE9TR/YiepoAxaK2v7ET1NH9iJ6mgDFora/sRPU0f2InqaAM6wm8q6XnCk811KsGUEdDWQNFQEEE5FakUflxKnoMUAf/Z
+  recorded_at: Mon, 02 Mar 2026 01:57:45 GMT
+- request:
+    method: post
+    uri: https://api.openai.com/v1/chat/completions
+    body:
+      encoding: UTF-8
+      string: '{"model":"gpt-4.1-mini","messages":[{"role":"developer","content":"  User
+        will send you a set of bibliography records in html form, most of them are
+        in Hebrew, but English and other\n  languages are possible. Each record represents
+        single work (e.g. book, or article) about a person, or one of this\n  person''s
+        works.\n\n  Usually bibliography is represented as a set of <ul> tags, with
+        optional short header before each. Header represents\n  subject, and <li>
+        elements inside <ul> represent individual works about this subject.\n\n  You
+        need to parse it and turn into a JSON object with a single key `result` with
+        a value of array of JSON objects\n  representing works grouped by subjects:\n  ```\n  {\n    result:
+        [\n      { subject: ''Subject 1'', works: [ <ARRAY of Works 1> ] },\n      {
+        subject: ''Subject 2'', works: [ <ARRAY of Works 2> ] },\n      ...\n    ]\n  }\n  ```\n  Subject
+        should be extracted from the header before <ul> tag and contains only name
+        of the subject work. E.g. if header\n  is \"about `My Life`\", subject must
+        be just \"My Life\". If there is no header before <ul>, subject should be
+        null.\n\n  Each element in the array of works is a JSON object representing
+        a single bibliography record with the following structure:\n  - authors -
+        array of Authors who authored work. Author can be represented as text entry,
+        or as a link to page about\n    this author. So an author record contains
+        two string attributes: name (mandatory) and link (optional)\n  - title - title
+        of work (e.g. title of article) - mandatory. If whole title is in quotes,
+        remove quotes.\n  - from_publication - name of publication where work was
+        published (e.g. name of collection of articles, name of the\n    journal where
+        article was published, etc). You should include there additional information
+        helping to identify\n    publication, like year and number of issue for journal
+        article, volume number for multivolume collection, etc.\n  - pages - string
+        representing page, or pages interval, e.g. \"7\", \"5-12\"\n  - link - (optional)
+        sometimes the HTML will contain a link to the actual work or article.\n  -
+        notes - (optional) some additional notes, not fitting into other fields (like
+        ''First published at...'')\n\n  Example of work JSON:\n  ```\n  {\n    \"authors\":
+        [\n      {\n        \"name\": \"איזיקוביץ, גילי\",\n        \"link\": null\n      },\n      {\n        \"name\":
+        \"ארליך, צור\",\n        \"link\": \"00563.php\"\n      }\n    ],\n    \"title\":
+        \"״אני הקלישאה, אין לי ארץ אחרת״\",\n    \"from_publication\": \"הארץ, גלריה,
+        י״ג באייר תשפ״ג, 4 במאי 2023\",\n    \"pages\": \"1–3\",\n    \"link\": \"https://somejournal.com/article.html\",\n    \"notes\":
+        \"ראיון עם הסופרת גבריאלה אביגור-רותם לרגל צאת ספרה החדש\"\n  }\n  ```\n"},{"role":"user","content":"<font
+        color=\"#FF0000\"></font> <ul style=\"MARGIN-TOP: 0in\" type=\"circle\"> </ul>
+        <font color=\"#FF0000\">על \"געגועים\"</font> <ul style=\"MARGIN-TOP: 0in\"
+        type=\"circle\"> <li>נימוקי השופטים להענקת פרס זאב לתמר אגדי על ספרה \"געגועים\"
+        ודברי הסופרת. <u>ספרות ילדים ונוער</u>, חוב'' 28-29 (110) (2001), עמ'' 1-10</li>
+        <li> <b><a href=\"01169.php\">דר, יעל.</a></b> בלי מתכונים תרפויטיים. <u>הארץ,
+        מוסף ספרים</u>, גל'' 434 (כ\"ט בסיון תשס\"א, 20 ביוני 2001), עמ'' 14 </li>
+        <li> <b>הראל, תמי.</b> <a target=\"_blank\" href=\"http://www.dafdaf.co.il/Details.asp?MenuID=82&amp;SubMenuID=134&amp;PageID=2960\">הרהורים
+        בעקבות \"געגועים\".</a> <u>דףדף</u> &lt;מקוון&gt;</li> </ul> <font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"circle\"> </ul> <font color=\"#FF0000\"></font>
+        <ul style=\"MARGIN-TOP: 0in\" type=\"circle\"> </ul> <p> </p> <font size=\"4\"
+        color=\"#0000FF\"><a name=\"links\">קישורים:</a></font> <ul style=\"MARGIN-TOP:
+        0in\" type=\"circle\"> </ul> <hr>עודכן לאחרונה: 2 בספטמבר 2020 <!-- page footer
+        --> <?php // include page footer include \"footerf.php\"; ?>"}],"stream":false,"response_format":{"type":"json_object"}}'
+    headers:
+      User-Agent:
+      - Faraday v2.14.1
+      Authorization:
+      - Bearer OPENAI_API_KEY
+      Content-Type:
+      - application/json
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Mon, 02 Mar 2026 01:57:50 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Access-Control-Expose-Headers:
+      - X-Request-ID
+      Openai-Organization:
+      - user-vxjynqng9r7rhmhl2weyv1zh
+      Openai-Processing-Ms:
+      - '4115'
+      Openai-Project:
+      - proj_9czHqU0SlMAfBhrpRLcU6RCd
+      Openai-Version:
+      - '2020-10-01'
+      Server:
+      - cloudflare
+      X-Ratelimit-Limit-Requests:
+      - '500'
+      X-Ratelimit-Limit-Tokens:
+      - '200000'
+      X-Ratelimit-Remaining-Requests:
+      - '499'
+      X-Ratelimit-Remaining-Tokens:
+      - '199010'
+      X-Ratelimit-Reset-Requests:
+      - 120ms
+      X-Ratelimit-Reset-Tokens:
+      - 297ms
+      X-Request-Id:
+      - req_7a725bba0a7142f0b42fcfb0aad42037
+      X-Openai-Proxy-Wasm:
+      - v0.1
+      Cf-Cache-Status:
+      - DYNAMIC
+      Set-Cookie:
+      - __cf_bm=i98QhSgb5KX0fO6GtUrS96y.cHA7KF1q_k5.nvUuS5M-1772416666.1050215-1.0.1.1-lJm.dMPuxpVkkQkycpfxcMiy9lVs2414PigXcP0tdzKhO34CjuxANjk30vECCCuUlI8XQQAFLXCC6xNJnzFhKE4UWvLYlkAzbEYICuv9b.Xor2wo5_UFSv9f6gEcesst;
+        HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Mon, 02 Mar 2026
+        02:27:50 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains; preload
+      X-Content-Type-Options:
+      - nosniff
+      Cf-Ray:
+      - 9d5ccae32f11fea8-AMS
+      Alt-Svc:
+      - h3=":443"; ma=86400
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        ewogICJpZCI6ICJjaGF0Y21wbC1ERW1wV21wZVZrbElLNnMwbW1MdmlIQzBJaFhWUiIsCiAgIm9iamVjdCI6ICJjaGF0LmNvbXBsZXRpb24iLAogICJjcmVhdGVkIjogMTc3MjQxNjY2NiwKICAibW9kZWwiOiAiZ3B0LTQuMS1taW5pLTIwMjUtMDQtMTQiLAogICJjaG9pY2VzIjogWwogICAgewogICAgICAiaW5kZXgiOiAwLAogICAgICAibWVzc2FnZSI6IHsKICAgICAgICAicm9sZSI6ICJhc3Npc3RhbnQiLAogICAgICAgICJjb250ZW50IjogIntcbiAgXCJyZXN1bHRcIjogW1xuICAgIHtcbiAgICAgIFwic3ViamVjdFwiOiBcIteS16LXkteV16LXmdedXCIsXG4gICAgICBcIndvcmtzXCI6IFtcbiAgICAgICAge1xuICAgICAgICAgIFwiYXV0aG9yc1wiOiBbXSxcbiAgICAgICAgICBcInRpdGxlXCI6IFwi16DXmdee15XXp9eZINeU16nXldek15jXmdedINec15TXoteg16fXqiDXpNeo16Eg15bXkNeRINec16rXnteoINeQ15LXk9eZINei15wg16HXpNeo15QgJ9eS16LXkteV16LXmdedJyDXldeT15HXqNeZINeU16HXldek16jXqlwiLFxuICAgICAgICAgIFwiZnJvbV9wdWJsaWNhdGlvblwiOiBcIteh16TXqNeV16og15nXnNeT15nXnSDXldeg15XXoteoLCDXl9eV15EnIDI4LTI5ICgxMTApICgyMDAxKVwiLFxuICAgICAgICAgIFwicGFnZXNcIjogXCIxLTEwXCJcbiAgICAgICAgfSxcbiAgICAgICAge1xuICAgICAgICAgIFwiYXV0aG9yc1wiOiBbXG4gICAgICAgICAgICB7XG4gICAgICAgICAgICAgIFwibmFtZVwiOiBcIteZ16LXnCDXk9eoXCIsXG4gICAgICAgICAgICAgIFwibGlua1wiOiBcIjAxMTY5LnBocFwiXG4gICAgICAgICAgICB9XG4gICAgICAgICAgXSxcbiAgICAgICAgICBcInRpdGxlXCI6IFwi15HXnNeZINee16rXm9eV16DXmdedINeq16jXpNeV15nXmNeZ15nXnVwiLFxuICAgICAgICAgIFwiZnJvbV9wdWJsaWNhdGlvblwiOiBcIteU15DXqNelLCDXnteV16HXoyDXodek16jXmdedLCDXktecJyA0MzQgKNebXFxcIteYINeR16HXmdeV158g16rXqdehXFxcIteQLCAyMCDXkdeZ15XXoNeZIDIwMDEpXCIsXG4gICAgICAgICAgXCJwYWdlc1wiOiBcIjE0XCJcbiAgICAgICAgfSxcbiAgICAgICAge1xuICAgICAgICAgIFwiYXV0aG9yc1wiOiBbXG4gICAgICAgICAgICB7XG4gICAgICAgICAgICAgIFwibmFtZVwiOiBcIteq157XmSDXlNeo15DXnFwiLFxuICAgICAgICAgICAgICBcImxpbmtcIjogbnVsbFxuICAgICAgICAgICAgfVxuICAgICAgICAgIF0sXG4gICAgICAgICAgXCJ0aXRsZVwiOiBcIteU16jXlNeV16jXmdedINeR16LXp9eR15XXqiAn15LXoteS15XXoteZ150nXCIsXG4gICAgICAgICAgXCJmcm9tX3B1YmxpY2F0aW9uXCI6IFwi15PXo9eT16MgPNee16fXldeV158+XCIsXG4gICAgICAgICAgXCJwYWdlc1wiOiBudWxsLFxuICAgICAgICAgIFwibGlua1wiOiBcImh0dHA6Ly93d3cuZGFmZGFmLmNvLmlsL0RldGFpbHMuYXNwP01lbnVJRD04MiZTdWJNZW51SUQ9MTM0JlBhZ2VJRD0yOTYwXCJcbiAgICAgICAgfVxuICAgICAgXVxuICAgIH1cbiAgXVxufSIsCiAgICAgICAgInJlZnVzYWwiOiBudWxsLAogICAgICAgICJhbm5vdGF0aW9ucyI6IFtdCiAgICAgIH0sCiAgICAgICJsb2dwcm9icyI6IG51bGwsCiAgICAgICJmaW5pc2hfcmVhc29uIjogInN0b3AiCiAgICB9CiAgXSwKICAidXNhZ2UiOiB7CiAgICAicHJvbXB0X3Rva2VucyI6IDExMDgsCiAgICAiY29tcGxldGlvbl90b2tlbnMiOiAzMDUsCiAgICAidG90YWxfdG9rZW5zIjogMTQxMywKICAgICJwcm9tcHRfdG9rZW5zX2RldGFpbHMiOiB7CiAgICAgICJjYWNoZWRfdG9rZW5zIjogMTAyNCwKICAgICAgImF1ZGlvX3Rva2VucyI6IDAKICAgIH0sCiAgICAiY29tcGxldGlvbl90b2tlbnNfZGV0YWlscyI6IHsKICAgICAgInJlYXNvbmluZ190b2tlbnMiOiAwLAogICAgICAiYXVkaW9fdG9rZW5zIjogMCwKICAgICAgImFjY2VwdGVkX3ByZWRpY3Rpb25fdG9rZW5zIjogMCwKICAgICAgInJlamVjdGVkX3ByZWRpY3Rpb25fdG9rZW5zIjogMAogICAgfQogIH0sCiAgInNlcnZpY2VfdGllciI6ICJkZWZhdWx0IiwKICAic3lzdGVtX2ZpbmdlcnByaW50IjogImZwX2EzOTFmMmNlZTAiCn0K
+  recorded_at: Mon, 02 Mar 2026 01:57:50 GMT
+recorded_with: VCR 6.3.1

@@ -24,10 +24,11 @@ module Lexicon
       return [] if citations_node&.name != 'font'
 
       result = Lexicon::ParseCitations.call(citations_node.inner_html)
-      # remove header and citations node to simplify further processing
-      header.remove
-      citations_node.remove
 
+      # We used to delete parsed nodes earlier, but it turned out in some files citations node contains other
+      # sections (e.g. Links block, so we cannot simply remove it)
+      # header.remove
+      # citations_node.remove
       result
     end
 
@@ -40,6 +41,11 @@ module Lexicon
         header = header.parent # should be a <font> tag
 
         if header.parent.name == 'p' # normally font tag should be wrapped in a paragraph, but sometimes it's not
+          header = header.parent
+        end
+
+        # this can happen if citations header was added at the end of Works list (malformed document)
+        if header.next_element.nil?
           header = header.parent
         end
       end
