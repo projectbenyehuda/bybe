@@ -4,8 +4,8 @@ module Lexicon
   # Service to ingest Lexicon Person from php file
   class IngestPerson < IngestBase
     WORK_TYPE_HEADERS = {
-      edited: ['כתיבה, עריכה ושכתוב:', 'עריכה:'],
-      translated: ['תרגום:']
+      'edited' => ['כתיבה, עריכה ושכתוב:', 'עריכה:'],
+      'translated' => ['תרגום:']
     }.freeze
 
     def call(lex_file)
@@ -93,11 +93,17 @@ module Lexicon
       index = 0
       work_type = :original
       while next_elem.present? && !header?(next_elem)
+        header_line = next_elem.text.strip
         if next_elem.name == 'p'
           work_type = WORK_TYPE_HEADERS.keys.detect do |work_type|
-            WORK_TYPE_HEADERS[work_type].include?(next_elem.text.strip)
+            WORK_TYPE_HEADERS[work_type].include?(header_line)
           end
-          index = 0 if work_type != :original # restarting seqno if work_type was changed
+
+          if work_type.nil?
+            Rails.logger.warn("Unrecognized works section header: #{header_line}")
+            work_type = 'original' # defaulting to original if we don't recognize the header
+          end
+          index = lex_person.works.select { |w| w.work_type == work_type }.map(&:seqno).max || 0
         elsif next_elem.name == 'ul'
           next_elem.css('li').each do |li|
             work = ParsePersonWork.call(li.text)
