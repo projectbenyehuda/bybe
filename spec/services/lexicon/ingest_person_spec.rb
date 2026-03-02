@@ -29,9 +29,9 @@ describe Lexicon::IngestPerson do
       expect(person).to have_attributes(birthdate: '1946', deathdate: nil)
       expect(person.gender).to eq('female')
       expect(person.citations.count).to eq(53)
-      expect(person.citations.select { |c| c.person_work.present? }.count).to eq(45)
+      expect(person.citations.select { |c| c.person_work.present? }.size).to eq(45)
       # There is a discrepancy between the book name in file and the citation subject for 3 citations
-      expect(person.citations.select { |c| c.subject.present? }.count).to eq(3)
+      expect(person.citations.select { |c| c.subject.present? }.size).to eq(3)
 
       expect(person.works.count).to eq(19)
       expect(person.works.select(&:work_type_original?).size).to eq(15)
@@ -102,9 +102,9 @@ describe Lexicon::IngestPerson do
       expect(person).to have_attributes(birthdate: '1899', deathdate: '1949')
       expect(person.gender).to eq('male')
       expect(person.citations.count).to eq(4)
-      expect(person.citations.select { |c| c.person_work.present? }.count).to eq(1)
+      expect(person.citations.select { |c| c.person_work.present? }.size).to eq(1)
       # There is a discrepancy between the book name in file and the citation subject for 3 citations
-      expect(person.citations.select { |c| c.subject.present? }.count).to eq(3)
+      expect(person.citations.select { |c| c.subject.present? }.size).to eq(3)
       expect(person.works.count).to eq(22)
       expect(person.works.select(&:work_type_original?).size).to eq(18)
       expect(person.works.select(&:work_type_edited?).size).to eq(2)
@@ -112,6 +112,45 @@ describe Lexicon::IngestPerson do
 
       expect(entry.english_title).to eq('Samuel Bass')
 
+      expect(entry.external_identifiers).to be_nil
+    end
+  end
+
+  context 'when citations header is malformed', vcr: { cassette_name: 'lexicon/ingest_person/00020' } do
+    # In this file citations header is added at the end of Works list
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Judith Rotem',
+          fname: '00020.php',
+          full_path: Rails.root.join('spec/data/lexicon/00020.php')
+        }
+      )
+    end
+
+    it 'parses file successfully' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      expect(file.reload).to be_status_ingested
+      entry = file.lex_entry
+      person = entry.lex_item
+      expect(person).to be_an_instance_of(LexPerson)
+      expect(person).to have_attributes(birthdate: '1942', deathdate: nil)
+      expect(person.gender).to eq('female')
+      expect(person.citations.count).to eq(35)
+      expect(person.citations.select { |c| c.subject.present? }.size).to eq(5)
+      expect(person.citations.select { |c| c.person_work.present? }.size).to eq(24)
+
+      expect(person.works.count).to eq(28)
+      expect(person.works.select(&:work_type_original?).size).to eq(12)
+      expect(person.works.select(&:work_type_edited?).size).to eq(16)
+
+      expect(entry.english_title).to eq('Judith Rotem')
+
+      expect(person.links).to be_empty
       expect(entry.external_identifiers).to be_nil
     end
   end

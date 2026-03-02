@@ -3,8 +3,10 @@
 module Lexicon
   # Service to ingest Lexicon Person from php file
   class IngestPerson < IngestBase
-    EDITED_HEADER = 'עריכה:'
-    TRANSLATED_HEADER = 'תרגום:'
+    WORK_TYPE_HEADERS = {
+      edited: ['כתיבה, עריכה ושכתוב:', 'עריכה:'],
+      translated: ['תרגום:']
+    }.freeze
 
     def call(lex_file)
       raw = File.read(lex_file.full_path, encoding: 'UTF-8')
@@ -92,13 +94,10 @@ module Lexicon
       work_type = :original
       while next_elem.present? && !header?(next_elem)
         if next_elem.name == 'p'
-          if next_elem.text.strip == EDITED_HEADER
-            work_type = :edited
-            index = 0
-          elsif next_elem.text.strip == TRANSLATED_HEADER
-            work_type = :translated
-            index = 0
+          work_type = WORK_TYPE_HEADERS.keys.detect do |work_type|
+            WORK_TYPE_HEADERS[work_type].include?(next_elem.text.strip)
           end
+          index = 0 if work_type != :original # restarting seqno if work_type was changed
         elsif next_elem.name == 'ul'
           next_elem.css('li').each do |li|
             work = ParsePersonWork.call(li.text)
