@@ -20,6 +20,20 @@ module Lexicon
           next
         end
 
+        # Checking if this a link to another Lexicon page and if so replacing it with a link to the new location.
+        match = href.match(/\A(?<filename>\d+\.php)(?:#(?<anchor>.*))?\z/)
+        if match.present?
+          filename = match[:filename]
+          anchor = match[:anchor]
+          entry = LexFile.find_by(fname: filename)&.lex_entry
+          if entry.present?
+            new_path = Rails.application.routes.url_helpers.lexicon_entry_path(entry)
+            new_path += "##{anchor}" if anchor.present?
+            tag['href'] = new_path
+          end
+          next
+        end
+
         new_path = MigrateAttachment.call(href, lex_entry)
         if new_path.present?
           tag['href'] = new_path
