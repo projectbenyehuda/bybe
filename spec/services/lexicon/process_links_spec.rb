@@ -16,6 +16,7 @@ describe Lexicon::ProcessLinks do
         <li><a id="link_6" href="12345.php">Existing Lexicon Page</a></li>
         <li><a id="link_7" href="12345.php#תווית">Existing Lexicon Page with an Anchor</a></li>
         <li><a id="link_8" href="98765.php">Missing Lexicon Page</a></li>
+        <li><a id="link_9" href="index.htm">Lexicon root page</a></li>
       </ul>
     HTML
   end
@@ -45,5 +46,6 @@ describe Lexicon::ProcessLinks do
     expect(html_doc.at_css('#link_6')['href']).to eq("/lex/entries/#{existing_lex_entry.id}")
     expect(html_doc.at_css('#link_7')['href']).to eq("/lex/entries/#{existing_lex_entry.id}#תווית")
     expect(html_doc.at_css('#link_8')['href']).to eq('98765.php') # not changed as there is no matching lexicon entry
+    expect(html_doc.at_css('#link_9')['href']).to eq('/lex')
   end
 end

@@ -14,6 +14,12 @@ module Lexicon
 
         next if href[0] == '#' # local href (anchor on the same page)
 
+        # Link to lexicon root page should be replaced with a link to the new root page
+        if href == 'index.htm'
+          tag['href'] = Rails.application.routes.url_helpers.lexicon_root_path
+          next
+        end
+
         if href.start_with?('hbe/')
           # see https://github.com/projectbenyehuda/bybe/issues/1035#issuecomment-3966763191
           tag['href'] = "/lexicon/#{href}"
