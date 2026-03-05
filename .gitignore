@@ -83,3 +83,7 @@ mise.toml
 .git/beads-worktrees/
 
 Site v02/
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

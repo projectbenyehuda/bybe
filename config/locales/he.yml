@@ -254,6 +254,7 @@ he:
   donate: תרומה
   donate_en: donate
   bookshelves: רשימות קריאה
+  exclude_from_index: הוצאה מאינדקס החיפוש
   sefaria_linker: הפעלת קישוריוֹת ספריא
   anthologies: מקראות
   add_curated_text: הוספת טקסט מלווה
@@ -2181,17 +2182,6 @@ he:
   whatsnew_in_periodicals: מה חדש בכתבי עת?
   periodical_genres: סוגות בכתבי עת
   works_from_periodicals: יצירות מכתבי עת שהועלו למאגר
-  activerecord:
-    attributes:
-      collection:
-        collection_types:
-          volume: כרך
-          periodical: כתב עת
-          periodical_issue: גיליון כתב עת
-          series: סדרה
-          volume_series: סדרת כרכים
-          other: אחר
-          uncollected: יצירות לא באוסף
   helpers:
     page_entries_info:
       one_page:
