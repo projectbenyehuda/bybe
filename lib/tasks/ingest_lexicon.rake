@@ -49,7 +49,12 @@ task :ingest_lexicon, [:dirname] => :environment do |_taskname, args|
   @bibs = []
   @texts = []
   files.each do |fname|
-    next if IGNORE_LIST.include?(fname[(fname.rindex('/') + 1)..])
+    short_fname = fname[(fname.rindex('/') + 1)..]
+    next if IGNORE_LIST.include?(short_fname)
+
+    # At the first stage only process files where name is numeric.
+    # We exclude non-standard files like appendixes, see https://github.com/projectbenyehuda/bybe/issues/1049
+    next unless short_fname =~ /\A\d+\.php\z/
 
     Chewy.strategy(:atomic) do
       process_legacy_lexicon_entry(fname)
