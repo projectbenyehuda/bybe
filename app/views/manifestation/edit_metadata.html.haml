@@ -78,6 +78,9 @@
     %p
       %b= t(:comments)+': '
       = text_area_tag :mcomment, @m.comment, rows: 4, cols: 40
+    %p
+      = check_box_tag :exclude_from_index, 1, @m.exclude_from_index
+      %b= t(:exclude_from_index)
     / = render partial: 'shared/associated_people', locals: { which: :manifestation, manifestation: @m, edit: true}
     %hr
     %h2= t(:external_links)
