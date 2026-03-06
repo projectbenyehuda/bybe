@@ -546,6 +546,31 @@ describe ManifestationController do
             expect(work).to have_attributes(title: 'New Work Title', orig_lang: 'ru', genre: 'fables', primary: false)
           end
         end
+
+        context 'when exclude_from_index is set' do
+          let(:params) do
+            { wtitle: 'T', mtitle: 'T', etitle: 'T', genre: 'prose',
+              wlang: 'he', intellectual_property: 'public_domain', exclude_from_index: '1' }
+          end
+
+          it 'sets exclude_from_index to true' do
+            call
+            expect(manifestation.reload.exclude_from_index).to be true
+          end
+        end
+
+        context 'when exclude_from_index is not set' do
+          before { manifestation.update_column(:exclude_from_index, true) }
+          let(:params) do
+            { wtitle: 'T', mtitle: 'T', etitle: 'T', genre: 'prose',
+              wlang: 'he', intellectual_property: 'public_domain' }
+          end
+
+          it 'sets exclude_from_index to false' do
+            call
+            expect(manifestation.reload.exclude_from_index).to be false
+          end
+        end
       end
 
       context "when 'preview' button pressed" do

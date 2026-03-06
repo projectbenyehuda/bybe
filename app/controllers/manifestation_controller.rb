@@ -737,6 +737,7 @@ class ManifestationController < ApplicationController
           @m.comment = params[:mcomment]
           @m.status = params[:mstatus].to_i
           @m.sefaria_linker = params[:sefaria_linker]
+          @m.exclude_from_index = params[:exclude_from_index].present?
           if params[:add_url].present?
             @m.external_links.create!(url: params[:add_url], linktype: params[:link_type].to_i,
                                       description: params[:link_description], status: :approved)

@@ -254,6 +254,7 @@ he:
   donate: תרומה
   donate_en: donate
   bookshelves: רשימות קריאה
+  exclude_from_index: הוצאה מאינדקס החיפוש
   sefaria_linker: הפעלת קישוריוֹת ספריא
   anthologies: מקראות
   add_curated_text: הוספת טקסט מלווה
