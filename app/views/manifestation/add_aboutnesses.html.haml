@@ -5,9 +5,9 @@
 
   #add-authority
     = form_for @aboutness, remote: true do |f|
-      = select_tag :add_authority_topic,
-                   options_from_collection_for_select(Authority.order(:name), 'id', 'name'),
-                   include_blank: true
+      = autocomplete_field_tag :add_authority_autocomplete, '', autocomplete_authority_name_and_aliases_path,
+                               id_element: '#add_authority_topic'
+      = hidden_field_tag :add_authority_topic, nil
       = hidden_field_tag :aboutness_type, 'Authority'
       = hidden_field_tag :work_id, @w.id
       = hidden_field_tag :manifestation_id, @m.id
