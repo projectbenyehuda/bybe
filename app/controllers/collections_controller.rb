@@ -492,8 +492,9 @@ class CollectionsController < ApplicationController
   end
 
   def images_to_absolute_url(buf)
-    buf.gsub('<img src="/rails/active_storage',
-             "<img src=\"#{Rails.application.routes.url_helpers.root_url}/rails/active_storage")
+    root = Rails.application.routes.url_helpers.root_url.chomp('/')
+    root = root.sub(%r{\Ahttps://(localhost|127\.0\.0\.1)}, 'http://\1')
+    buf.gsub('<img src="/rails/active_storage', "<img src=\"#{root}/rails/active_storage")
   end
 
   def prep_for_show

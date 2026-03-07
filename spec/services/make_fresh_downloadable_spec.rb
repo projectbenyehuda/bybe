@@ -74,6 +74,20 @@ describe MakeFreshDownloadable do
         described_class.call('pdf', 'test.pdf', html_with_as_image, manifestation, 'Author')
         expect(captured_html.first).to include('<div style="width:209mm">')
       end
+
+      it 'converts the src to an absolute URL with no double slash' do
+        described_class.call('pdf', 'test.pdf', html_with_as_image, manifestation, 'Author')
+        expect(captured_html.first).not_to include('active_storage//rails')
+        expect(captured_html.first).not_to match(%r{https?://[^/]+//})
+      end
+
+      it 'uses http:// for localhost regardless of configured protocol' do
+        allow(Rails.application.routes.url_helpers).to receive(:root_url)
+          .and_return('https://localhost:3000/')
+        described_class.call('pdf', 'test.pdf', html_with_as_image, manifestation, 'Author')
+        expect(captured_html.first).to include('http://localhost:3000/rails/active_storage')
+        expect(captured_html.first).not_to include('https://localhost')
+      end
     end
   end
 end

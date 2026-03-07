@@ -122,7 +122,11 @@ class MakeFreshDownloadable < ApplicationService
   private
 
   def images_to_absolute_url(buf)
-    return buf.gsub('<img src="/rails/active_storage',
-                    "<img src=\"#{Rails.application.routes.url_helpers.root_url}/rails/active_storage")
+    root = Rails.application.routes.url_helpers.root_url.chomp('/')
+    # wkhtmltopdf cannot connect to localhost via HTTPS (dev server is plain HTTP).
+    # routes.default_url_options may set protocol: 'https' even in development,
+    # so force http:// for localhost to avoid TLS handshake failures.
+    root = root.sub(%r{\Ahttps://(localhost|127\.0\.0\.1)}, 'http://\1')
+    buf.gsub('<img src="/rails/active_storage', "<img src=\"#{root}/rails/active_storage")
   end
 end
