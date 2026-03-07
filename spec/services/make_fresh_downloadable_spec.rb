@@ -63,6 +63,11 @@ describe MakeFreshDownloadable do
         described_class.call('pdf', 'test.pdf', basic_html, manifestation, 'Author')
         expect(captured_html.first).to include('height: auto !important;')
       end
+
+      it 'sets a white background on html and body to prevent gray wkhtmltopdf canvas' do
+        described_class.call('pdf', 'test.pdf', basic_html, manifestation, 'Author')
+        expect(captured_html.first).to include('background-color: white')
+      end
     end
 
     context 'when HTML contains active_storage images' do
