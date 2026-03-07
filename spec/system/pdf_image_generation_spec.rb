@@ -55,17 +55,10 @@ RSpec.describe 'PDF image generation', type: :system do
     )
   end
 
-  it 'generates HTML with a <head> tag so CSS can be injected' do
-    GetFreshManifestationDownloadable.call(manifestation, 'pdf')
-    msg = 'GetFreshManifestationDownloadable must produce a full HTML document with a <head> tag ' \
-          'so that MakeFreshDownloadable can inject the image-scaling CSS into it.'
-    expect(captured_html.first).to include('</head>'), msg
-  end
-
-  it 'injects the image-scaling CSS into the <head>' do
+  it 'injects the image-scaling CSS into the HTML' do
     GetFreshManifestationDownloadable.call(manifestation, 'pdf')
     html = captured_html.first
-    msg = 'Expected the image-scaling CSS to be present inside <head>. ' \
+    msg = 'Expected the image-scaling CSS to be present in the HTML. ' \
           'Without it, oversized images will overflow the page and be cut off.'
     expect(html).to include('img {max-width: 100% !important;'), msg
     expect(html).to include('height: auto !important;')

@@ -22,7 +22,10 @@ class MakeFreshDownloadable < ApplicationService
         html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
         base_css = 'html, body {background-color: white; margin: 0; padding: 0;}'
         img_css = 'img {max-width: 100% !important; height: auto !important;}'
-        html.sub!('</head>', "<style>#{base_css} #{img_css}</style></head>")
+        style_tag = "<style>#{base_css} #{img_css}</style>"
+        unless html.sub!('</head>', "#{style_tag}</head>")
+          html.prepend(style_tag)
+        end
         # html.sub!(/<body.*?>/, "#{$&}<div class=\"html-wrapper\" style=\"position:absolute\">")
         # html.sub!('</body>','</div></body>')
         pdfname = HtmlFile.pdf_from_any_html(html)

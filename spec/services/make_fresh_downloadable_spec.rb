@@ -51,6 +51,16 @@ describe MakeFreshDownloadable do
       end
     end
 
+    context 'when HTML is a bare fragment with no <head> tag (Manifestation path)' do
+      let(:bare_html) { '<div dir="rtl"><p>text</p></div>' }
+
+      it 'prepends the style tag so CSS still applies' do
+        described_class.call('pdf', 'test.pdf', bare_html, manifestation, 'Author')
+        expect(captured_html.first).to start_with('<style>')
+        expect(captured_html.first).to include('img {max-width: 100% !important;')
+      end
+    end
+
     context 'when injecting CSS into the head' do
       let(:basic_html) { '<html><head></head><body><p>text</p></body></html>' }
 
