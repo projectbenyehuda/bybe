@@ -66,27 +66,45 @@ describe MakeFreshDownloadable do
     end
 
     context 'when HTML contains active_storage images' do
-      let(:html_with_as_image) do
-        '<html><head></head><body><img src="/rails/active_storage/blobs/abc/photo.jpg"></body></html>'
+      context 'with an unresolvable blob id (fallback path)' do
+        let(:html_with_as_image) do
+          '<html><head></head><body><img src="/rails/active_storage/blobs/redirect/invalid-id/photo.jpg"></body></html>'
+        end
+
+        it 'wraps unresolvable active_storage images in a constraining div' do
+          # find_signed! raises for an invalid id, so the URL is left unchanged and the div-wrap applies
+          described_class.call('pdf', 'test.pdf', html_with_as_image, manifestation, 'Author')
+          expect(captured_html.first).to include('<div style="width:209mm">')
+        end
       end
 
-      it 'wraps active_storage images in a constraining div' do
-        described_class.call('pdf', 'test.pdf', html_with_as_image, manifestation, 'Author')
-        expect(captured_html.first).to include('<div style="width:209mm">')
-      end
+      context 'with a real attached blob' do
+        let(:image_content) { "GIF89a\x01\x00\x01\x00\x00\xFF\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x00;" }
+        let(:blob) do
+          ActiveStorage::Blob.create_and_upload!(
+            io: StringIO.new(image_content),
+            filename: 'test.gif',
+            content_type: 'image/gif'
+          )
+        end
+        let(:html_with_real_blob) do
+          signed_id = blob.signed_id
+          '<html><head></head><body>' \
+            "<img src=\"/rails/active_storage/blobs/redirect/#{signed_id}/test.gif\">" \
+            '</body></html>'
+        end
 
-      it 'converts the src to an absolute URL with no double slash' do
-        described_class.call('pdf', 'test.pdf', html_with_as_image, manifestation, 'Author')
-        expect(captured_html.first).not_to include('active_storage//rails')
-        expect(captured_html.first).not_to match(%r{https?://[^/]+//})
-      end
+        after { blob.purge }
 
-      it 'uses http:// for localhost regardless of configured protocol' do
-        allow(Rails.application.routes.url_helpers).to receive(:root_url)
-          .and_return('https://localhost:3000/')
-        described_class.call('pdf', 'test.pdf', html_with_as_image, manifestation, 'Author')
-        expect(captured_html.first).to include('http://localhost:3000/rails/active_storage')
-        expect(captured_html.first).not_to include('https://localhost')
+        it 'embeds the image as a base64 data: URL' do
+          described_class.call('pdf', 'test.pdf', html_with_real_blob, manifestation, 'Author')
+          expect(captured_html.first).to include('src="data:image/gif;base64,')
+        end
+
+        it 'does not leave any active_storage HTTP reference in the HTML' do
+          described_class.call('pdf', 'test.pdf', html_with_real_blob, manifestation, 'Author')
+          expect(captured_html.first).not_to include('/rails/active_storage')
+        end
       end
     end
   end
