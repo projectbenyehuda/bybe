@@ -31,7 +31,7 @@ class GetFreshManifestationDownloadable < ApplicationService
         body = "<div dir=\"rtl\" style=\"text-align:right\">#{manifestation.title_and_authors_html}" \
                "#{html_content}\n\n<hr />#{footer}</div>"
         html = "<html><head><meta charset=\"utf-8\"><title>#{manifestation.title_and_authors}</title></head>" \
-               "<body dir=\"rtl\">#{body}</body></html>"
+               "<body>#{body}</body></html>"
         dl = MakeFreshDownloadable.call(format, filename, html, manifestation, manifestation.author_string)
       end
     end
