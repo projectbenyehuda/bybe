@@ -64,9 +64,14 @@ describe MakeFreshDownloadable do
         expect(captured_html.first).to include('height: auto !important;')
       end
 
-      it 'sets a white background on html and body to prevent gray wkhtmltopdf canvas' do
+      it 'sets a white background to prevent gray wkhtmltopdf canvas' do
         described_class.call('pdf', 'test.pdf', basic_html, manifestation, 'Author')
         expect(captured_html.first).to include('background-color: white')
+      end
+
+      it 'does not set an explicit body width that would conflict with page margins' do
+        described_class.call('pdf', 'test.pdf', basic_html, manifestation, 'Author')
+        expect(captured_html.first).not_to include('width: 20cm')
       end
     end
 
