@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require 'mini_magick'
+
 # Creates or overwrites downloadable from given Html file using provided file format
 class MakeFreshDownloadable < ApplicationService
   # @return created Downloadable object
@@ -14,9 +18,23 @@ class MakeFreshDownloadable < ApplicationService
     begin
       case format
       when 'pdf'
-        html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
-        html.sub!('</head>',
-                  '<style>html, body {width: 20cm !important;} p{max-width: 20cm;} div {max-width:20cm;} img {max-width: 100%;}</style></head>')
+        # Strip explicit width/height attributes from images so CSS max-width can constrain them
+        html.gsub!(%r{<img\b([^>]*?)/?>}) do |_match|
+          attrs = Regexp.last_match(1).gsub(/\s+(?:width|height)=["'][^"']*["']/, '')
+          "<img#{attrs}>"
+        end
+        html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"max-width:100%\">#{match}</div>" }
+        # figure { width: 100% } gives wkhtmltopdf's smart-shrinking a 1024px-wide
+        # layout anchor. Without it, smart-shrinking measures the widest intrinsic
+        # element (e.g. a 1000px image) and scales so that element fits 18 cm —
+        # but text was laid out at the full 1024px viewport, ending up ~2-3% wider
+        # than 18 cm and clipping a few pixels off the edge of each line.
+        base_css = 'html, body {background-color: white; margin: 0; padding: 0; width: 100%;}'
+        img_css = 'figure {width: 100%;} img {max-width: 100% !important; height: auto !important;}'
+        style_tag = "<style>#{base_css} #{img_css}</style>"
+        unless html.sub!('</head>', "#{style_tag}</head>")
+          html.prepend(style_tag)
+        end
         # html.sub!(/<body.*?>/, "#{$&}<div class=\"html-wrapper\" style=\"position:absolute\">")
         # html.sub!('</body>','</div></body>')
         pdfname = HtmlFile.pdf_from_any_html(html)
@@ -113,10 +131,44 @@ class MakeFreshDownloadable < ApplicationService
     return dl
   end
 
+  # Maximum image width in pixels before resizing.
+  # Keeping images within the wkhtmltopdf default 1024px viewport prevents
+  # the renderer from expanding the viewport to the image's intrinsic size,
+  # which would cause text to lay out at that expanded width and then be
+  # clipped after smart-shrinking scales everything down to the page width.
+  MAX_IMAGE_WIDTH_PX = 1000
+
   private
 
+  # Embeds ActiveStorage images as base64 data: URLs so that external processes
+  # (wkhtmltopdf, Pandoc) can render them without making HTTP requests back to
+  # the Rails server. HTTP round-trips cause a deadlock: the server is blocked
+  # waiting for the subprocess, while the subprocess is blocked waiting for the
+  # server to respond to the image request.
+
   def images_to_absolute_url(buf)
-    return buf.gsub('<img src="/rails/active_storage',
-                    "<img src=\"#{Rails.application.routes.url_helpers.root_url}/rails/active_storage")
+    buf.gsub(%r{/rails/active_storage/blobs/redirect/([^/"]+)/[^"]*}) do |url|
+      signed_id = Regexp.last_match(1)
+      begin
+        blob = ActiveStorage::Blob.find_signed!(signed_id)
+        raw = blob.download
+        content_type = blob.content_type
+        if content_type.start_with?('image/')
+          begin
+            image = MiniMagick::Image.read(raw)
+            if image.width > MAX_IMAGE_WIDTH_PX
+              image.resize "#{MAX_IMAGE_WIDTH_PX}x>"
+              raw = image.to_blob
+            end
+          rescue StandardError => e
+            Rails.logger.warn "Image resize skipped (#{signed_id}): #{e.message}"
+          end
+        end
+        "data:#{content_type};base64,#{Base64.strict_encode64(raw)}"
+      rescue StandardError => e
+        Rails.logger.warn "Image embedding failed (#{signed_id}): #{e.message}"
+        url
+      end
+    end
   end
 end
