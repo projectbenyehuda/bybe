@@ -100,7 +100,7 @@ describe MakeFreshDownloadable do
         it 'wraps unresolvable active_storage images in a constraining div' do
           # find_signed! raises for an invalid id, so the URL is left unchanged and the div-wrap applies
           described_class.call('pdf', 'test.pdf', html_with_as_image, manifestation, 'Author')
-          expect(captured_html.first).to include('<div style="width:209mm">')
+          expect(captured_html.first).to include('<div style="max-width:100%">')
         end
       end
 

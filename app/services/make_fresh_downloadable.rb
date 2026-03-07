@@ -23,8 +23,12 @@ class MakeFreshDownloadable < ApplicationService
           attrs = Regexp.last_match(1).gsub(/\s+(?:width|height)=["'][^"']*["']/, '')
           "<img#{attrs}>"
         end
-        html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
-        base_css = 'html, body {background-color: white; margin: 0; padding: 0;}'
+        html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"max-width:100%\">#{match}</div>" }
+        # width:100% ensures the body fills the full viewport (1024px default), giving
+        # wkhtmltopdf's smart-shrinking the correct reference width. Without it, smart-shrinking
+        # may measure the widest intrinsic element (e.g. a 1000px image) instead of the
+        # viewport width, causing text that wraps at 1024px to be scaled 2-3% too wide.
+        base_css = 'html, body {background-color: white; margin: 0; padding: 0; width: 100%;}'
         img_css = 'img {max-width: 100% !important; height: auto !important;}'
         style_tag = "<style>#{base_css} #{img_css}</style>"
         unless html.sub!('</head>', "#{style_tag}</head>")
