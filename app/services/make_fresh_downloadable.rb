@@ -14,9 +14,15 @@ class MakeFreshDownloadable < ApplicationService
     begin
       case format
       when 'pdf'
+        # Strip explicit width/height attributes from images so CSS max-width can constrain them
+        html.gsub!(%r{<img\b([^>]*?)/?>}) do |_match|
+          attrs = Regexp.last_match(1).gsub(/\s+(?:width|height)=["'][^"']*["']/, '')
+          "<img#{attrs}>"
+        end
         html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
-        html.sub!('</head>',
-                  '<style>html, body {width: 20cm !important;} p{max-width: 20cm;} div {max-width:20cm;} img {max-width: 100%;}</style></head>')
+        base_css = 'html, body {width: 20cm !important;} p{max-width: 20cm;} div {max-width:20cm;}'
+        img_css = 'img {max-width: 100% !important; height: auto !important;}'
+        html.sub!('</head>', "<style>#{base_css} #{img_css}</style></head>")
         # html.sub!(/<body.*?>/, "#{$&}<div class=\"html-wrapper\" style=\"position:absolute\">")
         # html.sub!('</body>','</div></body>')
         pdfname = HtmlFile.pdf_from_any_html(html)
