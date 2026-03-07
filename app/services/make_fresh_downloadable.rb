@@ -24,12 +24,13 @@ class MakeFreshDownloadable < ApplicationService
           "<img#{attrs}>"
         end
         html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"max-width:100%\">#{match}</div>" }
-        # width:100% ensures the body fills the full viewport (1024px default), giving
-        # wkhtmltopdf's smart-shrinking the correct reference width. Without it, smart-shrinking
-        # may measure the widest intrinsic element (e.g. a 1000px image) instead of the
-        # viewport width, causing text that wraps at 1024px to be scaled 2-3% too wide.
+        # figure { width: 100% } gives wkhtmltopdf's smart-shrinking a 1024px-wide
+        # layout anchor. Without it, smart-shrinking measures the widest intrinsic
+        # element (e.g. a 1000px image) and scales so that element fits 18 cm —
+        # but text was laid out at the full 1024px viewport, ending up ~2-3% wider
+        # than 18 cm and clipping a few pixels off the edge of each line.
         base_css = 'html, body {background-color: white; margin: 0; padding: 0; width: 100%;}'
-        img_css = 'img {max-width: 100% !important; height: auto !important;}'
+        img_css = 'figure {width: 100%;} img {max-width: 100% !important; height: auto !important;}'
         style_tag = "<style>#{base_css} #{img_css}</style>"
         unless html.sub!('</head>', "#{style_tag}</head>")
           html.prepend(style_tag)
