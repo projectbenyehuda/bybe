@@ -1,8 +1,13 @@
 # frozen_string_literal: true
 
+require 'mini_magick'
+
 # Controller to work with Collections.
 # Most of the actions require editor's permissions
 class CollectionsController < ApplicationController
+  # Maximum image width before resizing for PDF/DOCX embedding.
+  # Prevents wkhtmltopdf viewport expansion when large images are embedded as data: URIs.
+  MAX_IMAGE_WIDTH_PX = 1000
   include Tracking
   include BybeUtils
   include KwicConcordanceConcern
@@ -496,12 +501,26 @@ class CollectionsController < ApplicationController
   # the Rails server. HTTP round-trips cause a deadlock: the server is blocked
   # waiting for the subprocess, while the subprocess is blocked waiting for the
   # server to respond to the image request.
+
   def images_to_absolute_url(buf)
     buf.gsub(%r{/rails/active_storage/blobs/redirect/([^/"]+)/[^"]*}) do |url|
       signed_id = Regexp.last_match(1)
       begin
         blob = ActiveStorage::Blob.find_signed!(signed_id)
-        "data:#{blob.content_type};base64,#{Base64.strict_encode64(blob.download)}"
+        raw = blob.download
+        content_type = blob.content_type
+        if content_type.start_with?('image/')
+          begin
+            image = MiniMagick::Image.read(raw)
+            if image.width > MAX_IMAGE_WIDTH_PX
+              image.resize "#{MAX_IMAGE_WIDTH_PX}x>"
+              raw = image.to_blob
+            end
+          rescue StandardError => e
+            Rails.logger.warn "Image resize skipped (#{signed_id}): #{e.message}"
+          end
+        end
+        "data:#{content_type};base64,#{Base64.strict_encode64(raw)}"
       rescue StandardError => e
         Rails.logger.warn "Image embedding failed (#{signed_id}): #{e.message}"
         url
