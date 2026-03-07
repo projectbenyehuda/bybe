@@ -69,6 +69,12 @@ describe MakeFreshDownloadable do
         expect(captured_html.first).to include('background-color: white')
       end
 
+      it 'resets body margin and padding to match implicit-body behaviour from bare-div rendering' do
+        described_class.call('pdf', 'test.pdf', basic_html, manifestation, 'Author')
+        expect(captured_html.first).to include('margin: 0')
+        expect(captured_html.first).to include('padding: 0')
+      end
+
       it 'does not set an explicit body width that would conflict with page margins' do
         described_class.call('pdf', 'test.pdf', basic_html, manifestation, 'Author')
         expect(captured_html.first).not_to include('width: 20cm')

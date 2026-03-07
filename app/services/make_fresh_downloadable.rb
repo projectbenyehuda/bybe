@@ -20,7 +20,7 @@ class MakeFreshDownloadable < ApplicationService
           "<img#{attrs}>"
         end
         html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
-        base_css = 'html, body {background-color: white;}'
+        base_css = 'html, body {background-color: white; margin: 0; padding: 0;}'
         img_css = 'img {max-width: 100% !important; height: auto !important;}'
         html.sub!('</head>', "<style>#{base_css} #{img_css}</style></head>")
         # html.sub!(/<body.*?>/, "#{$&}<div class=\"html-wrapper\" style=\"position:absolute\">")
