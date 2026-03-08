@@ -450,10 +450,7 @@ class CollectionsController < ApplicationController
 
     case format
     when 'pdf'
-      html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
-      html.sub!('</head>',
-                '<style>html, body {width: 20cm !important;} p{max-width: 20cm;} div {max-width:20cm;} img {max-width: 100%;}</style></head>')
-      pdfname = HtmlFile.pdf_from_any_html(html)
+      pdfname = HtmlFile.pdf_from_any_html(HtmlFile.prepare_html_for_pdf(html))
       # Read file content before deleting
       pdf_content = File.binread(pdfname)
       File.delete(pdfname)

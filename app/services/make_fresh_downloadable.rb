@@ -14,15 +14,7 @@ class MakeFreshDownloadable < ApplicationService
     begin
       case format
       when 'pdf'
-        html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"max-width:100%\">#{match}</div>" }
-        pdf_css = '@page {size: A4; margin: 2cm;} img {max-width: 100%; height: auto;}'
-        if html.include?('</head>')
-          html.sub!('</head>', "<style>#{pdf_css}</style></head>")
-        else
-          html = "<!DOCTYPE html><html><head><meta charset='utf-8'><style>#{pdf_css}</style></head>" \
-                 "<body dir='rtl'>#{html}</body></html>"
-        end
-        pdfname = HtmlFile.pdf_from_any_html(html)
+        pdfname = HtmlFile.pdf_from_any_html(HtmlFile.prepare_html_for_pdf(html))
         dl.stored_file.attach(io: File.open(pdfname), filename: filename)
         File.delete(pdfname) # delete temporary generated PDF
       when 'docx'

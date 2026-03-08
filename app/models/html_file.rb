@@ -582,6 +582,20 @@ class HtmlFile < ApplicationRecord
       # TODO: validate result
     end
   end
+  PDF_CSS = '@page {size: A4; margin: 2cm;} img {max-width: 100%; height: auto;}'.freeze
+
+  # Wraps an HTML fragment (or full document) in a print-ready full document
+  # with A4 page CSS and ActiveStorage image scaling. Call this before pdf_from_any_html.
+  def self.prepare_html_for_pdf(html)
+    html = html.gsub(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"max-width:100%\">#{match}</div>" }
+    if html.include?('</head>')
+      html.sub('</head>', "<style>#{PDF_CSS}</style></head>")
+    else
+      "<!DOCTYPE html><html><head><meta charset='utf-8'><style>#{PDF_CSS}</style></head>" \
+        "<body dir='rtl'>#{html}</body></html>"
+    end
+  end
+
   def self.pdf_from_any_html(html_buffer)
     tmpfile = Tempfile.new(['pdf2html__', '.html'])
     begin
@@ -589,13 +603,15 @@ class HtmlFile < ApplicationRecord
       tmpfile.flush
       tmpfilename = tmpfile.path
       pdffilename = "#{tmpfilename}.pdf"
-      system('google-chrome', '--headless', '--no-sandbox', '--disable-gpu',
-             "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
-             "file://#{tmpfilename}")
-    rescue
+      # --no-sandbox is required when running as root (e.g. in Docker containers)
+      success = system('google-chrome', '--headless', '--no-sandbox', '--disable-gpu',
+                       "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
+                       "file://#{tmpfilename}")
+      return nil unless success && File.exist?(pdffilename)
+    rescue StandardError
       return nil
     ensure
-      tmpfile.close
+      tmpfile.close! # close and unlink the temp HTML file
     end
     pdffilename
   end

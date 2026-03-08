@@ -4,23 +4,24 @@ require 'rails_helper'
 
 describe HtmlFile do
   describe '.pdf_from_any_html' do
-    def minimal_html(body_content, extra_head = '')
-      <<~HTML
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Test</title>
-            #{extra_head}
-            <style>@page {size: A4; margin: 1cm;} html, body {width: 19cm !important;} img {max-width: 100%;}</style>
-          </head>
-          <body dir="rtl">#{body_content}</body>
-        </html>
-      HTML
+    before do
+      skip 'google-chrome not available' unless system('google-chrome --version', out: File::NULL, err: File::NULL)
+    end
+
+    # A 1x1 transparent PNG encoded as data: URI — no network required
+    let(:tiny_png_data_uri) do
+      'data:image/png;base64,' \
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=='
+    end
+
+    def pdf_html(body_content)
+      described_class.prepare_html_for_pdf(
+        "<div dir='rtl'>#{body_content}</div>"
+      )
     end
 
     it 'returns a path to a non-empty PDF file for plain text HTML' do
-      html = minimal_html('<p>שלום עולם</p><p>Hello world</p>')
-      pdfpath = described_class.pdf_from_any_html(html)
+      pdfpath = described_class.pdf_from_any_html(pdf_html('<p>שלום עולם</p><p>Hello world</p>'))
 
       expect(pdfpath).to end_with('.pdf')
       expect(File.exist?(pdfpath)).to be true
@@ -30,19 +31,16 @@ describe HtmlFile do
     end
 
     it 'produces a valid PDF (starts with PDF magic bytes)' do
-      html = minimal_html('<p>Test content</p>')
-      pdfpath = described_class.pdf_from_any_html(html)
+      pdfpath = described_class.pdf_from_any_html(pdf_html('<p>Test content</p>'))
 
       expect(File.binread(pdfpath, 4)).to eq('%PDF')
     ensure
       File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
     end
 
-    it 'handles HTML with an absolute-URL image' do
-      # Simulate what MakeFreshDownloadable does: convert /rails/active_storage paths to absolute URLs
-      img_tag = '<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png">'
-      html = minimal_html("<p>Text with image</p><div style=\"width:190mm\">#{img_tag}</div>")
-      pdfpath = described_class.pdf_from_any_html(html)
+    it 'handles HTML with an embedded image (no network required)' do
+      img_tag = "<img src=\"#{tiny_png_data_uri}\">"
+      pdfpath = described_class.pdf_from_any_html(pdf_html("<p>Text with image</p>#{img_tag}"))
 
       expect(File.exist?(pdfpath)).to be true
       expect(File.size(pdfpath)).to be > 0
@@ -52,13 +50,37 @@ describe HtmlFile do
     end
 
     it 'handles HTML without images' do
-      html = minimal_html('<p>Plain text only, no images.</p>')
-      pdfpath = described_class.pdf_from_any_html(html)
+      pdfpath = described_class.pdf_from_any_html(pdf_html('<p>Plain text only, no images.</p>'))
 
       expect(File.exist?(pdfpath)).to be true
       expect(File.size(pdfpath)).to be > 0
     ensure
       File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
+    end
+  end
+
+  describe '.prepare_html_for_pdf' do
+    it 'wraps a fragment in a full HTML document' do
+      result = described_class.prepare_html_for_pdf('<div>content</div>')
+
+      expect(result).to include('<!DOCTYPE html>')
+      expect(result).to include(described_class::PDF_CSS)
+      expect(result).to include('<div>content</div>')
+    end
+
+    it 'injects CSS into an existing </head> tag' do
+      html = '<html><head><title>T</title></head><body>content</body></html>'
+      result = described_class.prepare_html_for_pdf(html)
+
+      expect(result).to include(described_class::PDF_CSS)
+      expect(result).not_to include('<!DOCTYPE html><html><head>')
+    end
+
+    it 'wraps active_storage images in a max-width div' do
+      html = '<div><img src="/rails/active_storage/blobs/xxx/img.jpg"></div>'
+      result = described_class.prepare_html_for_pdf(html)
+
+      expect(result).to include('<div style="max-width:100%"><img src="/rails/active_storage')
     end
   end
 
