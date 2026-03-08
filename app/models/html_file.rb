@@ -613,7 +613,7 @@ class HtmlFile < ApplicationRecord
       unless success && File.exist?(pdffilename)
         Rails.logger.error(
           '[HtmlFile.pdf_from_any_html] Chrome PDF generation failed. ' \
-          "exit_status=#{$CHILD_STATUS&.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
+          "exit_status=#{$?&.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
         )
         return nil
       end
