@@ -18,8 +18,11 @@ class MakeFreshDownloadable < ApplicationService
         raise StandardError, "PDF generation failed for #{download_entity.class.name} #{download_entity.id}" \
           if pdfname.nil?
 
-        dl.stored_file.attach(io: File.open(pdfname), filename: filename)
-        FileUtils.rm_f(pdfname)
+        begin
+          dl.stored_file.attach(io: File.open(pdfname), filename: filename)
+        ensure
+          FileUtils.rm_f(pdfname)
+        end
       when 'docx'
         begin
           temp_file = Tempfile.new('tmp_doc_' + download_entity.id.to_s, 'tmp/')
