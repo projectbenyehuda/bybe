@@ -21,6 +21,16 @@ class FindSiblings < ApplicationService
     @next_sibling ||= find_sibling(1)
   end
 
+  # returns true if there are collection items before the current one (even if all placeholders)
+  def more_before?
+    @index > 0
+  end
+
+  # returns true if there are collection items after the current one (even if all placeholders)
+  def more_after?
+    @index < @items.length - 1
+  end
+
   private
 
   def find_sibling(step)

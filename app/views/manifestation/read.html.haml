@@ -28,7 +28,9 @@
                 prev = siblings.previous_sibling
                 nextsib = siblings.next_sibling
                 show_collection_link = !ci.collection.system?
-              - if prev.present? || nextsib.present? || show_collection_link
+                show_nav = prev.present? || nextsib.present? || show_collection_link ||
+                           siblings.more_before? || siblings.more_after?
+              - if show_nav
                 .author-works-nav
                   .topNavEntry
                     .link-nav
@@ -37,6 +39,8 @@
                         = link_to "#{default_link_by_class(prev[:item].class, prev[:item].id)}#{extra}" do
                           %span.right-arrow= '2'
                           = t(:to_previous_item)
+                      - elsif siblings.more_before?
+                        %span= t(:previous_items_not_yet_uploaded)
                   .topNavEntry
                     .link-nav{style: 'margin-left:20px; margin-right:20px;'}
                       - if show_collection_link
@@ -51,6 +55,8 @@
                         = link_to "#{default_link_by_class(nextsib[:item].class, nextsib[:item].id)}#{extra}" do
                           = t(:to_next_item)
                           %span.left-arrow= '1'
+                      - elsif siblings.more_after?
+                        %span= t(:next_items_not_yet_uploaded)
 
         .by-card-v02.proofable{ data: { item_id: @m.id, item_type: @m.class.name } }
           .work-area

@@ -2802,6 +2802,8 @@ en:
   to_other_translations_of_author: To Other Translations Of Author
   to_periodical: To Periodical
   to_previous_item: To Previous Item
+  next_items_not_yet_uploaded: The next items have not been uploaded yet
+  previous_items_not_yet_uploaded: The previous items have not been uploaded yet
   to_tagging_instructions: To Tagging Instructions
   to_the_author_page: To The Author Page
   to_the_authoress_page: To The Authoress Page

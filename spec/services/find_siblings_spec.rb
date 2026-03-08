@@ -29,6 +29,11 @@ describe FindSiblings do
       expect(previous_sibling).to be_nil
       expect(next_sibling).to eq({ item: manifestation_2, skipped: 0 })
     end
+
+    it 'reports more_before? true (placeholder exists before) and more_after? true' do
+      expect(result.more_before?).to be true
+      expect(result.more_after?).to be true
+    end
   end
 
   context 'when second manifestation is given' do
@@ -38,6 +43,11 @@ describe FindSiblings do
       expect(previous_sibling).to eq({ item: manifestation_1, skipped: 0 })
       expect(next_sibling).to eq({ item: manifestation_3, skipped: 2 })
     end
+
+    it 'reports more_before? and more_after? true' do
+      expect(result.more_before?).to be true
+      expect(result.more_after?).to be true
+    end
   end
 
   context 'when third manifestation is given' do
@@ -46,6 +56,11 @@ describe FindSiblings do
     it 'finds previous sibling but no next sibling' do
       expect(previous_sibling).to eq({ item: manifestation_2, skipped: 2 })
       expect(next_sibling).to be_nil
+    end
+
+    it 'reports more_before? true and more_after? false (truly last item)' do
+      expect(result.more_before?).to be true
+      expect(result.more_after?).to be false
     end
   end
 
