@@ -104,3 +104,14 @@ input[type=file][data-direct-upload-url][disabled] {
   padding: 4px 8px;
   display: inline-block;
 }
+
+.nav-placeholder {
+  display: flex;
+  text-align: center;
+  border-radius: 3px;
+  padding-right: 3px;
+  padding-left: 3px;
+  line-height: 25px;
+  color: #888;
+  font-style: italic;
+}
