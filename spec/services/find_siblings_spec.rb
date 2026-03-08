@@ -29,6 +29,11 @@ describe FindSiblings do
       expect(previous_sibling).to be_nil
       expect(next_sibling).to eq({ item: manifestation_2, skipped: 0 })
     end
+
+    it 'reports more_before? true (placeholder exists before) and more_after? true' do
+      expect(result.more_before?).to be true
+      expect(result.more_after?).to be true
+    end
   end
 
   context 'when second manifestation is given' do
@@ -38,6 +43,11 @@ describe FindSiblings do
       expect(previous_sibling).to eq({ item: manifestation_1, skipped: 0 })
       expect(next_sibling).to eq({ item: manifestation_3, skipped: 2 })
     end
+
+    it 'reports more_before? and more_after? true' do
+      expect(result.more_before?).to be true
+      expect(result.more_after?).to be true
+    end
   end
 
   context 'when third manifestation is given' do
@@ -46,6 +56,28 @@ describe FindSiblings do
     it 'finds previous sibling but no next sibling' do
       expect(previous_sibling).to eq({ item: manifestation_2, skipped: 2 })
       expect(next_sibling).to be_nil
+    end
+
+    it 'reports more_before? true and more_after? false (truly last item)' do
+      expect(result.more_before?).to be true
+      expect(result.more_after?).to be false
+    end
+  end
+
+  context 'when manifestation is last uploaded item but placeholders follow' do
+    subject(:result) { described_class.call(manifestation_a, collection_with_trailing_placeholders) }
+
+    let(:collection_with_trailing_placeholders) { create(:collection) }
+    let(:manifestation_a) { create(:manifestation) }
+
+    before do
+      collection_with_trailing_placeholders.collection_items.create!(item: manifestation_a, seqno: 1)
+      collection_with_trailing_placeholders.collection_items.create!(alt_title: 'placeholder_after', seqno: 2)
+    end
+
+    it 'finds no next sibling but reports more_after? true' do
+      expect(result.next_sibling).to be_nil
+      expect(result.more_after?).to be true
     end
   end
 

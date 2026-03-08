@@ -4,7 +4,7 @@
 class FindSiblings < ApplicationService
   def call(manifestation, collection)
     @items = collection.collection_items.sort_by(&:seqno)
-    @index = @items.find_index { |ci| ci.item_id == manifestation.id }
+    @index = @items.find_index { |ci| ci.item_type == manifestation.class.name && ci.item_id == manifestation.id }
 
     raise 'Item not found in collection' if @index.nil?
 
@@ -19,6 +19,16 @@ class FindSiblings < ApplicationService
   # returns the next sibling that wraps an item, skipping placeholders. and returning count of skipped items
   def next_sibling
     @next_sibling ||= find_sibling(1)
+  end
+
+  # returns true if there are collection items before the current one (even if all placeholders)
+  def more_before?
+    @index > 0
+  end
+
+  # returns true if there are collection items after the current one (even if all placeholders)
+  def more_after?
+    @index < @items.length - 1
   end
 
   private
