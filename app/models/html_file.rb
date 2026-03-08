@@ -582,19 +582,48 @@ class HtmlFile < ApplicationRecord
       # TODO: validate result
     end
   end
+  PDF_CSS = '@page {size: A4; margin: 2cm;} img {max-width: 100%; height: auto;}'.freeze
+
+  # Wraps an HTML fragment (or full document) in a print-ready full document
+  # with A4 page CSS and ActiveStorage image scaling. Call this before pdf_from_any_html.
+  def self.prepare_html_for_pdf(html)
+    html = html.gsub(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"max-width:100%\">#{match}</div>" }
+    if html.include?('</head>')
+      html.sub('</head>', "<style>#{PDF_CSS}</style></head>")
+    else
+      "<!DOCTYPE html><html><head><meta charset='utf-8'><style>#{PDF_CSS}</style></head>" \
+        "<body dir='rtl'>#{html}</body></html>"
+    end
+  end
+
   def self.pdf_from_any_html(html_buffer)
-    tmpfile = Tempfile.new(['pdf2html__','.html'])
+    tmpfile = Tempfile.new(['pdf2html__', '.html'])
     begin
       tmpfile.write(html_buffer)
       tmpfile.flush
       tmpfilename = tmpfile.path
-      result = `wkhtmltopdf --encoding 'UTF-8' --page-width 20cm page #{tmpfilename} #{tmpfilename}.pdf`
-    rescue
+      pdffilename = "#{tmpfilename}.pdf"
+      # --no-sandbox is required when running as root (e.g. in Docker/CI containers).
+      # For non-root deployments the sandbox is preserved unless CHROME_NO_SANDBOX=1.
+      args = ['google-chrome', '--headless', '--disable-gpu',
+              "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
+              "file://#{tmpfilename}"]
+      args.insert(1, '--no-sandbox') if Process.uid.zero? || ENV['CHROME_NO_SANDBOX'] == '1'
+      success = system(*args)
+      unless success && File.exist?(pdffilename)
+        Rails.logger.error(
+          '[HtmlFile.pdf_from_any_html] Chrome PDF generation failed. ' \
+          "exit_status=#{$?&.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
+        )
+        return nil
+      end
+    rescue StandardError => e
+      Rails.logger.error("[HtmlFile.pdf_from_any_html] #{e.class}: #{e.message}")
       return nil
     ensure
-      tmpfile.close
+      tmpfile.close! # close and unlink the temp HTML file
     end
-    "#{tmpfilename}.pdf"
+    pdffilename
   end
 
   def self.new_since(t) # pass a Time

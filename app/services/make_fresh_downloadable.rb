@@ -14,14 +14,15 @@ class MakeFreshDownloadable < ApplicationService
     begin
       case format
       when 'pdf'
-        html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
-        html.sub!('</head>',
-                  '<style>html, body {width: 20cm !important;} p{max-width: 20cm;} div {max-width:20cm;} img {max-width: 100%;}</style></head>')
-        # html.sub!(/<body.*?>/, "#{$&}<div class=\"html-wrapper\" style=\"position:absolute\">")
-        # html.sub!('</body>','</div></body>')
-        pdfname = HtmlFile.pdf_from_any_html(html)
-        dl.stored_file.attach(io: File.open(pdfname), filename: filename)
-        File.delete(pdfname) # delete temporary generated PDF
+        pdfname = HtmlFile.pdf_from_any_html(HtmlFile.prepare_html_for_pdf(html))
+        raise StandardError, "PDF generation failed for #{download_entity.class.name} #{download_entity.id}" \
+          if pdfname.nil?
+
+        begin
+          dl.stored_file.attach(io: File.open(pdfname), filename: filename)
+        ensure
+          FileUtils.rm_f(pdfname)
+        end
       when 'docx'
         begin
           temp_file = Tempfile.new('tmp_doc_' + download_entity.id.to_s, 'tmp/')

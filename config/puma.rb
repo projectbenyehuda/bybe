@@ -25,7 +25,7 @@ if ENV['RACK_ENV'] == 'production'
   end
   
 else
-  workers 0
+  workers 3
   environment 'development'
 end
 

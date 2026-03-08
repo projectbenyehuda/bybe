@@ -76,7 +76,7 @@ Rails.application.configure do
   # config.action_cable.disable_request_forgery_protection = true
 
   routes.default_url_options[:host] = 'localhost:3000'
-  routes.default_url_options[:protocol] = 'https'
+  routes.default_url_options[:protocol] = 'http'
 
   if ENV['PROFILE']
     config.cache_classes = true
