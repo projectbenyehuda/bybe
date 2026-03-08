@@ -3,6 +3,65 @@
 require 'rails_helper'
 
 describe HtmlFile do
+  describe '.pdf_from_any_html' do
+    def minimal_html(body_content, extra_head = '')
+      <<~HTML
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Test</title>
+            #{extra_head}
+            <style>@page {size: A4; margin: 1cm;} html, body {width: 19cm !important;} img {max-width: 100%;}</style>
+          </head>
+          <body dir="rtl">#{body_content}</body>
+        </html>
+      HTML
+    end
+
+    it 'returns a path to a non-empty PDF file for plain text HTML' do
+      html = minimal_html('<p>שלום עולם</p><p>Hello world</p>')
+      pdfpath = described_class.pdf_from_any_html(html)
+
+      expect(pdfpath).to end_with('.pdf')
+      expect(File.exist?(pdfpath)).to be true
+      expect(File.size(pdfpath)).to be > 0
+    ensure
+      File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
+    end
+
+    it 'produces a valid PDF (starts with PDF magic bytes)' do
+      html = minimal_html('<p>Test content</p>')
+      pdfpath = described_class.pdf_from_any_html(html)
+
+      expect(File.binread(pdfpath, 4)).to eq('%PDF')
+    ensure
+      File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
+    end
+
+    it 'handles HTML with an absolute-URL image' do
+      # Simulate what MakeFreshDownloadable does: convert /rails/active_storage paths to absolute URLs
+      img_tag = '<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png">'
+      html = minimal_html("<p>Text with image</p><div style=\"width:190mm\">#{img_tag}</div>")
+      pdfpath = described_class.pdf_from_any_html(html)
+
+      expect(File.exist?(pdfpath)).to be true
+      expect(File.size(pdfpath)).to be > 0
+      expect(File.binread(pdfpath, 4)).to eq('%PDF')
+    ensure
+      File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
+    end
+
+    it 'handles HTML without images' do
+      html = minimal_html('<p>Plain text only, no images.</p>')
+      pdfpath = described_class.pdf_from_any_html(html)
+
+      expect(File.exist?(pdfpath)).to be true
+      expect(File.size(pdfpath)).to be > 0
+    ensure
+      File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
+    end
+  end
+
   describe '.create_WEM_new' do
     subject(:call) { html_file.create_WEM_new(author.id, title, markdown, true) }
 

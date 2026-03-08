@@ -583,18 +583,21 @@ class HtmlFile < ApplicationRecord
     end
   end
   def self.pdf_from_any_html(html_buffer)
-    tmpfile = Tempfile.new(['pdf2html__','.html'])
+    tmpfile = Tempfile.new(['pdf2html__', '.html'])
     begin
       tmpfile.write(html_buffer)
       tmpfile.flush
       tmpfilename = tmpfile.path
-      result = `wkhtmltopdf --encoding 'UTF-8' --page-width 20cm page #{tmpfilename} #{tmpfilename}.pdf`
+      pdffilename = "#{tmpfilename}.pdf"
+      system('google-chrome', '--headless', '--no-sandbox', '--disable-gpu',
+             "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
+             "file://#{tmpfilename}")
     rescue
       return nil
     ensure
       tmpfile.close
     end
-    "#{tmpfilename}.pdf"
+    pdffilename
   end
 
   def self.new_since(t) # pass a Time

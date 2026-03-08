@@ -14,11 +14,14 @@ class MakeFreshDownloadable < ApplicationService
     begin
       case format
       when 'pdf'
-        html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"width:209mm\">#{match}</div>" }
-        html.sub!('</head>',
-                  '<style>html, body {width: 20cm !important;} p{max-width: 20cm;} div {max-width:20cm;} img {max-width: 100%;}</style></head>')
-        # html.sub!(/<body.*?>/, "#{$&}<div class=\"html-wrapper\" style=\"position:absolute\">")
-        # html.sub!('</body>','</div></body>')
+        html.gsub!(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"max-width:100%\">#{match}</div>" }
+        pdf_css = '@page {size: A4; margin: 2cm;} img {max-width: 100%; height: auto;}'
+        if html.include?('</head>')
+          html.sub!('</head>', "<style>#{pdf_css}</style></head>")
+        else
+          html = "<!DOCTYPE html><html><head><meta charset='utf-8'><style>#{pdf_css}</style></head>" \
+                 "<body dir='rtl'>#{html}</body></html>"
+        end
         pdfname = HtmlFile.pdf_from_any_html(html)
         dl.stored_file.attach(io: File.open(pdfname), filename: filename)
         File.delete(pdfname) # delete temporary generated PDF
