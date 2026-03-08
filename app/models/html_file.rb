@@ -603,12 +603,22 @@ class HtmlFile < ApplicationRecord
       tmpfile.flush
       tmpfilename = tmpfile.path
       pdffilename = "#{tmpfilename}.pdf"
-      # --no-sandbox is required when running as root (e.g. in Docker containers)
-      success = system('google-chrome', '--headless', '--no-sandbox', '--disable-gpu',
-                       "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
-                       "file://#{tmpfilename}")
-      return nil unless success && File.exist?(pdffilename)
-    rescue StandardError
+      # --no-sandbox is required when running as root (e.g. in Docker/CI containers).
+      # For non-root deployments the sandbox is preserved unless CHROME_NO_SANDBOX=1.
+      args = ['google-chrome', '--headless', '--disable-gpu',
+              "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
+              "file://#{tmpfilename}"]
+      args.insert(1, '--no-sandbox') if Process.uid.zero? || ENV['CHROME_NO_SANDBOX'] == '1'
+      success = system(*args)
+      unless success && File.exist?(pdffilename)
+        Rails.logger.error(
+          '[HtmlFile.pdf_from_any_html] Chrome PDF generation failed. ' \
+          "exit_status=#{$CHILD_STATUS&.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
+        )
+        return nil
+      end
+    rescue StandardError => e
+      Rails.logger.error("[HtmlFile.pdf_from_any_html] #{e.class}: #{e.message}")
       return nil
     ensure
       tmpfile.close! # close and unlink the temp HTML file

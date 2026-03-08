@@ -15,8 +15,11 @@ class MakeFreshDownloadable < ApplicationService
       case format
       when 'pdf'
         pdfname = HtmlFile.pdf_from_any_html(HtmlFile.prepare_html_for_pdf(html))
+        raise StandardError, "PDF generation failed for #{download_entity.class.name} #{download_entity.id}" \
+          if pdfname.nil?
+
         dl.stored_file.attach(io: File.open(pdfname), filename: filename)
-        File.delete(pdfname) # delete temporary generated PDF
+        FileUtils.rm_f(pdfname)
       when 'docx'
         begin
           temp_file = Tempfile.new('tmp_doc_' + download_entity.id.to_s, 'tmp/')

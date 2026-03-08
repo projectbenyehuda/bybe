@@ -451,10 +451,14 @@ class CollectionsController < ApplicationController
     case format
     when 'pdf'
       pdfname = HtmlFile.pdf_from_any_html(HtmlFile.prepare_html_for_pdf(html))
-      # Read file content before deleting
-      pdf_content = File.binread(pdfname)
-      File.delete(pdfname)
-      send_data pdf_content, filename: filename, type: 'application/pdf', disposition: 'attachment'
+      raise StandardError, 'PDF generation failed' if pdfname.nil?
+
+      begin
+        pdf_content = File.binread(pdfname)
+        send_data pdf_content, filename: filename, type: 'application/pdf', disposition: 'attachment'
+      ensure
+        FileUtils.rm_f(pdfname)
+      end
     when 'docx'
       content = PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :docx).force_encoding('UTF-8')
       send_data content, filename: filename, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'

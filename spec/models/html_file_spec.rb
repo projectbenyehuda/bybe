@@ -11,7 +11,7 @@ describe HtmlFile do
     # A 1x1 transparent PNG encoded as data: URI — no network required
     let(:tiny_png_data_uri) do
       'data:image/png;base64,' \
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=='
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=='
     end
 
     def pdf_html(body_content)
