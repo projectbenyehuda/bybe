@@ -64,6 +64,23 @@ describe FindSiblings do
     end
   end
 
+  context 'when manifestation is last uploaded item but placeholders follow' do
+    subject(:result) { described_class.call(manifestation_a, collection_with_trailing_placeholders) }
+
+    let(:collection_with_trailing_placeholders) { create(:collection) }
+    let(:manifestation_a) { create(:manifestation) }
+
+    before do
+      collection_with_trailing_placeholders.collection_items.create!(item: manifestation_a, seqno: 1)
+      collection_with_trailing_placeholders.collection_items.create!(alt_title: 'placeholder_after', seqno: 2)
+    end
+
+    it 'finds no next sibling but reports more_after? true' do
+      expect(result.next_sibling).to be_nil
+      expect(result.more_after?).to be true
+    end
+  end
+
   context 'when manifestation is not in collection' do
     let(:manifestation) { create(:manifestation) }
 

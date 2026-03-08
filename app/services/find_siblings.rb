@@ -4,7 +4,7 @@
 class FindSiblings < ApplicationService
   def call(manifestation, collection)
     @items = collection.collection_items.sort_by(&:seqno)
-    @index = @items.find_index { |ci| ci.item_id == manifestation.id }
+    @index = @items.find_index { |ci| ci.item_type == manifestation.class.name && ci.item_id == manifestation.id }
 
     raise 'Item not found in collection' if @index.nil?
 
