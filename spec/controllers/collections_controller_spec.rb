@@ -563,4 +563,91 @@ describe CollectionsController do
       expect(response).to have_http_status(:unprocessable_content)
     end
   end
+
+  describe 'cover image and cover_text' do
+    let(:editor_user) { create(:user, :edit_catalog) }
+
+    before { allow(controller).to receive(:current_user).and_return(editor_user) }
+
+    describe '#show' do
+      context 'when cover_image is attached' do
+        let(:collection_with_cover) do
+          create(:collection, collection_type: 'volume', manifestations: create_list(:manifestation, 2)).tap do |c|
+            c.cover_image.attach(io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
+                                 filename: 'cover.jpg', content_type: 'image/jpeg')
+          end
+        end
+
+        it 'renders the cover image before collection items' do
+          get :show, params: { id: collection_with_cover.id }
+          expect(response).to be_successful
+          expect(response.body).to have_css('.collection-cover-image-card')
+          expect(response.body).to have_css('img.collection-cover-image')
+        end
+      end
+
+      context 'when cover_image is attached and cover_text is present' do
+        let(:collection_with_cover_text) do
+          create(:collection, collection_type: 'volume', cover_text: '**Bold intro text**',
+                              manifestations: create_list(:manifestation, 2)).tap do |c|
+            c.cover_image.attach(io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
+                                 filename: 'cover.jpg', content_type: 'image/jpeg')
+          end
+        end
+
+        it 'renders cover_text as HTML below the cover image' do
+          get :show, params: { id: collection_with_cover_text.id }
+          expect(response).to be_successful
+          expect(response.body).to include('<strong>Bold intro text</strong>')
+          expect(response.body).to have_css('.collection-cover-text')
+        end
+      end
+
+      context 'when collection is periodical and issues have cover images' do
+        let(:issue_with_cover) do
+          create(:collection, collection_type: 'periodical_issue').tap do |c|
+            c.cover_image.attach(io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
+                                 filename: 'issue_cover.jpg', content_type: 'image/jpeg')
+          end
+        end
+        let(:issue_without_cover) { create(:collection, collection_type: 'periodical_issue') }
+        let(:periodical) do
+          create(:collection, collection_type: 'periodical',
+                              included_collections: [issue_with_cover, issue_without_cover])
+        end
+
+        it 'renders the issue gallery' do
+          get :show, params: { id: periodical.id }
+          expect(response).to be_successful
+          expect(response.body).to have_css('.periodical-issue-gallery')
+        end
+      end
+
+      context 'when collection is periodical and no issues have cover images' do
+        let(:periodical) do
+          create(:collection, collection_type: 'periodical',
+                              included_collections: create_list(:collection, 2, collection_type: 'periodical_issue'))
+        end
+
+        it 'does not render the issue gallery' do
+          get :show, params: { id: periodical.id }
+          expect(response).to be_successful
+          expect(response.body).not_to have_css('.periodical-issue-gallery')
+        end
+      end
+    end
+
+    describe '#update' do
+      it 'permits cover_text parameter' do
+        put :update, params: { id: collection.id, collection: { cover_text: 'Some cover text' } }
+        expect(collection.reload.cover_text).to eq('Some cover text')
+      end
+
+      it 'permits cover_image parameter' do
+        image_file = fixture_file_upload(Rails.root.join('spec/fixtures/files/test_image.jpg'), 'image/jpeg')
+        put :update, params: { id: collection.id, collection: { cover_image: image_file } }
+        expect(collection.reload.cover_image).to be_attached
+      end
+    end
+  end
 end
