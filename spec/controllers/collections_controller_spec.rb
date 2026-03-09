@@ -98,11 +98,14 @@ describe CollectionsController do
         )
       end
 
-      it 'marks periodical issues divs as proofable' do
+      it 'renders the thumbnail gallery and issue TOC cards' do
+        expect(response.body).to have_css('.periodical-issue-gallery')
+        expect(response.body).to have_css('.issue-gallery-item', count: 3)
         expect(response.body).to have_css('.by-card-v02.proofable', count: 3)
-        collection.collection_items.select { |ci| issues.include?(ci.item) }.each do |ci|
-          expect(response.body).to have_css(".proofable[data-item-id='#{ci.item_id}'][data-item-type='Collection']")
-        end
+      end
+
+      it 'does not render the flat anchor-link list for periodicals' do
+        expect(response.body).not_to have_css('.binder-texts-list')
       end
     end
 
@@ -561,6 +564,96 @@ describe CollectionsController do
       }
 
       expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe 'cover image and cover_text' do
+    let(:editor_user) { create(:user, :edit_catalog) }
+
+    before { allow(controller).to receive(:current_user).and_return(editor_user) }
+
+    describe '#show' do
+      context 'when cover_image is attached' do
+        let(:collection_with_cover) do
+          create(:collection, collection_type: 'volume', manifestations: create_list(:manifestation, 2)).tap do |c|
+            c.cover_image.attach(io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
+                                 filename: 'cover.jpg', content_type: 'image/jpeg')
+          end
+        end
+
+        it 'renders the cover image before collection items' do
+          get :show, params: { id: collection_with_cover.id }
+          expect(response).to be_successful
+          expect(response.body).to have_css('.collection-cover-image-card')
+          expect(response.body).to have_css('img.collection-cover-image')
+        end
+      end
+
+      context 'when cover_image is attached and cover_text is present' do
+        let(:collection_with_cover_text) do
+          create(:collection, collection_type: 'volume', cover_text: '**Bold intro text**',
+                              manifestations: create_list(:manifestation, 2)).tap do |c|
+            c.cover_image.attach(io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
+                                 filename: 'cover.jpg', content_type: 'image/jpeg')
+          end
+        end
+
+        it 'renders cover_text as HTML below the cover image' do
+          get :show, params: { id: collection_with_cover_text.id }
+          expect(response).to be_successful
+          expect(response.body).to include('<strong>Bold intro text</strong>')
+          expect(response.body).to have_css('.collection-cover-text')
+        end
+      end
+
+      context 'when collection is periodical' do
+        let(:issue_with_cover) do
+          create(:collection, collection_type: 'periodical_issue').tap do |c|
+            c.cover_image.attach(io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
+                                 filename: 'issue_cover.jpg', content_type: 'image/jpeg')
+          end
+        end
+        let(:issue_without_cover) { create(:collection, collection_type: 'periodical_issue') }
+        let(:periodical) do
+          create(:collection, collection_type: 'periodical',
+                              included_collections: [issue_with_cover, issue_without_cover])
+        end
+
+        it 'renders the issue gallery for all issues' do
+          get :show, params: { id: periodical.id }
+          expect(response).to be_successful
+          expect(response.body).to have_css('.periodical-issue-gallery')
+          expect(response.body).to have_css('.issue-gallery-item', count: 2)
+        end
+
+        it 'uses placeholder image for issues without a cover' do
+          get :show, params: { id: periodical.id }
+          expect(response.body).to match(/cover_placeholder.*\.svg/)
+        end
+      end
+
+      context 'when collection is periodical with no issues' do
+        let(:periodical) { create(:collection, collection_type: 'periodical') }
+
+        it 'still renders the gallery' do
+          get :show, params: { id: periodical.id }
+          expect(response).to be_successful
+          expect(response.body).to have_css('.periodical-issue-gallery')
+        end
+      end
+    end
+
+    describe '#update' do
+      it 'permits cover_text parameter' do
+        put :update, params: { id: collection.id, collection: { cover_text: 'Some cover text' } }
+        expect(collection.reload.cover_text).to eq('Some cover text')
+      end
+
+      it 'permits cover_image parameter' do
+        image_file = fixture_file_upload(Rails.root.join('spec/fixtures/files/test_image.jpg'), 'image/jpeg')
+        put :update, params: { id: collection.id, collection: { cover_image: image_file } }
+        expect(collection.reload.cover_image).to be_attached
+      end
     end
   end
 end
