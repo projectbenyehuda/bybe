@@ -504,11 +504,15 @@ class CollectionsController < ApplicationController
     parent_authorities = @collection.involved_authorities.map { |ia| [ia.authority_id, ia.role] }
 
     if @collection.periodical?
-      # Preload cover_image attachments to avoid N+1 when rendering the issue gallery
-      preloaded_items = @collection.collection_items.includes(item: { cover_image_attachment: :blob })
-      @periodical_issues = preloaded_items.filter_map do |ci|
+      # Load items first, then preload cover_image attachments on the concrete Collection records.
+      # Cannot use includes(item: {...}) through a polymorphic association — Rails can't resolve it.
+      @periodical_issues = @collection.collection_items.includes(:item).filter_map do |ci|
         ci.item if ci.item.present? && ci.item_type == 'Collection' && ci.item.periodical_issue?
       end
+      ActiveRecord::Associations::Preloader.new(
+        records: @periodical_issues,
+        associations: { cover_image_attachment: :blob }
+      ).call
     else
       @periodical_issues = []
     end

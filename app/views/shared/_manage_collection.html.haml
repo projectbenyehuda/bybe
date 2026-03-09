@@ -49,7 +49,7 @@
       %p
         %img{ src: url_for(collection.cover_image), alt: collection.title,
               style: 'max-width: 300px; max-height: 300px;' }
-    = form_for collection, url: collection_path(collection.id), method: :put, multipart: true do |f|
+    = form_for collection, url: collection_path(collection.id), namespace: "cover_#{collection.id}", method: :put, multipart: true do |f|
       .form-group
         = f.file_field :cover_image, class: 'form-control', accept: 'image/*'
       = f.submit t(:upload_cover_image), class: 'by-button-v02'
