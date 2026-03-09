@@ -504,14 +504,13 @@ class CollectionsController < ApplicationController
     parent_authorities = @collection.involved_authorities.map { |ia| [ia.authority_id, ia.role] }
 
     if @collection.periodical?
-      # Preload cover_image attachments to avoid N+1 when checking cover images for gallery
+      # Preload cover_image attachments to avoid N+1 when rendering the issue gallery
       preloaded_items = @collection.collection_items.includes(item: { cover_image_attachment: :blob })
-      @issues_with_cover = preloaded_items.filter_map do |ci|
-        ci.item if ci.item.present? && ci.item_type == 'Collection' &&
-                   ci.item.periodical_issue? && ci.item.cover_image.attached?
+      @periodical_issues = preloaded_items.filter_map do |ci|
+        ci.item if ci.item.present? && ci.item_type == 'Collection' && ci.item.periodical_issue?
       end
     else
-      @issues_with_cover = []
+      @periodical_issues = []
     end
 
     if @collection.periodical? || @collection.volume_series? # we don't want to show an entire periodical's or volume series' run in a single Web page; instead, we show the complete TOC of all issues/volumes

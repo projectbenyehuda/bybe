@@ -603,7 +603,7 @@ describe CollectionsController do
         end
       end
 
-      context 'when collection is periodical and issues have cover images' do
+      context 'when collection is periodical' do
         let(:issue_with_cover) do
           create(:collection, collection_type: 'periodical_issue').tap do |c|
             c.cover_image.attach(io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
@@ -616,18 +616,21 @@ describe CollectionsController do
                               included_collections: [issue_with_cover, issue_without_cover])
         end
 
-        it 'renders the issue gallery' do
+        it 'renders the issue gallery for all issues' do
           get :show, params: { id: periodical.id }
           expect(response).to be_successful
           expect(response.body).to have_css('.periodical-issue-gallery')
+          expect(response.body).to have_css('.issue-gallery-item', count: 2)
+        end
+
+        it 'uses placeholder image for issues without a cover' do
+          get :show, params: { id: periodical.id }
+          expect(response.body).to match(/cover_placeholder.*\.svg/)
         end
       end
 
-      context 'when collection is periodical and no issues have cover images' do
-        let(:periodical) do
-          create(:collection, collection_type: 'periodical',
-                              included_collections: create_list(:collection, 2, collection_type: 'periodical_issue'))
-        end
+      context 'when collection is periodical with no issues' do
+        let(:periodical) { create(:collection, collection_type: 'periodical') }
 
         it 'does not render the issue gallery' do
           get :show, params: { id: periodical.id }
