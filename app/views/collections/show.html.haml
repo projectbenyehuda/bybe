@@ -130,7 +130,7 @@
                   .collection-cover-text
                     = sanitize(MarkdownToHtml.call(@collection.cover_text))
 
-          - if @collection.periodical? && @periodical_issues.any?
+          - if @collection.periodical?
             .by-card-v02.periodical-issue-gallery
               .by-card-content-v02
                 %h3= t(:issue_covers)
