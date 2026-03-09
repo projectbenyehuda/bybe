@@ -547,6 +547,7 @@ en:
       periodical_issue: to issue
       series: to whole series
       volume_series: to volume series
+      other: to whole collection
   genre_values:
     poetry: Poetry
     prose: Prose
@@ -1315,8 +1316,8 @@ en:
   items_to_save: Items to save
   items_to_print: Items to print
   included_items: Included items
-  download_full_collection: Save the collection in the selected format
-  download_n_selected_items: Save %{count} items in the selected format
+  download_full_collection: Download collection in the selected format
+  download_n_selected_items: Download %{count} items in the selected format
   print_full_collection: Print the collection
   print_n_selected_items: Print %{count} selected items
   select_all: Select all

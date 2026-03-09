@@ -1987,6 +1987,7 @@ he:
       periodical_issue: לתצוגת הגליון
       series: לתצוגת המחזור/שער כולו
       volume_series: לתצוגת סדרת הכרכים
+      other: לאוסף המלא
   genre_values:
     poetry: שירה
     prose: פרוזה
