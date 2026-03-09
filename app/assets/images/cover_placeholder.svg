@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 200" width="150" height="200">
+  <!-- Book cover background -->
+  <rect width="150" height="200" fill="#907989" rx="4"/>
+  <!-- Spine highlight -->
+  <rect width="12" height="200" fill="#7D5F74" rx="2"/>
+  <!-- Book pages suggestion (right edge) -->
+  <rect x="138" width="12" height="200" fill="#CAAFC1" rx="2"/>
+  <!-- Open book icon in center -->
+  <g transform="translate(75,90)" fill="#d9cdd5">
+    <!-- Left page -->
+    <path d="M-28,-30 C-28,-30 -5,-25 -5,0 C-5,25 -28,30 -28,30 L-32,30 L-32,-30 Z" opacity="0.9"/>
+    <!-- Right page -->
+    <path d="M28,-30 C28,-30 5,-25 5,0 C5,25 28,30 28,30 L32,30 L32,-30 Z" opacity="0.9"/>
+    <!-- Spine center line -->
+    <rect x="-2" y="-30" width="4" height="60" opacity="0.7"/>
+  </g>
+</svg>

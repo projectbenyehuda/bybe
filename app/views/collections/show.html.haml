@@ -122,6 +122,30 @@
                 -#  %span{style: "font-weight:bold"} המלצות:
                 -#  %a{href: "#"} 3 המלצות קוראים
 
+          - if @collection.cover_image.attached?
+            .by-card-v02.collection-cover-image-card
+              .by-card-content-v02
+                %img.collection-cover-image{ src: url_for(@collection.cover_image), alt: @collection.title, style: 'max-width: 100%; height: auto;' }
+                - if @collection.cover_text.present?
+                  .collection-cover-text
+                    = sanitize(MarkdownToHtml.call(@collection.cover_text))
+
+          - if @collection.periodical?
+            .by-card-v02.periodical-issue-gallery
+              .by-card-content-v02
+                %h3= t(:issue_covers)
+                .issue-gallery-grid{ style: 'display: flex; flex-wrap: wrap; gap: 16px;' }
+                  - @periodical_issues.each do |issue|
+                    .issue-gallery-item{ style: 'text-align: center; max-width: 150px;' }
+                      = link_to collection_path(issue) do
+                        - if issue.cover_image.attached? && issue.cover_image.variable?
+                          %img{ src: url_for(issue.cover_image.variant(resize_to_fit: [150, nil])), alt: issue.title, style: 'max-width: 150px; height: auto;' }
+                        - elsif issue.cover_image.attached?
+                          %img{ src: url_for(issue.cover_image), alt: issue.title, style: 'max-width: 150px; height: auto;' }
+                        - else
+                          %img{ src: image_path('cover_placeholder.svg'), alt: issue.title, style: 'max-width: 150px; height: auto;' }
+                        %div= issue.title
+
           :ruby
             eauthors = {}
             etranslators = {}
@@ -132,7 +156,7 @@
               effective_translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
               etranslators[title] = effective_translators.map(&:name).join(', ') if effective_translators.present?
             end
-          - if eauthors.present? || @htmls.any?
+          - if !@collection.periodical? && (eauthors.present? || @htmls.any?)
             .by-card-v02.binder-texts-list
               .by-card-content-v02
                 .list-no-bullets

@@ -43,6 +43,21 @@
     %span.by-button-v02.cancel_editable_edit{style:'padding-top:7px;display:inline-block;'}= t(:cancel)
     = render partial: 'involved_authorities/list', locals: { item: collection, edit: true }
 
+  #cover_image_section{ style: 'margin-top: 20px; padding: 10px; border: 1px solid #ddd;' }
+    %h3= t(:cover_image)
+    - if collection.cover_image.attached?
+      %p
+        %img{ src: url_for(collection.cover_image), alt: collection.title,
+              style: 'max-width: 300px; max-height: 300px;' }
+    = form_for collection, url: collection_path(collection.id), namespace: "cover_#{collection.id}", method: :put, multipart: true do |f|
+      .form-group
+        = f.file_field :cover_image, class: 'form-control', accept: 'image/*'
+      = f.submit t(:upload_cover_image), class: 'by-button-v02'
+      %br
+      = f.label :cover_text, t(:cover_text)
+      = f.text_area :cover_text, class: 'form-control', style: 'width: 75%;', rows: 4
+      = f.submit t(:save), class: 'by-button-v02', style: 'margin-top: 5px;'
+
   #external_links_section{ style: 'margin-top: 20px; padding: 10px; border: 1px solid #ddd;' }
     %h3= t(:external_links)
     #external_links_list

@@ -244,7 +244,7 @@ class CollectionsController < ApplicationController
   def update
     if @collection.update(collection_params)
       respond_to do |format|
-        format.html { redirect_to collection_url(@collection), notice: t(:updated_successfully) }
+        format.html { redirect_back fallback_location: collection_url(@collection), notice: t(:updated_successfully) }
         format.js
       end
     else
@@ -440,7 +440,8 @@ class CollectionsController < ApplicationController
   # Only allow a list of trusted parameters through.
   def collection_params
     params.require(:collection).permit(:title, :sort_title, :subtitle, :issn, :collection_type, :inception,
-                                       :inception_year, :publisher_line, :pub_year, :publication_id, :toc_id, :toc_strategy, :alternate_titles, :description)
+                                       :inception_year, :publisher_line, :pub_year, :publication_id, :toc_id, :toc_strategy, :alternate_titles, :description,
+                                       :cover_image, :cover_text)
   end
 
   # Generate and send file directly without caching (for selective downloads)
@@ -502,6 +503,20 @@ class CollectionsController < ApplicationController
     counter = { value: 1 } # Use hash to maintain reference across recursive calls
     parent_authorities = @collection.involved_authorities.map { |ia| [ia.authority_id, ia.role] }
 
+    if @collection.periodical?
+      # Load items first, then preload cover_image attachments on the concrete Collection records.
+      # Cannot use includes(item: {...}) through a polymorphic association — Rails can't resolve it.
+      @periodical_issues = @collection.collection_items.includes(:item).filter_map do |ci|
+        ci.item if ci.item.present? && ci.item_type == 'Collection' && ci.item.periodical_issue?
+      end
+      ActiveRecord::Associations::Preloader.new(
+        records: @periodical_issues,
+        associations: { cover_image_attachment: :blob }
+      ).call
+    else
+      @periodical_issues = []
+    end
+
     if @collection.periodical? || @collection.volume_series? # we don't want to show an entire periodical's or volume series' run in a single Web page; instead, we show the complete TOC of all issues/volumes
       @collection.collection_items.each do |ci|
         next unless ci.item.present? && ci.item_type == 'Collection'
@@ -517,6 +532,10 @@ class CollectionsController < ApplicationController
     else
       build_htmls_recursively(@collection.collection_items, parent_authorities, 0, counter)
     end
+    set_collection_metadata
+  end
+
+  def set_collection_metadata
     @collection_total_items = @collection.collection_items.reject { |ci| ci.paratext }.count
     @collection_minus_placeholders = @collection.collection_items.reject do |ci|
       !ci.public? || ci.paratext.present? || ci.alt_title.present?
