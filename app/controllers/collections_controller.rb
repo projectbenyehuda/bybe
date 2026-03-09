@@ -244,7 +244,7 @@ class CollectionsController < ApplicationController
   def update
     if @collection.update(collection_params)
       respond_to do |format|
-        format.html { redirect_to collection_url(@collection), notice: t(:updated_successfully) }
+        format.html { redirect_back fallback_location: collection_url(@collection), notice: t(:updated_successfully) }
         format.js
       end
     else
@@ -502,6 +502,17 @@ class CollectionsController < ApplicationController
     @htmls = []
     counter = { value: 1 } # Use hash to maintain reference across recursive calls
     parent_authorities = @collection.involved_authorities.map { |ia| [ia.authority_id, ia.role] }
+
+    if @collection.periodical?
+      # Preload cover_image attachments to avoid N+1 when checking cover images for gallery
+      preloaded_items = @collection.collection_items.includes(item: { cover_image_attachment: :blob })
+      @issues_with_cover = preloaded_items.filter_map do |ci|
+        ci.item if ci.item.present? && ci.item_type == 'Collection' &&
+                   ci.item.periodical_issue? && ci.item.cover_image.attached?
+      end
+    else
+      @issues_with_cover = []
+    end
 
     if @collection.periodical? || @collection.volume_series? # we don't want to show an entire periodical's or volume series' run in a single Web page; instead, we show the complete TOC of all issues/volumes
       @collection.collection_items.each do |ci|

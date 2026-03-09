@@ -33,8 +33,6 @@
     = f.text_field :alternate_titles, class: 'form-control', style: 'width: 75%;'
     = f.label :description, t(:description)
     = f.text_area :description, class: 'form-control', style: 'width: 75%;', rows: 4
-    = f.label :cover_text, t(:cover_text)
-    = f.text_area :cover_text, class: 'form-control', style: 'width: 75%;', rows: 4
     %br
     = f.label :publisher, t(:edition_details)
     = f.text_field :publisher_line, class: 'form-control', style: 'width: 65%;'
@@ -49,11 +47,16 @@
     %h3= t(:cover_image)
     - if collection.cover_image.attached?
       %p
-        %img{ src: url_for(collection.cover_image), alt: collection.title, style: 'max-width: 300px; max-height: 300px;' }
+        %img{ src: url_for(collection.cover_image), alt: collection.title,
+              style: 'max-width: 300px; max-height: 300px;' }
     = form_for collection, url: collection_path(collection.id), method: :put, multipart: true do |f|
       .form-group
         = f.file_field :cover_image, class: 'form-control', accept: 'image/*'
       = f.submit t(:upload_cover_image), class: 'by-button-v02'
+      %br
+      = f.label :cover_text, t(:cover_text)
+      = f.text_area :cover_text, class: 'form-control', style: 'width: 75%;', rows: 4
+      = f.submit t(:save), class: 'by-button-v02', style: 'margin-top: 5px;'
 
   #external_links_section{ style: 'margin-top: 20px; padding: 10px; border: 1px solid #ddd;' }
     %h3= t(:external_links)

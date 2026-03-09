@@ -128,21 +128,23 @@
                 %img.collection-cover-image{ src: url_for(@collection.cover_image), alt: @collection.title, style: 'max-width: 100%; height: auto;' }
                 - if @collection.cover_text.present?
                   .collection-cover-text
-                    != MarkdownToHtml.call(@collection.cover_text)
+                    = sanitize(MarkdownToHtml.call(@collection.cover_text))
 
           - if @collection.periodical?
-            - issues_with_cover = @collection.coll_items.select { |c| c.cover_image.attached? }
+            - issues_with_cover = @issues_with_cover
             - if issues_with_cover.any?
               .by-card-v02.periodical-issue-gallery
                 .by-card-content-v02
                   %h3= t(:issue_covers)
                   .issue-gallery-grid{ style: 'display: flex; flex-wrap: wrap; gap: 16px;' }
-                    - @collection.collection_items.each do |ci|
-                      - next unless ci.item.present? && ci.item_type == 'Collection' && ci.item.periodical_issue? && ci.item.cover_image.attached?
+                    - issues_with_cover.each do |issue|
                       .issue-gallery-item{ style: 'text-align: center; max-width: 150px;' }
-                        = link_to collection_path(ci.item) do
-                          %img{ src: url_for(ci.item.cover_image.variant(resize_to_fit: [150, nil])), alt: ci.item.title, style: 'max-width: 150px; height: auto;' }
-                          %div= ci.item.title
+                        = link_to collection_path(issue) do
+                          - if issue.cover_image.variable?
+                            %img{ src: url_for(issue.cover_image.variant(resize_to_fit: [150, nil])), alt: issue.title, style: 'max-width: 150px; height: auto;' }
+                          - else
+                            %img{ src: url_for(issue.cover_image), alt: issue.title, style: 'max-width: 150px; height: auto;' }
+                          %div= issue.title
 
           :ruby
             eauthors = {}
