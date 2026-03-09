@@ -156,7 +156,7 @@
               effective_translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
               etranslators[title] = effective_translators.map(&:name).join(', ') if effective_translators.present?
             end
-          - if eauthors.present? || @htmls.any?
+          - if !@collection.periodical? && (eauthors.present? || @htmls.any?)
             .by-card-v02.binder-texts-list
               .by-card-content-v02
                 .list-no-bullets

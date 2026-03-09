@@ -509,13 +509,11 @@ class CollectionsController < ApplicationController
       @periodical_issues = preloaded_items.filter_map do |ci|
         ci.item if ci.item.present? && ci.item_type == 'Collection' && ci.item.periodical_issue?
       end
-      set_collection_metadata
-      return # gallery handles navigation; no issue-list rendering needed for periodicals
     else
       @periodical_issues = []
     end
 
-    if @collection.volume_series? # we don't want to show an entire periodical's or volume series' run in a single Web page; instead, we show the complete TOC of all issues/volumes
+    if @collection.periodical? || @collection.volume_series? # we don't want to show an entire periodical's or volume series' run in a single Web page; instead, we show the complete TOC of all issues/volumes
       @collection.collection_items.each do |ci|
         next unless ci.item.present? && ci.item_type == 'Collection'
         # For periodicals, show only periodical_issue items; for volume_series, show only volume items

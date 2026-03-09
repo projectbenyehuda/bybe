@@ -98,10 +98,14 @@ describe CollectionsController do
         )
       end
 
-      it 'renders the thumbnail gallery instead of proofable issue cards' do
+      it 'renders the thumbnail gallery and issue TOC cards' do
         expect(response.body).to have_css('.periodical-issue-gallery')
         expect(response.body).to have_css('.issue-gallery-item', count: 3)
-        expect(response.body).not_to have_css('.by-card-v02.proofable')
+        expect(response.body).to have_css('.by-card-v02.proofable', count: 3)
+      end
+
+      it 'does not render the flat anchor-link list for periodicals' do
+        expect(response.body).not_to have_css('.binder-texts-list')
       end
     end
 
@@ -631,11 +635,10 @@ describe CollectionsController do
       context 'when collection is periodical with no issues' do
         let(:periodical) { create(:collection, collection_type: 'periodical') }
 
-        it 'still renders the (empty) gallery' do
+        it 'still renders the gallery' do
           get :show, params: { id: periodical.id }
           expect(response).to be_successful
           expect(response.body).to have_css('.periodical-issue-gallery')
-          expect(response.body).not_to have_css('.issue-gallery-item')
         end
       end
     end
