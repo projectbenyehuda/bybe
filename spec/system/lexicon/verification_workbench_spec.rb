@@ -78,7 +78,7 @@ describe 'Lexicon Verification Workbench' do
       visit '/lex/verification/queue'
 
       select 'טיוטה', from: 'status' # Draft in Hebrew
-      click_button 'Filter'
+      click_button I18n.t('lexicon.entries.index.filter')
 
       expect(page).to have_content('Test Person')
     end
@@ -492,7 +492,7 @@ describe 'Lexicon Verification Workbench' do
 
     it 'displays "Use as Profile" buttons for each attachment' do
       within('#section-attachments') do
-        expect(page).to have_button('Use as Profile', count: 2)
+        expect(page).to have_button(I18n.t('lexicon.verification.migrated.use_as_profile'), count: 2)
       end
     end
 
@@ -502,9 +502,9 @@ describe 'Lexicon Verification Workbench' do
       within('#section-attachments') do
         within("#attachment-#{attachment.id}") do
           # Wait for button to be present
-          expect(page).to have_button('Use as Profile')
+          expect(page).to have_button(I18n.t('lexicon.verification.migrated.use_as_profile'))
 
-          click_button 'Use as Profile'
+          click_button I18n.t('lexicon.verification.migrated.use_as_profile')
         end
       end
 
@@ -530,7 +530,7 @@ describe 'Lexicon Verification Workbench' do
       within('#section-attachments') do
         # Set first attachment as profile
         within("#attachment-#{attachment1.id}") do
-          click_button 'Use as Profile'
+          click_button I18n.t('lexicon.verification.migrated.use_as_profile')
         end
       end
 
@@ -549,7 +549,7 @@ describe 'Lexicon Verification Workbench' do
       within('#section-attachments') do
         # Set second attachment as profile
         within("#attachment-#{attachment2.id}") do
-          click_button 'Use as Profile'
+          click_button I18n.t('lexicon.verification.migrated.use_as_profile')
         end
       end
 
