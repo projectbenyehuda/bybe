@@ -6,8 +6,8 @@ describe LexCitationAuthor do
   describe 'validations' do
     subject(:result) { author.valid? }
 
-    let(:person) { create(:lex_entry, :person).lex_item }
-    let(:citation) { build(:lex_citation, person: person) }
+    let(:lex_person) { create(:lex_entry, :person).lex_item }
+    let(:citation) { build(:lex_citation, person: lex_person) }
 
     describe 'name presence/absence' do
       context 'without entry' do

@@ -49,7 +49,7 @@ module LexiconHelper
   def grouped_and_ordered_citations(lex_person)
     person_works = lex_person.works.index_by(&:title)
     # we preload data required for citations rendering
-    grouped_citations = lex_person.citations.preload(authors: { person: :entry })
+    grouped_citations = lex_person.citations.preload(authors: :entry)
                                   .group_by(&:subject_title).sort_by do |subject_title, _entries|
       work = person_works[subject_title] if subject_title.present?
       # sort General (empty subject) first, then titles associated with Person Works, then custom titles
