@@ -35,17 +35,17 @@ describe '/lexicon/citation_authors' do
       end
     end
 
-    context 'when both name and lex_person_id are provided' do
-      let(:author_person) { create(:lex_person) }
-      let(:attrs) { { name: 'Custom Author', lex_person_id: author_person.id } }
+    context 'when both name and lex_entry_id are provided' do
+      let(:author_entry) { create(:lex_entry, :person) }
+      let(:attrs) { { name: 'Custom Author', lex_entry_id: author_entry.id } }
 
-      it 'creates a new author referencing LexPerson and sets name to nil' do
+      it 'creates a new author referencing LexEntry and sets name to nil' do
         expect { call }.to change { LexCitationAuthor.count }.by(1)
         expect(response).to have_http_status(:ok)
 
         author = LexCitationAuthor.order(id: :desc).first
         expect(author.name).to be_nil
-        expect(author.person).to eq(author_person)
+        expect(author.entry).to eq(author_entry)
         expect(author.citation).to eq(citation)
       end
     end

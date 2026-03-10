@@ -28,6 +28,7 @@ he:
     errors:
       messages:
         required: שדה חובה
+        present: חייב להיות ריק
       models:
         involved_authority:
           attributes:
@@ -59,6 +60,12 @@ he:
               belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
             subject:
               present: must be empty if record is linked to a work
+        lex_citation_author:
+          attributes:
+            link:
+              link_with_entry_error: לא ניתן לציין קישור כאשר קיים ערך לקסיקון עבור המחבר
+            entry:
+              not_a_person: הערך חייב להיות ערך מסוג אדם
     attributes:
       authority:
         other_designation: כינויים אחרים

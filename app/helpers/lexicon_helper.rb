@@ -17,8 +17,8 @@ module LexiconHelper
   end
 
   def render_citation_author(author)
-    if author.person.present?
-      "<b>#{link_to(author.display_name, lexicon_entry_path(author.person.entry))}</b>"
+    if author.entry.present?
+      "<b>#{link_to(author.display_name, lexicon_entry_path(author.entry))}</b>"
     else
       "<b>#{author.display_name}</b>"
     end

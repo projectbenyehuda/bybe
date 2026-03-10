@@ -16,7 +16,7 @@ module Lexicon
         LexPeopleAutocompleteIndex,
         %i(title)
       )
-      render json: json_for_autocomplete(items, :title)
+      render json: items.map { |item| { id: item.entry_id, label: item.title } }
     end
 
     # GET /lex_people/new
