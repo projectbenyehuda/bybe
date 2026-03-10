@@ -13,6 +13,7 @@ module Lexicon
       @lex_files = LexFile.all
       @entrytype = params[:entrytype]
       @title = params[:title]
+      @fname = params[:fname]
 
       if @entrytype.present?
         @lex_files = @lex_files.where(entrytype: @entrytype)
@@ -21,6 +22,10 @@ module Lexicon
       if @title.present?
         @lex_files = @lex_files.joins(:lex_entry)
                                .where('lex_entries.title LIKE ?', "%#{@title}%")
+      end
+
+      if @fname.present?
+        @lex_files = @lex_files.where('fname LIKE ?', "%#{@fname}%")
       end
 
       @lex_files = @lex_files.includes(:lex_entry)
