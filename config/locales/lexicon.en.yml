@@ -1,7 +1,6 @@
 en:
   file: File
   entry: Entry
-  lexicon_migration: Absorbing Lexicon Galron
   lexicon_name: Lexicon Galron
   to_lexicon_entries: to Lexicon entries
   lexicon_show_person: View
@@ -117,8 +116,10 @@ en:
         no_links: No links yet
     files:
       index:
-        title: List of files
+        title: Absorbing Lexicon Galron
+        subtitle: List of files
         title_placeholder: Search by title...
+        fname_placeholder: Search by filename...
       migrate:
         success: Migration queued
         title: Analyze
