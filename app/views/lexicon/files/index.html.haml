@@ -1,16 +1,18 @@
 .top-element
   %div{ style: 'margin-top:10px' }
-    %h1= t(:lexicon_migration) + ': ' + t('.title')
+    %h1= t('.title') + ': ' + t('.subtitle')
 
-    = form_tag lexicon_files_path, method: :get, id: :filter do
-      = label_tag :entrytype, LexFile.human_attribute_name(:entrytype)
+    = form_tag lexicon_files_path, method: :get, id: :filter, class: 'form-inline mb-2' do
+      = label_tag :entrytype, LexFile.human_attribute_name(:entrytype), class: 'mr-2'
       = select_tag :entrytype,
                    options_for_select(LexFile.entrytypes.map { |k, _v| [LexFile.human_enum_name(:entrytype, k), k] },
                                       @entrytype),
-                   include_blank: true
-
-      = label_tag :title, t(:title)
-      = text_field_tag :title, @title, placeholder: t('.title_placeholder')
+                   include_blank: true,
+                   class: 'form-control mr-2'
+      = label_tag :title, LexFile.human_attribute_name(:title), class: 'mr-2'
+      = text_field_tag :title, @title, placeholder: t('.title_placeholder'), class: 'form-control mr-2'
+      = label_tag :fname, LexFile.human_attribute_name(:fname), class: 'mr-2'
+      = text_field_tag :fname, @fname, placeholder: t('.fname_placeholder'), class: 'form-control mr-2'
 
     %table.table
       %tr
@@ -38,5 +40,7 @@
 :javascript
   $(function() {
     const submitFilters = (e) => { $('#filter').submit(); };
-    $('#entrytype').change(submitFilters);
+    $('#filter #entrytype').change(submitFilters);
+    $('#filter #fname').change(submitFilters);
+    $('#filter #title').change(submitFilters);
   });

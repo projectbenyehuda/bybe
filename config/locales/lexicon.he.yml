@@ -1,7 +1,6 @@
 he:
   file: קובץ
   entry: ערך
-  lexicon_migration: הסבת הלקסיקון
   lexicon_name: לקסיקון הספרות העברית החדשה
   to_lexicon_entries: לערכי הלקסיקון
   lexicon_show_person: הצגת ערך
@@ -118,8 +117,10 @@ he:
         no_links: אין קישוריות עדיין
     files:
       index:
-        title: רשימת הקבצים
+        title: הסבת הלקסיקון
+        subtitle: רשימת הקבצים
         title_placeholder: חיפוש לפי כותרת...
+        fname_placeholder: חפש לפי שם קובץ...
       migrate:
         success: ההסבה החלה
         title: התחל הסבה
