@@ -10,6 +10,19 @@ module Lexicon
 
     layout 'lexicon_backend', except: %i(show list)
 
+    def autocomplete
+      allowed_entry_types = %w(person publication)
+      entry_type = params[:entry_type].presence
+      filter = { term: { entry_type: entry_type } } if entry_type.in?(allowed_entry_types)
+      items = ElasticsearchAutocomplete.call(
+        params[:term],
+        LexEntriesAutocompleteIndex,
+        %i(title),
+        filter: filter
+      )
+      render json: items.map { |item| { id: item.id, label: item.title, value: item.title } }
+    end
+
     # GET /lex_entries or /lex_entries.json
     def index
       @lex_entries = LexEntry.where.not(lex_item: nil)

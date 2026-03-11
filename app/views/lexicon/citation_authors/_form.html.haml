@@ -4,9 +4,9 @@
     .col-sm-6
       = f.input :name,
                 label: false,
-                update_elements: { entry_id: '#lex_citation_author_lex_entry_id' },
+                id_element: '#lex_citation_author_lex_entry_id',
                 placeholder: LexCitationAuthor.human_attribute_name(:name),
-                url: autocomplete_lexicon_people_path,
+                url: autocomplete_lexicon_entries_path(entry_type: :person),
                 as: :autocomplete
     .col-sm-2
       = f.submit t('.add_author')
