@@ -64,16 +64,26 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
     end
   end
 
-  describe 'single-line paratext' do
-    let!(:collection) do
+  describe 'single rendered paragraph' do
+    it 'does not collapse a single-sentence paragraph' do
       create(:collection, collection_type: 'other', authors: [authority],
                           markdown_placeholders: ['A brief note about this collection.'])
-    end
 
-    it 'renders the paratext inline without a collapse widget' do
       visit authority_path(authority)
 
       expect(page).to have_content('A brief note about this collection.', wait: 5)
+      expect(page).not_to have_css('.paratext-preview')
+      expect(page).not_to have_css('.paratext-toggle')
+    end
+
+    # Key regression: multiple raw markdown lines without blank separators form ONE paragraph
+    it 'does not collapse multiple raw markdown lines that render as a single paragraph' do
+      create(:collection, collection_type: 'other', authors: [authority],
+                          markdown_placeholders: ["Line one\nLine two\nLine three"])
+
+      visit authority_path(authority)
+
+      expect(page).to have_content('Line one', wait: 5)
       expect(page).not_to have_css('.paratext-preview')
       expect(page).not_to have_css('.paratext-toggle')
     end
