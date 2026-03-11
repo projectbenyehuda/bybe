@@ -23,8 +23,15 @@ module Lexicon
         @author.name = nil
       end
 
-      @author.save
-      render status: @author.new_record? ? :unprocessable_content : :ok
+      unless @author.save
+        # resetting value of possibly selected lex_entry_id if record is invalid (probaly non-unique value)
+        @author.lex_entry_id = nil
+        status = :unprocessable_content
+      else
+        status = :ok
+      end
+
+      render status: status
     end
 
     def destroy
