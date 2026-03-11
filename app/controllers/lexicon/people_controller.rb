@@ -10,15 +10,6 @@ module Lexicon
 
     layout false
 
-    def autocomplete
-      items = ElasticsearchAutocomplete.call(
-        params[:term],
-        LexPeopleAutocompleteIndex,
-        %i(title)
-      )
-      render json: json_for_autocomplete(items, :title)
-    end
-
     # GET /lex_people/new
     def new
       @lex_person = LexPerson.new

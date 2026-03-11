@@ -12,19 +12,26 @@ module Lexicon
     layout false
 
     def index
-      @authors = @citation.authors.preload(person: :entry).sort_by(&:display_name)
+      @authors = @citation.authors.preload(:entry).sort_by(&:display_name)
     end
 
     def create
       @author = @citation.authors.build(author_params)
 
-      # We use auto-completion to select a person, so if a person from db is selected we need to nullify the name
-      if @author.lex_person_id.present?
+      # We use auto-completion to select an entry, so if an entry from db is selected we need to nullify the name
+      if @author.lex_entry_id.present?
         @author.name = nil
       end
 
-      @author.save
-      render status: @author.new_record? ? :unprocessable_content : :ok
+      unless @author.save
+        # resetting value of possibly selected lex_entry_id if record is invalid (probaly non-unique value)
+        @author.lex_entry_id = nil
+        status = :unprocessable_content
+      else
+        status = :ok
+      end
+
+      render status: status
     end
 
     def destroy
@@ -34,7 +41,7 @@ module Lexicon
     private
 
     def author_params
-      params.expect(lex_citation_author: %i(name link lex_person_id))
+      params.expect(lex_citation_author: %i(name link lex_entry_id))
     end
 
     def set_citation
