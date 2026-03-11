@@ -10,9 +10,10 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
   let!(:authority) { create(:authority) }
 
   describe 'multi-line paratext' do
-    # Use a heading as the first line so we can verify it is rendered as HTML, not raw markdown
+    # Content clearly > 80 non-whitespace chars; heading as first block lets us verify
+    # that the preview is rendered HTML (h2), not raw markdown (## …)
     let(:multi_line_markdown) do
-      "## Introduction Title\n\nFirst paragraph body.\n\nSecond paragraph body."
+      "## Introduction Title\n\nThis paragraph provides enough context to exceed the eighty non-whitespace character threshold."
     end
 
     let!(:collection) do
@@ -46,8 +47,7 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
 
       # Wait for animation to complete
       expect(page).to have_css('[id^="paratext_collapse_"].show', wait: 5)
-      expect(page).to have_content('First paragraph body.', wait: 5)
-      expect(page).to have_content('Second paragraph body.', wait: 5)
+      expect(page).to have_content('eighty non-whitespace character threshold', wait: 5)
       expect(page).to have_css('.paratext-toggle', text: I18n.t(:show_less), wait: 5)
     end
 
@@ -76,8 +76,8 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
       expect(page).not_to have_css('.paratext-toggle')
     end
 
-    # Key regression: multiple raw markdown lines without blank separators form ONE paragraph
-    it 'does not collapse multiple raw markdown lines that render as a single paragraph' do
+    # Threshold is 80 non-whitespace chars; short content never collapses regardless of newlines
+    it 'does not collapse short content with multiple raw markdown lines' do
       create(:collection, collection_type: 'other', authors: [authority],
                           markdown_placeholders: ["Line one\nLine two\nLine three"])
 
