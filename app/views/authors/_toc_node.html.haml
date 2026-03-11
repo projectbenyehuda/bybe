@@ -125,9 +125,8 @@
       - if ci.markdown.gsub(/\s/, '').length > 80
         - collapse_id = "paratext_collapse_#{ci.id}"
         - preview_text = truncate(strip_tags(full_html).gsub(/\s+/, ' ').strip, length: 80)
-        .paratext-preview
-          = preview_text
-          %button.paratext-toggle.btn.btn-link{ type: 'button', 'data-toggle' => 'collapse', 'data-target' => "##{collapse_id}", 'aria-expanded': 'false', 'aria-controls': collapse_id }= t(:show_more)
+        %span.paratext-preview= preview_text
+        %button.paratext-toggle.btn.btn-link{ type: 'button', 'data-toggle' => 'collapse', 'data-target' => "##{collapse_id}", 'aria-expanded': 'false', 'aria-controls': collapse_id }= t(:show_more)
         .collapse{ id: collapse_id }
           != full_html
       - else

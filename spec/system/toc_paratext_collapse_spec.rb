@@ -22,14 +22,12 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
     it 'shows a plain-text truncated preview with a show-more toggle, no raw markdown' do
       visit authority_path(authority)
 
-      expect(page).to have_css('.paratext-preview', wait: 5)
-      within('.paratext-preview') do
-        # Preview is plain text (no HTML tags, no raw ## markers)
-        expect(page).to have_content('Introduction Title')
-        expect(page).not_to have_content('##')
-        expect(page).not_to have_css('h2')
-        expect(page).to have_css('button.paratext-toggle', text: I18n.t(:show_more))
-      end
+      expect(page).to have_css('span.paratext-preview', visible: :visible, wait: 5)
+      # Preview is plain text — no HTML tags, no raw ## markers
+      expect(page).to have_css('span.paratext-preview', text: 'Introduction Title')
+      expect(page).not_to have_content('##')
+      expect(page).not_to have_css('span.paratext-preview h2')
+      expect(page).to have_css('button.paratext-toggle', text: I18n.t(:show_more))
     end
 
     it 'hides the full content initially' do
@@ -38,27 +36,28 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
       expect(page).to have_css('[id^="paratext_collapse_"]', visible: :hidden, wait: 5)
     end
 
-    it 'expands the full content and updates toggle to show-less on click' do
-      visit authority_path(authority)
-
-      expect(page).to have_css('.paratext-toggle', text: I18n.t(:show_more), wait: 5)
-      find('.paratext-toggle').click
-
-      # Wait for animation to complete; full HTML is now visible (rendered, not truncated)
-      expect(page).to have_css('[id^="paratext_collapse_"].show', wait: 5)
-      expect(page).to have_css('h2', text: 'Introduction Title', wait: 5)
-      expect(page).to have_css('.paratext-toggle', text: I18n.t(:show_less), wait: 5)
-    end
-
-    it 'collapses again on a second click and restores the show-more label' do
+    it 'hides the preview and shows full HTML content on expand' do
       visit authority_path(authority)
 
       find('.paratext-toggle', wait: 5).click
-      # Wait for the open animation to fully complete (Bootstrap ignores clicks during 'collapsing')
+
+      expect(page).to have_css('[id^="paratext_collapse_"].show', wait: 5)
+      # Full rendered HTML is visible
+      expect(page).to have_css('h2', text: 'Introduction Title', wait: 5)
+      # Preview text is hidden to avoid duplication
+      expect(page).to have_css('span.paratext-preview', visible: :hidden, wait: 5)
+      expect(page).to have_css('.paratext-toggle', text: I18n.t(:show_less), wait: 5)
+    end
+
+    it 'restores the preview and hides full content on collapse' do
+      visit authority_path(authority)
+
+      find('.paratext-toggle', wait: 5).click
       expect(page).to have_css('[id^="paratext_collapse_"].show', wait: 5)
 
       find('.paratext-toggle').click
       expect(page).to have_css('[id^="paratext_collapse_"]', visible: :hidden, wait: 5)
+      expect(page).to have_css('span.paratext-preview', visible: :visible, wait: 5)
       expect(page).to have_css('.paratext-toggle', text: I18n.t(:show_more), wait: 5)
     end
   end

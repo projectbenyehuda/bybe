@@ -175,9 +175,11 @@
     var orig_mainlist = $('#browse_mainlist').html();
 
     $(document).on('show.bs.collapse', '[id^="paratext_collapse_"]', function() {
+      $(this).prevAll('.paratext-preview').first().hide();
       $('[aria-controls="' + this.id + '"]').text('#{I18n.t(:show_less)}');
     });
     $(document).on('hide.bs.collapse', '[id^="paratext_collapse_"]', function() {
+      $(this).prevAll('.paratext-preview').first().show();
       $('[aria-controls="' + this.id + '"]').text('#{I18n.t(:show_more)}');
     });
 
