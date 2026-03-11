@@ -227,8 +227,8 @@ describe 'Lexicon Verification Workbench' do
 
     it 'displays citation author names in view' do
       # Add an author to the citation first
-      author_person = create(:lex_person)
-      author_entry = create(:lex_entry, title: 'Citation Author', lex_item: author_person)
+      author_entry = create(:lex_entry, :person, title: 'Citation Author')
+      author_person = author_entry.lex_item
       citation.authors.create!(entry: author_entry)
 
       visit "/lex/verification/#{entry.id}"

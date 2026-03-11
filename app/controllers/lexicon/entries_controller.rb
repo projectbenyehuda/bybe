@@ -11,16 +11,14 @@ module Lexicon
     layout 'lexicon_backend', except: %i(show list)
 
     def autocomplete
-      allowed_entry_types = %w(person publication)
-      entry_type = params[:entry_type].presence
-      filter = { term: { entry_type: entry_type } } if entry_type.in?(allowed_entry_types)
+      filter = { term: { entry_type: params[:entry_type] } } if params[:entry_type].present?
       items = ElasticsearchAutocomplete.call(
         params[:term],
         LexEntriesAutocompleteIndex,
         %i(title),
         filter: filter
       )
-      render json: items.map { |item| { id: item.id, label: item.title, value: item.title } }
+      render json: json_for_autocomplete(items, :title)
     end
 
     # GET /lex_entries or /lex_entries.json
