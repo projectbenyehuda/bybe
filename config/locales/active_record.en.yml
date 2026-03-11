@@ -28,6 +28,7 @@ en:
     errors:
       messages:
         required: required
+        present: must be blank
       models:
         involved_authority:
           attributes:
@@ -55,6 +56,12 @@ en:
               belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
             subject:
               present: must be empty if record is linked to a work
+        lex_citation_author:
+          attributes:
+            link:
+              link_with_entry_error: link can only be specified if we don't have a Lexicon entry for author
+            entry:
+              not_a_person: must be a Person entry
     attributes:
       authority:
         other_designation: Other designation
