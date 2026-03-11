@@ -1,5 +1,5 @@
 %ul
-  - @citation.authors.preload(person: :entry).sort_by(&:display_name).each do |author|
+  - @citation.authors.preload(:entry).sort_by(&:display_name).each do |author|
     %li
       != render_citation_author(author)
       = link_to t(:delete),
