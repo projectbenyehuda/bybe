@@ -3,24 +3,14 @@ FROM ubuntu:24.04
 ADD https://github.com/jgm/pandoc/releases/download/3.8.2.1/pandoc-3.8.2.1-1-amd64.deb /tmp/pandoc.deb
 
 RUN apt-get update -qq \
-    && apt-get install -y curl cmake git wkhtmltopdf yaz libyaz-dev libmagickwand-dev \
-    mysql-client libmysqlclient-dev \
-    libpcap-dev libyaml-dev \
-    && dpkg -i /tmp/pandoc.deb \
+    && apt-get install -y curl cmake git yaz libyaz-dev libmagickwand-dev \
+       mysql-client libmysqlclient-dev libpcap-dev libyaml-dev \
+    && dpkg -i /tmp/pandoc.deb
+
+# Ubuntu uses snap for chromium, but snap doesn't work in docker, so we need to install chromium from PPA
+RUN apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:xtradeb/apps \
+    && apt-get update -qq \
+    && apt-get install -y chromium \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/*
-
-RUN apt-get update -qq \
-    && apt-get install -y gnupg ca-certificates \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
-      | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] \
-      https://dl.google.com/linux/chrome/deb/ stable main" \
-      > /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update -qq \
-    && apt-get install -y google-chrome-stable \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*

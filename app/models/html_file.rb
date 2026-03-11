@@ -571,17 +571,6 @@ class HtmlFile < ApplicationRecord
     end
   end
 
-  def make_pdf
-    if %w(Parsed Accepted Published).include? status
-      # markdown = File.open(self.path+'.markdown', 'r:UTF-8').read # slurp markdown
-      # File.open(self.path+'.latex', 'wb') { |f| f.write("\\documentclass[12pt,twoside]{book}\n\\usepackage[utf8x]{inputenc}\n\\usepackage[english,hebrew]{babel}\n\\usepackage{hebfont}\n\\begin{document}"+MultiMarkdown.new(markdown).to_latex.force_encoding('UTF-8')+"\n\\end{document}") }
-      ## TODO: find a way to do this without a system() call?
-      # result = `pdflatex -halt-on-error #{self.path+'.latex'}`
-      make_html(nil)
-      result = `wkhtmltopdf page #{path + '.html ' + path + '.pdf'}`
-      # TODO: validate result
-    end
-  end
   PDF_CSS = '@page {size: A4; margin: 2cm;} img {max-width: 100%; height: auto;}'.freeze
 
   # Wraps an HTML fragment (or full document) in a print-ready full document
@@ -605,7 +594,7 @@ class HtmlFile < ApplicationRecord
       pdffilename = "#{tmpfilename}.pdf"
       # --no-sandbox is required when running as root (e.g. in Docker/CI containers).
       # For non-root deployments the sandbox is preserved unless CHROME_NO_SANDBOX=1.
-      args = ['google-chrome', '--headless', '--disable-gpu',
+      args = ['chromium', '--headless', '--disable-gpu',
               "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
               "file://#{tmpfilename}"]
       args.insert(1, '--no-sandbox') if Process.uid.zero? || ENV['CHROME_NO_SANDBOX'] == '1'
