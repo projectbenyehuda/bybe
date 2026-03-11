@@ -124,9 +124,9 @@
       - full_html = MultiMarkdown.new(ci.markdown).to_html
       - if ci.markdown.gsub(/\s/, '').length > 80
         - collapse_id = "paratext_collapse_#{ci.id}"
-        - first_block = Nokogiri::HTML.fragment(full_html).css('p, h1, h2, h3, h4, h5, h6, li, dt, dd').first
+        - preview_text = truncate(strip_tags(full_html).gsub(/\s+/, ' ').strip, length: 80)
         .paratext-preview
-          != first_block&.to_html || full_html
+          = preview_text
           %button.paratext-toggle.btn.btn-link{ type: 'button', 'data-toggle' => 'collapse', 'data-target' => "##{collapse_id}", 'aria-expanded': 'false', 'aria-controls': collapse_id }= t(:show_more)
         .collapse{ id: collapse_id }
           != full_html

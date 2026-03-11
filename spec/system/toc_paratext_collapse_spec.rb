@@ -9,9 +9,7 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
 
   let!(:authority) { create(:authority) }
 
-  describe 'multi-line paratext' do
-    # Content clearly > 80 non-whitespace chars; heading as first block lets us verify
-    # that the preview is rendered HTML (h2), not raw markdown (## …)
+  describe 'long paratext (> 80 non-whitespace chars)' do
     let(:multi_line_markdown) do
       "## Introduction Title\n\nThis paragraph provides enough context to exceed the eighty non-whitespace character threshold."
     end
@@ -21,14 +19,15 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
                           markdown_placeholders: [multi_line_markdown])
     end
 
-    it 'renders the first line as HTML inside a preview div with a show-more toggle' do
+    it 'shows a plain-text truncated preview with a show-more toggle, no raw markdown' do
       visit authority_path(authority)
 
       expect(page).to have_css('.paratext-preview', wait: 5)
       within('.paratext-preview') do
-        # First line is rendered as an h2, not raw markdown (no '##' visible)
-        expect(page).to have_css('h2', text: 'Introduction Title')
+        # Preview is plain text (no HTML tags, no raw ## markers)
+        expect(page).to have_content('Introduction Title')
         expect(page).not_to have_content('##')
+        expect(page).not_to have_css('h2')
         expect(page).to have_css('button.paratext-toggle', text: I18n.t(:show_more))
       end
     end
@@ -45,9 +44,9 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
       expect(page).to have_css('.paratext-toggle', text: I18n.t(:show_more), wait: 5)
       find('.paratext-toggle').click
 
-      # Wait for animation to complete
+      # Wait for animation to complete; full HTML is now visible (rendered, not truncated)
       expect(page).to have_css('[id^="paratext_collapse_"].show', wait: 5)
-      expect(page).to have_content('eighty non-whitespace character threshold', wait: 5)
+      expect(page).to have_css('h2', text: 'Introduction Title', wait: 5)
       expect(page).to have_css('.paratext-toggle', text: I18n.t(:show_less), wait: 5)
     end
 
