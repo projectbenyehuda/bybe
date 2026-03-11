@@ -121,7 +121,16 @@
       %br
       - if ci.alt_title.present?
         %h4= ci.alt_title
-      != MultiMarkdown.new(ci.markdown).to_html
+      - full_html = MultiMarkdown.new(ci.markdown).to_html
+      - if ci.markdown.gsub(/\s/, '').length > 80
+        - collapse_id = "paratext_collapse_#{ci.id}"
+        - preview_text = truncate(strip_tags(full_html).gsub(/\s+/, ' ').strip, length: 80)
+        %span.paratext-preview= preview_text
+        %button.paratext-toggle.btn.btn-link{ type: 'button', 'data-toggle' => 'collapse', 'data-target' => "##{collapse_id}", 'aria-expanded': 'false', 'aria-controls': collapse_id }= t(:show_more)
+        .collapse{ id: collapse_id }
+          != full_html
+      - else
+        != full_html
     - elsif ci.alt_title.present?
       = ci.alt_title
 -# rubocop:enable Style/CaseLikeIf
