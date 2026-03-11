@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_08_233344) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_10_121305) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -625,10 +625,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_08_233344) do
     t.bigint "lex_citation_id", null: false
     t.string "name"
     t.string "link"
-    t.bigint "lex_person_id"
-    t.index ["lex_citation_id", "lex_person_id"], name: "idx_on_lex_citation_id_lex_person_id_df9730c730", unique: true
+    t.bigint "lex_entry_id"
+    t.index ["lex_citation_id", "lex_entry_id"], name: "index_lex_citation_authors_on_lex_citation_id_and_lex_entry_id", unique: true
     t.index ["lex_citation_id"], name: "index_lex_citation_authors_on_lex_citation_id"
-    t.index ["lex_person_id"], name: "index_lex_citation_authors_on_lex_person_id"
+    t.index ["lex_entry_id"], name: "index_lex_citation_authors_on_lex_entry_id"
   end
 
   create_table "lex_citations", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1189,7 +1189,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_08_233344) do
   add_foreign_key "ingestibles", "users", column: "locked_by_user_id"
   add_foreign_key "involved_authorities", "authorities"
   add_foreign_key "lex_citation_authors", "lex_citations"
-  add_foreign_key "lex_citation_authors", "lex_people"
+  add_foreign_key "lex_citation_authors", "lex_entries"
   add_foreign_key "lex_citations", "lex_people"
   add_foreign_key "lex_citations", "lex_person_works"
   add_foreign_key "lex_citations", "manifestations"

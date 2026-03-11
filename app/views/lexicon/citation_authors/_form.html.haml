@@ -1,12 +1,24 @@
 =simple_form_for author, url: lexicon_citation_authors_path(citation), remote: true do |f|
   .row
-    = f.hidden_field :lex_person_id
-    .col-sm-6
+    = f.hidden_field :lex_entry_id
+    .col-sm-8
       = f.input :name,
                 label: false,
-                id_element: '#lex_citation_author_lex_person_id',
+                id_element: '#lex_citation_author_lex_entry_id',
                 placeholder: LexCitationAuthor.human_attribute_name(:name),
-                url: autocomplete_lexicon_people_path,
+                url: autocomplete_lexicon_entries_path(entry_type: :person),
                 as: :autocomplete
     .col-sm-2
-      = f.submit t('.add_author')
+      = f.submit t('.add_author'), class: 'btn btn-primary'
+  .row
+    .col-sm-12
+      -# display validation errors for :entry and :lex_entry_id together since they are related
+      .text-danger
+        = f.error :entry
+        = f.error :lex_entry_id
+-# fix to make autocomplete menu the same width as the input field (Consider moving this layout js?)
+:javascript
+  $.ui.autocomplete.prototype._resizeMenu = function () {
+    const ul = this.menu.element;
+    ul.outerWidth(this.element.outerWidth());
+  }
