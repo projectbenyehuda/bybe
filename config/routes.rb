@@ -65,9 +65,6 @@ Bybeconv::Application.routes.draw do
     match 'admin', to: 'entries#index', as: :lex_backend, via: %i(get post)
 
     resources :people, only: %i(edit update new create) do
-      collection do
-        get :autocomplete
-      end
       resources :citations, shallow: true, except: %i(show) do
         post :reorder, on: :member
         resources :authors, controller: 'citation_authors', only: %i(index create)
@@ -81,6 +78,9 @@ Bybeconv::Application.routes.draw do
 
     resources :publications, only: %i(edit update new create)
     resources :entries, except: %i(new create) do
+      collection do
+        get :autocomplete
+      end
       resources :attachments, only: %i(index create destroy)
       resources :links, shallow: true, except: %i(show)
     end
