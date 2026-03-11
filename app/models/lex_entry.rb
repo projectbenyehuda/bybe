@@ -36,6 +36,18 @@ class LexEntry < ApplicationRecord
   scope :verified_pending_publish, -> { where(status: :verified) }
 
   update_index('lex_entries') { self }
+  update_index('lex_entries_autocomplete') { self }
+
+  # Returns the entry type for autocomplete and display purposes.
+  # Returns :person if the entry is backed by a LexPerson item or a person-type LexFile.
+  # Returns :publication if the entry is backed by a LexPublication item or a text-type LexFile.
+  def entry_type
+    if lex_item.is_a?(LexPerson) || lex_file&.entrytype_person?
+      :person
+    elsif lex_item.is_a?(LexPublication) || lex_file&.entrytype_text?
+      :publication
+    end
+  end
 
   # returns link to page representing this entry in old lexicon system
   # TODO: remove after migration is complete
