@@ -174,4 +174,11 @@
     prune_collections();
     var orig_mainlist = $('#browse_mainlist').html();
 
+    $(document).on('show.bs.collapse', '[id^="paratext_collapse_"]', function() {
+      $('[aria-controls="' + this.id + '"]').text('#{I18n.t(:show_less)}');
+    });
+    $(document).on('hide.bs.collapse', '[id^="paratext_collapse_"]', function() {
+      $('[aria-controls="' + this.id + '"]').text('#{I18n.t(:show_more)}');
+    });
+
   });
