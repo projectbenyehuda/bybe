@@ -59,7 +59,9 @@ describe LexCitationAuthor do
 
       context 'when entry has a LexFile with entrytype person' do
         let(:lex_file) { create(:lex_file, :person) }
-        let(:author) { build(:lex_citation_author, citation: citation, entry: lex_file.lex_entry, name: nil, link: nil) }
+        let(:author) do
+          build(:lex_citation_author, citation: citation, entry: lex_file.lex_entry, name: nil, link: nil)
+        end
 
         it { is_expected.to be_truthy }
       end
