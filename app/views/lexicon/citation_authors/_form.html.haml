@@ -4,7 +4,7 @@
     .col-sm-6
       = f.input :name,
                 label: false,
-                id_element: '#lex_citation_author_lex_entry_id',
+                update_elements: { entry_id: '#lex_citation_author_lex_entry_id' },
                 placeholder: LexCitationAuthor.human_attribute_name(:name),
                 url: autocomplete_lexicon_people_path,
                 as: :autocomplete
