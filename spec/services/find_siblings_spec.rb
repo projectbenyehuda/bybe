@@ -30,7 +30,7 @@ describe FindSiblings do
       expect(next_sibling).to eq({ item: manifestation_2, skipped: 0 })
     end
 
-    it 'reports more_before? true (placeholder exists before) and more_after? true' do
+    it 'reports more_before? true (non-paratext placeholder exists before) and more_after? true' do
       expect(result.more_before?).to be true
       expect(result.more_after?).to be true
     end
@@ -78,6 +78,23 @@ describe FindSiblings do
     it 'finds no next sibling but reports more_after? true' do
       expect(result.next_sibling).to be_nil
       expect(result.more_after?).to be true
+    end
+  end
+
+  context 'when manifestation is last real item and only paratexts follow' do
+    subject(:result) { described_class.call(manifestation_b, collection_with_trailing_paratexts) }
+
+    let(:collection_with_trailing_paratexts) { create(:collection) }
+    let(:manifestation_b) { create(:manifestation) }
+
+    before do
+      collection_with_trailing_paratexts.collection_items.create!(item: manifestation_b, seqno: 1)
+      collection_with_trailing_paratexts.collection_items.create!(paratext: true, seqno: 2)
+    end
+
+    it 'finds no next sibling and reports more_after? false' do
+      expect(result.next_sibling).to be_nil
+      expect(result.more_after?).to be false
     end
   end
 

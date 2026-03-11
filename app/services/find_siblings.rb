@@ -21,14 +21,14 @@ class FindSiblings < ApplicationService
     @next_sibling ||= find_sibling(1)
   end
 
-  # returns true if there are collection items before the current one (even if all placeholders)
+  # returns true if there are non-paratext collection items before the current one
   def more_before?
-    @index > 0
+    @items[0...@index].any? { |ci| !ci.paratext? }
   end
 
-  # returns true if there are collection items after the current one (even if all placeholders)
+  # returns true if there are non-paratext collection items after the current one
   def more_after?
-    @index < @items.length - 1
+    @items[(@index + 1)..].any? { |ci| !ci.paratext? }
   end
 
   private
