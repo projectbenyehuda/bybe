@@ -81,7 +81,8 @@ PROMPT
           )
 
           work['authors'].each do |author|
-            citation.authors.build(name: author['name'], link: author['link'])
+            author = citation.authors.build(name: author['name'], link: author['link'])
+            update_link(author)
           end
 
           result << citation
@@ -92,6 +93,22 @@ PROMPT
     end
 
     private
+
+    def update_link(author)
+      return if author.link.blank?
+
+      match = author.link.match(%r{/lex/entries/(?<entry_id>\d+)})
+      if match.present?
+        entry_id = match[:entry_id]
+        entry = LexEntry.find_by(id: entry_id)
+        if entry.present? && entry.entry_type == :person
+          # name used for Author can be different from entry title (e.g. alias)
+          author.name = nil if author.name == entry.title
+          author.link = nil
+          author.entry = entry
+        end
+      end
+    end
 
     def sanitize_smart_quotes(text)
       text&.gsub(/[“”״]/, '"')&.gsub(/[‘’]/, "'")
