@@ -5,13 +5,12 @@ class LexCitationAuthor < ApplicationRecord
   belongs_to :entry, optional: true, class_name: 'LexEntry', foreign_key: 'lex_entry_id'
 
   validates :name, presence: true, if: -> { entry.nil? }
-  validates :name, absence: true, if: -> { entry.present? }
   validates :lex_entry_id, uniqueness: { scope: :lex_citation_id }, allow_nil: true
   validates :link, absence: { message: :link_with_entry_error }, if: -> { entry.present? }
   validate :entry_must_be_person, if: -> { entry.present? }
 
   def display_name
-    entry&.title || name
+    name.presence || entry&.title
   end
 
   private
