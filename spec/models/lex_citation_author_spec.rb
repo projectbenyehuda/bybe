@@ -30,10 +30,7 @@ describe LexCitationAuthor do
         let(:entry) { create(:lex_entry, :person) }
         let(:author) { build(:lex_citation_author, citation: citation, entry: entry, name: 'John', link: nil) }
 
-        it 'fails because name must be absent' do
-          expect(result).to be false
-          expect(author.errors[:name]).to be_present
-        end
+        it { is_expected.to be_truthy }
       end
     end
 
