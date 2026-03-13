@@ -106,6 +106,9 @@ module Lexicon
           index = lex_person.works.select { |w| w.work_type == work_type }.map(&:seqno).max || 0
         elsif next_elem.name == 'ul'
           next_elem.css('li').each do |li|
+            # sometimes list can contains empty items
+            next if li.text.blank?
+
             work = ParsePersonWork.call(li.text)
             work.work_type = work_type
             work.seqno = index += 1
