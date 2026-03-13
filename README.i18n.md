@@ -12,7 +12,10 @@ translation, so it is not perfect and may contain some errors (feel free to fix 
 
 Historically we used single locale file with flat resources structure (i.e. no controller or view-specific prefixes),
 but it was hard to maintain and navigate. Now we're switching to more structured approach, with separate files
-for ActiveRecord models and messages, and use controller and view-specific scopes for other resources.
+for ActiveRecord models and messages, and use controller and view-specific scopes for other resources. Also all
+resources related to Lexicon controllers and views are now in separate 'lexicon.*.yml' files with 'lexicon' scope 
+(for lexicon models we still use active_record.*.yml files).
+
 This is still a work in progress, but we strongly recommend to use structured approach for any new resources, and to
 refactor existing resources to follow this approach when possible.
 
