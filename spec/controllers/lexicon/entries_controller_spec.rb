@@ -414,6 +414,47 @@ RSpec.describe Lexicon::EntriesController, type: :controller do
     end
   end
 
+  describe '#edit' do
+    render_views
+
+    before { login_as_lexicon_editor }
+
+    context 'when entry status is a migration status' do
+      # 'raw' entries have no lex_item and can't reach the edit screen
+      editable_migration_statuses = LexEntry::MIGRATION_STATUSES - %w(raw)
+
+      editable_migration_statuses.each do |status|
+        context "with status '#{status}'" do
+          let(:entry) { create(:lex_entry, :person, status: status.to_sym) }
+
+          it 'shows the migration-in-progress banner' do
+            get :edit, params: { id: entry.id }
+            expect(response.body).to include(I18n.t('lexicon.entries.edit.migration_in_progress'))
+          end
+
+          it 'includes a link back to the verification workbench' do
+            get :edit, params: { id: entry.id }
+            expect(response.body).to include(lexicon_verification_path(entry))
+          end
+        end
+      end
+    end
+
+    context 'when entry status is published' do
+      let(:entry) { create(:lex_entry, :person, status: :published) }
+
+      it 'does not show the migration-in-progress banner' do
+        get :edit, params: { id: entry.id }
+        expect(response.body).not_to include(I18n.t('lexicon.entries.edit.migration_in_progress'))
+      end
+
+      it 'does not include a link to the verification workbench' do
+        get :edit, params: { id: entry.id }
+        expect(response.body).not_to include(lexicon_verification_path(entry))
+      end
+    end
+  end
+
   describe '#show' do
     render_views
 
