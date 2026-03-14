@@ -34,7 +34,7 @@ he:
         show: הצג
         back: חזרה לרשימה
         migration_in_progress: "ערך זה נמצא בתהליך הסבה או בדיקה."
-        back_to_workbench: לחזרה למסך הבדיקה
+        back_to_workbench: חזרה למסך הבדיקה
       index:
         add_person: הוספת יוצר/ת
         add_publication: הוספת פרסום
