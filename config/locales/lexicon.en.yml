@@ -33,6 +33,8 @@ en:
         links: Links
         show: Show
         back: Back
+        migration_in_progress: "This entry is currently being migrated or verified."
+        back_to_workbench: Back to Verification Workbench
       index:
         add_person: Add Person
         add_publication: Add Publication
@@ -161,6 +163,7 @@ en:
       show:
         title: "Verifying: %{entry_title}"
         back_to_queue: Back to Queue
+        edit_entry: Edit Entry (Full Edit Screen)
         save_progress: Save Progress
         mark_verified: Mark as Verified
         progress: Progress
