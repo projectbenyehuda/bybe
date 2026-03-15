@@ -15,9 +15,12 @@
     .title-section
       %h2
         = t('lexicon.verification.show.title', entry_title: @entry.title)
-      = link_to lexicon_verification_queue_path, class: 'btn btn-sm btn-outline-secondary' do
-        ←
-        = t('lexicon.verification.show.back_to_queue')
+      .d-flex.gap-2.mt-1
+        = link_to lexicon_verification_queue_path, class: 'btn btn-sm btn-outline-secondary' do
+          ←
+          = t('lexicon.verification.show.back_to_queue')
+        = link_to edit_lexicon_entry_path(@entry), class: 'btn btn-sm btn-warning' do
+          = t('lexicon.verification.show.edit_entry')
     .action-section
       - percentage = @entry.verification_percentage
       .progress-indicator.mb-2

@@ -1,3 +1,9 @@
+- if LexEntry::MIGRATION_STATUSES.include?(@lex_entry.status)
+  .alert.alert-warning.d-flex.align-items-center.mb-3
+    %span= t('lexicon.entries.edit.migration_in_progress')
+    = link_to lexicon_verification_path(@lex_entry), class: 'btn btn-sm btn-warning ms-auto' do
+      = t('lexicon.entries.edit.back_to_workbench')
+
 %h1= t('.title')
 
 %ul.nav.nav-tabs
