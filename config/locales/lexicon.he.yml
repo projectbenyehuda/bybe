@@ -33,6 +33,8 @@ he:
         links: קישוריות
         show: הצג
         back: חזרה לרשימה
+        migration_in_progress: "ערך זה נמצא בתהליך הסבה או בדיקה."
+        back_to_workbench: חזרה למסך הבדיקה
       index:
         add_person: הוספת יוצר/ת
         add_publication: הוספת פרסום
@@ -162,6 +164,7 @@ he:
       show:
         title: "אימות: %{entry_title}"
         back_to_queue: חזור לרשימה
+        edit_entry: עריכת הערך במסך העריכה
         save_progress: שמור התקדמות
         mark_verified: סמן כבדוק
         progress: התקדמות
