@@ -91,10 +91,10 @@ module Lexicon
       end
 
       index = 0
-      work_type = :original
+      work_type = 'original'
       while next_elem.present? && !header?(next_elem)
         header_line = next_elem.text.strip
-        if next_elem.name == 'p'
+        if next_elem.name == 'p' || next_elem.name == 'font'
           work_type = WORK_TYPE_HEADERS.keys.detect do |work_type|
             WORK_TYPE_HEADERS[work_type].include?(header_line)
           end
