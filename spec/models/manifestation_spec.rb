@@ -845,6 +845,44 @@ describe Manifestation do
     end
   end
 
+  describe '#volumes' do
+    let(:manifestation) { create(:manifestation) }
+
+    it 'returns a directly containing volume' do
+      volume = create(:collection, collection_type: :volume)
+      create(:collection_item, collection: volume, item: manifestation)
+      manifestation.reload
+      expect(manifestation.volumes).to contain_exactly(volume)
+    end
+
+    it 'returns the volume when the manifestation is inside a series that is inside a volume' do
+      volume = create(:collection, collection_type: :volume)
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: volume, item: series)
+      create(:collection_item, collection: series, item: manifestation)
+      manifestation.reload
+      expect(manifestation.volumes).to contain_exactly(volume)
+    end
+
+    it 'returns the volume when nested more than one series level deep (regression for #1076)' do
+      volume = create(:collection, collection_type: :volume)
+      series_outer = create(:collection, collection_type: :series)
+      series_inner = create(:collection, collection_type: :series)
+      create(:collection_item, collection: volume, item: series_outer)
+      create(:collection_item, collection: series_outer, item: series_inner)
+      create(:collection_item, collection: series_inner, item: manifestation)
+      manifestation.reload
+      expect(manifestation.volumes).to contain_exactly(volume)
+    end
+
+    it 'returns empty when there is no volume in the parent tree' do
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: series, item: manifestation)
+      manifestation.reload
+      expect(manifestation.volumes).to be_empty
+    end
+  end
+
   describe '.popular_works' do
     let!(:manifestation1) { create(:manifestation) }
     let!(:manifestation2) { create(:manifestation) }
