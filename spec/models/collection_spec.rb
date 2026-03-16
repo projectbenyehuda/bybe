@@ -899,4 +899,34 @@ describe Collection do
       end
     end
   end
+
+  describe '#parent_volume_or_isssue' do
+    it 'returns nil when the collection has no parent' do
+      c = create(:collection, collection_type: :series)
+      expect(c.parent_volume_or_isssue).to be_nil
+    end
+
+    it 'returns the direct parent when it is a volume' do
+      volume = create(:collection, collection_type: :volume)
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: volume, item: series)
+      expect(series.parent_volume_or_isssue).to eq(volume)
+    end
+
+    it 'traverses multiple levels of nesting to find an ancestor volume' do
+      volume = create(:collection, collection_type: :volume)
+      series_outer = create(:collection, collection_type: :series)
+      series_inner = create(:collection, collection_type: :series)
+      create(:collection_item, collection: volume, item: series_outer)
+      create(:collection_item, collection: series_outer, item: series_inner)
+      expect(series_inner.parent_volume_or_isssue).to eq(volume)
+    end
+
+    it 'returns nil when there is no volume anywhere in the parent tree' do
+      series_outer = create(:collection, collection_type: :series)
+      series_inner = create(:collection, collection_type: :series)
+      create(:collection_item, collection: series_outer, item: series_inner)
+      expect(series_inner.parent_volume_or_isssue).to be_nil
+    end
+  end
 end

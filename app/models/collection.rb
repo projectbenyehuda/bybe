@@ -364,17 +364,20 @@ class Collection < ApplicationRecord
     return []
   end
 
-  # return nearest parent volume or periodical_issue
+  # return nearest ancestor volume or periodical_issue, traversing the full parent tree
   def parent_volume_or_isssue
-    seen_colls = []
-    parent_collections.each do |pc| # iterate until we find a volume of collection_type parent or periodical_issue
-      next if seen_colls.include?(pc.id)
+    stack = parent_collections.dup
+    visited = Set.new([id])
+    while stack.any?
+      pc = stack.pop
+      next if pc.nil? || visited.include?(pc.id)
 
+      visited.add(pc.id)
       return pc if pc.volume? || pc.periodical_issue?
 
-      seen_colls << pc.id
+      stack.concat(pc.parent_collections)
     end
-    return nil
+    nil
   end
 
   def authorities
