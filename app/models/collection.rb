@@ -364,18 +364,18 @@ class Collection < ApplicationRecord
     return []
   end
 
-  # return nearest ancestor volume or periodical_issue, traversing the full parent tree
+  # return nearest ancestor volume or periodical_issue, traversing the full parent tree (BFS)
   def parent_volume_or_isssue
-    stack = parent_collections.dup
+    queue = parent_collections.dup
     visited = Set.new([id])
-    while stack.any?
-      pc = stack.pop
+    until queue.empty?
+      pc = queue.shift
       next if pc.nil? || visited.include?(pc.id)
 
       visited.add(pc.id)
       return pc if pc.volume? || pc.periodical_issue?
 
-      stack.concat(pc.parent_collections)
+      queue.concat(pc.parent_collections)
     end
     nil
   end
