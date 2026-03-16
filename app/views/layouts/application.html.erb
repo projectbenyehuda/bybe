@@ -2,6 +2,7 @@
 <html>
 <head>
   <title><%= @page_title ? @page_title : t(:default_page_title)%></title>
+  <link rel="canonical" href="https://benyehuda.org<%= request.path %>">
   <% if Rails.env.production? %>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-4865013-2"></script>
