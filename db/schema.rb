@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_13_233623) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_16_134431) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -776,21 +776,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_13_233623) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "lex_texts", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.string "title"
-    t.string "authors"
-    t.string "pages"
-    t.bigint "lex_publication_id"
-    t.bigint "lex_issue_id"
-    t.integer "manifestation_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
-    t.index ["lex_issue_id"], name: "index_lex_texts_on_lex_issue_id"
-    t.index ["lex_publication_id"], name: "index_lex_texts_on_lex_publication_id"
-    t.index ["manifestation_id"], name: "index_lex_texts_on_manifestation_id"
-    t.index ["title"], name: "index_lex_texts_on_title"
-  end
-
   create_table "list_items", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "user_id"
     t.string "listkey"
@@ -1203,9 +1188,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_13_233623) do
   add_foreign_key "lex_person_works", "lex_people"
   add_foreign_key "lex_person_works", "lex_publications"
   add_foreign_key "lex_person_works", "publications"
-  add_foreign_key "lex_texts", "lex_issues"
-  add_foreign_key "lex_texts", "lex_publications"
-  add_foreign_key "lex_texts", "manifestations"
   add_foreign_key "list_items", "users"
   add_foreign_key "manifestations", "expressions"
   add_foreign_key "proofs", "users", column: "resolved_by", name: "proofs_resolved_by_fk"
