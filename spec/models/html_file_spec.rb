@@ -4,10 +4,6 @@ require 'rails_helper'
 
 describe HtmlFile do
   describe '.pdf_from_any_html' do
-    before do
-      skip 'google-chrome not available' unless system('google-chrome --version', out: File::NULL, err: File::NULL)
-    end
-
     # A 1x1 transparent PNG encoded as data: URI — no network required
     let(:tiny_png_data_uri) do
       'data:image/png;base64,' \

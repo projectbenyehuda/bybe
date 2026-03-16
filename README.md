@@ -17,9 +17,8 @@ External (i.e. hosting system) dependencies
 -------------------------------------------
 
 * Pandoc 3.x for converting to markdown and generating ebooks and other formats. (previous versions skip SmartTag tags in DOCX files, causing random letters to disappear in certain DOCXes with extraneous mark-up.
-* wkhtmltopdf for PDF generation
+* chromium for PDF generation
 * ElasticSearch for search
-** https://github.com/synhershko/elasticsearch-analysis-hebrew for the Hebrew analyzer for ElasticSearch
 * YAZ and libyaz-dev for the 'zoom' gem for the bibliographic workshop
 * watir and selenium for scraping other catalogue systems
 * libpcap-dev for net-dns2

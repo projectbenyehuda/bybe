@@ -41,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y mysql-client libmysqlclient-dev wkhtmltopdf pandoc yaz libyaz-dev libmagickwand-dev libpcap-dev cmake
+          sudo apt-get install -y mysql-client libmysqlclient-dev pandoc yaz libyaz-dev libmagickwand-dev libpcap-dev cmake chromium-browser
       - name: Checkout
         uses: actions/checkout@v5
       - name: Set up Ruby
