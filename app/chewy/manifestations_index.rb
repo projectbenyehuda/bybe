@@ -27,6 +27,9 @@ class ManifestationsIndex < Chewy::Index
   field :impressions_count, type: 'integer'
   field :raw_publication_date, value: ->(manifestation) { manifestation.expression.date }
   field :orig_publication_date, type: 'date', value: ->(manifestation) { normalize_date(manifestation.expression.date) }
+  field :raw_first_publication_date, value: ->(manifestation) { manifestation.expression.first_publication_date }
+  field :first_publication_date, type: 'date',
+        value: ->(manifestation) { normalize_date(manifestation.expression.first_publication_date) }
   # field :video_count, type: 'integer', value: ->(manifestation){ manifestation.video_count}
   # field :recommendation_count, type: 'integer', value: ->(manifestation){manifestation.recommendations.all_approved.count}
   # field :curated_content_count, type: 'integer', value: ->(manifestation){ 0 } # TODO: implement

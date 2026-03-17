@@ -224,6 +224,7 @@ he:
   deprecated: מחוּק
   pub_status_explanation: ברירת המחדל אם השדה ריק היא שהיצירה תהא פומבית אם היוצר כבר פומבי, ולא פומבית אם לאו.
   dpublished: פורסם
+  dfirst_published: פורסם לראשונה
   duploaded: עלה לאתר
   dcreated: חובר
   dbirth: ת. לידה
@@ -1340,6 +1341,9 @@ he:
   creation_date_explanation: "תאריך החיבור של היצירה, אם ידוע"
   publication_date: תאריך פרסום בדפוס
   publication_date_explanation: "תאריך פרסום בדפוס של מהדורת המקור שממנה הקלדנו"
+  first_publication_date: תאריך פרסום ראשון
+  first_publication_date_explanation: "תאריך הפרסום הראשון של היצירה, לפי הידוע"
+  first_publication: פרסום ראשון
   upload_date_explanation: "תאריך העלאת היצירה למאגר פרויקט בן־יהודה"
   alphabetical: 'סדר א"ב'
   recent: לפי תאריך

@@ -729,6 +729,7 @@ class ManifestationController < ApplicationController
           @e.comment = params[:ecomment]
           @e.intellectual_property = params[:intellectual_property]
           @e.source_edition = params[:source_edition]
+          @e.first_publication_date = params[:first_publication_date]
           @e.period = params[:period]
           @m.title = params[:mtitle]
           @m.sort_title = params[:sort_title]
@@ -1058,7 +1059,7 @@ class ManifestationController < ApplicationController
     end
 
     unless range_expr.empty?
-      raise "Wrong datetype: #{@datetype}" unless %w(uploaded created published).include?(@datetype)
+      raise "Wrong datetype: #{@datetype}" unless %w(uploaded created published first_published).include?(@datetype)
 
       datefield = "#{@datetype}_between"
       ret[datefield] = range_expr
