@@ -3,8 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
-  # NOTE: This test depends on the ddslick jQuery plugin loaded from CDN in the view.
-  # If CI/offline flakiness becomes an issue, consider vendoring the ddslick asset.
+  # NOTE: ddslick is vendored at app/assets/javascripts/jquery.ddslick.min.js — no CDN dependency.
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
