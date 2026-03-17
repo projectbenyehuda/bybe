@@ -17,6 +17,8 @@ module Lexicon
     def create_lex_item(html_doc)
       lex_person = LexPerson.new(citations: Lexicon::ExtractCitations.call(html_doc))
 
+      lex_person.authority = Lexicon::ExtractAuthority.call(html_doc)
+
       heading_table = html_doc.at_css('table[width="100%"]')
       heading_table_html = heading_table.to_html
       # Match both patterns: (YYYY) and (YYYY-YYYY)
@@ -51,7 +53,8 @@ module Lexicon
       # to avoid validation errors
       lex_person.save!
 
-      AssociateAuthority.call(lex_person, html_doc)
+      # Authority can already be filled in ExtractAuthority service so we call AssociateAuthority only if it is nil
+      AssociateAuthority.call(lex_person, html_doc) if lex_person.authority.nil?
       link_citations_to_works(lex_person)
       lex_person
     end
