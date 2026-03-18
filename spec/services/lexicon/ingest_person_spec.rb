@@ -154,4 +154,51 @@ describe Lexicon::IngestPerson do
       expect(entry.external_identifiers).to be_nil
     end
   end
+
+  context 'when page contains BYP badge, empty items in works list and malformed citations block',
+          vcr: { cassette_name: 'lexicon/ingest_person/04443' } do
+    let!(:authority) { create(:authority, name: 'Matthias Simcha Rabener', id: 2575) }
+
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Matthias Simcha Rabener',
+          fname: '04443.php',
+          full_path: Rails.root.join('spec/data/lexicon/04443.php')
+        }
+      )
+    end
+
+    it 'parses file successfully' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      expect(file.reload).to be_status_ingested
+      entry = file.lex_entry
+      person = entry.lex_item
+      expect(person).to be_an_instance_of(LexPerson)
+      expect(person).to have_attributes(birthdate: nil, deathdate: nil)
+      expect(person.gender).to eq('male')
+      expect(person.citations.count).to eq(2)
+      expect(person.citations.select { |c| c.subject.nil? && c.person_work.nil? }.size).to eq(2)
+
+      expect(person.works.count).to eq(0)
+      expect(person.authority).to eq(authority)
+
+      expect(entry.english_title).to eq('Matthias Simcha Rabener')
+
+      expect(person.links).to be_empty
+      expect(entry.external_identifiers).to eq(
+        {
+          'lc' => 'nb2009008724',
+          'nli' => '987007519078905171',
+          'openlibrary' => 'OL13430890A',
+          'viaf' => '141147266569335480503',
+          'wikidata' => 'Q12409731'
+        }
+      )
+    end
+  end
 end
