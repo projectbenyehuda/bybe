@@ -2,3 +2,4 @@
 //= link_tree ../fonts
 //= link application.css
 //= link application.js
+//= link jquery.ddslick.min.js

@@ -21,6 +21,7 @@
 //= require ahoy
 //= require rails.validations
 
+//= stub jquery.ddslick.min
 //= require_tree .
 
 var mobileWidth = 767;
