@@ -58,6 +58,8 @@ class Expression < ApplicationRecord
 
   def norm_dates
     nd = normalize_date(date)
-    self.normalized_pub_date = nd unless nd.nil?
+    self.normalized_pub_date = nd
+    nd2 = normalize_date(first_publication_date)
+    self.normalized_first_publication_date = nd2
   end
 end

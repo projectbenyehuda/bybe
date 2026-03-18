@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_08_233344) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_17_212025) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -403,6 +403,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_08_233344) do
     t.string "normalized_creation_date"
     t.integer "work_id", null: false
     t.integer "intellectual_property", null: false
+    t.string "first_publication_date"
+    t.string "normalized_first_publication_date"
     t.index ["intellectual_property"], name: "index_expressions_on_intellectual_property"
     t.index ["normalized_creation_date"], name: "index_expressions_on_normalized_creation_date"
     t.index ["normalized_pub_date"], name: "index_expressions_on_normalized_pub_date"
