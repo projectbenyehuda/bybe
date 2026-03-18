@@ -87,8 +87,8 @@
     / = render partial: 'shared/associated_people', locals: { which: :manifestation, manifestation: @m, edit: true}
     %hr
     %h2= t(:external_links)
-    %b= t(:sefaria_linker)
     = check_box_tag :sefaria_linker, 1, @m.sefaria_linker
+    %b= t(:sefaria_linker)
     %br
     = render partial: 'external_links', locals: { links: @m.external_links, edit: true }
     = t(:add_url)
