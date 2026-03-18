@@ -3,10 +3,10 @@
 module Lexicon
   # Service to ingest Lexicon Person from php file
   class IngestPerson < IngestBase
-    WORK_TYPE_HEADERS = {
-      'edited' => ['כתיבה, עריכה ושכתוב:', 'עריכה:'],
-      'translated' => ['תרגום:']
-    }.freeze
+    include HtmlUtils
+
+    WORKS_HEADER = 'Books'
+    CITATIONS_HEADER = 'Bib.'
 
     def call(lex_file)
       raw = File.read(lex_file.full_path, encoding: 'UTF-8')
@@ -33,15 +33,15 @@ module Lexicon
 
       next_elem = heading_table.next_element
       bio = []
-      while next_elem.present? && !works_header?(next_elem)
+      while next_elem.present? && !header?(next_elem, WORKS_HEADER)
         bio << next_elem.to_html
         next_elem = next_elem.next_element
       end
 
       lex_person.bio = HtmlToMarkdown.call(bio.join("\n"))
 
-      if next_elem.present? && works_header?(next_elem)
-        parse_person_works(next_elem, lex_person)
+      if next_elem.present? && header?(next_elem, WORKS_HEADER)
+        Lexicon::ExtractPersonWorks.call(next_elem, lex_person)
       end
 
       buf = html_doc.to_html
@@ -77,53 +77,6 @@ module Lexicon
         citation.subject = nil # clear the subject since it's now linked to PersonWork
         citation.save!
       end
-    end
-
-    def header?(elem)
-      %w(p font).include?(elem.name) && elem.at_css('a[name]')
-    end
-
-    def works_header?(elem)
-      header?(elem) && elem.at_css('a[name="Books"]')
-    end
-
-    def parse_person_works(works_header, lex_person)
-      next_elem = works_header.next_element
-      if next_elem.present? && next_elem.name == 'span'
-        next_elem = next_elem.first_element_child
-      end
-
-      index = 0
-      work_type = 'original'
-      while next_elem.present? && !header?(next_elem)
-        header_line = next_elem.text.strip
-        if next_elem.name == 'p' || next_elem.name == 'font'
-          work_type = WORK_TYPE_HEADERS.keys.detect do |work_type|
-            WORK_TYPE_HEADERS[work_type].include?(header_line)
-          end
-
-          if work_type.nil?
-            Rails.logger.warn("Unrecognized works section header: #{header_line}")
-            work_type = 'original' # defaulting to original if we don't recognize the header
-          end
-          index = lex_person.works.select { |w| w.work_type == work_type }.map(&:seqno).max || 0
-        elsif next_elem.name == 'ul'
-          next_elem.css('li').each do |li|
-            # sometimes list can contains empty items
-            next if li.text.blank?
-
-            work = ParsePersonWork.call(li.text)
-            work.work_type = work_type
-            work.seqno = index += 1
-            lex_person.works << work
-          end
-        else
-          Rails.logger.warn('Unexpected element while parsing person works: ' + next_elem.name)
-        end
-        next_elem = next_elem.next_element
-      end
-
-      next_elem
     end
 
     def parse_person_links(person, buf)
