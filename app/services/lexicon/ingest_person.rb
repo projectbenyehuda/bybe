@@ -3,6 +3,11 @@
 module Lexicon
   # Service to ingest Lexicon Person from php file
   class IngestPerson < IngestBase
+    include HtmlUtils
+
+    WORKS_HEADER = 'Books'
+    CITATIONS_HEADER = 'Bib.'
+
     def call(lex_file)
       raw = File.read(lex_file.full_path, encoding: 'UTF-8')
       @female = raw.include?('על המחברת ויצירתה')
@@ -28,14 +33,14 @@ module Lexicon
 
       next_elem = heading_table.next_element
       bio = []
-      while next_elem.present? && !works_header?(next_elem)
+      while next_elem.present? && !header?(next_elem, WORKS_HEADER)
         bio << next_elem.to_html
         next_elem = next_elem.next_element
       end
 
       lex_person.bio = HtmlToMarkdown.call(bio.join("\n"))
 
-      if next_elem.present? && works_header?(next_elem)
+      if next_elem.present? && header?(next_elem, WORKS_HEADER)
         Lexicon::ExtractPersonWorks.call(next_elem, lex_person)
       end
 
@@ -72,14 +77,6 @@ module Lexicon
         citation.subject = nil # clear the subject since it's now linked to PersonWork
         citation.save!
       end
-    end
-
-    def header?(elem)
-      %w(p font).include?(elem.name) && elem.at_css('a[name]')
-    end
-
-    def works_header?(elem)
-      header?(elem) && elem.at_css('a[name="Books"]')
     end
 
     def parse_person_links(person, buf)

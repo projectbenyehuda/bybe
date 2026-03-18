@@ -3,6 +3,8 @@
 module Lexicon
   # Service to extract works of a Lexicon Person from html document
   class ExtractPersonWorks < ApplicationService
+    include HtmlUtils
+
     WORK_TYPE_HEADERS = {
       'edited' => ['כתיבה, עריכה ושכתוב:', 'עריכה:'],
       'translated' => ['תרגום:']
@@ -45,12 +47,6 @@ module Lexicon
       end
 
       next_elem
-    end
-
-    private
-
-    def header?(elem)
-      %w(p font).include?(elem.name) && elem.at_css('a[name]')
     end
   end
 end
