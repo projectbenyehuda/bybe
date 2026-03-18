@@ -15,5 +15,14 @@ module Lexicon
         return elem.at_css('a[name]').present?
       end
     end
+
+    def next_element_skipping_blank(elem)
+      next_elem = elem.next_element
+      while next_elem.present? && next_elem.text.blank? do
+        next_elem = next_elem.next_element
+      end
+
+      next_elem
+    end
   end
 end
