@@ -9,6 +9,7 @@ class SearchManifestations < ApplicationService
     'alphabetical' => { default_dir: 'asc', column: :sort_title },
     'popularity' => { default_dir: 'desc', column: :impressions_count },
     'publication_date' => { default_dir: 'asc', column: :orig_publication_date },
+    'first_publication_date' => { default_dir: 'asc', column: :first_publication_date },
     'creation_date' => { default_dir: 'asc', column: :creation_date },
     'upload_date' => { default_dir: 'desc', column: :pby_publication_date },
     RELEVANCE_SORT_BY => { default_dir: 'desc', column: :_score }
@@ -73,6 +74,7 @@ class SearchManifestations < ApplicationService
     add_date_range(filter, :pby_publication_date, filters['uploaded_between'])
     add_date_range(filter, :creation_date, filters['created_between'])
     add_date_range(filter, :orig_publication_date, filters['published_between'])
+    add_date_range(filter, :first_publication_date, filters['first_published_between'])
 
     author = filters['author']
     if author.present?

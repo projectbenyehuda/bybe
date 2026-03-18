@@ -1324,6 +1324,7 @@ en:
   format_to_save: Format to save
   download_to_file: Save Text to File
   dpublished: Published
+  dfirst_published: First Published
   duploaded: Uploaded to Site
   dutch: Dutch
   edit_bib_source: Edit Bibliographic Source
@@ -1808,6 +1809,10 @@ en:
   public_anthology: Public Anthology
   publication: Publication
   publication_date: Publication Date
+  publication_date_explanation: "Print publication date of the source edition we transcribed from"
+  first_publication_date: First Publication Date
+  first_publication_date_explanation: "Date of the work's first known publication"
+  first_publication: First Publication
   publication_details: Publication Details
   publication_place: Publication Place
   publications: Publications
