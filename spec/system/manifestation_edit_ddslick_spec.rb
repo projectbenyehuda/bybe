@@ -90,8 +90,9 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       find('.dd-select').click
       expect(page).to have_css('.dd-options', visible: true, wait: 5)
 
-      # Close it by clicking elsewhere
+      # Close it by clicking elsewhere and wait for animation to complete
       find('body').click
+      expect(page).to have_css('.dd-options', visible: false, wait: 5)
 
       # Check height after first open/close
       first_height = page.evaluate_script("$('.dd-select').outerHeight()")
@@ -101,8 +102,9 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       find('.dd-select').click
       expect(page).to have_css('.dd-options', visible: true, wait: 5)
 
-      # Close it
+      # Close it and wait for animation to complete
       find('body').click
+      expect(page).to have_css('.dd-options', visible: false, wait: 5)
 
       # Check height after second open/close
       second_height = page.evaluate_script("$('.dd-select').outerHeight()")
@@ -112,8 +114,9 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       find('.dd-select').click
       expect(page).to have_css('.dd-options', visible: true, wait: 5)
 
-      # Close it
+      # Close it and wait for animation to complete
       find('body').click
+      expect(page).to have_css('.dd-options', visible: false, wait: 5)
 
       # Check height after third open/close
       third_height = page.evaluate_script("$('.dd-select').outerHeight()")
