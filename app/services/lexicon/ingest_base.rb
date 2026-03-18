@@ -33,7 +33,7 @@ module Lexicon
       # Look for table cell with dir="ltr" containing the English title
       # The pattern is: <td><p align="center" dir="ltr"><font size="5" color="#FF0000">English Name</font></td>
       english_cell = html_doc.at_css('table td p[dir="ltr"] font[size="5"][color="#FF0000"]')
-      english_cell&.text&.strip
+      english_cell&.text&.squish
     end
 
     # Extract external identifiers from the footer table
