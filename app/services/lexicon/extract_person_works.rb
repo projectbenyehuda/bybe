@@ -11,7 +11,7 @@ module Lexicon
     }.freeze
 
     def call(works_header, lex_person)
-      next_elem = works_header.next_element
+      next_elem = next_element_skipping_blank(works_header)
       if next_elem.present? && next_elem.name == 'span'
         next_elem = next_elem.first_element_child
       end
@@ -43,7 +43,7 @@ module Lexicon
         else
           Rails.logger.warn('Unexpected element while parsing person works: ' + next_elem.name)
         end
-        next_elem = next_elem.next_element
+        next_elem = next_element_skipping_blank(next_elem)
       end
 
       next_elem
