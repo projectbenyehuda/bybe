@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 describe Lexicon::ExtractPersonWorks do
-  subject(:result) { described_class.call(works_header, lex_person) }
+  subject!(:result) { described_class.call(works_header, lex_person) }
 
   let(:html_doc) { Nokogiri::HTML(html) }
   let(:works_header) { html_doc.css('p, font').find { |e| e.at_css('a[name="Books"]') } }
@@ -21,10 +21,11 @@ describe Lexicon::ExtractPersonWorks do
       HTML
     end
 
-    it 'extracts all original works' do
-      result
+    it 'extracts all original works and returns next element' do
       expect(lex_person.works.size).to eq(2)
       expect(lex_person.works).to all(be_work_type_original)
+      expect(result.text).to eq('על המחבר:')
+      expect(result.name).to eq('p')
     end
 
     it 'assigns sequential seqno' do
@@ -38,7 +39,7 @@ describe Lexicon::ExtractPersonWorks do
     end
   end
 
-  context 'when works list is wrapped in a span' do
+  context 'when works list is wrapped in a span and has no following elements' do
     let(:html) do
       <<~HTML
         <p><a name="Books">ספריה:</a></p>
@@ -52,10 +53,10 @@ describe Lexicon::ExtractPersonWorks do
       HTML
     end
 
-    it 'extracts works from inside the span' do
-      result
+    it 'extracts works from inside the span and returns nil' do
       expect(lex_person.works.size).to eq(3)
       expect(lex_person.works).to all(be_work_type_original)
+      expect(result).to be_nil
     end
   end
 
@@ -82,26 +83,16 @@ describe Lexicon::ExtractPersonWorks do
       HTML
     end
 
-    it 'extracts original works' do
-      result
+    it 'extracts works and assigns seqno independetly for each work_type' do
       expect(lex_person.works.select(&:work_type_original?).size).to eq(2)
-    end
-
-    it 'extracts translated works' do
-      result
       expect(lex_person.works.select(&:work_type_translated?).size).to eq(1)
-    end
-
-    it 'extracts edited works' do
-      result
       expect(lex_person.works.select(&:work_type_edited?).size).to eq(2)
-    end
 
-    it 'assigns seqno independently per work type' do
-      result
       expect(lex_person.works.select(&:work_type_original?).map(&:seqno)).to eq([1, 2])
       expect(lex_person.works.select(&:work_type_translated?).map(&:seqno)).to eq([1])
       expect(lex_person.works.select(&:work_type_edited?).map(&:seqno)).to eq([1, 2])
+
+      expect(result).to be_nil
     end
   end
 
@@ -123,19 +114,12 @@ describe Lexicon::ExtractPersonWorks do
       HTML
     end
 
-    it 'stops parsing at the citations header' do
-      result
+    it 'stops parsing at the citations header and returns it as result' do
       expect(lex_person.works.size).to eq(3)
-    end
-
-    it 'extracts original works before the citations header' do
-      result
       expect(lex_person.works.select(&:work_type_original?).size).to eq(2)
-    end
-
-    it 'extracts edited works before the citations header' do
-      result
       expect(lex_person.works.select(&:work_type_edited?).size).to eq(1)
+      expect(result.text).to eq('על המחברת ויצירתה:')
+      expect(result.name).to eq('p')
     end
   end
 end
