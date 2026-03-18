@@ -15,7 +15,21 @@ module Lexicon
 
       return [] if citations_node&.name != 'font'
 
-      result = Lexicon::ParseCitations.call(citations_node.inner_html)
+      html_nodes = [citations_node]
+
+      # Sometimes we have not a single node with citations, but a node with following li or ul tags (malformed document)
+      # So we check if citations_node does not contains other section header (e.g. Links), and if so
+      # consider following li and ul nodes as part of citations section
+      unless citations_node.at_css("a[name]").present?
+        next_elem = next_element_skipping_blank(citations_node)
+
+        while next_elem&.name == 'li' || next_elem&.name == 'ul'
+          html_nodes << next_elem
+          next_elem = next_element_skipping_blank(next_elem)
+        end
+      end
+
+      result = Lexicon::ParseCitations.call(html_nodes.map(&:to_html).join)
 
       # We used to delete parsed nodes earlier, but it turned out in some files citations node contains other
       # sections (e.g. Links block, so we cannot simply remove it)
