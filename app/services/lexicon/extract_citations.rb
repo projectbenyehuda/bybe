@@ -3,25 +3,15 @@
 module Lexicon
   # Service to extract citations from Lexicon entry php file
   class ExtractCitations < ApplicationService
-    HEADERS = ['על המחבר ויצירתו:', 'על המחברת ויצירתה:', 'על המחברות ויצירתן:'].freeze
+    include HtmlUtils
 
     def call(html_doc)
-      header = nil
-      HEADERS.each do |header_title|
-        header = header_element(html_doc, header_title)
-        break if header.present?
-      end
+      header = header_element(html_doc)
       return [] if header.nil?
 
       # The next element should be a 'font' tag containing all citations. Sometimes there could be one or more blank
       # paragraphs before it, so we need to skip them.
-      citations_node = header.next_element
-
-      while citations_node.name != 'font' && citations_node.text.blank? do
-        next_elem = citations_node = citations_node.next_element
-        citations_node.remove
-        citations_node = next_elem
-      end
+      citations_node = next_element_skipping_blank(header)
 
       return [] if citations_node&.name != 'font'
 
@@ -36,20 +26,20 @@ module Lexicon
 
     private
 
-    def header_element(html_doc, header)
-      header = html_doc.xpath("//a[contains(., \"#{header}\")]").first
+    def header_element(html_doc)
+      header = html_doc.at_css("a[name=\"Bib.\"]")
 
-      if header.present?
-        header = header.parent # should be a <font> tag
+      return nil if header.nil?
 
-        if header.parent.name == 'p' # normally font tag should be wrapped in a paragraph, but sometimes it's not
-          header = header.parent
-        end
+      header = header.parent # should be a <font> tag
 
-        # this can happen if citations header was added at the end of Works list (malformed document)
-        if header.next_element.nil?
-          header = header.parent
-        end
+      if header.parent.name == 'p' # normally font tag should be wrapped in a paragraph, but sometimes it's not
+        header = header.parent
+      end
+
+      # this can happen if citations header was added at the end of Works list (malformed document)
+      if header.next_element.nil?
+        header = header.parent
       end
 
       header
