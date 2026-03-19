@@ -33,7 +33,7 @@ module Lexicon
         elsif next_elem.name == 'ul'
           next_elem.css('li').each do |li|
             # sometimes list can contains empty items
-            next if li.text.blank?
+            next if li.text.blank? || li.text.strip.empty?
 
             work = ParsePersonWork.call(li.text)
             work.work_type = work_type
