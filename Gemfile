@@ -96,6 +96,7 @@ gem 'rack-attack' # control misbehaving clients
 gem 'rswag-api'
 gem 'rswag-ui'
 
+gem 'dotenv', '~> 3.1.2'
 ## these were used for some legacy HtmlDir VIAF lookup stuff. They have a huge RAM footprint (~160MB per process), so commented out until needed again.
 # gem 'rdf' #, '~> 2.0.1'
 # gem 'linkeddata' # for RDF etc.
@@ -151,7 +152,6 @@ end
 
 group :test, :development do
   gem 'brakeman'
-  gem 'dotenv', '~> 3.1.2'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails'
   gem 'spring', '4.2.1' # later version yields https://github.com/rails/spring/issues/734

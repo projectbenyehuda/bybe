@@ -21,8 +21,7 @@ set :deploy_to, "/home/bybe/bybeconv_staging"
 # set :pty, true
 
 # Default value for :linked_files is []
-append :linked_files, "config/database.yml", "config/s3.yml", "config/constants.yml", "config/storage.yml", "config/chewy.yml", "config/puma.rb"
-
+append :linked_files, "config/database.yml", "config/s3.yml", "config/constants.yml", "config/storage.yml", "config/chewy.yml", "config/puma.rb", ".env.production"
 append :linked_dirs, '.bundle', 'log', 'tmp/cache', 'public/system', 'tmp/pids', 'tmp/sockets'
 
 append :rvm1_map_bins, :rake, :gem, :bundle, :ruby
@@ -41,7 +40,7 @@ append :rvm1_map_bins, :rake, :gem, :bundle, :ruby
 # Uncomment the following to require manually verifying the host key before first deploy.
 # set :ssh_options, verify_host_key: :secure
 
-set :rvm1_ruby_version, "3.2.1"
+set :rvm1_ruby_version, "3.3.9"
 before 'deploy', 'rvm1:alias:create'
 after 'deploy:publishing', 'puma:restart'
 
