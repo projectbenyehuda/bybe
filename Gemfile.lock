@@ -867,6 +867,7 @@ DEPENDENCIES
   active_data
   active_record_query_trace
   activerecord-session_store
+  addressable
   ahoy_matey
   aws-sdk-s3
   bcrypt_pbkdf

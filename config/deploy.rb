@@ -41,7 +41,13 @@ append :rvm1_map_bins, :rake, :gem, :bundle, :ruby
 # Uncomment the following to require manually verifying the host key before first deploy.
 # set :ssh_options, verify_host_key: :secure
 
+<<<<<<< Updated upstream
 set :rvm1_ruby_version, "3.2.1"
+=======
+set :rvm1_ruby_version, "3.3.9"
+set :rvm_ruby_version, 'ruby-3.3.9@global'
+set :rvm_type, :user
+>>>>>>> Stashed changes
 before 'deploy', 'rvm1:alias:create'
 after 'deploy:publishing', 'puma:restart'
 
@@ -53,3 +59,11 @@ namespace :debug do
     end
   end
 end
+
+task :load_remote_environment do
+  on roles(:app) do
+    set :default_environment, Dotenv::Parser.call(capture("cat #{shared_path}/.env.production"))
+  end
+end
+after 'deploy:set_current_revision', 'load_remote_environment'
+

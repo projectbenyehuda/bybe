@@ -39,7 +39,7 @@ gem 'ruby_llm', '~> 1.9'
 gem 'simple_form', '~> 5.3.0'
 
 gem 'kt-paperclip'
-
+gem 'addressable'
 gem 'jbuilder', '~> 2.0' # for JSON APIs
 gem 'sqlite3' # for dictionary imports
 # gem 'rollbar' # error reporting. Airbrake replacement.
