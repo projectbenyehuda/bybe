@@ -21,8 +21,7 @@ set :deploy_to, "/home/bybe/bybeconv_staging"
 # set :pty, true
 
 # Default value for :linked_files is []
-append :linked_files, "config/database.yml", "config/s3.yml", "config/constants.yml", "config/storage.yml", "config/chewy.yml", "config/puma.rb"
-
+append :linked_files, "config/database.yml", "config/s3.yml", "config/constants.yml", "config/storage.yml", "config/chewy.yml", "config/puma.rb", ".env.production"
 append :linked_dirs, '.bundle', 'log', 'tmp/cache', 'public/system', 'tmp/pids', 'tmp/sockets'
 
 append :rvm1_map_bins, :rake, :gem, :bundle, :ruby
