@@ -20,10 +20,12 @@ module Lexicon
       # Sometimes we have not a single node with citations, but a node with following li or ul tags (malformed document)
       # So we check if citations_node does not contains other section header (e.g. Links), and if so
       # consider following li and ul nodes as part of citations section
+      # Another common issue is when part of following list is wrapped in a font tag with size = 2
       unless citations_node.at_css("a[name]").present?
         next_elem = next_element_skipping_blank(citations_node)
 
-        while next_elem&.name == 'li' || next_elem&.name == 'ul'
+        while next_elem&.name == 'li' || next_elem&.name == 'ul' ||
+              (next_elem&.name == 'font' && next_elem['size'] == '2')
           html_nodes << next_elem
           next_elem = next_element_skipping_blank(next_elem)
         end
