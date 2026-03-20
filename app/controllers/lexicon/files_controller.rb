@@ -47,7 +47,8 @@ module Lexicon
       lex_item.destroy! if lex_item.present?
       Lexicon::IngestFile.perform_async(@lex_file.id)
 
-      redirect_to lexicon_files_path, notice: t('.success')
+      filter_params = params.permit(:entrytype, :title, :fname, :page).to_h.compact_blank
+      redirect_to lexicon_files_path(filter_params), notice: t('.success')
     end
 
     private
