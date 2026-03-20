@@ -457,4 +457,34 @@ describe BybeUtils do
       end
     end
   end
+
+  describe '#orig_lang_label' do
+    context 'when original language is unknown' do
+      it 'returns the unknown-language I18n string for nil' do
+        expect(instance.orig_lang_label(nil)).to eq(I18n.t(:translated_from_unknown_lang))
+      end
+
+      it 'returns the unknown-language I18n string for blank string' do
+        expect(instance.orig_lang_label('')).to eq(I18n.t(:translated_from_unknown_lang))
+      end
+
+      it "returns the unknown-language I18n string for 'unknown'" do
+        expect(instance.orig_lang_label('unknown')).to eq(I18n.t(:translated_from_unknown_lang))
+      end
+
+      it "returns the unknown-language I18n string for 'unk'" do
+        expect(instance.orig_lang_label('unk')).to eq(I18n.t(:translated_from_unknown_lang))
+      end
+    end
+
+    context 'when original language is a known ISO code' do
+      it 'returns the from_lang prefix combined with the language name' do
+        expect(instance.orig_lang_label('ru')).to eq("#{I18n.t(:from_lang)}#{I18n.t(:russian)}")
+      end
+
+      it 'returns the correct label for Hebrew' do
+        expect(instance.orig_lang_label('he')).to eq("#{I18n.t(:from_lang)}#{I18n.t(:hebrew)}")
+      end
+    end
+  end
 end
