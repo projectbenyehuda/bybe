@@ -2,6 +2,7 @@
 
 # require 'zoom' # Z39.50 queries
 require 'rmultimarkdown'
+require 'open3'
 include BybeUtils
 
 ENCODING_SUBSTS = [{ from: "\xCA", to: "\xC9" }, # fix weird invalid chars instead of proper Hebrew xolams
@@ -598,11 +599,15 @@ class HtmlFile < ApplicationRecord
               "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
               "file://#{tmpfilename}"]
       args.insert(1, '--no-sandbox') if Process.uid.zero? || ENV['CHROME_NO_SANDBOX'] == '1'
-      success = system(*args)
-      unless success && File.exist?(pdffilename)
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] Running: #{args.join(' ')}")
+      stdout, stderr, status = Open3.capture3(*args)
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] exit_status=#{status.exitstatus.inspect}")
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] stdout: #{stdout}") unless stdout.blank?
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] stderr: #{stderr}") unless stderr.blank?
+      unless status.success? && File.exist?(pdffilename)
         Rails.logger.error(
           '[HtmlFile.pdf_from_any_html] Chrome PDF generation failed. ' \
-          "exit_status=#{$?&.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
+          "exit_status=#{status.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
         )
         return nil
       end
