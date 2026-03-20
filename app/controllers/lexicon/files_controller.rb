@@ -14,6 +14,7 @@ module Lexicon
       @entrytype = params[:entrytype]
       @title = params[:title]
       @fname = params[:fname]
+      @page = params[:page]
 
       if @entrytype.present?
         @lex_files = @lex_files.where(entrytype: @entrytype)
@@ -30,7 +31,7 @@ module Lexicon
 
       @lex_files = @lex_files.includes(:lex_entry)
                              .order(:fname)
-                             .page(params[:page])
+                             .page(@page)
     end
 
     def migrate

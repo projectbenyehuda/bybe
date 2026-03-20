@@ -52,7 +52,7 @@
       const entrytype = $('#filter #entrytype').val();
       const title = $('#filter #title').val();
       const fname = $('#filter #fname').val();
-      const page = new URLSearchParams(window.location.search).get('page') || '';
+      const page = '#{@page}';
 
       const redirectParams = new URLSearchParams();
       if (entrytype) redirectParams.set('entrytype', entrytype);
