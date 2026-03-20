@@ -587,7 +587,12 @@ class HtmlFile < ApplicationRecord
   end
 
   def self.pdf_from_any_html(html_buffer)
-    tmpfile = Tempfile.new(['pdf2html__', '.html'])
+    # Use Rails.root/tmp rather than /tmp so that both this process and chromium
+    # resolve the same real filesystem path. Using /tmp can fail when the Rails
+    # process runs under a systemd unit with PrivateTmp=true (or chromium runs as
+    # a snap), because each process sees a different /tmp namespace.
+    tmp_dir = Rails.root.join('tmp').to_s
+    tmpfile = Tempfile.new(['pdf2html__', '.html'], tmp_dir)
     begin
       tmpfile.write(html_buffer)
       tmpfile.flush
@@ -599,27 +604,16 @@ class HtmlFile < ApplicationRecord
               "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
               "file://#{tmpfilename}"]
       args.insert(1, '--no-sandbox') if Process.uid.zero? || ENV['CHROME_NO_SANDBOX'] == '1'
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] uid=#{Process.uid} sandbox=#{args.include?('--no-sandbox') ? 'off' : 'on'}")
       Rails.logger.info("[HtmlFile.pdf_from_any_html] Running: #{args.join(' ')}")
-      Rails.logger.info("[HtmlFile.pdf_from_any_html] Expecting PDF at: #{pdffilename}")
       stdout, stderr, status = Open3.capture3(*args)
-      Rails.logger.info("[HtmlFile.pdf_from_any_html] exit_status=#{status.exitstatus.inspect}")
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] exit_status=#{status.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}")
       Rails.logger.info("[HtmlFile.pdf_from_any_html] stdout: #{stdout}") unless stdout.blank?
       Rails.logger.info("[HtmlFile.pdf_from_any_html] stderr: #{stderr}") unless stderr.blank?
-      # Chromium may use helper processes that finish writing after the main process exits.
-      # Retry File.exist? for up to 5 seconds to handle this race condition.
-      pdf_exists = 10.times.any? do |i|
-        if File.exist?(pdffilename)
-          true
-        else
-          Rails.logger.info("[HtmlFile.pdf_from_any_html] PDF not found yet (attempt #{i + 1}/10), waiting...") if i < 9
-          sleep 0.5
-          false
-        end
-      end
-      unless status.success? && pdf_exists
+      unless status.success? && File.exist?(pdffilename)
         Rails.logger.error(
           '[HtmlFile.pdf_from_any_html] Chrome PDF generation failed. ' \
-          "exit_status=#{status.exitstatus.inspect} pdf_exists=#{pdf_exists}"
+          "exit_status=#{status.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
         )
         return nil
       end
