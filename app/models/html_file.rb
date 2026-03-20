@@ -2,6 +2,7 @@
 
 # require 'zoom' # Z39.50 queries
 require 'rmultimarkdown'
+require 'open3'
 include BybeUtils
 
 ENCODING_SUBSTS = [{ from: "\xCA", to: "\xC9" }, # fix weird invalid chars instead of proper Hebrew xolams
@@ -598,11 +599,27 @@ class HtmlFile < ApplicationRecord
               "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
               "file://#{tmpfilename}"]
       args.insert(1, '--no-sandbox') if Process.uid.zero? || ENV['CHROME_NO_SANDBOX'] == '1'
-      success = system(*args)
-      unless success && File.exist?(pdffilename)
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] Running: #{args.join(' ')}")
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] Expecting PDF at: #{pdffilename}")
+      stdout, stderr, status = Open3.capture3(*args)
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] exit_status=#{status.exitstatus.inspect}")
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] stdout: #{stdout}") unless stdout.blank?
+      Rails.logger.info("[HtmlFile.pdf_from_any_html] stderr: #{stderr}") unless stderr.blank?
+      # Chromium may use helper processes that finish writing after the main process exits.
+      # Retry File.exist? for up to 5 seconds to handle this race condition.
+      pdf_exists = 10.times.any? do |i|
+        if File.exist?(pdffilename)
+          true
+        else
+          Rails.logger.info("[HtmlFile.pdf_from_any_html] PDF not found yet (attempt #{i + 1}/10), waiting...") if i < 9
+          sleep 0.5
+          false
+        end
+      end
+      unless status.success? && pdf_exists
         Rails.logger.error(
           '[HtmlFile.pdf_from_any_html] Chrome PDF generation failed. ' \
-          "exit_status=#{$?&.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
+          "exit_status=#{status.exitstatus.inspect} pdf_exists=#{pdf_exists}"
         )
         return nil
       end

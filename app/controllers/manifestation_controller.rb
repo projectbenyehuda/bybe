@@ -1022,6 +1022,7 @@ class ManifestationController < ApplicationController
 
     # languages
     @languages = params['ckb_languages']
+    @languages = [@languages] if @languages.is_a?(String) # if only one language was selected, it will come as a string instead of an array, so convert to array for consistent processing
     if @languages.present?
       if @languages == ['xlat']
         @languages = get_langs.reject { |x| x == 'he' }
