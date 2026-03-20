@@ -21,7 +21,7 @@
       %b= t(:origlang_title)+': '
       = text_field_tag :origlang_title, @w.origlang_title, size: 90
     %p
-      %b= t(:thedate) + ': '
+      %b= t(:creation_date_explanation) + ': '
       = text_field_tag :wdate, @w.date
     %p
       %b= t(:comments)+': '
@@ -36,7 +36,7 @@
       %b= t(:genre) + ': '
       = textify_genre(@w.genre) # should be identical to work's genre, so not editable
     %p
-      %b= t(:thedate) + ': '
+      %b= t(:publication_date_explanation) + ': '
       = text_field_tag :edate, @e.date
     %p
       %b #{Manifestation.human_attribute_name(:period)}:
@@ -45,7 +45,7 @@
       %b= t(:language) + ': '
       = select_tag :elang, options_for_select(get_langs.map {|lang| [textify_lang(lang), lang]}, @e.language.nil? ? 'he' : @e.language)
     %p
-      %b= t(:first_publication_date) + ': '
+      %b= t(:first_publication_date_explanation) + ': '
       = text_field_tag :first_publication_date, @e.first_publication_date
     %p
       %b= t(:source_edition) + ': '
