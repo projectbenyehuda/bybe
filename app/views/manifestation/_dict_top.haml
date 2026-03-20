@@ -13,7 +13,7 @@
             .headline-3-v02
               = "#{t(:translation)}: "
               != @e.translators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
-              = " (#{t(:from_lang)}#{textify_lang(@e.work.orig_lang)})"
+              = " (#{orig_lang_label(@e.work.orig_lang)})"
         - else
           = '?'
       .BYD-rights

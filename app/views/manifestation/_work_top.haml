@@ -20,7 +20,7 @@
                 .headline-3-v02
                   = "#{t(:translation)}: "
                   != xlatbuf
-                  = " (#{t(:from_lang)}#{textify_lang(@e.work.orig_lang)})"
+                  = " (#{orig_lang_label(@e.work.orig_lang)})"
             - else
               = '?'
       .row
@@ -36,7 +36,7 @@
                     .headline-3-v02
                       = "#{t(:translation)}: "
                       != xlatbuf
-                      = " (#{t(:from_lang)}#{textify_lang(@e.work.orig_lang)})"
+                      = " (#{orig_lang_label(@e.work.orig_lang)})"
                 - else
                   = '?'
           - if @m.chapters?
