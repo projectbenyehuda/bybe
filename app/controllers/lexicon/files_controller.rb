@@ -48,8 +48,10 @@ module Lexicon
       lex_item.destroy! if lex_item.present?
       Lexicon::IngestFile.perform_async(@lex_file.id)
 
-      filter_params = params.permit(:entrytype, :title, :fname, :page).to_h.compact_blank
-      redirect_to lexicon_files_path(filter_params), notice: t('.success')
+      # Reload to capture the state after scheduling (lex_entry status is now migrating).
+      # The async job's result won't be reflected here.
+      @lex_file.reload
+      render partial: 'file_row', locals: { lf: @lex_file }
     end
 
     private
