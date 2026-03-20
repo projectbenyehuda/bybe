@@ -7,6 +7,12 @@ require 'active_job'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Configure RubyLLM before Rails::Application is inherited
+# see https://rubyllm.com/upgrading/#troubleshooting
+RubyLLM.configure do |config|
+  config.use_new_acts_as = true
+end
+
 module Bybeconv
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
