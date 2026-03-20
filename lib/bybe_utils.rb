@@ -655,10 +655,13 @@ module BybeUtils
   end
 
   def orig_lang_label(orig_lang)
-    if orig_lang == 'unknown'
+    iso = orig_lang.to_s.strip
+    lang_name = textify_lang(iso) unless iso.empty?
+
+    if iso.empty? || iso == 'unk' || lang_name == I18n.t(:unknown)
       I18n.t(:translated_from_unknown_lang)
     else
-      "#{I18n.t(:from_lang)}#{textify_lang(orig_lang)}"
+      "#{I18n.t(:from_lang)}#{lang_name}"
     end
   end
 
