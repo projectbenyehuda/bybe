@@ -357,8 +357,16 @@ class ManifestationController < ApplicationController
 
   def dict
     if @m.expression.work.genre == 'lexicon'
-      @page = params[:page] || 1
-      @page = 1 if ['0', ''].include?(@page) # slider sets page to zero or '', awkwardly
+
+      begin
+        @page = params[:page] || 1
+        @page = 1 if ['0', ''].include?(@page) # slider sets page to zero or '', awkwardly
+        @page = @page.to_i
+      rescue StandardError
+        # sometimes web crawlers can send a page with a rubbish value so we fail on converting it to int
+        @page = 1
+      end
+
       @dict_list_mode = params[:dict_list_mode] || 'list'
       @emit_filters = true if params[:load_filters] == 'true' || params[:emit_filters] == 'true'
       @e = @m.expression
