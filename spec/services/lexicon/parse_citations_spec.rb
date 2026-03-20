@@ -5,7 +5,7 @@ require 'rails_helper'
 describe Lexicon::ParseCitations do
   subject(:result) { described_class.call(html) }
 
-  context 'when html is provided', vcr: { cassette_name: 'lexicon/parse_citations' } do
+  context 'when html is provided', vcr: { cassette_name: 'lexicon/parse_citations/00024_snippet' } do
     let(:html) do
       <<~HTML
         <font color="#FF0000"></font>
@@ -60,7 +60,7 @@ describe Lexicon::ParseCitations do
       {
         subject: 'ארה',
         title: 'ארה',
-        from_publication: "בספרו: פרקי חיים וספרות / ליקט וכינס זאב וויינר (ירושלים : קרית-ספר, תש\"ך 1960)",
+        from_publication: 'פרקי חיים וספרות / ליקט וכינס זאב וויינר (ירושלים : קרית-ספר, תש"ך 1960)',
         link: nil,
         pages: '89־90',
         notes: "פורסם לראשונה ב'הדואר', 7 בפברואר 1930",
@@ -71,12 +71,12 @@ describe Lexicon::ParseCitations do
     let(:expected_attributes_3) do
       {
         subject: 'הדמות הקסומה',
-        title: 'מאצטבת הספרים: הדמות הקסומה לשמואל בס',
+        title: 'הדמות הקסומה לשמואל בס',
         from_publication: 'דבר, כ"ב באב תש"ז, 8 באוגוסט 1947',
-        link: 'http://jpress2.tau.ac.il/Repository/getFiles.asp?Style=OliveXLib:LowLevelEntityToSaveGifMSIE_TAUHE&'\
+        link: 'http://jpress2.tau.ac.il/Repository/getFiles.asp?Style=OliveXLib:LowLevelEntityToSaveGifMSIE_TAUHE&' \
               'Type=text/html&Locale=hebrew-skin-custom&Path=DAV/1947/08/08&ChunkNum=-1&ID=Ar00702',
         pages: '7',
-        notes: nil,
+        notes: 'מאצטבת הספרים',
         seqno: 1
       }
     end
