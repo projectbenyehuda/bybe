@@ -654,6 +654,17 @@ module BybeUtils
     end
   end
 
+  def orig_lang_label(orig_lang)
+    iso = orig_lang.to_s.strip
+    lang_name = textify_lang(iso) unless iso.empty?
+
+    if iso.empty? || iso == 'unk' || lang_name == I18n.t(:unknown)
+      I18n.t(:translated_from_unknown_lang)
+    else
+      "#{I18n.t(:from_lang)}#{lang_name}"
+    end
+  end
+
   # returns an up-to-maxchars-character snippet and the rest of the buffer
   def snippet(buf, maxchars)
     return [buf, ''] if buf.length < maxchars

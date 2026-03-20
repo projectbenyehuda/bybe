@@ -2116,6 +2116,7 @@ en:
   translated: Translated
   translated_by: Translated by
   translated_from: Translated from
+  translated_from_unknown_lang: from unknown language
   translated_title: Translated Title
   translation_details: Translation Details
   translation_language: Translation Language

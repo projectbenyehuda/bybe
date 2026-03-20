@@ -24,7 +24,7 @@
         %br
         = "#{t(:translation)}: "
         != @translators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
-        - linktext = t(:from_lang) + textify_lang(@e.work.orig_lang)
+        - linktext = orig_lang_label(@e.work.orig_lang)
         != " (#{linktext})"
   - if @e.translation 
     .origlang_details
