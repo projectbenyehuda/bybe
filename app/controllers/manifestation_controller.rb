@@ -692,7 +692,7 @@ class ManifestationController < ApplicationController
     if other_m.nil?
       render partial: 'manifestation/link_expression_preview',
              locals: { error: t(:manifestation_not_found), other_m: nil, other_w: nil, other_e: nil,
-                       ia_warning: nil }
+                       ia_warning: nil, manifestation_id: @m.id }
       return
     end
     @other_m = other_m
@@ -702,7 +702,7 @@ class ManifestationController < ApplicationController
     ia_warning = ia_mismatch_warning(@w, @other_w)
     render partial: 'manifestation/link_expression_preview',
            locals: { error: nil, other_m: @other_m, other_e: @other_e, other_w: @other_w,
-                     ia_warning: ia_warning }
+                     ia_warning: ia_warning, manifestation_id: @m.id }
   end
 
   def link_expression
@@ -1309,7 +1309,7 @@ class ManifestationController < ApplicationController
     @liked = (current_user.nil? ? false : @m.likers.include?(current_user))
     if @e.work.expressions.many? # one is the one we're looking at...
       @additional_translations = []
-      @e.work.expressions.joins(:manifestations).includes(:manifestations).find_each do |ex|
+      @e.work.expressions.joins(:manifestations).includes(manifestations: { collection_items: :collection }).find_each do |ex|
         @additional_translations << ex unless ex == @e
       end
     end

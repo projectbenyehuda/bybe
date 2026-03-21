@@ -2,19 +2,13 @@
 
 # Merges two Works, keeping the older one and moving all associations from the newer one.
 # Returns { success: true, kept_work_id: id } or { success: false, error: '...' }
-class MergeWorks
+class MergeWorks < ApplicationService
   COPYABLE_COLUMNS = %w(title form date comment genre orig_lang origlang_title).freeze
 
-  def self.call(work_a, work_b)
-    new(work_a, work_b).call
-  end
-
-  def initialize(work_a, work_b)
+  def call(work_a, work_b)
     # keep the older work (lower id = created earlier)
     @older, @newer = [work_a, work_b].minmax_by(&:id)
-  end
 
-  def call
     validation_error = validate_involved_authorities
     return { success: false, error: validation_error } if validation_error
 
@@ -28,6 +22,7 @@ class MergeWorks
     end
     { success: true, kept_work_id: @older.id }
   rescue StandardError => e
+    Rails.logger.error("MergeWorks failed: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
     { success: false, error: e.message }
   end
 

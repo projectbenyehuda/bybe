@@ -1,45 +1,46 @@
 - if error.present?
   .alert.alert-danger= error
 - else
-  .well.mt-2
-    %h4= t(:work_details_for_linking)
-    %p
-      %b= t(:title) + ': '
-      = other_w.title
-    %p
-      %b= t(:genre) + ': '
-      = textify_genre(other_w.genre)
-    %p
-      %b= t(:language) + ': '
-      = textify_lang(other_w.orig_lang)
-    %p
-      %b= t(:creation_date_explanation) + ': '
-      = other_w.date
-    - work_authorities = other_w.involved_authorities.includes(:authority).to_a
-    - if work_authorities.any?
+  .card.mt-2
+    .card-body
+      %h4= t(:work_details_for_linking)
       %p
-        %b= t(:involved_authorities_label) + ': '
-        = work_authorities.map { |ia| "#{ia.authority.name} (#{t(ia.role)})" }.join(', ')
-    - if other_w.expressions.many?
-      %h5= t(:other_expressions_in_work)
-      %ul
-        - other_w.expressions.includes(involved_authorities: :authority).to_a.each do |ex|
-          - next if ex == other_e
+        %b= t(:title) + ': '
+        = other_w.title
+      %p
+        %b= t(:genre) + ': '
+        = textify_genre(other_w.genre)
+      %p
+        %b= t(:language) + ': '
+        = textify_lang(other_w.orig_lang)
+      %p
+        %b= t(:creation_date_explanation) + ': '
+        = other_w.date
+      - work_authorities = other_w.involved_authorities.includes(:authority).to_a
+      - if work_authorities.any?
+        %p
+          %b= t(:involved_authorities_label) + ': '
+          = work_authorities.map { |ia| "#{ia.authority.name} (#{t(ia.role)})" }.join(', ')
+      - if other_w.expressions.many?
+        %h5= t(:other_expressions_in_work)
+        %ul
+          - other_w.expressions.includes(involved_authorities: :authority).to_a.each do |ex|
+            - next if ex == other_e
 
-          %li
-            %b= ex.title
-            - ex_authorities = ex.involved_authorities.to_a
-            - if ex_authorities.any?
-              = ' — ' + ex_authorities.map { |ia| "#{ia.authority.name} (#{t(ia.role)})" }.join(', ')
-            - if ex.source_edition.present?
-              \| #{t(:source_edition)}: #{ex.source_edition}
-            - if ex.date.present?
-              \| #{t(:publication_date_explanation)}: #{ex.date}
-    - if ia_warning.present?
-      .alert.alert-warning= ia_warning
-    - else
-      %button.btn.btn-primary{ type: 'button', id: 'confirm-link-expression-btn',
-                               data: { url: manifestation_link_expression_path(id: params[:id]),
-                                       other_id: other_m.id } }
-        = t(:confirm_link_expression)
-      %button.btn.btn-secondary{ type: 'button', id: 'cancel-link-expression' }= t(:cancel)
+            %li
+              %b= ex.title
+              - ex_authorities = ex.involved_authorities.to_a
+              - if ex_authorities.any?
+                = ' — ' + ex_authorities.map { |ia| "#{ia.authority.name} (#{t(ia.role)})" }.join(', ')
+              - if ex.source_edition.present?
+                \| #{t(:source_edition)}: #{ex.source_edition}
+              - if ex.date.present?
+                \| #{t(:publication_date_explanation)}: #{ex.date}
+      - if ia_warning.present?
+        .alert.alert-warning= ia_warning
+      - else
+        %button.btn.btn-primary{ type: 'button', id: 'confirm-link-expression-btn',
+                                 data: { url: manifestation_link_expression_path(id: manifestation_id),
+                                         other_id: other_m.id } }
+          = t(:confirm_link_expression)
+        %button.btn.btn-secondary{ type: 'button', id: 'cancel-link-expression' }= t(:cancel)
