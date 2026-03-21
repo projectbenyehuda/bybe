@@ -3,6 +3,8 @@
 module TocTree
   # Manifestation node
   class ManifestationNode
+    include TocTree::CollectionHierarchy
+
     attr_reader :manifestation
 
     def initialize(manifestation)
@@ -41,26 +43,6 @@ module TocTree
       return 0 unless @manifestation.status == 'published'
 
       1
-    end
-
-    private
-
-    def involved_in_parent_collection(parent_collections, role, authority_id)
-      if parent_collections.empty?
-        return false
-      end
-
-      upper_level = []
-
-      parent_collections.each do |col|
-        return true if col.involved_authorities.any? do |ia|
-          ia.role == role.to_s && ia.authority_id == authority_id
-        end
-
-        upper_level += col.parent_collections
-      end
-
-      return involved_in_parent_collection(upper_level.uniq, role, authority_id)
     end
   end
 end
