@@ -37,11 +37,11 @@
               %div.text-muted{style: 'font-size: 0.85em; margin-bottom: 0.25rem;'}
                 = link.url
               = link_to t('moderate_links.open_link'), link.url, target: '_blank', class: 'btn btn-sm btn-info'
-            %td= link.description
+            %td= text_field_tag "description_#{link.id}", link.description, class: 'form-control form-control-sm'
             %td
               = button_to t('moderate_links.approve'), approve_external_link_path(link),
-                          method: :post, remote: true, class: 'btn btn-sm btn-success',
-                          data: { confirm: t('moderate_links.confirm_approve') }
+                          method: :post, remote: true, class: 'btn btn-sm btn-success approve-link-btn',
+                          data: { link_id: link.id }
               = button_to t('moderate_links.reject'), reject_external_link_path(link),
                           method: :post, remote: true, class: 'btn btn-sm btn-danger reject-link-btn',
                           data: { link_id: link.id }
@@ -55,6 +55,18 @@
     %p= t('moderate_links.no_submitted_links')
 
 :javascript
+  $('.approve-link-btn').click(function(e) {
+    e.preventDefault();
+    if (!confirm('#{j I18n.t('moderate_links.confirm_approve')}')) return;
+    var linkId = $(this).data('link-id');
+    var description = $('#description_' + linkId).val();
+    $.post($(this).closest('form').attr('action'), {
+      description: description,
+      authenticity_token: $('[name="csrf-token"]').attr('content')
+    }, function() {
+      $('#link_' + linkId).fadeOut();
+    });
+  });
   $('.reject-link-btn').click(function(e) {
     e.preventDefault();
     var linkId = $(this).data('link-id');
