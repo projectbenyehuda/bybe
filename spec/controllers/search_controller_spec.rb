@@ -119,6 +119,11 @@ describe SearchController do
         end
       end
 
+      it 'does not crash on a trailing backslash' do
+        get :results, params: { q: 'שלום\\' }
+        expect(response).to be_successful
+      end
+
       it 'leaves already-quoted phrases untouched' do
         get :results, params: { q: '"Test Manifestation"' }
         expect(response).to be_successful

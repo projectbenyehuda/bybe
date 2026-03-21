@@ -43,7 +43,7 @@ class SearchController < ApplicationController
   protected
 
   def sanitize_term(term)
-    term = term.gsub(/(\S)\"(\S)/, '\1\2').gsub('׳', "'").gsub('״', '"')
+    term = term.gsub(/(\S)"(\S)/, '\1\2').gsub('׳', "'").gsub('״', '"')
     quote_special_char_tokens(term)
   end
 
@@ -57,7 +57,11 @@ class SearchController < ApplicationController
   def quote_special_char_tokens(query)
     query.gsub(/"[^"]*"|[^\s"]+/) do |token|
       next token if token.start_with?('"')
-      next "\"#{token}\"" if token.match?(ELASTICSEARCH_SPECIAL_CHARS)
+
+      if token.match?(ELASTICSEARCH_SPECIAL_CHARS)
+        escaped_token = token.gsub('\\', '\\\\\\\\')
+        next "\"#{escaped_token}\""
+      end
 
       token
     end
