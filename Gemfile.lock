@@ -843,7 +843,7 @@ DEPENDENCIES
   bootstrap4-datetime-picker-rails
   brakeman
   bullet
-  capistrano (~> 3.11)
+  capistrano (~> 3.17)
   capistrano-rails (~> 1.4)
   capistrano-rvm
   capistrano3-puma
