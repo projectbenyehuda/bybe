@@ -28,6 +28,59 @@
       = text_area_tag :wcomment, @w.comment, rows: 4, cols: 40
     = render partial: 'involved_authorities/list', locals: { item: @w, edit: true }
     = render partial: 'aboutnesses', locals: {edit: true, add: true}
+
+    %hr
+    %p
+      %button.btn.btn-secondary{ type: 'button', id: 'show-link-expression-form' }= t(:link_to_another_text)
+    #link-expression-section{ style: 'display:none' }
+      %h3= t(:link_to_another_text)
+      %p
+        %b= t(:enter_manifestation_id) + ': '
+        = text_field_tag :link_other_manifestation_id, nil, size: 10, id: 'link-other-manifestation-id'
+        %button.btn.btn-secondary.btn-sm{ type: 'button', id: 'preview-link-expression-btn' }= t(:show_details)
+      #link-expression-preview
+    %hr
+    :javascript
+      $(document).ready(function() {
+        $('#show-link-expression-form').click(function() {
+          $('#link-expression-section').show();
+          $(this).hide();
+        });
+
+        $('#preview-link-expression-btn').click(function() {
+          var otherId = $('#link-other-manifestation-id').val();
+          if (!otherId) return;
+          $.ajax({
+            url: '#{manifestation_preview_link_expression_path(id: @m.id)}',
+            method: 'GET',
+            data: { other_manifestation_id: otherId },
+            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+            success: function(html) {
+              $('#link-expression-preview').html(html);
+            },
+            error: function() {
+              $('#link-expression-preview').html('<div class="alert alert-danger">#{t(:error_loading_preview)}</div>');
+            }
+          });
+        });
+
+        $(document).on('click', '#cancel-link-expression', function() {
+          $('#link-expression-section').hide();
+          $('#link-expression-preview').html('');
+          $('#link-other-manifestation-id').val('');
+          $('#show-link-expression-form').show();
+        });
+
+        $(document).on('click', '#confirm-link-expression-btn', function() {
+          var $btn = $(this);
+          var $form = $('<form>', { method: 'POST', action: $btn.data('url') });
+          $form.append($('<input>', { type: 'hidden', name: 'other_manifestation_id', value: $btn.data('other-id') }));
+          $form.append($('<input>', { type: 'hidden', name: 'authenticity_token', value: $('meta[name="csrf-token"]').attr('content') }));
+          $('body').append($form);
+          $form.submit();
+        });
+      });
+
     %h2= t(:expression_details)
     %p
       %b= t(:title) + ': '

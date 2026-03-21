@@ -888,6 +888,20 @@ en:
   additional_tagging_explanation: 'Here is a note from the editor who handled your
     tagging suggestion: "%{explanation}"'
   additional_translations: Additional Translations of the Work
+  additional_versions: Additional Versions of this Work
+  link_to_another_text: Link to Another Text/Translation
+  enter_manifestation_id: Manifestation ID to Link
+  show_details: Show Details
+  work_details_for_linking: Work Details for Linking
+  other_expressions_in_work: Other Expressions in this Work
+  confirm_link_expression: Confirm Link
+  expressions_already_linked: Expressions are already linked to the same Work
+  expressions_link_ia_mismatch: Cannot link — the two Works have different involved authorities. Please verify you selected the correct manifestation.
+  expressions_linked_successfully: Expressions linked successfully
+  expressions_link_failed: "Error linking expressions: %{error}"
+  manifestation_not_found: Manifestation not found
+  error_loading_preview: Error loading preview
+  involved_authorities_label: Involved Authorities
   additional_warning_explanation: 'Here is a note from the editor who identified the
     issue: "%{msg}"'
   adjacent_or_similar_tags: Adjacent or Similar Tags
