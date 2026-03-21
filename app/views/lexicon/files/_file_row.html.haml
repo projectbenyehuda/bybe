@@ -12,4 +12,4 @@
       = link_to t(:show), lexicon_entry_path(lex_entry)
     - elsif (lex_entry.lex_item.nil? || lex_entry.status_error?) && lf.entrytype_person?
       -# for now we only show the migrate link for person entries (stage 1)
-      = link_to t('lexicon.files.migrate.title'), '#', data: { file_id: lf.id }, class: 'migrate-link', role: 'button'
+      = link_to t('lexicon.files.migrate.title'), migrate_lexicon_file_path(lf), remote: true, method: :post, class: 'migrate-link'

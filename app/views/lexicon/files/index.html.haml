@@ -32,13 +32,8 @@
     $('#filter #fname').change(submitFilters);
     $('#filter #title').change(submitFilters);
 
-    $(document).on('click', '.migrate-link', function(e) {
-      e.preventDefault();
-      const fileId = $(this).data('file-id');
-      $.post(`/lex/files/${fileId}/migrate`, {
-        authenticity_token: $('meta[name="csrf-token"]').attr('content')
-      }).done(function(html) {
-        $(`#lex-file-${fileId}`).replaceWith(html);
-      });
+    $(document).on('ajax:success', '.migrate-link', function(event) {
+      const html = event.detail[0];
+      $(this).closest('tr').replaceWith(html);
     });
   });
