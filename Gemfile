@@ -129,7 +129,7 @@ group :development do
   gem 'active_record_query_trace'
   gem 'bcrypt_pbkdf'
   gem 'bullet' # for suggestions to add/remove eager loading
-  gem 'capistrano', '~> 3.11', require: false
+  gem 'capistrano', '~> 3.17', require: false
   gem 'capistrano3-puma'
   gem 'capistrano-rails', '~> 1.4', require: false
   gem 'capistrano-rvm'
