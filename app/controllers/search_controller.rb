@@ -43,6 +43,27 @@ class SearchController < ApplicationController
   protected
 
   def sanitize_term(term)
-    return term.gsub(/(\S)\"(\S)/,'\1\2').gsub('׳',"'").gsub('״','"')
+    term = term.gsub(/(\S)"(\S)/, '\1\2').gsub('׳', "'").gsub('״', '"')
+    quote_special_char_tokens(term)
+  end
+
+  # Elasticsearch query_string syntax reserves these characters as operators.
+  # Any token containing them must be wrapped in double quotes so they are
+  # treated as literal text rather than query syntax.
+  ELASTICSEARCH_SPECIAL_CHARS = %r{[+\-=!&|><()\{\}\[\]^~*?:\\/]}
+
+  # Wraps tokens that contain Elasticsearch query_string special characters in
+  # double quotes. Already-quoted phrases ("...") are passed through unchanged.
+  def quote_special_char_tokens(query)
+    query.gsub(/"[^"]*"|[^\s"]+/) do |token|
+      next token if token.start_with?('"')
+
+      if token.match?(ELASTICSEARCH_SPECIAL_CHARS)
+        escaped_token = token.gsub('\\', '\\\\\\\\')
+        next "\"#{escaped_token}\""
+      end
+
+      token
+    end
   end
 end

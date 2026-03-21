@@ -104,6 +104,32 @@ describe SearchController do
       end
     end
 
+    context 'when query contains Elasticsearch special characters' do
+      it 'does not crash on a trailing exclamation mark' do
+        get :results, params: { q: 'הו!' }
+        expect(response).to be_successful
+        expect(assigns(:total)).to eq 0
+      end
+
+      it 'does not crash on other special characters' do
+        %w[שלום+ שלום- שלום^ שלום~ שלום* שלום? שלום: שלום/ שלום( שלום)
+           שלום{ שלום} שלום[ שלום] שלום< שלום> שלום= שלום| שלום&].each do |term|
+          get :results, params: { q: term }
+          expect(response).to be_successful, "Expected success for query #{term.inspect}"
+        end
+      end
+
+      it 'does not crash on a trailing backslash' do
+        get :results, params: { q: 'שלום\\' }
+        expect(response).to be_successful
+      end
+
+      it 'leaves already-quoted phrases untouched' do
+        get :results, params: { q: '"Test Manifestation"' }
+        expect(response).to be_successful
+      end
+    end
+
     context 'when filter is persisted in session' do
       it 'remembers the filter selection for subsequent searches' do
         # First search with manifestations filter
