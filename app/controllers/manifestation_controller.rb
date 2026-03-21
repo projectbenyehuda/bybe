@@ -10,7 +10,7 @@ class ManifestationController < ApplicationController
   include PaperTrailHelpers
 
   before_action only: %i(list show remove_link edit_metadata add_aboutnesses versions version_diff
-                         restore_version) do |c|
+                         restore_version preview_link_expression link_expression) do |c|
     c.require_editor('edit_catalog')
   end
   before_action only: %i(edit update) do |c|
@@ -686,6 +686,50 @@ class ManifestationController < ApplicationController
     @w = @e.work
   end
 
+  def preview_link_expression
+    @m = Manifestation.find(params[:id])
+    other_m = Manifestation.find_by(id: params[:other_manifestation_id])
+    if other_m.nil?
+      render partial: 'manifestation/link_expression_preview',
+             locals: { error: t(:manifestation_not_found), other_m: nil, other_w: nil, other_e: nil,
+                       ia_warning: nil }
+      return
+    end
+    @other_m = other_m
+    @other_e = other_m.expression
+    @other_w = @other_e.work
+    @w = @m.expression.work
+    ia_warning = ia_mismatch_warning(@w, @other_w)
+    render partial: 'manifestation/link_expression_preview',
+           locals: { error: nil, other_m: @other_m, other_e: @other_e, other_w: @other_w,
+                     ia_warning: ia_warning }
+  end
+
+  def link_expression
+    @m = Manifestation.find(params[:id])
+    @e = @m.expression
+    @w = @e.work
+    other_m = Manifestation.find_by(id: params[:other_manifestation_id])
+    if other_m.nil?
+      flash[:alert] = t(:manifestation_not_found)
+      redirect_to manifestation_edit_metadata_path(id: @m.id)
+      return
+    end
+    other_w = other_m.expression.work
+    if other_w == @w
+      flash[:notice] = t(:expressions_already_linked)
+      redirect_to manifestation_edit_metadata_path(id: @m.id)
+      return
+    end
+    result = MergeWorks.call(@w, other_w)
+    if result[:success]
+      flash[:notice] = t(:expressions_linked_successfully)
+    else
+      flash[:alert] = t(:expressions_link_failed, error: result[:error])
+    end
+    redirect_to manifestation_edit_metadata_path(id: @m.id)
+  end
+
   def chomp_period
     @m = Manifestation.find(params[:id])
     @e = @m.expression
@@ -1263,7 +1307,7 @@ class ManifestationController < ApplicationController
     @entity = @m
     @pagetype = :manifestation
     @liked = (current_user.nil? ? false : @m.likers.include?(current_user))
-    if @e.translation? && @e.work.expressions.many? # one is the one we're looking at...
+    if @e.work.expressions.many? # one is the one we're looking at...
       @additional_translations = []
       @e.work.expressions.joins(:manifestations).includes(:manifestations).find_each do |ex|
         @additional_translations << ex unless ex == @e
@@ -1290,5 +1334,12 @@ class ManifestationController < ApplicationController
 
     flash.notice = t(:work_not_available)
     redirect_to '/'
+  end
+
+  def ia_mismatch_warning(work_a, work_b)
+    fingerprint = ->(work) { work.involved_authorities.map { |ia| [ia.authority_id, ia.role] }.sort }
+    return nil if fingerprint.call(work_a) == fingerprint.call(work_b)
+
+    t(:expressions_link_ia_mismatch)
   end
 end

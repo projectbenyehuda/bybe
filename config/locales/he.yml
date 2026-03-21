@@ -622,6 +622,20 @@ he:
   found_br_mistake_html: מצאתי<BR /> שגיאה
   chapters_list: 'רשימת פרקים:'
   additional_translations: תרגומים נוספים ליצירה
+  additional_versions: נוסחים אחרים ליצירה זו
+  link_to_another_text: קישור לנוסח/תרגום אחר
+  enter_manifestation_id: מספר מימוש לקישור
+  show_details: הצג פרטים
+  work_details_for_linking: פרטי היצירה לקישור
+  other_expressions_in_work: ביטויים נוספים ביצירה זו
+  confirm_link_expression: אשר קישור
+  expressions_already_linked: הביטויים כבר מקושרים לאותה יצירה
+  expressions_link_ia_mismatch: לא ניתן לקשר — ליצירות יש רשימות שונות של יוצרים מעורבים. אנא בדוק שבחרת את המימוש הנכון.
+  expressions_linked_successfully: הקישור בוצע בהצלחה
+  expressions_link_failed: "שגיאה בקישור: %{error}"
+  manifestation_not_found: מימוש לא נמצא
+  error_loading_preview: שגיאה בטעינת הפרטים
+  involved_authorities_label: יוצרים מעורבים
   mistake_important: חשוב לנו שהטקסט יהא מדויק וחף משגיאות
   not_implemented_yet: תכונה זו טרם מומשה. המערכת עדיין בפיתוח.
   works_page: היצירות במאגרנו

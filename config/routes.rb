@@ -315,6 +315,10 @@ Bybeconv::Application.routes.draw do
   get 'manifestation/edit/:id' => 'manifestation#edit', as: 'manifestation_edit'
   get 'manifestation/remove_image/:id' => 'manifestation#remove_image'
   get 'manifestation/edit_metadata/:id' => 'manifestation#edit_metadata', as: 'manifestation_edit_metadata'
+  get 'manifestation/preview_link_expression/:id' => 'manifestation#preview_link_expression',
+      as: 'manifestation_preview_link_expression'
+  post 'manifestation/link_expression/:id' => 'manifestation#link_expression',
+       as: 'manifestation_link_expression'
   match 'manifestation/list', via: %i(get post)
   get 'manifestation/genre' => 'manifestation#genre', as: 'manifestation_genre'
   get 'manifestation/index', as: 'manifestation_index'

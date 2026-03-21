@@ -139,19 +139,31 @@
                   .metadata-link-icon.small-icon.pointer &amp;
                   %div= t(:suggest_new_tag)
 
-        -# Additional translations of same work
-        - if @e.translation? && (@additional_translations != nil && @additional_translations != [])
+        -# Additional translations/versions of same work
+        - if @additional_translations.present?
           .by-card-v02.left-side-card-v02
             .by-card-header-left-v02
-              %span.headline-1-v02= t(:additional_translations)
+              - if @e.translation?
+                %span.headline-1-v02= t(:additional_translations)
+              - else
+                %span.headline-1-v02= t(:additional_versions)
             .by-card-content-v02
-              -  @additional_translations.each do |tr|
+              - @additional_translations.each do |tr|
                 %div
                   %span
                     = link_to tr.title, manifestation_path(id: tr.manifestations[0].id)
-                  %span= ' '+t(:translation)+': '
-                  %span
-                    != tr.translators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                  - if @e.translation?
+                    %span= ' '+t(:translation)+': '
+                    %span
+                      != tr.translators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                  - else
+                    - tr_volumes = tr.manifestations[0].volumes
+                    - if tr_volumes.any?
+                      %span= ' | ' + tr_volumes.first.title
+                    - if tr.source_edition.present?
+                      %span= ' | ' + t(:source_edition) + ': ' + tr.source_edition
+                    - if tr.date.present?
+                      %span= ' | ' + tr.date
         -# External links
         = render partial: 'shared/external_links_panel', locals: { linkable: @m }
 - if @m.not_short?
