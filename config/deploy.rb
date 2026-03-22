@@ -59,5 +59,5 @@ task :load_remote_environment do
     set :default_environment, Dotenv::Parser.call(capture("cat #{shared_path}/.env.production"))
   end
 end
-after 'deploy:set_current_revision', 'load_remote_environment'
+before 'deploy:starting', 'load_remote_environment'
 
