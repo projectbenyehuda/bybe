@@ -31,9 +31,4 @@
     $('#filter #entrytype').change(submitFilters);
     $('#filter #fname').change(submitFilters);
     $('#filter #title').change(submitFilters);
-
-    $(document).on('ajax:success', '.migrate-link', function(event) {
-      const html = event.detail[0];
-      $(this).closest('tr').replaceWith(html);
-    });
   });
