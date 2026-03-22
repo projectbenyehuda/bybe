@@ -158,7 +158,7 @@ describe '/lexicon/files' do
           expect(call).to eq(200)
           expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
           expect(file.lex_entry.reload.status).to eq('migrating')
-          expect(file.reload.error_message).to eq(nil)
+          expect(file.reload.error_message).to be_nil
         end
       end
 
@@ -166,7 +166,7 @@ describe '/lexicon/files' do
         let(:entry_status) { (LexEntry.statuses.keys - %w(raw error)).sample }
 
         it 'does not queue job and simply re-renders tr' do
-          expect { call }.not_to change { Lexicon::IngestFile.jobs.size }
+          expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
           expect(call).to eq(200)
           expect(file.lex_entry.reload.status).to eq(entry_status)
         end
