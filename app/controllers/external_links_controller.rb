@@ -20,7 +20,9 @@ class ExternalLinksController < ApplicationController
 
   def approve
     @link = ExternalLink.find(params[:id])
-    @link.update!(status: :approved)
+    update_attrs = { status: :approved }
+    update_attrs[:description] = params[:description] if params.key?(:description)
+    @link.update!(update_attrs)
 
     # Send approval email respecting user email preferences
     LinkProposalMailer.send_or_queue(:approved, @link.proposer_email, @link)

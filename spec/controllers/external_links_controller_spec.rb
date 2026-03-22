@@ -169,6 +169,25 @@ RSpec.describe ExternalLinksController, type: :controller do
 
       expect(response.body).to include("$('#link_#{link.id}').fadeOut();")
     end
+
+    it 'updates description when provided' do
+      post :approve, params: { id: link.id, description: 'Edited description' }, xhr: true
+
+      expect(link.reload.description).to eq('Edited description')
+    end
+
+    it 'keeps original description when param is absent' do
+      original_description = link.description
+      post :approve, params: { id: link.id }, xhr: true
+
+      expect(link.reload.description).to eq(original_description)
+    end
+
+    it 'clears description when empty string is provided' do
+      post :approve, params: { id: link.id, description: '' }, xhr: true
+
+      expect(link.reload.description).to eq('')
+    end
   end
 
   describe 'POST #reject' do
