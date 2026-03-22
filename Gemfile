@@ -154,6 +154,8 @@ group :development do
   gem 'web-console'
 end
 
+gem 'dotenv', '~> 3.1.2'
+
 group :test, :development do
   gem 'brakeman'
   gem 'factory_bot_rails', '~> 6.2.0'
