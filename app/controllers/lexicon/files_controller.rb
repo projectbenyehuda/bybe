@@ -14,6 +14,7 @@ module Lexicon
       @entrytype = params[:entrytype]
       @title = params[:title]
       @fname = params[:fname]
+      @page = params[:page]
 
       if @entrytype.present?
         @lex_files = @lex_files.where(entrytype: @entrytype)
@@ -30,10 +31,14 @@ module Lexicon
 
       @lex_files = @lex_files.includes(:lex_entry)
                              .order(:fname)
-                             .page(params[:page])
+                             .page(@page)
     end
 
     def migrate
+      # From the stale page we can try to migrate file already being migrated or already migrated
+      # In this case we simply re-render row
+      return unless @lex_file.lex_entry.status_raw? || @lex_file.lex_entry.status_error?
+
       if @lex_file.error_message.present?
         @lex_file.update!(error_message: nil)
       end
@@ -44,10 +49,8 @@ module Lexicon
       lex_entry.status_migrating!
 
       # Cleaning up any existing LexItem before re-ingesting
-      lex_item.destroy! if lex_item.present?
+      lex_item&.destroy!
       Lexicon::IngestFile.perform_async(@lex_file.id)
-
-      redirect_to lexicon_files_path, notice: t('.success')
     end
 
     private
