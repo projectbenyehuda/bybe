@@ -23,21 +23,7 @@
         %th= t(:entrytype)
         %th= t(:actions)
       - @lex_files.each do |lf|
-        - lex_entry = lf.lex_entry
-        %tr
-          %td!= lf.error_message&.split("\n")&.join('<br/>')
-          %td= lf.fname.sub('.php', '').sub('/', '')
-          %td= lf.lex_entry.title
-          %td #{t(lf.status)} / #{LexEntry.human_enum_name(:status, lf.lex_entry&.status)}
-          %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
-          %td
-            - if lex_entry.status_migrating?
-              %span= LexEntry.human_enum_name(:status, lex_entry.status)
-            - elsif lex_entry.lex_item.present? && !lex_entry.status_error?
-              = link_to t(:show), lexicon_entry_path(lex_entry)
-            - elsif (lex_entry.lex_item.nil? || lex_entry.status_error?) && lf.entrytype_person?
-              -# for now we only show the migrate link for person entries (stage 1)
-              = link_to t('lexicon.files.migrate.title'), migrate_lexicon_file_path(lf), method: :post
+        = render partial: 'file_row', locals: { lf: lf }
   = paginate @lex_files
 :javascript
   $(function() {
