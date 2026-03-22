@@ -153,9 +153,10 @@ group :development do
   gem 'web-console'
 end
 
+gem 'dotenv', '~> 3.1.2'
+
 group :test, :development do
   gem 'brakeman'
-  gem 'dotenv', '~> 3.1.2'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails'
   gem 'spring', '4.2.1' # later version yields https://github.com/rails/spring/issues/734
