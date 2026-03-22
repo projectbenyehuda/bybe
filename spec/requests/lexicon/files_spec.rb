@@ -117,7 +117,7 @@ describe '/lexicon/files' do
   end
 
   describe 'POST /migrate' do
-    subject(:call) { post "/lex/files/#{file.id}/migrate" }
+    subject(:call) { post "/lex/files/#{file.id}/migrate", xhr: true }
 
     before { Sidekiq::Testing.fake! }
     after { Sidekiq::Worker.clear_all }
@@ -127,20 +127,49 @@ describe '/lexicon/files' do
         create(
           :lex_file,
           :person,
-          entrytype: :person,
           status: :classified,
           title: 'Gabriella Avigur',
           fname: '00002.php',
+          entry_status: entry_status,
           full_path: Rails.root.join('spec/data/lexicon/00002.php')
         )
       end
 
-      it 'add ingestion job to queue and sets entry status to `migrating`' do
-        expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
-        expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
-        expect(call).to redirect_to lexicon_files_path
-        expect(flash.notice).to eq(I18n.t('lexicon.files.migrate.success'))
-        expect(file.lex_entry.reload.status).to eq('migrating')
+      context 'when entry_status is raw' do
+        let(:entry_status) { :raw }
+
+        it 'add ingestion job to queue and sets entry status to `migrating`' do
+          expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+          expect(call).to eq(200)
+          expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
+          expect(file.lex_entry.reload.status).to eq('migrating')
+        end
+      end
+
+      context 'when entry_status is error' do
+        let(:entry_status) { :error }
+
+        before do
+          file.update!(error_message: 'Some error')
+        end
+
+        it 'resets error message and add ingestion job to queue and sets entry status to `migrating`' do
+          expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+          expect(call).to eq(200)
+          expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
+          expect(file.lex_entry.reload.status).to eq('migrating')
+          expect(file.reload.error_message).to be_nil
+        end
+      end
+
+      context 'when entry_status is not error or raw' do
+        let(:entry_status) { (LexEntry.statuses.keys - %w(raw error)).sample }
+
+        it 'does not queue job and simply re-renders tr' do
+          expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
+          expect(call).to eq(200)
+          expect(file.lex_entry.reload.status).to eq(entry_status)
+        end
       end
     end
   end
