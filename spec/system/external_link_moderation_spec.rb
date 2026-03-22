@@ -65,12 +65,12 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
 
     it 'displays only submitted links' do
       submitted_links.each do |link|
-        expect(page).to have_content(link.description)
+        expect(page).to have_field("description_#{link.id}", with: link.description, type: :text)
         expect(page).to have_content(link.url)
       end
 
       # Should not show approved links
-      expect(page).not_to have_content('Already approved link')
+      expect(page).not_to have_field(with: 'Already approved link')
     end
 
     it 'shows link details including linkable information' do
@@ -101,11 +101,8 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
         end
       end
 
-      # Wait for AJAX and animation
-      sleep 0.5
-
       # Link should disappear from the list
-      expect(page).not_to have_selector("#link_#{link.id}")
+      expect(page).not_to have_selector("#link_#{link.id}", wait: 5)
 
       # Verify the link was approved in the database
       link.reload
@@ -114,6 +111,27 @@ RSpec.describe 'External Link Moderation', type: :system, js: true do
       # Verify email was sent
       expect(LinkProposalMailer).to have_received(:send_or_queue)
         .with(:approved, link.proposer_email, link)
+    end
+
+    it 'approves a link with an edited description' do
+      link = submitted_links.second
+      new_description = 'Editor-revised description'
+
+      within("#link_#{link.id}") do
+        fill_in "description_#{link.id}", with: new_description
+      end
+
+      accept_confirm do
+        within("#link_#{link.id}") do
+          click_button I18n.t('moderate_links.approve')
+        end
+      end
+
+      expect(page).not_to have_selector("#link_#{link.id}", wait: 5)
+
+      link.reload
+      expect(link.status).to eq('approved')
+      expect(link.description).to eq(new_description)
     end
   end
 
