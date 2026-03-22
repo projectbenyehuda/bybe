@@ -1,0 +1,3 @@
+$('tr#lex-file-<%= @lex_file.id %>').replaceWith(
+  '<%= j render(partial: "lexicon/files/file_row", locals: { lf: @lex_file }) %>'
+);
