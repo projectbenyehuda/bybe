@@ -41,7 +41,7 @@
             %td
               = button_to t('moderate_links.approve'), approve_external_link_path(link),
                           method: :post, remote: true, class: 'btn btn-sm btn-success approve-link-btn',
-                          data: { link_id: link.id }
+                          data: { link_id: link.id, confirm: t('moderate_links.confirm_approve') }
               = button_to t('moderate_links.reject'), reject_external_link_path(link),
                           method: :post, remote: true, class: 'btn btn-sm btn-danger reject-link-btn',
                           data: { link_id: link.id }
@@ -57,12 +57,12 @@
 :javascript
   $('.approve-link-btn').click(function(e) {
     e.preventDefault();
-    if (!confirm('#{j I18n.t('moderate_links.confirm_approve')}')) return;
+    if (!confirm($(this).data('confirm'))) return;
     var linkId = $(this).data('link-id');
     var description = $('#description_' + linkId).val();
     $.post($(this).closest('form').attr('action'), {
       description: description,
-      authenticity_token: $('[name="csrf-token"]').attr('content')
+      authenticity_token: $('meta[name="csrf-token"]').attr('content')
     }, function() {
       $('#link_' + linkId).fadeOut();
     });
@@ -74,7 +74,7 @@
     if (note !== null) {
       $.post($(this).closest('form').attr('action'), {
         note: note,
-        authenticity_token: $('[name="csrf-token"]').attr('content')
+        authenticity_token: $('meta[name="csrf-token"]').attr('content')
       }, function() {
         $('#link_' + linkId).fadeOut();
       });

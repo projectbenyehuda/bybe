@@ -176,11 +176,17 @@ RSpec.describe ExternalLinksController, type: :controller do
       expect(link.reload.description).to eq('Edited description')
     end
 
-    it 'keeps original description when none provided' do
+    it 'keeps original description when param is absent' do
       original_description = link.description
       post :approve, params: { id: link.id }, xhr: true
 
       expect(link.reload.description).to eq(original_description)
+    end
+
+    it 'clears description when empty string is provided' do
+      post :approve, params: { id: link.id, description: '' }, xhr: true
+
+      expect(link.reload.description).to eq('')
     end
   end
 
