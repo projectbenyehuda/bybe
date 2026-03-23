@@ -14,7 +14,7 @@ module Lexicon
       @title = params[:title]
       @fname = params[:fname]
       @page = params[:page]
-      @entry_statuses = params[:entry_statuses].presence || %w(raw error)
+      @entry_statuses = params[:entry_statuses].presence || %w(raw migrating error draft)
 
       @lex_files = LexFile.joins(:lex_entry)
 
@@ -23,7 +23,7 @@ module Lexicon
       @lex_files = @lex_files.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
       @lex_files = @lex_files.where(lex_entries: { status: @entry_statuses })
 
-      @lex_files = @lex_files.includes(:lex_entry)
+      @lex_files = @lex_files.preload(:lex_entry)
                              .order(:fname)
                              .page(@page)
     end

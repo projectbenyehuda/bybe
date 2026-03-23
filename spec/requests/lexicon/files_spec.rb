@@ -23,10 +23,10 @@ describe '/lexicon/files' do
         create_list(:lex_file, 2, :publication, status: :ingested, entry_status: :published)
       end
 
-      it 'renders successfully and shows only raw and error entries by default' do
+      it 'renders successfully and shows default statuses selection' do
         call
         expect(call).to eq(200)
-        expect(file_ids.size).to eq(4)
+        expect(file_ids.size).to eq(6)
       end
     end
 
@@ -122,6 +122,7 @@ describe '/lexicon/files' do
 
       context 'when filtering by entry_statuses' do
         let!(:raw_file) { create(:lex_file, :person, entry_status: :raw) }
+        let!(:migrating_file) { create(:lex_file, :person, entry_status: :migrating) }
         let!(:error_file) { create(:lex_file, :person, entry_status: :error) }
         let!(:draft_file) { create(:lex_file, :person, entry_status: :draft) }
         let!(:verified_file) { create(:lex_file, :person, entry_status: :verified) }
@@ -147,9 +148,9 @@ describe '/lexicon/files' do
         context 'when no entry_statuses param is provided (default)' do
           let(:params) { {} }
 
-          it 'defaults to raw and error statuses' do
+          it 'defaults to raw, migrating, error and draft statuses' do
             call
-            expect(file_ids).to contain_exactly(raw_file.id, error_file.id)
+            expect(file_ids).to contain_exactly(raw_file.id, error_file.id, migrating_file.id, draft_file.id)
           end
         end
       end
