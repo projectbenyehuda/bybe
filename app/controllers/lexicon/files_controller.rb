@@ -10,26 +10,20 @@ module Lexicon
     layout 'lexicon_backend'
 
     def index
-      @lex_files = LexFile.all
       @entrytype = params[:entrytype]
       @title = params[:title]
       @fname = params[:fname]
       @page = params[:page]
+      @entry_statuses = params[:entry_statuses].presence || %w(raw migrating error draft)
 
-      if @entrytype.present?
-        @lex_files = @lex_files.where(entrytype: @entrytype)
-      end
+      @lex_files = LexFile.joins(:lex_entry)
 
-      if @title.present?
-        @lex_files = @lex_files.joins(:lex_entry)
-                               .where('lex_entries.title LIKE ?', "%#{@title}%")
-      end
+      @lex_files = @lex_files.where(entrytype: @entrytype) if @entrytype.present?
+      @lex_files = @lex_files.where('lex_entries.title LIKE ?', "%#{@title}%") if @title.present?
+      @lex_files = @lex_files.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
+      @lex_files = @lex_files.where(lex_entries: { status: @entry_statuses })
 
-      if @fname.present?
-        @lex_files = @lex_files.where('fname LIKE ?', "%#{@fname}%")
-      end
-
-      @lex_files = @lex_files.includes(:lex_entry)
+      @lex_files = @lex_files.preload(:lex_entry)
                              .order(:fname)
                              .page(@page)
     end
