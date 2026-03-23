@@ -13,6 +13,14 @@
       = text_field_tag :title, @title, placeholder: t('.title_placeholder'), class: 'form-control mr-2'
       = label_tag :fname, LexFile.human_attribute_name(:fname), class: 'mr-2'
       = text_field_tag :fname, @fname, placeholder: t('.fname_placeholder'), class: 'form-control mr-2'
+    .mt-2
+      = label_tag :entry_statuses, t('.entry_status_filter'), class: 'mr-2'
+      - LexEntry.statuses.each_key do |status|
+        .form-check.form-check-inline
+          = check_box_tag 'entry_statuses[]', status, @entry_statuses.include?(status),
+                          id: "entry_status_#{status}", class: 'form-check-input'
+          = label_tag "entry_status_#{status}", LexEntry.human_enum_name(:status, status),
+                      class: 'form-check-label'
 
     %table.table
       %tr
@@ -31,4 +39,5 @@
     $('#filter #entrytype').change(submitFilters);
     $('#filter #fname').change(submitFilters);
     $('#filter #title').change(submitFilters);
+    $('#filter input[name="entry_statuses[]"]').change(submitFilters);
   });
