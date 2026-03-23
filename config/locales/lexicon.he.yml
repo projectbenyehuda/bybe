@@ -123,6 +123,7 @@ he:
         subtitle: רשימת הקבצים
         title_placeholder: חיפוש לפי כותרת...
         fname_placeholder: חפש לפי שם קובץ...
+        entry_status_filter: סטטוס ערך
       migrate:
         success: ההסבה החלה
         title: התחל הסבה

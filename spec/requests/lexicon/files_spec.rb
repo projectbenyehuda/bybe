@@ -17,16 +17,16 @@ describe '/lexicon/files' do
       let(:params) { {} }
 
       before do
-        create_list(:lex_file, 2, :person, status: :classified)
-        create_list(:lex_file, 2, :person, status: :ingested)
-        create_list(:lex_file, 2, :publication, status: :classified)
-        create_list(:lex_file, 2, :publication, status: :ingested)
+        create_list(:lex_file, 2, :person, status: :classified, entry_status: :raw)
+        create_list(:lex_file, 2, :person, status: :ingested, entry_status: :error)
+        create_list(:lex_file, 2, :publication, status: :classified, entry_status: :draft)
+        create_list(:lex_file, 2, :publication, status: :ingested, entry_status: :published)
       end
 
-      it 'renders successfully' do
+      it 'renders successfully and shows default statuses selection' do
         call
         expect(call).to eq(200)
-        expect(file_ids.size).to eq(8)
+        expect(file_ids.size).to eq(6)
       end
     end
 
@@ -37,6 +37,7 @@ describe '/lexicon/files' do
             :lex_file,
             :person,
             status: :classified,
+            entry_status: :raw,
             title: 'Abraham Lincoln'
           )
         end
@@ -46,6 +47,7 @@ describe '/lexicon/files' do
             :lex_file,
             :person,
             status: :classified,
+            entry_status: :raw,
             title: 'Abraham Mapu'
           )
         end
@@ -64,6 +66,7 @@ describe '/lexicon/files' do
             :lex_file,
             :person,
             status: :classified,
+            entry_status: :raw,
             title: 'Test Person',
             fname: '00003.php'
           )
@@ -74,6 +77,7 @@ describe '/lexicon/files' do
             :lex_file,
             :publication,
             status: :classified,
+            entry_status: :raw,
             title: 'Test Publication',
             fname: '000030001.php'
           )
@@ -93,6 +97,7 @@ describe '/lexicon/files' do
             :lex_file,
             :person,
             status: :classified,
+            entry_status: :raw,
             title: 'Test Person'
           )
         end
@@ -102,6 +107,7 @@ describe '/lexicon/files' do
             :lex_file,
             :publication,
             status: :classified,
+            entry_status: :raw,
             title: 'Test Publication'
           )
         end
@@ -111,6 +117,41 @@ describe '/lexicon/files' do
         it 'applies both filters' do
           call
           expect(file_ids).to contain_exactly(person_file.id)
+        end
+      end
+
+      context 'when filtering by entry_statuses' do
+        let!(:raw_file) { create(:lex_file, :person, entry_status: :raw) }
+        let!(:migrating_file) { create(:lex_file, :person, entry_status: :migrating) }
+        let!(:error_file) { create(:lex_file, :person, entry_status: :error) }
+        let!(:draft_file) { create(:lex_file, :person, entry_status: :draft) }
+        let!(:verified_file) { create(:lex_file, :person, entry_status: :verified) }
+
+        context 'when a single status is requested' do
+          let(:params) { { entry_statuses: ['raw'] } }
+
+          it 'returns only files with that entry status' do
+            call
+            expect(file_ids).to contain_exactly(raw_file.id)
+          end
+        end
+
+        context 'when multiple statuses are requested' do
+          let(:params) { { entry_statuses: %w(raw error) } }
+
+          it 'returns files matching any of the specified statuses' do
+            call
+            expect(file_ids).to contain_exactly(raw_file.id, error_file.id)
+          end
+        end
+
+        context 'when no entry_statuses param is provided (default)' do
+          let(:params) { {} }
+
+          it 'defaults to raw, migrating, error and draft statuses' do
+            call
+            expect(file_ids).to contain_exactly(raw_file.id, error_file.id, migrating_file.id, draft_file.id)
+          end
         end
       end
     end
