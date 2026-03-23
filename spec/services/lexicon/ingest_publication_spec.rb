@@ -13,7 +13,7 @@ describe Lexicon::IngestPublication do
         status: :classified,
         title: 'Eliezer Jerushalmi',
         fname: '02645001.php',
-        full_path: Rails.root.join('spec/data/lexicon/02645001.php')
+        full_path: Rails.root.join('spec/fixtures/files/lexicon/02645001.php')
       }
     )
   end

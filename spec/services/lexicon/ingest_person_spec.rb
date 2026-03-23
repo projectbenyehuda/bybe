@@ -14,7 +14,7 @@ describe Lexicon::IngestPerson do
           status: :classified,
           title: 'Gabriella Avigur',
           fname: '00002.php',
-          full_path: Rails.root.join('spec/data/lexicon/00002.php')
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/00002.php')
         }
       )
     end
@@ -60,7 +60,7 @@ describe Lexicon::IngestPerson do
           status: :classified,
           title: 'Test Person',
           fname: 'href_only_link.php',
-          full_path: Rails.root.join('spec/data/lexicon/href_only_link.php')
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/href_only_link.php')
         }
       )
     end
@@ -87,7 +87,7 @@ describe Lexicon::IngestPerson do
           title: 'Samuel Bass',
           entry_status: :raw,
           fname: '00024.php',
-          full_path: Rails.root.join('spec/data/lexicon/00024.php')
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/00024.php')
         }
       )
     end
@@ -126,7 +126,7 @@ describe Lexicon::IngestPerson do
           status: :classified,
           title: 'Judith Rotem',
           fname: '00020.php',
-          full_path: Rails.root.join('spec/data/lexicon/00020.php')
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/00020.php')
         }
       )
     end
@@ -167,7 +167,7 @@ describe Lexicon::IngestPerson do
           status: :classified,
           title: 'Matthias Simcha Rabener',
           fname: '04443.php',
-          full_path: Rails.root.join('spec/data/lexicon/04443.php')
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/04443.php')
         }
       )
     end

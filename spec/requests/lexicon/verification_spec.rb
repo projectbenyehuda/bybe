@@ -387,7 +387,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
 
   describe 'GET /lex/verification/:id - PHP source file count mismatch warnings' do
     # tsifroni.php has 3 work bullets, 0 citation bullets, 0 link bullets
-    let(:fixture_path) { Rails.root.join('spec/data/lexicon/tsifroni.php').to_s }
+    let(:fixture_path) { Rails.root.join('spec/fixtures/files/lexicon/tsifroni.php').to_s }
 
     let(:entry) do
       e = create(:lex_entry, :person, status: :verifying)
