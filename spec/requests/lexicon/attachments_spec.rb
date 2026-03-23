@@ -11,14 +11,14 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
 
   let!(:image) do
     lex_entry.attachments.attach(
-      io: Rails.root.join(*%w(spec data lexicon attachments lorem_ipsum.png)).open,
+      io: Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem_ipsum.png').open,
       filename: 'image.png'
     ).last
   end
 
   let!(:pdf) do
     lex_entry.attachments.attach(
-      io: Rails.root.join(*%w(spec data lexicon attachments lorem.pdf)).open,
+      io: Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem.pdf').open,
       filename: 'lorem.pdf'
     ).last
   end
@@ -44,7 +44,7 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
 
     let(:file) do
       Rack::Test::UploadedFile.new(
-        Rails.root.join('spec/data/lexicon/attachments/lorem_ipsum.png'),
+        Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem_ipsum.png'),
         'image/png'
       )
     end
@@ -59,7 +59,7 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
     context 'when file with the same name already exists' do
       let!(:image) do
         lex_entry.attachments.attach(
-          io: Rails.root.join(*%w(spec data lexicon attachments lorem_ipsum.png)).open,
+          io: Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem_ipsum.png').open,
           filename: 'lorem_ipsum.png'
         ).last
       end
