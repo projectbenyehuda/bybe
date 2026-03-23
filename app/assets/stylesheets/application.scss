@@ -203,7 +203,7 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
   background-color: transparent;
 }
 #header {
-  z-index: 1000; // Override BY_styles_General.css (z-index: 12) so header dropdowns appear above sticky page elements
+  z-index: 2000; // Override BY_styles_General.css (z-index: 12) so header dropdowns appear above sticky page elements
 }
 #header-general{
   z-index: 2000;
