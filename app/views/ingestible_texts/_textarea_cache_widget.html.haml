@@ -1,9 +1,14 @@
 :ruby
+  format_saved_at = lambda do |saved_at|
+    Time.zone.parse(saved_at.to_s).strftime('%d/%m/%Y %H:%M')
+  rescue ArgumentError, TypeError
+    saved_at.to_s
+  end
   indexed = cache_versions.each_with_index.map { |v, i| v.merge('_idx' => i) }
   current_versions = indexed.select { |v| v['title'] == current_title }
-                            .sort_by { |v| v['saved_at'] }.reverse
+                            .sort_by { |v| v['saved_at'].to_s }.reverse
   other_versions   = indexed.reject { |v| v['title'] == current_title }
-                            .sort_by { |v| v['saved_at'] }.reverse
+                            .sort_by { |v| v['saved_at'].to_s }.reverse
 - if cache_versions.any?
   .textarea-cache-widget{ style: 'margin-top: 10px; padding: 8px; border: 1px solid #ccc; background: #f9f9f9;' }
     %label= t('ingestible_texts.edit.cached_versions_label')
@@ -12,12 +17,12 @@
         %optgroup{ label: t('ingestible_texts.edit.current_text_versions') }
           - current_versions.each do |v|
             %option{ value: v['_idx'].to_s }
-              #{v['title']} — #{Time.zone.parse(v['saved_at']).strftime('%d/%m/%Y %H:%M')}
+              #{v['title']} — #{format_saved_at.call(v['saved_at'])}
       - if other_versions.any?
         %optgroup{ label: t('ingestible_texts.edit.other_cached_versions') }
           - other_versions.each do |v|
             %option{ value: v['_idx'].to_s }
-              #{v['title']} — #{Time.zone.parse(v['saved_at']).strftime('%d/%m/%Y %H:%M')}
+              #{v['title']} — #{format_saved_at.call(v['saved_at'])}
     %button.btn.btn-warning.btn-sm#paste_cached_version{ type: 'button' }
       = t('ingestible_texts.edit.paste_cached_version')
 :javascript

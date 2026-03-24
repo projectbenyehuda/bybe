@@ -44,8 +44,10 @@ describe IngestibleTextsController do
 
     context 'when the same content is sent twice' do
       it 'only stores one version (no duplicates)' do
-        2.times { post :save_to_cache, params: { ingestible_id: ingestible.id, id: 0,
-                                                 title: 'Same', content: 'Same Content' } }
+        2.times do
+          post :save_to_cache, params: { ingestible_id: ingestible.id, id: 0,
+                                         title: 'Same', content: 'Same Content' }
+        end
         ingestible.reload
         same_versions = ingestible.parsed_textarea_cache.select { |v| v['title'] == 'Same' }
         expect(same_versions.length).to eq(1)
@@ -62,16 +64,26 @@ describe IngestibleTextsController do
     it 'returns the content for the given cache index' do
       get :fetch_cached_version, params: { ingestible_id: ingestible.id, id: 0, cache_index: 0 }
       expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body)['content']).to eq('First content')
+      expect(response.parsed_body['content']).to eq('First content')
     end
 
     it 'returns the correct content for a later index' do
       get :fetch_cached_version, params: { ingestible_id: ingestible.id, id: 0, cache_index: 1 }
-      expect(JSON.parse(response.body)['content']).to eq('Second content')
+      expect(response.parsed_body['content']).to eq('Second content')
     end
 
     it 'returns 404 for an out-of-range index' do
       get :fetch_cached_version, params: { ingestible_id: ingestible.id, id: 0, cache_index: 99 }
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'returns 404 for a negative index' do
+      get :fetch_cached_version, params: { ingestible_id: ingestible.id, id: 0, cache_index: -1 }
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it 'returns 404 for a non-numeric index' do
+      get :fetch_cached_version, params: { ingestible_id: ingestible.id, id: 0, cache_index: 'abc' }
       expect(response).to have_http_status(:not_found)
     end
   end

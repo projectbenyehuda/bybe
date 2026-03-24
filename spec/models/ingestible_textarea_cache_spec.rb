@@ -33,7 +33,7 @@ describe Ingestible do
       ingestible.save_text_to_cache('Title B', 'Content B')
       cache = ingestible.parsed_textarea_cache
       expect(cache.length).to eq(2)
-      expect(cache.map { |v| v['title'] }).to contain_exactly('Title A', 'Title B')
+      expect(cache.pluck('title')).to contain_exactly('Title A', 'Title B')
     end
 
     it 'does not save when title is blank' do
@@ -62,7 +62,8 @@ describe Ingestible do
     end
 
     it 'returns parsed JSON when cache is populated' do
-      ingestible.update_columns(textarea_cache: [{ title: 'T', content: 'C', saved_at: '2024-01-01T10:00:00Z' }].to_json)
+      data = [{ title: 'T', content: 'C', saved_at: '2024-01-01T10:00:00Z' }].to_json
+      ingestible.update_columns(textarea_cache: data)
       result = ingestible.parsed_textarea_cache
       expect(result).to be_an(Array)
       expect(result.first['title']).to eq('T')

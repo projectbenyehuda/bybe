@@ -31,11 +31,13 @@ class IngestibleTextsController < ApplicationController
   end
 
   def fetch_cached_version
-    cache_index = params[:cache_index].to_i
-    version = @ingestible.parsed_textarea_cache[cache_index]
-    return head :not_found if version.nil?
+    return head :not_found unless params[:cache_index].to_s.match?(/\A\d+\z/)
 
-    render json: { content: version['content'] }
+    cache = @ingestible.parsed_textarea_cache
+    cache_index = params[:cache_index].to_i
+    return head :not_found if cache_index >= cache.length
+
+    render json: { content: cache[cache_index]['content'] }
   end
 
   private
