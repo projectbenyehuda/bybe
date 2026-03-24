@@ -80,7 +80,7 @@ RSpec.describe 'Collection selective download and print', :js, type: :system do
 
       within('#downloadDlg') do
         # Click on selected items toggle (execute_script bypasses animation overlay interception)
-        find('.search-mobile-option', text: I18n.t(:selected_items)).execute_script('this.click()')
+        page.execute_script("arguments[0].click()", find('.search-mobile-option', text: I18n.t(:selected_items)))
 
         # Check that manifestation selection area is visible
         expect(page).to have_css('#manifestation-selection-area', visible: true)
@@ -103,7 +103,7 @@ RSpec.describe 'Collection selective download and print', :js, type: :system do
 
       within('#downloadDlg') do
         # Switch to partial mode (execute_script bypasses animation overlay interception)
-        find('.search-mobile-option', text: I18n.t(:selected_items)).execute_script('this.click()')
+        page.execute_script("arguments[0].click()", find('.search-mobile-option', text: I18n.t(:selected_items)))
 
         # Select 2 manifestations
         checkboxes = all('.multiselect_checkbox')
@@ -127,7 +127,7 @@ RSpec.describe 'Collection selective download and print', :js, type: :system do
 
       within('#downloadDlg') do
         # Switch to partial mode (execute_script bypasses animation overlay interception)
-        find('.search-mobile-option', text: I18n.t(:selected_items)).execute_script('this.click()')
+        page.execute_script("arguments[0].click()", find('.search-mobile-option', text: I18n.t(:selected_items)))
 
         # Click select all
         find('#select-all-checkbox').check
@@ -171,7 +171,7 @@ RSpec.describe 'Collection selective download and print', :js, type: :system do
 
       within('#printDlg') do
         # Click on selected items toggle (execute_script bypasses animation overlay interception)
-        find('.search-mobile-option', text: I18n.t(:selected_items)).execute_script('this.click()')
+        page.execute_script("arguments[0].click()", find('.search-mobile-option', text: I18n.t(:selected_items)))
 
         # Check that manifestation selection area is visible
         expect(page).to have_css('#print-manifestation-selection-area', visible: true)
@@ -194,7 +194,7 @@ RSpec.describe 'Collection selective download and print', :js, type: :system do
 
       within('#printDlg') do
         # Switch to partial mode (execute_script bypasses animation overlay interception)
-        find('.search-mobile-option', text: I18n.t(:selected_items)).execute_script('this.click()')
+        page.execute_script("arguments[0].click()", find('.search-mobile-option', text: I18n.t(:selected_items)))
 
         # Select 2 manifestations
         checkboxes = all('.print-multiselect_checkbox')
