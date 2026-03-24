@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 describe HtmlToMarkdown do
-  subject(:call) { described_class.call(html) }
+  subject(:result) { described_class.call(html) }
 
   context 'when html is nil' do
     let(:html) { nil }
@@ -21,5 +21,35 @@ describe HtmlToMarkdown do
     end
 
     it { is_expected.to eq("# Header\n\nHello World\n") }
+  end
+
+  context 'when html contains table' do
+    let(:html) do
+      <<~SNIPPET
+        <h1>Header</h1>
+        <table>
+        <tr><td>Hello</td><td>World</td></tr>
+        </table>
+      SNIPPET
+    end
+
+    let(:expected_output) do
+      <<~MARKDOWN
+        # Header
+
+        <table>
+        <tbody>
+        <tr>
+        <td>Hello</td>
+        <td>World</td>
+        </tr>
+        </tbody>
+        </table>
+      MARKDOWN
+    end
+
+    it 'renders table using raw html' do
+      expect(result).to eq(expected_output)
+    end
   end
 end
