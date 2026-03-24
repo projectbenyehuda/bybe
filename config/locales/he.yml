@@ -1893,6 +1893,11 @@ he:
       next: הטקסט הבא
       previous: הטקסט הקודם
       not_in_toc: הטקסט לא סומן ככלול בהעלאה!
+      cached_versions_label: "גרסה שמורה לשחזור:"
+      current_text_versions: גרסאות של הטקסט הנוכחי
+      other_cached_versions: גרסאות של טקסטים אחרים
+      paste_cached_version: הכנס גרסה שמורה
+      confirm_paste: האם לבחור גרסה שמורה זו? הטקסט הנוכחי יוחלף.
   collections_migration:
     index:
       title: תהליך המרת דפי יוצר לדפים אוטומטיים עם כותרים

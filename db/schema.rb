@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_17_212025) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_24_014547) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -584,6 +584,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_17_212025) do
     t.text "collection_authorities"
     t.bigint "project_id"
     t.integer "tasks_project_id"
+    t.text "textarea_cache", size: :medium
     t.index ["last_editor_id"], name: "index_ingestibles_on_last_editor_id"
     t.index ["locked_by_user_id"], name: "index_ingestibles_on_locked_by_user_id"
     t.index ["originating_task"], name: "index_ingestibles_on_originating_task"

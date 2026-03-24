@@ -51,7 +51,12 @@ Bybeconv::Application.routes.draw do
         post :replace
       end
     end
-    resources :texts, controller: :ingestible_texts, only: %i(edit update)
+    resources :texts, controller: :ingestible_texts, only: %i(edit update) do
+      member do
+        post :save_to_cache
+        get :fetch_cached_version
+      end
+    end
     collection do
       get :autocomplete_authority_full
       get :autocomplete_collection_full
