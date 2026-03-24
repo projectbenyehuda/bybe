@@ -9,7 +9,7 @@ class HtmlToMarkdown < ApplicationService
       html.strip.gsub(/\u00A0|&nbsp;/, '<p />').gsub(%r{<br>|<br/>}, "\n\n"),
       M: 'dir=rtl',
       from: :html,
-      to: :markdown_mmd
+      to: 'markdown_mmd-pipe_tables+raw_html'
     ).force_encoding('UTF-8')
   end
 end
