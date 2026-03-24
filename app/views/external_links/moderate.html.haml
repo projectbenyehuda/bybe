@@ -41,7 +41,7 @@
             %td
               = button_to t('moderate_links.approve'), approve_external_link_path(link),
                           method: :post, remote: true, class: 'btn btn-sm btn-success approve-link-btn',
-                          data: { link_id: link.id, confirm: t('moderate_links.confirm_approve') }
+                          data: { link_id: link.id }
               = button_to t('moderate_links.reject'), reject_external_link_path(link),
                           method: :post, remote: true, class: 'btn btn-sm btn-danger reject-link-btn',
                           data: { link_id: link.id }
