@@ -45,6 +45,11 @@
                     class: 'btn btn-primary form-control js-text-nav-link',
                     remote: true,
                     id: 'next_text_link'
+    .row
+      .col-sm-3
+        = render partial: 'ingestible_texts/textarea_cache_widget',
+                 locals: { cache_versions: cache_versions, current_title: text.title,
+                           save_cache_url: save_cache_url, fetch_cache_url: fetch_cache_url }
     .markdown_container.row
       .col-sm-3
         = f.text_area :content, class: 'textarea100 markdown'
@@ -60,8 +65,5 @@
             != raw(texthtml)
     .actions
       = f.submit t(:save), class: 'btn btn-primary btn-sm', remote: true
-    = render partial: 'ingestible_texts/textarea_cache_widget',
-             locals: { cache_versions: cache_versions, current_title: text.title,
-                       save_cache_url: save_cache_url, fetch_cache_url: fetch_cache_url }
 = render partial: 'shared/markdown_utils',
          locals: { container_id: 'ingestible_edit_texts', element_id: 'ingestible_text_content' }

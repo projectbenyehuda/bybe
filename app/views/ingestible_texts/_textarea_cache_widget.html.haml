@@ -10,9 +10,9 @@
   other_versions   = indexed.reject { |v| v['title'] == current_title }
                             .sort_by { |v| v['saved_at'].to_s }.reverse
 - if cache_versions.any?
-  .textarea-cache-widget{ style: 'margin-top: 10px; padding: 8px; border: 1px solid #ccc; background: #f9f9f9;' }
+  .textarea-cache-widget{ style: 'margin-bottom: 6px;' }
     %label= t('ingestible_texts.edit.cached_versions_label')
-    %select#textarea_cache_select{ style: 'width: 70%; margin: 0 5px;' }
+    %select#textarea_cache_select{ style: 'width: 100%; margin-bottom: 4px;' }
       - if current_versions.any?
         %optgroup{ label: t('ingestible_texts.edit.current_text_versions') }
           - current_versions.each do |v|
