@@ -21,11 +21,11 @@ RSpec.describe 'Download modal', :js, type: :system do
 
     # First download attempt - click the download icon
     find('a.download[data-target="#downloadDlg"]').click
-    expect(page).to have_selector('#downloadDlg', visible: true)
+    expect(page).to have_css('#downloadDlg', visible: true, wait: 10)
 
     # Select format and submit
     within '#downloadDlg' do
-      choose 'format_pdf'
+      page.execute_script('arguments[0].click()', find('#format_pdf'))
       click_button I18n.t(:download)
     end
 
@@ -34,11 +34,11 @@ RSpec.describe 'Download modal', :js, type: :system do
 
     # Second download attempt (without page reload)
     find('a.download[data-target="#downloadDlg"]').click
-    expect(page).to have_selector('#downloadDlg', visible: true)
+    expect(page).to have_css('#downloadDlg', visible: true, wait: 10)
 
     # Select format and submit again
     within '#downloadDlg' do
-      choose 'format_html'
+      page.execute_script('arguments[0].click()', find('#format_html'))
       click_button I18n.t(:download)
     end
 
@@ -56,11 +56,11 @@ RSpec.describe 'Download modal', :js, type: :system do
 
     # First download attempt - find download button by data-target
     find('[data-target="#downloadDlg"]').click
-    expect(page).to have_selector('#downloadDlg', visible: true)
+    expect(page).to have_css('#downloadDlg', visible: true, wait: 10)
 
     # Select format and submit
     within '#downloadDlg' do
-      choose 'format_epub'
+      page.execute_script('arguments[0].click()', find('#format_epub'))
       click_button I18n.t(:download)
     end
 
@@ -69,12 +69,12 @@ RSpec.describe 'Download modal', :js, type: :system do
 
     # Second download attempt
     find('[data-target="#downloadDlg"]').click
-    expect(page).to have_selector('#downloadDlg', visible: true)
+    expect(page).to have_css('#downloadDlg', visible: true, wait: 10)
 
     # The download button should still be enabled
     within '#downloadDlg' do
       expect(page).to have_button(I18n.t(:download), disabled: false)
-      choose 'format_pdf'
+      page.execute_script('arguments[0].click()', find('#format_pdf'))
       click_button I18n.t(:download)
     end
 

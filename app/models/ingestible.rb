@@ -433,6 +433,34 @@ class Ingestible < ApplicationRecord
     return ret
   end
 
+  # Returns the parsed textarea cache as an array of version hashes.
+  # Each entry: { 'title' => ..., 'content' => ..., 'saved_at' => ... }
+  def parsed_textarea_cache
+    return [] if textarea_cache.blank?
+
+    JSON.parse(textarea_cache)
+  rescue JSON::ParserError
+    []
+  end
+
+  TEXTAREA_CACHE_MAX_VERSIONS = 50
+
+  # Save a version of a text to the cache if it differs from the most recent version for that title.
+  # Uses a row-level lock to prevent lost updates from concurrent saves.
+  def save_text_to_cache(title, content)
+    return if title.blank? || content.nil?
+
+    with_lock do
+      cache = parsed_textarea_cache
+      latest_for_title = cache.select { |v| v['title'] == title }.max_by { |v| v['saved_at'] }
+      next if latest_for_title.present? && latest_for_title['content'] == content
+
+      cache << { 'title' => title, 'content' => content, 'saved_at' => Time.zone.now.iso8601 }
+      cache.shift if cache.length > TEXTAREA_CACHE_MAX_VERSIONS
+      update_columns(textarea_cache: cache.to_json)
+    end
+  end
+
   def locked?
     locked_at.present? && locked_at > LOCK_TIMEOUT_IN_SECONDS.seconds.ago
   end
