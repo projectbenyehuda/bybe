@@ -1,4 +1,8 @@
-- text = ingestible.texts[index]
+:ruby
+  text = ingestible.texts[index]
+  cache_versions = ingestible.parsed_textarea_cache
+  save_cache_url = save_to_cache_ingestible_text_path(ingestible, index)
+  fetch_cache_url = fetch_cached_version_ingestible_text_path(ingestible, index)
 .container-fluid#ingestible_edit_texts
   = form_for [ingestible, text], url: ingestible_text_path(ingestible, index), method: :patch do |f|
     .row
@@ -6,9 +10,9 @@
       .col-sm-6
         %b= t(:text_n_of_m, n: index + 1, m: ingestible.texts.length)
         - if ingestible.toc_buffer.present?
-          - delta = ingestible.toc_buffer.lines.count - ingestible.texts.length
-          = t(:and_n_placeholders, n: delta > 0 ? delta : 0)
-        - if ingestible.decode_toc.select{|x| x[1] == text.title && x[0] == 'yes'}.blank?
+          - delta = [ingestible.toc_buffer.lines.count - ingestible.texts.length, 0].max
+          = t(:and_n_placeholders, n: delta)
+        - if ingestible.decode_toc.select { |x| x[1] == text.title && x[0] == 'yes' }.blank?
           %b.redbg= t('.not_in_toc')
       .col-sm-3
     .row
@@ -16,9 +20,10 @@
         - if index > 0
           = link_to t('.previous'),
                     edit_ingestible_text_path(ingestible, index - 1),
-                    class: 'btn btn-primary form-control',
-                    remote: true
-        %div{style: 'display:flex; flex-direction:column;  justify-content: space-between;'}
+                    class: 'btn btn-primary form-control js-text-nav-link',
+                    remote: true,
+                    id: 'prev_text_link'
+        %div{ style: 'display:flex; flex-direction:column; justify-content: space-between;' }
           %button.btn-small-outline-v02#add_stanza_break
             %b.btn-text-v02= t(:add_stanza_break)
           %button.btn-small-outline-v02#add_angled_brackets{ style: 'display:unset' }
@@ -27,20 +32,19 @@
             %b.btn-text-v02= t(:remove_angled_brackets)
           %button.btn-small-outline-v02#minuses_to_makafim{ style: 'display:unset' }
             %b.btn-text-v02= t(:minuses_to_makafim)
-
       .col-sm-8
         .row
           .col-sm-2
             %label.control-label= IngestibleText.human_attribute_name(:title)
-
           .col-sm-10
             .form-control= f.text_field :title
       .col-sm-2
         - if index < ingestible.texts.length - 1
           = link_to t('.next'),
                     edit_ingestible_text_path(ingestible, index + 1),
-                    class: 'btn btn-primary form-control',
-                    remote: true
+                    class: 'btn btn-primary form-control js-text-nav-link',
+                    remote: true,
+                    id: 'next_text_link'
     .markdown_container.row
       .col-sm-3
         = f.text_area :content, class: 'textarea100 markdown'
@@ -50,9 +54,14 @@
           - if defined?(@text_html) && @text_html.present?
             != raw(@text_html)
           - else
-            - texthtml = highlight_suspicious_markdown(MarkdownToHtml.call(text.content))
-            - texthtml = footnotes_noncer(texthtml, "txt_#{index}")
+            :ruby
+              texthtml = highlight_suspicious_markdown(MarkdownToHtml.call(text.content))
+              texthtml = footnotes_noncer(texthtml, "txt_#{index}")
             != raw(texthtml)
     .actions
       = f.submit t(:save), class: 'btn btn-primary btn-sm', remote: true
-= render partial: 'shared/markdown_utils', locals: { container_id: 'ingestible_edit_texts', element_id: 'ingestible_text_content' }
+    = render partial: 'ingestible_texts/textarea_cache_widget',
+             locals: { cache_versions: cache_versions, current_title: text.title,
+                       save_cache_url: save_cache_url, fetch_cache_url: fetch_cache_url }
+= render partial: 'shared/markdown_utils',
+         locals: { container_id: 'ingestible_edit_texts', element_id: 'ingestible_text_content' }

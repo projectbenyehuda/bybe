@@ -1,0 +1,72 @@
+:ruby
+  indexed = cache_versions.each_with_index.map { |v, i| v.merge('_idx' => i) }
+  current_versions = indexed.select { |v| v['title'] == current_title }
+                            .sort_by { |v| v['saved_at'] }.reverse
+  other_versions   = indexed.reject { |v| v['title'] == current_title }
+                            .sort_by { |v| v['saved_at'] }.reverse
+- if cache_versions.any?
+  .textarea-cache-widget{ style: 'margin-top: 10px; padding: 8px; border: 1px solid #ccc; background: #f9f9f9;' }
+    %label= t('ingestible_texts.edit.cached_versions_label')
+    %select#textarea_cache_select{ style: 'width: 70%; margin: 0 5px;' }
+      - if current_versions.any?
+        %optgroup{ label: t('ingestible_texts.edit.current_text_versions') }
+          - current_versions.each do |v|
+            %option{ value: v['_idx'].to_s }
+              #{v['title']} — #{Time.zone.parse(v['saved_at']).strftime('%d/%m/%Y %H:%M')}
+      - if other_versions.any?
+        %optgroup{ label: t('ingestible_texts.edit.other_cached_versions') }
+          - other_versions.each do |v|
+            %option{ value: v['_idx'].to_s }
+              #{v['title']} — #{Time.zone.parse(v['saved_at']).strftime('%d/%m/%Y %H:%M')}
+    %button.btn.btn-warning.btn-sm#paste_cached_version{ type: 'button' }
+      = t('ingestible_texts.edit.paste_cached_version')
+:javascript
+  (function() {
+    var saveUrl = '#{save_cache_url}';
+    var fetchBaseUrl = '#{fetch_cache_url}';
+    var confirmMsg = '#{j t('ingestible_texts.edit.confirm_paste')}';
+    var csrfToken = $('meta[name="csrf-token"]').attr('content');
+    var fetchedContent = null;
+
+    function getCurrentContent() { return $('#ingestible_text_content').val() || ''; }
+    function getCurrentTitle() {
+      return $('input[name="ingestible_text[title]"]').val() || '';
+    }
+
+    function saveToCache(callback) {
+      $.ajax({
+        url: saveUrl, method: 'POST',
+        data: { authenticity_token: csrfToken,
+                title: getCurrentTitle(), content: getCurrentContent() },
+        complete: function() { if (callback) callback(); }
+      });
+    }
+
+    $('#textarea_cache_select').on('change', function() {
+      fetchedContent = null;
+      var idx = $(this).val();
+      if (idx === '' || idx === null) return;
+      $.get(fetchBaseUrl, { cache_index: idx }, function(data) {
+        fetchedContent = data.content;
+      });
+    }).trigger('change');
+
+    $(document).on('click', '.js-text-nav-link', function(e) {
+      if ($('#ingestible_text_content').length === 0) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      var href = $(this).attr('href');
+      saveToCache(function() { $.ajax({ url: href, dataType: 'script' }); });
+    });
+
+    $(document).on('click', 'a[data-toggle="tab"]', function() {
+      if ($('#ingestible_text_content').length === 0) return;
+      if ($(this).attr('href') !== '#texts') { saveToCache(); }
+    });
+
+    $('#paste_cached_version').on('click', function() {
+      if (fetchedContent === null) return;
+      if (getCurrentContent().trim() !== '' && !confirm(confirmMsg)) return;
+      $('#ingestible_text_content').val(fetchedContent);
+    });
+  })();

@@ -411,6 +411,11 @@ en:
       text_x_of_total: Text %{index} of %{total}
       next: Ingestible Texts Edit Next
       not_in_toc: Ingestible Texts Edit Not In Toc
+      cached_versions_label: 'Cached version to restore:'
+      current_text_versions: Versions of current text
+      other_cached_versions: Versions of other texts
+      paste_cached_version: Paste cached version
+      confirm_paste: Replace current content with this cached version?
       previous: Ingestible Texts Edit Previous
   involved_authorities:
     list:

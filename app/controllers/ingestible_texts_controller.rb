@@ -17,9 +17,25 @@ class IngestibleTextsController < ApplicationController
   end
 
   def update
-    @ingestible.texts[@text_index] = IngestibleText.new(params.require(:ingestible_text).permit(:content, :title))
+    text_params = params.expect(ingestible_text: %i(content title))
+    @ingestible.save_text_to_cache(text_params[:title], text_params[:content])
+    @ingestible.texts[@text_index] = IngestibleText.new(text_params)
     @ingestible.save!
     redirect_to edit_ingestible_path(@ingestible, text_index: @text_index), notice: t(:updated_successfully)
+  end
+
+  def save_to_cache
+    cache_params = params.permit(:title, :content)
+    @ingestible.save_text_to_cache(cache_params[:title], cache_params[:content])
+    head :ok
+  end
+
+  def fetch_cached_version
+    cache_index = params[:cache_index].to_i
+    version = @ingestible.parsed_textarea_cache[cache_index]
+    return head :not_found if version.nil?
+
+    render json: { content: version['content'] }
   end
 
   private
