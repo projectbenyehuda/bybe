@@ -3,6 +3,10 @@ require 'addressable/uri'
 module ApplicationHelper
   include BybeUtils
 
+  def staging?
+    ENV['CACHE_NONCE'] == 'staging'
+  end
+
   def u8(s)
     return s if s.nil?
 
