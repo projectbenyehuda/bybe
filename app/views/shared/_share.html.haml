@@ -3,7 +3,8 @@
     %i.fa.fa-share-alt
     %span.tooltiptext= t(:share)
 - elsif local_assigns.key?(:element) && local_assigns[:element] == :header_button
-  %a.by-icon-v02.pointer.share-icon-button{ data: { toggle: :modal, target: '#shareDlg' }, title: t(:share_tt) }
+  %a.by-icon-v02.pointer.share-icon-button{ data: { toggle: :modal, target: '#shareDlg' },
+                                            href: '#', title: t(:share_tt) }
     U
 - elsif local_assigns.key?(:element) && local_assigns[:element] == :mobile_button
   %a.dropdown-item.linkcolor{style: 'color: #660248;', 'data-toggle' => 'modal', 'data-target' => '#shareDlg'}

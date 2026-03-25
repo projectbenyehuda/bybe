@@ -587,6 +587,10 @@ a .by-genre-name-v02:hover{
   background-color: #660248;
 }
 
+.share-name {
+  font-family: Alef;
+}
+
 #footer .footer-share .by-footer-nav-item-v02{
   padding:5px;
   margin: 5px;
