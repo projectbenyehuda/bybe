@@ -14,6 +14,25 @@
  *= require_self
  *= require slick
 */
+// Staging environment indicator: diagonal stripe overlay
+body.staging::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 165, 0, 0.06) 0px,
+    rgba(255, 165, 0, 0.06) 10px,
+    transparent 10px,
+    transparent 30px
+  );
+}
+
 /*body{font-size:14px;} /* default */
 /* temporary fix */
 .credits{
