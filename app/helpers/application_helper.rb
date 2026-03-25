@@ -4,7 +4,7 @@ module ApplicationHelper
   include BybeUtils
 
   def staging?
-    ENV['CACHE_NONCE'] == 'staging'
+    (ENV['cache_nonce'] || ENV['CACHE_NONCE']) == 'staging'
   end
 
   def u8(s)
