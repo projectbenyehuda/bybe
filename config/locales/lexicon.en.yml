@@ -3,6 +3,7 @@ en:
   entry: Entry
   lexicon_name: Lexicon Galron
   to_lexicon_entries: to Lexicon entries
+  to_old_lexicon_page: "To the old lexicon page"
   lexicon_show_person: View
   lex_prev_entry: Previous entry
   lex_next_entry: Next entry
