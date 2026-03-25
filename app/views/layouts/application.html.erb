@@ -49,7 +49,7 @@
   <%= csrf_meta_tags %>
   <%= Sentry.get_trace_propagation_meta.html_safe %>
   </head>
-<body dir="rtl" style="position:relative;">
+<body dir="rtl" style="position:relative;" class="<%= 'staging' if staging? %>">
 <% unless @print %>
   <% unless @readmode %>
   <!-- top logo area -->

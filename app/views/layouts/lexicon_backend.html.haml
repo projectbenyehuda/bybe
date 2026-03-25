@@ -18,7 +18,7 @@
              integrity: 'sha384-K/wjzuoV8a4rD2q1L2clnXIYLNmQiFganXCXSzSWUpFGF04s38f9vwnQFj2NUhDy',
              crossorigin: :anonymous }
     = csrf_meta_tags
-  %body
+  %body{ class: ('staging' if staging?) }
     %header.container-fluid
       - flash.each do |name, msg|
         .alert.alert-dismissable{ class: %w(error alert).include?(name) ? 'alert-danger' : 'alert-success' }
