@@ -21,7 +21,7 @@
     - else
       %meta{content: "#{@og_image}", property: "og:image"}/
     = csrf_meta_tags
-  %body{dir: "rtl", style: "position:relative;"}
+  %body{ dir: "rtl", style: "position:relative;", class: ('staging' if staging?) }
     %header
       #header.container-fluid
         #header-general.container-fluid
