@@ -15,10 +15,6 @@
 }
 
 // Specifying min-height for welcome page blocks to reduce Cumulative Layout Shift (CLS)
-.by-card-v02#genre {
-  min-height: 815px;
-}
-
 .by-card-v02#welcome-authors {
   min-height: 720px;
 }
