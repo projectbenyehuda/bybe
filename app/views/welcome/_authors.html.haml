@@ -1,5 +1,5 @@
 - cache "homepage_authors", expires_in: 6.hours do
-  .by-card-content-v02
+  .by-card-content-v02#welcome-authors
     = render partial: 'shared/author_cards', locals: {title: t(:most_popular_authors), authors: popular_authors, surprise: false, id_frag: 'pop', skip_title: false, size: :large}
     = render partial: 'shared/author_cards', locals: {title: t(:random_authors), authors: random_authors, surprise: true, id_frag: 'new', skip_title: false, size: :large}
     .link-to-all-v02
