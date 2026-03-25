@@ -3,6 +3,40 @@
 require 'rails_helper'
 
 RSpec.describe ApplicationHelper, type: :helper do
+  describe '#staging?' do
+    around do |example|
+      original_upper = ENV['CACHE_NONCE']
+      original_lower = ENV['cache_nonce']
+      example.run
+      ENV['CACHE_NONCE'] = original_upper
+      ENV['cache_nonce'] = original_lower
+    end
+
+    it 'returns true when CACHE_NONCE is staging' do
+      ENV['CACHE_NONCE'] = 'staging'
+      ENV['cache_nonce'] = nil
+      expect(helper.staging?).to be true
+    end
+
+    it 'returns true when cache_nonce (lowercase) is staging' do
+      ENV['CACHE_NONCE'] = nil
+      ENV['cache_nonce'] = 'staging'
+      expect(helper.staging?).to be true
+    end
+
+    it 'returns false when neither env var is set' do
+      ENV['CACHE_NONCE'] = nil
+      ENV['cache_nonce'] = nil
+      expect(helper.staging?).to be false
+    end
+
+    it 'returns false when CACHE_NONCE is set to a different value' do
+      ENV['CACHE_NONCE'] = 'production'
+      ENV['cache_nonce'] = nil
+      expect(helper.staging?).to be false
+    end
+  end
+
   describe '#update_param' do
     it 'updates a parameter in a simple URL' do
       url = 'https://example.com/path?foo=bar'
