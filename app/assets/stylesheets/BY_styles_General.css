@@ -420,8 +420,6 @@ padding-left: 6px;
 }
 
 .by-icon-v02 {
-  height: 26px;
-  width: 26px;
   font-family: ben-yehuda;
   font-size: 18px; 
 line-height: 18px;
@@ -585,10 +583,6 @@ a .by-genre-name-v02:hover{
 }
 #footer a:hover .by-footer-nav-item-v02{
   background-color: #660248;
-}
-
-.share-name {
-  font-family: Alef;
 }
 
 #footer .footer-share .by-footer-nav-item-v02{
