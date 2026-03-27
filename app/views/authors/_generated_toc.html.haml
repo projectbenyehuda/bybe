@@ -103,10 +103,12 @@
         if (this.value == 'colls_abc') {
           $('#browse_mainlist').html(orig_mainlist);
           $('#genre_filtering').hide();
-          nodes_to_sort = $('.cwrapper');
+          nodes_to_sort = $('.cwrapper').filter(function() {
+            return $(this).parents('.cwrapper').length === 0;
+          });
           nodes_to_sort.sort(function(a, b) {
-            x = $(a).find('span').text();
-            y = $(b).find('span').text();
+            x = $(a).find('.ctitle_only').first().text();
+            y = $(b).find('.ctitle_only').first().text();
             return x.localeCompare(y);
           });
         } else {
