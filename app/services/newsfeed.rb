@@ -20,11 +20,18 @@ class Newsfeed < ApplicationService
         person.profile_image.url(:thumb)
       )
     end
-    # cached_youtube_videos.each do |title, desc, id, thumbnail_url, relevance| # add latest videos
-    #  unsorted_news_items << NewsItem.from_youtube(title, desc, youtube_url_from_id(id), thumbnail_url, relevance)
-    # end
+    recent_external_links.each do |link| # add recent youtube/audio external links
+      unsorted_news_items << NewsItem.from_external_link(link)
+    end
     # TODO: add latest blog posts
     return unsorted_news_items.sort_by(&:relevance).reverse # sort by descending relevance
+  end
+
+  def recent_external_links
+    ExternalLink.where(linktype: %i(youtube audio), status: :approved)
+                .where(created_at: 1.month.ago..)
+                .where(linkable_type: 'Manifestation')
+                .order(created_at: :desc)
   end
 
   # def cached_youtube_videos

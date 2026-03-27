@@ -1,5 +1,5 @@
 class NewsItem < ApplicationRecord
-  enum :itemtype, { publication: 0, facebook: 1, youtube: 2, blog: 3, announcement: 4, recommendation: 5 }
+  enum :itemtype, { publication: 0, facebook: 1, youtube: 2, blog: 3, announcement: 4, recommendation: 5, audio: 6 }
 
   scope :new_since, ->(since) { where('created_at > ?', since) }
 
@@ -27,5 +27,17 @@ class NewsItem < ApplicationRecord
   def self.from_youtube(title, text, url, thumbnail_url, relevance)
     return NewsItem.new(itemtype: :youtube, title: title, body: text, url: url, thumbnail_url: thumbnail_url,
                         relevance: relevance)
+  end
+
+  def self.from_external_link(link)
+    # Only use :youtube (embeddable iframe) for actual YouTube URLs
+    embeddable = link.linktype_youtube? && link.url.to_s.include?('youtube.com')
+    return NewsItem.new(
+      itemtype: embeddable ? :youtube : :audio,
+      title: link.linkable.title_and_authors,
+      body: link.description.to_s.strip,
+      url: link.url,
+      relevance: link.created_at
+    )
   end
 end
