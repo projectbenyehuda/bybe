@@ -4,11 +4,6 @@
   .top-space
   - aus = @collection.authors_string
   - eds = @collection.editors_string(true)
-  - if @collection.parent_collections.count > 0
-    = t(:parent_collections)
-    %ol
-    - @collection.parent_collections.each do |pc|
-      %li{ style: 'list-style-type: decimal; font-size:120%;' }= link_to "🢁 🢁 🢁 #{pc.title}", collection_path(pc)
 
   .work-page-top
     .work-page-top-info-card
