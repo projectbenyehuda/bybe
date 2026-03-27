@@ -724,6 +724,10 @@ small p{
 .icon-byyoutube:before {
   content: "\57";
 }
+/* Sound icon from ben-yehuda-2 font (unicode D = &#68;) */
+.icon-sound:before {
+  content: "\44";
+}
 .icon-bydownload:before {
   content: "\33";
 }

@@ -220,6 +220,8 @@ module ApplicationHelper
       return 's'
     when item.announcement?
       return 'O'
+    when item.audio?
+      return content_tag(:span, '', class: 'icon-sound')
     end
   end
 
