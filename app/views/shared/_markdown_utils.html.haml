@@ -58,6 +58,19 @@
       $txt.caretTo(caretPos+txtToAdd.length);
       $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
     });
+    $('##{container_id} #add_indent').click(function(e) {
+      e.preventDefault();
+      var $txt = jQuery(element_id);
+      var scrollLeft = $txt[0].scrollLeft;
+      var scrollTop  = $txt[0].scrollTop;
+      var caretPos = $txt[0].selectionStart;
+      var textAreaTxt = $txt.val();
+      var txtToAdd = "&emsp;";
+      $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos));
+      $txt.focus();
+      $txt.caretTo(caretPos+txtToAdd.length);
+      $txt[0].scrollTo(scrollLeft, scrollTop);
+    });
     // highlight suspicious angled brackets in rendered HTML
     $("#preview p:contains('> ')").each(function(){
       $(this).html(highlight_in_red($(this).html()));
