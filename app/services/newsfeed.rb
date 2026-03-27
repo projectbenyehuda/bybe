@@ -29,9 +29,10 @@ class Newsfeed < ApplicationService
 
   def recent_external_links
     ExternalLink.where(linktype: %i(youtube audio), status: :approved)
-                .where(created_at: 1.month.ago..)
+                .where(updated_at: 30.days.ago..)
                 .where(linkable_type: 'Manifestation')
-                .order(created_at: :desc)
+                .includes(:linkable)
+                .order(updated_at: :desc)
   end
 
   # def cached_youtube_videos

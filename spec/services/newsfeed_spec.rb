@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 describe Newsfeed do
+  include ActiveSupport::Testing::TimeHelpers
+
   describe '#call' do
     subject(:result) { described_class.call }
 
@@ -12,16 +14,17 @@ describe Newsfeed do
       end
     end
 
-    context 'when there are recent approved youtube ExternalLinks on Manifestations' do
+    context 'when there are recently approved youtube ExternalLinks on Manifestations' do
       let!(:manifestation) { create(:manifestation, orig_lang: 'he') }
       let!(:youtube_link) do
-        create(:external_link,
-               linkable: manifestation,
-               linktype: :youtube,
-               status: :approved,
-               url: 'https://www.youtube.com/watch?v=abc123',
-               description: 'Watch the reading',
-               created_at: 1.week.ago)
+        link = create(:external_link,
+                      linkable: manifestation,
+                      linktype: :youtube,
+                      status: :approved,
+                      url: 'https://www.youtube.com/watch?v=abc123',
+                      description: 'Watch the reading')
+        link.update_column(:updated_at, 1.week.ago)
+        link
       end
 
       it 'includes a youtube news item for the link' do
@@ -33,48 +36,68 @@ describe Newsfeed do
         expect(item.title).to eq(manifestation.title_and_authors)
         expect(item.body).to eq('Watch the reading')
       end
+    end
 
-      context 'when the youtube link is older than 30 days' do
-        let!(:youtube_link) do
-          create(:external_link,
-                 linkable: manifestation,
-                 linktype: :youtube,
-                 status: :approved,
-                 url: 'https://www.youtube.com/watch?v=abc123',
-                 created_at: 31.days.ago)
-        end
+    context 'when a youtube link was approved more than 30 days ago' do
+      let!(:manifestation) { create(:manifestation, orig_lang: 'he') }
 
-        it 'does not include the old link' do
-          expect(result.select(&:youtube?)).to be_empty
-        end
-      end
-
-      context 'when the youtube link is not approved' do
-        let!(:youtube_link) do
-          create(:external_link,
-                 linkable: manifestation,
-                 linktype: :youtube,
-                 status: :submitted,
-                 url: 'https://www.youtube.com/watch?v=abc123',
-                 created_at: 1.week.ago)
-        end
-
-        it 'does not include unapproved links' do
-          expect(result.select(&:youtube?)).to be_empty
+      it 'does not include the old link' do
+        freeze_time do
+          link = create(:external_link,
+                        linkable: manifestation,
+                        linktype: :youtube,
+                        status: :approved,
+                        url: 'https://www.youtube.com/watch?v=abc123')
+          link.update_column(:updated_at, 31.days.ago)
+          expect(described_class.call.select(&:youtube?)).to be_empty
         end
       end
     end
 
-    context 'when there are recent approved audio ExternalLinks on Manifestations' do
+    context 'when the youtube link is not approved' do
       let!(:manifestation) { create(:manifestation, orig_lang: 'he') }
-      let!(:audio_link) do
+      let!(:youtube_link) do
         create(:external_link,
                linkable: manifestation,
-               linktype: :audio,
-               status: :approved,
-               url: 'https://example.com/audio/poem',
-               description: 'Listen to the poem',
-               created_at: 3.days.ago)
+               linktype: :youtube,
+               status: :submitted,
+               url: 'https://www.youtube.com/watch?v=abc123')
+      end
+
+      it 'does not include unapproved links' do
+        expect(result.select(&:youtube?)).to be_empty
+      end
+    end
+
+    context 'when a link was proposed long ago but approved recently' do
+      let!(:manifestation) { create(:manifestation, orig_lang: 'he') }
+      let!(:youtube_link) do
+        link = create(:external_link,
+                      linkable: manifestation,
+                      linktype: :youtube,
+                      status: :approved,
+                      url: 'https://www.youtube.com/watch?v=abc123',
+                      created_at: 6.months.ago)
+        link.update_column(:updated_at, 2.days.ago) # approved 2 days ago
+        link
+      end
+
+      it 'includes the link because it was recently approved' do
+        expect(result.select(&:youtube?).size).to eq(1)
+      end
+    end
+
+    context 'when there are recently approved audio ExternalLinks on Manifestations' do
+      let!(:manifestation) { create(:manifestation, orig_lang: 'he') }
+      let!(:audio_link) do
+        link = create(:external_link,
+                      linkable: manifestation,
+                      linktype: :audio,
+                      status: :approved,
+                      url: 'https://example.com/audio/poem',
+                      description: 'Listen to the poem')
+        link.update_column(:updated_at, 3.days.ago)
+        link
       end
 
       it 'includes an audio news item for the link' do
@@ -95,8 +118,7 @@ describe Newsfeed do
                linkable: manifestation,
                linktype: :youtube,
                status: :approved,
-               url: 'https://archive.example.org/video/123',
-               created_at: 1.week.ago)
+               url: 'https://archive.example.org/video/123')
       end
 
       it 'creates an audio item (link only, no iframe) for non-YouTube video URLs' do

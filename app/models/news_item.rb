@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class NewsItem < ApplicationRecord
   enum :itemtype, { publication: 0, facebook: 1, youtube: 2, blog: 3, announcement: 4, recommendation: 5, audio: 6 }
 
@@ -29,9 +31,13 @@ class NewsItem < ApplicationRecord
                         relevance: relevance)
   end
 
+  YOUTUBE_HOSTS = %w(youtube.com www.youtube.com m.youtube.com youtu.be www.youtu.be).freeze
+
   def self.from_external_link(link)
-    # Only use :youtube (embeddable iframe) for actual YouTube URLs
-    embeddable = link.linktype_youtube? && link.url.to_s.include?('youtube.com')
+    # Only use :youtube (embeddable iframe) for actual YouTube URLs; validate by host to
+    # prevent substring attacks like "youtube.com.evil.example"
+    host = URI.parse(link.url.to_s).host.to_s.downcase
+    embeddable = link.linktype_youtube? && YOUTUBE_HOSTS.include?(host)
     return NewsItem.new(
       itemtype: embeddable ? :youtube : :audio,
       title: link.linkable.title_and_authors,
