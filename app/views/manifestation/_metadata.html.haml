@@ -92,7 +92,7 @@
         -# simple case: default title, link to url with description as link text
         - if publisher_link.description.index('&&&').nil?
           %span{style: 'font-weight: bold'}= t(:made_available_by)
-          = link_to publisher_link.description, publisher_link.url
+          = link_to publisher_link.description, publisher_link.url, target: '_blank'
         - else
           -# custom case: use description as raw-HTML format string, replacing &&&(.*)&&& with the link
           - escaped_url = ERB::Util.html_escape(publisher_link.url)
