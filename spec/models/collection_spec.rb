@@ -941,4 +941,35 @@ describe Collection do
       expect(series_inner.parent_volume_or_isssue).to eq(volume_direct)
     end
   end
+
+  describe '#toc_html' do
+    let(:issue) { create(:collection, collection_type: :periodical_issue) }
+    let(:manifestation) { create(:manifestation) }
+
+    before do
+      create(:collection_item, collection: issue, item: manifestation, seqno: 1)
+    end
+
+    it 'generates plain text TOC without url_builder' do
+      html = issue.toc_html
+      expect(html).to include(manifestation.title)
+      expect(html).not_to include('<a href=')
+    end
+
+    it 'generates linked TOC when url_builder is provided' do
+      url_builder = ->(item) { "/manifestations/#{item.id}" }
+      html = issue.toc_html(url_builder: url_builder)
+      expect(html).to include("<a href=\"/manifestations/#{manifestation.id}\"")
+      expect(html).to include(manifestation.title)
+    end
+
+    it 'skips items with no content' do
+      create(:collection_item, collection: issue, item: nil, alt_title: nil, markdown: nil, seqno: 2)
+      url_builder = ->(item) { "/manifestations/#{item.id}" }
+      html = issue.toc_html(url_builder: url_builder)
+      doc = Nokogiri::HTML.fragment(html)
+      expect(doc.css('li').count).to eq(1)
+      expect(doc.css("a[href=\"/manifestations/#{manifestation.id}\"]").count).to eq(1)
+    end
+  end
 end
