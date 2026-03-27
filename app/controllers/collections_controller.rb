@@ -524,7 +524,7 @@ class CollectionsController < ApplicationController
         next unless (@collection.periodical? && ci.item.collection_type == 'periodical_issue') ||
                     (@collection.volume_series? && ci.item.collection_type == 'volume')
 
-        html = ci.item.toc_html
+        html = ci.item.toc_html(url_builder: method(:url_for))
         @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false,
                    ci.genre, counter[:value], ci, 0, [], nil] # nil for footnote (TOC items don't have footnotes)
         counter[:value] += 1
