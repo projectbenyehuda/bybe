@@ -49,18 +49,18 @@ RSpec.describe CollectionsHelper, type: :helper do
         expect(result).to include('href="/#section"')
       end
 
-      it 'removes target attribute from internal links' do
+      it 'preserves target attribute on internal links' do
         html = '<a href="https://example.com/path" target="_blank">Link</a>'
         result = helper.convert_internal_links_to_relative(base_url, html)
         expect(result).to include('href="/path"')
-        expect(result).not_to include('target=')
+        expect(result).to include('target="_blank"')
       end
 
-      it 'removes target attribute from root path links' do
+      it 'preserves target attribute on root path links' do
         html = '<a href="https://example.com" target="_blank">Home</a>'
         result = helper.convert_internal_links_to_relative(base_url, html)
         expect(result).to include('href="/"')
-        expect(result).not_to include('target=')
+        expect(result).to include('target="_blank"')
       end
     end
 
