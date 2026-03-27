@@ -967,9 +967,9 @@ describe Collection do
       create(:collection_item, collection: issue, item: nil, alt_title: nil, markdown: nil, seqno: 2)
       url_builder = ->(item) { "/manifestations/#{item.id}" }
       html = issue.toc_html(url_builder: url_builder)
-      # Only the real manifestation link should appear
-      expect(html).to include("<a href=\"/manifestations/#{manifestation.id}\"")
-      expect(html.scan('<li>').count).to eq(1)
+      doc = Nokogiri::HTML.fragment(html)
+      expect(doc.css('li').count).to eq(1)
+      expect(doc.css("a[href=\"/manifestations/#{manifestation.id}\"]").count).to eq(1)
     end
   end
 end

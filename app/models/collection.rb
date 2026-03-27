@@ -162,20 +162,24 @@ class Collection < ApplicationRecord
       next if ci.item.nil? && ci.markdown.blank? && ci.alt_title.blank?
       next if ci.paratext # Skip items of type paratext in periodical toc display
 
-      item_text = if ci.item.nil? && ci.alt_title.present?
-                    ci.alt_title
-                  else
-                    ci.title_and_authors
+      item_text = if ci.item.present?
+                    ERB::Util.html_escape(ci.title_and_authors)
+                  elsif ci.alt_title.present?
+                    ERB::Util.html_escape(ci.alt_title)
+                  elsif ci.markdown.present?
+                    ERB::Util.html_escape(ci.first_contentful_markdown.to_s)
                   end
+
+      next if item_text.blank?
 
       ret += if url_builder && ci.item.present?
                url = ERB::Util.html_escape(url_builder.call(ci.item))
-               "<li><a href=\"#{url}\">#{item_text}</a>"
+               "<li><a href=\"#{url}\">#{item_text}</a></li>"
              else
-               "<li>#{item_text}"
+               "<li>#{item_text}</li>"
              end
     end
-    ret += '</div>'
+    ret += '</ul></div>'
     ret
   end
 
