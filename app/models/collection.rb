@@ -155,20 +155,32 @@ class Collection < ApplicationRecord
   end
 
   # produce HTML for a table of contents of the collection - used for periodicals, and skips paratexts
-  def toc_html
+  # url_builder: optional callable (e.g. method(:url_for)) to generate links for each item
+  def toc_html(url_builder: nil)
     ret = '<div class="collection_toc"><ul>'
     flatten_items.each do |ci|
       next if ci.item.nil? && ci.markdown.blank? && ci.alt_title.blank?
       next if ci.paratext # Skip items of type paratext in periodical toc display
 
-      ret += if ci.item.nil? && ci.alt_title.present?
-               '<li>' + ci.alt_title
+      item_text = if ci.item.present?
+                    ERB::Util.html_escape(ci.title_and_authors)
+                  elsif ci.alt_title.present?
+                    ERB::Util.html_escape(ci.alt_title)
+                  elsif ci.markdown.present?
+                    ERB::Util.html_escape(ci.first_contentful_markdown.to_s)
+                  end
+
+      next if item_text.blank?
+
+      ret += if url_builder && ci.item.present?
+               url = ERB::Util.html_escape(url_builder.call(ci.item))
+               "<li><a href=\"#{url}\">#{item_text}</a></li>"
              else
-               '<li>' + ci.title_and_authors
+               "<li>#{item_text}</li>"
              end
     end
-    ret += '</div>'
-    return ret
+    ret += '</ul></div>'
+    ret
   end
 
   def flatten_items
