@@ -128,7 +128,12 @@
                 %img.collection-cover-image{ src: url_for(@collection.cover_image), alt: @collection.title, style: 'max-width: 100%; height: auto;' }
                 - if @collection.cover_text.present?
                   .collection-cover-text
-                    != MarkdownToHtml.call(@collection.cover_text)
+                    = sanitize(
+                      MarkdownToHtml.call(@collection.cover_text),
+                      attributes: {
+                        'a' => %w[href title target rel]
+                      }
+                    )
 
           - if @collection.periodical?
             .by-card-v02.periodical-issue-gallery
