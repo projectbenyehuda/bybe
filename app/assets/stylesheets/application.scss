@@ -208,6 +208,9 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
 #header-general{
   z-index: 2000;
 }
+// Modals and dialogs must appear above the header (z-index: 2000)
+.modal { z-index: 3000 !important; }
+.modal-backdrop { z-index: 2500 !important; }
 .by-dropdown-content-v02 p {
   padding: 6px 15px;
   margin: 0;
