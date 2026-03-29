@@ -9,7 +9,7 @@
           -#= t(:x_authors, x: @totals[:authors])
           = "(#{@totals[:authors]})"
         -# author carousels
-        = render partial: 'shared/authors', locals: {popular_authors: @pop_authors, random_authors: @random_authors}
+        = render partial: 'authors', locals: { popular_authors: @pop_authors, random_authors: @random_authors }
 
       -# most read and new works
       - cache "homepage_mostread", expires_in: 6.hours do
