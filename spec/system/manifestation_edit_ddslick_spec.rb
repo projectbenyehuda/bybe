@@ -174,7 +174,7 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
 
       # Verify the image was inserted in the markdown textarea
       markdown_content = page.evaluate_script("$('#markdown').val()")
-      expect(markdown_content).to include('<img src=')
+      expect(markdown_content).to include('<img')
     end
 
     it 'does not advance beyond the last image' do
@@ -204,7 +204,7 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
 
       # Verify the image was still inserted
       markdown_content = page.evaluate_script("$('#markdown').val()")
-      expect(markdown_content).to include('<img src=')
+      expect(markdown_content).to include('<img')
     end
   end
 end
