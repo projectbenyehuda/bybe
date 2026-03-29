@@ -2,18 +2,20 @@
   %button.toolbox-cell.darkoldpink.share
     %i.fa.fa-share-alt
     %span.tooltiptext= t(:share)
-- elsif local_assigns.has_key?(:element) && local_assigns[:element] == :header_button
-  .by-icon-v02.pointer.share-icon-button{style:'color: #660248', 'data-toggle' => 'modal', 'data-target' => '#shareDlg', title: "#{ t(:share_tt) }"}= 'U'
-- elsif local_assigns.has_key?(:element) && local_assigns[:element] == :mobile_button
+- elsif local_assigns.key?(:element) && local_assigns[:element] == :header_button
+  %a.by-icon-v02.pointer.share-icon-button{ data: { toggle: :modal, target: '#shareDlg' },
+                                            href: '#', title: t(:share_tt) }
+    U
+- elsif local_assigns.key?(:element) && local_assigns[:element] == :mobile_button
   %a.dropdown-item.linkcolor{style: 'color: #660248;', 'data-toggle' => 'modal', 'data-target' => '#shareDlg'}
-    .share{style:'cursor:pointer'}
+    .share{ style: 'cursor:pointer' }
       %span.by-icon-v02 U
       = t(:share)
-- elsif local_assigns.has_key?(:element) && local_assigns[:element] == :link
+- elsif local_assigns.key?(:element) && local_assigns[:element] == :link
   .pointer.share{style:'display:inline', 'data-toggle' => 'modal', 'data-target' => '#shareDlg'}
     %i.fa.fa-share-alt.fa08
     = t(:share)
-- elsif local_assigns.has_key?(:element) && local_assigns[:element] == :footer
+- elsif local_assigns.key?(:element) && local_assigns[:element] == :footer
   .pointer.by-footer-nav-item-v02.share.footer-share{style:'display:inline;color:white', 'data-toggle' => 'modal', 'data-target' => '#shareDlg'}
     %span.by-icon-v02.footer-nav-icon-v02 U
     %span.by-footer-nav-text= t(:share)

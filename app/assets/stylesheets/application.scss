@@ -1139,3 +1139,14 @@ p.by-genre-name-v02.headline-2-v02 {
 .sort-type .search-mobile-switch{
 	width: unset;
 }
+
+/* Optimizations to reduce CLS caused by icon loading */
+.by-icon-v02 {
+  height: 26px;
+  width: 26px;
+}
+
+.share-name {
+  font-family: Alef;
+}
+

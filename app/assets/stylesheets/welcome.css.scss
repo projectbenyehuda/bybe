@@ -13,3 +13,8 @@
   padding: 1.4rem 1.6rem 1.6rem 1.6rem;
   font-size: 1.2rem;
 }
+
+// Specifying min-height for welcome page blocks to reduce Cumulative Layout Shift (CLS)
+.by-card-content-v02#welcome-authors {
+  min-height: 720px;
+}
