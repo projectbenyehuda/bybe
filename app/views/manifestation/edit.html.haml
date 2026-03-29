@@ -75,6 +75,9 @@
 :javascript
   var selected_image_url = '';
   var selected_filename = '';
+  var selected_width = '';
+  var selected_height = '';
+  var imageMetadata = #{images_metadata_json(@m)};
 
   $.widget( "custom.iconselectmenu", $.ui.selectmenu, {
     _renderItem: function( ul, item ) {
@@ -107,6 +110,9 @@
           //callback function: do something with selectedData;
           selected_filename = selectedData.selectedData.text;
           selected_image_url = selectedData.selectedData.value;
+          var meta = imageMetadata[selected_image_url] || {};
+          selected_width = meta.width || '';
+          selected_height = meta.height || '';
         }
       });
     }
@@ -137,7 +143,10 @@
       var scrollLeft = $txt[0].scrollLeft;
       var scrollTop  = $txt[0].scrollTop;
       var textAreaTxt = $txt.val();
-      var txtToAdd = "\n!["+selected_filename+"]("+selected_image_url+")\n";
+      var attrs = 'src="' + selected_image_url + '"';
+      if (selected_width) attrs += ' width="' + selected_width + '"';
+      if (selected_height) attrs += ' height="' + selected_height + '"';
+      var txtToAdd = "\n<img " + attrs + "/>\n";
       $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
       $txt.focus();
       $txt.caretTo(caretPos+txtToAdd.length);
@@ -163,7 +172,7 @@
       var scrollTop  = $txt[0].scrollTop;
       var caretPos = $txt[0].selectionStart;
       var textAreaTxt = $txt.val();
-      var txtToAdd = "#{all_images_markdown(@m.images)}";
+      var txtToAdd = "#{all_images_html(@m.images)}";
       $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
       $txt.focus();
       $txt.caretTo(caretPos+txtToAdd.length);

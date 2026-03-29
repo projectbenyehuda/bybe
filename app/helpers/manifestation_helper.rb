@@ -15,8 +15,27 @@ module ManifestationHelper
     end.join
   end
 
-  def all_images_markdown(images)
-    escape_javascript(images.map { |img| "\n![#{img.blob.filename}](#{url_for(img)})\n" }.join)
+  def all_images_html(images)
+    escape_javascript(images.map do |img|
+      width = img.blob.metadata['width']
+      height = img.blob.metadata['height']
+      attrs = ["src=\"#{url_for(img)}\""]
+      attrs << "width=\"#{width}\"" if width.present?
+      attrs << "height=\"#{height}\"" if height.present?
+      "\n<img #{attrs.join(' ')}/>\n"
+    end.join)
+  end
+
+  def images_metadata_json(manifestation)
+    return '{}' unless manifestation.images.attached?
+
+    metadata = manifestation.images.each_with_object({}) do |img, h|
+      h[url_for(img)] = {
+        width: img.blob.metadata['width'],
+        height: img.blob.metadata['height']
+      }
+    end
+    metadata.to_json
   end
 
   def authorlist_decorator_by_sort_type(sort_type)
