@@ -10,6 +10,10 @@ Bybeconv::Application.routes.draw do
   get 'collections_migration/person'
   post 'collections_migration/migrate'
   post 'collections_migration/create_collection'
+
+  # Special route for user-friendly file links to be used in Lexicon entries and Manifestations markdown
+  get 'files/:record_type/:record_id/:filename', to: 'files#download', as: 'file_download'
+
   namespace :admin do
     resources :featured_contents do
       resources :features, controller: 'featured_content_features', only: %i(create)
