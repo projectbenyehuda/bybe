@@ -12,11 +12,11 @@ module ManifestationHelper
       thumbnail_url = request.base_url + url_for(img.variant(resize_to_fill: [150, nil]))
       width = img.blob.metadata['width']
       height = img.blob.metadata['height']
-      width_attr = width.present? ? " data-width=\"#{width}\"" : ''
-      height_attr = height.present? ? " data-height=\"#{height}\"" : ''
-      "<option value=\"#{url_for(img)}\" data-imagesrc=\"#{thumbnail_url}\" " \
-        "data-description=\"&nbsp;\"#{width_attr}#{height_attr}>#{img.blob.filename}</option>"
-    end.join
+      data_attrs = { imagesrc: thumbnail_url, description: "\u00a0" }
+      data_attrs[:width] = width if width.present?
+      data_attrs[:height] = height if height.present?
+      content_tag(:option, img.blob.filename.to_s, value: url_for(img), data: data_attrs)
+    end.join.html_safe
   end
 
   def authorlist_decorator_by_sort_type(sort_type)

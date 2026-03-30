@@ -75,14 +75,16 @@
 :javascript
   function image_tag_from_option(option) {
     var $opt = $(option);
-    var src = $opt.val();
-    var alt = $opt.text().trim();
+    var attrs = {
+      src: $opt.val(),
+      alt: $opt.text().trim()
+    };
     var width = $opt.data('width');
     var height = $opt.data('height');
-    var attrs = 'src="' + src + '" alt="' + alt + '"';
-    if (width) attrs += ' width="' + width + '"';
-    if (height) attrs += ' height="' + height + '"';
-    return '<img ' + attrs + '/>';
+    if (width) attrs.width = width;
+    if (height) attrs.height = height;
+    var $img = $('<img>', attrs);
+    return $img[0].outerHTML;
   }
 
   $.widget( "custom.iconselectmenu", $.ui.selectmenu, {
