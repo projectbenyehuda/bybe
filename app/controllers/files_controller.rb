@@ -31,6 +31,7 @@ class FilesController < ApplicationController
       return
     end
 
-    redirect_to rails_blob_url(blob, disposition: 'attachment')
+    disposition = blob.image? ? 'inline' : 'attachment'
+    redirect_to rails_blob_url(blob, disposition: disposition)
   end
 end
