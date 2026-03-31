@@ -12,7 +12,7 @@ class FilesController < ApplicationController
     filename = [params.fetch(:filename), params[:format]].compact.join('.')
 
     # Resolve short code to class; if unknown, return Bad Request with message expected by tests
-    record_class = DownloadLink::record_class(record_type)
+    record_class = DownloadLink.record_class(record_type)
 
     if record_class.nil?
       render plain: "Invalid record type: '#{record_type}'", status: :bad_request

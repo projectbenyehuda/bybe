@@ -43,7 +43,7 @@ module DownloadLink
   # Converts a record_type code from the URL back to the corresponding model class name
   # Returns nil if no matching record_type is found
   def self.record_class(record_type)
-    class_name = RECORD_TYPES.detect { | _class_name, data |  data[:record_type] == record_type }&.first
+    class_name = RECORD_TYPES.detect { |_class_name, data| data[:record_type] == record_type }&.first
     class_name&.constantize
   end
 end
