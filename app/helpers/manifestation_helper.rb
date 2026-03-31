@@ -1,21 +1,20 @@
 module ManifestationHelper
-  # NOTE: these URLs depends on secret_key_base -- once one is generated or change for the app, all URLs change.
-  # out current implementation *stores* the URLs with the digests *in the markdown* of the works, meaning they can
-  # all suddenly break if secret_key_base is changed.
-  def options_from_images(images)
-    # full resolution URL in value, thumbnail URL in imagesrc!
-    actual_images = # skip any non-image attachments that may have been accidentally uploaded
-      images.reject do |img|
-        !img.variable?
-      end
-    return actual_images.map do |img|
-      thumbnail_url = request.base_url + url_for(img.variant(resize_to_fill: [150, nil]))
-      width = img.blob.metadata['width']
-      height = img.blob.metadata['height']
-      data_attrs = { imagesrc: thumbnail_url, description: "\u00a0" }
-      data_attrs[:width] = width if width.present?
-      data_attrs[:height] = height if height.present?
-      content_tag(:option, img.blob.filename.to_s, value: url_for(img), data: data_attrs)
+  def options_from_images(record)
+    # skip any non-image attachments that may have been accidentally uploaded
+    record.images.select(&:variable?).map do |img|
+      blob = img.blob
+      filename = blob.filename.to_s
+      content_tag(
+        :option,
+        filename,
+        value: record.download_path(filename), # user-friendly URL
+        data: {
+          description: ' ', # when description is empty ddslick increases the height of the dropdown on each open
+          imagesrc: url_for(img.variant(resize_to_fill: [150, nil])), # thumbnail
+          width: blob.metadata['width'],
+          height: blob.metadata['height']
+        }
+      )
     end.join.html_safe
   end
 

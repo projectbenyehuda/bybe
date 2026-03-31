@@ -47,7 +47,7 @@
             %b.static-btn= t(:add_image)
           %button.btn-small-outline-v02#add_all_images
             %b.static-btn= t(:add_all_images)
-          = select_tag :images, raw(options_from_images(@m.images))
+          = select_tag :images, raw(options_from_images(@m))
           %br
           = t(:in_current_cursor)
         .markdown
@@ -73,20 +73,6 @@
 = render partial: 'shared/markdown_utils', locals: { container_id: 'manifestation_edit_markdown', element_id: 'markdown' }
 
 :javascript
-  function image_tag_from_option(option) {
-    var $opt = $(option);
-    var attrs = {
-      src: $opt.val(),
-      alt: $opt.text().trim()
-    };
-    var width = $opt.data('width');
-    var height = $opt.data('height');
-    if (width) attrs.width = width;
-    if (height) attrs.height = height;
-    var $img = $('<img>', attrs);
-    return $img[0].outerHTML;
-  }
-
   $.widget( "custom.iconselectmenu", $.ui.selectmenu, {
     _renderItem: function( ul, item ) {
       var li = $( "<li>" ),
@@ -138,20 +124,10 @@
 
     $('#add_image').click(function(e) {
       e.preventDefault();
-      var $txt = jQuery("#markdown");
-      var caretPos = $txt[0].selectionStart;
-      var scrollLeft = $txt[0].scrollLeft;
-      var scrollTop  = $txt[0].scrollTop;
-      var textAreaTxt = $txt.val();
-      var ddData = $('#images').data('ddslick');
-      var $selectedOption = ddData.original.find('option:selected');
-      var txtToAdd = "\n" + image_tag_from_option($selectedOption) + "\n";
-      $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
-      $txt.focus();
-      $txt.caretTo(caretPos+txtToAdd.length);
-      $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
+      insertImageFromDDSlick('#markdown', '#images');
 
       // Auto-select next image in the dropdown
+      const ddData = $('#images').data('ddslick');
       if (ddData && ddData.settings && ddData.settings.data) {
         var currentIndex = ddData.selectedIndex;
         var totalOptions = ddData.settings.data.length;
@@ -163,6 +139,7 @@
         }
       }
     });
+
     $('#add_all_images').click(function(e) {
       e.preventDefault();
       var $txt = jQuery("#markdown");
@@ -173,7 +150,7 @@
       var txtToAdd = '';
       var $original = $('#images').data('ddslick').original;
       $original.find('option').each(function() {
-        txtToAdd += "\n" + image_tag_from_option($(this)) + "\n";
+        txtToAdd += "\n" + imageTagFromOption($(this)) + "\n";
       });
       $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
       $txt.focus();
