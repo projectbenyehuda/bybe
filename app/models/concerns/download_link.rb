@@ -26,7 +26,8 @@ module DownloadLink
     raise "Unsupported class: #{class_name}" if type_data.nil?
 
     attachments_field = type_data[:attachments_field]
-    attachment = send(attachments_field).detect { |att| att.filename.to_s == filename }
+    attachments = send(attachments_field).attachments.includes(:blob)
+    attachment = attachments.detect { |att| att.filename.to_s == filename }
     attachment&.blob
   end
 
