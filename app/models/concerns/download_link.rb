@@ -32,7 +32,6 @@ module DownloadLink
   end
 
   # Returns string record_type code for this entry, used in download URLs
-  # Returns nil if no matching record_type is found
   def file_record_type
     class_name = self.class.name
     type_data = RECORD_TYPES[class_name]
