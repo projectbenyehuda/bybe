@@ -54,5 +54,25 @@ describe '/files' do
         end
       end
     end
+
+    context 'when record is a StaticPage' do
+      let(:record) { create(:static_page) }
+      let(:record_id) { record.id }
+      let(:record_type) { 'static' }
+      let(:filename) { 'file.txt' }
+
+      before do
+        record.images.attach(
+          io: StringIO.new('Test'),
+          filename: 'file.txt',
+          content_type: 'text/plain'
+        )
+      end
+
+      it 'redirects to the file URL' do
+        attachment = record.images.detect { |att| att.filename.to_s == 'file.txt' }
+        expect(call).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+      end
+    end
   end
 end
