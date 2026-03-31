@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # This controller is used to generate user-friendly permanent URLs for files stored in ActiveStorage
-# Initially it was created to manage files stored for Lexicon Entries, but we want to eventually use it for
-# Manifestations as well.
+# Initially it was created to manage files stored for Lexicon Entries, but we want to use it for
+# Manifestations and StaticPages as well.
 # One limitation of this is that we assume all attachments attached to a given model are unique by filename.
 class FilesController < ApplicationController
   # URL format: /files/:record_type/:record_id/:filename
@@ -11,27 +11,26 @@ class FilesController < ApplicationController
     record_id = params.fetch(:record_id)
     filename = [params.fetch(:filename), params[:format]].compact.join('.')
 
-    # We use short codes for entry types in the URL for brevity
-    if record_type == 'text'
-      record_type = Manifestation
-      attachments_field = :images
-    else
+    # Resolve short code to class; if unknown, return Bad Request with message expected by tests
+    record_class = DownloadLink::record_class(record_type)
+
+    if record_class.nil?
       render plain: "Invalid record type: '#{record_type}'", status: :bad_request
       return
     end
 
-    entry = record_type.find_by(id: record_id)
-    unless entry
+    record = record_class.find_by(id: record_id)
+    if record.nil?
       render plain: "Record not found: #{record_id}", status: :not_found
       return
     end
 
-    attachment = entry.send(attachments_field).detect { |att| att.filename.to_s == filename }
-    unless attachment
+    blob = record.blob_by_filename(filename)
+    unless blob
       render plain: "File not found: #{filename}", status: :not_found
       return
     end
 
-    redirect_to rails_blob_url(attachment.blob, disposition: 'attachment')
+    redirect_to rails_blob_url(blob, disposition: 'attachment')
   end
 end
