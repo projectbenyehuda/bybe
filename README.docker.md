@@ -43,8 +43,7 @@ vm.max_map_count=262144
 ### 3. Update configuration files
 
 To use docker-magaed services you need to update set of configuration files in `config` folder:
-- `constants.yml` and `storage.yml` - simply copy content of `constants.yml.sample` and `storage.yml.sample`
-- `s3.yml` - you can copy content of `s3.yml.sample` but to have images properly loaded you'll need real keys for our server. 
+- `constants.yml` - simply copy content of `constants.yml.sample`
 
 ### 4. Start services
 
