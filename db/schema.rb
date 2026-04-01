@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_24_014547) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_31_212345) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "work_id"
     t.integer "user_id"
@@ -619,6 +619,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_24_014547) do
     t.integer "html_file_id"
     t.integer "recommended_by"
     t.integer "manifestation_id"
+  end
+
+  create_table "legacy_urls", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "from_url", null: false
+    t.string "target_type"
+    t.integer "target_id"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["from_url"], name: "index_legacy_urls_on_from_url", unique: true
+    t.index ["target_type", "target_id"], name: "index_legacy_urls_on_target_type_and_target_id"
   end
 
   create_table "list_items", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|

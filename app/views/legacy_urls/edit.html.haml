@@ -1,0 +1,8 @@
+.backend
+  %h1
+    = @legacy_url.from_url
+    = ': '
+    = t(:edit)
+  = render partial: 'form'
+  %p
+  = link_to t(:back), legacy_urls_path

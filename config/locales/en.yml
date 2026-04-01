@@ -3019,3 +3019,17 @@ en:
   version_restore_failed: Failed to restore version
   work: Work
   author: Author
+  legacy_urls:
+    index:
+      title: Legacy URL Mappings
+    new:
+      title: New Legacy URL Mapping
+    created: Legacy URL mapping was successfully created.
+    updated: Legacy URL mapping was successfully updated.
+    destroyed: Legacy URL mapping was successfully deleted.
+    target: Target
+    no_target: No target set
+    from_url_hint: "The legacy URL path, e.g. /bialik/bia001.html"
+    target_type_hint: "The target model class, e.g. Manifestation, Authority, FeaturedContent"
+    target_id_hint: "The numeric ID of the target record"
+    description_hint: "Optional note describing this mapping"

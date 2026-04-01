@@ -1,0 +1,9 @@
+= simple_form_for @legacy_url do |f|
+  .form-inputs
+    = f.error_notification
+    = f.input :from_url, required: true, hint: t('legacy_urls.from_url_hint')
+    = f.input :target_type, hint: t('legacy_urls.target_type_hint')
+    = f.input :target_id, as: :integer, hint: t('legacy_urls.target_id_hint')
+    = f.input :description, hint: t('legacy_urls.description_hint')
+    .actions
+      = f.submit t(:save), class: 'btn btn-primary'

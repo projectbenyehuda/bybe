@@ -303,37 +303,31 @@ class HtmlFileController < ApplicationController
   end
 
   def render_by_legacy_url
-    if params[:format] && params[:format] == 'xml'
-      head :bad_request
+    return head :bad_request if params[:format] == 'xml'
+
+    from_url = request.path
+    from_url = '/' + from_url unless from_url.start_with?('/')
+
+    legacy = LegacyUrl.find_by(from_url: from_url)
+
+    if legacy.nil? || legacy.target.nil?
+      head :not_found
+      return
+    end
+
+    target_url = case legacy.target
+                 when Manifestation
+                   url_for(controller: :manifestation, action: :read, id: legacy.target.id)
+                 when Authority
+                   url_for(controller: :authors, action: :toc, id: legacy.target.id)
+                 else
+                   nil
+                 end
+
+    if target_url
+      redirect_to target_url
     else
-      the_url = params[:path] + '.html'
-      the_url = '/' + the_url if the_url[0] != '/' # prepend slash if necessary
-      h = HtmlFile.find_by_url(the_url)
-      unless h.nil?
-        # TODO: handle errors, at least path not found
-        if h.status != 'Published'
-          @html = File.open(h.path, 'r:UTF-8').read
-        elsif h.manifestations.empty?
-          head :bad_request
-        else
-          redirect_to url_for(controller: :manifestation, action: :read, id: h.manifestations[0].id)
-        end
-      else
-        path = params[:path]
-        path = '/' + path if path[0] != '/' # prepend slash if necessary
-        if path =~ %r{/([^/]*)/?(index)?}
-          d = HtmlDir.find_by_path(::Regexp.last_match(1))
-          unless d.nil?
-            unless d.person.nil?
-              redirect_to url_for(controller: :authors, action: :toc, id: d.person.id)
-            else
-              @html = "<h1>#{t(:error)}</h1>"
-            end
-          end
-        else
-          @html = "<h1>#{t(:error)}</h1>"
-        end
-      end
+      head :not_found
     end
   end
 
