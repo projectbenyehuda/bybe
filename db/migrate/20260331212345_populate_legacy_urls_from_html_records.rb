@@ -14,6 +14,7 @@ class PopulateLegacyUrlsFromHtmlRecords < ActiveRecord::Migration[8.0]
         lu.target = manifestation
         lu.description = "Imported from HtmlFile ##{hf.id}"
       end
+      hf.update_columns(status: 'Migrated')
     rescue ActiveRecord::RecordInvalid => e
       Rails.logger.warn "PopulateLegacyUrls: skipping HtmlFile #{hf.id} (#{hf.url}): #{e.message}"
     end
@@ -38,6 +39,8 @@ class PopulateLegacyUrlsFromHtmlRecords < ActiveRecord::Migration[8.0]
   end
 
   def down
+    migrated_urls = LegacyUrl.where("description LIKE 'Imported from HtmlFile%'").pluck(:from_url)
+    HtmlFile.where(url: migrated_urls, status: 'Migrated').update_all(status: 'Published')
     LegacyUrl.where("description LIKE 'Imported from Html%'").delete_all
   end
 end
