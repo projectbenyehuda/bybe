@@ -98,3 +98,10 @@ en:
         default_external_link: Default External Link
         default_link_description: Default Link Description
         tasks_project_id: Tasks System Project ID
+      legacy_url:
+        one: Legacy URL
+        other: Legacy URLs
+        from_url: Legacy URL
+        target_type: Target Type
+        target_id: Target ID
+        description: Description

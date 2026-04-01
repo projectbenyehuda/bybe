@@ -406,6 +406,7 @@ Bybeconv::Application.routes.draw do
   get 'legacy_recommendation/purge' => 'legacy_recommendation#purge', as: 'legacy_recommendation_purge'
   match 'legacy_recommendation/:id/resolve' => 'legacy_recommendation#resolve', as: 'legacy_recommendation_resolve',
         via: %i(get post)
+  resources :legacy_urls
   resources :legacy_recommendations
   resources :recommendations
 
