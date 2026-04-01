@@ -942,8 +942,7 @@ module BybeUtils
   def is_legacy_url(url)
     return false if url =~ %r{rails/active_storage}
 
-    url = '/' + url if url[0] != '/' # prepend slash if necessary
-    LegacyUrl.exists?(from_url: url)
+    LegacyUrl.exists_for_url?(url)
   end
 
   def redspan(s)

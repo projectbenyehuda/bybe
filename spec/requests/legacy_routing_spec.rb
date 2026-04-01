@@ -41,24 +41,26 @@ RSpec.describe 'Legacy URL routing', type: :request do
         get '/authdir'
         expect(response).to redirect_to(controller: :authors, action: :toc, id: authority.id)
       end
-    end
 
-    context 'when LegacyUrl for index.html path points to an Authority' do
-      let!(:legacy_url) do
-        LegacyUrl.create!(from_url: '/authdir2/index.html', target: authority, description: 'test')
+      it 'also redirects when the URL has a trailing slash' do
+        get '/authdir/'
+        expect(response).to redirect_to(controller: :authors, action: :toc, id: authority.id)
       end
 
-      it 'redirects to the author toc page' do
-        get '/authdir2/index.html'
+      it 'also redirects /dir/index.html to the same target' do
+        get '/authdir/index.html'
         expect(response).to redirect_to(controller: :authors, action: :toc, id: authority.id)
       end
     end
   end
 
   describe 'non-legacy URL' do
-    it 'does not route to legacy handler' do
-      get '/some/nonexistent/path'
+    it 'is not matched by the legacy wildcard route' do
+      expect { get '/some/nonexistent/path' }.not_to raise_error
+      # The response must not be a redirect — the legacy handler was not invoked
       expect(response).not_to have_http_status(:redirect)
+      # And it should not be a successful legacy dispatch either
+      expect(response).not_to have_http_status(:ok)
     end
   end
 end

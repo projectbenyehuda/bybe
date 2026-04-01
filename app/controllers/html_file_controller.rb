@@ -305,27 +305,16 @@ class HtmlFileController < ApplicationController
   def render_by_legacy_url
     return head :bad_request if params[:format] == 'xml'
 
-    from_url = request.path
-    from_url = '/' + from_url unless from_url.start_with?('/')
-
-    legacy = LegacyUrl.find_by(from_url: from_url)
+    legacy = LegacyUrl.find_for_url(request.path)
 
     if legacy.nil? || legacy.target.nil?
       head :not_found
       return
     end
 
-    target_url = case legacy.target
-                 when Manifestation
-                   url_for(controller: :manifestation, action: :read, id: legacy.target.id)
-                 when Authority
-                   url_for(controller: :authors, action: :toc, id: legacy.target.id)
-                 else
-                   nil
-                 end
-
-    if target_url
-      redirect_to target_url
+    url = legacy.target_url
+    if url
+      redirect_to url
     else
       head :not_found
     end
