@@ -406,10 +406,6 @@ class HtmlFile < ApplicationRecord
   def self.analyze_all # class method
     HtmlFile.where(status: 'Unknown').each(&:analyze)
   end
-  def author_dir
-    relpath = path.sub(Rails.configuration.constants['base_dir'], '')
-    relpath[1..-1].sub(/\/.*/, '')
-  end
   # this method is, for now, deliberately only callable manually, via the console
   def manual_fix_encoding
     if self.status == 'BadCP1255'
