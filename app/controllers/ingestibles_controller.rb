@@ -694,6 +694,7 @@ class IngestiblesController < ApplicationController
     toc_authorities_set == existing_authorities_set
   end
 
+  # rubocop:disable Metrics/MethodLength,  Metrics/BlockLength
   def upload_text(toc_line, index)
     # create Work, Expression, Manifestation entities
 
@@ -755,8 +756,8 @@ class IngestiblesController < ApplicationController
           responsibility_statement: responsibility_line,
           conversion_verified: true,
           medium: I18n.t(:etext),
-          publisher: Rails.configuration.constants['our_publisher'],
-          publication_place: Rails.configuration.constants['our_place_of_publication'],
+          publisher: SiteConstants::OUR_PUBLISHER,
+          publication_place: SiteConstants::OUR_PLACE_OF_PUBLICATION,
           publication_date: Time.zone.today,
           markdown: @ingestible.texts[index].content,
           status: pub_status,
@@ -840,6 +841,7 @@ class IngestiblesController < ApplicationController
     @failures << "#{toc_line[1]} - #{$ERROR_INFO}"
     return I18n.t(:frbrization_error)
   end
+  # rubocop:enable Metrics/MethodLength,  Metrics/BlockLength
 
   # Remove markdown escape backslashes from title text
   # Pandoc escapes special characters when converting DOCX to markdown,
