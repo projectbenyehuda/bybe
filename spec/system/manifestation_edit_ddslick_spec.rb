@@ -25,8 +25,12 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
         filename: 'test_image_2.jpg',
         content_type: 'image/jpeg'
       )
-      # Set known dimensions so data-width/data-height are rendered and can be asserted
-      m.images.each { |img| img.blob.update!(metadata: { 'width' => 800, 'height' => 600 }) }
+      # Set known dimensions so data-width/data-height are rendered and can be asserted.
+      # 'analyzed' must be in the metadata JSON (not a separate column) to prevent the helper
+      # from calling blob.analyze, which would overwrite our dimensions with the fixture's real 1x1 size.
+      m.images.each do |img|
+        img.blob.update!(metadata: img.blob.metadata.merge('analyzed' => true, 'width' => 800, 'height' => 600))
+      end
     end
   end
 
