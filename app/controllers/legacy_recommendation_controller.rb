@@ -5,8 +5,14 @@ class LegacyRecommendationController < ApplicationController
 
   def create
     unless params['what'].nil? or params['what'].empty? # don't bother capturing null submissions
-      @p = Recommendation.new(:from => params['email'], :about => params['about'] || request.env["HTTP_REFERER"] || 'none', :what => params['what'], :subscribe => (params['subscribe'] == "yes" ? true : false), :status => 'new')
-      h = HtmlFile.find_by_url(@p.about.sub(/https?:\/\/.*benyehuda.org\//, ''))
+      @p = Recommendation.new(
+        from: params['email'],
+        about: params['about'] || request.env['HTTP_REFERER'] || 'none',
+        what: params['what'],
+        subscribe: (params['subscribe'] == 'yes'),
+        status: 'new'
+      )
+      h = HtmlFile.find_by(url: @p.about.sub(%r{https?://.*benyehuda.org/}, ''))
       @p.html_file = h unless h.nil?
       @p.save!
     end
