@@ -45,7 +45,7 @@ class Newsfeed < ApplicationService
   # def latest_youtube_videos
   #   ret = []
   #   begin
-  #     channel = Yt::Channel.new id: Rails.configuration.constants['youtube_channel_id']
+  #     channel = Yt::Channel.new id: SiteConstants::YOUTUBE_CHANNEL_ID
   #     vids = channel.videos
   #     max = vids.count > 5 ? 5 : vids.count
   #     i = 0

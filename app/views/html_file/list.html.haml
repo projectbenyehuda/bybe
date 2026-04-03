@@ -32,7 +32,7 @@
       %th= t(:actions)
     - @texts.each do |txt|
       %tr
-        %td= txt.path.nil? ? txt.title : txt.path.sub(Rails.configuration.constants['base_dir'],'')
+        %td= txt.path.nil? ? txt.title : txt.path.sub(SiteConstants::BASE_DIR, '')
         %td= textify_htmlfile_status(txt.status)
         %td= txt.manifestations.empty? ? t(:no) : t(:yes)
         %td= textify_nikkud(txt.nikkud)
