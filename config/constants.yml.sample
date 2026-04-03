@@ -7,7 +7,6 @@ development: &default
   twitter_consumer_key: 'bla'
   twitter_consumer_secret: 'bla'
   google_api_key: 'your Google API key'
-  youtube_channel_id: "your YouTube channel ID for what's new feed"
   tasks_system_host: 'localhost'
   tasks_system_port: 3001
 
