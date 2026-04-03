@@ -7,7 +7,6 @@ development: &default
   twitter_consumer_key: 'bla'
   twitter_consumer_secret: 'bla'
   secret_key_base: 'bla'
-  google_api_key: 'your Google API key'
   primo_url: 'http://your.primo.server/PrimoWebServices/xservice/search/brief'
   primo_institution: 'some_code'
   idea_url: 'http://your.IDEA.url'
