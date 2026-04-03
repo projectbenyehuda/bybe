@@ -6,8 +6,6 @@ development: &default
   google_oauth_client_secret: 'bla'
   twitter_consumer_key: 'bla'
   twitter_consumer_secret: 'bla'
-  our_publisher: 'name to put in Manifestation entities'
-  our_place_of_publication: 'yourdomain.com'
   google_api_key: 'your Google API key'
   youtube_channel_id: "your YouTube channel ID for what's new feed"
   tasks_system_host: 'localhost'
