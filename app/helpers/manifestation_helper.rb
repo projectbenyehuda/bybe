@@ -10,13 +10,25 @@ module ManifestationHelper
         value: record.download_path(filename), # user-friendly URL
         data: {
           description: ' ', # when description is empty ddslick increases the height of the dropdown on each open
-          imagesrc: url_for(img.variant(resize_to_fill: [150, nil])), # thumbnail
-          width: blob.metadata['width'],
-          height: blob.metadata['height']
-        }
+          imagesrc: url_for(img.variant(resize_to_fill: [150, nil])) # thumbnail
+        }.merge(image_dimensions_data(blob))
       )
     end.join.html_safe
   end
+
+  def image_dimensions_data(blob)
+    blob.analyze unless blob.analyzed?
+
+    width = blob.metadata['width']
+    height = blob.metadata['height']
+
+    {}.tap do |dims|
+      dims[:width] = width if width.present?
+      dims[:height] = height if height.present?
+    end
+  end
+
+  private :image_dimensions_data
 
   def authorlist_decorator_by_sort_type(sort_type)
     case sort_type

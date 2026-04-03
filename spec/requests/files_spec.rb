@@ -33,7 +33,8 @@ describe '/files' do
 
       it 'redirects to the file URL' do
         attachment = record.images.detect { |att| att.filename.to_s == 'file.txt' }
-        expect(call).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+        call
+        expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
       end
 
       context 'when wrong entry_id is given' do
@@ -71,7 +72,8 @@ describe '/files' do
 
       it 'redirects to the file URL' do
         attachment = record.images.detect { |att| att.filename.to_s == 'file.txt' }
-        expect(call).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+        call
+        expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
       end
     end
   end
