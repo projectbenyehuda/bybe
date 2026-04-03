@@ -1150,3 +1150,7 @@ p.by-genre-name-v02.headline-2-v02 {
   font-family: Alef;
 }
 
+/* 120 was wrapping after by-icon-v02 CLS optimization */
+.donation-btn-v02 {
+  min-width: 122px;
+}
