@@ -1,5 +1,5 @@
 .htmlfile{style: 'margin: 5px'}
-  %h2= t(:converted_output, fname: @text.path.sub(Rails.configuration.constants['base_dir'],''))
+  %h2= t(:converted_output, fname: @text.path.sub(SiteConstants::BASE_DIR, ''))
   / - unless @text.paras_condensed
   /   %button#bPoetry= t(:treat_as_poetry)
   %button#bPoetry= t(:treat_as_poetry)

@@ -11,4 +11,7 @@ module SiteConstants
   TASK_SYSTEM_PORT = ENV.fetch('TASK_SYSTEM_PORT')
   TASK_SYSTEM_URL = "#{TASK_SYSTEM_PORT == '443' ? 'https' : 'http'}://#{TASK_SYSTEM_HOST}" \
                     "#{":#{TASK_SYSTEM_PORT}" unless TASK_SYSTEM_PORT == '80'}".freeze
+
+  # TODO: to be removed after we get rid of HtmlFiles
+  BASE_DIR = ENV.fetch('BASE_DIR')
 end

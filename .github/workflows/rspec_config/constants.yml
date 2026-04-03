@@ -1,7 +1,6 @@
 # Enter your per-environment constants below
 
 development: &default
-  base_dir:  "/home/me/my_dev_data"
   google_oauth_client_id: 'bla'
   google_oauth_client_secret: 'bla'
   twitter_consumer_key: 'bla'
@@ -9,7 +8,6 @@ development: &default
 
 production:
   <<: *default
-  base_dir:  "/var/www/my_actual_static_files_dir"
 
 test:
   <<: *default

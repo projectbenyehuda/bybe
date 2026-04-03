@@ -477,7 +477,7 @@ class HtmlFile < ApplicationRecord
   end
 
   def author_string
-    relpath = path.sub(Rails.configuration.constants['base_dir'], '')
+    relpath = path.sub(SiteConstants::BASE_DIR, '')
     authordir = relpath[1..-1].sub(/\/.*/, '')
     author_name_from_dir(authordir, {})
   end
@@ -824,7 +824,7 @@ class HtmlFile < ApplicationRecord
         puts "read as binary, fixing encoding and trying to reread" # DBG
         raw = IO.binread(f).force_encoding('windows-1255')
         raw = fix_encoding(raw)
-        tmpfile = Tempfile.new(f.sub(Rails.configuration.constants['base_dir'],'').gsub('/',''))
+        tmpfile = Tempfile.new(f.sub(SiteConstants::BASE_DIR, '').gsub('/', ''))
         begin
           tmpfile.write(raw)
           tmpfilename = tmpfile.path
@@ -859,7 +859,7 @@ class HtmlFile < ApplicationRecord
   end
 
   def html_dir
-    d = path.sub(Rails.configuration.constants['base_dir'], '')
+    d = path.sub(SiteConstants::BASE_DIR, '')
     d = d[1..d.rindex('/')-1]
     HtmlDir.find_by_path(d)
   end
