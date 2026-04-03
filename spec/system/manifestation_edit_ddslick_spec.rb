@@ -25,6 +25,8 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
         filename: 'test_image_2.jpg',
         content_type: 'image/jpeg'
       )
+      # Set known dimensions so data-width/data-height are rendered and can be asserted
+      m.images.each { |img| img.blob.update!(metadata: { 'width' => 800, 'height' => 600 }) }
     end
   end
 
@@ -174,7 +176,9 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
 
       # Verify the image was inserted in the markdown textarea
       markdown_content = page.evaluate_script("$('#markdown').val()")
-      expect(markdown_content).to include('![test_image_1.jpg]')
+      expect(markdown_content).to include('<img')
+      expect(markdown_content).to include('alt="test_image_1.jpg"')
+      expect(markdown_content).to include('style="width: 800px; height: 600px; object-fit: contain;"')
     end
 
     it 'does not advance beyond the last image' do
@@ -204,7 +208,9 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
 
       # Verify the image was still inserted
       markdown_content = page.evaluate_script("$('#markdown').val()")
-      expect(markdown_content).to include('![test_image_2.jpg]')
+      expect(markdown_content).to include('<img')
+      expect(markdown_content).to include('alt="test_image_2.jpg"')
+      expect(markdown_content).to include('style="width: 800px; height: 600px; object-fit: contain;"')
     end
   end
 end

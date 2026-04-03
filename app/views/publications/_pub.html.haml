@@ -21,9 +21,7 @@
         - if ['todo', 'obtained'].include?(pub.status) && pub.task_id.nil?
           %button.create_task{id: "scn_#{pub.id}"}= t(:create_scanning_task)
         - if pub.task_id.present?
-          - portpart = Rails.configuration.constants['tasks_system_port'] == 80 ? '' : ":#{Rails.configuration.constants['tasks_system_port'] }"
-          - taskurl = "#{Rails.configuration.constants['tasks_system_port'] == 443 ? 'https://' : 'http://'}#{  Rails.configuration.constants['tasks_system_host']}#{portpart}/tasks/#{pub.task_id}"
-          = link_to t(:to_the_task), taskurl
+          = link_to t(:to_the_task), pub.task_url
       %td= link_to t(:destroy), publication_path(id: pub.id), method: :delete, remote: true, :data => { :confirm => t(:are_you_sure) }
     - when :scans
       %td= link_to t(:mark_as_uploaded), publication_path(pub.id), 'class' => 'scanned', method: :put, remote: true, 'data-params' => 'publication[status]=uploaded'

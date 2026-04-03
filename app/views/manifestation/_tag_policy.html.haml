@@ -5,13 +5,13 @@
   %div
     .by-card-content-v02
       %p= t(:tag_policy_intro_html)
-      %a{href: Rails.configuration.constants['full_tagging_policy_url'], target: "_blank"}
-        %span{style: "font-weight: bold"}= t(:to_full_tagging_policy)
+      %a{ href: SiteConstants::TAGGING_POLICY_URL, target: '_blank' }
+        %span{ style: 'font-weight: bold;' }= t(:to_full_tagging_policy)
         %span.open-in-new-tab T
       %p/
       %p
         %label#approve_tags_guidelines
-          %input#accept_cbox{name: "CheckboxGroup1", type: "checkbox", value: "Approve"}>/
+          %input#accept_cbox{ name: 'CheckboxGroup1', type: 'checkbox', value: 'Approve' }>/
           = t(:i_understand_and_accept)
         %br/
       .bottom-button-area.left-buttons

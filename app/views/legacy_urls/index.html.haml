@@ -1,0 +1,31 @@
+.backend
+  %h2= t('legacy_urls.index.title')
+
+  = link_to new_legacy_url_path, class: 'btn btn-primary btn-sm mb-3' do
+    %b= t('legacy_urls.new.title')
+
+  %table.table
+    %thead
+      %tr
+        %th= LegacyUrl.human_attribute_name(:from_url)
+        %th= LegacyUrl.human_attribute_name(:target_type)
+        %th= t('legacy_urls.target')
+        %th= LegacyUrl.human_attribute_name(:description)
+        %th
+    %tbody
+      - @legacy_urls.each do |legacy_url|
+        %tr
+          %td= legacy_url.from_url
+          %td= legacy_url.target_type
+          %td
+            - if legacy_url.target.present?
+              - label = legacy_url.target.try(:title) || legacy_url.target.try(:name) || legacy_url.target_id.to_s
+              = link_to label, legacy_url.target_url || '#'
+            - else
+              %span.text-muted= t('legacy_urls.no_target')
+          %td= legacy_url.description
+          %td
+            = link_to t(:edit), edit_legacy_url_path(legacy_url)
+            &nbsp;
+            = link_to t(:destroy), legacy_url_path(legacy_url), method: :delete, data: { confirm: t(:are_you_sure) }
+  != paginate @legacy_urls

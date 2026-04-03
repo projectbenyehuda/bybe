@@ -112,8 +112,8 @@ class BibController < ApplicationController
     if pub.nil?
       render plain: 'moose'
     else
-      Net::HTTP.start(Rails.configuration.constants['tasks_system_host'],
-                      Rails.configuration.constants['tasks_system_port'], use_ssl: Rails.configuration.constants['tasks_system_port'] == 443) do |http|
+      Net::HTTP.start(SiteConstants::TASK_SYSTEM_HOST,
+                      SiteConstants::TASK_SYSTEM_PORT, use_ssl: SiteConstants::TASK_SYSTEM_PORT == 443) do |http|
         req = Net::HTTP::Post.new('/api/create_task')
         req.set_form_data(title: pub.title, author: pub.author_line,
                           edition_details: "#{pub.publisher_line}, #{pub.pub_year}", extra_info: "#{pub.language}\n#{pub.notes}",
@@ -124,8 +124,7 @@ class BibController < ApplicationController
           pub.status = 'scanned'
           pub.task_id = task_result['task']['id']
           pub.save!
-          portpart = Rails.configuration.constants['tasks_system_port'] == 80 ? '' : ":#{Rails.configuration.constants['tasks_system_port']}"
-          taskurl = "#{Rails.configuration.constants['tasks_system_port'] == 443 ? 'https://' : 'http://'}#{Rails.configuration.constants['tasks_system_host']}#{portpart}/tasks/#{task_result['task']['id']}"
+          taskurl = Publication.task_url(task_result['task']['id'])
           render inline: taskurl
         else
           render inline: 'alert("אירעה שגיאה ביצירת המשימה.");'

@@ -50,4 +50,12 @@ class Publication < ApplicationRecord
     lis = list_items.where(listkey: %w(pubs_maybe_done pubs_false_maybe_done))
     lis.destroy_all # remove temporary maintenance list_items once publication is uploaded
   end
+
+  def task_url
+    Publication.task_url(task_id)
+  end
+
+  def self.task_url(task_id)
+    task_id.blank? ? nil : "#{SiteConstants::TASK_SYSTEM_URL}/tasks/#{task_id}"
+  end
 end

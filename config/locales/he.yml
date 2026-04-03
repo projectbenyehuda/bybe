@@ -2252,3 +2252,17 @@ he:
   version_restore_failed: שגיאה בשחזור הגרסה
   work: יצירה
   author: יוצר
+  legacy_urls:
+    index:
+      title: מיפויי כתובות ישנות
+    new:
+      title: מיפוי כתובת ישנה חדש
+    created: מיפוי הכתובת הישנה נוצר בהצלחה.
+    updated: מיפוי הכתובת הישנה עודכן בהצלחה.
+    destroyed: מיפוי הכתובת הישנה נמחק בהצלחה.
+    target: יעד
+    no_target: אין יעד מוגדר
+    from_url_hint: "נתיב הכתובת הישנה, לדוגמה /bialik/bia001.html"
+    target_type_hint: "סוג מודל היעד, לדוגמה Manifestation, Authority, FeaturedContent"
+    target_id_hint: "מזהה המספרי של רשומת היעד"
+    description_hint: "הערה אופציונלית המתארת את המיפוי"

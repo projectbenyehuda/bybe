@@ -55,10 +55,6 @@ module ApplicationHelper
     ret += '</ul>'
   end
 
-  def absolute_url_from_urlpart(u)
-    return Rails.configuration.constants['base_dir'] + u
-  end
-
   def textify_external_link_type(linktype)
     return I18n.t(linktype)
   end
