@@ -6,12 +6,6 @@ development: &default
   google_oauth_client_secret: 'bla'
   twitter_consumer_key: 'bla'
   twitter_consumer_secret: 'bla'
-  secret_key_base: 'bla'
-  primo_url: 'http://your.primo.server/PrimoWebServices/xservice/search/brief'
-  primo_institution: 'some_code'
-  idea_url: 'http://your.IDEA.url'
-  tasks_system_host: 'localhost'
-  tasks_system_port: 3001
 
 production:
   <<: *default
