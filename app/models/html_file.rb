@@ -340,7 +340,7 @@ class HtmlFile < ApplicationRecord
   scope :not_stripped, -> { where('stripped_nikkud IS NULL or stripped_nikkud = 0') }
   # attr_accessible :title, :genre, :markdown, :publisher, :comments, :path, :url, :status, :orig_mtime, :orig_ctime, :person_id, :doc, :translator_id, :orig_lang, :year_published
 
-  has_attached_file :doc, storage: :s3, s3_credentials: 'config/s3.yml', s3_region: 'us-east-1'
+  has_attached_file :doc
 #  validates_attachment_content_type :doc, content_type: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
   validates_attachment_content_type :doc, content_type: ['application/zip', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
   validates :title, presence: true

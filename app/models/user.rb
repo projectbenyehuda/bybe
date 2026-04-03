@@ -1,7 +1,6 @@
 class User < ApplicationRecord
   # attr_accessible :email, :name, :oauth_expires_at, :oauth_token, :provider, :uid
-  has_attached_file :avatar, styles: { full: '720x1040', medium: '360x520', thumb: '180x260', tiny: '90x120' },
-                             storage: :s3, s3_credentials: 'config/s3.yml', s3_region: 'us-east-1'
+  has_attached_file :avatar, styles: { full: '720x1040', medium: '360x520', thumb: '180x260', tiny: '90x120' }
 
   validates_attachment_content_type :avatar, content_type: %r{\Aimage/.*\z}
   validates :name, :provider, presence: true

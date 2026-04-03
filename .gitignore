@@ -28,7 +28,6 @@
 /ignore/*
 # ignore site-specific config
 /config/constants.yml
-/config/storage.yml
 /config/newrelic.yml
 /config/s3.yml
 /config/behead.payload
