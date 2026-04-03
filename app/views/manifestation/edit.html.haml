@@ -47,7 +47,7 @@
             %b.static-btn= t(:add_image)
           %button.btn-small-outline-v02#add_all_images
             %b.static-btn= t(:add_all_images)
-          = select_tag :images, raw(options_from_images(@m.images))
+          = select_tag :images, raw(options_from_images(@m))
           %br
           = t(:in_current_cursor)
         .markdown
@@ -73,9 +73,6 @@
 = render partial: 'shared/markdown_utils', locals: { container_id: 'manifestation_edit_markdown', element_id: 'markdown' }
 
 :javascript
-  var selected_image_url = '';
-  var selected_filename = '';
-
   $.widget( "custom.iconselectmenu", $.ui.selectmenu, {
     _renderItem: function( ul, item ) {
       var li = $( "<li>" ),
@@ -102,12 +99,7 @@
     // Check if ddslick is already initialized to prevent double initialization on page reload
     if (!$('#images').data('ddslick')) {
       $('#images').ddslick({
-        width: 550,
-        onSelected: function(selectedData){
-          //callback function: do something with selectedData;
-          selected_filename = selectedData.selectedData.text;
-          selected_image_url = selectedData.selectedData.value;
-        }
+        width: 550
       });
     }
     $('#vised').click(function() {
@@ -132,19 +124,10 @@
 
     $('#add_image').click(function(e) {
       e.preventDefault();
-      var $txt = jQuery("#markdown");
-      var caretPos = $txt[0].selectionStart;
-      var scrollLeft = $txt[0].scrollLeft;
-      var scrollTop  = $txt[0].scrollTop;
-      var textAreaTxt = $txt.val();
-      var txtToAdd = "\n!["+selected_filename+"]("+selected_image_url+")\n";
-      $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
-      $txt.focus();
-      $txt.caretTo(caretPos+txtToAdd.length);
-      $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
+      insertImageFromDDSlick('#markdown', '#images');
 
       // Auto-select next image in the dropdown
-      var ddData = $('#images').data('ddslick');
+      const ddData = $('#images').data('ddslick');
       if (ddData && ddData.settings && ddData.settings.data) {
         var currentIndex = ddData.selectedIndex;
         var totalOptions = ddData.settings.data.length;
@@ -156,6 +139,7 @@
         }
       }
     });
+
     $('#add_all_images').click(function(e) {
       e.preventDefault();
       var $txt = jQuery("#markdown");
@@ -163,7 +147,11 @@
       var scrollTop  = $txt[0].scrollTop;
       var caretPos = $txt[0].selectionStart;
       var textAreaTxt = $txt.val();
-      var txtToAdd = "#{all_images_markdown(@m.images)}";
+      var txtToAdd = '';
+      var $original = $('#images').data('ddslick').original;
+      $original.find('option').each(function() {
+        txtToAdd += "\n" + imageTagFromOption($(this)) + "\n";
+      });
       $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
       $txt.focus();
       $txt.caretTo(caretPos+txtToAdd.length);
