@@ -1,0 +1,22 @@
+.backend
+  %h1= @legacy_url.from_url
+  %p
+    %b= LegacyUrl.human_attribute_name(:from_url) + ':'
+    = @legacy_url.from_url
+  %p
+    %b= LegacyUrl.human_attribute_name(:target_type) + ':'
+    = @legacy_url.target_type
+  %p
+    %b= t('legacy_urls.target') + ':'
+    - if @legacy_url.target.present?
+      - label = @legacy_url.target.try(:title) || @legacy_url.target.try(:name) || @legacy_url.target_id.to_s
+      = link_to label, @legacy_url.target_url || '#'
+    - else
+      %span.text-muted= t('legacy_urls.no_target')
+  - if @legacy_url.description.present?
+    %p
+      %b= LegacyUrl.human_attribute_name(:description) + ':'
+      = @legacy_url.description
+  %p
+  = link_to t(:edit), edit_legacy_url_path(@legacy_url), class: 'btn btn-primary'
+  = link_to t(:back), legacy_urls_path

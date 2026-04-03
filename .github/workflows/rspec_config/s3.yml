@@ -1,7 +1,0 @@
-# Amazon S3 settings, for the backup mechanism using the 'backup' and 'clockwork' gems
-#
-test:
-  access_key_id: sample
-  secret_access_key: sample
-  backup_bucket_name: sample
-  backup_path: sample

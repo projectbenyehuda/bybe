@@ -118,3 +118,10 @@ he:
         default_external_link: קישור ברירת מחדל
         default_link_description: תיאור הקישור
         tasks_project_id: מזהה מיזם במערכת משימות
+      legacy_url:
+        one: כתובת ישנה
+        other: כתובות ישנות
+        from_url: כתובת ישנה
+        target_type: סוג יעד
+        target_id: מזהה יעד
+        description: תיאור

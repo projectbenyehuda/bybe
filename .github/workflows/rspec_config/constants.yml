@@ -1,28 +1,13 @@
 # Enter your per-environment constants below
 
 development: &default
-  base_dir:  "/home/me/my_dev_data"
-  no_nikkud_insert: '/home/me/my_dev_data/no_nikkud_insert.txt'
   google_oauth_client_id: 'bla'
   google_oauth_client_secret: 'bla'
   twitter_consumer_key: 'bla'
   twitter_consumer_secret: 'bla'
-  project_honeypot_api_key: 'bla'
-  secret_key_base: 'bla'
-  our_publisher: 'name to put in Manifestation entities'
-  our_place_of_publication: 'yourdomain.com'
-  google_cse_cx: 'your CSE code'
-  google_api_key: 'your Google API key'
-  youtube_channel_id: "your YouTube channel ID for what's new feed"
-  primo_url: 'http://your.primo.server/PrimoWebServices/xservice/search/brief'
-  primo_institution: 'some_code'
-  idea_url: 'http://your.IDEA.url'
-  tasks_system_host: 'localhost'
-  tasks_system_port: 3001
 
 production:
   <<: *default
-  base_dir:  "/var/www/my_actual_static_files_dir"
 
 test:
   <<: *default

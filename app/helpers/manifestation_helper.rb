@@ -1,23 +1,34 @@
 module ManifestationHelper
-  # NOTE: these URLs depends on secret_key_base -- once one is generated or change for the app, all URLs change.
-  # out current implementation *stores* the URLs with the digests *in the markdown* of the works, meaning they can
-  # all suddenly break if secret_key_base is changed.
-  def options_from_images(images)
-    # full resolution URL in value, thumbnail URL in imagesrc!
-    actual_images = # skip any non-image attachments that may have been accidentally uploaded
-      images.reject do |img|
-        !img.variable?
-      end
-    return actual_images.map do |img|
-      thumbnail_url = request.base_url + url_for(img.variant(resize_to_fill: [150, nil]))
-      "<option value=\"#{url_for(img)}\" data-imagesrc=\"#{thumbnail_url}\" " \
-        "data-description=\"&nbsp;\">#{img.blob.filename}</option>"
-    end.join
+  def options_from_images(record)
+    # skip any non-image attachments that may have been accidentally uploaded
+    record.images.select(&:variable?).map do |img|
+      blob = img.blob
+      filename = blob.filename.to_s
+      content_tag(
+        :option,
+        filename,
+        value: record.download_path(filename), # user-friendly URL
+        data: {
+          description: ' ', # when description is empty ddslick increases the height of the dropdown on each open
+          imagesrc: url_for(img.variant(resize_to_fill: [150, nil])) # thumbnail
+        }.merge(image_dimensions_data(blob))
+      )
+    end.join.html_safe
   end
 
-  def all_images_markdown(images)
-    escape_javascript(images.map { |img| "\n![#{img.blob.filename}](#{url_for(img)})\n" }.join)
+  def image_dimensions_data(blob)
+    blob.analyze unless blob.analyzed?
+
+    width = blob.metadata['width']
+    height = blob.metadata['height']
+
+    {}.tap do |dims|
+      dims[:width] = width if width.present?
+      dims[:height] = height if height.present?
+    end
   end
+
+  private :image_dimensions_data
 
   def authorlist_decorator_by_sort_type(sort_type)
     case sort_type

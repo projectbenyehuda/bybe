@@ -719,17 +719,6 @@ module BybeUtils
     return newbuf
   end
 
-  # def is_blacklisted_ip(ip)
-  #  # check posting IP against HTTP:BL
-  #  unless Rails.configuration.constants['project_honeypot_api_key'].nil?
-  #    listing = ProjectHoneypot.lookup(Rails.configuration.constants['project_honeypot_api_key'], ip)
-  #    if listing.comment_spammer? or listing.suspicious? # silently ignore spam submissions
-  #      logger.info "SPAM IP identified by HTTP:BL lookup.  Ignoring form submission."
-  #      return true
-  #    end
-  #  end
-  #  return false
-  # end
   def client_ip
     # logger.debug "client_ip - request.env dump follows\n#{request.env.to_s}"
     request.env['HTTP_X_FORWARDED_FOR'] || request.remote_ip
@@ -942,13 +931,7 @@ module BybeUtils
   def is_legacy_url(url)
     return false if url =~ %r{rails/active_storage}
 
-    url = '/' + url if url[0] != '/' # prepend slash if necessary
-    h = HtmlFile.find_by_url(url)
-    # also treat /{author} or /{author}/ or /{author}/index.html as legacy urls
-    if h.nil? && (url =~ %r{/([^/]*)/?(index\.html)?})
-      h = HtmlDir.find_by_path(::Regexp.last_match(1))
-    end
-    return !h.nil?
+    LegacyUrl.exists_for_url?(url)
   end
 
   def redspan(s)

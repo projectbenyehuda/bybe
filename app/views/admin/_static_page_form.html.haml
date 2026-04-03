@@ -14,7 +14,7 @@
     - if sp.images.attached?
       %button.btn-small-outline-v02#add_image
         %b.static-btn= t(:add_image)+' '+t(:in_current_cursor)
-      = select_tag :sel_images, raw(options_from_images(sp.images))
+      = select_tag :sel_images, raw(options_from_images(sp))
       %br
   
   .backend-field
@@ -39,24 +39,13 @@
   .actions
     = f.submit t(:save)
 :javascript
-  $('#sel_images').ddslick({
-    width: 550,
-    onSelected: function(selectedData){
-      //callback function: do something with selectedData;
-      selected_filename = selectedData.selectedData.text;
-      selected_image_url = selectedData.selectedData.value;
-    }
-  });
-  $('#add_image').click(function(e) {
-    e.preventDefault();
-    var $txt = jQuery("#static_page_body");
-    var caretPos = $txt[0].selectionStart;
-    var scrollLeft = $txt[0].scrollLeft;
-    var scrollTop  = $txt[0].scrollTop;
-    var textAreaTxt = $txt.val();
-    var txtToAdd = "\n!["+selected_filename+"]("+selected_image_url+")\n";
-    $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
-    $txt.focus();
-    $txt.caretTo(caretPos+txtToAdd.length);
-    $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
+  $(function() {
+    $('#sel_images').ddslick({
+      width: 550
+    });
+
+    $('#add_image').click(function(e) {
+      e.preventDefault();
+      insertImageFromDDSlick('#static_page_body', '#sel_images')
+    });
   });

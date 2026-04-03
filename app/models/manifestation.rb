@@ -2,9 +2,11 @@
 
 include BybeUtils
 
+# Class representing Manifestation (actual text) of a Work's Expression
 class Manifestation < ApplicationRecord
   include TrackingEvents
   include SortedTitle
+  include DownloadLink
 
   paginates_per 100
   belongs_to :expression, inverse_of: :manifestations

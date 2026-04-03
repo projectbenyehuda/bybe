@@ -340,7 +340,7 @@ class HtmlFile < ApplicationRecord
   scope :not_stripped, -> { where('stripped_nikkud IS NULL or stripped_nikkud = 0') }
   # attr_accessible :title, :genre, :markdown, :publisher, :comments, :path, :url, :status, :orig_mtime, :orig_ctime, :person_id, :doc, :translator_id, :orig_lang, :year_published
 
-  has_attached_file :doc, storage: :s3, s3_credentials: 'config/s3.yml', s3_region: 'us-east-1'
+  has_attached_file :doc
 #  validates_attachment_content_type :doc, content_type: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
   validates_attachment_content_type :doc, content_type: ['application/zip', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
   validates :title, presence: true
@@ -405,10 +405,6 @@ class HtmlFile < ApplicationRecord
   end
   def self.analyze_all # class method
     HtmlFile.where(status: 'Unknown').each(&:analyze)
-  end
-  def author_dir
-    relpath = path.sub(Rails.configuration.constants['base_dir'], '')
-    relpath[1..-1].sub(/\/.*/, '')
   end
   # this method is, for now, deliberately only callable manually, via the console
   def manual_fix_encoding
@@ -481,7 +477,7 @@ class HtmlFile < ApplicationRecord
   end
 
   def author_string
-    relpath = path.sub(Rails.configuration.constants['base_dir'], '')
+    relpath = path.sub(SiteConstants::BASE_DIR, '')
     authordir = relpath[1..-1].sub(/\/.*/, '')
     author_name_from_dir(authordir, {})
   end
@@ -723,8 +719,8 @@ class HtmlFile < ApplicationRecord
               responsibility_statement: em_author.name,
               conversion_verified: true,
               medium: I18n.t(:etext),
-              publisher: Rails.configuration.constants['our_publisher'],
-              publication_place: Rails.configuration.constants['our_place_of_publication'],
+              publisher: SiteConstants::OUR_PUBLISHER,
+              publication_place: SiteConstants::OUR_PLACE_OF_PUBLICATION,
               publication_date: Time.zone.today,
               markdown: the_markdown,
               comment: comments,
@@ -828,7 +824,7 @@ class HtmlFile < ApplicationRecord
         puts "read as binary, fixing encoding and trying to reread" # DBG
         raw = IO.binread(f).force_encoding('windows-1255')
         raw = fix_encoding(raw)
-        tmpfile = Tempfile.new(f.sub(Rails.configuration.constants['base_dir'],'').gsub('/',''))
+        tmpfile = Tempfile.new(f.sub(SiteConstants::BASE_DIR, '').gsub('/', ''))
         begin
           tmpfile.write(raw)
           tmpfilename = tmpfile.path
@@ -863,7 +859,7 @@ class HtmlFile < ApplicationRecord
   end
 
   def html_dir
-    d = path.sub(Rails.configuration.constants['base_dir'], '')
+    d = path.sub(SiteConstants::BASE_DIR, '')
     d = d[1..d.rindex('/')-1]
     HtmlDir.find_by_path(d)
   end

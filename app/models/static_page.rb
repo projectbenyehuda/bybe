@@ -1,4 +1,9 @@
+# frozen_string_literal: true
+
+# This class represents a static page in the application, which can be created and edited by administrators.
 class StaticPage < ApplicationRecord
+  include DownloadLink
+
   # attr_accessible :tag, :title, :body, :status, :mode, :ltr
 
   has_paper_trail

@@ -1,1 +1,1 @@
-Yt.configuration.api_key = Rails.configuration.constants['google_api_key']
+Yt.configuration.api_key = ENV.fetch('GOOGLE_API_KEY')
