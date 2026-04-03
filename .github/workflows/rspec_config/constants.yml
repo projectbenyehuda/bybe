@@ -6,7 +6,6 @@ development: &default
   google_oauth_client_secret: 'bla'
   twitter_consumer_key: 'bla'
   twitter_consumer_secret: 'bla'
-  project_honeypot_api_key: 'bla'
   secret_key_base: 'bla'
   our_publisher: 'name to put in Manifestation entities'
   our_place_of_publication: 'yourdomain.com'
