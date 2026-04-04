@@ -7,24 +7,19 @@ class PublicationsController < ApplicationController
   # GET /publications
   # GET /publications.json
   def index
-    query = []
+    @publications = Publication.joins(:authority).includes([:authority, { holdings: :bib_source }])
+    
     if params['title'].present?
-      query << "publications.title like '%#{params['title']}%'"
+      @publications = @publications.where("publications.title like ?", "%#{params['title']}%")
     end
     if params['author'].present?
-      query << "authorities.name like '%#{params['author']}%'"
+      @publications = @publications.where("authorities.name like ?", "%#{params['author']}%")
     end
     if params['status'].present?
-      query << "publications.status = '#{Publication.statuses[params['status']]}'"
+      @publications = @publications.where("publications.status = ?", Publication.statuses[params['status']])
     end
-    unless query.empty?
-      @publications = Publication.joins(:authority).includes([:authority, { holdings: :bib_source }]).where(query.join(' and ')).order(
-        status: :asc, authority_id: :asc
-      ).page(params[:page])
-    else
-      @publications = Publication.includes([:authority, { holdings: :bib_source }]).order(status: :asc,
-                                                                                          authority_id: :asc).page(params[:page])
-    end
+
+    @publications = @publications.order(status: :asc, authority_id: :asc).page(params[:page])
   end
 
   # GET /publications/1

@@ -46,6 +46,9 @@ class InvolvedAuthoritiesController < ApplicationController
 
   def set_item
     item_type = params.fetch(:item_type)
+    unless %w(Work Expression Collection).include?(item_type)
+      raise ActionController::BadRequest, "Invalid item_type: #{item_type}"
+    end
     item_id = params.fetch(:item_id)
     @item = item_type.constantize.find(item_id)
   end

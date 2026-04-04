@@ -481,7 +481,7 @@ class CollectionsController < ApplicationController
     when 'mobi'
       epubname = make_epub_from_single_html(html, @collection, author_string)
       mobiname = epubname[epubname.rindex('/') + 1..-6] + '.mobi'
-      `kindlegen #{epubname} -c1 -o #{mobiname}`
+      system('kindlegen', epubname, '-c1', '-o', mobiname)
       mobiname = epubname[0..-6] + '.mobi'
       # Read file content before deleting
       mobi_content = File.binread(mobiname)

@@ -76,7 +76,7 @@ class MakeFreshDownloadable < ApplicationService
           # TODO: figure out how not to go through epub
           epubname = make_epub_from_single_html(html, download_entity, author_string)
           mobiname = epubname[epubname.rindex('/') + 1..-6] + '.mobi'
-          out = `kindlegen #{epubname} -c1 -o #{mobiname}`
+          system('kindlegen', epubname, '-c1', '-o', mobiname)
           mobiname = epubname[0..-6] + '.mobi'
           dl.stored_file.attach(io: File.open(mobiname), filename: filename)
           File.delete(epubname) # delete temporary generated EPUB
