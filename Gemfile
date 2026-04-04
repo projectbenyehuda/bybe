@@ -38,8 +38,9 @@ gem 'ruby_llm', '~> 1.9'
 
 gem 'simple_form', '~> 5.3.0'
 
-gem 'jbuilder', '~> 2.0' # for JSON APIs
 gem 'kt-paperclip'
+
+gem 'jbuilder', '~> 2.0' # for JSON APIs
 gem 'sqlite3' # for dictionary imports
 # gem 'rollbar' # error reporting. Airbrake replacement.
 
@@ -47,6 +48,7 @@ gem 'activerecord-session_store'
 gem 'addressable' # used in application_helper
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
+
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
 
@@ -153,8 +155,6 @@ group :development do
   gem 'stackprof'
   gem 'web-console'
 end
-
-gem 'dotenv', '~> 3.1.2'
 
 group :test, :development do
   gem 'brakeman'
