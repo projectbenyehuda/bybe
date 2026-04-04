@@ -37,8 +37,9 @@ gem 'ruby_llm', '~> 1.9'
 
 gem 'simple_form', '~> 5.3.0'
 
-gem 'jbuilder', '~> 2.0' # for JSON APIs
 gem 'kt-paperclip'
+
+gem 'jbuilder', '~> 2.0' # for JSON APIs
 gem 'sqlite3' # for dictionary imports
 # gem 'rollbar' # error reporting. Airbrake replacement.
 
@@ -46,6 +47,7 @@ gem 'activerecord-session_store'
 gem 'addressable' # used in application_helper
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
+
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
 
@@ -53,7 +55,7 @@ gem 'client_side_validations'
 
 gem 'execjs'
 gem 'htmlentities'
-gem 'kaminari', git: 'https://github.com/kaminari/kaminari'
+gem 'kaminari'
 gem 'mini_racer'
 gem 'nokogiri'
 
@@ -153,8 +155,6 @@ group :development do
   gem 'web-console'
 end
 
-gem 'dotenv', '~> 3.1.2'
-
 group :test, :development do
   gem 'brakeman'
   gem 'factory_bot_rails', '~> 6.2.0'
@@ -166,4 +166,4 @@ group :test, :development do
   gem 'selenium-webdriver' # For system tests with a browser driver like Chrome/Firefox
 end
 
-gem 'sidekiq'
+gem 'sidekiq', '~> 7.2'
