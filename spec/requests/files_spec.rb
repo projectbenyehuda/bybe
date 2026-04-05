@@ -49,7 +49,7 @@ describe '/files' do
         end
 
         it 'redirects to the file URL' do
-          attachment = record.images.detect { |att| att.filename.to_s == 'photo.album.cover.jpg' }
+          attachment = record.images.detect { |att| att.filename.to_s == filename }
           call
           expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'inline'))
         end
