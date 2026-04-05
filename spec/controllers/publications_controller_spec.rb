@@ -38,7 +38,7 @@ RSpec.describe PublicationsController, type: :controller do
       expect(assigns(:publications)).to include(publication)
       expect(assigns(:publications)).not_to include(other_publication)
     end
-    
+
     it 'is safe from SQL injection' do
       # This would have broken or returned everything/nothing in a vulnerable version
       get :index, params: { title: "') OR 1=1 --" }

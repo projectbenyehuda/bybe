@@ -8,14 +8,14 @@ class PublicationsController < ApplicationController
   # GET /publications.json
   def index
     @publications = Publication.joins(:authority).includes([:authority, { holdings: :bib_source }])
-    
+
     if params['title'].present?
       @publications = @publications.where("publications.title like ?", "%#{params['title']}%")
     end
     if params['author'].present?
       @publications = @publications.where("authorities.name like ?", "%#{params['author']}%")
     end
-    if params['status'].present?
+    if params['status'].present? && Publication.statuses.key?(params['status'])
       @publications = @publications.where("publications.status = ?", Publication.statuses[params['status']])
     end
 

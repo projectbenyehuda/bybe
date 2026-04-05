@@ -481,7 +481,9 @@ class CollectionsController < ApplicationController
     when 'mobi'
       epubname = make_epub_from_single_html(html, @collection, author_string)
       mobiname = epubname[epubname.rindex('/') + 1..-6] + '.mobi'
-      system('kindlegen', epubname, '-c1', '-o', mobiname)
+      unless system('kindlegen', epubname, '-c1', '-o', mobiname)
+        raise "Kindlegen conversion failed for EPUB #{epubname}"
+      end
       mobiname = epubname[0..-6] + '.mobi'
       # Read file content before deleting
       mobi_content = File.binread(mobiname)

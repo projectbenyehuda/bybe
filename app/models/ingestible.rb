@@ -272,13 +272,14 @@ class Ingestible < ApplicationRecord
       # limit memory use in production; otherwise severe server hangs possible
       rts_args = Rails.env.development? ? [] : ['+RTS', '-M2200m', '-RTS']
       pandoc_args = ['pandoc'] + rts_args + ['-f', 'docx', '-t', 'markdown_mmd', tmpfile_pp.path]
-      
+
       require 'open3'
-      markdown, status = Open3.capture3(*pandoc_args, binmode: true)
+      markdown, stderr, status = Open3.capture3(*pandoc_args, binmode: true)
       markdown = markdown.force_encoding('utf-8')
-      
-      raise 'Heap exhausted' if markdown =~ /pandoc: Heap exhausted/
-      raise "Pandoc conversion failed: #{status}" unless status.success?
+      stderr = stderr.force_encoding('utf-8')
+
+      raise 'Heap exhausted' if markdown =~ /pandoc: Heap exhausted/ || stderr =~ /pandoc: Heap exhausted/
+      raise "Pandoc conversion failed: #{stderr.presence || status}" unless status.success?
 
       self.markdown_updated_at = Time.zone.now
       return postprocess(markdown)

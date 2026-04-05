@@ -83,17 +83,19 @@ class HtmlFileController < ApplicationController
             p.text = '&&STANZA&&' if p.text.empty? # replaced with <br> tags in new_postprocess
           end
           docx.save(tmpfile_pp.path) # save modified version
-          
+
           rts_args = Rails.env.development? ? [] : ['+RTS', '-M1200m', '-RTS']
           pandoc_args = ['pandoc'] + rts_args + ['-f', 'docx', '-t', 'markdown_mmd', tmpfile_pp.path]
-          
+
           require 'open3'
-          markdown, status = Open3.capture3(*pandoc_args, binmode: true)
+          markdown, stderr, status = Open3.capture3(*pandoc_args, binmode: true)
           markdown = markdown.force_encoding('utf-8')
-          
-          unless markdown =~ /pandoc: Heap exhausted/ || !status.success?
+          stderr = stderr.force_encoding('utf-8')
+
+          unless markdown =~ /pandoc: Heap exhausted/ || stderr =~ /pandoc: Heap exhausted/ || !status.success?
             @text.markdown = new_postprocess(markdown)
           else
+            Rails.logger.error("Pandoc DOCX conversion failed for HtmlFile #{@text.id}: status=#{status.exitstatus}, stderr=#{stderr}, stdout=#{markdown}")
             @text.markdown = t(:docx_too_large)
             flash[:error] = t(:conversion_error)
             redirect_to controller: :admin, action: :index
