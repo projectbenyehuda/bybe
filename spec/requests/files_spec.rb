@@ -37,6 +37,24 @@ describe '/files' do
         expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
       end
 
+      context 'when filename contains periods before the extension' do
+        let(:filename) { 'photo.album.cover.jpg' }
+
+        before do
+          record.images.attach(
+            io: StringIO.new('Test image'),
+            filename: 'photo.album.cover.jpg',
+            content_type: 'image/jpeg'
+          )
+        end
+
+        it 'redirects to the file URL' do
+          attachment = record.images.detect { |att| att.filename.to_s == filename }
+          call
+          expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'inline'))
+        end
+      end
+
       context 'when wrong entry_id is given' do
         let(:record_id) { record.id + 1 }
 

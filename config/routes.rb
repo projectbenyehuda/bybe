@@ -12,7 +12,11 @@ Bybeconv::Application.routes.draw do
   post 'collections_migration/create_collection'
 
   # Special route for user-friendly file links to be used in Manifestation and StaticPage markdown
-  get 'files/:record_type/:record_id/:filename', to: 'files#download', as: 'file_download'
+  # The filename constraint allows dots so filenames like "photo.album.jpg" are routed correctly.
+  get 'files/:record_type/:record_id/:filename',
+      to: 'files#download',
+      as: 'file_download',
+      constraints: { filename: %r{[^/]+} }
 
   namespace :admin do
     resources :featured_contents do
