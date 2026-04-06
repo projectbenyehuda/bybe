@@ -4,9 +4,6 @@
   %div{style:'width: 200px'}
     = link_to '/auth/google_oauth2', method: :post do
       .btn-small-outline-v02.static-btn= 'Google'
-    -#%p
-    -#= link_to '/auth/twitter', method: :post do
-    -#  .btn-small-outline-v02.static-btn= 'Twitter'
     - if Rails.env.development?
       = link_to '/auth/developer', method: :post do
         .btn-small-outline-v02.static-btn= 'Developer'

@@ -8,6 +8,11 @@ NOTE for Copilot: Copilot should ignore this file and follow instructions in .gi
 We assume that application itself will be run in host system natively, docker is used to only host services used by app:
 database, elasticsearch, cache, etc.
 
+We use environment variables to configure application, git repository already contains `.env.*` files with a settings
+assuming you running services in docker. Some sensitive values are not included in these files, but you should be
+able to run application without them. If you need to use some of these values, you can create `.env.local` file and 
+add them there (values from `.local` files take precedence).
+
 ## Preparing development environment with docker
 
 ### 1. Installing docker
@@ -40,12 +45,7 @@ and add there a line:
 vm.max_map_count=262144
 ```
 
-### 3. Update configuration files
-
-To use docker-magaed services you need to update set of configuration files in `config` folder:
-- `constants.yml` - simply copy content of `constants.yml.sample`
-
-### 4. Start services
+### 3. Start services
 
 > all `docker compose` calls should be done from the folder containing `docker-compose.yml` file.
 
@@ -55,7 +55,7 @@ Simply run
 ```
 This command will start all services defined in `docker-compose.yml`
 
-### 5. Prepare databases
+### 4. Prepare databases
 At first you need to create databases:
 ```shell
  $ rails db:create
@@ -75,12 +75,12 @@ And migrate test database as well:
  $ rails db:migrate RAILS_ENV=test
 ```
 
-### 6. Rebuild Elasticsearch indices
+### 5. Rebuild Elasticsearch indices
 ```shell
  $ rake chewy:reset
 ```
 
-### 7. Running tests
+### 6. Running tests
 
 Now you can try to run specs to check your setup 
 ```shell

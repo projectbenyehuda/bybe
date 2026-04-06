@@ -1329,7 +1329,6 @@ he:
   make_corrections_below: "תיקונים יש לבצע בתיבת הטקסט להלן:"
   recommendations_by_status: המלצות לפי סטטוס %{status}
   sign_in: התחברות
-  sign_in_google_twitter: התחברו באמצעות זהות גוגל או טוויטר
   sign_out: התנתקות
   welcome_heading: 'שלום '
   please_log_in: אין מה לראות לפני התחברות למערכת.
