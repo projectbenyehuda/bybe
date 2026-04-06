@@ -29,11 +29,12 @@ else
   environment 'development'
 end
 
-threads_count = Integer(ENV['RAILS_MAX_THREADS'] || 3)
-threads 1, threads_count
+# Allow puma to be restarted by `bin/rails restart` command.
+plugin :tmp_restart
 
-preload_app!
+# Run the Solid Queue supervisor inside of Puma for single-server deployments.
+plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
 
-# port        ENV['PORT']     || 3000
-pidfile "#{shared_dir}/tmp/pids/puma.pid"
-
+# Specify the PID file. Defaults to tmp/pids/server.pid in development.
+# In other environments, only set the PID file if requested.
+pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
