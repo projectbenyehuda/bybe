@@ -4,7 +4,10 @@ require 'rails_helper'
 
 describe '/files' do
   describe 'GET /files/:entry_type/:entry_id/:filename' do
-    subject(:call) { get "/files/#{record_type}/#{record_id}/#{filename}" }
+    subject!(:call) { get "/files/#{record_type}/#{record_id}/#{filename}" }
+
+    # requested attachment found by name
+    let(:attachment) { record.images.detect { |att| att.filename.to_s == filename } }
 
     context 'when wrong entry_type is given' do
       let(:record_type) { 'foo' }
@@ -18,23 +21,63 @@ describe '/files' do
     end
 
     context 'when record is a Manifestation' do
-      let(:record) { create(:manifestation) }
+      let(:record) do
+        create(:manifestation).tap do |record|
+          record.images.attach(
+            io: StringIO.new('Test'),
+            filename: 'file.txt',
+            content_type: 'text/plain'
+          )
+          record.images.attach(
+            io: StringIO.new('Double extension test'),
+            filename: 'double.ext.txt',
+            content_type: 'text/plain'
+          )
+          record.images.attach(
+            io: StringIO.new('No extension test'),
+            filename: 'no_extension',
+            content_type: 'text/plain'
+          )
+          record.images.attach(
+            io: Rails.root.join('spec/fixtures/files/test_image.jpg').open,
+            filename: 'image.jpg',
+            content_type: 'image/jpeg'
+          )
+        end
+      end
       let(:record_id) { record.id }
       let(:record_type) { 'text' }
-      let(:filename) { 'file.txt' }
 
-      before do
-        record.images.attach(
-          io: StringIO.new('Test'),
-          filename: 'file.txt',
-          content_type: 'text/plain'
-        )
+      context 'when non-image file is requested' do
+        let(:filename) { 'file.txt' }
+
+        it 'redirects to the file URL with attachment disposition' do
+          expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+        end
       end
 
-      it 'redirects to the file URL' do
-        attachment = record.images.detect { |att| att.filename.to_s == 'file.txt' }
-        call
-        expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+      context 'when image file is requested' do
+        let(:filename) { 'image.jpg' }
+
+        it 'redirects to the file URL with inline disposition' do
+          expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'inline'))
+        end
+      end
+
+      context 'when filename with double extension is requested' do
+        let(:filename) { 'double.ext.txt' }
+
+        it 'redirects to the file URL' do
+          expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+        end
+      end
+
+      context 'when filename without extension is requested' do
+        let(:filename) { 'no_extension' }
+
+        it 'redirects to the file URL' do
+          expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+        end
       end
 
       context 'when filename contains periods before the extension' do
@@ -50,13 +93,14 @@ describe '/files' do
 
         it 'redirects to the file URL' do
           attachment = record.images.detect { |att| att.filename.to_s == filename }
-          call
+          get "/files/#{record_type}/#{record_id}/#{filename}"
           expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'inline'))
         end
       end
 
       context 'when wrong entry_id is given' do
         let(:record_id) { record.id + 1 }
+        let(:filename) { 'file.txt' }
 
         it 'fails with Not Found status' do
           expect(call).to eq(404)
@@ -75,22 +119,20 @@ describe '/files' do
     end
 
     context 'when record is a StaticPage' do
-      let(:record) { create(:static_page) }
+      let(:record) do
+        create(:static_page).tap do |record|
+          record.images.attach(
+            io: StringIO.new('Test'),
+            filename: 'file.txt',
+            content_type: 'text/plain'
+          )
+        end
+      end
       let(:record_id) { record.id }
       let(:record_type) { 'static' }
       let(:filename) { 'file.txt' }
 
-      before do
-        record.images.attach(
-          io: StringIO.new('Test'),
-          filename: 'file.txt',
-          content_type: 'text/plain'
-        )
-      end
-
       it 'redirects to the file URL' do
-        attachment = record.images.detect { |att| att.filename.to_s == 'file.txt' }
-        call
         expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
       end
     end
