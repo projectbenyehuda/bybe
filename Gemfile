@@ -14,7 +14,6 @@ gem 'sprockets', '~> 4.2.1'
 gem 'damerau-levenshtein' # string distance
 gem 'mysql2'
 gem 'omniauth-google-oauth2'
-gem 'omniauth-twitter'
 gem 'rails-ujs'
 gem 'rufus-scheduler' # scheduler
 
