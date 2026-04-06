@@ -7,8 +7,6 @@ class SessionController < ApplicationController
     case params[:commit]
     when 'Google'
       redirect_to '/auth/google_oauth2'
-    #when 'Twitter'
-    #  redirect_to '/auth/twitter'
     else
       redirect_to '/', flash: { error: 'No such login method' }
     end
