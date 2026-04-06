@@ -9,7 +9,7 @@ class FilesController < ApplicationController
   def download
     record_type = params.fetch(:record_type)
     record_id = params.fetch(:record_id)
-    filename = [params.fetch(:filename), params[:format]].compact.join('.')
+    filename = params.fetch(:filename)
 
     # Resolve short code to class; if unknown, return Bad Request with message expected by tests
     record_class = DownloadLink.record_class(record_type)

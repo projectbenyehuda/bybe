@@ -52,7 +52,8 @@ RSpec.describe FixDocxInheritedFormatting do
           tmpfile.flush
 
           # Convert to markdown and check for bold markers
-          markdown = `pandoc -f docx -t markdown_mmd #{tmpfile.path} 2>&1`
+          require 'open3'
+          markdown, _stderr, _status = Open3.capture3('pandoc', '-f', 'docx', '-t', 'markdown_mmd', tmpfile.path)
 
           # Check that יומן is now bolded in the output
           expect(markdown).to include('**יומן**')
