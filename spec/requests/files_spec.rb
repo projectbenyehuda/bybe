@@ -93,7 +93,7 @@ describe '/files' do
 
         it 'redirects to the file URL' do
           attachment = record.images.detect { |att| att.filename.to_s == filename }
-          call
+          get "/files/#{record_type}/#{record_id}/#{filename}"
           expect(response).to redirect_to(rails_blob_url(attachment.blob, disposition: 'inline'))
         end
       end
