@@ -6,7 +6,7 @@ class WhatsNewSince < ApplicationService
     authors = {}
     Manifestation.all_published.new_since(timestamp)
                  .joins(expression: :work).where(works: { primary: true })
-                 .includes(:expression).find_each do |m|
+                 .includes(expression: :work).find_each do |m|
       e = m.expression
       next if e.nil? # shouldn't happen
 
