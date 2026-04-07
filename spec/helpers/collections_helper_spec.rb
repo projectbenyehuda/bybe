@@ -70,6 +70,13 @@ RSpec.describe CollectionsHelper, type: :helper do
         expect(result).not_to include('target=')
       end
 
+      it 'removes target attribute for same-page anchor links at the root path' do
+        html = '<a href="https://example.com#section" target="_blank">Section</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html, '/')
+        expect(result).to include('href="/#section"')
+        expect(result).not_to include('target=')
+      end
+
       it 'preserves target attribute for links to other pages with fragments' do
         html = '<a href="https://example.com/other-page#section" target="_blank">Section</a>'
         result = helper.convert_internal_links_to_relative(base_url, html, '/current-page')

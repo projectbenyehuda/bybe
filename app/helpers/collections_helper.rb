@@ -21,8 +21,9 @@ module CollectionsHelper
 
   # Converts absolute URLs pointing to the provided base_url into relative paths.
   # Preserves query strings and fragments.
-  # When current_path is provided, same-page anchor links (same path, only fragment differs)
-  # have their target attribute removed so they don't open in a new tab.
+  # When current_path is provided, anchor links whose path matches current_path and that
+  # include a fragment have their target="_blank" removed so they don't open in a new tab.
+  # Query strings are preserved in the href but are not considered for this comparison.
   #
   # @param base_url [String] The base URL to match against (e.g., "https://example.com")
   # @param html_string [String] The HTML content to process
@@ -70,8 +71,11 @@ module CollectionsHelper
 
           link['href'] = relative_path
 
-          # Remove target attribute for same-page anchor links (path matches current page)
-          if current_path.present? && href_uri.path == current_path && href_uri.fragment.present?
+          # Remove target="_blank" for same-page anchor links (path matches current page),
+          # but only when target is _blank — preserve named frame targets.
+          normalized_href_path = href_uri.path.presence || '/'
+          if current_path.present? && normalized_href_path == current_path &&
+             href_uri.fragment.present? && link['target'].to_s.casecmp('_blank').zero?
             link.remove_attribute('target')
           end
         end
