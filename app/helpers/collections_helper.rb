@@ -21,11 +21,15 @@ module CollectionsHelper
 
   # Converts absolute URLs pointing to the provided base_url into relative paths.
   # Preserves query strings and fragments.
+  # When current_path is provided, anchor links whose path matches current_path and that
+  # include a fragment have their target="_blank" removed so they don't open in a new tab.
+  # Query strings are preserved in the href but are not considered for this comparison.
   #
   # @param base_url [String] The base URL to match against (e.g., "https://example.com")
   # @param html_string [String] The HTML content to process
+  # @param current_path [String, nil] The current page path (e.g., "/collections/123")
   # @return [String] The modified HTML with relative URLs
-  def convert_internal_links_to_relative(base_url, html_string)
+  def convert_internal_links_to_relative(base_url, html_string, current_path = nil)
     return html_string if html_string.blank? || base_url.blank?
 
     # Normalize the base URL (remove trailing slash) and parse
@@ -66,6 +70,14 @@ module CollectionsHelper
           relative_path += "##{href_uri.fragment}" if href_uri.fragment.present?
 
           link['href'] = relative_path
+
+          # Remove target="_blank" for same-page anchor links (path matches current page),
+          # but only when target is _blank — preserve named frame targets.
+          normalized_href_path = href_uri.path.presence || '/'
+          if current_path.present? && normalized_href_path == current_path &&
+             href_uri.fragment.present? && link['target'].to_s.casecmp('_blank').zero?
+            link.remove_attribute('target')
+          end
         end
       rescue URI::InvalidURIError
         # Skip malformed URIs

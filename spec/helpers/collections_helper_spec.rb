@@ -62,6 +62,34 @@ RSpec.describe CollectionsHelper, type: :helper do
         expect(result).to include('href="/"')
         expect(result).to include('target="_blank"')
       end
+
+      it 'removes target attribute for same-page anchor links when current_path matches' do
+        html = '<a href="https://example.com/current-page#section" target="_blank">Section</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html, '/current-page')
+        expect(result).to include('href="/current-page#section"')
+        expect(result).not_to include('target=')
+      end
+
+      it 'removes target attribute for same-page anchor links at the root path' do
+        html = '<a href="https://example.com#section" target="_blank">Section</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html, '/')
+        expect(result).to include('href="/#section"')
+        expect(result).not_to include('target=')
+      end
+
+      it 'preserves target attribute for links to other pages with fragments' do
+        html = '<a href="https://example.com/other-page#section" target="_blank">Section</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html, '/current-page')
+        expect(result).to include('href="/other-page#section"')
+        expect(result).to include('target="_blank"')
+      end
+
+      it 'preserves target attribute for same-path links without fragments' do
+        html = '<a href="https://example.com/current-page" target="_blank">Page</a>'
+        result = helper.convert_internal_links_to_relative(base_url, html, '/current-page')
+        expect(result).to include('href="/current-page"')
+        expect(result).to include('target="_blank"')
+      end
     end
 
     context 'when html contains external links' do
