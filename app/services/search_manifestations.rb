@@ -86,9 +86,7 @@ class SearchManifestations < ApplicationService
       filter << { match_phrase: { title: title } } # TODO: also search in alternate_titles
     end
 
-    if filter.empty? # only include primary works in all-works query
-      filter << { term: { primary: true } }
-    end
+    filter << { term: { primary: true } } # always exclude non-primary works from browse
 
     result = ManifestationsIndex.filter(filter)
 

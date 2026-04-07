@@ -4,7 +4,9 @@
 class WhatsNewSince < ApplicationService
   def call(timestamp)
     authors = {}
-    Manifestation.all_published.new_since(timestamp).includes(:expression).find_each do |m|
+    Manifestation.all_published.new_since(timestamp)
+                 .joins(expression: :work).where(works: { primary: true })
+                 .includes(:expression).find_each do |m|
       e = m.expression
       next if e.nil? # shouldn't happen
 
