@@ -1021,6 +1021,7 @@ class ManifestationController < ApplicationController
     end
   end
 
+  # rubocop:disable Metrics/MethodLength
   def build_es_filter_from_filters
     ret = {}
     @filters = []
@@ -1154,6 +1155,7 @@ class ManifestationController < ApplicationController
 
     return ret
   end
+  # rubocop:enable Metrics/MethodLength
 
   def prepare_totals(collection)
     standard_aggregations = {

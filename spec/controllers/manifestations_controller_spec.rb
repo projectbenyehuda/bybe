@@ -165,6 +165,7 @@ describe ManifestationController do
           context 'when search_type is empty' do
             let(:search_type) { nil }
             let(:expected_filter) { author_filter }
+
             it { is_expected.to be_successful }
           end
         end
