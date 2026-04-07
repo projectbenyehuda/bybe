@@ -1128,7 +1128,7 @@ class ManifestationController < ApplicationController
     end
 
     # in browse UI we can search by author name or by title
-    @search_type = params['search_type'] || 'authorname'
+    @search_type = params['search_type'].presence || 'authorname'
     if @search_type == 'authorname'
       @authorstr = params['authorstr']
       @search_input = ''
