@@ -259,8 +259,12 @@ class Authority < ApplicationRecord
   end
 
   def works_since(since, maxitems)
-    o = original_works.where('manifestations.created_at > ?', since).limit(maxitems)
-    t = translations.where('manifestations.created_at > ?', since).limit(maxitems)
+    o = original_works.joins(expression: :work)
+                      .where(works: { primary: true })
+                      .where('manifestations.created_at > ?', since).limit(maxitems)
+    t = translations.joins(expression: :work)
+                    .where(works: { primary: true })
+                    .where('manifestations.created_at > ?', since).limit(maxitems)
     joint = (o + t).uniq # NOTE: both of these are manifestations, not works!
     return joint[0..maxitems - 1] if joint.count > maxitems
 
@@ -345,7 +349,10 @@ class Authority < ApplicationRecord
   end
 
   def latest_stuff
-    published_manifestations(:author, :translator).order(created_at: :desc).limit(20)
+    published_manifestations(:author, :translator)
+      .joins('INNER JOIN works ON works.id = expressions.work_id')
+      .where(works: { primary: true })
+      .order(created_at: :desc).limit(20)
   end
 
   def cached_original_works_by_genre

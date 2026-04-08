@@ -5,12 +5,10 @@ scheduler = Rufus::Scheduler::singleton
 # jobs go here
 
 # daily stats
-scheduler.every '24h' do
-  puts "calculating popular authors..."
-  Authority.recalc_popular
-  #puts "calculating recommendation counts..."
-  #Person.recalc_recommendation_counts
-end
+# scheduler.every '24h' do
+  # puts "calculating recommendation counts..."
+  # Person.recalc_recommendation_counts
+# end
 scheduler.every '2h' do
   puts "expiring assigned crowdsourcing tasks"
   CrowdController.expire_assigned_tasks
