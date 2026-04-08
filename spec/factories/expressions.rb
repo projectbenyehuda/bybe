@@ -29,7 +29,8 @@ FactoryBot.define do
         author: author,
         illustrator: illustrator,
         orig_lang: orig_lang,
-        date: work_date
+        date: work_date,
+        primary: primary
       )
     end
     involved_authorities do

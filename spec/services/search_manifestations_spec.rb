@@ -936,4 +936,35 @@ describe SearchManifestations do
       end
     end
   end
+
+  describe 'primary works filtering' do
+    let(:sort_by) { 'alphabetical' }
+    let(:sort_dir) { 'asc' }
+    let(:primary_work) { create(:manifestation, primary: true) }
+    let(:non_primary_work) { create(:manifestation, primary: false) }
+
+    before do
+      Chewy.strategy(:atomic) do
+        primary_work
+        non_primary_work
+      end
+    end
+
+    it 'excludes non-primary works with no filters' do
+      result_ids = described_class.call(sort_by, sort_dir, {}).map(&:id)
+      expect(result_ids).to include(primary_work.id)
+      expect(result_ids).not_to include(non_primary_work.id)
+    end
+
+    it 'excludes non-primary works even when genre filter is applied' do
+      result_ids = described_class.call(sort_by, sort_dir, { 'genres' => [non_primary_work.genre] }).map(&:id)
+      expect(result_ids).not_to include(non_primary_work.id)
+    end
+
+    it 'excludes non-primary works even with fulltext filter' do
+      result_ids = described_class.call(sort_by, sort_dir,
+                                        { 'fulltext' => non_primary_work.title }).map(&:id)
+      expect(result_ids).not_to include(non_primary_work.id)
+    end
+  end
 end
