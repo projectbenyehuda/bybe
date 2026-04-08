@@ -278,6 +278,7 @@ class ManifestationController < ApplicationController
 
   def fetch_new_texts(since)
     Manifestation.all_published.new_since(since)
+                 .joins(expression: :work).where(works: { primary: true })
                  .includes(expression: { involved_authorities: :authority, work: { involved_authorities: :authority } })
                  .to_a
   end

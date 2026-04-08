@@ -36,7 +36,7 @@ class Manifestation < ApplicationRecord
   enum :status, { published: 0, nonpd: 1, unpublished: 2, deprecated: 3 }
 
   scope :all_published, -> { where(status: Manifestation.statuses[:published]) }
-  scope :new_since, ->(since) { where('created_at > ?', since) }
+  scope :new_since, ->(since) { where('manifestations.created_at > ?', since) }
   scope :not_translations, -> { joins(:expression).includes(:expression).where(expressions: { translation: false }) }
   scope :translations, -> { joins(:expression).includes(:expression).where(expressions: { translation: true }) }
   scope :genre, ->(genre) { joins(expression: :work).where(works: { genre: genre }) }

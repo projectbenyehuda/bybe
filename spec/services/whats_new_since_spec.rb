@@ -45,6 +45,18 @@ describe WhatsNewSince do
       end
     end
 
+    context 'when a new publication belongs to a non-primary work' do
+      let(:timestamp) { 1.month.ago }
+      let!(:non_primary_work) do
+        create(:manifestation, author: author, primary: false, created_at: 1.week.ago)
+      end
+
+      it 'excludes the non-primary manifestation from results' do
+        genres_with_manifestations = result[author]&.except(:latest)&.values&.flatten || []
+        expect(genres_with_manifestations).not_to include(non_primary_work)
+      end
+    end
+
     context 'when there are new original and translated publications' do
       let(:timestamp) { 1.month.ago }
 
