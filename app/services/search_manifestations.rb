@@ -86,7 +86,9 @@ class SearchManifestations < ApplicationService
       filter << { match_phrase: { title: title } } # TODO: also search in alternate_titles
     end
 
-    filter << { term: { primary: true } } # always exclude non-primary works from browse
+    # Non-primary works are excluded unconditionally from all browse/API consumers of this
+    # service. They remain indexed in ES and findable via the sitewide search (SiteWideSearch).
+    filter << { term: { primary: true } }
 
     result = ManifestationsIndex.filter(filter)
 

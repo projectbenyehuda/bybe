@@ -259,10 +259,10 @@ class Authority < ApplicationRecord
   end
 
   def works_since(since, maxitems)
-    o = original_works.joins('INNER JOIN works ON works.id = expressions.work_id')
+    o = original_works.joins(expression: :work)
                       .where(works: { primary: true })
                       .where('manifestations.created_at > ?', since).limit(maxitems)
-    t = translations.joins('INNER JOIN works ON works.id = expressions.work_id')
+    t = translations.joins(expression: :work)
                     .where(works: { primary: true })
                     .where('manifestations.created_at > ?', since).limit(maxitems)
     joint = (o + t).uniq # NOTE: both of these are manifestations, not works!

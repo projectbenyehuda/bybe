@@ -89,6 +89,23 @@ RSpec.describe 'Whatsnew Page', :js, type: :system do
       end
     end
 
+    context 'when a recent manifestation belongs to a non-primary work' do
+      let!(:non_primary_manifestation) do
+        create(:manifestation, status: :published, primary: false, created_at: 1.week.ago)
+      end
+
+      before do
+        Rails.cache.clear
+        visit whatsnew_path
+      end
+
+      it 'excludes the non-primary manifestation from new texts' do
+        within('#new-texts') do
+          expect(page).not_to have_link(href: manifestation_path(non_primary_manifestation))
+        end
+      end
+    end
+
     it 'shows only collections from last 30 days' do
       within('#new-collections') do
         expect(page).to have_link(new_collection.title)
