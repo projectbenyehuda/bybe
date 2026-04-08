@@ -10,7 +10,7 @@ Bundler.require(*Rails.groups)
 module Bybeconv
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 8.0
+    config.load_defaults 8.1
 
     # but use SHA1 for key generation, as in Rails 6.1, because there are links to storage objects embedded in markdown
     config.active_support.key_generator_hash_digest_class = OpenSSL::Digest::SHA1
