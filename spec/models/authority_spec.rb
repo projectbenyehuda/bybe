@@ -291,6 +291,14 @@ describe Authority do
         expect(latest_stuff).to contain_exactly(original_work, translated_work)
       end
 
+      context 'when a manifestation belongs to a non-primary work' do
+        let!(:non_primary_work) { create(:manifestation, author: authority, primary: false) }
+
+        it 'excludes the non-primary manifestation' do
+          expect(latest_stuff).not_to include(non_primary_work)
+        end
+      end
+
       context 'when more than 20 records present' do
         before do
           create_list(:manifestation, 25, author: authority)
@@ -298,6 +306,34 @@ describe Authority do
 
         it 'returns first 20 records only' do
           expect(latest_stuff.length).to eq 20
+        end
+      end
+    end
+
+    describe '.works_since' do
+      subject(:works_since) { authority.works_since(2.weeks.ago, 100) }
+
+      let!(:recent_original) { create(:manifestation, author: authority, created_at: 1.week.ago) }
+      let!(:recent_translation) do
+        create(:manifestation, orig_lang: 'ru', translator: authority, created_at: 1.week.ago)
+      end
+      let!(:old_work) { create(:manifestation, author: authority, created_at: 3.months.ago) }
+
+      it 'returns recent original and translated works' do
+        expect(works_since).to include(recent_original, recent_translation)
+      end
+
+      it 'excludes old works' do
+        expect(works_since).not_to include(old_work)
+      end
+
+      context 'when a recent manifestation belongs to a non-primary work' do
+        let!(:non_primary_recent) do
+          create(:manifestation, author: authority, primary: false, created_at: 1.week.ago)
+        end
+
+        it 'excludes the non-primary manifestation' do
+          expect(works_since).not_to include(non_primary_recent)
         end
       end
     end
