@@ -27,9 +27,9 @@ function imageTagFromOption(option) {
     src: $opt.val(),
     alt: $opt.text().trim()
   };
-  const $img = $('<img>', attrs);
-  $img.css('width', $opt.data('width'));
-  $img.css('height', $opt.data('height'));
-  $img.css('object-fit', 'contain');
-  return $img[0].outerHTML;
+  const width = $opt.data('width');
+  const height = $opt.data('height');
+  if (width) attrs.width = width;
+  if (height) attrs.height = height;
+  return $('<img>', attrs)[0].outerHTML;
 }
