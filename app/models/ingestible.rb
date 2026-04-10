@@ -147,7 +147,22 @@ class Ingestible < ApplicationRecord
   def decode_toc
     return [] if toc_buffer.blank?
 
-    return toc_buffer.lines.map(&:strip).reject(&:empty?).map { |x| x.split('||').map(&:strip) }
+    toc_buffer.lines.map(&:strip).reject(&:empty?).map do |line|
+      parts = line.split('||').map(&:strip)
+      # Guard against old toc_buffer format (pre-Oct 2024) that had no authorities
+      # column: "yes/no || title || genre || lang [|| ip]".
+      # Detect by checking whether parts[2] is valid JSON; if not, insert an
+      # empty authorities slot so all downstream code can rely on the current
+      # 6-column layout: yes/no || title || authorities_json || genre || lang || ip
+      if parts.length >= 3 && parts[2].present?
+        begin
+          JSON.parse(parts[2])
+        rescue JSON::ParserError
+          parts.insert(2, '')
+        end
+      end
+      parts
+    end
   end
 
   def texts_to_upload
