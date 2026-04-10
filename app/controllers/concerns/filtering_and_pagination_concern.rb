@@ -46,8 +46,8 @@ module FilteringAndPaginationConcern
     end
 
     sort_column = get_sort_column(@sort_by)
-    @search_after_for_next = search_after_for_item(records.last, sort_column, false) if have_more_items
-    @search_after_for_previous = search_after_for_item(records.first, sort_column, true) if @page > 1
+    @search_after_for_next = search_after_for_item(records.last, sort_column, false) if have_more_items && records.last
+    @search_after_for_previous = search_after_for_item(records.first, sort_column, true) if @page > 1 && records.first
 
     records
   end
