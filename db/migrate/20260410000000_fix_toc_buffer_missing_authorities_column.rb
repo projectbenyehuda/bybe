@@ -22,9 +22,18 @@ class FixTocBufferMissingAuthoritiesColumn < ActiveRecord::Migration[8.0]
           JSON.parse(parts[2])
           line # Already valid JSON – nothing to do
         rescue JSON::ParserError
-          # parts[2] is not JSON (e.g. "article") → old format, insert empty authorities
           needs_update = true
-          ([parts[0], parts[1], ''] + parts[2..]).join(' || ')
+
+          if parts.length <= 5
+            # Old format:
+            #   yes/no || title || genre || lang [|| ip]
+            # Insert empty authorities at index 2.
+            ([parts[0], parts[1], ''] + parts[2..]).join(' || ')
+          else
+            # Already in new format, but authorities JSON is malformed.
+            # Normalize authorities in place without shifting genre/lang/ip.
+            ([parts[0], parts[1], '[]'] + parts[3..]).join(' || ')
+          end
         end
       end
 
