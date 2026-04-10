@@ -164,7 +164,8 @@ describe ManifestationController do
 
           context 'when search_type is empty' do
             let(:search_type) { nil }
-            let(:expected_filter) { title_filter }
+            let(:expected_filter) { author_filter }
+
             it { is_expected.to be_successful }
           end
         end
@@ -199,6 +200,14 @@ describe ManifestationController do
       context 'when page number is not specified' do
         let(:page) { nil }
         it 'returns first page' do
+          expect(subject).to be_successful
+        end
+      end
+
+      context 'when page > 1 and filter produces empty results' do
+        let(:browse_params) { { page: 2, search_input: 'zzz_no_match_xxxxxxxxxxx', search_type: 'workname' } }
+
+        it 'returns successfully without raising NoMethodError' do
           expect(subject).to be_successful
         end
       end

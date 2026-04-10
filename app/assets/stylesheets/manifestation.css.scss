@@ -12,11 +12,13 @@ h2 {
 }
 .maintext-prose-body img {
   max-width: 100%;
+  height: auto !important;
   display:block;
   margin:auto;
 }
 .maintext-poetry-body img {
   max-width: 100%;
+  height: auto !important;
   display:block;
   margin:auto;
 }
@@ -53,6 +55,7 @@ h2 {
 
 .read_html img {
   max-width: 100%;
+  height: auto !important;
   display:block;
   margin:auto;
 }

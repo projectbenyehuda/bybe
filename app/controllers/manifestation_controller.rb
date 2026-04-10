@@ -1022,6 +1022,7 @@ class ManifestationController < ApplicationController
     end
   end
 
+  # rubocop:disable Metrics/MethodLength
   def build_es_filter_from_filters
     ret = {}
     @filters = []
@@ -1129,7 +1130,7 @@ class ManifestationController < ApplicationController
     end
 
     # in browse UI we can search by author name or by title
-    @search_type = params['search_type'] || 'authorname'
+    @search_type = params['search_type'].presence || 'authorname'
     if @search_type == 'authorname'
       @authorstr = params['authorstr']
       @search_input = ''
@@ -1155,6 +1156,7 @@ class ManifestationController < ApplicationController
 
     return ret
   end
+  # rubocop:enable Metrics/MethodLength
 
   def prepare_totals(collection)
     standard_aggregations = {
