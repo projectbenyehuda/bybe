@@ -151,14 +151,19 @@ class Ingestible < ApplicationRecord
       parts = line.split('||').map(&:strip)
       # Guard against old toc_buffer format (pre-Oct 2024) that had no authorities
       # column: "yes/no || title || genre || lang [|| ip]".
-      # Detect by checking whether parts[2] is valid JSON; if not, insert an
-      # empty authorities slot so all downstream code can rely on the current
-      # 6-column layout: yes/no || title || authorities_json || genre || lang || ip
+      # Detect by checking whether parts[2] is valid JSON; if not:
+      # - old 4-5 column rows need an empty authorities slot inserted
+      # - current 6-column rows should keep their column positions and blank
+      #   invalid authorities JSON instead
       if parts.length >= 3 && parts[2].present?
         begin
           JSON.parse(parts[2])
         rescue JSON::ParserError
-          parts.insert(2, '')
+          if parts.length <= 5
+            parts.insert(2, '')
+          else
+            parts[2] = ''
+          end
         end
       end
       parts
