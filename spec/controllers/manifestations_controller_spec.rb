@@ -203,6 +203,14 @@ describe ManifestationController do
           expect(subject).to be_successful
         end
       end
+
+      context 'when page > 1 and filter produces empty results' do
+        let(:browse_params) { { page: 2, search_input: 'zzz_no_match_xxxxxxxxxxx', search_type: 'workname' } }
+
+        it 'returns successfully without raising NoMethodError' do
+          expect(subject).to be_successful
+        end
+      end
     end
 
     after(:all) do
