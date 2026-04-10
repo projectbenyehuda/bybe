@@ -981,6 +981,7 @@ small p{
 
 #actualtext img {
   max-width: 100%;
+  height: auto !important; // override inline height (e.g. legacy insert_image.js content)
 }
 
 .unpublished {
