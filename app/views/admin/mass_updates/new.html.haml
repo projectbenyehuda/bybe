@@ -71,13 +71,11 @@
     #collection-expand-widget{ style: 'display:none; border: 1px solid #660248; padding:10px; margin-top:8px; background-color:#f0f0ff;' }
       %b= t('admin.mass_update.collection_expand_label')
       %br
-      - expand_modes = [
-      -   [:collection_only,         t('admin.mass_update.collection_expand_collection_only')],
-      -   [:collection_and_contents, t('admin.mass_update.collection_expand_collection_and_contents')],
-      -   [:contents_only,           t('admin.mass_update.collection_expand_contents_only')],
-      -   [:manifestations_only,     t('admin.mass_update.collection_expand_manifestations_only')],
-      -   [:custom,                  t('admin.mass_update.collection_expand_custom')]
-      - ]
+      - expand_modes = [[:collection_only, t('admin.mass_update.collection_expand_collection_only')]]
+      - expand_modes << [:collection_and_contents, t('admin.mass_update.collection_expand_collection_and_contents')]
+      - expand_modes << [:contents_only, t('admin.mass_update.collection_expand_contents_only')]
+      - expand_modes << [:manifestations_only, t('admin.mass_update.collection_expand_manifestations_only')]
+      - expand_modes << [:custom, t('admin.mass_update.collection_expand_custom')]
       - expand_modes.each_with_index do |(val, label), i|
         %label.d-block
           %input{ type: 'radio', name: 'collection_expand_mode', value: val, checked: i.zero? }
@@ -116,25 +114,21 @@
     -# Change kind selector
     .admin_container
       %b= t('admin.mass_update.change_type_label')
-      - ck_opts = [
-      -   [t('admin.mass_update.change_kind_field_update'),              'field_update'],
-      -   [t('admin.mass_update.change_kind_involved_authority_add'),    'involved_authority_add'],
-      -   [t('admin.mass_update.change_kind_involved_authority_remove'), 'involved_authority_remove'],
-      -   [t('admin.mass_update.change_kind_external_link_add'),         'external_link_add'],
-      -   [t('admin.mass_update.change_kind_external_link_remove'),      'external_link_remove']
-      - ]
+      - ck_opts = [[t('admin.mass_update.change_kind_field_update'), 'field_update']]
+      - ck_opts << [t('admin.mass_update.change_kind_involved_authority_add'), 'involved_authority_add']
+      - ck_opts << [t('admin.mass_update.change_kind_involved_authority_remove'), 'involved_authority_remove']
+      - ck_opts << [t('admin.mass_update.change_kind_external_link_add'), 'external_link_add']
+      - ck_opts << [t('admin.mass_update.change_kind_external_link_remove'), 'external_link_remove']
       = select_tag :change_kind, options_for_select(ck_opts), id: 'change-kind-select'
 
     -# ── Sub-form: field_update ──
     .change-subform.mt-2#subform-field-update
       .admin_container
         %b= t('admin.mass_update.record_type_label')
-        - frt_opts = [
-        -   [t('admin.mass_update.record_type_work'),         'work'],
-        -   [t('admin.mass_update.record_type_expression'),   'expression'],
-        -   [t('admin.mass_update.record_type_manifestation'),'manifestation'],
-        -   [t('admin.mass_update.record_type_collection'),   'collection']
-        - ]
+        - frt_opts = [[t('admin.mass_update.record_type_work'), 'work']]
+        - frt_opts << [t('admin.mass_update.record_type_expression'), 'expression']
+        - frt_opts << [t('admin.mass_update.record_type_manifestation'), 'manifestation']
+        - frt_opts << [t('admin.mass_update.record_type_collection'), 'collection']
         = select_tag :field_record_type, options_for_select(frt_opts), id: 'field-record-type'
         &nbsp;
         %b= t('admin.mass_update.field_label')
