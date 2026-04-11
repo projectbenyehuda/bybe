@@ -221,10 +221,11 @@
     };
 
     var enumOptions = {
-      genre:                 #{Work::GENRES.map { |g| [t(g), g] }.to_json},
+      genre:                 #{Work::GENRES.map { |g| [t("genre_values.#{g}"), g] }.to_json},
       status:                #{Manifestation.statuses.keys.map { |k| [t(k), k] }.to_json},
       period:                #{Expression.periods.keys.map { |p| [t(p), p] }.to_json},
       language:              #{get_langs.map { |lang| [textify_lang(lang), lang] }.to_json},
+      orig_lang:             #{get_langs.map { |lang| [textify_lang(lang), lang] }.to_json},
       intellectual_property: #{Expression.intellectual_properties.keys.map { |ip| [textify_intellectual_property(ip), ip] }.to_json},
       collection_type:       #{(Collection.collection_types.keys - Collection::SYSTEM_TYPES).map { |ct| [ct, ct] }.to_json}
     };
@@ -537,11 +538,24 @@
       });
     });
 
+    var recordUrlPatterns = {
+      Manifestation: '#{manifestation_path("RECID")}',
+      Collection: '#{collection_path("RECID")}'
+    };
+
+    function recordLink(type, id, label) {
+      var pattern = recordUrlPatterns[type];
+      if (!pattern) return $('<span>').text(label);
+      return $('<a>').attr('href', pattern.replace('RECID', id)).attr('target', '_blank').text(label);
+    }
+
     function renderResults(results) {
       var $body = $('#results-body').empty();
       results.forEach(function(res) {
         var typeLabel = res.type === 'Manifestation' ? i18n.typeManifest : i18n.typeCollection;
-        $body.append($('<h4>').text(typeLabel + ' #' + res.id));
+        var heading = $('<h4>');
+        heading.append(recordLink(res.type, res.id, typeLabel + ' #' + res.id));
+        $body.append(heading);
         var $ul = $('<ul class="list-group mb-2">');
         res.results.forEach(function(r, i) {
           var desc = describeChange(pendingChanges[i] || {});

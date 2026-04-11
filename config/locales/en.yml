@@ -400,6 +400,7 @@ en:
         ia_not_found: Involved authority record not found
         external_link_not_found: "External link not found: %{url}"
         destroy_failed: Deletion failed
+        value_not_persisted: "The value entered for field '%{field}' was not saved (it may be invalid)"
         unknown_change_kind: "Unknown change kind: %{kind}"
         no_records: No records selected for update
         no_changes: No changes defined to apply

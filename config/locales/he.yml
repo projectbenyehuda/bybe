@@ -1846,7 +1846,7 @@ he:
       fields:
         work:
           title: "כותרת (יצירה)"
-          genre: ז'אנר
+          genre: סוגה
           primary: ראשי
           orig_lang: שפת מקור
           origlang_title: כותרת בשפת מקור
@@ -1884,6 +1884,7 @@ he:
         ia_not_found: קשר יוצר/ת-ישות לא נמצא
         external_link_not_found: "קישור חיצוני לא נמצא: %{url}"
         destroy_failed: המחיקה נכשלה
+        value_not_persisted: "הערך שהוזן לשדה '%{field}' לא נשמר (ייתכן שאינו תקין)"
         unknown_change_kind: "סוג שינוי לא מוכר: %{kind}"
         no_records: לא נבחרו רשומות לעדכון
         no_changes: לא הוגדרו שינויים להחיל

@@ -186,6 +186,29 @@ RSpec.describe MassUpdateService do
       end
     end
 
+    context 'when value is silently not persisted after save' do
+      it 'returns an error if the saved value does not match the intended value' do
+        # Simulate a before_validation callback that resets a field to nil,
+        # so save returns true but the intended value was not persisted.
+        work = manifestation.expression.work
+        expression = manifestation.expression
+        allow(expression).to receive(:work).and_return(work)
+        allow(work).to receive(:save) do
+          work.write_attribute(:orig_lang, nil) # simulate silent normalization
+          true
+        end
+
+        changes = [{ 'kind' => 'field_update', 'record_type' => 'work',
+                     'field' => 'orig_lang', 'value' => 'invalid_lang' }]
+        # Feed the same manifestation but stub its expression to get our rigged work
+        allow(Manifestation).to receive(:find_by).with(id: manifestation.id).and_return(
+          instance_double(Manifestation, expression: expression)
+        )
+        results = apply([m_record], changes)
+        expect(result_for(results, m_record).first).not_to eq(:ok)
+      end
+    end
+
     context 'with unknown change kind' do
       it 'returns an error string' do
         changes = [{ 'kind' => 'does_not_exist' }]

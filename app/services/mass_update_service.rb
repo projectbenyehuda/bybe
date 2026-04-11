@@ -83,9 +83,22 @@ class MassUpdateService
 
     target.assign_attributes(field => value)
     if target.save
-      :ok
+      verify_field_persisted(target, field, value)
     else
       target.errors.full_messages.join(', ')
+    end
+  end
+
+  # Guards against silent normalization: if a before_validation callback
+  # reset the value to something other than what we intended, report it.
+  def verify_field_persisted(target, field, intended_value)
+    actual = target.public_send(field)
+    if intended_value.nil?
+      actual.nil? ? :ok : I18n.t('admin.mass_update.errors.value_not_persisted', field: field)
+    elsif actual.to_s == intended_value.to_s
+      :ok
+    else
+      I18n.t('admin.mass_update.errors.value_not_persisted', field: field)
     end
   end
 
