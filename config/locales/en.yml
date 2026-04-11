@@ -407,7 +407,7 @@ en:
         no_field_selected: Please select a field
         no_authority_selected: Please select an authority
         no_url_entered: Please enter a URL
-        unknown_error: Unknown error
+        unknown_error: "Unexpected error (ID: %{error_id})"
         no_selection_name: Please enter a name for this selection
         not_owner: Only the owner of a saved selection can delete it
       loading: Loading...

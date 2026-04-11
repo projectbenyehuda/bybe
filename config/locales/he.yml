@@ -1891,7 +1891,7 @@ he:
         no_field_selected: בחר שדה
         no_authority_selected: "בחר יוצר/ת"
         no_url_entered: נא להזין כתובת URL
-        unknown_error: שגיאה לא ידועה
+        unknown_error: "שגיאה לא צפויה (מזהה: %{error_id})"
         no_selection_name: נא לתת שם לבחירה
         not_owner: רק בעל/ת הבחירה יכול/ה למחוק אותה
       loading: "טוען..."

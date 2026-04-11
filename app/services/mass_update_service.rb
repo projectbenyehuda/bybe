@@ -61,7 +61,10 @@ class MassUpdateService
       I18n.t('admin.mass_update.errors.unknown_change_kind', kind: change['kind'])
     end
   rescue StandardError => e
-    e.message
+    error_id = SecureRandom.hex(4)
+    Rails.logger.error("[MassUpdateService] Unexpected error (#{error_id}): #{e.message}\n" \
+                       "#{e.backtrace.first(10).join("\n")}")
+    I18n.t('admin.mass_update.errors.unknown_error', error_id: error_id)
   end
 
   # --- Field update ---

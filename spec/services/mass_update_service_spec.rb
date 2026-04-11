@@ -217,6 +217,23 @@ RSpec.describe MassUpdateService do
       end
     end
 
+    context 'when an unexpected exception is raised inside apply_change' do
+      it 'logs the error and returns a generic i18n message with an error ID' do
+        allow(manifestation).to receive(:assign_attributes).and_raise(RuntimeError, 'DB exploded')
+        allow(Manifestation).to receive(:find_by).with(id: manifestation.id).and_return(manifestation)
+        allow(Rails.logger).to receive(:error)
+
+        changes = [{ 'kind' => 'field_update', 'record_type' => 'manifestation',
+                     'field' => 'title', 'value' => 'X' }]
+        results = apply([m_record], changes)
+        error_msg = result_for(results, m_record).first
+        expect(Rails.logger).to have_received(:error).with(a_string_matching(/MassUpdateService.*DB exploded/))
+        expect(error_msg).to be_a(String)
+        expect(error_msg).to match(/[0-9a-f]{8}/)
+        expect(error_msg).not_to include('DB exploded')
+      end
+    end
+
     context 'with boolean field changes' do
       it 'sets exclude_from_index to true' do
         manifestation.update!(exclude_from_index: false)
