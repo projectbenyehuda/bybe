@@ -214,10 +214,10 @@
     };
 
     var fieldDefs = {
-      work:          #{MassUpdateService::WORK_FIELDS.to_json},
-      expression:    #{MassUpdateService::EXPRESSION_FIELDS.to_json},
-      manifestation: #{MassUpdateService::MANIFESTATION_FIELDS.to_json},
-      collection:    #{MassUpdateService::COLLECTION_FIELDS.to_json}
+      work:          #{MassUpdateService::WORK_FIELDS.map { |f| [t("admin.mass_update.fields.work.#{f}"), f] }.to_json},
+      expression:    #{MassUpdateService::EXPRESSION_FIELDS.map { |f| [t("admin.mass_update.fields.expression.#{f}"), f] }.to_json},
+      manifestation: #{MassUpdateService::MANIFESTATION_FIELDS.map { |f| [t("admin.mass_update.fields.manifestation.#{f}"), f] }.to_json},
+      collection:    #{MassUpdateService::COLLECTION_FIELDS.map { |f| [t("admin.mass_update.fields.collection.#{f}"), f] }.to_json}
     };
 
     var enumOptions = {
@@ -402,7 +402,7 @@
     function updateFieldDropdown() {
       var rt = $('#field-record-type').val();
       var $sel = $('#field-name-select').empty();
-      (fieldDefs[rt] || []).forEach(function(f) { $sel.append($('<option>').val(f).text(f)); });
+      (fieldDefs[rt] || []).forEach(function(pair) { $sel.append($('<option>').val(pair[1]).text(pair[0])); });
       updateValueWidget();
     }
 
@@ -464,7 +464,7 @@
 
     function describeChange(ch) {
       if (ch.kind === 'field_update') {
-        return ch.record_type + '.' + ch.field + ' = ' + (ch.value || '(blank)');
+        return ch.record_type + '.' + (ch.field_label || ch.field) + ' = ' + (ch.value || '(blank)');
       }
       if (ch.kind === 'involved_authority_add') {
         return '[+] ' + ch.role + ': ' + ch.authority_name + ' (' + ch.entity + ')';
@@ -482,6 +482,7 @@
       if (kind === 'field_update') {
         change.record_type = $('#field-record-type').val();
         change.field = $('#field-name-select').val();
+        change.field_label = $('#field-name-select option:selected').text();
         var enumVisible = $('#field-value-enum-container').is(':visible');
         change.value = enumVisible ? $('#field-value-enum').val() : $('#field-value').val();
         if (!change.field) error = 'בחר שדה';

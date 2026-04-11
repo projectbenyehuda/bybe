@@ -1787,9 +1787,9 @@ he:
       enter_manifestation_ids: "נא להזין מספרי זיהוי של *יצירות* (מופרדים ברווח או במעבר שורה)"
       fetch: טען יצירות
     mass_update:
-      dashboard_link: עדכון מסה
+      dashboard_link: עדכון באצווה
       new:
-        title: עדכון מסה של רשומות
+        title: עדכון באצווה של רשומות
       section_records: רשומות שתתעדכנּה
       section_changes: שינויים להחיל
       mode_by_id: לפי מזהה
@@ -1823,14 +1823,14 @@ he:
       change_kind_external_link_add: הוספת קישור חיצוני
       change_kind_external_link_remove: הסרת קישור חיצוני
       record_type_label: "סוג הרשומה:"
-      record_type_work: יצירה (Work)
-      record_type_expression: גרסה (Expression)
+      record_type_work: יצירה
+      record_type_expression: ביטוי
       field_label: "שדה:"
       value_label: "ערך (ריק = ביטול):"
       role_label: "תפקיד:"
       entity_label: "ישות לעדכן:"
-      entity_work: יצירה (Work)
-      entity_expression: גרסה (Expression)
+      entity_work: יצירה
+      entity_expression: ביטוי
       url_label: "כתובת URL:"
       link_type_label: "סוג קישור:"
       link_description_label: "תיאור:"
@@ -1845,7 +1845,7 @@ he:
       result_error: "שגיאה: %{message}"
       fields:
         work:
-          title: "כותרת (Work)"
+          title: "כותרת (יצירה)"
           genre: ז'אנר
           primary: ראשי
           orig_lang: שפת מקור
@@ -1853,7 +1853,7 @@ he:
           date: תאריך יצירה
           comment: הערות
         expression:
-          title: "כותרת (Expression)"
+          title: "כותרת (ביטוי)"
           date: תאריך פרסום
           period: תקופה
           language: שפה
@@ -1862,7 +1862,7 @@ he:
           comment: הערות
           intellectual_property: זכויות יוצרים
         manifestation:
-          title: "כותרת (Manifestation)"
+          title: "כותרת (מימוש)"
           alternate_titles: כותרות חלופיות
           sort_title: כותרת למיון
           status: סטטוס
@@ -1879,7 +1879,7 @@ he:
         record_not_found: הרשומה לא נמצאה
         authority_not_found: היוצר/ת לא נמצא/אה
         field_not_applicable: "השדה '%{field}' אינו חל על סוג רשומה '%{record_type}'"
-        field_not_allowed: "השדה '%{field}' אינו מותר לעדכון מסה"
+        field_not_allowed: "השדה '%{field}' אינו מותר לעדכון באצווה"
         ia_entity_not_applicable: "ישות '%{entity}' אינה ישימה לרשומה זו"
         ia_not_found: קשר יוצר/ת-ישות לא נמצא
         external_link_not_found: "קישור חיצוני לא נמצא: %{url}"

@@ -21,13 +21,15 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
   end
 
   # Adds a field_update change to the changes list.
-  def add_field_update_change(record_type_label, field_name, value)
+  # field_name is the internal key (e.g. 'title'); field_label is the localized label shown in the dropdown.
+  def add_field_update_change(record_type_label, field_name, value, record_type_key: nil)
     select I18n.t('admin.mass_update.change_kind_field_update'), from: 'change_kind'
     select record_type_label, from: 'field_record_type'
-    select field_name, from: 'field-name-select'
+    field_label = record_type_key ? I18n.t("admin.mass_update.fields.#{record_type_key}.#{field_name}") : field_name
+    select field_label, from: 'field-name-select'
     fill_in 'field_value', with: value
     click_button I18n.t('admin.mass_update.add_change_button')
-    find('#changes-list', text: "#{record_type_label.downcase}.#{field_name}", wait: 5)
+    find('#changes-list', text: field_label, wait: 5)
   end
 
   describe 'page load' do
@@ -56,8 +58,9 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
     end
 
     it 'adds a change to the changes list' do
-      add_field_update_change(I18n.t('admin.mass_update.record_type_manifestation'), 'title', 'Updated Title')
-      expect(page).to have_content('manifestation.title = Updated Title')
+      add_field_update_change(I18n.t('admin.mass_update.record_type_manifestation'),
+                              'title', 'Updated Title', record_type_key: 'manifestation')
+      expect(page).to have_content(I18n.t('admin.mass_update.fields.manifestation.title') + ' = Updated Title')
     end
   end
 
