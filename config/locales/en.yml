@@ -404,7 +404,13 @@ en:
         unknown_change_kind: "Unknown change kind: %{kind}"
         no_records: No records selected for update
         no_changes: No changes defined to apply
+        no_field_selected: Please select a field
+        no_authority_selected: Please select an authority
+        no_url_entered: Please enter a URL
+        unknown_error: Unknown error
+        no_selection_name: Please enter a name for this selection
         not_owner: Only the owner of a saved selection can delete it
+      loading: Loading...
     saved_selections:
       save_success: Selection saved successfully
       delete_confirm: Are you sure you want to delete this selection?

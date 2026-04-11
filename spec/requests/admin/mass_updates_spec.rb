@@ -129,4 +129,30 @@ RSpec.describe 'Admin::MassUpdates', type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # GET /admin/mass_update/record_info
+  # ---------------------------------------------------------------------------
+  describe 'GET /admin/mass_update/record_info' do
+    it 'returns id and title for a Manifestation' do
+      get admin_mass_update_record_info_path, params: { type: 'Manifestation', id: manifestation.id }
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body['id']).to eq(manifestation.id)
+      expect(body['title']).to eq(manifestation.title)
+      expect(body['type']).to eq('Manifestation')
+    end
+
+    it 'returns id and title for a Collection' do
+      col = create(:collection, title: 'My Collection', collection_type: :volume)
+      get admin_mass_update_record_info_path, params: { type: 'Collection', id: col.id }
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['title']).to eq('My Collection')
+    end
+
+    it 'returns 404 for unknown id' do
+      get admin_mass_update_record_info_path, params: { type: 'Manifestation', id: 0 }
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end

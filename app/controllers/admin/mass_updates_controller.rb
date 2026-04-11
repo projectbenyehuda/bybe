@@ -29,6 +29,22 @@ module Admin
       render json: { results: format_results(results) }
     end
 
+    # AJAX: returns id and title for a single Manifestation or Collection record.
+    # Params: type (Manifestation|Collection), id
+    # Returns: { id:, title:, type: } or 404
+    def record_info
+      record = case params[:type]
+               when 'Manifestation' then Manifestation.find_by(id: params[:id].to_i)
+               when 'Collection'    then Collection.find_by(id: params[:id].to_i)
+               end
+      if record.nil?
+        return render json: { error: I18n.t('admin.mass_update.errors.record_not_found') },
+                      status: :not_found
+      end
+
+      render json: { id: record.id, title: record.title, type: params[:type] }
+    end
+
     # AJAX: returns flat list of all items (recursively) within a collection.
     # Params: collection_id
     # Returns: { items: [{ type:, id:, title:, depth: }, ...] }

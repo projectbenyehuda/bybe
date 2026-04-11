@@ -1888,7 +1888,13 @@ he:
         unknown_change_kind: "סוג שינוי לא מוכר: %{kind}"
         no_records: לא נבחרו רשומות לעדכון
         no_changes: לא הוגדרו שינויים להחיל
+        no_field_selected: בחר שדה
+        no_authority_selected: "בחר יוצר/ת"
+        no_url_entered: נא להזין כתובת URL
+        unknown_error: שגיאה לא ידועה
+        no_selection_name: נא לתת שם לבחירה
         not_owner: רק בעל/ת הבחירה יכול/ה למחוק אותה
+      loading: "טוען..."
     saved_selections:
       save_success: הבחירה נשמרה בהצלחה
       delete_confirm: האם אתה בטוח שברצונך למחוק בחירה זו?

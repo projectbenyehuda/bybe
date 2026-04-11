@@ -22,7 +22,9 @@ Bybeconv::Application.routes.draw do
          as: 'mass_update_collection_contents'
     get  'mass_update/authority_manifestations' => 'mass_updates#authority_manifestations',
          as: 'mass_update_authority_manifestations'
-    resources :saved_selections, only: %i[index show create destroy]
+    get  'mass_update/record_info' => 'mass_updates#record_info',
+         as: 'mass_update_record_info'
+    resources :saved_selections, only: %i(index show create destroy)
 
     resources :featured_contents do
       resources :features, controller: 'featured_content_features', only: %i(create)

@@ -207,10 +207,16 @@
       confirmApply:  #{t('admin.mass_update.confirm_apply', count_records: '__REC__', count_changes: '__CHG__').to_json},
       resultOk:      #{t('admin.mass_update.result_ok').to_json},
       resultError:   #{t('admin.mass_update.result_error', message: '__MSG__').to_json},
-      saveSuccess:   #{t('admin.saved_selections.save_success').to_json},
-      noSelections:  #{t('admin.saved_selections.no_selections').to_json},
-      typeManifest:  #{t('admin.mass_update.record_type_manifestation').to_json},
-      typeCollection:#{t('admin.mass_update.record_type_collection').to_json}
+      saveSuccess:       #{t('admin.saved_selections.save_success').to_json},
+      noSelections:      #{t('admin.saved_selections.no_selections').to_json},
+      typeManifest:      #{t('admin.mass_update.record_type_manifestation').to_json},
+      typeCollection:    #{t('admin.mass_update.record_type_collection').to_json},
+      errorNoField:      #{t('admin.mass_update.errors.no_field_selected').to_json},
+      errorNoAuthority:  #{t('admin.mass_update.errors.no_authority_selected').to_json},
+      errorNoUrl:        #{t('admin.mass_update.errors.no_url_entered').to_json},
+      errorUnknown:      #{t('admin.mass_update.errors.unknown_error').to_json},
+      errorNoName:       #{t('admin.mass_update.errors.no_selection_name').to_json},
+      loading:           #{t('admin.mass_update.loading').to_json}
     };
 
     var fieldDefs = {
@@ -309,7 +315,7 @@
         return;
       }
       var contentsUrl = '#{admin_mass_update_collection_contents_path}';
-      $('#custom-content-tree').show().html('<em>טוען...</em>');
+      $('#custom-content-tree').show().html('<em>' + i18n.loading + '</em>');
       $.getJSON(contentsUrl, { collection_id: pendingCollection.id }, function(data) {
         var $tree = $('#custom-content-tree').empty();
         (data.items || []).forEach(function(item) {
@@ -341,31 +347,29 @@
     });
 
     function fetchRecordTitle(type, id, onSuccess) {
-      var path = type === 'Manifestation'
-        ? '/manifestation/' + id + '.json'
-        : '/collections/' + id + '.json';
-      $.getJSON(path, function(data) {
+      var url = '#{admin_mass_update_record_info_path}';
+      $.getJSON(url, { type: type, id: id }, function(data) {
         onSuccess(data.title || ('#' + id));
       }).fail(function() { onSuccess('#' + id); });
     }
 
     // ── Tab 2: Autocomplete ──
-    $(document).on('autocompleteselect', '#manifestation-title-search', function(event, ui) {
-      var id = ui.item.id || $('#manifestation-title-id').val();
-      addRecord('Manifestation', id, ui.item.label || $(this).val());
+    $(document).on('railsAutocomplete.select', '#manifestation-title-search', function(event, data) {
+      var id = data.item.id || $('#manifestation-title-id').val();
+      addRecord('Manifestation', id, data.item.label || $(this).val());
       $(this).val(''); $('#manifestation-title-id').val(''); event.preventDefault();
     });
 
-    $(document).on('autocompleteselect', '#collection-title-search', function(event, ui) {
-      var id = ui.item.id || $('#collection-title-id').val();
-      showCollectionExpandWidget(id, ui.item.label || $(this).val());
+    $(document).on('railsAutocomplete.select', '#collection-title-search', function(event, data) {
+      var id = data.item.id || $('#collection-title-id').val();
+      showCollectionExpandWidget(id, data.item.label || $(this).val());
       $(this).val(''); $('#collection-title-id').val(''); event.preventDefault();
     });
 
     // ── Tab 3: Authority ──
-    $(document).on('autocompleteselect', '#authority-name-search', function(event, ui) {
-      $('#authority-id-hidden').val(ui.item.id);
-      loadAuthorityDropdowns(ui.item.id);
+    $(document).on('railsAutocomplete.select', '#authority-name-search', function(event, data) {
+      $('#authority-id-hidden').val(data.item.id);
+      loadAuthorityDropdowns(data.item.id);
       event.preventDefault();
     });
 
@@ -486,21 +490,21 @@
         change.field_label = $('#field-name-select option:selected').text();
         var enumVisible = $('#field-value-enum-container').is(':visible');
         change.value = enumVisible ? $('#field-value-enum').val() : $('#field-value').val();
-        if (!change.field) error = 'בחר שדה';
+        if (!change.field) error = i18n.errorNoField;
       } else if (kind.indexOf('involved_') === 0) {
         change.role = $('#ia-role-select').val();
         change.authority_id = $('#ia-authority-id').val();
         change.authority_name = $('#ia-authority-name').val();
         change.entity = $('#ia-entity-select').val();
-        if (!change.authority_id) error = 'בחר יוצר/ת';
+        if (!change.authority_id) error = i18n.errorNoAuthority;
       } else if (kind === 'external_link_add') {
         change.url = $('#ext-link-url').val().trim();
         change.linktype = $('#ext-link-type').val();
         change.description = $('#ext-link-description').val();
-        if (!change.url) error = 'נא להזין כתובת URL';
+        if (!change.url) error = i18n.errorNoUrl;
       } else if (kind === 'external_link_remove') {
         change.url = $('#ext-remove-url').val().trim();
-        if (!change.url) error = 'נא להזין כתובת URL';
+        if (!change.url) error = i18n.errorNoUrl;
       }
       if (error) { $('#add-change-error').text(error).show(); return; }
       $('#add-change-error').hide();
@@ -531,7 +535,7 @@
         error: function(xhr) {
           $('#applying-indicator').hide();
           $('#apply-btn').prop('disabled', false);
-          var errMsg = xhr.responseJSON ? xhr.responseJSON.error : 'שגיאה לא ידועה';
+          var errMsg = xhr.responseJSON ? xhr.responseJSON.error : i18n.errorUnknown;
           $('#results-body').html('<div class="alert alert-danger">' + $('<span>').text(errMsg).html() + '</div>');
           $('#results-section').show();
         }
@@ -539,8 +543,8 @@
     });
 
     var recordUrlPatterns = {
-      Manifestation: '#{manifestation_path("RECID")}',
-      Collection: '#{collection_path("RECID")}'
+      Manifestation: '#{manifestation_path('RECID')}',
+      Collection: '#{collection_path('RECID')}'
     };
 
     function recordLink(type, id, label) {
@@ -597,7 +601,7 @@
 
     function saveSelection(shared) {
       var name = $('#new-selection-name').val().trim();
-      if (!name) { alert('נא לתת שם לבחירה'); return; }
+      if (!name) { alert(i18n.errorNoName); return; }
       if (!selectedRecords.length) { alert(i18n.noRecords); return; }
       $.ajax({
         url: '#{admin_saved_selections_path}',
@@ -613,7 +617,7 @@
           loadSavedSelectionsList();
         },
         error: function(xhr) {
-          var err = xhr.responseJSON ? xhr.responseJSON.error : 'שגיאה';
+          var err = xhr.responseJSON ? xhr.responseJSON.error : i18n.errorUnknown;
           $('#saved-selection-message').text(err).removeClass('text-success').addClass('text-danger').show();
         }
       });

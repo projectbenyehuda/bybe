@@ -7,7 +7,7 @@ module Admin
     before_action :set_selection, only: %i(show destroy)
 
     def index
-      selections = SavedSelection.visible_to(current_user).order(name: :asc)
+      selections = SavedSelection.visible_to(current_user).includes(:saved_selection_items).order(name: :asc)
       render json: selections.map { |s|
         { id: s.id, name: s.name, shared: s.shared, mine: s.user_id == current_user.id,
           item_count: s.saved_selection_items.size, delete_after: s.delete_after }
