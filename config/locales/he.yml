@@ -1786,6 +1786,112 @@ he:
       title: פעולות באצווה
       enter_manifestation_ids: "נא להזין מספרי זיהוי של *יצירות* (מופרדים ברווח או במעבר שורה)"
       fetch: טען יצירות
+    mass_update:
+      dashboard_link: עדכון מסה
+      new:
+        title: עדכון מסה של רשומות
+      section_records: רשומות שתתעדכנּה
+      section_changes: שינויים להחיל
+      mode_by_id: לפי מזהה
+      mode_by_title: לפי כותרת
+      mode_by_authority: לפי שם יוצר/ת
+      record_type_manifestation: יצירה
+      record_type_collection: אוסף
+      id_label: "מזהה:"
+      add_button: הוסף לרשימה
+      remove_button: הסר
+      authority_name_label: "שם יוצר/ת:"
+      authority_volumes_label: "כרכים שהיוצר/ת מעורב/ת בהם:"
+      authority_manifestations_label: "יצירות שהיוצר/ת מעורב/ת בהן:"
+      collection_expand_label: "כיצד להוסיף את האוסף?"
+      collection_expand_collection_only: האוסף בלבד
+      collection_expand_collection_and_contents: האוסף וכל תוכנו (רקורסיבי)
+      collection_expand_contents_only: תוכן האוסף בלבד (ללא האוסף עצמו)
+      collection_expand_manifestations_only: יצירות בלבד (ללא ישויות של תת-אוסף)
+      collection_expand_custom: בחירה מותאמת אישית
+      saved_selections_label: "בחירות שמורות:"
+      load_selection_button: טען
+      save_private_button: שמור לי בלבד
+      save_shared_button: שמור לשיתוף
+      save_selection_name_placeholder: שם הבחירה...
+      no_records_in_list: לא נבחרו רשומות
+      records_list_title: רשומות שנבחרו
+      change_type_label: "סוג השינוי:"
+      change_kind_field_update: עדכון שדה
+      change_kind_involved_authority_add: הוספת יוצר/ת מעורב/ת
+      change_kind_involved_authority_remove: הסרת יוצר/ת מעורב/ת
+      change_kind_external_link_add: הוספת קישור חיצוני
+      change_kind_external_link_remove: הסרת קישור חיצוני
+      record_type_label: "סוג הרשומה:"
+      record_type_work: יצירה (Work)
+      record_type_expression: גרסה (Expression)
+      field_label: "שדה:"
+      value_label: "ערך (ריק = ביטול):"
+      role_label: "תפקיד:"
+      entity_label: "ישות לעדכן:"
+      entity_work: יצירה (Work)
+      entity_expression: גרסה (Expression)
+      url_label: "כתובת URL:"
+      link_type_label: "סוג קישור:"
+      link_description_label: "תיאור:"
+      add_change_button: הוסף שינוי
+      changes_list_title: שינויים שנוספו
+      no_changes_in_list: לא הוגדרו שינויים
+      apply_button: החל את כל השינויים
+      confirm_apply: "האם אתה בטוח שברצונך לעדכן %{count_records} רשומות עם %{count_changes} שינויים?"
+      applying: מחיל שינויים...
+      results_title: תוצאות העדכון
+      result_ok: הצליח
+      result_error: "שגיאה: %{message}"
+      fields:
+        work:
+          title: "כותרת (Work)"
+          genre: ז'אנר
+          primary: ראשי
+          orig_lang: שפת מקור
+          origlang_title: כותרת בשפת מקור
+          date: תאריך יצירה
+          comment: הערות
+        expression:
+          title: "כותרת (Expression)"
+          date: תאריך פרסום
+          period: תקופה
+          language: שפה
+          first_publication_date: תאריך פרסום ראשון
+          source_edition: מהדורת מקור
+          comment: הערות
+          intellectual_property: זכויות יוצרים
+        manifestation:
+          title: "כותרת (Manifestation)"
+          alternate_titles: כותרות חלופיות
+          sort_title: כותרת למיון
+          status: סטטוס
+          comment: הערות
+          exclude_from_index: הוצא מהאינדקס
+          sefaria_linker: קישור ספריא
+        collection:
+          title: כותרת
+          sort_title: כותרת למיון
+          collection_type: סוג האוסף
+          comment: הערות
+          suppress_download_and_print: בלום הורדה והדפסה
+      errors:
+        record_not_found: הרשומה לא נמצאה
+        authority_not_found: היוצר/ת לא נמצא/אה
+        field_not_applicable: "השדה '%{field}' אינו חל על סוג רשומה '%{record_type}'"
+        field_not_allowed: "השדה '%{field}' אינו מותר לעדכון מסה"
+        ia_entity_not_applicable: "ישות '%{entity}' אינה ישימה לרשומה זו"
+        ia_not_found: קשר יוצר/ת-ישות לא נמצא
+        external_link_not_found: "קישור חיצוני לא נמצא: %{url}"
+        destroy_failed: המחיקה נכשלה
+        unknown_change_kind: "סוג שינוי לא מוכר: %{kind}"
+        no_records: לא נבחרו רשומות לעדכון
+        no_changes: לא הוגדרו שינויים להחיל
+        not_owner: רק בעל/ת הבחירה יכול/ה למחוק אותה
+    saved_selections:
+      save_success: הבחירה נשמרה בהצלחה
+      delete_confirm: האם אתה בטוח שברצונך למחוק בחירה זו?
+      no_selections: אין בחירות שמורות זמינות
     incongruous_copyright:
       title: דו\"ח יצירות במצב זכויות יוצרים שגוי (כנראה)
       columns:

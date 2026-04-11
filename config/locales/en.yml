@@ -302,6 +302,112 @@ en:
     index:
       takes_long_time: Takes long time
       batch_operations: Batch Operations
+    mass_update:
+      dashboard_link: Mass Update
+      new:
+        title: Mass Update Records
+      section_records: Records to Update
+      section_changes: Changes to Apply
+      mode_by_id: By ID
+      mode_by_title: By Title Search
+      mode_by_authority: By Authority Name
+      record_type_manifestation: Manifestation
+      record_type_collection: Collection
+      id_label: "ID:"
+      add_button: Add to List
+      remove_button: Remove
+      authority_name_label: "Authority name:"
+      authority_volumes_label: "Collections/Volumes this authority is involved in:"
+      authority_manifestations_label: "Manifestations whose Expression or Work this authority is involved in:"
+      collection_expand_label: "How to add this collection?"
+      collection_expand_collection_only: Collection record only
+      collection_expand_collection_and_contents: Collection + all contents (recursive)
+      collection_expand_contents_only: Contents only (without collection record)
+      collection_expand_manifestations_only: Manifestations only (skip sub-collection entities)
+      collection_expand_custom: Custom selection
+      saved_selections_label: "Saved selections:"
+      load_selection_button: Load
+      save_private_button: Save for me only
+      save_shared_button: Save and share with others
+      save_selection_name_placeholder: Selection name...
+      no_records_in_list: No records selected yet
+      records_list_title: Selected Records
+      change_type_label: "Change type:"
+      change_kind_field_update: Field Update
+      change_kind_involved_authority_add: Add Involved Authority
+      change_kind_involved_authority_remove: Remove Involved Authority
+      change_kind_external_link_add: Add External Link
+      change_kind_external_link_remove: Remove External Link
+      record_type_label: "Record type:"
+      record_type_work: Work
+      record_type_expression: Expression
+      field_label: "Field:"
+      value_label: "Value (leave blank to clear):"
+      role_label: "Role:"
+      entity_label: "Entity to update:"
+      entity_work: Work
+      entity_expression: Expression
+      url_label: "URL:"
+      link_type_label: "Link type:"
+      link_description_label: "Description:"
+      add_change_button: Add Change
+      changes_list_title: Changes Added
+      no_changes_in_list: No changes defined yet
+      apply_button: Apply All Changes
+      confirm_apply: "Are you sure you want to update %{count_records} records with %{count_changes} changes?"
+      applying: Applying changes...
+      results_title: Update Results
+      result_ok: OK
+      result_error: "Error: %{message}"
+      fields:
+        work:
+          title: Title (Work)
+          genre: Genre
+          primary: Primary
+          orig_lang: Original Language
+          origlang_title: Original Language Title
+          date: Creation Date
+          comment: Comments
+        expression:
+          title: Title (Expression)
+          date: Publication Date
+          period: Period
+          language: Language
+          first_publication_date: First Publication Date
+          source_edition: Source Edition
+          comment: Comments
+          intellectual_property: Intellectual Property
+        manifestation:
+          title: Title (Manifestation)
+          alternate_titles: Alternate Titles
+          sort_title: Sort Title
+          status: Status
+          comment: Comments
+          exclude_from_index: Exclude from Index
+          sefaria_linker: Sefaria Linker
+        collection:
+          title: Title
+          sort_title: Sort Title
+          collection_type: Collection Type
+          comment: Comments
+          suppress_download_and_print: Suppress Download and Print
+      errors:
+        record_not_found: Record not found
+        authority_not_found: Authority not found
+        field_not_applicable: "Field '%{field}' does not apply to record type '%{record_type}'"
+        field_not_allowed: "Field '%{field}' is not allowed for mass update"
+        ia_entity_not_applicable: "Entity '%{entity}' is not applicable to this record"
+        ia_not_found: Involved authority record not found
+        external_link_not_found: "External link not found: %{url}"
+        destroy_failed: Deletion failed
+        unknown_change_kind: "Unknown change kind: %{kind}"
+        no_records: No records selected for update
+        no_changes: No changes defined to apply
+        not_owner: Only the owner of a saved selection can delete it
+    saved_selections:
+      save_success: Selection saved successfully
+      delete_confirm: Are you sure you want to delete this selection?
+      no_selections: No saved selections available
     incongruous_copyright:
       title: Probably incongruous copyright report
       columns:

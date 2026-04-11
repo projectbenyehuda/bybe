@@ -1,0 +1,619 @@
+-# app/views/admin/mass_updates/new.html.haml
+.backend
+  %h1= t('admin.mass_update.new.title')
+
+  -# ─── SECTION 1: Record Selection ───────────────────────────────────────
+  .admin_dashboard_item
+    %h2= t('admin.mass_update.section_records')
+
+    -# Selection mode tabs
+    %ul.nav.nav-tabs#selection-mode-tabs{ role: 'tablist' }
+      %li.nav-item{ role: 'presentation' }
+        %a.nav-link.active{ href: '#tab-by-id', data: { toggle: 'tab' }, role: 'tab' }
+          = t('admin.mass_update.mode_by_id')
+      %li.nav-item{ role: 'presentation' }
+        %a.nav-link{ href: '#tab-by-title', data: { toggle: 'tab' }, role: 'tab' }
+          = t('admin.mass_update.mode_by_title')
+      %li.nav-item{ role: 'presentation' }
+        %a.nav-link{ href: '#tab-by-authority', data: { toggle: 'tab' }, role: 'tab' }
+          = t('admin.mass_update.mode_by_authority')
+
+    .tab-content.mt-2
+      -# ── Tab 1: By ID ──
+      .tab-pane.active#tab-by-id{ role: 'tabpanel' }
+        .admin_container
+          %b= t('admin.mass_update.record_type_label')
+          - rec_opts = [[t('admin.mass_update.record_type_manifestation'), 'Manifestation']]
+          - rec_opts << [t('admin.mass_update.record_type_collection'), 'Collection']
+          = select_tag :direct_record_type, options_for_select(rec_opts), id: 'direct-record-type'
+          &nbsp;
+          %b= t('admin.mass_update.id_label')
+          = text_field_tag :direct_id, nil, id: 'direct-id', size: 10, style: 'background-color: #ffffff;'
+          &nbsp;
+          %button.btn.btn-secondary.btn-sm#add-by-id-btn{ type: 'button' }= t('admin.mass_update.add_button')
+        .text-danger#add-by-id-error{ style: 'display:none' }
+
+      -# ── Tab 2: By Title Search ──
+      .tab-pane#tab-by-title{ role: 'tabpanel' }
+        .admin_container
+          %b= t('admin.mass_update.record_type_manifestation') + ': '
+          - m_ac_opts = { id: 'manifestation-title-search', style: 'background-color: #ffffff; min-width:350px;', id_element: '#manifestation-title-id' }
+          = autocomplete_field_tag :manifestation_title_search, '', autocomplete_manifestation_title_path, m_ac_opts
+          = hidden_field_tag :manifestation_title_id, '', id: 'manifestation-title-id'
+        .admin_container.mt-1
+          %b= t('admin.mass_update.record_type_collection') + ': '
+          - c_ac_opts = { id: 'collection-title-search', style: 'background-color: #ffffff; min-width:350px;', id_element: '#collection-title-id' }
+          = autocomplete_field_tag :collection_title_search, '', autocomplete_collection_title_path, c_ac_opts
+          = hidden_field_tag :collection_title_id, '', id: 'collection-title-id'
+
+      -# ── Tab 3: By Authority ──
+      .tab-pane#tab-by-authority{ role: 'tabpanel' }
+        .admin_container
+          %b= t('admin.mass_update.authority_name_label')
+          - a_ac_opts = { id: 'authority-name-search', style: 'background-color: #ffffff; min-width:350px;', id_element: '#authority-id-hidden' }
+          = autocomplete_field_tag :authority_name_search, '', autocomplete_authority_name_and_aliases_path, a_ac_opts
+          = hidden_field_tag :authority_id_hidden, '', id: 'authority-id-hidden'
+        #authority-lists{ style: 'display:none;' }
+          .admin_container.mt-1
+            %b= t('admin.mass_update.authority_volumes_label')
+            %select.form-control#authority-volumes-dropdown{ style: 'max-width:500px;' }
+              %option= ''
+            %button.btn.btn-secondary.btn-sm#add-authority-volume-btn{ type: 'button' }
+              = t('admin.mass_update.add_button')
+          .admin_container.mt-1
+            %b= t('admin.mass_update.authority_manifestations_label')
+            %select.form-control#authority-manifestations-dropdown{ style: 'max-width:500px;' }
+              %option= ''
+            %button.btn.btn-secondary.btn-sm#add-authority-manifestation-btn{ type: 'button' }
+              = t('admin.mass_update.add_button')
+
+    -# ── Collection Expansion Widget (hidden by default) ──
+    #collection-expand-widget{ style: 'display:none; border: 1px solid #660248; padding:10px; margin-top:8px; background-color:#f0f0ff;' }
+      %b= t('admin.mass_update.collection_expand_label')
+      %br
+      - expand_modes = [
+      -   [:collection_only,         t('admin.mass_update.collection_expand_collection_only')],
+      -   [:collection_and_contents, t('admin.mass_update.collection_expand_collection_and_contents')],
+      -   [:contents_only,           t('admin.mass_update.collection_expand_contents_only')],
+      -   [:manifestations_only,     t('admin.mass_update.collection_expand_manifestations_only')],
+      -   [:custom,                  t('admin.mass_update.collection_expand_custom')]
+      - ]
+      - expand_modes.each_with_index do |(val, label), i|
+        %label.d-block
+          %input{ type: 'radio', name: 'collection_expand_mode', value: val, checked: i.zero? }
+          = label
+      #custom-content-tree{ style: 'display:none; margin-top:8px;' }
+      %button.btn.btn-primary.btn-sm.mt-2#confirm-add-collection-btn{ type: 'button' }
+        = t('admin.mass_update.add_button')
+      %button.btn.btn-secondary.btn-sm.mt-2#cancel-add-collection-btn{ type: 'button' }
+        = t(:cancel)
+
+    -# ── Selected Records List ──
+    %h3.mt-3= t('admin.mass_update.records_list_title')
+    %ul.list-group#records-list{ style: 'min-height: 40px;' }
+      %li.list-group-item.text-muted#records-list-empty= t('admin.mass_update.no_records_in_list')
+
+    -# ── Saved Selections ──
+    .mt-3
+      %b= t('admin.mass_update.saved_selections_label')
+      %select.form-control#saved-selections-dropdown{ style: 'max-width:400px; display:inline-block;' }
+        %option{ value: '' }= t('admin.mass_update.saved_selections_label')
+      %button.btn.btn-secondary.btn-sm#load-selection-btn{ type: 'button' }
+        = t('admin.mass_update.load_selection_button')
+      &nbsp;|&nbsp;
+      - sel_name_opts = { id: 'new-selection-name', placeholder: t('admin.mass_update.save_selection_name_placeholder'), style: 'background-color:#ffffff; width:200px;' }
+      = text_field_tag :new_selection_name, nil, sel_name_opts
+      %button.btn.btn-secondary.btn-sm#save-private-btn{ type: 'button' }
+        = t('admin.mass_update.save_private_button')
+      %button.btn.btn-info.btn-sm#save-shared-btn{ type: 'button' }
+        = t('admin.mass_update.save_shared_button')
+    .mt-1#saved-selection-message{ style: 'display:none;' }
+
+  -# ─── SECTION 2: Changes to Apply ────────────────────────────────────────
+  .admin_dashboard_item.mt-4
+    %h2= t('admin.mass_update.section_changes')
+
+    -# Change kind selector
+    .admin_container
+      %b= t('admin.mass_update.change_type_label')
+      - ck_opts = [
+      -   [t('admin.mass_update.change_kind_field_update'),              'field_update'],
+      -   [t('admin.mass_update.change_kind_involved_authority_add'),    'involved_authority_add'],
+      -   [t('admin.mass_update.change_kind_involved_authority_remove'), 'involved_authority_remove'],
+      -   [t('admin.mass_update.change_kind_external_link_add'),         'external_link_add'],
+      -   [t('admin.mass_update.change_kind_external_link_remove'),      'external_link_remove']
+      - ]
+      = select_tag :change_kind, options_for_select(ck_opts), id: 'change-kind-select'
+
+    -# ── Sub-form: field_update ──
+    .change-subform.mt-2#subform-field-update
+      .admin_container
+        %b= t('admin.mass_update.record_type_label')
+        - frt_opts = [
+        -   [t('admin.mass_update.record_type_work'),         'work'],
+        -   [t('admin.mass_update.record_type_expression'),   'expression'],
+        -   [t('admin.mass_update.record_type_manifestation'),'manifestation'],
+        -   [t('admin.mass_update.record_type_collection'),   'collection']
+        - ]
+        = select_tag :field_record_type, options_for_select(frt_opts), id: 'field-record-type'
+        &nbsp;
+        %b= t('admin.mass_update.field_label')
+        %select.form-control#field-name-select{ style: 'display:inline-block; width:auto;' }
+      .admin_container.mt-1
+        %b= t('admin.mass_update.value_label')
+        = text_field_tag :field_value, nil, id: 'field-value', style: 'background-color:#ffffff; min-width:250px;'
+        %span#field-value-enum-container{ style: 'display:none;' }
+          %select.form-control#field-value-enum{ style: 'display:inline-block; width:auto;' }
+
+    -# ── Sub-form: involved_authority (add/remove) ──
+    .change-subform.mt-2#subform-involved-authority{ style: 'display:none;' }
+      .admin_container
+        %b= t('admin.mass_update.role_label')
+        - ia_role_opts = InvolvedAuthority.roles.keys.map { |r| [t(r), r] }
+        = select_tag :ia_role, options_for_select(ia_role_opts), id: 'ia-role-select'
+        &nbsp;
+        %b= t('admin.mass_update.entity_label')
+        - ia_ent_opts = [[t('admin.mass_update.entity_work'), 'work'], [t('admin.mass_update.entity_expression'), 'expression']]
+        = select_tag :ia_entity, options_for_select(ia_ent_opts), id: 'ia-entity-select'
+      .admin_container.mt-1
+        %b= t('admin.mass_update.authority_name_label')
+        - ia_ac_opts = { id: 'ia-authority-name', style: 'background-color:#ffffff; min-width:300px;', id_element: '#ia-authority-id' }
+        = autocomplete_field_tag :ia_authority_name, '', autocomplete_authority_name_and_aliases_path, ia_ac_opts
+        = hidden_field_tag :ia_authority_id, '', id: 'ia-authority-id'
+
+    -# ── Sub-form: external_link_add ──
+    .change-subform.mt-2#subform-external-link-add{ style: 'display:none;' }
+      .admin_container
+        %b= t('admin.mass_update.url_label')
+        = text_field_tag :ext_link_url, nil, id: 'ext-link-url', style: 'background-color:#ffffff; min-width:350px;'
+        &nbsp;
+        %b= t('admin.mass_update.link_type_label')
+        - lt_opts = ExternalLink.linktypes.keys.map { |lt| [t(lt), lt] }
+        = select_tag :ext_link_type, options_for_select(lt_opts), id: 'ext-link-type'
+      .admin_container.mt-1
+        %b= t('admin.mass_update.link_description_label')
+        = text_field_tag :ext_link_description, nil, id: 'ext-link-description', style: 'background-color:#ffffff; min-width:350px;'
+
+    -# ── Sub-form: external_link_remove ──
+    .change-subform.mt-2#subform-external-link-remove{ style: 'display:none;' }
+      .admin_container
+        %b= t('admin.mass_update.url_label')
+        = text_field_tag :ext_remove_url, nil, id: 'ext-remove-url', style: 'background-color:#ffffff; min-width:350px;'
+
+    %button.btn.btn-secondary.mt-2#add-change-btn{ type: 'button' }
+      = t('admin.mass_update.add_change_button')
+    .text-danger.mt-1#add-change-error{ style: 'display:none;' }
+
+    -# ── Changes List ──
+    %h3.mt-3= t('admin.mass_update.changes_list_title')
+    %ul.list-group#changes-list{ style: 'min-height: 40px;' }
+      %li.list-group-item.text-muted#changes-list-empty= t('admin.mass_update.no_changes_in_list')
+
+  -# ─── APPLY ───────────────────────────────────────────────────────────────
+  .mt-4
+    %button.btn.btn-danger#apply-btn{ type: 'button' }
+      = t('admin.mass_update.apply_button')
+    %span#applying-indicator{ style: 'display:none; margin-right:10px;' }
+      = t('admin.mass_update.applying')
+
+  .mt-4#results-section{ style: 'display:none;' }
+    %h2= t('admin.mass_update.results_title')
+    #results-body
+
+:javascript
+  var MassUpdate = (function() {
+    var selectedRecords = [];
+    var pendingChanges  = [];
+    var pendingCollection = null;
+
+    var i18n = {
+      removeButton:  #{t('admin.mass_update.remove_button').to_json},
+      noRecords:     #{t('admin.mass_update.no_records_in_list').to_json},
+      noChanges:     #{t('admin.mass_update.no_changes_in_list').to_json},
+      confirmApply:  #{t('admin.mass_update.confirm_apply', count_records: '__REC__', count_changes: '__CHG__').to_json},
+      resultOk:      #{t('admin.mass_update.result_ok').to_json},
+      resultError:   #{t('admin.mass_update.result_error', message: '__MSG__').to_json},
+      saveSuccess:   #{t('admin.saved_selections.save_success').to_json},
+      noSelections:  #{t('admin.saved_selections.no_selections').to_json},
+      typeManifest:  #{t('admin.mass_update.record_type_manifestation').to_json},
+      typeCollection:#{t('admin.mass_update.record_type_collection').to_json}
+    };
+
+    var fieldDefs = {
+      work:          #{MassUpdateService::WORK_FIELDS.to_json},
+      expression:    #{MassUpdateService::EXPRESSION_FIELDS.to_json},
+      manifestation: #{MassUpdateService::MANIFESTATION_FIELDS.to_json},
+      collection:    #{MassUpdateService::COLLECTION_FIELDS.to_json}
+    };
+
+    var enumOptions = {
+      genre:                 #{Work::GENRES.map { |g| [t(g), g] }.to_json},
+      status:                #{Manifestation.statuses.keys.map { |k| [t(k), k] }.to_json},
+      period:                #{Expression.periods.keys.map { |p| [t(p), p] }.to_json},
+      language:              #{get_langs.map { |lang| [textify_lang(lang), lang] }.to_json},
+      intellectual_property: #{Expression.intellectual_properties.keys.map { |ip| [textify_intellectual_property(ip), ip] }.to_json},
+      collection_type:       #{(Collection.collection_types.keys - Collection::SYSTEM_TYPES).map { |ct| [ct, ct] }.to_json}
+    };
+
+    var booleanFields = ['primary', 'exclude_from_index', 'sefaria_linker', 'suppress_download_and_print'];
+
+    function getCsrf() {
+      return $('meta[name="csrf-token"]').attr('content');
+    }
+
+    // ── Records list ──
+    function renderRecords() {
+      var $list = $('#records-list').empty();
+      if (selectedRecords.length === 0) {
+        $list.append('<li class="list-group-item text-muted">' + i18n.noRecords + '</li>');
+        return;
+      }
+      selectedRecords.forEach(function(rec, idx) {
+        var typeLabel = rec.type === 'Manifestation' ? i18n.typeManifest : i18n.typeCollection;
+        var $item = $('<li class="list-group-item d-flex justify-content-between align-items-center">');
+        $item.append('<span>' + typeLabel + ' #' + rec.id + ': ' + $('<span>').text(rec.title).html() + '</span>');
+        var $btn = $('<button class="btn btn-danger btn-sm">').text(i18n.removeButton);
+        (function(i) { $btn.on('click', function() { selectedRecords.splice(i, 1); renderRecords(); }); }(idx));
+        $item.append($btn);
+        $list.append($item);
+      });
+    }
+
+    function addRecord(type, id, title) {
+      if (!selectedRecords.some(function(r) { return r.type === type && r.id == id; })) {
+        selectedRecords.push({ type: type, id: parseInt(id, 10), title: title });
+        renderRecords();
+      }
+    }
+
+    // ── Collection expand widget ──
+    function showCollectionExpandWidget(id, title) {
+      pendingCollection = { id: id, title: title };
+      $('input[name="collection_expand_mode"]').first().prop('checked', true);
+      $('#custom-content-tree').hide().empty();
+      $('#collection-expand-widget').show();
+    }
+
+    $('#confirm-add-collection-btn').on('click', function() {
+      if (!pendingCollection) return;
+      var mode = $('input[name="collection_expand_mode"]:checked').val();
+      var cid = pendingCollection.id, ctitle = pendingCollection.title;
+      $('#collection-expand-widget').hide();
+      if (mode === 'collection_only') {
+        addRecord('Collection', cid, ctitle);
+        pendingCollection = null;
+      } else if (mode === 'custom') {
+        $('#custom-content-tree input[type=checkbox]:checked').each(function() {
+          addRecord($(this).data('type'), $(this).data('id'), $(this).data('title'));
+        });
+        pendingCollection = null;
+      } else {
+        var contentsUrl = '#{admin_mass_update_collection_contents_path}';
+        $.getJSON(contentsUrl, { collection_id: cid }, function(data) {
+          var all = data.items || [];
+          var filtered = mode === 'collection_and_contents'
+            ? [{ type: 'Collection', id: cid, title: ctitle }].concat(all)
+            : mode === 'contents_only' ? all
+            : mode === 'manifestations_only'
+              ? all.filter(function(i) { return i.type === 'Manifestation'; })
+            : [];
+          filtered.forEach(function(item) { addRecord(item.type, item.id, item.title); });
+        });
+        pendingCollection = null;
+      }
+    });
+
+    $('#cancel-add-collection-btn').on('click', function() {
+      pendingCollection = null;
+      $('#collection-expand-widget').hide();
+    });
+
+    $(document).on('change', 'input[name="collection_expand_mode"]', function() {
+      if ($(this).val() !== 'custom' || !pendingCollection) {
+        $('#custom-content-tree').hide();
+        return;
+      }
+      var contentsUrl = '#{admin_mass_update_collection_contents_path}';
+      $('#custom-content-tree').show().html('<em>טוען...</em>');
+      $.getJSON(contentsUrl, { collection_id: pendingCollection.id }, function(data) {
+        var $tree = $('#custom-content-tree').empty();
+        (data.items || []).forEach(function(item) {
+          var $label = $('<label class="d-block">').css('padding-right', (item.depth * 20) + 'px');
+          var $cb = $('<input type="checkbox" checked>');
+          $cb.data('type', item.type).data('id', item.id).data('title', item.title);
+          $label.append($cb).append(' ' + item.type + ' #' + item.id + ': ' + $('<span>').text(item.title).html());
+          $tree.append($label);
+        });
+      });
+    });
+
+    // ── Tab 1: By ID ──
+    $('#add-by-id-btn').on('click', function() {
+      var type = $('#direct-record-type').val();
+      var id   = $('#direct-id').val().trim();
+      if (!id) return;
+      fetchRecordTitle(type, id, function(title) {
+        if (type === 'Collection') {
+          showCollectionExpandWidget(id, title);
+        } else {
+          addRecord(type, id, title);
+        }
+        $('#direct-id').val('');
+        $('#add-by-id-error').hide();
+      }, function() {
+        $('#add-by-id-error').text('').show();
+      });
+    });
+
+    function fetchRecordTitle(type, id, onSuccess) {
+      var path = type === 'Manifestation'
+        ? '/manifestation/' + id + '.json'
+        : '/collections/' + id + '.json';
+      $.getJSON(path, function(data) {
+        onSuccess(data.title || ('#' + id));
+      }).fail(function() { onSuccess('#' + id); });
+    }
+
+    // ── Tab 2: Autocomplete ──
+    $(document).on('autocompleteselect', '#manifestation-title-search', function(event, ui) {
+      var id = ui.item.id || $('#manifestation-title-id').val();
+      addRecord('Manifestation', id, ui.item.label || $(this).val());
+      $(this).val(''); $('#manifestation-title-id').val(''); event.preventDefault();
+    });
+
+    $(document).on('autocompleteselect', '#collection-title-search', function(event, ui) {
+      var id = ui.item.id || $('#collection-title-id').val();
+      showCollectionExpandWidget(id, ui.item.label || $(this).val());
+      $(this).val(''); $('#collection-title-id').val(''); event.preventDefault();
+    });
+
+    // ── Tab 3: Authority ──
+    $(document).on('autocompleteselect', '#authority-name-search', function(event, ui) {
+      $('#authority-id-hidden').val(ui.item.id);
+      loadAuthorityDropdowns(ui.item.id);
+      event.preventDefault();
+    });
+
+    function loadAuthorityDropdowns(authorityId) {
+      $('#authority-lists').show();
+      var $volDrop = $('#authority-volumes-dropdown').html('<option value=""></option>');
+      var $manDrop = $('#authority-manifestations-dropdown').html('<option value=""></option>');
+      $.getJSON('/authors/' + authorityId + '/volumes', function(data) {
+        var vols = (data.volumes || []).concat(data.publications || []);
+        vols.forEach(function(v) {
+          $volDrop.append($('<option>').val(v.id).text(v.title));
+        });
+      });
+      var manifestUrl = '#{admin_mass_update_authority_manifestations_path}';
+      $.getJSON(manifestUrl, { authority_id: authorityId }, function(data) {
+        (data.manifestations || []).forEach(function(m) {
+          $manDrop.append($('<option>').val(m.id).data('title', m.title).text(m.title));
+        });
+      });
+    }
+
+    $('#add-authority-volume-btn').on('click', function() {
+      var $sel = $('#authority-volumes-dropdown');
+      var id = $sel.val(), title = $sel.find('option:selected').text();
+      if (id) showCollectionExpandWidget(id, title);
+    });
+
+    $('#add-authority-manifestation-btn').on('click', function() {
+      var $sel = $('#authority-manifestations-dropdown'), id = $sel.val();
+      var title = $sel.find('option:selected').data('title') || $sel.find('option:selected').text();
+      if (id) addRecord('Manifestation', id, title);
+    });
+
+    // ── Field dropdown ──
+    function updateFieldDropdown() {
+      var rt = $('#field-record-type').val();
+      var $sel = $('#field-name-select').empty();
+      (fieldDefs[rt] || []).forEach(function(f) { $sel.append($('<option>').val(f).text(f)); });
+      updateValueWidget();
+    }
+
+    function updateValueWidget() {
+      var field = $('#field-name-select').val();
+      if (!field) return;
+      if (enumOptions[field]) {
+        $('#field-value').hide();
+        var $enumSel = $('#field-value-enum').empty().append('<option value=""></option>');
+        enumOptions[field].forEach(function(pair) {
+          $enumSel.append($('<option>').val(pair[1]).text(pair[0]));
+        });
+        $('#field-value-enum-container').show();
+      } else if (booleanFields.indexOf(field) !== -1) {
+        $('#field-value').hide();
+        var $b = $('#field-value-enum').empty();
+        $b.append('<option value="">--</option>');
+        $b.append('<option value="true">כן / Yes</option>');
+        $b.append('<option value="false">לא / No</option>');
+        $('#field-value-enum-container').show();
+      } else {
+        $('#field-value-enum-container').hide();
+        $('#field-value').show();
+      }
+    }
+
+    $('#field-record-type').on('change', updateFieldDropdown);
+    $('#field-name-select').on('change', updateValueWidget);
+    updateFieldDropdown();
+
+    // ── Change sub-forms ──
+    function updateSubforms() {
+      var kind = $('#change-kind-select').val();
+      $('.change-subform').hide();
+      if (kind === 'field_update')              $('#subform-field-update').show();
+      else if (kind.indexOf('involved_') === 0) $('#subform-involved-authority').show();
+      else if (kind === 'external_link_add')    $('#subform-external-link-add').show();
+      else if (kind === 'external_link_remove') $('#subform-external-link-remove').show();
+    }
+    $('#change-kind-select').on('change', updateSubforms);
+    updateSubforms();
+
+    // ── Changes list ──
+    function renderChanges() {
+      var $list = $('#changes-list').empty();
+      if (pendingChanges.length === 0) {
+        $list.append('<li class="list-group-item text-muted">' + i18n.noChanges + '</li>');
+        return;
+      }
+      pendingChanges.forEach(function(ch, idx) {
+        var $item = $('<li class="list-group-item d-flex justify-content-between align-items-center">');
+        $item.append('<span>' + $('<span>').text(describeChange(ch)).html() + '</span>');
+        var $btn = $('<button class="btn btn-danger btn-sm">').text(i18n.removeButton);
+        (function(i) { $btn.on('click', function() { pendingChanges.splice(i, 1); renderChanges(); }); }(idx));
+        $item.append($btn);
+        $list.append($item);
+      });
+    }
+
+    function describeChange(ch) {
+      if (ch.kind === 'field_update') {
+        return ch.record_type + '.' + ch.field + ' = ' + (ch.value || '(blank)');
+      }
+      if (ch.kind === 'involved_authority_add') {
+        return '[+] ' + ch.role + ': ' + ch.authority_name + ' (' + ch.entity + ')';
+      }
+      if (ch.kind === 'involved_authority_remove') {
+        return '[-] ' + ch.role + ': ' + ch.authority_name + ' (' + ch.entity + ')';
+      }
+      if (ch.kind === 'external_link_add') return '[+ link] ' + ch.url + ' (' + ch.linktype + ')';
+      if (ch.kind === 'external_link_remove') return '[- link] ' + ch.url;
+      return ch.kind;
+    }
+
+    $('#add-change-btn').on('click', function() {
+      var kind = $('#change-kind-select').val(), change = { kind: kind }, error = null;
+      if (kind === 'field_update') {
+        change.record_type = $('#field-record-type').val();
+        change.field = $('#field-name-select').val();
+        var enumVisible = $('#field-value-enum-container').is(':visible');
+        change.value = enumVisible ? $('#field-value-enum').val() : $('#field-value').val();
+        if (!change.field) error = 'בחר שדה';
+      } else if (kind.indexOf('involved_') === 0) {
+        change.role = $('#ia-role-select').val();
+        change.authority_id = $('#ia-authority-id').val();
+        change.authority_name = $('#ia-authority-name').val();
+        change.entity = $('#ia-entity-select').val();
+        if (!change.authority_id) error = 'בחר יוצר/ת';
+      } else if (kind === 'external_link_add') {
+        change.url = $('#ext-link-url').val().trim();
+        change.linktype = $('#ext-link-type').val();
+        change.description = $('#ext-link-description').val();
+        if (!change.url) error = 'נא להזין כתובת URL';
+      } else if (kind === 'external_link_remove') {
+        change.url = $('#ext-remove-url').val().trim();
+        if (!change.url) error = 'נא להזין כתובת URL';
+      }
+      if (error) { $('#add-change-error').text(error).show(); return; }
+      $('#add-change-error').hide();
+      pendingChanges.push(change);
+      renderChanges();
+    });
+
+    // ── Apply ──
+    $('#apply-btn').on('click', function() {
+      if (!selectedRecords.length || !pendingChanges.length) return;
+      var msg = i18n.confirmApply
+        .replace('__REC__', selectedRecords.length)
+        .replace('__CHG__', pendingChanges.length);
+      if (!confirm(msg)) return;
+      $('#applying-indicator').show();
+      $('#apply-btn').prop('disabled', true);
+      $.ajax({
+        url: '#{admin_mass_update_path}',
+        method: 'POST',
+        contentType: 'application/json',
+        headers: { 'X-CSRF-Token': getCsrf() },
+        data: JSON.stringify({ records: selectedRecords, changes: pendingChanges }),
+        success: function(data) {
+          $('#applying-indicator').hide();
+          $('#apply-btn').prop('disabled', false);
+          renderResults(data.results);
+        },
+        error: function(xhr) {
+          $('#applying-indicator').hide();
+          $('#apply-btn').prop('disabled', false);
+          var errMsg = xhr.responseJSON ? xhr.responseJSON.error : 'שגיאה לא ידועה';
+          $('#results-body').html('<div class="alert alert-danger">' + $('<span>').text(errMsg).html() + '</div>');
+          $('#results-section').show();
+        }
+      });
+    });
+
+    function renderResults(results) {
+      var $body = $('#results-body').empty();
+      results.forEach(function(res) {
+        var typeLabel = res.type === 'Manifestation' ? i18n.typeManifest : i18n.typeCollection;
+        $body.append($('<h4>').text(typeLabel + ' #' + res.id));
+        var $ul = $('<ul class="list-group mb-2">');
+        res.results.forEach(function(r, i) {
+          var desc = describeChange(pendingChanges[i] || {});
+          var okMsg = desc + ': ' + i18n.resultOk;
+          var errMsg = desc + ': ' + i18n.resultError.replace('__MSG__', r.error || '?');
+          var $li = r.ok
+            ? $('<li class="list-group-item list-group-item-success">').text(okMsg)
+            : $('<li class="list-group-item list-group-item-danger">').text(errMsg);
+          $ul.append($li);
+        });
+        $body.append($ul);
+      });
+      $('#results-section').show();
+    }
+
+    // ── Saved Selections ──
+    function loadSavedSelectionsList() {
+      $.getJSON('#{admin_saved_selections_path}', function(data) {
+        var $drop = $('#saved-selections-dropdown').empty().append('<option value=""></option>');
+        if (!data.length) {
+          $drop.append($('<option>').val('').text(i18n.noSelections));
+          return;
+        }
+        data.forEach(function(s) {
+          var label = s.name + ' (' + s.item_count + ')' + (s.shared ? ' \u2605' : '');
+          $drop.append($('<option>').val(s.id).text(label));
+        });
+      });
+    }
+    loadSavedSelectionsList();
+
+    $('#load-selection-btn').on('click', function() {
+      var id = $('#saved-selections-dropdown').val();
+      if (!id) return;
+      $.getJSON('#{admin_saved_selections_path}/' + id, function(data) {
+        (data.items || []).forEach(function(item) { addRecord(item.type, item.id, item.title); });
+      });
+    });
+
+    function saveSelection(shared) {
+      var name = $('#new-selection-name').val().trim();
+      if (!name) { alert('נא לתת שם לבחירה'); return; }
+      if (!selectedRecords.length) { alert(i18n.noRecords); return; }
+      $.ajax({
+        url: '#{admin_saved_selections_path}',
+        method: 'POST',
+        contentType: 'application/json',
+        headers: { 'X-CSRF-Token': getCsrf() },
+        data: JSON.stringify({ name: name, shared: shared, items: selectedRecords }),
+        success: function() {
+          var $msg = $('#saved-selection-message');
+          $msg.text(i18n.saveSuccess).removeClass('text-danger').addClass('text-success').show();
+          setTimeout(function() { $msg.hide(); }, 3000);
+          $('#new-selection-name').val('');
+          loadSavedSelectionsList();
+        },
+        error: function(xhr) {
+          var err = xhr.responseJSON ? xhr.responseJSON.error : 'שגיאה';
+          $('#saved-selection-message').text(err).removeClass('text-success').addClass('text-danger').show();
+        }
+      });
+    }
+
+    $('#save-private-btn').on('click', function() { saveSelection(false); });
+    $('#save-shared-btn').on('click', function() { saveSelection(true); });
+
+    renderRecords();
+    renderChanges();
+
+  }());

@@ -15,6 +15,15 @@ Bybeconv::Application.routes.draw do
   get 'files/:record_type/:record_id/*filename', to: 'files#download', as: 'file_download', format: false
 
   namespace :admin do
+    # Mass update tool
+    get  'mass_update' => 'mass_updates#new', as: 'mass_update'
+    post 'mass_update' => 'mass_updates#create'
+    get  'mass_update/collection_contents' => 'mass_updates#collection_contents',
+         as: 'mass_update_collection_contents'
+    get  'mass_update/authority_manifestations' => 'mass_updates#authority_manifestations',
+         as: 'mass_update_authority_manifestations'
+    resources :saved_selections, only: %i[index show create destroy]
+
     resources :featured_contents do
       resources :features, controller: 'featured_content_features', only: %i(create)
     end
