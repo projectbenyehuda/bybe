@@ -341,16 +341,22 @@
         }
         $('#direct-id').val('');
         $('#add-by-id-error').hide();
-      }, function() {
-        $('#add-by-id-error').text('').show();
+      }, function(errorMessage) {
+        $('#add-by-id-error').text(errorMessage || i18n.error).show();
       });
     });
 
-    function fetchRecordTitle(type, id, onSuccess) {
+    function fetchRecordTitle(type, id, onSuccess, onFailure) {
       var url = '#{admin_mass_update_record_info_path}';
       $.getJSON(url, { type: type, id: id }, function(data) {
         onSuccess(data.title || ('#' + id));
-      }).fail(function() { onSuccess('#' + id); });
+      }).fail(function(jqXHR) {
+        var errorMessage = i18n.error;
+        if (jqXHR && jqXHR.responseJSON) {
+          errorMessage = jqXHR.responseJSON.error || jqXHR.responseJSON.message || errorMessage;
+        }
+        if (onFailure) onFailure(errorMessage);
+      });
     }
 
     // ── Tab 2: Autocomplete ──
