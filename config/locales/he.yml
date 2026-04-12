@@ -1822,7 +1822,7 @@ he:
       change_kind_involved_authority_remove: הסרת יוצר/ת מעורב/ת
       change_kind_external_link_add: הוספת קישור חיצוני
       change_kind_external_link_remove: הסרת קישור חיצוני
-      record_type_label: "סוג הרשומה:"
+      record_type_label: "סוג הפרטים:"
       record_type_work: יצירה
       record_type_expression: ביטוי
       field_label: "שדה:"
