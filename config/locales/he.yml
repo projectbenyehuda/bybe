@@ -1795,7 +1795,7 @@ he:
       mode_by_id: לפי מזהה
       mode_by_title: לפי כותרת
       mode_by_authority: לפי שם יוצר/ת
-      record_type_manifestation: יצירה
+      record_type_manifestation: מימוש
       record_type_collection: אוסף
       id_label: "מזהה:"
       add_button: הוסף לרשימה
@@ -1854,11 +1854,11 @@ he:
           comment: הערות
         expression:
           title: "כותרת (ביטוי)"
-          date: תאריך פרסום
+          date: תאריך הוצאה
           period: תקופה
           language: שפה
           first_publication_date: תאריך פרסום ראשון
-          source_edition: מהדורת מקור
+          source_edition: פרטי הוצאה
           comment: הערות
           intellectual_property: זכויות יוצרים
         manifestation:
