@@ -332,6 +332,7 @@ en:
       save_selection_name_placeholder: Selection name...
       no_records_in_list: No records selected yet
       records_list_title: Selected Records
+      clear_all_button: Clear all
       change_type_label: "Change type:"
       change_kind_field_update: Field Update
       change_kind_involved_authority_add: Add Involved Authority
@@ -357,6 +358,9 @@ en:
       confirm_apply: "Are you sure you want to update %{count_records} records with %{count_changes} changes?"
       applying: Applying changes...
       results_title: Update Results
+      results_summary: "Total %{total} changes:"
+      results_summary_succeeded: "%{count} succeeded"
+      results_summary_failed: "%{count} failed"
       result_ok: OK
       result_error: "Error: %{message}"
       fields:

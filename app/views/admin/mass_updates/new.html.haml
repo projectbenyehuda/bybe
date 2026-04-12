@@ -87,8 +87,11 @@
         = t(:cancel)
 
     -# ── Selected Records List ──
-    %h3.mt-3= t('admin.mass_update.records_list_title')
-    %ul.list-group#records-list{ style: 'min-height: 40px;' }
+    .mt-3.d-flex.align-items-center
+      %h3.mb-0= t('admin.mass_update.records_list_title')
+      %button.btn.btn-outline-danger.btn-sm.ml-3#clear-records-btn{ type: 'button', style: 'display:none;' }
+        = t('admin.mass_update.clear_all_button')
+    %ul.list-group.mt-2#records-list{ style: 'min-height: 40px;' }
       %li.list-group-item.text-muted#records-list-empty= t('admin.mass_update.no_records_in_list')
 
     -# ── Saved Selections ──
@@ -215,8 +218,12 @@
       errorNoAuthority:  #{t('admin.mass_update.errors.no_authority_selected').to_json},
       errorNoUrl:        #{t('admin.mass_update.errors.no_url_entered').to_json},
       errorUnknown:      #{t('admin.mass_update.errors.unknown_error').to_json},
-      errorNoName:       #{t('admin.mass_update.errors.no_selection_name').to_json},
-      loading:           #{t('admin.mass_update.loading').to_json}
+      errorNoName:        #{t('admin.mass_update.errors.no_selection_name').to_json},
+      loading:            #{t('admin.mass_update.loading').to_json},
+      clearAll:           #{t('admin.mass_update.clear_all_button').to_json},
+      resultsSummary:     #{t('admin.mass_update.results_summary', total: '__TOTAL__').to_json},
+      resultsSummaryOk:   #{t('admin.mass_update.results_summary_succeeded', count: '__OK__').to_json},
+      resultsSummaryFail: #{t('admin.mass_update.results_summary_failed', count: '__FAIL__').to_json}
     };
 
     var fieldDefs = {
@@ -245,6 +252,7 @@
     // ── Records list ──
     function renderRecords() {
       var $list = $('#records-list').empty();
+      $('#clear-records-btn').toggle(selectedRecords.length > 0);
       if (selectedRecords.length === 0) {
         $list.append('<li class="list-group-item text-muted">' + i18n.noRecords + '</li>');
         return;
@@ -266,6 +274,11 @@
         renderRecords();
       }
     }
+
+    $('#clear-records-btn').on('click', function() {
+      selectedRecords = [];
+      renderRecords();
+    });
 
     // ── Collection expand widget ──
     function showCollectionExpandWidget(id, title) {
@@ -561,6 +574,16 @@
 
     function renderResults(results) {
       var $body = $('#results-body').empty();
+      var total = 0, succeeded = 0, failed = 0;
+      results.forEach(function(res) {
+        res.results.forEach(function(r) { total++; if (r.ok) succeeded++; else failed++; });
+      });
+      var $summary = $('<div class="mb-3 p-2" style="border:1px solid #ccc; background:#f9f9f9; border-radius:4px;">');
+      $summary.append($('<span>').text(i18n.resultsSummary.replace('__TOTAL__', total) + ' '));
+      $summary.append($('<strong class="text-success">').text(i18n.resultsSummaryOk.replace('__OK__', succeeded)));
+      $summary.append($('<span>').text(', '));
+      $summary.append($('<strong class="text-danger">').text(i18n.resultsSummaryFail.replace('__FAIL__', failed)));
+      $body.append($summary);
       results.forEach(function(res) {
         var typeLabel = res.type === 'Manifestation' ? i18n.typeManifest : i18n.typeCollection;
         var heading = $('<h4>');

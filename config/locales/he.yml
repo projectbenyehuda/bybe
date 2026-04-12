@@ -1816,6 +1816,7 @@ he:
       save_selection_name_placeholder: שם הבחירה...
       no_records_in_list: לא נבחרו רשומות
       records_list_title: רשומות שנבחרו
+      clear_all_button: נקה הכל
       change_type_label: "סוג השינוי:"
       change_kind_field_update: עדכון שדה
       change_kind_involved_authority_add: הוספת יוצר/ת מעורב/ת
@@ -1841,6 +1842,9 @@ he:
       confirm_apply: "האם אתה בטוח שברצונך לעדכן %{count_records} רשומות עם %{count_changes} שינויים?"
       applying: מחיל שינויים...
       results_title: תוצאות העדכון
+      results_summary: "סה\"כ %{total} שינויים:"
+      results_summary_succeeded: "%{count} הצליחו"
+      results_summary_failed: "%{count} נכשלו"
       result_ok: הצליח
       result_error: "שגיאה: %{message}"
       fields:
