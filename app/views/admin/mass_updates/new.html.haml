@@ -23,7 +23,7 @@
       .tab-pane.active#tab-by-id{ role: 'tabpanel' }
         .admin_container
           %b= t('admin.mass_update.record_type_label')
-          - rec_opts = [[t('admin.mass_update.record_type_manifestation'), 'Manifestation']]
+          - rec_opts = [[t('text'), 'Manifestation']]
           - rec_opts << [t('admin.mass_update.record_type_collection'), 'Collection']
           = select_tag :direct_record_type, options_for_select(rec_opts), id: 'direct-record-type'
           &nbsp;
