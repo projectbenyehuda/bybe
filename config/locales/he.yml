@@ -1833,6 +1833,7 @@ he:
       entity_label: "ישות לעדכן:"
       entity_work: יצירה
       entity_expression: ביטוי
+      entity_collection: אוסף
       url_label: "כתובת URL:"
       link_type_label: "סוג קישור:"
       link_description_label: "תיאור:"

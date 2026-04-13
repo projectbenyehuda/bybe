@@ -387,6 +387,24 @@ RSpec.describe MassUpdateService do
         expect(manifestation.reload.title).to eq('M Title')
         expect(collection.reload.title).to eq('C Title')
       end
+
+      it 'returns correct change_index per record so results can be labelled by original change position' do
+        # changes[0] = work-level (Manifestation only), changes[1] = collection-level (Collection only)
+        changes = [
+          { 'kind' => 'field_update', 'record_type' => 'work', 'field' => 'genre', 'value' => 'drama' },
+          { 'kind' => 'field_update', 'record_type' => 'collection', 'field' => 'title', 'value' => 'C Title' }
+        ]
+        results = apply([m_record, c_record], changes)
+
+        m_results = results[['Manifestation', manifestation.id]]
+        c_results = results[['Collection', collection.id]]
+
+        expect(m_results.pluck(:change_index)).to eq([0])
+        expect(m_results.pluck(:result)).to eq([:ok])
+
+        expect(c_results.pluck(:change_index)).to eq([1])
+        expect(c_results.pluck(:result)).to eq([:ok])
+      end
     end
 
     context 'with InvolvedAuthority role validation' do
@@ -436,6 +454,30 @@ RSpec.describe MassUpdateService do
                      'authority_id' => authority.id, 'entity' => 'expression' }]
         results = apply([c_record], changes)
         expect(result_for(results, c_record)).to be_empty
+      end
+
+      it 'adds an involved authority directly to a Collection entity' do
+        changes = [{ 'kind' => 'involved_authority_add', 'role' => 'editor',
+                     'authority_id' => authority.id, 'entity' => 'collection' }]
+        expect { apply([c_record], changes) }.to change {
+          InvolvedAuthority.where(item: collection, authority: authority, role: :editor).count
+        }.by(1)
+      end
+
+      it 'removes an involved authority from a Collection entity' do
+        InvolvedAuthority.create!(item: collection, authority: authority, role: :editor)
+        changes = [{ 'kind' => 'involved_authority_remove', 'role' => 'editor',
+                     'authority_id' => authority.id, 'entity' => 'collection' }]
+        expect { apply([c_record], changes) }.to change {
+          InvolvedAuthority.where(item: collection, authority: authority, role: :editor).count
+        }.by(-1)
+      end
+
+      it 'omits result for collection entity on Manifestation record (not applicable)' do
+        changes = [{ 'kind' => 'involved_authority_add', 'role' => 'editor',
+                     'authority_id' => authority.id, 'entity' => 'collection' }]
+        results = apply([m_record], changes)
+        expect(result_for(results, m_record)).to be_empty
       end
     end
 

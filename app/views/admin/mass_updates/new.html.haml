@@ -150,7 +150,7 @@
         = select_tag :ia_role, options_for_select(ia_role_opts), id: 'ia-role-select'
         &nbsp;
         %b= t('admin.mass_update.entity_label')
-        - ia_ent_opts = [[t('admin.mass_update.entity_work'), 'work'], [t('admin.mass_update.entity_expression'), 'expression']]
+        - ia_ent_opts = [[t('admin.mass_update.entity_work'), 'work'], [t('admin.mass_update.entity_expression'), 'expression'], [t('admin.mass_update.entity_collection'), 'collection']]
         = select_tag :ia_entity, options_for_select(ia_ent_opts), id: 'ia-entity-select'
       .admin_container.mt-1
         %b= t('admin.mass_update.authority_name_label')
@@ -490,13 +490,13 @@
 
     function describeChange(ch) {
       if (ch.kind === 'field_update') {
-        return ch.record_type + '.' + (ch.field_label || ch.field) + ' = ' + (ch.value || '(blank)');
+        return (ch.record_type_label || ch.record_type) + '.' + (ch.field_label || ch.field) + ' = ' + (ch.value || '(blank)');
       }
       if (ch.kind === 'involved_authority_add') {
-        return '[+] ' + ch.role + ': ' + ch.authority_name + ' (' + ch.entity + ')';
+        return '[+] ' + (ch.role_label || ch.role) + ': ' + ch.authority_name + ' (' + (ch.entity_label || ch.entity) + ')';
       }
       if (ch.kind === 'involved_authority_remove') {
-        return '[-] ' + ch.role + ': ' + ch.authority_name + ' (' + ch.entity + ')';
+        return '[-] ' + (ch.role_label || ch.role) + ': ' + ch.authority_name + ' (' + (ch.entity_label || ch.entity) + ')';
       }
       if (ch.kind === 'external_link_add') return '[+ link] ' + ch.url + ' (' + ch.linktype + ')';
       if (ch.kind === 'external_link_remove') return '[- link] ' + ch.url;
@@ -507,6 +507,7 @@
       var kind = $('#change-kind-select').val(), change = { kind: kind }, error = null;
       if (kind === 'field_update') {
         change.record_type = $('#field-record-type').val();
+        change.record_type_label = $('#field-record-type option:selected').text();
         change.field = $('#field-name-select').val();
         change.field_label = $('#field-name-select option:selected').text();
         var enumVisible = $('#field-value-enum-container').is(':visible');
@@ -514,9 +515,11 @@
         if (!change.field) error = i18n.errorNoField;
       } else if (kind.indexOf('involved_') === 0) {
         change.role = $('#ia-role-select').val();
+        change.role_label = $('#ia-role-select option:selected').text();
         change.authority_id = $('#ia-authority-id').val();
         change.authority_name = $('#ia-authority-name').val();
         change.entity = $('#ia-entity-select').val();
+        change.entity_label = $('#ia-entity-select option:selected').text();
         if (!change.authority_id) error = i18n.errorNoAuthority;
       } else if (kind === 'external_link_add') {
         change.url = $('#ext-link-url').val().trim();

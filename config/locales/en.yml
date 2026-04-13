@@ -348,6 +348,7 @@ en:
       entity_label: "Entity to update:"
       entity_work: Work
       entity_expression: Expression
+      entity_collection: Collection
       url_label: "URL:"
       link_type_label: "Link type:"
       link_description_label: "Description:"
