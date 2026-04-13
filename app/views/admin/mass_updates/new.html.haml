@@ -605,8 +605,8 @@
         heading.append(recordLink(res.type, res.id, typeLabel + ' #' + res.id));
         $body.append(heading);
         var $ul = $('<ul class="list-group mb-2">');
-        res.results.forEach(function(r, i) {
-          var desc = describeChange(pendingChanges[i] || {});
+        res.results.forEach(function(r) {
+          var desc = describeChange(pendingChanges[r.change_index] || {});
           var okMsg = desc + ': ' + i18n.resultOk;
           var errMsg = desc + ': ' + i18n.resultError.replace('__MSG__', r.error || '?');
           var $li = r.ok

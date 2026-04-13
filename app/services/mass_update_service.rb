@@ -34,9 +34,16 @@ class MassUpdateService
       key = [rec['type'], rec['id'].to_i]
       record = load_record(rec['type'], rec['id'].to_i)
       results[key] = if record.nil?
-                       @changes.map { I18n.t('admin.mass_update.errors.record_not_found') }
+                       @changes.each_with_index.map do |_, i|
+                         { result: I18n.t('admin.mass_update.errors.record_not_found'), change_index: i }
+                       end
                      else
-                       @changes.map.with_index { |change, i| apply_change(record, change, i) }
+                       @changes.each_with_index.filter_map do |change, i|
+                         outcome = apply_change(record, change, i)
+                         next if outcome == :skip
+
+                         { result: outcome, change_index: i }
+                       end
                      end
     end
     results
@@ -76,7 +83,7 @@ class MassUpdateService
     value       = change['value'].presence
 
     target = resolve_field_target(record, record_type)
-    return :ok if target.nil? # change doesn't apply to this record type — skip silently
+    return :skip if target.nil? # change doesn't apply to this record type — omit from results
 
     unless allowed_field?(record_type, field)
       return I18n.t('admin.mass_update.errors.field_not_allowed', field: field)
@@ -134,7 +141,7 @@ class MassUpdateService
     return I18n.t('admin.mass_update.errors.authority_not_found') if authority.nil?
 
     entity = resolve_ia_entity(record, change['entity'])
-    return :ok if entity.nil? # change doesn't apply to this record type — skip silently
+    return :skip if entity.nil? # change doesn't apply to this record type — omit from results
 
     role = change['role']
 

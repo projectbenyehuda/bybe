@@ -13,8 +13,9 @@ RSpec.describe MassUpdateService do
     described_class.new(records, changes).apply
   end
 
+  # Returns the array of result values (unwrapped from { result:, change_index: }) for a given record.
   def result_for(results, record)
-    results[[record['type'], record['id']]]
+    results[[record['type'], record['id']]].map { |r| r[:result] }
   end
 
   describe '#apply' do
@@ -22,7 +23,7 @@ RSpec.describe MassUpdateService do
       it 'returns error for all changes' do
         changes = [{ 'kind' => 'field_update', 'record_type' => 'manifestation', 'field' => 'title', 'value' => 'X' }]
         results = apply([{ 'type' => 'Manifestation', 'id' => 0 }], changes)
-        expect(results[['Manifestation', 0]].first).to eq(I18n.t('admin.mass_update.errors.record_not_found'))
+        expect(results[['Manifestation', 0]].first[:result]).to eq(I18n.t('admin.mass_update.errors.record_not_found'))
       end
     end
 
@@ -73,10 +74,10 @@ RSpec.describe MassUpdateService do
         expect(collection.reload.title).to eq('New Name')
       end
 
-      it 'silently skips a work field applied to collection (not applicable)' do
+      it 'omits result entirely for a work field applied to collection (not applicable)' do
         changes = [{ 'kind' => 'field_update', 'record_type' => 'work', 'field' => 'genre', 'value' => 'poetry' }]
         results = apply([c_record], changes)
-        expect(result_for(results, c_record).first).to eq(:ok)
+        expect(result_for(results, c_record)).to be_empty
       end
 
       it 'returns error for disallowed field' do
@@ -352,29 +353,29 @@ RSpec.describe MassUpdateService do
     end
 
     context 'with mixed Manifestation and Collection records in the same batch' do
-      it 'applies a collection-level change to collection and silently skips it for manifestation' do
+      it 'applies a collection-level change to collection and omits it for manifestation' do
         changes = [{ 'kind' => 'field_update', 'record_type' => 'collection',
                      'field' => 'title', 'value' => 'Bulk Title' }]
         results = apply([m_record, c_record], changes)
         expect(collection.reload.title).to eq('Bulk Title')
-        expect(result_for(results, m_record).first).to eq(:ok) # not applicable — silently skipped
+        expect(result_for(results, m_record)).to be_empty
       end
 
-      it 'applies a manifestation-level change to manifestation and silently skips it for collection' do
+      it 'applies a manifestation-level change to manifestation and omits it for collection' do
         changes = [{ 'kind' => 'field_update', 'record_type' => 'manifestation',
                      'field' => 'title', 'value' => 'Batch Title' }]
         results = apply([m_record, c_record], changes)
         expect(manifestation.reload.title).to eq('Batch Title')
-        expect(result_for(results, c_record).first).to eq(:ok) # not applicable — silently skipped
+        expect(result_for(results, c_record)).to be_empty
       end
 
-      it 'applies a work-level change to manifestation and silently skips it for collection' do
+      it 'applies a work-level change to manifestation and omits it for collection' do
         work = manifestation.expression.work
         changes = [{ 'kind' => 'field_update', 'record_type' => 'work',
                      'field' => 'genre', 'value' => 'drama' }]
         results = apply([m_record, c_record], changes)
         expect(work.reload.genre).to eq('drama')
-        expect(result_for(results, c_record).first).to eq(:ok) # not applicable — silently skipped
+        expect(result_for(results, c_record)).to be_empty
       end
 
       it 'applies multiple changes and collects independent results per record' do
@@ -423,18 +424,18 @@ RSpec.describe MassUpdateService do
         }.by(1)
       end
 
-      it 'silently skips work entity on Collection record (not applicable)' do
+      it 'omits result for work entity on Collection record (not applicable)' do
         changes = [{ 'kind' => 'involved_authority_add', 'role' => 'editor',
                      'authority_id' => authority.id, 'entity' => 'work' }]
         results = apply([c_record], changes)
-        expect(result_for(results, c_record).first).to eq(:ok)
+        expect(result_for(results, c_record)).to be_empty
       end
 
-      it 'silently skips expression entity on Collection record (not applicable)' do
+      it 'omits result for expression entity on Collection record (not applicable)' do
         changes = [{ 'kind' => 'involved_authority_add', 'role' => 'editor',
                      'authority_id' => authority.id, 'entity' => 'expression' }]
         results = apply([c_record], changes)
-        expect(result_for(results, c_record).first).to eq(:ok)
+        expect(result_for(results, c_record)).to be_empty
       end
     end
 

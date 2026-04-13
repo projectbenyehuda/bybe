@@ -94,7 +94,13 @@ module Admin
         {
           type: type,
           id: id,
-          results: change_results.map { |r| r == :ok ? { ok: true } : { ok: false, error: r } }
+          results: change_results.map do |r|
+            if r[:result] == :ok
+              { ok: true, change_index: r[:change_index] }
+            else
+              { ok: false, error: r[:result], change_index: r[:change_index] }
+            end
+          end
         }
       end
     end
