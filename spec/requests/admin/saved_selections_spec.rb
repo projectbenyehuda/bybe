@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe 'Admin::SavedSelections', type: :request do
-  let(:owner)      { login_as_catalog_editor }
+  let(:owner)      { login_as_batch_editor }
   let(:other_user) { create(:user, editor: true) }
 
   def make_selection(user:, shared: false)

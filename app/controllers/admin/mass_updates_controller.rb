@@ -3,7 +3,7 @@
 module Admin
   # Handles the mass update tool: selection of records and batch application of changes.
   class MassUpdatesController < ApplicationController
-    before_action -> { require_editor('edit_catalog') }
+    before_action -> { require_editor('batch_editing') }
     layout 'backend'
 
     def new

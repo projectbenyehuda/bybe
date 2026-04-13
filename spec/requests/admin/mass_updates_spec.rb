@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe 'Admin::MassUpdates', type: :request do
-  before { login_as_catalog_editor }
+  before { login_as_batch_editor }
 
   let(:manifestation) { create(:manifestation, title: 'Test Manifestation') }
   let(:collection)    { create(:collection, title: 'Test Collection', collection_type: :volume) }
@@ -153,6 +153,23 @@ RSpec.describe 'Admin::MassUpdates', type: :request do
     it 'returns 404 for unknown id' do
       get admin_mass_update_record_info_path, params: { type: 'Manifestation', id: 0 }
       expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Authorization: batch_editing bit required
+  # ---------------------------------------------------------------------------
+  describe 'authorization' do
+    it 'redirects an editor without batch_editing bit' do
+      user = create(:user, editor: true)
+      # has edit_catalog but NOT batch_editing
+      ListItem.create!(listkey: 'edit_catalog', item: user)
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+      # override the global stub so the real require_editor runs
+      allow_any_instance_of(ApplicationController).to receive(:require_editor).and_call_original
+
+      get admin_mass_update_path
+      expect(response).to redirect_to('/')
     end
   end
 end

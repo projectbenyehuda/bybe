@@ -3,7 +3,7 @@
 module Admin
   # CRUD for SavedSelections used in the mass update tool.
   class SavedSelectionsController < ApplicationController
-    before_action -> { require_editor('edit_catalog') }
+    before_action -> { require_editor('batch_editing') }
     before_action :set_selection, only: %i(show destroy)
 
     def index
