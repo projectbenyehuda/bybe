@@ -19,7 +19,8 @@ class MassUpdateService
   EXPRESSION_FIELDS    = %w(title date period language first_publication_date
                             source_edition comment intellectual_property).freeze
   WORK_FIELDS          = %w(title genre primary orig_lang origlang_title date comment).freeze
-  COLLECTION_FIELDS    = %w(title sort_title collection_type comment
+  COLLECTION_FIELDS    = %w(title sort_title subtitle alternate_titles description
+                            publisher_line pub_year collection_type
                             suppress_download_and_print).freeze
 
   def initialize(records, changes)
