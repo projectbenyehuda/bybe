@@ -335,7 +335,8 @@
           var $label = $('<label class="d-block">').css('padding-right', (item.depth * 20) + 'px');
           var $cb = $('<input type="checkbox" checked>');
           $cb.data('type', item.type).data('id', item.id).data('title', item.title);
-          $label.append($cb).append(' ' + item.type + ' #' + item.id + ': ' + $('<span>').text(item.title).html());
+          var typeLabel = item.type === 'Manifestation' ? i18n.typeManifest : i18n.typeCollection;
+          $label.append($cb).append(' ' + typeLabel + ' #' + item.id + ': ' + $('<span>').text(item.title).html());
           $tree.append($label);
         });
       });
