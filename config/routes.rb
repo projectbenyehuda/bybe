@@ -22,6 +22,8 @@ Bybeconv::Application.routes.draw do
          as: 'mass_update_collection_contents'
     get  'mass_update/authority_manifestations' => 'mass_updates#authority_manifestations',
          as: 'mass_update_authority_manifestations'
+    get  'mass_update/authority_volumes' => 'mass_updates#authority_volumes',
+         as: 'mass_update_authority_volumes'
     get  'mass_update/record_info' => 'mass_updates#record_info',
          as: 'mass_update_record_info'
     resources :saved_selections, only: %i(index show create destroy)

@@ -396,9 +396,8 @@
       $('#authority-lists').show();
       var $volDrop = $('#authority-volumes-dropdown').html('<option value=""></option>');
       var $manDrop = $('#authority-manifestations-dropdown').html('<option value=""></option>');
-      $.getJSON('/authors/' + authorityId + '/volumes', function(data) {
-        var vols = (data.volumes || []).concat(data.publications || []);
-        vols.forEach(function(v) {
+      $.getJSON('#{admin_mass_update_authority_volumes_path}', { authority_id: authorityId }, function(data) {
+        (data.volumes || []).forEach(function(v) {
           $volDrop.append($('<option>').val(v.id).text(v.title));
         });
       });

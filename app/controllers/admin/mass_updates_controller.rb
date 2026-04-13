@@ -73,6 +73,20 @@ module Admin
       render json: { manifestations: manifestations.map { |m| { id: m.id, title: m.title } } }
     end
 
+    # AJAX: returns collections of type volume associated with an authority.
+    # Params: authority_id
+    # Returns: { volumes: [{ id:, title: }, ...] }
+    def authority_volumes
+      authority = Authority.find_by(id: params[:authority_id])
+      if authority.nil?
+        return render json: { error: I18n.t('admin.mass_update.errors.authority_not_found') },
+                      status: :not_found
+      end
+
+      volumes = authority.volumes.select(:id, :title).order(:title)
+      render json: { volumes: volumes.map { |v| { id: v.id, title: v.title } } }
+    end
+
     private
 
     def format_results(results)

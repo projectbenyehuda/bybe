@@ -102,6 +102,28 @@ RSpec.describe 'Admin::MassUpdates', type: :request do
   # ---------------------------------------------------------------------------
   # GET /admin/mass_update/authority_manifestations
   # ---------------------------------------------------------------------------
+  # GET /admin/mass_update/authority_volumes
+  # ---------------------------------------------------------------------------
+  describe 'GET /admin/mass_update/authority_volumes' do
+    let(:authority) { create(:authority) }
+
+    it 'returns volumes (collections) associated with the authority' do
+      vol = create(:collection, title: 'Vol 1', collection_type: :volume)
+      InvolvedAuthority.create!(item: vol, authority: authority, role: :author)
+
+      get admin_mass_update_authority_volumes_path, params: { authority_id: authority.id }
+      expect(response).to have_http_status(:ok)
+      returned_ids = response.parsed_body['volumes'].map { |v| v['id'] } # rubocop:disable Rails/Pluck
+      expect(returned_ids).to include(vol.id)
+    end
+
+    it 'returns 404 for an unknown authority_id' do
+      get admin_mass_update_authority_volumes_path, params: { authority_id: 0 }
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   describe 'GET /admin/mass_update/authority_manifestations' do
     let(:authority) { create(:authority) }
 
