@@ -355,6 +355,7 @@ en:
       changes_list_title: Changes Added
       no_changes_in_list: No changes defined yet
       apply_button: Apply All Changes
+      new_batch_button: Start new mass update
       confirm_apply: "Are you sure you want to update %{count_records} records with %{count_changes} changes?"
       applying: Applying changes...
       results_title: Update Results

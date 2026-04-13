@@ -1840,6 +1840,7 @@ he:
       changes_list_title: שינויים שנוספו
       no_changes_in_list: לא הוגדרו שינויים
       apply_button: החל את כל השינויים
+      new_batch_button: התחל עדכון אצווה חדש
       confirm_apply: "האם אתה בטוח שברצונך לעדכן %{count_records} רשומות עם %{count_changes} שינויים?"
       applying: מחיל שינויים...
       results_title: תוצאות העדכון

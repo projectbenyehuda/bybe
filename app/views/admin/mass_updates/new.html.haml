@@ -190,6 +190,8 @@
   .mt-4
     %button.btn.btn-danger#apply-btn{ type: 'button' }
       = t('admin.mass_update.apply_button')
+    %button.btn.btn-secondary.mr-2#new-batch-btn{ type: 'button', style: 'display:none;' }
+      = t('admin.mass_update.new_batch_button')
     %span#applying-indicator{ style: 'display:none; margin-right:10px;' }
       = t('admin.mass_update.applying')
 
@@ -550,6 +552,7 @@
           $('#applying-indicator').hide();
           $('#apply-btn').prop('disabled', false);
           renderResults(data.results);
+          $('#new-batch-btn').show();
         },
         error: function(xhr) {
           $('#applying-indicator').hide();
@@ -559,6 +562,18 @@
           $('#results-section').show();
         }
       });
+    });
+
+    $('#new-batch-btn').on('click', function() {
+      selectedRecords  = [];
+      pendingChanges   = [];
+      pendingCollection = null;
+      renderRecords();
+      renderChanges();
+      $('#collection-expand-widget').hide();
+      $('#results-section').hide();
+      $('#results-body').empty();
+      $('#new-batch-btn').hide();
     });
 
     var recordUrlPatterns = {
