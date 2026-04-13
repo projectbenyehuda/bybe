@@ -73,10 +73,10 @@ RSpec.describe MassUpdateService do
         expect(collection.reload.title).to eq('New Name')
       end
 
-      it 'returns error when work field applied to collection' do
+      it 'silently skips a work field applied to collection (not applicable)' do
         changes = [{ 'kind' => 'field_update', 'record_type' => 'work', 'field' => 'genre', 'value' => 'poetry' }]
         results = apply([c_record], changes)
-        expect(result_for(results, c_record).first).not_to eq(:ok)
+        expect(result_for(results, c_record).first).to eq(:ok)
       end
 
       it 'returns error for disallowed field' do
@@ -193,6 +193,7 @@ RSpec.describe MassUpdateService do
         work = manifestation.expression.work
         expression = manifestation.expression
         allow(expression).to receive(:work).and_return(work)
+        allow(manifestation).to receive(:expression).and_return(expression)
         allow(work).to receive(:save) do
           work.write_attribute(:orig_lang, nil) # simulate silent normalization
           true
@@ -200,10 +201,7 @@ RSpec.describe MassUpdateService do
 
         changes = [{ 'kind' => 'field_update', 'record_type' => 'work',
                      'field' => 'orig_lang', 'value' => 'invalid_lang' }]
-        # Feed the same manifestation but stub its expression to get our rigged work
-        allow(Manifestation).to receive(:find_by).with(id: manifestation.id).and_return(
-          instance_double(Manifestation, expression: expression)
-        )
+        allow(Manifestation).to receive(:find_by).with(id: manifestation.id).and_return(manifestation)
         results = apply([m_record], changes)
         expect(result_for(results, m_record).first).not_to eq(:ok)
       end
@@ -354,31 +352,29 @@ RSpec.describe MassUpdateService do
     end
 
     context 'with mixed Manifestation and Collection records in the same batch' do
-      it 'applies a collection-level change to collection and ignores it for manifestation' do
+      it 'applies a collection-level change to collection and silently skips it for manifestation' do
         changes = [{ 'kind' => 'field_update', 'record_type' => 'collection',
                      'field' => 'title', 'value' => 'Bulk Title' }]
         results = apply([m_record, c_record], changes)
-        # Collection gets the update
         expect(collection.reload.title).to eq('Bulk Title')
-        # Manifestation gets an error (collection field not applicable)
-        expect(result_for(results, m_record).first).not_to eq(:ok)
+        expect(result_for(results, m_record).first).to eq(:ok) # not applicable — silently skipped
       end
 
-      it 'applies a manifestation-level change to manifestation and returns error for collection' do
+      it 'applies a manifestation-level change to manifestation and silently skips it for collection' do
         changes = [{ 'kind' => 'field_update', 'record_type' => 'manifestation',
                      'field' => 'title', 'value' => 'Batch Title' }]
         results = apply([m_record, c_record], changes)
         expect(manifestation.reload.title).to eq('Batch Title')
-        expect(result_for(results, c_record).first).not_to eq(:ok)
+        expect(result_for(results, c_record).first).to eq(:ok) # not applicable — silently skipped
       end
 
-      it 'applies a work-level change to manifestation but returns error for collection' do
+      it 'applies a work-level change to manifestation and silently skips it for collection' do
         work = manifestation.expression.work
         changes = [{ 'kind' => 'field_update', 'record_type' => 'work',
                      'field' => 'genre', 'value' => 'drama' }]
         results = apply([m_record, c_record], changes)
         expect(work.reload.genre).to eq('drama')
-        expect(result_for(results, c_record).first).not_to eq(:ok)
+        expect(result_for(results, c_record).first).to eq(:ok) # not applicable — silently skipped
       end
 
       it 'applies multiple changes and collects independent results per record' do
@@ -427,18 +423,18 @@ RSpec.describe MassUpdateService do
         }.by(1)
       end
 
-      it 'returns error when entity is not applicable for Collection record' do
+      it 'silently skips work entity on Collection record (not applicable)' do
         changes = [{ 'kind' => 'involved_authority_add', 'role' => 'editor',
                      'authority_id' => authority.id, 'entity' => 'work' }]
         results = apply([c_record], changes)
-        expect(result_for(results, c_record).first).not_to eq(:ok)
+        expect(result_for(results, c_record).first).to eq(:ok)
       end
 
-      it 'returns error for expression entity on Collection record' do
+      it 'silently skips expression entity on Collection record (not applicable)' do
         changes = [{ 'kind' => 'involved_authority_add', 'role' => 'editor',
                      'authority_id' => authority.id, 'entity' => 'expression' }]
         results = apply([c_record], changes)
-        expect(result_for(results, c_record).first).not_to eq(:ok)
+        expect(result_for(results, c_record).first).to eq(:ok)
       end
     end
 

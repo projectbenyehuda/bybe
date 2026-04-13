@@ -76,10 +76,7 @@ class MassUpdateService
     value       = change['value'].presence
 
     target = resolve_field_target(record, record_type)
-    if target.nil?
-      return I18n.t('admin.mass_update.errors.field_not_applicable',
-                    record_type: record_type, field: field)
-    end
+    return :ok if target.nil? # change doesn't apply to this record type — skip silently
 
     unless allowed_field?(record_type, field)
       return I18n.t('admin.mass_update.errors.field_not_allowed', field: field)
@@ -137,10 +134,7 @@ class MassUpdateService
     return I18n.t('admin.mass_update.errors.authority_not_found') if authority.nil?
 
     entity = resolve_ia_entity(record, change['entity'])
-    if entity.nil?
-      return I18n.t('admin.mass_update.errors.ia_entity_not_applicable',
-                    entity: change['entity'])
-    end
+    return :ok if entity.nil? # change doesn't apply to this record type — skip silently
 
     role = change['role']
 
