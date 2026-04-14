@@ -134,7 +134,7 @@ describe 'Lexicon Verification Workbench' do
         expect(page).to have_content('ביוגרפיה')
         expect(page).to have_content('יצירות')
         expect(page).to have_content('מראי מקום')  # Citations in Hebrew
-        expect(page).to have_content('קישורים')
+        expect(page).to have_content('קישוריוֹת')
         expect(page).to have_content('קבצים מצורפים')
       end
     end
@@ -471,17 +471,17 @@ describe 'Lexicon Verification Workbench' do
       skip 'WebDriver not available or misconfigured' unless webdriver_available?
 
       # Attach some test images to the entry
-      File.open("#{Rails.root}/spec/fixtures/images/male.png", 'rb') do |io|
+      File.open("#{Rails.root.join('spec/fixtures/images/male.png')}", 'rb') do |io|
         entry.attachments.attach(
-          io:,
+          io: io,
           filename: 'male.png',
           content_type: 'image/png'
         )
       end
 
-      File.open("#{Rails.root}/spec/fixtures/images/female.png", 'rb') do |io|
+      File.open("#{Rails.root.join('spec/fixtures/images/female.png')}", 'rb') do |io|
         entry.attachments.attach(
-          io:,
+          io: io,
           filename: 'female.png',
           content_type: 'image/png'
         )
