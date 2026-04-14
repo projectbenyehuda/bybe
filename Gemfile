@@ -94,6 +94,7 @@ gem 'puma_worker_killer' # cycle workers when they bloat
 gem 'rack-attack' # control misbehaving clients
 gem 'rswag-api'
 gem 'rswag-ui'
+gem 'addressable' # used in application_helper
 
 gem 'dotenv', '~> 3.1.2'
 ## these were used for some legacy HtmlDir VIAF lookup stuff. They have a huge RAM footprint (~160MB per process), so commented out until needed again.

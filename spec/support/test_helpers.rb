@@ -20,6 +20,23 @@ module TestHelpers
     user
   end
 
+  # Creates an editor user with batch_editing privileges for testing
+  def create_batch_editor
+    @batch_editor ||= begin
+      user = create(:user, editor: true)
+      ListItem.create!(listkey: 'batch_editing', item: user)
+      user
+    end
+  end
+
+  # Login helper for mass-update / saved-selections specs
+  def login_as_batch_editor
+    user = create_batch_editor
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    allow_any_instance_of(ApplicationController).to receive(:require_editor).and_return(true)
+    user
+  end
+
   # Creates an editor user with moderate_tags privileges for testing
   def create_moderator
     @moderator ||= begin
