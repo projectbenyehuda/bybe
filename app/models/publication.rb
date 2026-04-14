@@ -31,10 +31,11 @@ class Publication < ApplicationRecord
       print "\nHandling #{i} out of #{total}..." if i % 50 == 0
       if pub.authority_id != last_author
         last_author = pub.authority_id
-        author_title_cache = pub.authority.all_works_title_sorted.pluck(:title)
+        titles = pub.authority.all_works_title_sorted.pluck(:title)
+        author_title_cache = Set.new(titles.map { |t| pub_title_for_comparison(t) })
       end
       searchtitle = pub_title_for_comparison(pub.title)
-      if author_title_cache.any? { |title| pub_title_for_comparison(title) == searchtitle }
+      if author_title_cache.include?(searchtitle)
         li = ListItem.new(listkey: 'pubs_maybe_done', item: pub)
         li.save!
         added += 1

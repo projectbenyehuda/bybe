@@ -6,14 +6,7 @@ RSpec.describe Publication, type: :model do
   describe '.update_publications_that_may_be_done_list' do
     subject(:run) { described_class.update_publications_that_may_be_done_list }
 
-    def pub_title_for_comparison(str)
-      ret = if str['/'].nil?
-              str[0..[10, str.length].min]
-            else
-              str[0..[10, str.index('/') - 1].min]
-            end
-      ret.strip
-    end
+    before { allow($stdout).to receive(:write) }
 
     # Use a known prefix so we can craft matching/non-matching titles reliably.
     let(:shared_prefix) { 'אבגדהוזחטי' } # 10 Hebrew chars → first 11 chars are deterministic
