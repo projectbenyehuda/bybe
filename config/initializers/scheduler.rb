@@ -31,3 +31,12 @@ scheduler.every '7d' do
   puts "sending weekly notification digests"
   NotificationDigestJob.perform_async('weekly')
 end
+
+scheduler.every '7d' do
+  Rails.logger.info 'purging expired saved selections'
+  count = 0
+  SavedSelection.where(delete_after: ...Time.zone.today).find_each do |saved_selection|
+    count += 1 if saved_selection.destroy
+  end
+  Rails.logger.info "purged #{count} expired saved selections"
+end

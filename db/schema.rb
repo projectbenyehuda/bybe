@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_10_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_11_020041) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -799,6 +799,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_10_000000) do
     t.index ["manifestation_id", "status"], name: "index_recommendations_on_manifestation_id_and_status"
     t.index ["manifestation_id"], name: "index_recommendations_on_manifestation_id"
     t.index ["user_id"], name: "index_recommendations_on_user_id"
+  end
+
+  create_table "saved_selection_items", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "item_id", null: false
+    t.string "item_type", null: false
+    t.integer "saved_selection_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_type", "item_id"], name: "index_saved_selection_items_on_item_type_and_item_id"
+    t.index ["saved_selection_id"], name: "index_saved_selection_items_on_saved_selection_id"
+  end
+
+  create_table "saved_selections", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "delete_after", null: false
+    t.string "name", null: false
+    t.boolean "shared", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["delete_after"], name: "index_saved_selections_on_delete_after"
+    t.index ["user_id"], name: "index_saved_selections_on_user_id"
   end
 
   create_table "sessions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
