@@ -144,7 +144,7 @@ class BibController < ApplicationController
       item = pub.item
       mm = item.authority.all_works_including_unpublished
       # add the first work by this authority whose title matches the pub's title when compared via pub_title_for_comparison
-      to_add = mm.find { |work| pub_title_for_comparison(work.title) == pub_title_for_comparison(item.title) }
+      to_add = mm.find_all { |work| pub_title_for_comparison(work.title) == pub_title_for_comparison(item.title) }
       @pubs << [item, to_add] if to_add
     end
   end
