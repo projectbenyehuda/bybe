@@ -152,5 +152,15 @@ describe BibController do
         [translated_maybe_done_pub, [translated_manifestation_1, translated_manifestation_2]]
       ]
     end
+
+    context 'when a publication in the list has no matching manifestation titles' do
+      let!(:unmatched_pub) { create(:publication, :pubs_maybe_done, title: 'completely unique title') }
+
+      it 'excludes the publication from the results' do
+        expect(request).to be_successful
+        pub_items = assigns(:pubs).map(&:first)
+        expect(pub_items).not_to include(unmatched_pub)
+      end
+    end
   end
 end
