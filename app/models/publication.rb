@@ -34,7 +34,7 @@ class Publication < ApplicationRecord
         author_title_cache = pub.authority.all_works_title_sorted.pluck(:title)
       end
       searchtitle = pub_title_for_comparison(pub.title)
-      if author_title_cache.bsearch { |title| searchtitle <=> searchtitle }
+      if author_title_cache.any? { |title| pub_title_for_comparison(title) == searchtitle }
         li = ListItem.new(listkey: 'pubs_maybe_done', item: pub)
         li.save!
         added += 1
