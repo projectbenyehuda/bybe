@@ -50,9 +50,9 @@
   .col-12.col-lg-4
     .row
       .col.side-menu-area-left
-      .col
-        = render partial: 'lexicon/shared/images', locals: { entry: lex_person.entry }
-      .col
+      -#.col
+      -#  = render partial: 'lexicon/shared/images', locals: { entry: lex_person.entry }
+      .col-3
         - if lex_person.authority&.published?
           .by-card-v02.left-side-card-v02
             #author-whats-new-bg
