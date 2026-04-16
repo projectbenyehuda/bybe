@@ -120,33 +120,48 @@ class MakeFreshDownloadable < ApplicationService
 
   def images_to_absolute_url(buf)
     require 'base64'
-    # Handle /files/:record_type/:record_id/:filename URLs (custom download URLs for uploaded images).
-    # These must be embedded as base64 because Chromium/Pandoc cannot follow HTTP redirects back to
-    # the Rails server without deadlocking (server is blocked waiting for the subprocess).
-    result = buf.gsub(%r{/files/([^/"]+)/(\d+)/([^"'\s>]+)}) do |url|
-      record_type = ::Regexp.last_match(1)
-      record_id   = ::Regexp.last_match(2)
-      filename    = ::Regexp.last_match(3)
-      begin
-        record_class = DownloadLink.record_class(record_type)
-        next url unless record_class
+    root_url = Rails.application.routes.url_helpers.root_url.chomp('/')
 
-        record = record_class.find_by(id: record_id)
-        next url unless record
+    # Scope rewrites to <img src="..."> attributes only. A bare gsub on path patterns would also
+    # transform <a href="/files/..."> links and other non-image occurrences, and would miss
+    # filenames that contain spaces (download_path unescapes URI-encoded names).
+    buf.gsub(/<img\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*>)/i) do
+      before_src = ::Regexp.last_match(1)
+      quote      = ::Regexp.last_match(2)
+      src        = ::Regexp.last_match(3)
+      after_src  = ::Regexp.last_match(4)
 
-        blob = record.blob_by_filename(filename)
-        next url unless blob
+      new_src =
+        if src =~ %r{\A/files/([^/"]+)/(\d+)/(.+)\z}
+          # Custom download URL: /files/:record_type/:record_id/:filename
+          # Embed as base64 so Chromium/Pandoc don't make HTTP requests back to the server.
+          record_type = ::Regexp.last_match(1)
+          record_id   = ::Regexp.last_match(2)
+          filename    = URI::DEFAULT_PARSER.unescape(::Regexp.last_match(3))
+          begin
+            record_class = DownloadLink.record_class(record_type)
+            next "<img#{before_src}src=#{quote}#{src}#{quote}#{after_src}" unless record_class
 
-        raw = blob.download
-        "data:#{blob.content_type};base64,#{Base64.strict_encode64(raw)}"
-      rescue StandardError => e
-        Rails.logger.warn "Image embedding failed for #{url}: #{e.message}"
-        url
-      end
+            record = record_class.find_by(id: record_id)
+            next "<img#{before_src}src=#{quote}#{src}#{quote}#{after_src}" unless record
+
+            blob = record.blob_by_filename(filename)
+            next "<img#{before_src}src=#{quote}#{src}#{quote}#{after_src}" unless blob
+
+            raw = blob.download
+            "data:#{blob.content_type};base64,#{Base64.strict_encode64(raw)}"
+          rescue StandardError => e
+            Rails.logger.warn "Image embedding failed for #{src}: #{e.message}"
+            src
+          end
+        elsif src.start_with?('/rails/active_storage')
+          # Legacy or directly-inserted ActiveStorage blob URL: make absolute for the renderer
+          "#{root_url}#{src}"
+        else
+          src
+        end
+
+      "<img#{before_src}src=#{quote}#{new_src}#{quote}#{after_src}"
     end
-
-    # Handle any remaining /rails/active_storage/... URLs (legacy or directly-inserted blob URLs)
-    result.gsub('<img src="/rails/active_storage',
-                "<img src=\"#{Rails.application.routes.url_helpers.root_url}/rails/active_storage")
   end
 end

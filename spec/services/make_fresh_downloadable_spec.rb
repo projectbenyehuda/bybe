@@ -50,6 +50,26 @@ RSpec.describe MakeFreshDownloadable do
 
         expect(result).to include("/files/text/#{manifestation.id}/photo.jpg")
       end
+
+      it 'handles filenames with spaces (URI-decoded names from download_path)' do
+        spaced_html = "<img src=\"/files/text/#{manifestation.id}/my%20photo.jpg\" alt=\"my photo.jpg\">"
+        blob = instance_double(ActiveStorage::Blob, content_type: 'image/jpeg')
+        allow(blob).to receive(:download).and_return('fake_jpeg_data')
+        allow(manifestation).to receive(:blob_by_filename).with('my photo.jpg').and_return(blob)
+        allow(Manifestation).to receive(:find_by).with(id: manifestation.id.to_s).and_return(manifestation)
+
+        result = images_to_absolute_url(spaced_html)
+
+        expect(result).to include('data:image/jpeg;base64,')
+      end
+
+      it 'does not transform /files/... URLs in non-image tags like <a href>' do
+        link_html = "<a href=\"/files/text/#{manifestation.id}/document.pdf\">download</a>"
+
+        result = images_to_absolute_url(link_html)
+
+        expect(result).to eq(link_html)
+      end
     end
 
     context 'when HTML has no image tags' do
