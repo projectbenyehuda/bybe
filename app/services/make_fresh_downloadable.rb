@@ -119,7 +119,49 @@ class MakeFreshDownloadable < ApplicationService
   private
 
   def images_to_absolute_url(buf)
-    return buf.gsub('<img src="/rails/active_storage',
-                    "<img src=\"#{Rails.application.routes.url_helpers.root_url}/rails/active_storage")
+    require 'base64'
+    root_url = Rails.application.routes.url_helpers.root_url.chomp('/')
+
+    # Scope rewrites to <img src="..."> attributes only. A bare gsub on path patterns would also
+    # transform <a href="/files/..."> links and other non-image occurrences, and would miss
+    # filenames that contain spaces (download_path unescapes URI-encoded names).
+    buf.gsub(/<img\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*>)/i) do
+      before_src = ::Regexp.last_match(1)
+      quote      = ::Regexp.last_match(2)
+      src        = ::Regexp.last_match(3)
+      after_src  = ::Regexp.last_match(4)
+
+      new_src =
+        if src =~ %r{\A/files/([^/"]+)/(\d+)/(.+)\z}
+          # Custom download URL: /files/:record_type/:record_id/:filename
+          # Embed as base64 so Chromium/Pandoc don't make HTTP requests back to the server.
+          record_type = ::Regexp.last_match(1)
+          record_id   = ::Regexp.last_match(2)
+          filename    = URI::DEFAULT_PARSER.unescape(::Regexp.last_match(3))
+          begin
+            record_class = DownloadLink.record_class(record_type)
+            next "<img#{before_src}src=#{quote}#{src}#{quote}#{after_src}" unless record_class
+
+            record = record_class.find_by(id: record_id)
+            next "<img#{before_src}src=#{quote}#{src}#{quote}#{after_src}" unless record
+
+            blob = record.blob_by_filename(filename)
+            next "<img#{before_src}src=#{quote}#{src}#{quote}#{after_src}" unless blob
+
+            raw = blob.download
+            "data:#{blob.content_type};base64,#{Base64.strict_encode64(raw)}"
+          rescue StandardError => e
+            Rails.logger.warn "Image embedding failed for #{src}: #{e.message}"
+            src
+          end
+        elsif src.start_with?('/rails/active_storage')
+          # Legacy or directly-inserted ActiveStorage blob URL: make absolute for the renderer
+          "#{root_url}#{src}"
+        else
+          src
+        end
+
+      "<img#{before_src}src=#{quote}#{new_src}#{quote}#{after_src}"
+    end
   end
 end

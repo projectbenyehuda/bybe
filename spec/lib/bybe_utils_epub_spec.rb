@@ -128,6 +128,35 @@ RSpec.describe 'BybeUtils EPUB generation' do
         expect(Rails.logger).to have_received(:warn)
       end
     end
+
+    context 'when HTML contains /files/:record_type/:record_id/:filename URLs (HTML-inserted images)' do
+      it 'extracts and embeds images referenced by custom file download URLs' do
+        html_with_file_url = "<p>Text</p><img src=\"/files/text/#{manifestation.id}/photo.jpg\" " \
+                             'alt="photo.jpg" style="width:800px;height:600px;object-fit:contain">'
+
+        blob = instance_double(ActiveStorage::Blob)
+        allow(manifestation).to receive(:blob_by_filename).with('photo.jpg').and_return(blob)
+        allow(blob).to receive(:download).and_yield('fake_image_data')
+        allow(Manifestation).to receive(:find_by).with(id: manifestation.id.to_s).and_return(manifestation)
+
+        modified_html, counter = embed_images_in_epub(book, html_with_file_url, 0)
+
+        expect(modified_html).to include('images/image_0.jpg')
+        expect(modified_html).not_to include('/files/text/')
+        expect(counter).to eq(1)
+      end
+
+      it 'leaves URL unchanged when the record is not found' do
+        html = '<img src="/files/text/99999/missing.png" alt="missing.png">'
+        allow(Manifestation).to receive(:find_by).with(id: '99999').and_return(nil)
+        allow(Rails.logger).to receive(:warn)
+
+        modified_html, counter = embed_images_in_epub(book, html, 0)
+
+        expect(modified_html).to include('/files/text/99999/missing.png')
+        expect(counter).to eq(0)
+      end
+    end
   end
 
   describe '#make_epub_from_collection' do
