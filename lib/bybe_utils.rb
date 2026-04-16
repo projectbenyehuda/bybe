@@ -113,9 +113,40 @@ module BybeUtils
 
   # Extract and embed images from HTML into EPUB
   def embed_images_in_epub(book, html, image_counter = 0)
-    # Find all ActiveStorage image URLs in the HTML
     modified_html = html.dup
     image_map = {}
+
+    # Handle /files/:record_type/:record_id/:filename URLs (custom download URLs for uploaded images)
+    html.scan(%r{<img[^>]*src=["'](/files/([^/"]+)/(\d+)/([^"'\s>]+))["'][^>]*>}i).each do |matches|
+      full_path   = matches[0]
+      record_type = matches[1]
+      record_id   = matches[2]
+      filename    = matches[3]
+      next if image_map[full_path]
+
+      begin
+        record_class = DownloadLink.record_class(record_type)
+        next unless record_class
+
+        record = record_class.find_by(id: record_id)
+        next unless record
+
+        blob = record.blob_by_filename(filename)
+        next unless blob
+
+        extension = File.extname(filename)
+        epub_filename = "images/image_#{image_counter}#{extension}"
+        image_counter += 1
+
+        image_data = String.new
+        blob.download { |chunk| image_data << chunk }
+
+        book.add_item(epub_filename, content: StringIO.new(image_data))
+        image_map[full_path] = epub_filename
+      rescue StandardError => e
+        Rails.logger.warn("Failed to embed image #{full_path}: #{e.message}")
+      end
+    end
 
     # Match ActiveStorage URLs in img tags
     html.scan(%r{<img[^>]*src=["'](/rails/active_storage/[^"']+)["'][^>]*>}i).each do |matches|

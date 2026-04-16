@@ -119,7 +119,34 @@ class MakeFreshDownloadable < ApplicationService
   private
 
   def images_to_absolute_url(buf)
-    return buf.gsub('<img src="/rails/active_storage',
-                    "<img src=\"#{Rails.application.routes.url_helpers.root_url}/rails/active_storage")
+    require 'base64'
+    # Handle /files/:record_type/:record_id/:filename URLs (custom download URLs for uploaded images).
+    # These must be embedded as base64 because Chromium/Pandoc cannot follow HTTP redirects back to
+    # the Rails server without deadlocking (server is blocked waiting for the subprocess).
+    result = buf.gsub(%r{/files/([^/"]+)/(\d+)/([^"'\s>]+)}) do |url|
+      record_type = ::Regexp.last_match(1)
+      record_id   = ::Regexp.last_match(2)
+      filename    = ::Regexp.last_match(3)
+      begin
+        record_class = DownloadLink.record_class(record_type)
+        next url unless record_class
+
+        record = record_class.find_by(id: record_id)
+        next url unless record
+
+        blob = record.blob_by_filename(filename)
+        next url unless blob
+
+        raw = blob.download
+        "data:#{blob.content_type};base64,#{Base64.strict_encode64(raw)}"
+      rescue StandardError => e
+        Rails.logger.warn "Image embedding failed for #{url}: #{e.message}"
+        url
+      end
+    end
+
+    # Handle any remaining /rails/active_storage/... URLs (legacy or directly-inserted blob URLs)
+    result.gsub('<img src="/rails/active_storage',
+                "<img src=\"#{Rails.application.routes.url_helpers.root_url}/rails/active_storage")
   end
 end
