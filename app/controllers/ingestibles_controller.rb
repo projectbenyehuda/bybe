@@ -157,7 +157,7 @@ class IngestiblesController < ApplicationController
     end
     if params[:docx].present?
       file = URI.open(params[:docx])
-      uri = URI.parse(params[:docx])
+      uri = Addressable::URI.parse(params[:docx])
       @ingestible.docx.attach(io: file, filename: CGI.unescape(File.basename(uri.path)))
     end
     if @ingestible.save

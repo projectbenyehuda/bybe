@@ -34,11 +34,11 @@ class ExternalLink < ApplicationRecord
     return if url.blank?
 
     begin
-      uri = URI.parse(url.to_s)
+      uri = Addressable::URI.parse(url.to_s)
       unless %w[http https].include?(uri.scheme&.downcase)
         errors.add(:url, :invalid_scheme, message: 'must use http or https protocol')
       end
-    rescue URI::InvalidURIError
+    rescue Addressable::URI::InvalidURIError
       errors.add(:url, :invalid_uri, message: 'is not a valid URL')
     end
   end
