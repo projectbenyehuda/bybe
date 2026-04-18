@@ -35,8 +35,8 @@ module CollectionsHelper
     # Normalize the base URL (remove trailing slash) and parse
     normalized_base = base_url.chomp('/')
     begin
-      base_uri = URI.parse(normalized_base)
-    rescue URI::InvalidURIError
+      base_uri = Addressable::URI.parse(normalized_base)
+    rescue Addressable::URI::InvalidURIError
       # If the base URL itself is malformed, return the original HTML unchanged
       return html_string
     end
@@ -59,7 +59,7 @@ module CollectionsHelper
 
       begin
         # Parse the href URL
-        href_uri = URI.parse(href)
+        href_uri = Addressable::URI.parse(href)
 
         # Check if it's an absolute URL pointing to our base URL
         if href_uri.absolute? && href_uri.host == base_uri.host && href_uri.scheme == base_uri.scheme
@@ -79,7 +79,7 @@ module CollectionsHelper
             link.remove_attribute('target')
           end
         end
-      rescue URI::InvalidURIError
+      rescue Addressable::URI::InvalidURIError
         # Skip malformed URIs
         next
       end

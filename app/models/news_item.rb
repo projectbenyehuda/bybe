@@ -36,7 +36,7 @@ class NewsItem < ApplicationRecord
   def self.from_external_link(link)
     # Only use :youtube (embeddable iframe) for actual YouTube URLs; validate by host to
     # prevent substring attacks like "youtube.com.evil.example"
-    host = URI.parse(link.url.to_s).host.to_s.downcase
+    host = Addressable::URI.parse(link.url.to_s).host.to_s.downcase
     embeddable = link.linktype_youtube? && YOUTUBE_HOSTS.include?(host)
     return NewsItem.new(
       itemtype: embeddable ? :youtube : :audio,
