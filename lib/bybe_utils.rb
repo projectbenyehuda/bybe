@@ -273,12 +273,17 @@ module BybeUtils
     aus = []
     contributors = []
     collection.authorities.each do |ia|
-      if ia.role == 'author' || ia.role == 'editor'
-        # Treat editors as creators too — for periodical issues the editor is the primary responsible party
+      if ia.role == 'author'
         aus << ia.authority.name
       else
         contributors << [ia.authority.name, epub_role_from_ia_role(ia.role)]
       end
+    end
+    # When no authors exist, promote editors to creators so EPUB readers don't show "UNKNOWN"
+    if aus.empty?
+      editors, others = contributors.partition { |_, role| role == 'edt' }
+      aus = editors.map(&:first)
+      contributors = others
     end
     aus.each { |a| book.add_creator(a) }
     contributors.each { |c, r| book.add_contributor(c, role: r) }
@@ -321,9 +326,12 @@ module BybeUtils
     collection.flatten_items.each do |ci|
       # Build section HTML with title, authority information, and content
       section_html = ''
+      content_html = ci.collection? ? '<p/>' : ci.to_html
 
-      # Add manifestation/section title first
-      section_html += "<h1>#{ci.title}</h1>\n" if ci.title.present? && !ci.markdown.present?
+      # Prepend title unless this is a paratext item or the content already opens with <h1>
+      if ci.title.present? && ci.markdown.blank? && !content_html.lstrip.start_with?('<h1')
+        section_html += "<h1>#{CGI.escapeHTML(ci.title)}</h1>\n"
+      end
 
       # Add involved authorities for this section
       if ci.involved_authorities.present?
@@ -338,7 +346,6 @@ module BybeUtils
       end
 
       # Add the actual content
-      content_html = ci.collection? ? '<p/>' : ci.to_html
       section_html += content_html
 
       # Process and embed images (adds images to manifest, but outside ordered block so not in spine)

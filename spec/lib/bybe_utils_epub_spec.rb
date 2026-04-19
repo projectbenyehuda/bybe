@@ -241,7 +241,6 @@ RSpec.describe 'BybeUtils EPUB generation' do
     end
 
     context 'when collection is a periodical_issue' do
-      let(:periodical) { create(:collection, collection_type: :periodical) }
       let(:issue) { create(:collection, collection_type: :periodical_issue, title: 'Issue 1') }
       let(:article1) do
         create(:manifestation,
@@ -257,14 +256,20 @@ RSpec.describe 'BybeUtils EPUB generation' do
       end
       let(:author1) { create(:authority, name: 'Writer Aleph') }
       let(:editor) { create(:authority, name: 'Editor Bet') }
+      let(:generated_epub_files) { [] }
 
       before do
         create(:collection_item, collection: issue, item: article1, seqno: 1)
         create(:collection_item, collection: issue, item: article2, seqno: 2)
       end
 
+      after do
+        generated_epub_files.each { |f| FileUtils.rm_f(f) }
+      end
+
       it 'includes manifestation titles at the beginning of each section' do
         epub_file = make_epub_from_collection(issue)
+        generated_epub_files << epub_file
 
         Zip::File.open(epub_file) do |zip_file|
           first_section = zip_file.read('OEBPS/1_text.xhtml').force_encoding('UTF-8')
@@ -273,14 +278,13 @@ RSpec.describe 'BybeUtils EPUB generation' do
           second_section = zip_file.read('OEBPS/2_text.xhtml').force_encoding('UTF-8')
           expect(second_section).to include('<h1>Article Two</h1>')
         end
-
-        File.delete(epub_file)
       end
 
       it 'includes manifestation title before involved authorities in each section' do
         create(:involved_authority, authority: author1, role: 'author', item: article1.expression.work)
 
         epub_file = make_epub_from_collection(issue)
+        generated_epub_files << epub_file
 
         Zip::File.open(epub_file) do |zip_file|
           first_section = zip_file.read('OEBPS/1_text.xhtml').force_encoding('UTF-8')
@@ -291,35 +295,49 @@ RSpec.describe 'BybeUtils EPUB generation' do
           expect(author_pos).to be_present
           expect(title_pos).to be < author_pos
         end
-
-        File.delete(epub_file)
       end
 
       it 'includes involved authorities in TOC entries' do
         create(:involved_authority, authority: author1, role: 'author', item: article1.expression.work)
 
         epub_file = make_epub_from_collection(issue)
+        generated_epub_files << epub_file
 
         Zip::File.open(epub_file) do |zip_file|
           nav_content = zip_file.read('OEBPS/nav.xhtml').force_encoding('UTF-8')
           expect(nav_content).to include('Writer Aleph')
         end
-
-        File.delete(epub_file)
       end
 
       it 'uses editor as EPUB creator when collection has no author' do
         create(:involved_authority, authority: editor, role: 'editor', item: issue)
 
         epub_file = make_epub_from_collection(issue)
+        generated_epub_files << epub_file
 
         Zip::File.open(epub_file) do |zip_file|
           opf_content = zip_file.read('OEBPS/package.opf').force_encoding('UTF-8')
           expect(opf_content).to include('Editor Bet')
           expect(opf_content).to include('dc:creator')
         end
+      end
 
-        File.delete(epub_file)
+      it 'keeps editor as contributor (not creator) when authors are also present at collection level' do
+        create(:involved_authority, authority: author1, role: 'author', item: issue)
+        create(:involved_authority, authority: editor, role: 'editor', item: issue)
+
+        epub_file = make_epub_from_collection(issue)
+        generated_epub_files << epub_file
+
+        Zip::File.open(epub_file) do |zip_file|
+          opf_content = zip_file.read('OEBPS/package.opf').force_encoding('UTF-8')
+          # Author should be creator, editor should be contributor (not creator)
+          expect(opf_content).to include('Writer Aleph')
+          author_creator_pattern = %r{<dc:creator[^>]*>Writer Aleph</dc:creator>}
+          editor_creator_pattern = %r{<dc:creator[^>]*>Editor Bet</dc:creator>}
+          expect(opf_content).to match(author_creator_pattern)
+          expect(opf_content).not_to match(editor_creator_pattern)
+        end
       end
     end
 
