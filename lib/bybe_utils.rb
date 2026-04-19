@@ -279,6 +279,12 @@ module BybeUtils
         contributors << [ia.authority.name, epub_role_from_ia_role(ia.role)]
       end
     end
+    # When no authors exist, promote editors to creators so EPUB readers don't show "UNKNOWN"
+    if aus.empty?
+      editors, others = contributors.partition { |_, role| role == 'edt' }
+      aus = editors.map(&:first)
+      contributors = others
+    end
     aus.each { |a| book.add_creator(a) }
     contributors.each { |c, r| book.add_contributor(c, role: r) }
 
@@ -318,10 +324,16 @@ module BybeUtils
     # This ensures images are only in the manifest, not the spine
     processed_sections = []
     collection.flatten_items.each do |ci|
-      # Build section HTML with authority information
+      # Build section HTML with title, authority information, and content
       section_html = ''
+      content_html = ci.collection? ? '<p/>' : ci.to_html
 
-      # Add involved authorities for this manifestation
+      # Prepend title unless this is a paratext item or the content already opens with <h1>
+      if ci.title.present? && ci.markdown.blank? && !content_html.lstrip.start_with?('<h1')
+        section_html += "<h1>#{CGI.escapeHTML(ci.title)}</h1>\n"
+      end
+
+      # Add involved authorities for this section
       if ci.involved_authorities.present?
         InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
           ras = ci.involved_authorities.select { |ia| ia.role == role }
@@ -334,7 +346,6 @@ module BybeUtils
       end
 
       # Add the actual content
-      content_html = ci.collection? ? '<p/>' : ci.to_html
       section_html += content_html
 
       # Process and embed images (adds images to manifest, but outside ordered block so not in spine)
@@ -343,7 +354,7 @@ module BybeUtils
       processed_sections << {
         html: section_html,
         content_html: content_html,
-        toc_title: ci.markdown.present? ? I18n.t(:paratext_description) : ci.title,
+        toc_title: ci.markdown.present? ? I18n.t(:paratext_description) : ci.title_and_authors,
         is_collection: ci.collection?
       }
     end
