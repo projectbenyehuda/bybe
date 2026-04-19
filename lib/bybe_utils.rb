@@ -273,7 +273,8 @@ module BybeUtils
     aus = []
     contributors = []
     collection.authorities.each do |ia|
-      if ia.role == 'author'
+      if ia.role == 'author' || ia.role == 'editor'
+        # Treat editors as creators too — for periodical issues the editor is the primary responsible party
         aus << ia.authority.name
       else
         contributors << [ia.authority.name, epub_role_from_ia_role(ia.role)]
@@ -318,10 +319,13 @@ module BybeUtils
     # This ensures images are only in the manifest, not the spine
     processed_sections = []
     collection.flatten_items.each do |ci|
-      # Build section HTML with authority information
+      # Build section HTML with title, authority information, and content
       section_html = ''
 
-      # Add involved authorities for this manifestation
+      # Add manifestation/section title first
+      section_html += "<h1>#{ci.title}</h1>\n" if ci.title.present? && !ci.markdown.present?
+
+      # Add involved authorities for this section
       if ci.involved_authorities.present?
         InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
           ras = ci.involved_authorities.select { |ia| ia.role == role }
@@ -343,7 +347,7 @@ module BybeUtils
       processed_sections << {
         html: section_html,
         content_html: content_html,
-        toc_title: ci.markdown.present? ? I18n.t(:paratext_description) : ci.title,
+        toc_title: ci.markdown.present? ? I18n.t(:paratext_description) : ci.title_and_authors,
         is_collection: ci.collection?
       }
     end
