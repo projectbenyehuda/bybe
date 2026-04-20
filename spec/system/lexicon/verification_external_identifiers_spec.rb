@@ -96,6 +96,12 @@ describe 'Lexicon Verification Workbench – External Identifiers', :js do
       end
     end
 
+    it 'mark_verified checkbox is unchecked when section is not yet verified' do
+      within('#generalDlgBody') do
+        expect(page).to have_unchecked_field('mark_verified')
+      end
+    end
+
     it 'updates identifiers when the form is saved' do
       within('#generalDlgBody') do
         fill_in 'external_identifiers[viaf]', with: '99999999'
@@ -128,6 +134,25 @@ describe 'Lexicon Verification Workbench – External Identifiers', :js do
       expect(page).to have_css('#section-external-identifiers.verified', wait: 10)
       entry.reload
       expect(entry.verification_progress.dig('checklist', 'external_identifiers', 'verified')).to be true
+    end
+  end
+
+  describe 'edit modal when section is already verified' do
+    before do
+      entry.start_verification!('test@example.com')
+      entry.update_checklist_item('external_identifiers', true, '')
+
+      visit "/lex/verification/#{entry.id}"
+      within('#section-external-identifiers .section-actions') do
+        click_button I18n.t('lexicon.verification.migrated.edit')
+      end
+      find('#generalDlg', visible: true, wait: 5)
+    end
+
+    it 'pre-checks the mark_verified checkbox' do
+      within('#generalDlgBody') do
+        expect(page).to have_checked_field('mark_verified')
+      end
     end
   end
 end

@@ -7,7 +7,8 @@
   = render 'lexicon/entries/external_identifiers_form', entry: @entry
 
   .form-check.mt-3
-    = check_box_tag :mark_verified, '1', false, class: 'form-check-input'
+    - already_verified = @entry.verification_progress&.dig('checklist', 'external_identifiers', 'verified') || false
+    = check_box_tag :mark_verified, '1', already_verified, class: 'form-check-input'
     = label_tag :mark_verified, t('lexicon.verification.edit.mark_as_verified'), class: 'form-check-label'
 
   .modal-footer
