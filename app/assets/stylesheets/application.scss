@@ -253,6 +253,7 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
 #chapternav{ width: min-content;}
 #chapter-nav{
   max-height: 400px;
+  max-height: clamp(0px, calc(100dvh - 200px), 400px);
   overflow-y: auto;
 }
 .side-nav-col { pointer-events: none;}
@@ -264,6 +265,7 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
   .modal-content {height: 100%;}
   #chapter-nav{
     max-height: 300px;
+    max-height: clamp(0px, calc(100dvh - 200px), 300px);
   }
   #static_page img {
     width: 100%;
