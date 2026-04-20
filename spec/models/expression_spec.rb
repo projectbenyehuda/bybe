@@ -27,11 +27,18 @@ describe Expression do
       create(:manifestation, period: :ancient)
       create(:manifestation, period: :medieval)
       create(:manifestation, period: :medieval)
+      non_primary_work = create(:work, primary: false)
+      non_primary_expr = create(:expression, period: :medieval, work: non_primary_work)
+      create(:manifestation, period: :medieval, expression: non_primary_expr)
     end
 
-    it 'does not counts unpublished works' do
+    it 'does not count unpublished works' do
       expect(subject.size).to eq 2
       expect(subject['ancient']).to eq 1
+      expect(subject['medieval']).to eq 2
+    end
+
+    it 'does not count non-primary works' do
       expect(subject['medieval']).to eq 2
     end
   end
