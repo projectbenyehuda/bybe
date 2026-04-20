@@ -45,9 +45,9 @@ RSpec.describe LexiconHelper, type: :helper do
       expect(result).to be_nil
     end
 
-    it 'joins multiple identifiers with semicolons' do
+    it 'joins multiple identifiers with vertical pipes' do
       result = helper.render_external_identifiers({ 'lc' => 'n79021164', 'viaf' => '36924286' })
-      expect(result).to include('; ')
+      expect(result).to include(' | ')
       expect(result).to include('LC –')
       expect(result).to include('VIAF –')
     end
