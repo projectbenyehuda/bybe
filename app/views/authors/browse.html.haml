@@ -1,16 +1,7 @@
 -# Browse authors
 .row
   .col-sm-12.col-md-4
-    .by-card-v02.desktop-only#browse_intro{ style: @filters.present? ? 'display:none' : '' }
-      .work-area
-        .work-content
-          .headline-1-v02= t(:welcome_to_authors_browsing)
-          - if @total_pages > 1
-            %p= t(:authors_browsing_intro_paging, total: @total)
-          %p!= t(:authors_browsing_intro_html)
-        .work-side-color
-          .work-genre.author-side-default-picture
-    .by-card-v02#sort_filter_panel{ style: @filters.present? ? '' : 'display:none' }
+    .by-card-v02#sort_filter_panel
       = render partial: 'browse_filters'
   .col-sm-12.col-md-8
     .by-card-v02#thelist
