@@ -22,21 +22,13 @@ describe '/files' do
 
     context 'when entry is a LexEntry' do
       let(:record_type) { 'lex' }
-      let(:record) { create(:lex_entry) }
-      let(:record_id) { record.id }
-
-      before do
-        record.attachments.attach(
-          io: StringIO.new('First'),
-          filename: 'file_1.txt',
-          content_type: 'text/plain'
-        )
-        record.attachments.attach(
-          io: StringIO.new('Second'),
-          filename: 'file_2',
-          content_type: 'text/plain'
-        )
+      let(:record) do
+        create(:lex_entry).tap do |entry|
+          entry.attachments.attach(io: StringIO.new('First'), filename: 'file_1.txt', content_type: 'text/plain')
+          entry.attachments.attach(io: StringIO.new('Second'), filename: 'file_2', content_type: 'text/plain')
+        end
       end
+      let(:record_id) { record.id }
 
       context 'when wrong entry_id is given' do
         let(:record_id) { record.id + 1 }
