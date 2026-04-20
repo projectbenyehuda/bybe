@@ -5,15 +5,6 @@
     .texts-list-top-info-card
       .flex-container
         .headline-1-v02= @authors_list_title
-        .author-sort-area#sort_filter_toggle
-          .author-page-top-sort-desktop
-            = t(:filter_state)
-            -#%a.help{:href => "#"} [?]
-            .toggle-background-no
-              .toggle-button-no{ style: "display:#{@filters.empty? ? 'block' : 'none'}" }
-              .toggle-button-yes{ style: "display:#{@filters.empty? ? 'none' : 'block'}" }
-          .author-page-top-sort-mobile
-            %button.btn-small-outline-v02.btn-text-v02{:href => "#"} סינון
         .author-page-top-icons-desktop
           .top-left-icons-group
             %a.by-icon-v02.notyet{:href => "#"} 9
@@ -38,17 +29,3 @@
           .error-found
             .error-found-text= t(:found_br_mistake_html)
             .error-found-icon g
-
-:javascript
-  $(document).ready(function(){
-    $('#sort_filter_toggle').click(function() {
-      $('#sort_filter_panel').toggle();
-      if (isMobile()) {
-        $('#thelist').toggle();
-      } else {
-        $('#browse_intro').toggle();
-        $('.toggle-button-no').toggle();
-        $('.toggle-button-yes').toggle();
-      }
-    });
-  });
