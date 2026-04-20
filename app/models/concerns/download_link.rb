@@ -16,6 +16,8 @@ module DownloadLink
     path = Rails.application.routes.url_helpers.file_download_path(
       record_type: file_record_type, record_id: id, filename: filename
     )
+    # Unescape URI so Hebrew/non-ASCII filenames are stored and displayed human-readably
+    URI::DEFAULT_PARSER.unescape(path)
   end
 
   def blob_by_filename(filename)
