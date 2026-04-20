@@ -82,6 +82,7 @@ en:
         unpublished_warning: This entry has status '%{status}' and is not available to public
       show_person:
         pages: p.
+        authority_identifiers: External authority identifiers
     attachments:
       create:
         file_exists: "A file with this name already exists: %{filename}"

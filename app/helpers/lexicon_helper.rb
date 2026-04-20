@@ -7,10 +7,10 @@ module LexiconHelper
                              .map { |author| render_citation_author(author) }.join(', ')
 
     title_bit = if lex_citation.link.blank?
-        lex_citation.title
-      else
-        link_to(lex_citation.title, lex_citation.link, target: '_blank', rel: 'noopener noreferrer')
-      end
+                  lex_citation.title
+                else
+                  link_to(lex_citation.title, lex_citation.link, target: '_blank', rel: 'noopener noreferrer')
+                end
 
     raw "#{author_bit}, #{title_bit}, " \
         "<u>#{lex_citation.from_publication}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
@@ -48,6 +48,38 @@ module LexiconHelper
     end
   end
 
+  EXTERNAL_IDENTIFIER_URLS = {
+    'lc' => ->(id) { "https://id.loc.gov/authorities/#{id}" },
+    'viaf' => ->(id) { "https://viaf.org/viaf/#{id}" },
+    'nli' => ->(id) { "http://uli.nli.org.il/authorities/#{id}" },
+    'wikidata' => ->(id) { "https://www.wikidata.org/wiki/#{id}" },
+    'openlibrary' => ->(id) { "https://openlibrary.org/authors/#{id}" }
+  }.freeze
+
+  EXTERNAL_IDENTIFIER_LABELS = {
+    'lc' => 'LC',
+    'viaf' => 'VIAF',
+    'nli' => 'NLI',
+    'wikidata' => 'Wikidata',
+    'openlibrary' => 'OpenLibrary'
+  }.freeze
+
+  def render_external_identifiers(external_identifiers)
+    return nil if external_identifiers.blank?
+
+    pairs = external_identifiers.filter_map do |key, id|
+      url_builder = EXTERNAL_IDENTIFIER_URLS[key]
+      label = EXTERNAL_IDENTIFIER_LABELS[key]
+      next unless url_builder && label
+
+      url = url_builder.call(id)
+      link = link_to(id, url, target: '_blank', rel: 'noopener noreferrer')
+      "#{label} – #{link}"
+    end
+
+    raw pairs.join(' | ') if pairs.any?
+  end
+
   def grouped_and_ordered_citations(lex_person)
     person_works = lex_person.works.index_by(&:title)
     # we preload data required for citations rendering
@@ -78,6 +110,4 @@ module LexiconHelper
 
     grouped_citations
   end
-
-
 end
