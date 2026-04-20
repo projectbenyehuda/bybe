@@ -45,7 +45,10 @@ class Expression < ApplicationRecord
   # @return hash where keys are period names and value is a number of works from the given period
   def self.cached_work_count_by_periods
     Rails.cache.fetch('e_works_by_periods', expires_in: 24.hours) do
-      Expression.joins(:manifestations).merge(Manifestation.all_published).group(:period).count
+      Expression.joins(:manifestations, :work)
+               .merge(Manifestation.all_published)
+               .where(works: { primary: true })
+               .group(:period).count
     end
   end
 
