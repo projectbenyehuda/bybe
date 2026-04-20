@@ -16,7 +16,7 @@ background-color:#fadafa;
 }
 .markdown { min-height:600px; max-height: 800px;}
 #preview { min-height:600px; max-height: 800px; overflow-y: auto;}
-.textarea100 { min-height:600px; max-height: min(800px, calc(100dvh - 150px)); width:100%; overflow-y: auto;}
+.textarea100 { min-height: 600px; min-height: min(600px, calc(100dvh - 150px)); max-height: 800px; max-height: clamp(0px, calc(100dvh - 150px), 800px); width:100%; overflow-y: auto;}
 //p { text-align:right; direction:rtl; font-family:"Alef", "serif"; font-size:1em; padding: 0px 0; margin: 6px 2px; text-indent: 50px; }
 //p { text-align:right; direction:rtl; font-family:"Times New Roman", "serif"; font-size:12pt; padding: 0px 0; margin: 6px 2px; text-indent: 50px; }
 .htmlfile h1 { text-align:right;direction:rtl; }
