@@ -82,6 +82,7 @@ en:
         unpublished_warning: This entry has status '%{status}' and is not available to public
       show_person:
         pages: p.
+        authority_identifiers: External authority identifiers
     attachments:
       create:
         file_exists: "A file with this name already exists: %{filename}"
@@ -209,6 +210,7 @@ en:
         title_and_years: Title and Life Years
         biography: Biography
         works_section: Works
+        authority_control_section: Authority Control
         citations_section: Citations
         links_section: Links
         attachments_section: Attachments

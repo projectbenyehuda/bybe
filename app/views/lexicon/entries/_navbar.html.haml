@@ -25,6 +25,11 @@
         %a.nav-link#links_button{ 'aria-selected' => 'false', href: '#' }
           .side-menu-icon
           .side-menu-name= t('lexicon.verification.sections.links_section')
+      - if @lex_entry.external_identifiers.present?
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-authority-control' }
+          %a.nav-link#authority_control_button{ 'aria-selected' => 'false', href: '#' }
+            .side-menu-icon
+            .side-menu-name= t('lexicon.verification.sections.authority_control_section')
     - else
       %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-description' }
         %a.nav-link.active{ 'aria-selected' => 'true', href: '#' }

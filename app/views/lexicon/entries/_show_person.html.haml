@@ -46,6 +46,12 @@
                   %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
         #lexicon-links
           = render partial: 'links', locals: { links: lex_person.links }
+        - identifier_html = render_external_identifiers(@lex_entry.external_identifiers)
+        - if identifier_html
+          #lexicon-authority-control
+            = render layout: 'lexicon/block', locals: { title: t('lexicon.entries.show_person.authority_identifiers') } do
+              .lexicon-authority-identifiers
+                = identifier_html
 
   .col-12.col-lg-4
     .row

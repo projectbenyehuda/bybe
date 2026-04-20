@@ -82,6 +82,7 @@ he:
         unpublished_warning: "אזהרה: סטטוס הערך הוא '%{status}', ולכן אינו גלוי לציבור."
       show_person:
         pages: p.
+        authority_identifiers: מזהים חיצוניים
     attachments:
       create:
         file_exists: "קובץ בשם זה כבר קיים: %{filename}"
@@ -210,6 +211,7 @@ he:
         title_and_years: כותרת וזמנים
         biography: ביוגרפיה
         works_section: יצירות
+        authority_control_section: מזהים חיצוניים
         citations_section: מראי מקום
         links_section: קישוריוֹת
         attachments_section: קבצים מצורפים
