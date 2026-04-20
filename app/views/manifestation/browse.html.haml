@@ -2,13 +2,6 @@
 #content.container-fluid
   .row.list-all-texts
     .col-sm-12.col-md-4
-      .by-card-v02#browse_intro
-        .work-area
-          .work-content
-            .headline-1-v02= t(:welcome_to_works_browsing)
-            %p!= t(:works_browsing_intro_html)
-          .work-side-color
-            .work-genre.prose-side-icon
       .by-card-v02.text-sorting#sort_filter_panel
         = render partial: 'browse_filters'
     .col-sm-12.col-md-8
@@ -21,11 +14,6 @@
   = render partial: 'shared/anth_stuff'
 
 :javascript
-  $(function() {
-    $('#browse_intro').toggle(#{@filters.empty?} && !isMobile());
-    $('#sort_filter_panel').toggle(#{@filters.present?} && !isMobile());
-  });
-
   function submit_filters() {
     window.history.pushState($('#works_filters').serialize(), null, '/works');
     startModal('spinnerdiv');
