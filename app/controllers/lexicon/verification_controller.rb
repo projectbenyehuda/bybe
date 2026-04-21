@@ -3,7 +3,7 @@
 module Lexicon
   # Controller for migration verification workbench
   class VerificationController < ApplicationController
-    EXTERNAL_IDENTIFIER_KEYS = %w(lc viaf nli wikidata openlibrary j9u).freeze
+    EXTERNAL_IDENTIFIER_KEYS = LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys.freeze
 
     before_action :set_entry, except: %i(index)
     before_action do |c|
