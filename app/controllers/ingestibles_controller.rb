@@ -156,9 +156,29 @@ class IngestiblesController < ApplicationController
       end
     end
     if params[:docx].present?
-      file = URI.open(params[:docx])
-      uri = URI.parse(params[:docx])
-      @ingestible.docx.attach(io: file, filename: CGI.unescape(File.basename(uri.path)))
+      begin
+        uri = URI.parse(params[:docx])
+        raise ArgumentError unless %w(http https).include?(uri.scheme)
+
+        response = Faraday.get(params[:docx])
+      rescue URI::InvalidURIError, ArgumentError
+        @ingestible.errors.add(:base, t('.invalid_docx_url'))
+        render :new, status: :unprocessable_content
+        return
+      rescue Faraday::Error
+        @ingestible.errors.add(:base, t('.docx_download_failed'))
+        render :new, status: :unprocessable_content
+        return
+      end
+      unless response.success?
+        @ingestible.errors.add(:base, t('.docx_download_failed'))
+        render :new, status: :unprocessable_content
+        return
+      end
+      tmpfile = Tempfile.new(['docx_download_', '.docx'], encoding: 'ascii-8bit')
+      tmpfile.write(response.body)
+      tmpfile.rewind
+      @ingestible.docx.attach(io: tmpfile, filename: CGI.unescape(File.basename(uri.path)))
     end
     if @ingestible.save
       redirect_to edit_ingestible_url(@ingestible), notice: t('.success')
