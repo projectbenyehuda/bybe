@@ -76,22 +76,24 @@
       ✓
       = t('lexicon.verification.migrated.mark_verified')
 
--# Section 5: External Identifiers
-.section.verification-section{id: 'section-external-identifiers', class: checklist['external_identifiers']&.dig('verified') ? 'verified' : 'not-verified'}
+-# haml-lint:disable LineLength
+.section.verification-section{ id: 'section-external-identifiers', class: checklist['external_identifiers']&.dig('verified') ? 'verified' : 'not-verified' }
   .section-header
     %h5= t('lexicon.verification.sections.external_identifiers_section')
-    .verification-badge{class: checklist['external_identifiers']&.dig('verified') ? 'verified' : 'not-verified'}
+    .verification-badge{ class: checklist['external_identifiers']&.dig('verified') ? 'verified' : 'not-verified' }
       = checklist['external_identifiers']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if entry.external_identifiers.present?
       %dl.row
-        - entry.external_identifiers.each do |key, value|
-          %dt.col-sm-3= key.upcase
+        - LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.each do |key, label|
+          - value = entry.external_identifiers[key]
+          - next if value.blank?
+          %dt.col-sm-3= label
           %dd.col-sm-9= value
     - else
       %p.text-muted= t('lexicon.verification.sections.no_external_identifiers')
   .section-actions
-    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'external_identifiers')}', onSectionEditSuccess('section-external-identifiers'))"}
+    %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'external_identifiers')}', onSectionEditSuccess('section-external-identifiers'))" }
       ✏️
       = t('lexicon.verification.migrated.edit')
     %button.btn.btn-sm{ class: checklist['external_identifiers']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'external_identifiers' } }
