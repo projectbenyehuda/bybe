@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 
+prefix = case Rails.env
+         when 'production'
+           ENV.fetch('is_staging') == 'true' ? 'staging' : nil
+         when 'test'
+           'test'
+         else
+           nil
+         end
 Chewy.settings = {
   host: ENV.fetch('ELASTICSEARCH_HOST'),
-  prefix: Rails.env.test? ? 'test' : nil
+  prefix: prefix
 }
