@@ -451,6 +451,8 @@ en:
     create:
       success: Ingestible was successfully created
       failure: Failed to create Ingestible
+      invalid_docx_url: "DOCX URL must use http or https"
+      docx_download_failed: "Failed to download DOCX file from the provided URL"
     edit:
       title: Edit Ingestible
     form:
