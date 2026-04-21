@@ -146,7 +146,7 @@
     .change-subform.mt-2#subform-involved-authority{ style: 'display:none;' }
       .admin_container
         %b= t('admin.mass_update.role_label')
-        - ia_role_opts = InvolvedAuthority.roles.keys.map { |r| [t(r), r] }
+        - ia_role_opts = InvolvedAuthority.roles.keys.map { |r| [t("involved_authority.role.#{r}"), r] }
         = select_tag :ia_role, options_for_select(ia_role_opts), id: 'ia-role-select'
         &nbsp;
         %b= t('admin.mass_update.entity_label')
