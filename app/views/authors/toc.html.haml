@@ -21,7 +21,7 @@
                 - if @author.person.present?
                   .author-page-top-years!= "(#{@author.person.life_years})"
                   .metadata-link
-                    %a{href: '#'}
+                    %a.help{href: '#', onclick: 'return false;', data: { toggle: :popover, trigger: :focus, content: t('period_popover') }}
                       %span.metadata-link-icon> P
                       = t(@author.person.period)
             .by-card-content-v02{class: @unpublished ? 'unpublished' : ''}
