@@ -76,6 +76,14 @@
           %input{type: 'checkbox', checked: checklist['az_navbar']&.dig('verified'), disabled: true, data: {path: 'az_navbar', 'section-id': 'section-az-navbar'}}
           = t('lexicon.verification.checklist.publication.az_navbar')
 
+    -# External Identifiers (common to both)
+    %li.checklist-item
+      %label
+        -# haml-lint:disable LineLength
+        %input{ type: 'checkbox', checked: checklist['external_identifiers']&.dig('verified'), disabled: true, data: { path: 'external_identifiers', 'section-id': 'section-external-identifiers' } }
+        -# haml-lint:enable LineLength
+        = t('lexicon.verification.checklist.person.external_identifiers')
+
     -# Links (common to both)
     %li.checklist-item
       %label

@@ -113,7 +113,7 @@ class LexEntry < ApplicationRecord
     verified = 0
 
     # Count top-level items (excluding collections)
-    %w(title life_years bio description toc az_navbar attachments).each do |key|
+    %w(title life_years bio description toc az_navbar external_identifiers attachments).each do |key|
       next unless checklist[key]
 
       total += 1
@@ -321,6 +321,9 @@ class LexEntry < ApplicationRecord
       checklist['toc'] = { 'verified' => false, 'notes' => '' }
       checklist['az_navbar'] = { 'verified' => false, 'notes' => '' }
     end
+
+    # External Identifiers (common to both)
+    checklist['external_identifiers'] = { 'verified' => false, 'notes' => '' }
 
     # Links (common to both)
     link_items = if lex_item&.links&.any?
