@@ -1,2 +1,2 @@
 no-git-ops: true
-# sync.remote: git+ssh://git@github.com/projectbenyehuda/bybe.git
+sync.remote: git+ssh://git@github.com/projectbenyehuda/bybe.git

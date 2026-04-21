@@ -130,7 +130,8 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       markdown_content = page.evaluate_script("$('#markdown').val()")
       expect(markdown_content).to include('<img')
       expect(markdown_content).to include('alt="test_image_1.jpg"')
-      expect(markdown_content).to include('style="width: 800px; height: 600px;"')
+      expect(markdown_content).to include('width="800"')
+      expect(markdown_content).to include('height="600"')
     end
 
     it 'does not advance beyond the last image' do
@@ -162,7 +163,8 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       markdown_content = page.evaluate_script("$('#markdown').val()")
       expect(markdown_content).to include('<img')
       expect(markdown_content).to include('alt="test_image_2.jpg"')
-      expect(markdown_content).to include('style="width: 800px; height: 600px;"')
+      expect(markdown_content).to include('width="800"')
+      expect(markdown_content).to include('height="600"')
     end
   end
 end
