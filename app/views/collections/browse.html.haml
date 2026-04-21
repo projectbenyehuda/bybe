@@ -1,27 +1,22 @@
 -# Browse collections
-#content.container-fluid
+.container-fluid#content
   .row.list-all-texts
     .col-sm-12.col-md-4
-      .by-card-v02#browse_intro
-        .work-area
-          .work-content
-            .headline-1-v02= t(:welcome_to_collections_browsing)
-            %p!= t(:collections_browsing_intro_html)
-          .work-side-color
-            .work-genre.prose-side-icon
       .by-card-v02.text-sorting#sort_filter_panel
         = render partial: 'browse_filters'
     .col-sm-12.col-md-8
       .by-card-v02#thelist
         = render partial: 'browse_list'
 
-#authoritiesDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
-  = render partial: 'authorities_select', locals: {authorities: @authorities, list: @authorities_list}
+.modal#authoritiesDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
+  = render partial: 'authorities_select', locals: { authorities: @authorities, list: @authorities_list }
 
 :javascript
   $(function() {
-    $('#browse_intro').toggle(#{@filters.empty?} && !isMobile());
-    $('#sort_filter_panel').toggle(#{@filters.present?} && !isMobile());
+    $('#mobile_filter_btn').click(function() {
+      $('#sort_filter_panel').show();
+      $('#thelist').hide();
+    });
   });
 
   function submit_filters() {
