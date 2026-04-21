@@ -1949,6 +1949,8 @@ he:
     create:
       success: ההעלאה נוצרה
       failure: אירעה שגיאה בפתיחת ההעלאה
+      invalid_docx_url: "כתובת ה-DOCX חייבת להשתמש ב-http או https"
+      docx_download_failed: "הורדת קובץ ה-DOCX מהכתובת הנתונה נכשלה"
     edit:
       title: עדכון העלאה
     show:
