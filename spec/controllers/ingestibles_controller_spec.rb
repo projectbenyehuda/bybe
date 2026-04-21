@@ -71,7 +71,7 @@ describe IngestiblesController do
 
       let(:ingestible_params) { attributes_for(:ingestible) }
       let(:fake_docx_body) { Rails.root.join('spec/fixtures/docx/inherited_formatting_test.docx').binread }
-      let(:faraday_response) { instance_double(Faraday::Response, body: fake_docx_body) }
+      let(:faraday_response) { instance_double(Faraday::Response, body: fake_docx_body, success?: true) }
 
       context 'with a valid https URL' do
         let(:docx_url) { 'https://example.com/path/to/document.docx' }
@@ -94,9 +94,10 @@ describe IngestiblesController do
 
         before { allow(Faraday).to receive(:get) }
 
-        it 'raises an error instead of executing the shell command' do
-          # URI.parse rejects it before we even check the scheme
-          expect { call }.to raise_error(URI::InvalidURIError)
+        it 'returns 422 without calling Faraday' do
+          call
+          expect(response).to have_http_status(:unprocessable_content)
+          expect(assigns(:ingestible).errors[:base]).to be_present
           expect(Faraday).not_to have_received(:get)
         end
       end
@@ -106,9 +107,24 @@ describe IngestiblesController do
 
         before { allow(Faraday).to receive(:get) }
 
-        it 'raises an error' do
-          expect { call }.to raise_error(ArgumentError, %r{Only http/https URLs are allowed})
+        it 'returns 422 without calling Faraday' do
+          call
+          expect(response).to have_http_status(:unprocessable_content)
+          expect(assigns(:ingestible).errors[:base]).to be_present
           expect(Faraday).not_to have_received(:get)
+        end
+      end
+
+      context 'when Faraday returns a non-success response' do
+        let(:docx_url) { 'https://example.com/path/to/document.docx' }
+        let(:failed_response) { instance_double(Faraday::Response, success?: false) }
+
+        before { allow(Faraday).to receive(:get).with(docx_url).and_return(failed_response) }
+
+        it 'returns 422 with an error message' do
+          call
+          expect(response).to have_http_status(:unprocessable_content)
+          expect(assigns(:ingestible).errors[:base]).to be_present
         end
       end
     end
