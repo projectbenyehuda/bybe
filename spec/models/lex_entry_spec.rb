@@ -263,6 +263,54 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe 'external_identifiers verification' do
+    let(:person) { create(:lex_person) }
+    let(:entry) { create(:lex_entry, lex_item: person) }
+
+    describe '#build_checklist' do
+      it 'includes external_identifiers in the checklist for LexPerson entries' do
+        entry.start_verification!('test@example.com')
+        checklist = entry.verification_progress['checklist']
+
+        expect(checklist['external_identifiers']).to eq({ 'verified' => false, 'notes' => '' })
+      end
+
+      context 'when entry is a LexPublication' do
+        let(:publication) { create(:lex_publication) }
+        let(:pub_entry) { create(:lex_entry, lex_item: publication) }
+
+        it 'includes external_identifiers in the checklist for LexPublication entries' do
+          pub_entry.start_verification!('test@example.com')
+          checklist = pub_entry.verification_progress['checklist']
+
+          expect(checklist['external_identifiers']).to eq({ 'verified' => false, 'notes' => '' })
+        end
+      end
+    end
+
+    describe '#verification_percentage' do
+      it 'counts external_identifiers in the percentage calculation' do
+        entry.start_verification!('test@example.com')
+        percentage_before = entry.verification_percentage
+
+        entry.update_checklist_item('external_identifiers', true, '')
+        percentage_after = entry.verification_percentage
+
+        expect(percentage_after).to be > percentage_before
+      end
+    end
+
+    describe '#update_checklist_item for external_identifiers' do
+      before { entry.start_verification!('test@example.com') }
+
+      it 'marks external_identifiers as verified' do
+        entry.update_checklist_item('external_identifiers', true, 'Looks good')
+        expect(entry.verification_progress.dig('checklist', 'external_identifiers', 'verified')).to be true
+        expect(entry.verification_progress.dig('checklist', 'external_identifiers', 'notes')).to eq('Looks good')
+      end
+    end
+  end
+
   describe '#other_designation' do
     it 'can be read and written' do
       entry = create(:lex_entry, other_designation: 'alias1; alias2')

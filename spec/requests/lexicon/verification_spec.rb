@@ -256,6 +256,65 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     end
   end
 
+  describe 'PATCH /lex/verification/:id/update_section – external_identifiers' do
+    let(:entry) do
+      e = create(:lex_entry, :person,
+                 status: :verifying,
+                 external_identifiers: { 'viaf' => '123', 'lc' => 'n456' })
+      e.start_verification!('editor@example.com')
+      e
+    end
+    let(:url) { "/lex/verification/#{entry.id}/update_section" }
+
+    it 'saves updated external_identifiers' do
+      patch url,
+            params: { section: 'external_identifiers',
+                      external_identifiers: { viaf: '999', lc: 'n456' } },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      entry.reload
+      expect(entry.external_identifiers['viaf']).to eq('999')
+      expect(entry.external_identifiers['lc']).to eq('n456')
+    end
+
+    it 'removes an identifier when its value is blank' do
+      patch url,
+            params: { section: 'external_identifiers',
+                      external_identifiers: { viaf: '', lc: 'n456' } },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      entry.reload
+      expect(entry.external_identifiers).not_to have_key('viaf')
+      expect(entry.external_identifiers['lc']).to eq('n456')
+    end
+
+    it 'marks the section verified when mark_verified is set' do
+      patch url,
+            params: { section: 'external_identifiers',
+                      external_identifiers: { viaf: '123', lc: 'n456' },
+                      mark_verified: '1' },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(response.parsed_body['success']).to be true
+      entry.reload
+      expect(entry.verification_progress.dig('checklist', 'external_identifiers', 'verified')).to be true
+    end
+
+    it 'sets external_identifiers to nil when all values are blank' do
+      patch url,
+            params: { section: 'external_identifiers',
+                      external_identifiers: { viaf: '', lc: '' } },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      entry.reload
+      expect(entry.external_identifiers).to be_nil
+    end
+  end
+
   describe 'PATCH /lex/verification/:id/update_checklist' do
     context 'when verifying the title section for a LexPerson' do
       let(:entry) do
@@ -291,6 +350,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         # Simulate user clicking quickVerify on every section (title path covers life_years)
         patch url, params: { path: 'title', verified: 'true' }, as: :json
         patch url, params: { path: 'bio', verified: 'true' }, as: :json
+        patch url, params: { path: 'external_identifiers', verified: 'true' }, as: :json
         patch url, params: { path: 'attachments', verified: 'true' }, as: :json
 
         # Verify all collection items (citations, links, works are empty for this entry)
