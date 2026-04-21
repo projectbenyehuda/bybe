@@ -23,13 +23,15 @@ function insertImageFromDDSlick(textAreaSelector, ddslickDropDownSelector) {
 
 function imageTagFromOption(option) {
   const $opt = $(option);
-  const attrs = {
-    src: $opt.val(),
-    alt: $opt.text().trim()
-  };
+  // Use DOM API so width/height become HTML attributes (not inline styles).
+  // jQuery's $('<img>', {width, height}) routes through .width()/.height(),
+  // which sets style="width:Xpx" instead of the width="X" attribute.
+  const img = document.createElement('img');
+  img.src = $opt.val();
+  img.alt = $opt.text().trim();
   const width = $opt.data('width');
   const height = $opt.data('height');
-  if (width) attrs.width = width;
-  if (height) attrs.height = height;
-  return $('<img>', attrs)[0].outerHTML;
+  if (width) img.setAttribute('width', width);
+  if (height) img.setAttribute('height', height);
+  return img.outerHTML;
 }
