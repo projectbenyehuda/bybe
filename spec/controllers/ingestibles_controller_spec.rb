@@ -66,6 +66,53 @@ describe IngestiblesController do
       end
     end
 
+    context 'when docx URL param is provided' do
+      subject(:call) { post :create, params: { ingestible: ingestible_params, docx: docx_url } }
+
+      let(:ingestible_params) { attributes_for(:ingestible) }
+      let(:fake_docx_body) { Rails.root.join('spec/fixtures/docx/inherited_formatting_test.docx').binread }
+      let(:faraday_response) { instance_double(Faraday::Response, body: fake_docx_body) }
+
+      context 'with a valid https URL' do
+        let(:docx_url) { 'https://example.com/path/to/document.docx' }
+
+        before do
+          allow(Faraday).to receive(:get).with(docx_url).and_return(faraday_response)
+        end
+
+        it 'downloads via Faraday and attaches the file' do
+          call
+          expect(Faraday).to have_received(:get).with(docx_url)
+          ingestible = Ingestible.order(id: :desc).first
+          expect(ingestible.docx).to be_attached
+          expect(ingestible.docx.filename.to_s).to eq('document.docx')
+        end
+      end
+
+      context 'with a pipe-prefixed malicious URL' do
+        let(:docx_url) { '|rm -rf /' }
+
+        before { allow(Faraday).to receive(:get) }
+
+        it 'raises an error instead of executing the shell command' do
+          # URI.parse rejects it before we even check the scheme
+          expect { call }.to raise_error(URI::InvalidURIError)
+          expect(Faraday).not_to have_received(:get)
+        end
+      end
+
+      context 'with a file:// URL' do
+        let(:docx_url) { 'file:///etc/passwd' }
+
+        before { allow(Faraday).to receive(:get) }
+
+        it 'raises an error' do
+          expect { call }.to raise_error(ArgumentError, %r{Only http/https URLs are allowed})
+          expect(Faraday).not_to have_received(:get)
+        end
+      end
+    end
+
     context 'with duplicate volume params' do
       let(:authority) { create(:authority) }
       let(:publication) { create(:publication, authority: authority) }

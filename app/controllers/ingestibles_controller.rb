@@ -156,9 +156,11 @@ class IngestiblesController < ApplicationController
       end
     end
     if params[:docx].present?
-      file = URI.open(params[:docx])
       uri = URI.parse(params[:docx])
-      @ingestible.docx.attach(io: file, filename: CGI.unescape(File.basename(uri.path)))
+      raise ArgumentError, 'Only http/https URLs are allowed' unless %w(http https).include?(uri.scheme)
+
+      response = Faraday.get(params[:docx])
+      @ingestible.docx.attach(io: StringIO.new(response.body), filename: CGI.unescape(File.basename(uri.path)))
     end
     if @ingestible.save
       redirect_to edit_ingestible_url(@ingestible), notice: t('.success')
