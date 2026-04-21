@@ -73,7 +73,9 @@ input[type=checkbox].multiselect_checkbox {
 	box-sizing:border-box;
 	width:44px;
 }
-
+.popover {
+  max-width: 450px;
+}
 .author-name-v02 {
   color:white;
 }
