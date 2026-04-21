@@ -3,6 +3,8 @@
 module Lexicon
   # Controller for migration verification workbench
   class VerificationController < ApplicationController
+    EXTERNAL_IDENTIFIER_KEYS = LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys.freeze
+
     before_action :set_entry, except: %i(index)
     before_action do |c|
       c.require_editor('edit_lexicon')
@@ -253,6 +255,17 @@ module Lexicon
       # submitting an empty string will clear the field instead of being ignored.
       entry_updates[:english_title] = params[:english_title] if params.key?(:english_title)
 
+      # Update external_identifiers if submitted: blank values are removed, nil if all blank
+      if params.key?(:external_identifiers)
+        # rubocop:disable Rails/StrongParametersExpect
+        raw = params.require(:external_identifiers)
+                    .permit(*Lexicon::VerificationController::EXTERNAL_IDENTIFIER_KEYS)
+                    .to_h
+        # rubocop:enable Rails/StrongParametersExpect
+        filtered = raw.compact_blank
+        entry_updates[:external_identifiers] = filtered.presence
+      end
+
       if entry_updates.present? && !@entry.update(entry_updates)
         success = false
         errors += @entry.errors.full_messages
@@ -348,15 +361,20 @@ module Lexicon
     end
 
     def item_params
-      # Permit params based on item type
-      # Using require().permit() for consistency with rest of codebase
+      # Permit params based on item type, but only if the relevant nested params were submitted.
+      # Some edit forms (e.g. external_identifiers) update only LexEntry fields and don't
+      # include lex_person / lex_publication nested params.
       # rubocop:disable Rails/StrongParametersExpect
       case @entry.lex_item_type
       when 'LexPerson'
+        return nil unless params.key?(:lex_person)
+
         params.require(:lex_person).permit(
           :birthdate, :deathdate, :bio, :works, :gender, :aliases, :copyrighted, :authority_id
         )
       when 'LexPublication'
+        return nil unless params.key?(:lex_publication)
+
         params.require(:lex_publication).permit(
           :description, :toc, :az_navbar
         )

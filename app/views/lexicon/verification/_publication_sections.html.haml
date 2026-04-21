@@ -76,7 +76,31 @@
       ✓
       = t('lexicon.verification.migrated.mark_verified')
 
--# Section 5: Links
+-# haml-lint:disable LineLength
+.section.verification-section{ id: 'section-external-identifiers', class: checklist['external_identifiers']&.dig('verified') ? 'verified' : 'not-verified' }
+  .section-header
+    %h5= t('lexicon.verification.sections.external_identifiers_section')
+    .verification-badge{ class: checklist['external_identifiers']&.dig('verified') ? 'verified' : 'not-verified' }
+      = checklist['external_identifiers']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+  .section-content
+    - if entry.external_identifiers.present?
+      %dl.row
+        - LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.each do |key, label|
+          - value = entry.external_identifiers[key]
+          - next if value.blank?
+          %dt.col-sm-3= label
+          %dd.col-sm-9= value
+    - else
+      %p.text-muted= t('lexicon.verification.sections.no_external_identifiers')
+  .section-actions
+    %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'external_identifiers')}', onSectionEditSuccess('section-external-identifiers'))" }
+      ✏️
+      = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['external_identifiers']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'external_identifiers' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
+
+-# Section 6: Links
 .section.verification-section{id: 'section-links', class: checklist['links']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
     %h5= t('lexicon.verification.sections.links_section')
@@ -112,7 +136,7 @@
   .section-actions
     = link_to t('lexicon.verification.migrated.add_link'), new_lexicon_entry_link_path(entry), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href, function() { location.reload(); });"
 
--# Section 6: Attachments
+-# Section 7: Attachments
 .section.verification-section{id: 'section-attachments', class: checklist['attachments']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
     %h5= t('lexicon.verification.sections.attachments_section')

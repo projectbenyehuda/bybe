@@ -1,0 +1,13 @@
+-# Shared partial for editing external identifier fields on a LexEntry. Expects: `entry` (LexEntry).
+:ruby
+  current_identifiers = entry.external_identifiers || {}
+  identifier_keys = LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys
+  placeholder = t('lexicon.verification.edit.external_identifiers.leave_blank_to_remove')
+
+- identifier_keys.each do |key|
+  .form-group.mb-3
+    - label = t("lexicon.verification.edit.external_identifiers.#{key}")
+    = label_tag "external_identifiers_#{key}", label, class: 'form-label'
+    -# haml-lint:disable LineLength
+    = text_field_tag "external_identifiers[#{key}]", current_identifiers[key], class: 'form-control', placeholder: placeholder
+    -# haml-lint:enable LineLength
