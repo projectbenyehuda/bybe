@@ -184,6 +184,7 @@ he:
           citations: מראי מקום
           links: קישוריוֹת
           attachments: קבצים מצורפים
+          external_identifiers: מזהים חיצוניים
         publication:
           title: כותרת
           description: תיאור
@@ -191,6 +192,7 @@ he:
           az_navbar: ניווט א-ב
           links: קישוריוֹת
           attachments: קבצים מצורפים
+          external_identifiers: מזהים חיצוניים
       source:
         header: קובץ מקור
         file_not_found: "⚠️ קובץ מקור לא נמצא"
@@ -226,6 +228,8 @@ he:
         no_description: "(אין תיאור)"
         no_toc: "(אין תוכן עניינים)"
         no_az_navbar: "(אין ניווט א-ב)"
+        external_identifiers_section: מזהים חיצוניים
+        no_external_identifiers: "(אין מזהים חיצוניים)"
         citation_from_publication: "ממקור:"
         citation_pages: "עמ׳:"
         count_mismatch: "אי-התאמה בספירה: %{php_count} פריט/ים בקובץ המקור, אך %{migrated_count} פריטים מועברים. ייתכן שאי-ההתאמה מוצדקת ואינה מונעת את אישור הערך."
@@ -259,3 +263,12 @@ he:
         confirm_match: אשר התאמה
         reject_match: דחה התאמה
         proposed_collection: "(הצעה: %{title})"
+        external_identifiers:
+          instructions: "הכנס ערכי מזהה עבור מערכות בקרת סמכות. השאר שדה ריק כדי להסיר את המזהה."
+          leave_blank_to_remove: "השאר ריק כדי להסיר"
+          lc: "ספריית הקונגרס (LC)"
+          viaf: VIAF
+          nli: NLI
+          wikidata: Wikidata
+          openlibrary: OpenLibrary
+          j9u: J9U
