@@ -12,6 +12,13 @@
   = render partial: 'authorities_select', locals: { authorities: @authorities, list: @authorities_list }
 
 :javascript
+  $(function() {
+    $('#mobile_filter_btn').click(function() {
+      $('#sort_filter_panel').show();
+      $('#thelist').hide();
+    });
+  });
+
   function submit_filters() {
     window.history.pushState($('#collections_filters').serialize(), null, '/collections');
     startModal('spinnerdiv');
