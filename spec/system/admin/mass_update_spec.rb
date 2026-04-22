@@ -12,12 +12,16 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
   let!(:collection)    { create(:collection, title: 'Test Collection', collection_type: :volume) }
 
   # Adds a record to the selection list via the "By ID" tab, then waits for it to appear.
+  # For collections, the expansion widget appears instead of an immediate list entry.
   def add_record_by_id(type_label, id)
     select type_label, from: 'direct_record_type'
     fill_in 'direct_id', with: id.to_s
     click_button I18n.t('admin.mass_update.add_button'), match: :first
-    # Wait for the record to appear in the list (Capybara auto-waits)
-    find('#records-list', text: "##{id}", wait: 5)
+    if type_label == I18n.t('admin.mass_update.record_type_collection')
+      expect(page).to have_css('#collection-expand-widget', visible: true, wait: 5)
+    else
+      find('#records-list', text: "##{id}", wait: 5)
+    end
   end
 
   # Adds a field_update change to the changes list.
@@ -45,8 +49,8 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
     before { visit admin_mass_update_path }
 
     it 'adds a Manifestation to the list' do
-      add_record_by_id(I18n.t('admin.mass_update.record_type_manifestation'), manifestation.id)
-      expect(page).to have_content("Manifestation ##{manifestation.id}")
+      add_record_by_id(I18n.t('text'), manifestation.id)
+      expect(page).to have_content("#{I18n.t('admin.mass_update.record_type_manifestation')} ##{manifestation.id}")
       expect(page).not_to have_content(I18n.t('admin.mass_update.no_records_in_list'))
     end
   end
@@ -54,7 +58,7 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
   describe 'adding a field_update change' do
     before do
       visit admin_mass_update_path
-      add_record_by_id(I18n.t('admin.mass_update.record_type_manifestation'), manifestation.id)
+      add_record_by_id(I18n.t('text'), manifestation.id)
     end
 
     it 'adds a change to the changes list' do
@@ -67,8 +71,9 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
   describe 'applying changes' do
     before do
       visit admin_mass_update_path
-      add_record_by_id(I18n.t('admin.mass_update.record_type_manifestation'), manifestation.id)
-      add_field_update_change(I18n.t('admin.mass_update.record_type_manifestation'), 'title', 'Mass Updated Title')
+      add_record_by_id(I18n.t('text'), manifestation.id)
+      add_field_update_change(I18n.t('admin.mass_update.record_type_manifestation'), 'title', 'Mass Updated Title',
+                              record_type_key: 'manifestation')
     end
 
     it 'applies the changes and shows results' do
@@ -84,7 +89,7 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
   describe 'saving and loading selections' do
     before do
       visit admin_mass_update_path
-      add_record_by_id(I18n.t('admin.mass_update.record_type_manifestation'), manifestation.id)
+      add_record_by_id(I18n.t('text'), manifestation.id)
     end
 
     it 'saves a private selection' do
@@ -115,7 +120,8 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
                                     with_options: ['Existing Selection (1)'], wait: 5)
         select 'Existing Selection (1)', from: 'saved-selections-dropdown'
         click_button I18n.t('admin.mass_update.load_selection_button')
-        expect(page).to have_content("Manifestation ##{manifestation.id}", wait: 5)
+        type_label = I18n.t('admin.mass_update.record_type_manifestation')
+        expect(page).to have_content("#{type_label} ##{manifestation.id}", wait: 5)
       end
     end
   end
@@ -138,15 +144,17 @@ RSpec.describe 'Mass Update Tool', :js, type: :system do
       add_record_by_id(I18n.t('admin.mass_update.record_type_collection'), collection.id)
       choose I18n.t('admin.mass_update.collection_expand_collection_only')
       click_button I18n.t('admin.mass_update.add_button'), id: 'confirm-add-collection-btn'
-      expect(page).to have_content("Collection ##{collection.id}", wait: 5)
-      expect(page).not_to have_content("Manifestation ##{sub_manifestation.id}")
+      col_label = I18n.t('admin.mass_update.record_type_collection')
+      man_label = I18n.t('admin.mass_update.record_type_manifestation')
+      expect(page).to have_content("#{col_label} ##{collection.id}", wait: 5)
+      expect(page).not_to have_content("#{man_label} ##{sub_manifestation.id}")
     end
   end
 
   describe 'removing a record from the list' do
     before do
       visit admin_mass_update_path
-      add_record_by_id(I18n.t('admin.mass_update.record_type_manifestation'), manifestation.id)
+      add_record_by_id(I18n.t('text'), manifestation.id)
     end
 
     it 'removes a record when clicking the remove button' do
