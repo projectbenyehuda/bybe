@@ -94,7 +94,7 @@ describe MarkdownToHtml do
         decoded = CGI.unescapeHTML(fn_tag[/data-content="([^"]*)"/, 1])
         expect(decoded).to include('[x]')
         expect(decoded).to include('class="fn-popover-close"')
-        expect(decoded).to include(%[aria-label="#{I18n.t(:footnote_popover_close)}"])
+        expect(decoded).to include(%(aria-label="#{I18n.t(:footnote_popover_close)}"))
         expect(decoded).not_to include('onclick')
       end
 
