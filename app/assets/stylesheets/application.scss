@@ -1250,6 +1250,21 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
+/* Fix: prevent sidebar overlap at 992-1279px viewports.
+ * The inner row (spacer + content col) can flex-wrap at narrow widths,
+ * causing the content col to take full row width and overlap the fixed sidebar.
+ * flex-wrap: nowrap forces them to share the row; min-width: 0 lets the
+ * content col shrink below its natural min-content-size. */
+@media (min-width: 992px) {
+  .author-page-content .col-12.col-lg-8 > .row {
+    flex-wrap: nowrap;
+  }
+
+  .author-page-content .col-12.col-lg-8 > .row > .col:not(.author-side-menu-area) {
+    min-width: 0;
+  }
+}
+
 /* Navbar hover expansion - show full text by wrapping instead of extending horizontally */
 
 /* Simple direct hover on truncate - apply to all truncate elements in sidebars */
