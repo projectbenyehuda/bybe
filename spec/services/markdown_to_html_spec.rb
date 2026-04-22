@@ -70,6 +70,7 @@ describe MarkdownToHtml do
         result = described_class.call(markdown)
 
         fn_tag = result[/<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*>/]
+        expect(fn_tag).not_to be_nil
         expect(fn_tag).not_to include('onclick')
       end
 
@@ -78,9 +79,10 @@ describe MarkdownToHtml do
         result = described_class.call(markdown)
 
         fn_tag = result[/<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*>/]
+        expect(fn_tag).not_to be_nil
         decoded = CGI.unescapeHTML(fn_tag[/data-content="([^"]*)"/, 1])
         expect(decoded).to include('href="#fn:1"')
-        expect(decoded).to include('להערת השוליים בסוף הטקסט')
+        expect(decoded).to include(I18n.t(:footnote_popover_jump_link))
       end
 
       it 'includes a [x] close link with fn-popover-close class in the popover footer' do
@@ -88,9 +90,11 @@ describe MarkdownToHtml do
         result = described_class.call(markdown)
 
         fn_tag = result[/<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*>/]
+        expect(fn_tag).not_to be_nil
         decoded = CGI.unescapeHTML(fn_tag[/data-content="([^"]*)"/, 1])
         expect(decoded).to include('[x]')
         expect(decoded).to include('class="fn-popover-close"')
+        expect(decoded).to include(%[aria-label="#{I18n.t(:footnote_popover_close)}"])
         expect(decoded).not_to include('onclick')
       end
 

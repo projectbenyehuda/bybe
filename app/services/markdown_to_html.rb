@@ -58,8 +58,8 @@ class MarkdownToHtml < ApplicationService
   end
 
   def footnote_popover_footer(fn_id)
-    %(<div class="mt-2 pt-1 border-top"><a href="##{fn_id}">להערת השוליים בסוף הטקסט</a> ) +
-      %(<a href="#" class="fn-popover-close">[x]</a></div>)
+    %(<div class="mt-2 pt-1 border-top"><a href="##{fn_id}">#{I18n.t(:footnote_popover_jump_link)}</a> ) +
+      %(<a href="#" class="fn-popover-close" aria-label="#{I18n.t(:footnote_popover_close)}">[x]</a></div>)
   end
 
   # Builds { "fn:1" => "<inner html without reverse link>", ... } from the footnote list.
