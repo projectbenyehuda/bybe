@@ -182,6 +182,8 @@ he:
   mark_as_manual: סמן כדורש הסבה ידנית
   nikkud: ניקוד
   footnotes: הערות שוליים
+  footnote_popover_jump_link: "להערת השוליים בסוף הטקסט"
+  footnote_popover_close: "סגירת חלונית הערת השוליים"
   images: תמונות
   tables: טבלאות
   some: חלקי

@@ -1546,6 +1546,8 @@ en:
   folder_list: Folder List
   font_size: Font Size
   footnotes: Footnotes
+  footnote_popover_jump_link: "To the footnote at the end of the text"
+  footnote_popover_close: "Close footnote"
   for_pasting: Text for Pasting
   for_publishers_project: For works uploaded as part of the publishers' project only
   for_tag: For tag "%{tag}"
