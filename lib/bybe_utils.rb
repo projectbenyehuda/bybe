@@ -108,7 +108,26 @@ module BybeUtils
     coder = HTMLEntities.new
     buf = coder.decode(html) # convert HTML entities back to actual characters.
 
-    return buf.gsub('<br>', '<br />') # W3C epubcheck doesn't like <br> without closing
+    buf.gsub!('<br>', '<br />') # W3C epubcheck doesn't like <br> without closing
+    epub_footnote_transform!(buf)
+    buf
+  end
+
+  def epub_footnote_transform!(html)
+    # Add epub:type="noteref" so EPUB readers (e.g. Apple Books) can show footnotes as popups
+    html.gsub!(/<a\b([^>]*?\bclass="footnote"[^>]*?)>/) do
+      attrs = ::Regexp.last_match(1)
+      attrs.include?('epub:type') ? "<a#{attrs}>" : "<a epub:type=\"noteref\"#{attrs}>"
+    end
+
+    # Transform <li id="fn:..."> elements to <aside epub:type="footnote"> for EPUB3 compliance
+    html.gsub!(%r{<div class="footnotes">(.*?)</div>}m) do
+      inner = ::Regexp.last_match(1).gsub(%r{</?ol>}, '')
+      inner.gsub!(%r{<li(\s+id="fn:[^"]*"[^>]*)>(.*?)</li>}m) do
+        "<aside#{::Regexp.last_match(1)} epub:type=\"footnote\">#{::Regexp.last_match(2)}</aside>"
+      end
+      "<div class=\"footnotes\">#{inner}</div>"
+    end
   end
 
   # Extract and embed images from HTML into EPUB
@@ -366,7 +385,7 @@ module BybeUtils
       processed_sections.each do |section|
         # Add item to EPUB
         filename = "#{item_index}_text.xhtml"
-        book.add_item(filename).add_content(StringIO.new(boilerplate_start + section[:html] + boilerplate_end))
+        book.add_item(filename).add_content(StringIO.new(boilerplate_start + epub_sanitize_html(section[:html]) + boilerplate_end))
 
         # Add top-level TOC entry for this item
         toc_data << { link: filename, text: section[:toc_title], level: 1 }

@@ -15,6 +15,133 @@ RSpec.describe 'BybeUtils EPUB generation' do
            markdown: "# Test Book\n\n## Chapter 1\n\nContent 1\n\n## Chapter 2\n\nContent 2")
   end
 
+  describe '#epub_sanitize_html' do
+    let(:html_with_footnotes) do
+      <<~HTML
+        <p>Text with footnote<a href="#fn:1" id="fnref:1" title="see footnote" class="footnote"><sup>1</sup></a>.</p>
+        <div class="footnotes">
+        <hr />
+        <ol>
+        <li id="fn:1">
+        <span>Footnote body text. <a href="#fnref:1" title="return to article" class="reversefootnote">&#8617;</a></span>
+        </li>
+        </ol>
+        </div>
+      HTML
+    end
+
+    it 'adds epub:type="noteref" to footnote reference anchors' do
+      result = epub_sanitize_html(html_with_footnotes)
+      expect(result).to include('epub:type="noteref"')
+      expect(result).to include('<a epub:type="noteref"')
+    end
+
+    it 'transforms <li id="fn:..."> to <aside epub:type="footnote">' do
+      result = epub_sanitize_html(html_with_footnotes)
+      expect(result).to include('<aside id="fn:1" epub:type="footnote">')
+      expect(result).to include('</aside>')
+      expect(result).not_to include('<li id="fn:1">')
+      expect(result).not_to match(%r{</li>})
+    end
+
+    it 'removes <ol> wrapper from footnotes section' do
+      result = epub_sanitize_html(html_with_footnotes)
+      expect(result).not_to include('<ol>')
+      expect(result).not_to include('</ol>')
+    end
+
+    it 'preserves footnote body content inside <aside>' do
+      result = epub_sanitize_html(html_with_footnotes)
+      expect(result).to include('Footnote body text.')
+    end
+
+    it 'handles HTML with no footnotes unchanged (except br fix)' do
+      plain = '<p>Simple text without footnotes.</p>'
+      result = epub_sanitize_html(plain)
+      expect(result).to eq(plain)
+    end
+
+    context 'with nonce-salted footnote IDs' do
+      let(:nonced_html) do
+        <<~HTML
+          <p>Text<a href="#fn:abc_1" id="fnref:abc_1" class="footnote"><sup>1</sup></a>.</p>
+          <div class="footnotes">
+          <hr />
+          <ol>
+          <li id="fn:abc_1">
+          <span>Nonced footnote. <a href="#fnref:abc_1" class="reversefootnote">&#8617;</a></span>
+          </li>
+          </ol>
+          </div>
+        HTML
+      end
+
+      it 'handles nonce-prefixed IDs correctly' do
+        result = epub_sanitize_html(nonced_html)
+        expect(result).to include('<aside id="fn:abc_1" epub:type="footnote">')
+        expect(result).to include('epub:type="noteref"')
+      end
+    end
+
+    context 'with multiple footnotes' do
+      let(:multi_footnote_html) do
+        <<~HTML
+          <p>First<a href="#fn:1" id="fnref:1" class="footnote"><sup>1</sup></a> second<a href="#fn:2" id="fnref:2" class="footnote"><sup>2</sup></a>.</p>
+          <div class="footnotes">
+          <hr />
+          <ol>
+          <li id="fn:1">
+          <span>First note. <a href="#fnref:1" class="reversefootnote">&#8617;</a></span>
+          </li>
+          <li id="fn:2">
+          <span>Second note. <a href="#fnref:2" class="reversefootnote">&#8617;</a></span>
+          </li>
+          </ol>
+          </div>
+        HTML
+      end
+
+      it 'transforms all footnote anchors' do
+        result = epub_sanitize_html(multi_footnote_html)
+        expect(result.scan('epub:type="noteref"').count).to eq(2)
+      end
+
+      it 'transforms all footnote list items to asides' do
+        result = epub_sanitize_html(multi_footnote_html)
+        expect(result).to include('<aside id="fn:1" epub:type="footnote">')
+        expect(result).to include('<aside id="fn:2" epub:type="footnote">')
+        expect(result.scan('<aside').count).to eq(2)
+        expect(result.scan('</aside>').count).to eq(2)
+      end
+    end
+  end
+
+  describe '#make_epub_from_single_html footnotes' do
+    let(:manifestation_with_footnotes) do
+      create(:manifestation,
+             expression: expression,
+             title: 'Work with Footnotes',
+             markdown: "Content with a note.[^1]\n\n[^1]: The footnote text.")
+    end
+
+    it 'includes epub:type="noteref" on footnote anchors in generated EPUB' do
+      html = manifestation_with_footnotes.to_html
+      epub_file = make_epub_from_single_html(html, manifestation_with_footnotes, '')
+
+      Zip::File.open(epub_file) do |zip_file|
+        content_files = zip_file.entries.select { |e| e.name.end_with?('.xhtml') && e.name != 'OEBPS/0_front.xhtml' }
+        all_content = content_files.map { |e| zip_file.read(e.name).force_encoding('UTF-8') }.join
+
+        expect(all_content).to include('epub:type="noteref"')
+        expect(all_content).to include('epub:type="footnote"')
+        expect(all_content).to include('<aside')
+        expect(all_content).not_to include('<li id="fn:')
+      end
+
+      File.delete(epub_file)
+    end
+  end
+
   describe '#boilerplate' do
     it 'uses text-align:justify instead of text-align:right' do
       result = boilerplate('Test Title')
@@ -360,6 +487,35 @@ RSpec.describe 'BybeUtils EPUB generation' do
         # Collection title page should NOT have linear="no" (should appear at beginning)
         opf_content = zip_file.read('OEBPS/package.opf')
         expect(opf_content).not_to match(/<itemref[^>]*idref="item_0_front"[^>]*linear="no"/)
+      end
+
+      File.delete(epub_file)
+    end
+  end
+
+  describe '#make_epub_from_collection footnotes' do
+    let(:collection_with_fn) { create(:collection, title: 'Collection with Footnotes') }
+    let(:article_with_fn) do
+      create(:manifestation,
+             expression: expression,
+             title: 'Article with Footnote',
+             markdown: "Text with a note.[^1]\n\n[^1]: The footnote explanation.")
+    end
+
+    before do
+      create(:collection_item, collection: collection_with_fn, item: article_with_fn, seqno: 1)
+    end
+
+    it 'applies epub:type="noteref" and aside-based footnotes in collection EPUB' do
+      epub_file = make_epub_from_collection(collection_with_fn)
+
+      Zip::File.open(epub_file) do |zip_file|
+        section = zip_file.read('OEBPS/1_text.xhtml').force_encoding('UTF-8')
+
+        expect(section).to include('epub:type="noteref"')
+        expect(section).to include('epub:type="footnote"')
+        expect(section).to include('<aside')
+        expect(section).not_to include('<li id="fn:')
       end
 
       File.delete(epub_file)

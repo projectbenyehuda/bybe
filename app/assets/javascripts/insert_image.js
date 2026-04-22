@@ -21,15 +21,32 @@ function insertImageFromDDSlick(textAreaSelector, ddslickDropDownSelector) {
   $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
 }
 
+function sanitizeImageUrl(rawUrl) {
+  if (!rawUrl) return null;
+  try {
+    const parsed = new URL(rawUrl, window.location.origin);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.href;
+    }
+  } catch (e) {
+    // Invalid URL: ignore
+  }
+  return null;
+}
+
 function imageTagFromOption(option) {
   const $opt = $(option);
-  const attrs = {
-    src: $opt.val(),
-    alt: $opt.text().trim()
-  };
+  // Use DOM API so width/height become HTML attributes (not inline styles).
+  // jQuery's $('<img>', {width, height}) routes through .width()/.height(),
+  // which sets style="width:Xpx" instead of the width="X" attribute.
+  const img = document.createElement('img');
+  const safeSrc = sanitizeImageUrl($opt.val());
+  if (!safeSrc) return '';
+  img.src = safeSrc;
+  img.alt = $opt.text().trim();
   const width = $opt.data('width');
   const height = $opt.data('height');
-  if (width) attrs.width = width;
-  if (height) attrs.height = height;
-  return $('<img>', attrs)[0].outerHTML;
+  if (width) img.setAttribute('width', width);
+  if (height) img.setAttribute('height', height);
+  return img.outerHTML;
 }

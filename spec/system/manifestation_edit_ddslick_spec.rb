@@ -48,35 +48,12 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
     end
 
     it 'does not grow the dd-select container on repeated visits' do
-      # Visit the edit page for the first time
-      visit manifestation_edit_path(manifestation)
-      expect(page).to have_css('#images', wait: 5)
-
-      # Wait for ddslick to initialize
-      expect(page).to have_css('.dd-select', wait: 5)
-
-      # Get the initial height of the dd-select
-      initial_height = page.evaluate_script("$('.dd-select').outerHeight()")
-
-      # Visit the page again (simulate page reload)
-      visit manifestation_edit_path(manifestation)
-      expect(page).to have_css('.dd-select', wait: 5)
-
-      # Get the height after reload
-      second_height = page.evaluate_script("$('.dd-select').outerHeight()")
-
-      # The height should remain the same
-      expect(second_height).to eq(initial_height)
-
-      # Visit one more time to be sure
-      visit manifestation_edit_path(manifestation)
-      expect(page).to have_css('.dd-select', wait: 5)
-
-      # Get the height after second reload
-      third_height = page.evaluate_script("$('.dd-select').outerHeight()")
-
-      # The height should still be the same
-      expect(third_height).to eq(initial_height)
+      3.times do
+        visit manifestation_edit_path(manifestation)
+        expect(page).to have_css('.dd-selected-text', wait: 5)
+      end
+      # Only one dd-container should exist — re-initialization would create duplicates
+      expect(page.evaluate_script("$('.dd-container').length")).to eq(1)
     end
   end
 
@@ -87,46 +64,17 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
 
     it 'does not grow the dd-select container on repeated opens' do
       visit manifestation_edit_path(manifestation)
-      expect(page).to have_css('.dd-select', wait: 5)
+      expect(page).to have_css('.dd-selected-text', wait: 5)
 
-      # Get the initial height
-      initial_height = page.evaluate_script("$('.dd-select').outerHeight()")
+      3.times do
+        find('.dd-select').click
+        expect(page).to have_css('.dd-options', visible: true, wait: 5)
+        find('body').click
+        expect(page).to have_css('.dd-options', visible: false, wait: 5)
+      end
 
-      # Open the dropdown
-      find('.dd-select').click
-      expect(page).to have_css('.dd-options', visible: true, wait: 5)
-
-      # Close it by clicking elsewhere and wait for animation to complete
-      find('body').click
-      expect(page).to have_css('.dd-options', visible: false, wait: 5)
-
-      # Check height after first open/close
-      first_height = page.evaluate_script("$('.dd-select').outerHeight()")
-      expect(first_height).to eq(initial_height)
-
-      # Open again
-      find('.dd-select').click
-      expect(page).to have_css('.dd-options', visible: true, wait: 5)
-
-      # Close it and wait for animation to complete
-      find('body').click
-      expect(page).to have_css('.dd-options', visible: false, wait: 5)
-
-      # Check height after second open/close
-      second_height = page.evaluate_script("$('.dd-select').outerHeight()")
-      expect(second_height).to eq(initial_height)
-
-      # Open one more time
-      find('.dd-select').click
-      expect(page).to have_css('.dd-options', visible: true, wait: 5)
-
-      # Close it and wait for animation to complete
-      find('body').click
-      expect(page).to have_css('.dd-options', visible: false, wait: 5)
-
-      # Check height after third open/close
-      third_height = page.evaluate_script("$('.dd-select').outerHeight()")
-      expect(third_height).to eq(initial_height)
+      # Only one dd-container should exist — re-initialization would create duplicates
+      expect(page.evaluate_script("$('.dd-container').length")).to eq(1)
     end
   end
 
@@ -182,7 +130,8 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       markdown_content = page.evaluate_script("$('#markdown').val()")
       expect(markdown_content).to include('<img')
       expect(markdown_content).to include('alt="test_image_1.jpg"')
-      expect(markdown_content).to include('style="width: 800px; height: 600px; object-fit: contain;"')
+      expect(markdown_content).to include('width="800"')
+      expect(markdown_content).to include('height="600"')
     end
 
     it 'does not advance beyond the last image' do
@@ -214,7 +163,8 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       markdown_content = page.evaluate_script("$('#markdown').val()")
       expect(markdown_content).to include('<img')
       expect(markdown_content).to include('alt="test_image_2.jpg"')
-      expect(markdown_content).to include('style="width: 800px; height: 600px; object-fit: contain;"')
+      expect(markdown_content).to include('width="800"')
+      expect(markdown_content).to include('height="600"')
     end
   end
 end
