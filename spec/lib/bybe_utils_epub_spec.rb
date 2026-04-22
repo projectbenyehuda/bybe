@@ -55,6 +55,34 @@ RSpec.describe 'BybeUtils EPUB generation' do
       expect(result).to include('Footnote body text.')
     end
 
+    context 'with Bootstrap popover data attributes (as added by add_footnote_popovers)' do
+      let(:popover_html) do
+        <<~HTML
+          <p>Text<a data-toggle="popover" data-trigger="focus" data-html="true" data-content="&lt;span&gt;Note text&lt;/span&gt;&lt;div class=&quot;mt-2&quot;&gt;&lt;a href=&quot;#fn:1&quot;&gt;Jump&lt;/a&gt;&lt;/div&gt;" data-placement="top" data-container="body" href="#fn:1" id="fnref:1" class="footnote"><sup>1</sup></a>.</p>
+          <div class="footnotes">
+          <hr />
+          <ol>
+          <li id="fn:1">
+          <span>Note text.</span>
+          </li>
+          </ol>
+          </div>
+        HTML
+      end
+
+      it 'strips data-* attributes so epubcheck passes (data-content with raw HTML is invalid XHTML)' do
+        result = epub_sanitize_html(popover_html)
+        expect(result).not_to include('data-content')
+        expect(result).not_to include('data-toggle')
+        expect(result).not_to include('data-html')
+      end
+
+      it 'still adds epub:type="noteref" after stripping data-* attributes' do
+        result = epub_sanitize_html(popover_html)
+        expect(result).to include('epub:type="noteref"')
+      end
+    end
+
     it 'handles HTML with no footnotes unchanged (except br fix)' do
       plain = '<p>Simple text without footnotes.</p>'
       result = epub_sanitize_html(plain)
