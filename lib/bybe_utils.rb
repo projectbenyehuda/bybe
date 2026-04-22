@@ -105,8 +105,12 @@ module BybeUtils
   end
 
   def epub_sanitize_html(html)
+    # Strip data-* attributes BEFORE entity decoding: popover data-content is entity-encoded
+    # (safe), but HTMLEntities.decode would turn &lt; back into <, making it invalid XHTML.
+    buf = html.gsub(/\s+data-[a-z-]+=(?:"[^"]*"|'[^']*'|\S+)/, '')
+
     coder = HTMLEntities.new
-    buf = coder.decode(html) # convert HTML entities back to actual characters.
+    buf = coder.decode(buf) # convert HTML entities back to actual characters.
 
     buf.gsub!('<br>', '<br />') # W3C epubcheck doesn't like <br> without closing
     epub_footnote_transform!(buf)
