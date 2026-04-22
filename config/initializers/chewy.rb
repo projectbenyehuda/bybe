@@ -2,7 +2,7 @@
 
 prefix = case Rails.env
          when 'production'
-           ENV.fetch('is_staging') == 'true' ? 'staging' : nil
+           ENV['is_staging'] == 'true' ? 'staging' : nil
          when 'test'
            'test'
          else
