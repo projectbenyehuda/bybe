@@ -38,7 +38,6 @@ COPY --from=builder /app/public ./public
 
 EXPOSE 80
 EXPOSE 443
-EXPOSE 3000
 
 ENTRYPOINT ["/app/bin/docker-entrypoint"]
 CMD ["./bin/thrust", "./bin/rails", "server"]
