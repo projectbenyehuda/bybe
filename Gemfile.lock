@@ -543,13 +543,6 @@ GEM
     public_suffix (7.0.5)
     puma (7.1.0)
       nio4r (~> 2.0)
-    puma-daemon (0.5.0)
-      puma (>= 5.0)
-      rack
-    puma_worker_killer (1.0.0)
-      bigdecimal (>= 2.0)
-      get_process_mem (>= 0.2)
-      puma (>= 2.7)
     raabro (1.4.0)
     racc (1.8.1)
     rack (3.2.6)
@@ -936,8 +929,6 @@ DEPENDENCIES
   pronto-rubocop
   property_sets (>= 3.7.1)
   puma
-  puma-daemon
-  puma_worker_killer
   rack-attack
   rack-cors
   rails (= 8.1.3)

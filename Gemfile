@@ -93,7 +93,6 @@ gem 'grape-swagger', '~> 2.1.2'
 gem 'grape-swagger-entity', '~> 0.6.2'
 
 gem 'puma'
-gem 'puma_worker_killer' # cycle workers when they bloat
 gem 'rack-attack' # control misbehaving clients
 gem 'rswag-api'
 gem 'rswag-ui'
@@ -112,8 +111,7 @@ group :production do
   gem 'dalli'
   gem 'evil-seed', require: false # for seeding large databases without timeouts
   gem 'newrelic_rpm' # performance monitoring
-  gem 'puma-daemon', require: false
-  gem 'thruster'
+  gem 'thruster', require: false
 end
 
 group :test do
