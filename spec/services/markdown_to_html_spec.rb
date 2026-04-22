@@ -55,13 +55,43 @@ describe MarkdownToHtml do
         markdown = "Text with footnote[^1] and another[^2].\n\n[^1]: First note.\n\n[^2]: Second note."
         result = described_class.call(markdown)
 
-        # First reference carries first note's content; second carries second note's content.
-        expect(result).to match(
-          /<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*data-content="First note\."[^>]*>/
-        )
-        expect(result).to match(
-          /<a[^>]*href="#fn:2"[^>]*data-toggle="popover"[^>]*data-content="Second note\."[^>]*>/
-        )
+        # Each reference carries its corresponding note's content (HTML-escaped) in data-content.
+        fn1_tag = result[/<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*>/]
+        expect(fn1_tag).not_to be_nil
+        expect(CGI.unescapeHTML(fn1_tag[/data-content="([^"]*)"/, 1])).to include('First note.')
+
+        fn2_tag = result[/<a[^>]*href="#fn:2"[^>]*data-toggle="popover"[^>]*>/]
+        expect(fn2_tag).not_to be_nil
+        expect(CGI.unescapeHTML(fn2_tag[/data-content="([^"]*)"/, 1])).to include('Second note.')
+      end
+
+      it 'does not add onclick to footnote reference anchors (navigation is prevented by JS)' do
+        markdown = "Text[^1].\n\n[^1]: Note."
+        result = described_class.call(markdown)
+
+        fn_tag = result[/<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*>/]
+        expect(fn_tag).not_to include('onclick')
+      end
+
+      it 'includes a link to the footnote body in the popover footer' do
+        markdown = "Text[^1].\n\n[^1]: Note."
+        result = described_class.call(markdown)
+
+        fn_tag = result[/<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*>/]
+        decoded = CGI.unescapeHTML(fn_tag[/data-content="([^"]*)"/, 1])
+        expect(decoded).to include('href="#fn:1"')
+        expect(decoded).to include('להערת השוליים בסוף הטקסט')
+      end
+
+      it 'includes a [x] close link with fn-popover-close class in the popover footer' do
+        markdown = "Text[^1].\n\n[^1]: Note."
+        result = described_class.call(markdown)
+
+        fn_tag = result[/<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*>/]
+        decoded = CGI.unescapeHTML(fn_tag[/data-content="([^"]*)"/, 1])
+        expect(decoded).to include('[x]')
+        expect(decoded).to include('class="fn-popover-close"')
+        expect(decoded).not_to include('onclick')
       end
 
       it 'configures the popover for focus-triggered HTML content' do

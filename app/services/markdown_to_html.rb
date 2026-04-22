@@ -46,13 +46,20 @@ class MarkdownToHtml < ApplicationService
       if content.blank?
         "<a #{attrs}>"
       else
+        fn_id = match[1]
         # Bootstrap would use the title attribute as the popover header; strip it so
         # the popover shows only the footnote body.
         stripped = attrs.sub(/\s*\btitle="[^"]*"/, '')
         popover_attrs = 'tabindex="0" data-toggle="popover" data-trigger="focus" data-html="true"'
-        %(<a #{stripped} #{popover_attrs} data-content="#{CGI.escapeHTML(content)}">)
+        full_content = "#{content}#{footnote_popover_footer(fn_id)}"
+        %(<a #{stripped} #{popover_attrs} data-content="#{CGI.escapeHTML(full_content)}">)
       end
     end
+  end
+
+  def footnote_popover_footer(fn_id)
+    %(<div class="mt-2 pt-1 border-top"><a href="##{fn_id}">להערת השוליים בסוף הטקסט</a> ) +
+      %(<a href="#" class="fn-popover-close">[x]</a></div>)
   end
 
   # Builds { "fn:1" => "<inner html without reverse link>", ... } from the footnote list.
