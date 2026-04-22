@@ -113,6 +113,7 @@ group :production do
   gem 'evil-seed', require: false # for seeding large databases without timeouts
   gem 'newrelic_rpm' # performance monitoring
   gem 'puma-daemon', require: false
+  gem 'thruster'
 end
 
 group :test do
@@ -156,6 +157,7 @@ group :development do
 end
 
 group :test, :development do
+  gem 'dotenv-rails'
   gem 'brakeman'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails'

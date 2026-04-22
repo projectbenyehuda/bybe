@@ -36,5 +36,7 @@ COPY --from=builder /app/vendor/bundle       ./vendor/bundle
 COPY --from=builder /usr/local/bundle/config /usr/local/bundle/config
 COPY --from=builder /app/public ./public
 
-ENTRYPOINT ["./bin/rails"]
-CMD ["server"]
+EXPOSE 3000
+
+ENTRYPOINT ["bin/thrust"]
+CMD ["rails server"]
