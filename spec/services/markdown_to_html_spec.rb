@@ -50,6 +50,80 @@ describe MarkdownToHtml do
         expect(result).to include('class="reversefootnote"')
         expect(result).to include('href="#fnref:1"')
       end
+
+      it 'adds a Bootstrap popover to each footnote reference' do
+        markdown = "Text with footnote[^1] and another[^2].\n\n[^1]: First note.\n\n[^2]: Second note."
+        result = described_class.call(markdown)
+
+        # First reference carries first note's content; second carries second note's content.
+        expect(result).to match(
+          /<a[^>]*href="#fn:1"[^>]*data-toggle="popover"[^>]*data-content="First note\."[^>]*>/
+        )
+        expect(result).to match(
+          /<a[^>]*href="#fn:2"[^>]*data-toggle="popover"[^>]*data-content="Second note\."[^>]*>/
+        )
+      end
+
+      it 'configures the popover for focus-triggered HTML content' do
+        markdown = "Text[^1].\n\n[^1]: Note."
+        result = described_class.call(markdown)
+
+        expect(result).to match(/<a[^>]*href="#fn:1"[^>]*data-trigger="focus"/)
+        expect(result).to match(/<a[^>]*href="#fn:1"[^>]*data-html="true"/)
+        expect(result).to match(/<a[^>]*href="#fn:1"[^>]*tabindex="0"/)
+      end
+
+      it 'omits the popover title by stripping the reference title attribute' do
+        markdown = "Text[^1].\n\n[^1]: Note."
+        result = described_class.call(markdown)
+
+        # The footnote reference must not carry a title attribute, so Bootstrap
+        # renders no popover header.
+        reference_tag = result[/<a[^>]*href="#fn:1"[^>]*>/]
+        expect(reference_tag).not_to be_nil
+        expect(reference_tag).not_to include('title=')
+      end
+
+      it 'strips the reverse link from popover content but keeps it in the list' do
+        markdown = "Text[^1].\n\n[^1]: Note."
+        result = described_class.call(markdown)
+
+        # Popover content does not include the back-arrow link.
+        reference_tag = result[/<a[^>]*href="#fn:1"[^>]*>/]
+        expect(reference_tag).not_to include('reversefootnote')
+        # The bottom footnote list still has the reverse link.
+        expect(result).to match(%r{<li id="fn:1".*?class="reversefootnote".*?</li>}m)
+      end
+
+      it 'HTML-escapes popover content so it is safe inside a data-content attribute' do
+        markdown = "Text[^1].\n\n[^1]: A \"quoted\" <em>phrase</em>."
+        result = described_class.call(markdown)
+
+        # Extract the value of data-content for the fn:1 reference anchor.
+        reference_tag = result[/<a[^>]*href="#fn:1"[^>]*>/]
+        data_content = reference_tag[/data-content="([^"]*)"/, 1]
+        expect(data_content).not_to be_nil
+
+        # The attribute value itself must not contain raw '<', '>' or '"'
+        # characters - those would terminate the attribute or be interpreted
+        # as markup when the popover is rendered.
+        expect(data_content).not_to include('<')
+        expect(data_content).not_to include('>')
+        expect(data_content).not_to include('"')
+
+        # And after one level of HTML-entity decoding (what the browser does
+        # when reading an attribute), we should see the escaped footnote body
+        # that the popover will then render as HTML (data-html="true").
+        decoded_once = CGI.unescapeHTML(data_content)
+        expect(decoded_once).to include('phrase')
+      end
+
+      it 'does not add popover attributes when no footnotes are present' do
+        markdown = "# Title\n\nJust a paragraph."
+        result = described_class.call(markdown)
+
+        expect(result).not_to include('data-toggle="popover"')
+      end
     end
 
     context 'when markdown does not contain footnotes' do
