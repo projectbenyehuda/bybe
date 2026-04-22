@@ -28,6 +28,9 @@ describe 'Author page sidebar overlap regression', :js do
     # Content (.col:not(.author-side-menu-area)) must end before that.
     content_col_selector =
       '.author-page-content .col-12.col-lg-8 > .row > .col:not(.author-side-menu-area)'
+    expect(page).to have_css('.author-side-nav-col')
+    expect(page).to have_css(content_col_selector)
+
     sidebar_left = page.evaluate_script(
       "document.querySelector('.author-side-nav-col').getBoundingClientRect().left"
     )
@@ -52,6 +55,9 @@ describe 'Author page sidebar overlap regression', :js do
 
     content_col_selector =
       '.author-page-content .col-12.col-lg-8 > .row > .col:not(.author-side-menu-area)'
+    expect(page).to have_css('.author-side-nav-col')
+    expect(page).to have_css(content_col_selector)
+
     sidebar_left = page.evaluate_script(
       "document.querySelector('.author-side-nav-col').getBoundingClientRect().left"
     )
