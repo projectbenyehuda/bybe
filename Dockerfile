@@ -14,6 +14,9 @@ COPY app ./app
 COPY lib ./lib
 COPY config ./config
 COPY config.ru ./
+COPY db ./db
+COPY js ./js
+COPY vendor ./vendor
 
 ENV RAILS_ENV=production \
     RACK_ENV=production
