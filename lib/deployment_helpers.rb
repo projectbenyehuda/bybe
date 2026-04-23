@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Helper methods to use during deploy and app initialization
 module DeploymentHelpers
   # Assets compilation rake task tries to load whole app, which causes problems with some gems (e.g. Chewy) that
   # require external services (e.g. ElasticSearch) to be available.
