@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'deployment_helpers'
+
 prefix = case Rails.env
          when 'production'
            ENV['is_staging'] == 'true' ? 'staging' : nil
@@ -8,8 +10,11 @@ prefix = case Rails.env
          else
            nil
          end
-Chewy.settings = {
-  host: ENV.fetch('ELASTICSEARCH_HOST'),
-  prefix: prefix,
-  delete_all_enabled: Rails.env.test? # to use Chewy.massacre in tests
-}
+
+unless DeploymentHelpers.assets_compilation?
+  Chewy.settings = {
+    host: ENV.fetch('ELASTICSEARCH_HOST'),
+    prefix: prefix,
+    delete_all_enabled: Rails.env.test? # to use Chewy.massacre in tests
+  }
+end

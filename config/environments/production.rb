@@ -58,7 +58,7 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   # config.cache_store = :mem_cache_store
   # Use a different cache store in production
-  config.cache_store = :mem_cache_store, '127.0.0.1', {namespace: ENV['CACHE_NONCE'], value_max_bytes: 40*1024*1024}
+  config.cache_store = :mem_cache_store, {namespace: ENV['CACHE_NONCE'], value_max_bytes: 40*1024*1024}
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
   # config.active_job.queue_adapter = :resque
