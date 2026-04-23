@@ -94,13 +94,10 @@ gem 'grape-swagger', '~> 2.1.2'
 gem 'grape-swagger-entity', '~> 0.6.2'
 
 gem 'puma'
-gem 'puma_worker_killer' # cycle workers when they bloat
 gem 'rack-attack' # control misbehaving clients
 gem 'rswag-api'
 gem 'rswag-ui'
-gem 'addressable' # used in application_helper
 
-gem 'dotenv', '~> 3.1.2'
 ## these were used for some legacy HtmlDir VIAF lookup stuff. They have a huge RAM footprint (~160MB per process), so commented out until needed again.
 # gem 'rdf' #, '~> 2.0.1'
 # gem 'linkeddata' # for RDF etc.
@@ -113,7 +110,7 @@ group :production do
   gem 'dalli'
   gem 'evil-seed', require: false # for seeding large databases without timeouts
   gem 'newrelic_rpm' # performance monitoring
-  gem 'puma-daemon', require: false
+  gem 'thruster', require: false
 end
 
 group :test do
@@ -157,6 +154,7 @@ group :development do
 end
 
 group :test, :development do
+  gem 'dotenv-rails'
   gem 'brakeman'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails'
