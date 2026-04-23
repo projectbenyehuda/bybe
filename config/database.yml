@@ -5,6 +5,7 @@
 default: &default
   encoding: utf8mb4
   collation: utf8mb4_bin
+  adapter: mysql2
 
 development:
   <<: *default
