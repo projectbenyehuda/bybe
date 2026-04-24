@@ -1,9 +1,9 @@
 # see https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token
-name: Create and publish a Docker image for production (or staging) environments
+name: Build Docker image and deploy it to production (or staging)
 
 on:
   push:
-    branches: ['staging', 'production', 'docker-image-test']
+    branches: ['beta']
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain,
 # and a name for the Docker image that this workflow builds.
