@@ -109,7 +109,6 @@ group :production do
   gem 'dalli'
   gem 'evil-seed', require: false # for seeding large databases without timeouts
   gem 'newrelic_rpm' # performance monitoring
-  gem 'thruster', require: false
 end
 
 group :test do
