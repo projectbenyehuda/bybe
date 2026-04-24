@@ -39,8 +39,7 @@ COPY --from=builder /app/vendor/bundle       ./vendor/bundle
 COPY --from=builder /usr/local/bundle/config /usr/local/bundle/config
 COPY --from=builder /app/public ./public
 
-EXPOSE 80
-EXPOSE 443
+EXPOSE 3000
 
 ENTRYPOINT ["/app/bin/docker-entrypoint"]
-CMD ["./bin/thrust", "./bin/rails", "server"]
+CMD ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
