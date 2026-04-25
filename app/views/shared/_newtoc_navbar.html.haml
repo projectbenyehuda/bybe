@@ -3,6 +3,8 @@
 
 -# Calculate visibility for all roles upfront to share between full and thin navbars
 :ruby
+  max_expanded_works = 20
+
   visible_roles = []
   roles_data = {}
 
@@ -36,6 +38,9 @@
     }
   end
 
+  total_works = @author.published_manifestations.count
+  start_expanded = total_works <= max_expanded_works
+
 %nav.book-nav-full.by-card-v02
   .side-nav-in-page
     = t(:navigation_in_page)
@@ -46,6 +51,7 @@
     - involved_on_collection_level = data[:involved_on_collection_level]
     - involved_on_work_level = data[:involved_on_work_level]
     - uncollected_node = data[:uncollected_node]
+    - ul_class = start_expanded ? 'collapse navbar-nav show' : 'collapse navbar-nav'
 
     %div{ class: first ? "nav-book-group selected" : "nav-book-group" }
       .headline-2-v02
@@ -58,8 +64,11 @@
             = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
             %span.count-badge= " (#{role_counts[:collection_level]})"
             %span.collapse-arrow ↓
-        %ul{ id: "collection-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
+        %ul{ id: "collection-#{role}-collapse", class: ul_class, 'aria-label' => 'file-navigator', role: 'tree' }
           = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
+          %li.section-collapse-btn{ role: 'none' }
+            %button.section-collapse-link{ type: 'button', 'aria-label': t(:collapse_section) }
+              ▲
         - first = false
       - if role_counts[:work_level] > 0
         %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
@@ -67,16 +76,22 @@
             = t('toc_by_role.involved_on_work_level')
             %span.count-badge= " (#{role_counts[:work_level]})"
             %span.collapse-arrow ↓
-        %ul{ id: "work-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree" }
+        %ul{ id: "work-#{role}-collapse", class: ul_class, 'aria-label' => 'file-navigator', role: 'tree' }
           = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
+          %li.section-collapse-btn{ role: 'none' }
+            %button.section-collapse-link{ type: 'button', 'aria-label': t(:collapse_section) }
+              ▲
         - first = false
       - if role_counts[:uncollected] > 0
         %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
           .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-uncollected" }
             = t('toc_by_role.uncollected_works')
             %span.count-badge= " (#{role_counts[:uncollected]})"
-        %ul{ id: "uncollected-#{role}-collapse", class: first ? 'collapse navbar-nav show' : 'collapse navbar-nav', "aria-label" => "file-navigator", :role => "tree"}
+        %ul{ id: "uncollected-#{role}-collapse", class: ul_class, 'aria-label' => 'file-navigator', role: 'tree' }
           = render partial: 'shared/navbar/toc_node', collection: [uncollected_node], locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
+          %li.section-collapse-btn{ role: 'none' }
+            %button.section-collapse-link{ type: 'button', 'aria-label': t(:collapse_section) }
+              ▲
         - first = false
 
   .nav-book-group.editorial-nav
@@ -247,6 +262,27 @@
       if (e.key === 'Escape' && $('.book-nav-full').hasClass('mobile-expanded')) {
         collapseNavbar();
       }
+    });
+
+    // Handle bottom-of-section collapse buttons
+    $('.section-collapse-link').click(function(e) {
+      e.preventDefault();
+      var $collapseTarget = $(this).closest('.collapse.navbar-nav');
+      var targetId = '#' + $collapseTarget.attr('id');
+      var $trigger = $('.truncate[data-bs-target="' + targetId + '"]');
+      var scrollTarget = $trigger.data('scroll-target');
+
+      $('.book-type').removeClass('selected');
+
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        $collapseTarget.one('hidden.bs.collapse', function() {
+          var headerHeight = $('#header-author').outerHeight() || 0;
+          var offset = $(scrollTarget).offset().top - headerHeight - 120;
+          $('html, body').animate({ scrollTop: offset }, 500);
+        });
+      }
+
+      $collapseTarget.collapse('hide');
     });
 
     // Handle clicks on full navbar links in mobile expanded mode
