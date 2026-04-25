@@ -3,7 +3,7 @@
 
 -# Calculate visibility for all roles upfront to share between full and thin navbars
 :ruby
-  MAX_EXPANDED_WORKS = 20 unless defined?(MAX_EXPANDED_WORKS)
+  max_expanded_works = 20
 
   visible_roles = []
   roles_data = {}
@@ -39,7 +39,7 @@
   end
 
   total_works = visible_roles.sum { |role| roles_data[role][:counts][:total] }
-  start_expanded = total_works <= MAX_EXPANDED_WORKS
+  start_expanded = total_works <= max_expanded_works
 
 %nav.book-nav-full.by-card-v02
   .side-nav-in-page
