@@ -1293,6 +1293,10 @@ p.by-genre-name-v02.headline-2-v02 {
   padding: 2px;
   opacity: 0.6;
   user-select: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
 
   &:hover {
     opacity: 1;
