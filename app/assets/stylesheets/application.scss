@@ -1297,6 +1297,31 @@ p.by-genre-name-v02.headline-2-v02 {
   user-select: none;
 }
 
+/* Bottom-of-section collapse button */
+.section-collapse-btn {
+  list-style: none;
+  text-align: center;
+  padding: 6px 0 2px;
+  margin-top: 2px;
+  border-top: 1px solid var(--pink-10);
+}
+
+.section-collapse-link {
+  color: var(--pink-100);
+  font-size: 11px;
+  text-decoration: none;
+  display: block;
+  padding: 2px;
+  opacity: 0.6;
+  user-select: none;
+
+  &:hover {
+    opacity: 1;
+    text-decoration: none;
+    color: var(--pink-100);
+  }
+}
+
 /* Mobile navbar expansion styles (max-width: 991px) */
 @media only screen and (max-width: 991px) {
   .book-nav-full.mobile-expanded {
