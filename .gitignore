@@ -31,7 +31,6 @@
 /config/newrelic.yml
 /config/s3.yml
 /config/behead.payload
-/config/credentials.yml.enc
 
 /vendor/analysis*
 /public/assets/*
@@ -90,3 +89,7 @@ Site v02/
 
 # Beads / Dolt files (added by bd init)
 .beads-credential-key
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+
