@@ -1269,6 +1269,7 @@ en:
   close_highlights: Cancel Result Highlighting
   close_menu: Close menu
   expand_menu: Expand menu
+  collapse_section: Collapse section
   coll_drag_tt: Drag area to reorder items in collection
   collection_circular_reference: Collection linked to itself!
   collection_item_type: Item Type

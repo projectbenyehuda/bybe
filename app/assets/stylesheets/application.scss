@@ -1234,41 +1234,20 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
-/* Navbar hover expansion - show full text by wrapping instead of extending horizontally */
-
-/* Simple direct hover on truncate - apply to all truncate elements in sidebars */
-.author-side-nav-col .truncate:hover,
-.side-nav-col .truncate:hover {
+/* Navbar items always wrap - full text visible without hover (needed for mobile) */
+.author-side-nav-col .truncate,
+.side-nav-col .truncate {
   white-space: normal !important;
   overflow: visible !important;
   text-overflow: clip !important;
   word-break: break-word !important;
-  max-width: none !important;
 }
 
-/* Also when hovering parent containers */
-.author-side-nav-col .book-type:hover .truncate,
-.author-side-nav-col .nav-link-chapter:hover .truncate,
-.side-nav-col .book-type:hover .truncate,
-.side-nav-col .nav-link-chapter:hover .truncate {
+.author-side-nav-col .book-type .nav-author a,
+.author-side-nav-col .nav-link-chapter a,
+.side-nav-col .book-type .nav-author a,
+.side-nav-col .nav-link-chapter a {
   white-space: normal !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  word-break: break-word !important;
-  max-width: none !important;
-}
-.author-side-nav-col .book-type:hover .nav-author a,
-.author-side-nav-col .nav-link-chapter:hover a,
-.side-nav-col .book-type:hover .nav-author a,
-.side-nav-col .nav-link-chapter:hover a {
-  white-space: normal !important;
-}
-/* Make parent row containers allow overflow and wrapping for text expansion */
-.row:has(.author-side-nav-col),
-.row:has(.side-nav-col) {
-  overflow: visible !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
 }
 
 /* Collection show - .side-menu-item links */
@@ -1297,6 +1276,35 @@ p.by-genre-name-v02.headline-2-v02 {
 .collapse-arrow {
   margin-left: 4px;
   user-select: none;
+}
+
+/* Bottom-of-section collapse button */
+.section-collapse-btn {
+  list-style: none;
+  text-align: center;
+  padding: 6px 0 2px;
+  margin-top: 2px;
+  border-top: 1px solid var(--pink-10);
+}
+
+.section-collapse-link {
+  color: var(--pink-100);
+  font-size: 11px;
+  text-decoration: none;
+  display: block;
+  padding: 2px;
+  opacity: 0.6;
+  user-select: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+
+  &:hover {
+    opacity: 1;
+    text-decoration: none;
+    color: var(--pink-100);
+  }
 }
 
 /* Mobile navbar expansion styles (max-width: 991px) */
