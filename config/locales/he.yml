@@ -617,6 +617,7 @@ he:
   close: סגירה
   close_menu: סגור תפריט
   expand_menu: הרחב תפריט
+  collapse_section: סגור סעיף
   unauthorized: אין לך הרשאה לבצע פעולה זו
   can_only_cancel_pending_links: ניתן לבטל רק קישוריות בהמתנה לאישור
   by: מאת
