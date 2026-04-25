@@ -182,9 +182,7 @@ end
 
    # ONLY proceed to commit after fixing ALL lint issues
    git add <files>
-   bd sync  # sync beads changes
    git commit -m "Your commit message"
-   bd sync  # sync beads changes again
    ```
    - **CRITICAL**: You MUST run linters and fix ALL issues before committing
    - Focus on fixing issues in files YOU modified, not pre-existing issues
@@ -211,7 +209,6 @@ end
 6. **Close the bead** after PR is created:
    ```bash
    bd close <bead-id> --reason "Created PR #123"
-   bd sync
    ```
    - Close the bead AFTER creating the PR, not after merge
    - Include the PR number in the close reason
@@ -230,7 +227,6 @@ Before running ANY git command, verify:
 - [ ] Am I on a branch I created in this session? (`git branch --show-current`)
 - [ ] If not, have I created a new feature/fix branch?
 - [ ] Am I about to push to my own branch, not master/main?
-- [ ] Have I run `bd sync` before and after committing?
 - [ ] Will I create a PR with `--base <recorded-base-branch>` after pushing?
 - [ ] Has the user approved the feature/fix?
 
@@ -299,7 +295,6 @@ bd close bd-42 --reason "Completed" --json
 6. **Commit changes**: See "Git Workflow" section above for complete commit/push/PR process
 7. **Create PR**: Always submit work via Pull Request, never push directly
 8. **Complete**: `bd close <id>` after PR is created (not after merge)
-9. **Sync beads**: Run `bd sync` after closing bead
 
 **CRITICAL**: Always follow the Git Workflow section above. Never push to existing branches!
 
@@ -373,7 +368,6 @@ For example: `bd create --help` shows `--parent`, `--deps`, `--assignee`, etc.
 **Git Workflow:**
 - ✅ ALWAYS create a new feature/bug branch before starting work
 - ✅ ALWAYS submit work via Pull Requests
-- ✅ Run `bd sync` before and after commits to keep beads in sync
 - ❌ NEVER push directly to ANY existing branch (master, main, dragula, etc.)
 - ❌ NEVER skip creating a PR - all work must be reviewed
 
@@ -396,7 +390,6 @@ Important reminders:
    • Always use --json flag for programmatic bd commands
    • Link discovered work with discovered-from dependencies
    • Check bd ready before asking "what should I work on?"
-   • Run bd sync before and after commits
 
 Addressing PR code review comments:
 
