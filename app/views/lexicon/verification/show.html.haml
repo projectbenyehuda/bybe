@@ -42,11 +42,14 @@
         - else
           %button.btn.btn-success{disabled: true, id: 'mark-verified-btn', title: t('lexicon.verification.messages.verification_incomplete')}
             = t('lexicon.verification.show.mark_verified')
+        %button.btn#escalate-btn{ type: 'button', style: 'background-color: #f8d7da; border-color: #f5c6cb;' }
+          = t('lexicon.verification.show.escalate')
 
 - container_data = { controller: 'verification',
                      'verification-entry-id': @entry.id,
                      'verification-update-url': lexicon_update_checklist_verification_path(@entry),
                      'verification-save-progress-url': lexicon_save_progress_verification_path(@entry),
+                     'verification-escalate-url': lexicon_escalate_verification_path(@entry),
                      'verification-set-profile-image-url': lexicon_set_profile_image_verification_path(@entry),
                      'verification-remove-attachment-url': lexicon_remove_attachment_verification_path(@entry),
                      'profile-image-badge-text': t('lexicon.entries.show.profile_image_badge'),
@@ -61,7 +64,9 @@
                      'verified-badge-text': t('lexicon.verification.messages.verified_badge'),
                      'not-verified-badge-text': t('lexicon.verification.messages.not_verified_badge'),
                      'progress-saved-text': t('lexicon.verification.messages.progress_saved'),
-                     'section-updated-text': t('lexicon.verification.messages.section_updated') }
+                     'section-updated-text': t('lexicon.verification.messages.section_updated'),
+                     'escalate-confirm-text': t('lexicon.verification.show.escalate_confirm'),
+                     'error-escalating-entry-text': t('lexicon.verification.messages.error_escalating_entry') }
 .verification-container{ data: container_data }
   .verification-checklist
     = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item

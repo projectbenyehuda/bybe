@@ -12,7 +12,7 @@ class LexEntry < ApplicationRecord
   belongs_to :lex_item, polymorphic: true, optional: true, dependent: :destroy, inverse_of: :entry
 
   # Statuses related to migration process
-  MIGRATION_STATUSES = %w(raw migrating error verifying verified).freeze
+  MIGRATION_STATUSES = %w(raw migrating error verifying verified escalated).freeze
 
   enum :status, {
     draft: 0,       # entry created but not ready for public access
@@ -32,7 +32,7 @@ class LexEntry < ApplicationRecord
   validates :title, :sort_title, :status, presence: true
 
   # Scopes for verification queue
-  scope :needs_verification, -> { where(status: %i(draft verifying error)) }
+  scope :needs_verification, -> { where(status: %i(draft verifying error escalated)) }
   scope :in_verification, -> { where(status: :verifying) }
   scope :verified_pending_publish, -> { where(status: :verified) }
 

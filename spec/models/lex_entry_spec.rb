@@ -311,6 +311,21 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '.needs_verification scope' do
+    it 'includes draft, verifying, error, and escalated entries' do
+      draft_entry     = create(:lex_entry, status: :draft)
+      verifying_entry = create(:lex_entry, status: :verifying, verification_progress: { 'checklist' => {} })
+      error_entry     = create(:lex_entry, status: :error)
+      escalated_entry = create(:lex_entry, status: :escalated, verification_progress: { 'checklist' => {} })
+      published_entry = create(:lex_entry, status: :published)
+      verified_entry  = create(:lex_entry, status: :verified, verification_progress: { 'checklist' => {} })
+
+      result = described_class.needs_verification
+      expect(result).to include(draft_entry, verifying_entry, error_entry, escalated_entry)
+      expect(result).not_to include(published_entry, verified_entry)
+    end
+  end
+
   describe '#other_designation' do
     it 'can be read and written' do
       entry = create(:lex_entry, other_designation: 'alias1; alias2')

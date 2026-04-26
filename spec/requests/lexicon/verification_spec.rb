@@ -575,4 +575,58 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       end
     end
   end
+
+  describe 'POST /lex/verification/:id/escalate' do
+    let(:entry) do
+      e = create(:lex_entry, :person, status: :verifying)
+      e.start_verification!('editor@example.com')
+      e
+    end
+    let(:url) { "/lex/verification/#{entry.id}/escalate" }
+
+    it 'sets entry status to escalated' do
+      post url, params: { overall_notes: 'needs expert review' }, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['success']).to be true
+      expect(entry.reload).to be_status_escalated
+    end
+
+    it 'saves the submitted overall_notes' do
+      post url, params: { overall_notes: 'needs expert review' }, as: :json
+
+      expect(entry.reload.verification_progress['overall_notes']).to eq('needs expert review')
+    end
+
+    it 'clears overall_notes when blank is submitted' do
+      entry.update!(verification_progress: entry.verification_progress.merge('overall_notes' => 'old notes'))
+
+      post url, params: { overall_notes: '' }, as: :json
+
+      expect(entry.reload.verification_progress['overall_notes']).to eq('')
+    end
+
+    it 'returns a redirect_url pointing to the verification queue' do
+      post url, params: {}, as: :json
+
+      expect(response.parsed_body['redirect_url']).to eq('/lex/verification/queue')
+    end
+  end
+
+  describe 'GET /lex/verification/:id (show) - escalated entry does not reset progress' do
+    let(:entry) do
+      e = create(:lex_entry, :person, status: :verifying)
+      e.start_verification!('editor@example.com')
+      e.update!(status: :escalated,
+                verification_progress: e.verification_progress.merge('overall_notes' => 'escalation note'))
+      e
+    end
+
+    it 'does not reinitialize verification progress for an escalated entry' do
+      get "/lex/verification/#{entry.id}"
+
+      expect(entry.reload.verification_progress['overall_notes']).to eq('escalation note')
+      expect(entry.reload).to be_status_escalated
+    end
+  end
 end
