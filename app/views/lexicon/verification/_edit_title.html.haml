@@ -23,7 +23,7 @@
       = f.label :gender, t('activerecord.attributes.lex_person.gender'), class: 'form-label'
       -# haml-lint:disable LineLength
       - gender_options = [[t('male'), 'male'], [t('female'), 'female'], [t('other'), 'other'], [t('unknown'), 'unknown']]
-      = f.select :gender, options_for_select(gender_options, @item.gender), { include_blank: true }, class: 'form-control'
+      = f.select :gender, options_for_select(gender_options, @item.gender), {}, class: 'form-control'
 
     .form-group
       = f.label :copyrighted, t('activerecord.attributes.lex_person.intellectual_property'), class: 'form-label'
