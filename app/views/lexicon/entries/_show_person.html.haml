@@ -22,7 +22,7 @@
                 .metadata
                   = render partial: 'shared/intellectual_property',
                            locals: { intellectual_property: lex_person.intellectual_property }
-          %p#lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
+          %p#lexicon-biography!= MarkdownToHtml.call(bio_for_display(lex_person.bio, @lex_entry))
         #lexicon-works
           = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
             - LexPersonWork.work_types.each_key do |work_type|
