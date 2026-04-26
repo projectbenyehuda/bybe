@@ -160,6 +160,7 @@ he:
           all: הכל
           draft: טיוטה
           verifying: בבדיקה
+          verified: מאומת
           error: שגיאה
           escalated: הועבר לבדיקה נוספת
           person: יוצר/ת
@@ -255,6 +256,16 @@ he:
         saved: נשמר
         verified_badge: "✓ מאומת"
         not_verified_badge: לא אומת
+        person_no_authority: אין ישות מקושרת לאדם זה
+        publication_not_in_authority: הפרסום אינו שייך לישות
+        collection_not_in_publication: האוסף אינו שייך לפרסום
+        work_not_found: יצירה לא נמצאה
+        attachment_not_found: קובץ מצורף לא נמצא
+        unknown_error: שגיאה לא ידועה
+        error_updating_work_verification: שגיאה בעדכון אימות יצירה
+        error_updating_works_section: שגיאה בעדכון קטע היצירות
+        error_confirming_match: שגיאה באישור ההתאמה
+        error_reloading_works: שגיאה בטעינה מחדש של היצירות
       edit:
         mark_as_verified: סמן קטע זה כמאומת
         mark_all_works_verified: סמן את כל היצירות כמאומתות

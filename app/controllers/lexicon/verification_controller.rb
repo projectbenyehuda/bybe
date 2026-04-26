@@ -71,7 +71,7 @@ module Lexicon
         render html: processed_content.html_safe, layout: false
       else
         not_found_msg = '<div style="padding: 20px; text-align: center; color: #999;">' \
-                        '⚠️ קובץ מקור לא נמצא (Source file not found)</div>'
+                        "#{I18n.t('lexicon.verification.source.file_not_found')}</div>"
         render html: not_found_msg.html_safe, layout: false
       end
     end
@@ -102,7 +102,7 @@ module Lexicon
         complete: @entry.verification_complete?
       }
     rescue StandardError => e
-      render json: { success: false, error: e.message }, status: :unprocessable_entity
+      render json: { success: false, error: e.message }, status: :unprocessable_content
     end
 
     # PATCH /lexicon/verification/:id/save_progress
@@ -120,7 +120,7 @@ module Lexicon
         message: I18n.t('lexicon.verification.messages.progress_saved')
       }
     rescue StandardError => e
-      render json: { success: false, error: e.message }, status: :unprocessable_entity
+      render json: { success: false, error: e.message }, status: :unprocessable_content
     end
 
     # PATCH /lexicon/verification/:id/confirm_work_match
@@ -136,15 +136,15 @@ module Lexicon
       # Validate that publication belongs to the person's authority
       person = @entry.lex_item
       if person.authority.blank?
-        render json: { success: false, error: 'Person has no associated authority' },
-               status: :unprocessable_entity
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.person_no_authority') },
+               status: :unprocessable_content
         return
       end
 
       publication = person.authority.publications.find_by(id: publication_id)
       unless publication
-        render json: { success: false, error: 'Publication does not belong to authority' },
-               status: :unprocessable_entity
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.publication_not_in_authority') },
+               status: :unprocessable_content
         return
       end
 
@@ -152,8 +152,8 @@ module Lexicon
       if collection_id.present?
         collection = Collection.find_by(id: collection_id, publication_id: publication_id)
         unless collection
-          render json: { success: false, error: 'Collection does not belong to publication' },
-                 status: :unprocessable_entity
+          render json: { success: false, error: I18n.t('lexicon.verification.messages.collection_not_in_publication') },
+                 status: :unprocessable_content
           return
         end
       end
@@ -169,9 +169,9 @@ module Lexicon
         message: I18n.t('lexicon.verification.messages.work_match_confirmed')
       }
     rescue ActiveRecord::RecordNotFound
-      render json: { success: false, error: 'Work not found' }, status: :not_found
+      render json: { success: false, error: I18n.t('lexicon.verification.messages.work_not_found') }, status: :not_found
     rescue StandardError => e
-      render json: { success: false, error: e.message }, status: :unprocessable_entity
+      render json: { success: false, error: e.message }, status: :unprocessable_content
     end
 
     # PATCH /lexicon/verification/:id/set_profile_image
@@ -180,7 +180,8 @@ module Lexicon
 
       # Verify the attachment belongs to this entry using an efficient query
       unless attachment_id.positive? && @entry.attachments.exists?(id: attachment_id)
-        render json: { success: false, error: 'Attachment not found' }, status: :not_found
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.attachment_not_found') },
+               status: :not_found
         return
       end
 
@@ -191,7 +192,7 @@ module Lexicon
         profile_image_id: attachment_id
       }
     rescue StandardError => e
-      render json: { success: false, error: e.message }, status: :unprocessable_entity
+      render json: { success: false, error: e.message }, status: :unprocessable_content
     end
 
     # DELETE /lexicon/verification/:id/remove_attachment
@@ -200,7 +201,8 @@ module Lexicon
       attachment = attachment_id.positive? ? @entry.attachments.find_by(id: attachment_id) : nil
 
       unless attachment
-        render json: { success: false, error: 'Attachment not found' }, status: :not_found
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.attachment_not_found') },
+               status: :not_found
         return
       end
 
@@ -317,7 +319,7 @@ module Lexicon
         render json: {
           success: false,
           errors: errors
-        }, status: :unprocessable_entity
+        }, status: :unprocessable_content
       end
     end
 
