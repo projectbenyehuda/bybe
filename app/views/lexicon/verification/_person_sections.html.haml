@@ -125,7 +125,7 @@
       = checklist['bio']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if item.bio.present?
-      .bio-content!= MarkdownToHtml.call(item.bio)
+      .bio-content!= MarkdownToHtml.call(bio_for_display(item.bio, entry))
     - else
       %p.text-muted= t('lexicon.verification.sections.no_biography')
   .section-actions
