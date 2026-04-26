@@ -156,7 +156,7 @@ describe 'Lexicon Verification Workbench' do
 
     it 'displays migrated entry sections' do
       within('.verification-migrated') do
-        expect(page).to have_content('כותרת וזמנים')
+        expect(page).to have_content('שם ותאריכים')
         expect(page).to have_content('Test Person')
         expect(page).to have_content('1138')
         expect(page).to have_content('1204')
