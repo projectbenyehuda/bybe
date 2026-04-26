@@ -152,6 +152,7 @@ he:
           error: שגיאה
           verifying: בבדיקה
           verified: הסבה אושרה
+          escalated: ממתין לבדיקה נוספת
       lex_person:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה
