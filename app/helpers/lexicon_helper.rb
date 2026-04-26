@@ -81,6 +81,15 @@ module LexiconHelper
     raw pairs.join(' | ') if pairs.any?
   end
 
+  # Returns bio text with any <img> tag whose src contains the profile image filename removed.
+  # Call this before passing bio to MarkdownToHtml to avoid showing the profile image twice.
+  def bio_for_display(bio_text, lex_entry)
+    return bio_text if bio_text.blank? || lex_entry.profile_image.blank?
+
+    filename = lex_entry.profile_image.filename.to_s
+    bio_text.gsub(%r{<img\b[^>]*src=["'][^"']*#{Regexp.escape(filename)}[^"']*["'][^>]*/?>}i, '')
+  end
+
   def grouped_and_ordered_citations(lex_person)
     person_works = lex_person.works.index_by(&:title)
     # we preload data required for citations rendering
