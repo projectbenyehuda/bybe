@@ -68,8 +68,8 @@ describe 'Lexicon Verification Workbench' do
 
       within('tbody') do
         expect(page).to have_content('Test Person')
-        expect(page).to have_content('LexPerson')
-        expect(page).to have_content('Draft')
+        expect(page).to have_content(I18n.t('lexicon.verification.queue.filters.person'))
+        expect(page).to have_content(I18n.t('lexicon.verification.queue.filters.draft'))
         expect(page).to have_content('0%')
       end
     end
