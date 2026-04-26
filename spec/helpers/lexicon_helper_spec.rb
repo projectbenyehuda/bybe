@@ -3,6 +3,75 @@
 require 'rails_helper'
 
 RSpec.describe LexiconHelper, type: :helper do
+  describe '#bio_for_display' do
+    let(:lex_entry) { instance_double(LexEntry) }
+    let(:filename) { instance_double(ActiveStorage::Filename, to_s: 'portrait.jpg') }
+    let(:blob) { instance_double(ActiveStorage::Blob, filename: filename) }
+
+    context 'when no profile image is set' do
+      before { allow(lex_entry).to receive(:profile_image).and_return(nil) }
+
+      it 'returns bio text unchanged' do
+        bio = 'Some bio text <img src="portrait.jpg">'
+        expect(helper.bio_for_display(bio, lex_entry)).to eq(bio)
+      end
+    end
+
+    context 'when bio is blank' do
+      before { allow(lex_entry).to receive(:profile_image).and_return(blob) }
+
+      it 'returns nil unchanged' do
+        expect(helper.bio_for_display(nil, lex_entry)).to be_nil
+      end
+
+      it 'returns empty string unchanged' do
+        expect(helper.bio_for_display('', lex_entry)).to eq('')
+      end
+    end
+
+    context 'when profile image is set' do
+      before { allow(lex_entry).to receive(:profile_image).and_return(blob) }
+
+      it 'removes an img tag whose src matches the profile image filename' do
+        bio = 'Intro text <img src="portrait.jpg"> more text'
+        result = helper.bio_for_display(bio, lex_entry)
+        expect(result).to eq('Intro text  more text')
+        expect(result).not_to include('<img')
+      end
+
+      it 'removes a self-closing img tag' do
+        bio = '<img src="portrait.jpg" />'
+        expect(helper.bio_for_display(bio, lex_entry)).not_to include('<img')
+      end
+
+      it 'removes an img tag with other attributes before src' do
+        bio = '<img alt="Author photo" src="portrait.jpg" class="photo">'
+        expect(helper.bio_for_display(bio, lex_entry)).not_to include('<img')
+      end
+
+      it 'removes an img tag when src contains a path prefix' do
+        bio = '<img src="/uploads/2023/portrait.jpg">'
+        expect(helper.bio_for_display(bio, lex_entry)).not_to include('<img')
+      end
+
+      it 'removes an img tag with single-quoted src' do
+        bio = "<img src='portrait.jpg'>"
+        expect(helper.bio_for_display(bio, lex_entry)).not_to include('<img')
+      end
+
+      it 'preserves img tags whose src does not match the profile image' do
+        bio = 'Text <img src="other-image.jpg"> more'
+        result = helper.bio_for_display(bio, lex_entry)
+        expect(result).to include('<img src="other-image.jpg">')
+      end
+
+      it 'returns bio text unchanged when it contains no img tags' do
+        bio = 'Just plain text biography'
+        expect(helper.bio_for_display(bio, lex_entry)).to eq(bio)
+      end
+    end
+  end
+
   describe '#render_external_identifiers' do
     it 'returns nil when external_identifiers is blank' do
       expect(helper.render_external_identifiers(nil)).to be_nil
