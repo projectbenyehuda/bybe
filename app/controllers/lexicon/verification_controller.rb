@@ -30,7 +30,7 @@ module Lexicon
     # GET /lexicon/verification/:id
     def show
       # Initialize verification if not started
-      unless @entry.status_verifying? || @entry.status_verified?
+      unless @entry.status_verifying? || @entry.status_verified? || @entry.status_escalated?
         user_email = current_user&.email || 'anonymous@example.com'
         @entry.start_verification!(user_email)
       end
@@ -222,6 +222,24 @@ module Lexicon
     rescue StandardError => e
       redirect_to lexicon_verification_path(@entry),
                   alert: e.message
+    end
+
+    # POST /lexicon/verification/:id/escalate
+    def escalate
+      notes = params[:overall_notes] || ''
+
+      progress = @entry.verification_progress.deep_dup
+      progress['overall_notes'] = notes
+      progress['last_updated_at'] = Time.current.iso8601
+
+      @entry.update!(verification_progress: progress, status: :escalated)
+
+      render json: {
+        success: true,
+        redirect_url: lexicon_verification_queue_path
+      }
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
     end
 
     # GET /lexicon/verification/:id/edit_section?section=title
