@@ -159,6 +159,7 @@ en:
           all: All
           draft: Draft
           verifying: Verifying
+          verified: Verified
           error: Error
           escalated: Escalated
           person: Person
@@ -254,6 +255,16 @@ en:
         saved: Saved
         verified_badge: "✓ Verified"
         not_verified_badge: Not Verified
+        person_no_authority: Person has no associated authority
+        publication_not_in_authority: Publication does not belong to authority
+        collection_not_in_publication: Collection does not belong to publication
+        work_not_found: Work not found
+        attachment_not_found: Attachment not found
+        unknown_error: Unknown error
+        error_updating_work_verification: Error updating work verification
+        error_updating_works_section: Error updating works section
+        error_confirming_match: Error confirming match
+        error_reloading_works: Error reloading works
       edit:
         mark_as_verified: Mark this section as verified
         mark_all_works_verified: Mark all works as verified
