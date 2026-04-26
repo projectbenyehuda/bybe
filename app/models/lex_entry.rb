@@ -22,7 +22,8 @@ class LexEntry < ApplicationRecord
     migrating: 102, # async migration in progress
     error: 103,     # error during migration
     verifying: 104, # under verification review
-    verified: 105   # verification complete, ready for publishing
+    verified: 105,  # verification complete, ready for publishing
+    escalated: 106  # escalated for further review due to some problem
   }, prefix: true
 
   has_many_attached :attachments # attachments referenced by link or image on the entry page
