@@ -27,10 +27,15 @@
     - @entries.each do |entry|
       %tr{class: "status-#{entry.status}"}
         %td= entry.title
-        %td= entry.lex_item_type&.demodulize
+        - type_filter_key = { 'LexPerson' => 'person', 'LexPublication' => 'publication' }[entry.lex_item_type]
+        %td
+          - if type_filter_key
+            = t("lexicon.verification.queue.filters.#{type_filter_key}")
+          - else
+            = entry.lex_item_type&.demodulize.presence || t('unknown')
         %td
           %span.badge{class: badge_class_for_status(entry.status)}
-            = entry.status.humanize
+            = t("lexicon.verification.queue.filters.#{entry.status}", default: entry.status.humanize)
         %td
           - if entry.status_verifying? || entry.status_verified? || entry.status_escalated?
             - percentage = entry.verification_percentage
