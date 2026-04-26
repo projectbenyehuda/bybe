@@ -429,7 +429,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
 
         json_response = response.parsed_body
         expect(json_response['success']).to be false
-        expect(json_response['error']).to eq('Attachment not found')
+        expect(json_response['error']).to eq(I18n.t('lexicon.verification.messages.attachment_not_found'))
       end
     end
 
