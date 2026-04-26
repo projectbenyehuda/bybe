@@ -196,6 +196,13 @@
   (function() {
     const entryId = #{@entry.id};
     const personId = #{@item.id};
+    const i18n = {
+      errorUpdatingWork: #{t('lexicon.verification.messages.error_updating_work_verification').to_json},
+      errorUpdatingSection: #{t('lexicon.verification.messages.error_updating_works_section').to_json},
+      errorConfirmingMatch: #{t('lexicon.verification.messages.error_confirming_match').to_json},
+      errorReloadingWorks: #{t('lexicon.verification.messages.error_reloading_works').to_json},
+      unknownError: #{t('lexicon.verification.messages.unknown_error').to_json}
+    };
 
     // Handle individual work verification checkbox changes
     $('.verify-work-checkbox').on('change', function() {
@@ -224,7 +231,7 @@
           updateMarkAllCheckbox();
         },
         error: function(xhr) {
-          alert('Error updating work verification: ' + (xhr.responseJSON?.error || 'Unknown error'));
+          alert(i18n.errorUpdatingWork + ': ' + (xhr.responseJSON?.error || i18n.unknownError));
           // Revert checkbox
           checkbox.prop('checked', !verified);
         }
@@ -260,7 +267,7 @@
           setTimeout(() => location.reload(), 500);
         },
         error: function(xhr) {
-          alert('Error updating works section: ' + (xhr.responseJSON?.error || 'Unknown error'));
+          alert(i18n.errorUpdatingSection + ': ' + (xhr.responseJSON?.error || i18n.unknownError));
           // Revert checkbox
           checkbox.prop('checked', !verified);
         }
@@ -314,7 +321,7 @@
           reloadWorksSection();
         },
         error: function(xhr) {
-          alert('Error confirming match: ' + (xhr.responseJSON?.error || 'Unknown error'));
+          alert(i18n.errorConfirmingMatch + ': ' + (xhr.responseJSON?.error || i18n.unknownError));
           btn.prop('disabled', false);
         }
       });
@@ -362,7 +369,7 @@
           $('#generalDlgBody').html(html);
         },
         error: function(xhr) {
-          alert('Error reloading works: ' + (xhr.responseJSON?.error || 'Unknown error'));
+          alert(i18n.errorReloadingWorks + ': ' + (xhr.responseJSON?.error || i18n.unknownError));
         }
       });
     }
