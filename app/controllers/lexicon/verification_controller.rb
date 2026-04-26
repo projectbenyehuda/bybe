@@ -226,10 +226,10 @@ module Lexicon
 
     # POST /lexicon/verification/:id/escalate
     def escalate
-      notes = params[:overall_notes]
+      notes = params[:overall_notes] || ''
 
       progress = @entry.verification_progress.deep_dup
-      progress['overall_notes'] = notes if notes.present?
+      progress['overall_notes'] = notes
       progress['last_updated_at'] = Time.current.iso8601
 
       @entry.update!(verification_progress: progress, status: :escalated)

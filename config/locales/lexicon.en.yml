@@ -241,6 +241,7 @@ en:
       messages:
         progress_saved: Progress saved successfully
         entry_verified: Entry verified successfully
+        error_escalating_entry: Error escalating entry
         section_updated: Section updated successfully
         verification_incomplete: Verification incomplete - please verify all components
         work_match_confirmed: Work matched to publication successfully

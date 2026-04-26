@@ -242,6 +242,7 @@ he:
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
         entry_verified: הערך אומת בהצלחה
+        error_escalating_entry: שגיאה בהעברה לבדיקה נוספת
         section_updated: הקטע עודכן בהצלחה
         verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
         work_match_confirmed: היצירה הותאמה לפרסום בהצלחה

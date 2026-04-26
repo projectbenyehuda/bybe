@@ -68,7 +68,10 @@ function initVerification() {
             },
             error: function(xhr) {
                 var statusInfo = xhr && xhr.status ? ' (' + xhr.status + ')' : '';
-                showToast(('Error escalating entry') + statusInfo);
+                var responseJson = xhr && xhr.responseJSON ? xhr.responseJSON : null;
+                var serverMessage = responseJson && (responseJson.message || responseJson.error);
+                var baseMessage = container.data('error-escalating-entry-text') || 'Error escalating entry';
+                showToast(baseMessage + statusInfo + (serverMessage ? ': ' + serverMessage : ''));
             }
         });
     });

@@ -32,7 +32,7 @@
           %span.badge{class: badge_class_for_status(entry.status)}
             = entry.status.humanize
         %td
-          - if entry.status_verifying? || entry.status_verified?
+          - if entry.status_verifying? || entry.status_verified? || entry.status_escalated?
             - percentage = entry.verification_percentage
             .progress{style: 'width: 150px; height: 20px;'}
               .progress-bar{role: 'progressbar', style: "width: #{percentage}%", 'aria-valuenow': percentage, 'aria-valuemin': '0', 'aria-valuemax': '100'}

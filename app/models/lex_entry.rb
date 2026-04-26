@@ -12,7 +12,7 @@ class LexEntry < ApplicationRecord
   belongs_to :lex_item, polymorphic: true, optional: true, dependent: :destroy, inverse_of: :entry
 
   # Statuses related to migration process
-  MIGRATION_STATUSES = %w(raw migrating error verifying verified).freeze
+  MIGRATION_STATUSES = %w(raw migrating error verifying verified escalated).freeze
 
   enum :status, {
     draft: 0,       # entry created but not ready for public access
