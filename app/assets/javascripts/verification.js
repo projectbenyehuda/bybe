@@ -45,6 +45,34 @@ function initVerification() {
         });
     });
 
+    // Handle "Escalate" button
+    $('#escalate-btn').on('click', function(e) {
+        e.preventDefault();
+        const confirmMessage = container.data('escalate-confirm-text');
+        if (confirmMessage && !window.confirm(confirmMessage)) { return; }
+        const escalateUrl = container.data('verification-escalate-url');
+        const notes = $('#overall_notes').val();
+
+        $.ajax({
+            url: escalateUrl,
+            type: 'POST',
+            dataType: 'json',
+            headers: {
+                'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: {
+                overall_notes: notes
+            },
+            success: function(data) {
+                window.location.href = data.redirect_url;
+            },
+            error: function(xhr) {
+                var statusInfo = xhr && xhr.status ? ' (' + xhr.status + ')' : '';
+                showToast(('Error escalating entry') + statusInfo);
+            }
+        });
+    });
+
     // Handle quick verify buttons on citations and links
     $('[data-action="click->verification#quickVerify"]').on('click', function(e) {
         e.preventDefault();

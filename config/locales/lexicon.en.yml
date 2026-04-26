@@ -160,6 +160,7 @@ en:
           draft: Draft
           verifying: Verifying
           error: Error
+          escalated: Escalated
           person: Person
           publication: Publication
         time_updated: "%{time} ago"
@@ -169,6 +170,8 @@ en:
         edit_entry: Edit Entry (Full Edit Screen)
         save_progress: Save Progress
         mark_verified: Mark as Verified
+        escalate: Escalate for Further Review
+        escalate_confirm: Escalate this entry for further review?
         progress: Progress
         hide_verified: Hide Verified Items
       checklist:

@@ -32,7 +32,7 @@ class LexEntry < ApplicationRecord
   validates :title, :sort_title, :status, presence: true
 
   # Scopes for verification queue
-  scope :needs_verification, -> { where(status: %i(draft verifying error)) }
+  scope :needs_verification, -> { where(status: %i(draft verifying error escalated)) }
   scope :in_verification, -> { where(status: :verifying) }
   scope :verified_pending_publish, -> { where(status: :verified) }
 
