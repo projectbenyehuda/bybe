@@ -304,5 +304,54 @@ RSpec.describe 'Lexicon::Verification Auto-Matching', type: :request do
       json = response.parsed_body
       expect(json['success']).to be false
     end
+
+    context 'when person has no associated authority' do
+      let(:person_no_auth) { create(:lex_person, authority: nil) }
+      let(:entry_no_auth) { create(:lex_entry, lex_item: person_no_auth, status: :verifying) }
+      let!(:work_no_auth) { create(:lex_person_work, person: person_no_auth, title: 'Some Book', publication_id: nil) }
+
+      it 'returns unprocessable with a translated error' do
+        patch "/lex/verification/#{entry_no_auth.id}/confirm_work_match",
+              params: { work_id: work_no_auth.id, publication_id: publication.id },
+              headers: { 'Accept' => 'application/json' }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = response.parsed_body
+        expect(json['success']).to be false
+        expect(json['error']).to eq(I18n.t('lexicon.verification.messages.person_no_authority'))
+      end
+    end
+
+    context 'when publication does not belong to the person\'s authority' do
+      let(:other_authority) { create(:authority) }
+      let!(:other_publication) { create(:publication, authority: other_authority, title: 'Foreign Book') }
+
+      it 'returns unprocessable with a translated error' do
+        patch "/lex/verification/#{entry.id}/confirm_work_match",
+              params: { work_id: work.id, publication_id: other_publication.id },
+              headers: { 'Accept' => 'application/json' }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = response.parsed_body
+        expect(json['success']).to be false
+        expect(json['error']).to eq(I18n.t('lexicon.verification.messages.publication_not_in_authority'))
+      end
+    end
+
+    context 'when collection does not belong to the publication' do
+      let(:other_publication) { create(:publication, authority: authority, title: 'Other Book') }
+      let!(:other_collection) { create(:collection, publication: other_publication, title: 'Other Collection') }
+
+      it 'returns unprocessable with a translated error' do
+        patch "/lex/verification/#{entry.id}/confirm_work_match",
+              params: { work_id: work.id, publication_id: publication.id, collection_id: other_collection.id },
+              headers: { 'Accept' => 'application/json' }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = response.parsed_body
+        expect(json['success']).to be false
+        expect(json['error']).to eq(I18n.t('lexicon.verification.messages.collection_not_in_publication'))
+      end
+    end
   end
 end
