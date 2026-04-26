@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_11_020041) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_26_230722) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -637,7 +637,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_11_020041) do
     t.datetime "created_at", null: false
     t.bigint "lex_citation_id", null: false
     t.bigint "lex_entry_id"
-    t.string "link"
+    t.string "link", limit: 1024
     t.string "name"
     t.datetime "updated_at", null: false
     t.index ["lex_citation_id", "lex_entry_id"], name: "index_lex_citation_authors_on_lex_citation_id_and_lex_entry_id", unique: true
@@ -650,7 +650,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_11_020041) do
     t.string "from_publication"
     t.bigint "lex_person_id", null: false
     t.bigint "lex_person_work_id"
-    t.string "link", limit: 300
+    t.string "link", limit: 1024
     t.integer "link_http_status"
     t.integer "manifestation_id"
     t.text "notes"
