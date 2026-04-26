@@ -18,12 +18,12 @@ he:
       collection_item: פריט באוסף
       corporate_body: גוף/מוסד
       featured_content: תוכן מערכת
-      lex_citation: Citation of Lexicon Entry
-      lex_citation_author: Citation Author
+      lex_citation: מראה מקום על אדם או חיבור
+      lex_citation_author: מחבר/ת מראה המקום
       lex_entry: ערך בלקסיקון
       lex_person: אדם בלקסיקון
       lex_person_work: יצירת אדם בלקסיקון
-      lex_publication: Lexicon Publication
+      lex_publication: כותר בלקסיקון
       person: אדם
     errors:
       messages:
@@ -57,9 +57,9 @@ he:
         lex_citation:
           attributes:
             person_work:
-              belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
+              belongs_to_different_person: חייב להשתייך לאותו יוצר כמו מראה המקום
             subject:
-              present: must be empty if record is linked to a work
+              present: חייב להיות ריק אם הרשומה מקושרת לחיבור
         lex_citation_author:
           attributes:
             link:
@@ -125,12 +125,13 @@ he:
           ingested: נקלטה בקטלוג
           failed: ההעלאה נכשלה
       lex_citation:
-        authors: Authors
-        from_publication: From Publication
-        pages: Pages
-        person_work: Work
+        authors: מחברים
+        from_publication: מתוך החיבור
+        pages: עמודים
+        person_work: חיבור
       lex_file:
-        error_message: Error message
+        error_message: הודעות שגיאה
+        entrytype: סוג הערך
         fname: שם קובץ
         entrytypes:
           unknown: לא ידוע
