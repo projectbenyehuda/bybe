@@ -13,7 +13,7 @@
       = text_field_tag :title, @title, placeholder: t('.title_placeholder'), class: 'form-control mr-2'
       = label_tag :fname, LexFile.human_attribute_name(:fname), class: 'mr-2'
       = text_field_tag :fname, @fname, placeholder: t('.fname_placeholder'), class: 'form-control mr-2'
-      - %w(raw migrating error draft verifying verified published deprecated).each do |status|
+      - %w(raw migrating error draft verifying verified escalated published deprecated).each do |status|
         .form-check.form-check-inline
           = check_box_tag 'entry_statuses[]', status, @entry_statuses.include?(status),
                           id: "entry_status_#{status}", class: 'form-check-input'

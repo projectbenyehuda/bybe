@@ -161,6 +161,7 @@ he:
           draft: טיוטה
           verifying: בבדיקה
           error: שגיאה
+          escalated: הועבר לבדיקה נוספת
           person: יוצר/ת
           publication: פרסום
         time_updated: "לפני %{time}"
@@ -170,6 +171,8 @@ he:
         edit_entry: עריכת הערך במסך העריכה
         save_progress: שמור התקדמות
         mark_verified: סמן כבדוק
+        escalate: העברה לבדיקה נוספת
+        escalate_confirm: האם להעביר ערך זה לבדיקה נוספת?
         progress: התקדמות
         hide_verified: הסתר פריטים בדוקים
       checklist:
@@ -239,6 +242,7 @@ he:
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
         entry_verified: הערך אומת בהצלחה
+        error_escalating_entry: שגיאה בהעברה לבדיקה נוספת
         section_updated: הקטע עודכן בהצלחה
         verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
         work_match_confirmed: היצירה הותאמה לפרסום בהצלחה
