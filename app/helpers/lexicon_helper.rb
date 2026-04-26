@@ -84,9 +84,10 @@ module LexiconHelper
   # Returns bio text with any <img> tag whose src contains the profile image filename removed.
   # Call this before passing bio to MarkdownToHtml to avoid showing the profile image twice.
   def bio_for_display(bio_text, lex_entry)
-    return bio_text if bio_text.blank? || lex_entry.profile_image.blank?
+    profile_image = lex_entry.profile_image
+    return bio_text if bio_text.blank? || profile_image.blank?
 
-    filename = lex_entry.profile_image.filename.to_s
+    filename = profile_image.filename.to_s
     bio_text.gsub(%r{<img\b[^>]*src=["'][^"']*#{Regexp.escape(filename)}[^"']*["'][^>]*/?>}i, '')
   end
 

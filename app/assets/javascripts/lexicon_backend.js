@@ -8,11 +8,14 @@ $(function() {
     // Firefox paint bug: <select> options appear blank when the element was injected into a
     // display:none container. Force a reflow after the modal finishes showing so Gecko repaints.
     $('#generalDlg').on('shown.bs.modal', function() {
+        if (navigator.userAgent.indexOf('Firefox') === -1) return;
+
         $(this).find('select').each(function() {
             var savedValue = this.value;
+            var savedDisplay = this.style.display;
             this.style.display = 'none';
             this.getBoundingClientRect(); // triggers synchronous layout → repaint
-            this.style.display = '';
+            this.style.display = savedDisplay;
             this.value = savedValue;
         });
     });
