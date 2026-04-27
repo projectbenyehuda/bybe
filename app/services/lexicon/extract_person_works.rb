@@ -6,7 +6,7 @@ module Lexicon
     include HtmlUtils
 
     WORK_TYPE_HEADERS = {
-      'edited' => ['כתיבה, עריכה ושכתוב:', 'עריכה:'],
+      'edited' => ['כתיבה, עריכה ושכתוב:', 'עריכה:', 'עריכה: (מבחר)'],
       'translated' => ['תרגום:']
     }.freeze
 
