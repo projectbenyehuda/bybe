@@ -42,7 +42,10 @@ module Lexicon
         @citation.seqno = max_seqno + 1
       end
 
-      return if @citation.save
+      if @citation.save
+        Lexicon::CheckCitationLinkJob.perform_async(@citation.id) if @citation.saved_change_to_link?
+        return
+      end
 
       render :edit, status: :unprocessable_content
     end

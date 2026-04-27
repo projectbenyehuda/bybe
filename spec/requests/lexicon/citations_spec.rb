@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'sidekiq/testing'
+
+Sidekiq::Testing.fake!
 
 describe '/lexicon/citations' do
   before do
@@ -110,6 +113,30 @@ describe '/lexicon/citations' do
       it 're-renders edit form' do
         expect(call).to eq(422)
         expect(call).to render_template(:edit)
+      end
+    end
+
+    context 'when link is changed' do
+      let(:citation) { create(:lex_citation, person: person, link: 'https://old.example.com/') }
+      let(:citation_params) { { link: 'https://new.example.com/' } }
+
+      it 'enqueues CheckCitationLinkJob' do
+        expect { call }.to change(Lexicon::CheckCitationLinkJob.jobs, :size).by(1)
+      end
+
+      it 'passes the citation id to the job' do
+        call
+        expect(Lexicon::CheckCitationLinkJob.jobs.last['args']).to eq([citation.id])
+      end
+    end
+
+    context 'when link is not changed' do
+      let(:existing_link) { 'https://unchanged.example.com/' }
+      let(:citation) { create(:lex_citation, person: person, link: existing_link) }
+      let(:citation_params) { { title: 'New Title', link: existing_link } }
+
+      it 'does not enqueue CheckCitationLinkJob' do
+        expect { call }.not_to change(Lexicon::CheckCitationLinkJob.jobs, :size)
       end
     end
 
