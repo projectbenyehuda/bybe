@@ -5,8 +5,12 @@ if ($('#citations').length) {
   showToast(<%= @link_toast_message.to_json %>, '<%= @link_toast_type %>');
   <% end %>
 } else {
-  // Verification view: reload is driven by the openModal onSuccess callback.
-  // Any toast is rendered by the reloaded page using the existing flash/data-attribute flow.
-  // This setTimeout is a safety fallback if JS eval runs in a context without an onSuccess.
+  // Verification view: store toast data in sessionStorage so it survives the page reload.
+  // flash.now (set by the controller) only lives for the current JS response, not the reload.
+<% if @link_check_performed %>
+  sessionStorage.setItem('link-check-toast-type', <%= @link_toast_type.to_json %>);
+  sessionStorage.setItem('link-check-toast-message', <%= @link_toast_message.to_json %>);
+<% end %>
+  // Reload is triggered by the openModal onSuccess callback; setTimeout is a safety fallback.
   setTimeout(function() { location.reload(); }, 300);
 }
