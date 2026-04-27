@@ -106,6 +106,7 @@ Bybeconv::Application.routes.draw do
     resources :files, only: :index do
       member do
         post :migrate
+        post :redo_migration
       end
     end
 
