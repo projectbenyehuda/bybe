@@ -150,9 +150,11 @@
         %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
     - if item.works.present?
       .works-content
-        %ul
-          - item.works.each do |work|
-            %li!= render_person_work(work)
+        - item.works.group_by(&:work_type).each do |work_type, works|
+          %h6.mt-2= LexPersonWork.human_enum_name(:work_type, work_type)
+          %ul
+            - works.each do |work|
+              %li!= render_person_work(work)
     - else
       %p.text-muted= t('lexicon.verification.sections.no_works')
   .section-actions
@@ -288,6 +290,7 @@
       = checklist['attachments']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if entry.attachments.any?
+      - citations_by_link = item.citations.reject { |c| c.link.blank? }.group_by { |c| c.link.split('#').first }
       - entry.attachments.each do |attachment|
         .attachment-item{id: "attachment-#{attachment.id}", class: entry.profile_image_id == attachment.id ? 'profile-image-selected' : ''}
           - if attachment.variable?
@@ -298,12 +301,15 @@
             %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
             - if entry.profile_image_id == attachment.id
               %span.badge.profile-image-badge.bg-primary.ms-2= t('lexicon.verification.migrated.profile_image_badge')
+            - (citations_by_link[entry.download_path(attachment.filename.to_s)] || []).each do |citation|
+              %small.d-block.text-muted #{t('lexicon.verification.sections.attachment_used_in_citation')} #{citation.title}
           .attachment-actions.mt-2
-            %button.btn.btn-sm{class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: {action: 'click->verification#setProfileImage', 'attachment-id': attachment.id}}
-              - if entry.profile_image_id == attachment.id
-                = '✓ ' + t('lexicon.verification.migrated.profile_image_badge')
-              - else
-                = t('lexicon.verification.migrated.use_as_profile')
+            - if attachment.content_type.to_s.start_with?('image/')
+              %button.btn.btn-sm{ class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: { action: 'click->verification#setProfileImage', 'attachment-id': attachment.id } }
+                - if entry.profile_image_id == attachment.id
+                  = '✓ ' + t('lexicon.verification.migrated.profile_image_badge')
+                - else
+                  = t('lexicon.verification.migrated.use_as_profile')
             %button.btn.btn-sm.btn-outline-danger.ms-1{ data: { action: 'click->verification#removeAttachment',
                                                                 'attachment-id': attachment.id } }
               = t('lexicon.verification.migrated.remove_attachment')
