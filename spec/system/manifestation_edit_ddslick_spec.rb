@@ -66,10 +66,13 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       visit manifestation_edit_path(manifestation)
       expect(page).to have_css('.dd-selected-text', wait: 5)
 
+      # Disable jQuery animations so ddslick's internal slideUp(50) is instant,
+      # preventing the open/close toggle from mis-firing mid-animation.
+      page.execute_script('$.fx.off = true')
+
       3.times do
         find('.dd-select').click
         expect(page).to have_css('.dd-options', visible: true, wait: 5)
-        # Use ddslick's own close API to avoid body-click timing races with the 50ms slideUp animation
         page.execute_script("$('#images').ddslick('close')")
         expect(page).to have_css('.dd-options', visible: false, wait: 5)
       end
