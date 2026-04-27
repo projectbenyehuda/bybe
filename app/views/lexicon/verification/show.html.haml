@@ -35,8 +35,6 @@
           %label.form-check-label{for: 'hide-verified-toggle'}
             = t('lexicon.verification.show.hide_verified')
       .actions
-        %button.btn.btn-primary#save-progress-btn
-          = t('lexicon.verification.show.save_progress')
         - if @entry.verification_complete?
           = button_to t('lexicon.verification.show.mark_verified'), lexicon_mark_verified_verification_path(@entry), method: :post, class: 'btn btn-success', id: 'mark-verified-btn'
         - else
@@ -49,7 +47,7 @@
                      'verification-entry-id': @entry.id,
                      'verification-update-url': lexicon_update_checklist_verification_path(@entry),
                      'verification-save-progress-url': lexicon_save_progress_verification_path(@entry),
-                     'verification-escalate-url': lexicon_escalate_verification_path(@entry),
+                     'verification-escalate-form-url': lexicon_escalate_form_verification_path(@entry),
                      'verification-set-profile-image-url': lexicon_set_profile_image_verification_path(@entry),
                      'verification-remove-attachment-url': lexicon_remove_attachment_verification_path(@entry),
                      'profile-image-badge-text': t('lexicon.entries.show.profile_image_badge'),
@@ -64,9 +62,7 @@
                      'verified-badge-text': t('lexicon.verification.messages.verified_badge'),
                      'not-verified-badge-text': t('lexicon.verification.messages.not_verified_badge'),
                      'progress-saved-text': t('lexicon.verification.messages.progress_saved'),
-                     'section-updated-text': t('lexicon.verification.messages.section_updated'),
-                     'escalate-confirm-text': t('lexicon.verification.show.escalate_confirm'),
-                     'error-escalating-entry-text': t('lexicon.verification.messages.error_escalating_entry') }
+                     'section-updated-text': t('lexicon.verification.messages.section_updated') }
 .verification-container{ data: container_data }
   .verification-checklist
     = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item
