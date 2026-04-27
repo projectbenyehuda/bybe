@@ -173,7 +173,7 @@ he:
         save_progress: שמור התקדמות
         mark_verified: סמן כבדוק
         escalate: העברה לבדיקה נוספת
-        escalate_confirm: האם להעביר ערך זה לבדיקה נוספת?
+        escalate_confirm: הערך יועבר לבדיקה נוספת. ניתן להוסיף הערות המסבירות את הסיבה להעברה.
         progress: התקדמות
         hide_verified: הסתר פריטים בדוקים
       checklist:
@@ -244,7 +244,10 @@ he:
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
         entry_verified: הערך אומת בהצלחה
+        entry_escalated: הערך הועבר לבדיקה נוספת
         error_escalating_entry: שגיאה בהעברה לבדיקה נוספת
+        add_escalation_notes: הוספת הערות לבודק...
+        escalation_notes_help: הערות אלו יהיו גלויות לבודק שיסקור את הערך.
         section_updated: הקטע עודכן בהצלחה
         verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
         work_match_confirmed: היצירה הותאמה לפרסום בהצלחה

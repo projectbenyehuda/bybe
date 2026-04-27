@@ -613,6 +613,23 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     end
   end
 
+  describe 'GET /lex/verification/:id/escalate_form' do
+    let(:entry) { create(:lex_entry, :person, status: :verifying) }
+
+    before do
+      entry.start_verification!('editor@example.com')
+      entry.update!(verification_progress: entry.verification_progress.merge('overall_notes' => 'some existing notes'))
+    end
+
+    it 'returns the escalation form partial' do
+      get "/lex/verification/#{entry.id}/escalate_form"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('העברה לבדיקה נוספת') # Title in Hebrew
+      expect(response.body).to include('some existing notes')
+    end
+  end
+
   describe 'GET /lex/verification/:id (show) - escalated entry does not reset progress' do
     let(:entry) do
       e = create(:lex_entry, :person, status: :verifying)
