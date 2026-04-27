@@ -33,7 +33,7 @@ describe 'Author navbar conditional expand and bottom collapse button', :js do
       it 'starts with all sections collapsed' do
         visit authority_path(author)
         expect(page).to have_no_css('.collapse.navbar-nav.show', wait: 5)
-        expect(page).to have_css('.collapse.navbar-nav', wait: 5)
+        expect(page).to have_css('.collapse.navbar-nav', visible: false, wait: 5)
       end
     end
   end
@@ -56,7 +56,7 @@ describe 'Author navbar conditional expand and bottom collapse button', :js do
       first('.section-collapse-link').click
 
       # The section should now be collapsed (no longer has .show)
-      expect(page).to have_css('.collapse.navbar-nav:not(.show)', wait: 5)
+      expect(page).to have_css('.collapse.navbar-nav:not(.show)', visible: false, wait: 5)
     end
   end
 end

@@ -155,11 +155,12 @@
             - if entry.profile_image_id == attachment.id
               %span.badge.profile-image-badge.bg-primary.ms-2= t('lexicon.verification.migrated.profile_image_badge')
           .attachment-actions.mt-2
-            %button.btn.btn-sm{class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: {action: 'click->verification#setProfileImage', 'attachment-id': attachment.id}}
-              - if entry.profile_image_id == attachment.id
-                = '✓ ' + t('lexicon.verification.migrated.profile_image_badge')
-              - else
-                = t('lexicon.verification.migrated.use_as_profile')
+            - if attachment.content_type.to_s.start_with?('image/')
+              %button.btn.btn-sm{ class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: { action: 'click->verification#setProfileImage', 'attachment-id': attachment.id } }
+                - if entry.profile_image_id == attachment.id
+                  = '✓ ' + t('lexicon.verification.migrated.profile_image_badge')
+                - else
+                  = t('lexicon.verification.migrated.use_as_profile')
     - else
       %p.text-muted= t('lexicon.verification.sections.no_attachments')
   .section-actions
