@@ -23,10 +23,9 @@ function initVerification() {
         updateChecklistItem(updateUrl, path, verified, sectionId);
     });
 
-    // Handle "Save Progress" button
-    $('#save-progress-btn').on('click', function(e) {
-        e.preventDefault();
-        const notes = $('#overall_notes').val();
+    // Handle "Overall Notes" auto-save
+    $('#overall_notes').on('blur', function() {
+        const notes = $(this).val();
 
         $.ajax({
             url: saveProgressUrl,
@@ -48,30 +47,18 @@ function initVerification() {
     // Handle "Escalate" button
     $('#escalate-btn').on('click', function(e) {
         e.preventDefault();
-        const confirmMessage = container.data('escalate-confirm-text');
-        if (confirmMessage && !window.confirm(confirmMessage)) { return; }
-        const escalateUrl = container.data('verification-escalate-url');
-        const notes = $('#overall_notes').val();
+        const escalateFormUrl = container.data('verification-escalate-form-url');
+        const currentNotes = $('#overall_notes').val() || '';
 
-        $.ajax({
-            url: escalateUrl,
-            type: 'POST',
-            dataType: 'json',
-            headers: {
-                'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: {
-                overall_notes: notes
-            },
-            success: function(data) {
+        // Populate the modal's notes field after the modal opens so notes never
+        // appear in the URL (browser history, server logs, referrers).
+        $('#generalDlg').one('shown.bs.modal', function() {
+            $('#escalate_overall_notes').val(currentNotes);
+        });
+
+        openModal(escalateFormUrl, function(data) {
+            if (data && data.redirect_url) {
                 window.location.href = data.redirect_url;
-            },
-            error: function(xhr) {
-                var statusInfo = xhr && xhr.status ? ' (' + xhr.status + ')' : '';
-                var responseJson = xhr && xhr.responseJSON ? xhr.responseJSON : null;
-                var serverMessage = responseJson && (responseJson.message || responseJson.error);
-                var baseMessage = container.data('error-escalating-entry-text') || 'Error escalating entry';
-                showToast(baseMessage + statusInfo + (serverMessage ? ': ' + serverMessage : ''));
             }
         });
     });
