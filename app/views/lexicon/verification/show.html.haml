@@ -62,7 +62,9 @@
                      'verified-badge-text': t('lexicon.verification.messages.verified_badge'),
                      'not-verified-badge-text': t('lexicon.verification.messages.not_verified_badge'),
                      'progress-saved-text': t('lexicon.verification.messages.progress_saved'),
-                     'section-updated-text': t('lexicon.verification.messages.section_updated') }
+                     'section-updated-text': t('lexicon.verification.messages.section_updated'),
+                     'link-check-toast-type': flash[:link_check_toast_type],
+                     'link-check-toast-message': flash[:link_check_toast_message] }
 .verification-container{ data: container_data }
   .verification-checklist
     = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item

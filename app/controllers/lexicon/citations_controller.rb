@@ -115,6 +115,10 @@ module Lexicon
       @citation.update_column(:link_http_status, status)
       @link_check_performed = true
       @link_toast_type, @link_toast_message = link_toast_for(status)
+      # rubocop:disable Rails/ActionControllerFlashBeforeRender
+      flash[:link_check_toast_type] = @link_toast_type # intentional: survives the client-side location.reload()
+      flash[:link_check_toast_message] = @link_toast_message
+      # rubocop:enable Rails/ActionControllerFlashBeforeRender
     end
 
     def link_toast_for(status)

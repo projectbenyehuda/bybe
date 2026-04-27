@@ -13,6 +13,13 @@ function initVerification() {
     const updateUrl = container.data('verification-update-url');
     const saveProgressUrl = container.data('verification-save-progress-url');
 
+    // Show link-check toast if the server embedded one after a citation link edit
+    const linkCheckToastType = container.data('link-check-toast-type');
+    const linkCheckToastMessage = container.data('link-check-toast-message');
+    if (linkCheckToastType && linkCheckToastMessage) {
+        showToast(linkCheckToastMessage, linkCheckToastType);
+    }
+
     // Handle checklist checkbox toggles
     $('.checklist-items input[type="checkbox"]').on('change', function() {
         const checkbox = $(this);
