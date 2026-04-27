@@ -1,0 +1,4 @@
+reloadContent($('#citations'));
+<% if @link_check_performed %>
+showToast(<%= @link_toast_message.to_json %>, '<%= @link_toast_type %>');
+<% end %>

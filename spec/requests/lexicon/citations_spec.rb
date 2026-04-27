@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'sidekiq/testing'
-
-Sidekiq::Testing.fake!
 
 describe '/lexicon/citations' do
   before do
@@ -117,16 +114,70 @@ describe '/lexicon/citations' do
     end
 
     context 'when link is changed' do
+      let(:checker) { instance_double(Lexicon::CheckExternalLinks) }
       let(:citation) { create(:lex_citation, person: person, link: 'https://old.example.com/') }
       let(:citation_params) { { link: 'https://new.example.com/' } }
 
-      it 'enqueues CheckCitationLinkJob' do
-        expect { call }.to change(Lexicon::CheckCitationLinkJob.jobs, :size).by(1)
+      before do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+        citation.update_columns(link_http_status: 404)
       end
 
-      it 'passes the citation id to the job' do
+      context 'when the new link is accessible' do
+        before { allow(checker).to receive(:check_url).and_return(200) }
+
+        it 'updates link_http_status synchronously' do
+          call
+          expect(citation.reload.link_http_status).to eq(200)
+        end
+
+        it 'includes a success toast in the response' do
+          call
+          expect(response.body).to include('showToast')
+          expect(response.body).to include('success')
+        end
+      end
+
+      context 'when the new link is still broken' do
+        before { allow(checker).to receive(:check_url).and_return(404) }
+
+        it 'stores the new broken status' do
+          call
+          expect(citation.reload.link_http_status).to eq(404)
+        end
+
+        it 'includes an error toast in the response' do
+          call
+          expect(response.body).to include('showToast')
+          expect(response.body).to include('error')
+        end
+      end
+
+      context 'when the link check fails (network error)' do
+        before { allow(checker).to receive(:check_url).and_return(nil) }
+
+        it 'stores nil for link_http_status' do
+          call
+          expect(citation.reload.link_http_status).to be_nil
+        end
+
+        it 'includes a warning toast in the response' do
+          call
+          expect(response.body).to include('showToast')
+          expect(response.body).to include('warning')
+        end
+      end
+    end
+
+    context 'when link is cleared' do
+      let(:citation) { create(:lex_citation, person: person, link: 'https://old.example.com/', link_http_status: 404) }
+      let(:citation_params) { { link: '' } }
+
+      it 'resets link_http_status to nil without making a network request' do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_call_original
         call
-        expect(Lexicon::CheckCitationLinkJob.jobs.last['args']).to eq([citation.id])
+        expect(Lexicon::CheckExternalLinks).not_to have_received(:new)
+        expect(citation.reload.link_http_status).to be_nil
       end
     end
 
@@ -135,8 +186,10 @@ describe '/lexicon/citations' do
       let(:citation) { create(:lex_citation, person: person, link: existing_link) }
       let(:citation_params) { { title: 'New Title', link: existing_link } }
 
-      it 'does not enqueue CheckCitationLinkJob' do
-        expect { call }.not_to change(Lexicon::CheckCitationLinkJob.jobs, :size)
+      it 'does not check the link' do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_call_original
+        call
+        expect(Lexicon::CheckExternalLinks).not_to have_received(:new)
       end
     end
 

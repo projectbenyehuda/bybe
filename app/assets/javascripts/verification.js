@@ -302,8 +302,10 @@ function updateMarkVerifiedButton(complete) {
     }
 }
 
-function showToast(message) {
-    const toast = $('<div class="toast-notification"></div>').text(message);
+function showToast(message, type) {
+    const toast = $('<div class="toast-notification"></div>');
+    if (type) toast.addClass('toast-' + type);
+    toast.text(message);
     $('body').append(toast);
 
     setTimeout(function() {

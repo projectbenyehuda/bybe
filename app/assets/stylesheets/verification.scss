@@ -447,6 +447,14 @@
   z-index: 9999;
   animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
   font-weight: 500;
+
+  &.toast-error {
+    background: #dc3545;
+  }
+
+  &.toast-warning {
+    background: #856404;
+  }
 }
 
 @keyframes slideIn {
