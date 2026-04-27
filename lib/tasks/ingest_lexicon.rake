@@ -105,7 +105,6 @@ def process_legacy_lexicon_entry(fname)
         lf.lex_entry.lex_item = nil
         lf.lex_entry.status_raw!
       end
-      lf.item = nil
       @changed += 1
     end
   end
