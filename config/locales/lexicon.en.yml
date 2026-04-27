@@ -172,7 +172,7 @@ en:
         save_progress: Save Progress
         mark_verified: Mark as Verified
         escalate: Escalate for Further Review
-        escalate_confirm: Escalate this entry for further review?
+        escalate_confirm: This entry will be escalated for further review. You can provide notes explaining the reason for escalation.
         progress: Progress
         hide_verified: Hide Verified Items
       checklist:
@@ -243,7 +243,10 @@ en:
       messages:
         progress_saved: Progress saved successfully
         entry_verified: Entry verified successfully
+        entry_escalated: Entry escalated for review
         error_escalating_entry: Error escalating entry
+        add_escalation_notes: Add notes for the reviewer...
+        escalation_notes_help: These notes will be visible to the reviewer.
         section_updated: Section updated successfully
         verification_incomplete: Verification incomplete - please verify all components
         work_match_confirmed: Work matched to publication successfully
