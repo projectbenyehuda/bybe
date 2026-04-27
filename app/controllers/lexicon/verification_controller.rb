@@ -226,6 +226,12 @@ module Lexicon
                   alert: e.message
     end
 
+    # GET /lex/verification/:id/escalate_form
+    def escalate_form
+      @overall_notes = @entry.verification_progress['overall_notes']
+      render partial: 'lexicon/verification/escalate_form'
+    end
+
     # POST /lexicon/verification/:id/escalate
     def escalate
       notes = params[:overall_notes] || ''
@@ -236,12 +242,18 @@ module Lexicon
 
       @entry.update!(verification_progress: progress, status: :escalated)
 
-      render json: {
-        success: true,
-        redirect_url: lexicon_verification_queue_path
-      }
+      respond_to do |format|
+        format.json { render json: { success: true, redirect_url: lexicon_verification_queue_path } }
+        format.html do
+          redirect_to lexicon_verification_queue_path,
+                      notice: I18n.t('lexicon.verification.messages.entry_escalated')
+        end
+      end
     rescue StandardError => e
-      render json: { success: false, error: e.message }, status: :unprocessable_content
+      respond_to do |format|
+        format.json { render json: { success: false, error: e.message }, status: :unprocessable_content }
+        format.html { redirect_to lexicon_verification_path(@entry), alert: e.message }
+      end
     end
 
     # GET /lexicon/verification/:id/edit_section?section=title
