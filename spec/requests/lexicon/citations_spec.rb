@@ -113,6 +113,86 @@ describe '/lexicon/citations' do
       end
     end
 
+    context 'when link is changed' do
+      let(:checker) { instance_double(Lexicon::CheckExternalLinks) }
+      let(:citation) { create(:lex_citation, person: person, link: 'https://old.example.com/') }
+      let(:citation_params) { { link: 'https://new.example.com/' } }
+
+      before do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+        citation.update_columns(link_http_status: 404)
+      end
+
+      context 'when the new link is accessible' do
+        before { allow(checker).to receive(:check_url).and_return(200) }
+
+        it 'updates link_http_status synchronously' do
+          call
+          expect(citation.reload.link_http_status).to eq(200)
+        end
+
+        it 'includes a success toast in the response' do
+          call
+          expect(response.body).to include('showToast')
+          expect(response.body).to include('success')
+        end
+      end
+
+      context 'when the new link is still broken' do
+        before { allow(checker).to receive(:check_url).and_return(404) }
+
+        it 'stores the new broken status' do
+          call
+          expect(citation.reload.link_http_status).to eq(404)
+        end
+
+        it 'includes an error toast in the response' do
+          call
+          expect(response.body).to include('showToast')
+          expect(response.body).to include('error')
+        end
+      end
+
+      context 'when the link check fails (network error)' do
+        before { allow(checker).to receive(:check_url).and_return(nil) }
+
+        it 'stores nil for link_http_status' do
+          call
+          expect(citation.reload.link_http_status).to be_nil
+        end
+
+        it 'includes a warning toast in the response' do
+          call
+          expect(response.body).to include('showToast')
+          expect(response.body).to include('warning')
+        end
+      end
+    end
+
+    context 'when link is cleared' do
+      let(:citation) { create(:lex_citation, person: person, link: 'https://old.example.com/', link_http_status: 404) }
+      let(:citation_params) { { link: '' } }
+
+      it 'resets link_http_status to nil without making a network request' do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_call_original
+        call
+        expect(Lexicon::CheckExternalLinks).not_to have_received(:new)
+        expect(citation.reload.link_http_status).to be_nil
+      end
+    end
+
+    context 'when link is not changed' do
+      let(:existing_link) { 'https://unchanged.example.com/' }
+      let(:citation) { create(:lex_citation, person: person, link: existing_link) }
+      let(:citation_params) { { title: 'New Title', link: existing_link } }
+
+      it 'does not check the link' do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_call_original
+        call
+        expect(Lexicon::CheckExternalLinks).not_to have_received(:new)
+      end
+    end
+
     context 'when subject_title is changed' do
       let!(:work1) { create(:lex_person_work, person: person, title: 'Work A') }
       let!(:work2) { create(:lex_person_work, person: person, title: 'Work B') }
