@@ -13,10 +13,14 @@ function initVerification() {
     const updateUrl = container.data('verification-update-url');
     const saveProgressUrl = container.data('verification-save-progress-url');
 
-    // Show link-check toast if the server embedded one after a citation link edit
-    const linkCheckToastType = container.data('link-check-toast-type');
-    const linkCheckToastMessage = container.data('link-check-toast-message');
+    // Show link-check toast after a citation link edit + page reload.
+    // sessionStorage is set by update.js.erb before location.reload(); flash data-attributes
+    // are kept as a fallback for non-JS flows.
+    const linkCheckToastType = sessionStorage.getItem('link-check-toast-type') || container.data('link-check-toast-type');
+    const linkCheckToastMessage = sessionStorage.getItem('link-check-toast-message') || container.data('link-check-toast-message');
     if (linkCheckToastType && linkCheckToastMessage) {
+        sessionStorage.removeItem('link-check-toast-type');
+        sessionStorage.removeItem('link-check-toast-message');
         showToast(linkCheckToastMessage, linkCheckToastType);
     }
 
