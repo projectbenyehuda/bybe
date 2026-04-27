@@ -1,5 +1,5 @@
 # see https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#upgrading-a-workflow-that-accesses-a-registry-using-a-personal-access-token
-name: Build Docker image and deploy it to production (or staging)
+name: Build Docker image and deploy it to staging
 
 on:
   push:
@@ -69,3 +69,4 @@ jobs:
             cd bybe-staging
             docker compose down web sidekiq
             docker compose up web sidekiq -d --pull always
+            docker image prune -f
