@@ -20,6 +20,8 @@ $(function() {
         });
     });
 
+    initDraggableModal();
+
     $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
         const tabHeader = $(e.target);
         const tabContentId = tabHeader.data('target');
@@ -107,3 +109,46 @@ function closeModal() {
     $('#generalDlg').modal('hide');
     $('#generalDlg').data('onSuccess', null);
 };
+
+function initDraggableModal() {
+    var $modal = $('#generalDlg');
+    if (!$modal.length) return;
+
+    var $dialog = $modal.find('.modal-dialog');
+    var dragStartX, dragStartY, dialogStartLeft, dialogStartTop;
+
+    $modal.on('mousedown', '.modal-header', function(e) {
+        if ($(e.target).closest('button, a').length) return;
+
+        var rect = $dialog[0].getBoundingClientRect();
+        $dialog.css({
+            position: 'absolute',
+            margin: '0',
+            transform: 'none',
+            top: rect.top + 'px',
+            left: rect.left + 'px'
+        });
+
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dialogStartLeft = rect.left;
+        dialogStartTop = rect.top;
+
+        $(document).on('mousemove.dlgDrag', function(e) {
+            $dialog.css({
+                left: (dialogStartLeft + e.clientX - dragStartX) + 'px',
+                top: (dialogStartTop + e.clientY - dragStartY) + 'px'
+            });
+        });
+
+        $(document).on('mouseup.dlgDrag', function() {
+            $(document).off('mousemove.dlgDrag mouseup.dlgDrag');
+        });
+
+        e.preventDefault();
+    });
+
+    $modal.on('hidden.bs.modal', function() {
+        $dialog.css({ position: '', margin: '', transform: '', top: '', left: '' });
+    });
+}
