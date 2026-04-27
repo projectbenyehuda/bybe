@@ -1,0 +1,12 @@
+if ($('#citations').length) {
+  // Entry-edit view: lazy-reload just the citations section
+  reloadContent($('#citations'));
+  <% if @link_check_performed %>
+  showToast(<%= @link_toast_message.to_json %>, '<%= @link_toast_type %>');
+  <% end %>
+} else {
+  // Verification view: reload is driven by the openModal onSuccess callback.
+  // Any toast is rendered by the reloaded page using the existing flash/data-attribute flow.
+  // This setTimeout is a safety fallback if JS eval runs in a context without an onSuccess.
+  setTimeout(function() { location.reload(); }, 300);
+}

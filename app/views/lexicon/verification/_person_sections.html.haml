@@ -210,7 +210,7 @@
                     %span.broken-link-badge= broken_badge
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
               .citation-actions.mt-2
-                %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_citation_path(citation)}', onSectionEditSuccess('section-citations'))"}
+                %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_citation_path(citation)}', function() { location.reload(); })"}
                   ✏️
                   = t('lexicon.verification.migrated.edit')
                 %button.btn.btn-sm{class: checklist['citations']&.dig('items', citation.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "citations.items.#{citation.id}"}}

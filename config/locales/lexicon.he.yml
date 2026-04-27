@@ -241,6 +241,9 @@ he:
       broken_link:
         badge: "קישור שבור (HTTP %{status})"
         unchecked_badge: "קישור לא נבדק"
+        now_accessible: "הקישור כעת נגיש"
+        still_broken: "הקישור עדיין שבור (HTTP %{status})"
+        check_failed: "לא ניתן לבדוק את הקישור (שגיאת רשת)"
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
         entry_verified: הערך אומת בהצלחה
