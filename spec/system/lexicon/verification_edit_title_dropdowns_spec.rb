@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 describe 'Lexicon Verification – edit title section dropdowns', :js do
-  let!(:person) { create(:lex_person, gender: :male) }
+  let!(:person) { create(:lex_person, gender: :male, copyrighted: false) }
   let!(:entry) { create(:lex_entry, title: 'Test Person', lex_item: person, status: :draft) }
 
   before do
