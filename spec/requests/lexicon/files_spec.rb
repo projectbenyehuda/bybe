@@ -214,4 +214,55 @@ describe '/lexicon/files' do
       end
     end
   end
+
+  describe 'POST /redo_migration' do
+    subject(:call) { post "/lex/files/#{file.id}/redo_migration", xhr: true }
+
+    before { Sidekiq::Testing.fake! }
+    after { Sidekiq::Worker.clear_all }
+
+    let!(:file) do
+      create(
+        :lex_file,
+        :person,
+        status: :ingested,
+        entry_status: entry_status
+      )
+    end
+
+    context 'when entry_status is draft' do
+      let(:entry_status) { :draft }
+
+      it 'resets the lex_item, queues the job, and sets entry status to migrating' do
+        expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+        expect(call).to eq(200)
+        expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
+        expect(file.lex_entry.reload.status).to eq('migrating')
+        expect(file.lex_entry.lex_item).to be_nil
+        expect(file.reload.status).to eq('classified')
+      end
+    end
+
+    context 'when entry_status is verifying' do
+      let(:entry_status) { :verifying }
+
+      it 'resets the lex_item, queues the job, and sets entry status to migrating' do
+        expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+        expect(call).to eq(200)
+        expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
+        expect(file.lex_entry.reload.status).to eq('migrating')
+        expect(file.lex_entry.lex_item).to be_nil
+        expect(file.reload.status).to eq('classified')
+      end
+    end
+
+    context 'when entry_status is not draft or verifying' do
+      let(:entry_status) { LexEntry.statuses.keys.find { |status| !%w(draft verifying).include?(status) } }
+
+      it 'does not queue job and simply re-renders tr' do
+        expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
+        expect(call).to eq(200)
+      end
+    end
+  end
 end
