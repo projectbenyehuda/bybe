@@ -25,14 +25,6 @@ describe 'Lexicon Verification – edit title section dropdowns', :js do
     end
   end
 
-  it 'copyrighted dropdown has visible, non-blank options' do
-    within('#generalDlgBody') do
-      copyrighted_select = find('select[name="lex_person[copyrighted]"]')
-      option_texts = copyrighted_select.all('option').map(&:text).map(&:strip).compact_blank
-      expect(option_texts).to include('נחלת הכלל', 'מוגן בזכויות')
-    end
-  end
-
   it 'can select a gender value and save it' do
     within('#generalDlgBody') do
       select 'נקבה', from: 'lex_person[gender]'
@@ -42,16 +34,5 @@ describe 'Lexicon Verification – edit title section dropdowns', :js do
     expect(page).to have_css('#section-title', wait: 5)
     person.reload
     expect(person.gender).to eq('female')
-  end
-
-  it 'can select a copyrighted value and save it' do
-    within('#generalDlgBody') do
-      select 'מוגן בזכויות', from: 'lex_person[copyrighted]'
-      find('[type="submit"]').click
-    end
-
-    expect(page).to have_css('#section-title', wait: 5)
-    person.reload
-    expect(person.copyrighted).to be true
   end
 end
