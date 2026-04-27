@@ -257,7 +257,7 @@ describe '/lexicon/files' do
     end
 
     context 'when entry_status is not draft or verifying' do
-      let(:entry_status) { (LexEntry.statuses.keys - %w(draft verifying)).sample }
+      let(:entry_status) { LexEntry.statuses.keys.find { |status| !%w(draft verifying).include?(status) } }
 
       it 'does not queue job and simply re-renders tr' do
         expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
