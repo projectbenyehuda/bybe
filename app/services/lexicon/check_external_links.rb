@@ -41,6 +41,11 @@ module Lexicon
       check_citation_links(item) if item.is_a?(LexPerson)
     end
 
+    # Check a single URL and return its HTTP status code (or nil on error).
+    def check_url(url)
+      fetch_status(url)
+    end
+
     private
 
     def check_item_links(item)
