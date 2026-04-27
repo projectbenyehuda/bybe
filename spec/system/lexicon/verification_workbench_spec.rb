@@ -297,9 +297,9 @@ describe 'Lexicon Verification Workbench' do
       expect(page).to have_css('#generalDlg', visible: true, wait: 10)
       within('#generalDlg') do
         expect(page).to have_content('הערך יועבר לבדיקה נוספת')
-        notes_field = find('textarea#overall_notes')
+        notes_field = find('textarea#escalate_overall_notes')
         expect(notes_field.value).to eq(modal_notes_text)
-        
+
         # Update notes in modal
         notes_field.fill_in with: 'Final escalation reason'
         click_button 'העברה לבדיקה נוספת'

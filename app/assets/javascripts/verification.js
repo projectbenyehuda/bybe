@@ -49,9 +49,14 @@ function initVerification() {
         e.preventDefault();
         const escalateFormUrl = container.data('verification-escalate-form-url');
         const currentNotes = $('#overall_notes').val() || '';
-        const urlWithNotes = escalateFormUrl + '?' + $.param({ overall_notes: currentNotes });
 
-        openModal(urlWithNotes, function(data) {
+        // Populate the modal's notes field after the modal opens so notes never
+        // appear in the URL (browser history, server logs, referrers).
+        $('#generalDlg').one('shown.bs.modal', function() {
+            $('#escalate_overall_notes').val(currentNotes);
+        });
+
+        openModal(escalateFormUrl, function(data) {
             if (data && data.redirect_url) {
                 window.location.href = data.redirect_url;
             }

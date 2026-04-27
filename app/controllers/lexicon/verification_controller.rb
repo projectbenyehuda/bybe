@@ -226,9 +226,9 @@ module Lexicon
                   alert: e.message
     end
 
-    # GET /lexicon/verification/:id/escalate_form
+    # GET /lex/verification/:id/escalate_form
     def escalate_form
-      @overall_notes = params[:overall_notes].presence || @entry.verification_progress['overall_notes']
+      @overall_notes = @entry.verification_progress['overall_notes']
       render partial: 'lexicon/verification/escalate_form'
     end
 
