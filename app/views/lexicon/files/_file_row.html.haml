@@ -14,6 +14,10 @@
       = link_to t('lexicon.verification.queue.actions.start_or_continue'),
                 lexicon_verification_path(lex_entry),
                 class: 'btn btn-sm btn-outline-primary ms-2'
+      - if lex_entry.status_draft? || lex_entry.status_verifying?
+        = link_to t('lexicon.files.redo_migrate.title'), redo_migration_lexicon_file_path(lf),
+                  remote: true, method: :post, class: 'btn btn-sm btn-outline-warning ms-1',
+                  data: { confirm: t('lexicon.files.redo_migrate.confirm') }
     - elsif (lex_entry.status_raw? || lex_entry.status_error?) && lf.entrytype_person?
       -# for now we only show the migrate link for person entries (stage 1)
       = link_to t('lexicon.files.migrate.title'), migrate_lexicon_file_path(lf),
