@@ -3,7 +3,7 @@
 module Lexicon
   # Controller to manage Lexicon migration from static php files to Ben-Yehuda project
   class FilesController < ApplicationController
-    before_action :set_lex_file, only: [:migrate]
+    before_action :set_lex_file, only: %i(migrate redo_migration)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
@@ -44,6 +44,17 @@ module Lexicon
 
       # Cleaning up any existing LexItem before re-ingesting
       lex_item&.destroy!
+      Lexicon::IngestFile.perform_async(@lex_file.id)
+    end
+
+    def redo_migration
+      lex_entry = @lex_file.lex_entry
+      return unless lex_entry.status_draft? || lex_entry.status_verifying?
+
+      lex_entry.reset_ingestion!
+      @lex_file.reload
+      @lex_file.status_classified! if @lex_file.status_ingested?
+      lex_entry.status_migrating!
       Lexicon::IngestFile.perform_async(@lex_file.id)
     end
 
