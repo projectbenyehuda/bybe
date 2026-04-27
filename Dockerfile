@@ -1,7 +1,7 @@
 FROM ruby:3.3.9-trixie AS base
 
 RUN apt-get update -qq \
-  && apt-get install -y yaz libmagickwand-7.q16-10 libmariadb3 libcap2 libyaml-0-2 pandoc chromium \
+  && apt-get install -y yaz libmagickwand-7.q16-10 libmariadb3 libcap2 libvips42t64 libyaml-0-2 pandoc chromium \
   && apt-get clean && rm -rf /tmp/* /var/tmp/*
 
 WORKDIR /app
@@ -23,7 +23,8 @@ ENV RAILS_ENV=production \
 
 FROM base AS builder
 
-RUN apt-get install -y libyaz-dev libmagickwand-7.q16-dev default-libmysqlclient-dev libpcap-dev libyaml-dev cmake
+RUN apt-get install -y libyaz-dev libmagickwand-7.q16-dev default-libmysqlclient-dev libpcap-dev libyaml-dev \
+    libvips-dev
 
 RUN bundle install --deployment --without test development --jobs "$(grep -c ^processor /proc/cpuinfo)" \
     && find vendor/bundle/ -path "*/cache/*" -name "*.gem"   -delete \
