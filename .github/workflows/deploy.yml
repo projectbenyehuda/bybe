@@ -58,8 +58,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
       - name: Update server with new Docker image
         uses: appleboy/ssh-action@v1.2.5
         with:
