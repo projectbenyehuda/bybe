@@ -69,7 +69,8 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
       3.times do
         find('.dd-select').click
         expect(page).to have_css('.dd-options', visible: true, wait: 5)
-        find('body').click
+        # Use ddslick's own close API to avoid body-click timing races with the 50ms slideUp animation
+        page.execute_script("$('#images').ddslick('close')")
         expect(page).to have_css('.dd-options', visible: false, wait: 5)
       end
 
