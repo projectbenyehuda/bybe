@@ -205,10 +205,6 @@ describe 'Lexicon Verification Workbench' do
       end
     end
 
-    it 'provides save progress button' do
-      expect(page).to have_button('שמור התקדמות')
-    end
-
     it 'displays gender in localized form (Hebrew)' do
       within('.verification-migrated') do
         expect(page).to have_content('מגדר')  # Gender label in Hebrew
@@ -285,21 +281,34 @@ describe 'Lexicon Verification Workbench' do
       expect(page).to have_css('#main-progress-bar', visible: :all)
     end
 
-    it 'saves overall notes', :js do
+    it 'handles overall notes auto-save and escalation correctly', :js do
       skip 'WebDriver not available or misconfigured' unless webdriver_available?
 
-      # For now, just verify the UI elements exist
-      # TODO: Debug AJAX issue - notes don't persist after save
-      notes_text = 'Test notes for verification'
+      entry.start_verification!('editor@example.com')
+      visit "/lex/verification/#{entry.id}"
 
-      within('.verification-checklist') do
-        notes_field = find('#overall_notes')
-        notes_field.fill_in with: notes_text
-        expect(notes_field.value).to eq(notes_text)
+      # Test Escalation with Modal
+      modal_notes_text = 'Notes from main page'
+      page.execute_script("$('#overall_notes').val('#{modal_notes_text}')")
+
+      find('#escalate-btn').click
+
+      # Wait for modal to appear
+      expect(page).to have_css('#generalDlg', visible: true, wait: 10)
+      within('#generalDlg') do
+        expect(page).to have_content('הערך יועבר לבדיקה נוספת')
+        notes_field = find('textarea#escalate_overall_notes')
+        expect(notes_field.value).to eq(modal_notes_text)
+
+        # Update notes in modal
+        notes_field.fill_in with: 'Final escalation reason'
+        click_button 'העברה לבדיקה נוספת'
       end
 
-      # Verify save button exists
-      expect(page).to have_button('שמור התקדמות')
+      # Should redirect to queue
+      expect(page).to have_current_path(lexicon_verification_queue_path)
+      expect(entry.reload).to be_status_escalated
+      expect(entry.verification_progress['overall_notes']).to eq('Final escalation reason')
     end
   end
 
