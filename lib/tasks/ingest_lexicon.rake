@@ -99,11 +99,11 @@ def process_legacy_lexicon_entry(fname)
     should_process = true if lf.status_unclassified?
     if lf.updated_at < File.mtime(fname)
       should_process = true
-      item = lf.entry&.item
-      if item.present?
-        item.destroy!
-        lf.entry.item = nil
-        lf.entry.status_raw!
+      lex_item = lf.lex_entry&.lex_item
+      if lex_item.present?
+        lex_item.destroy!
+        lf.lex_entry.lex_item = nil
+        lf.lex_entry.status_raw!
       end
       lf.item = nil
       @changed += 1
