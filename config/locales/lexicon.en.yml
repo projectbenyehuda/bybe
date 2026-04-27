@@ -235,6 +235,7 @@ en:
         no_external_identifiers: "(No authority control identifiers)"
         citation_from_publication: "From:"
         citation_pages: "Pages:"
+        attachment_used_in_citation: "Used in citation:"
         count_mismatch: "Count mismatch: %{php_count} item(s) in the source file, but %{migrated_count} migrated. The mismatch may be justified and does not block verification."
       broken_link:
         badge: "Broken link (HTTP %{status})"

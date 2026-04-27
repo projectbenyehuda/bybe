@@ -24,6 +24,21 @@ describe 'Author navbar collapse arrows', :js do
     end
   end
 
+  let!(:manifestation_in_collection) do
+    Chewy.strategy(:atomic) do
+      create(:manifestation,
+             title: 'Work in Collection',
+             status: :published,
+             author: author)
+    end
+  end
+
+  let!(:collection_item) do
+    create(:collection_item,
+           collection: collection,
+           item: manifestation_in_collection)
+  end
+
   let!(:involved_authority) do
     create(:involved_authority,
            authority: author,
@@ -92,6 +107,9 @@ describe 'Author navbar collapse arrows', :js do
       within('.book-nav-full') do
         all('.collapse.navbar-nav').each do |collapse_target|
           target_id = collapse_target['id']
+          # Skip uncollected sections as they don't have arrows anymore
+          next if target_id.include?('uncollected')
+
           trigger = find(".truncate[data-bs-target='##{target_id}']")
           arrow = trigger.find('.collapse-arrow').text
 
