@@ -60,6 +60,45 @@ describe 'Verification Works Modal UX', :js do
       expect(cursor).to eq('move')
     end
 
+    it 'resize handles are present on all 8 directions' do
+      handle_classes = page.evaluate_script(
+        "Array.from(document.querySelectorAll('#generalDlg .modal-resize-handle')).map(h => h.className)"
+      )
+      %w[dlg-n dlg-ne dlg-e dlg-se dlg-s dlg-sw dlg-w dlg-nw].each do |dir|
+        expect(handle_classes.any? { |c| c.include?(dir) }).to be true
+      end
+    end
+
+    it 'dragging the SE corner handle increases modal size' do
+      initial_w = page.evaluate_script(
+        "document.querySelector('#generalDlg .modal-dialog').getBoundingClientRect().width"
+      )
+      initial_h = page.evaluate_script(
+        "document.querySelector('#generalDlg .modal-content').getBoundingClientRect().height"
+      )
+
+      page.evaluate_script(<<~JS)
+        (function() {
+          var handle = document.querySelector('#generalDlg .modal-resize-handle.dlg-se');
+          var rect = handle.getBoundingClientRect();
+          var cx = rect.left + rect.width / 2;
+          var cy = rect.top + rect.height / 2;
+          handle.dispatchEvent(new MouseEvent('mousedown', {bubbles: true, cancelable: true, clientX: cx, clientY: cy}));
+          document.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, cancelable: true, clientX: cx + 80, clientY: cy + 60}));
+          document.dispatchEvent(new MouseEvent('mouseup',   {bubbles: true, cancelable: true}));
+        })();
+      JS
+
+      new_w = page.evaluate_script(
+        "document.querySelector('#generalDlg .modal-dialog').getBoundingClientRect().width"
+      )
+      new_h = page.evaluate_script(
+        "document.querySelector('#generalDlg .modal-content').getBoundingClientRect().height"
+      )
+      expect(new_w).to be > initial_w
+      expect(new_h).to be > initial_h
+    end
+
     it 'dragging the modal header repositions the dialog' do
       initial_top = page.evaluate_script(
         "document.querySelector('#generalDlg .modal-dialog').getBoundingClientRect().top"
