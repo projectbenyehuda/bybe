@@ -20,6 +20,8 @@ $(function() {
         });
     });
 
+    initModalManipulation();
+
     $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
         const tabHeader = $(e.target);
         const tabContentId = tabHeader.data('target');
@@ -107,3 +109,112 @@ function closeModal() {
     $('#generalDlg').modal('hide');
     $('#generalDlg').data('onSuccess', null);
 };
+
+function initModalManipulation() {
+    var $modal = $('#generalDlg');
+    if (!$modal.length) return;
+
+    var $dialog = $modal.find('.modal-dialog');
+    var $content = $modal.find('.modal-content');
+
+    // Inject resize handle CSS once
+    $('head').append(
+        '<style id="generalDlg-manip-style">' +
+        '#generalDlg .modal-resize-handle{position:absolute;z-index:10;}' +
+        '#generalDlg .modal-resize-handle.dlg-n {top:-3px;left:12px;right:12px;height:6px;cursor:n-resize;}' +
+        '#generalDlg .modal-resize-handle.dlg-s {bottom:-3px;left:12px;right:12px;height:6px;cursor:s-resize;}' +
+        '#generalDlg .modal-resize-handle.dlg-e {right:-3px;top:12px;bottom:12px;width:6px;cursor:e-resize;}' +
+        '#generalDlg .modal-resize-handle.dlg-w {left:-3px;top:12px;bottom:12px;width:6px;cursor:w-resize;}' +
+        '#generalDlg .modal-resize-handle.dlg-ne{top:-3px;right:-3px;width:14px;height:14px;cursor:ne-resize;}' +
+        '#generalDlg .modal-resize-handle.dlg-se{bottom:-3px;right:-3px;width:14px;height:14px;cursor:se-resize;}' +
+        '#generalDlg .modal-resize-handle.dlg-sw{bottom:-3px;left:-3px;width:14px;height:14px;cursor:sw-resize;}' +
+        '#generalDlg .modal-resize-handle.dlg-nw{top:-3px;left:-3px;width:14px;height:14px;cursor:nw-resize;}' +
+        '</style>'
+    );
+
+    $.each(['n','ne','e','se','s','sw','w','nw'], function(_, dir) {
+        $content.append('<div class="modal-resize-handle dlg-' + dir + '"></div>');
+    });
+
+    var MIN_W = 300, MIN_H = 100;
+
+    // Switch dialog to absolute positioning, locked at current viewport position
+    function lockAbsolute() {
+        if ($dialog.css('position') === 'absolute') return;
+        var rect = $dialog[0].getBoundingClientRect();
+        $dialog.css({ position: 'absolute', margin: '0', transform: 'none',
+                      top: rect.top + 'px', left: rect.left + 'px' });
+    }
+
+    // --- Drag (header) ---
+    var dragStartX, dragStartY, dragStartLeft, dragStartTop;
+
+    $modal.on('mousedown', '.modal-header', function(e) {
+        if ($(e.target).closest('button, a').length) return;
+
+        lockAbsolute();
+        dragStartX    = e.clientX;
+        dragStartY    = e.clientY;
+        dragStartLeft = parseFloat($dialog.css('left')) || 0;
+        dragStartTop  = parseFloat($dialog.css('top'))  || 0;
+
+        $(document).on('mousemove.dlgDrag', function(e) {
+            $dialog.css({
+                left: (dragStartLeft + e.clientX - dragStartX) + 'px',
+                top:  (dragStartTop  + e.clientY - dragStartY) + 'px'
+            });
+        });
+        $(document).on('mouseup.dlgDrag', function() {
+            $(document).off('mousemove.dlgDrag mouseup.dlgDrag');
+        });
+        e.preventDefault();
+    });
+
+    // --- Resize (handles) ---
+    var resizeStartX, resizeStartY, startW, startH, startLeft, startTop, resizeDir;
+
+    $modal.on('mousedown', '.modal-resize-handle', function(e) {
+        resizeDir = $(this).attr('class').match(/dlg-(\w+)/)[1];
+
+        // Capture sizes before locking (max-height may still cap the height)
+        startH = $content.outerHeight();
+        startW = $dialog.outerWidth();
+
+        lockAbsolute();
+        startLeft = parseFloat($dialog.css('left')) || 0;
+        startTop  = parseFloat($dialog.css('top'))  || 0;
+
+        // Freeze explicit dimensions so CSS rules no longer interfere
+        $content.css({ 'max-height': 'none', height: startH + 'px' });
+        $dialog.css({ 'max-width': 'none', width: startW + 'px' });
+
+        resizeStartX = e.clientX;
+        resizeStartY = e.clientY;
+
+        $(document).on('mousemove.dlgResize', function(e) {
+            var dx = e.clientX - resizeStartX;
+            var dy = e.clientY - resizeStartY;
+            var nW = startW, nH = startH, nL = startLeft, nT = startTop;
+
+            if (resizeDir.indexOf('e') >= 0) nW = Math.max(MIN_W, startW + dx);
+            if (resizeDir.indexOf('w') >= 0) { nW = Math.max(MIN_W, startW - dx); nL = startLeft + startW - nW; }
+            if (resizeDir.indexOf('s') >= 0) nH = Math.max(MIN_H, startH + dy);
+            if (resizeDir.indexOf('n') >= 0) { nH = Math.max(MIN_H, startH - dy); nT = startTop + startH - nH; }
+
+            $dialog.css({ top: nT + 'px', left: nL + 'px', width: nW + 'px' });
+            $content.css({ height: nH + 'px' });
+        });
+        $(document).on('mouseup.dlgResize', function() {
+            $(document).off('mousemove.dlgResize mouseup.dlgResize');
+        });
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    // --- Reset on close ---
+    $modal.on('hidden.bs.modal', function() {
+        $dialog.css({ position: '', margin: '', transform: '', top: '', left: '', width: '', 'max-width': '' });
+        $content.css({ height: '', 'max-height': '' });
+    });
+}
