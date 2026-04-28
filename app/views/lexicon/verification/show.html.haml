@@ -1,13 +1,28 @@
 :css
-  /* Shared modal sizing for verification edit sections */
+  /* All verification modals: cap at top third of viewport, draggable header */
+  #generalDlg .modal-dialog {
+    margin-top: 10px;
+    margin-bottom: 0;
+  }
+
+  #generalDlg .modal-content {
+    max-height: 33vh;
+  }
+
+  #generalDlg .modal-body {
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  #generalDlg .modal-header {
+    cursor: move;
+    user-select: none;
+  }
+
+  /* Wider dialog for verification section forms */
   #generalDlg:has(.verification-edit-form[action*="section"]) .modal-dialog {
     max-width: 70vw;
     width: 70vw;
-  }
-
-  #generalDlg:has(.verification-edit-form[action*="section"]) .modal-body {
-    max-height: 80vh;
-    overflow-y: auto;
   }
 
 .verification-header
