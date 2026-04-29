@@ -28,6 +28,8 @@ class ExternalLink < ApplicationRecord
     return %i(wikipedia dedicated_site blog youtube audio other gnazim)
   end
 
+  before_validation { self.url = url.strip if url.present? }
+
   private
 
   def url_must_have_safe_scheme

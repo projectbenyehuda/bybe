@@ -35,6 +35,7 @@ class Ingestible < ApplicationRecord
   # after_commit :update_parsing # this results in ActiveStorage::FileNotFoundError in dev/local storage
 
   before_save do
+    self.pub_link = pub_link.strip if pub_link.present?
     if @texts.present?
       self.works_buffer = @texts.map(&:to_hash).to_json
     end
