@@ -385,7 +385,15 @@ module Lexicon
       # Cache file content in session to avoid repeated disk reads
       cache_key = "lex_file_content_#{@entry.lex_file.id}"
       Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-        File.read(file_path)
+        html_doc = File.open(file_path) { |f| Nokogiri::HTML(f) }
+
+        html_doc.css('img').each do |img|
+          src = img['src']
+          if src =~ %r{^\d+[_-]{1}files/}
+            img['src'] = OLD_LEXICON_URL + '/' + src
+          end
+        end
+        html_doc.to_s
       end
     rescue StandardError => e
       Rails.logger.error("Failed to load source PHP: #{e.message}")
