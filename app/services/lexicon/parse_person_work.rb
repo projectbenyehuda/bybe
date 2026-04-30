@@ -7,7 +7,9 @@ module Lexicon
       new.call(html)
     end
 
-    def call(line)
+    # @param element [Nokogiri::XML::Element] element containing the work information, typically a list item
+    def call(element)
+      line = element.text&.squish
       line = line.strip
       result = LexPersonWork.new
 
