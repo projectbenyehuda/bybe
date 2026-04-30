@@ -35,7 +35,7 @@ module Lexicon
             # sometimes list can contains empty items
             next if li.text.blank? || li.text.strip.empty?
 
-            work = ParsePersonWork.call(li.text)
+            work = ParsePersonWork.call(li)
             work.work_type = work_type
             work.seqno = index += 1
             lex_person.works << work
