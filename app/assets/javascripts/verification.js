@@ -24,21 +24,16 @@ function initVerification() {
         showToast(linkCheckToastMessage, linkCheckToastType);
     }
 
-    // Restore source iframe scroll position after any page reload.
-    var savedSourceScroll = sessionStorage.getItem('source_iframe_scroll');
+    // Restore source pane scroll position after any page reload.
+    var savedSourceScroll = sessionStorage.getItem('source_scroll_top');
     if (savedSourceScroll !== null) {
-        sessionStorage.removeItem('source_iframe_scroll');
+        sessionStorage.removeItem('source_scroll_top');
         var scrollVal = parseInt(savedSourceScroll, 10);
-        var iframe = document.querySelector('.source-iframe');
-        if (iframe && scrollVal > 0) {
-            var doIframeScroll = function() {
-                try { iframe.contentWindow.scrollTo(0, scrollVal); } catch (e) {}
-            };
-            if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-                setTimeout(doIframeScroll, 50);
-            } else {
-                iframe.addEventListener('load', doIframeScroll);
-            }
+        if (scrollVal > 0) {
+            setTimeout(function() {
+                var sourceContent = document.querySelector('.source-content');
+                if (sourceContent) { sourceContent.scrollTop = scrollVal; }
+            }, 100);
         }
     }
 
@@ -418,14 +413,11 @@ function closeModalWithReload(reloadSelector) {
     }
 }
 
-// Save source iframe scroll position before any reload
+// Save source pane scroll position before any reload
 function saveScrollPositions() {
-    var iframe = document.querySelector('.source-iframe');
-    if (iframe) {
-        try {
-            var scrollY = iframe.contentWindow.scrollY || 0;
-            sessionStorage.setItem('source_iframe_scroll', String(scrollY));
-        } catch (e) {}
+    var sourceContent = document.querySelector('.source-content');
+    if (sourceContent) {
+        sessionStorage.setItem('source_scroll_top', String(sourceContent.scrollTop));
     }
 }
 
