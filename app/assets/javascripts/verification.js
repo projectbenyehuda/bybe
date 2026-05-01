@@ -24,6 +24,27 @@ function initVerification() {
         showToast(linkCheckToastMessage, linkCheckToastType);
     }
 
+    // Scroll to a section after a work edit + page reload.
+    // Must scroll .migrated-content directly (the grid pane has overflow: hidden; the
+    // window itself does not scroll in this layout, so scrollIntoView targets the wrong element).
+    const scrollToSection = sessionStorage.getItem('scroll_to_section');
+    if (scrollToSection) {
+        sessionStorage.removeItem('scroll_to_section');
+        setTimeout(function() {
+            var el = document.getElementById(scrollToSection);
+            if (!el) return;
+            var scrollParent = el.closest('.migrated-content');
+            if (scrollParent) {
+                var offset = el.getBoundingClientRect().top
+                           - scrollParent.getBoundingClientRect().top
+                           + scrollParent.scrollTop;
+                scrollParent.scrollTop = Math.max(0, offset - 8);
+            } else {
+                el.scrollIntoView({ block: 'start' });
+            }
+        }, 150);
+    }
+
     // Handle checklist checkbox toggles
     $('.checklist-items input[type="checkbox"]').on('change', function() {
         const checkbox = $(this);
@@ -216,7 +237,7 @@ function initVerification() {
             $('.checklist-items input[type="checkbox"]:checked').closest('li').addClass('hidden-verified');
 
             // Hide verified citation and link cards
-            $('.citation-card.verified, .link-card.verified').addClass('hidden-verified');
+            $('.citation-card.verified, .link-card.verified, .work-card.verified').addClass('hidden-verified');
         } else {
             // Show all items
             $('.hidden-verified').removeClass('hidden-verified');
@@ -384,4 +405,44 @@ function closeModalWithReload(reloadSelector) {
             location.reload(); // Simple approach - reload entire page
         }
     }
+}
+
+// Reload the page and scroll to a named section after the reload
+function reloadScrollingToSection(sectionId) {
+    sessionStorage.setItem('scroll_to_section', sectionId);
+    location.reload();
+}
+
+// Confirm an auto-matched work-to-publication proposal
+function confirmWorkMatch(button) {
+    var $btn = $(button);
+    var workId = $btn.data('work-id');
+    var publicationId = $btn.data('publication-id');
+    var collectionId = $btn.data('collection-id');
+    var confirmUrl = $btn.data('confirm-url');
+
+    $btn.prop('disabled', true);
+
+    $.ajax({
+        url: confirmUrl,
+        type: 'PATCH',
+        dataType: 'json',
+        headers: {
+            'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            work_id: workId,
+            publication_id: publicationId,
+            collection_id: collectionId || ''
+        },
+        success: function(data) {
+            showToast(data.message || 'Match confirmed');
+            $('#match-row-' + workId).fadeOut();
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false);
+            var err = (xhr.responseJSON && xhr.responseJSON.error) || 'Error confirming match';
+            showToast(err);
+        }
+    });
 }

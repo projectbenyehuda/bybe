@@ -309,7 +309,7 @@
   }
 }
 
-.citation-card, .link-card {
+.citation-card, .link-card, .work-card {
   padding: 1rem;
   margin-bottom: 1rem;
   border: 2px solid #e9ecef;
@@ -349,7 +349,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
 
-  .citation-content, .link-content {
+  .citation-content, .link-content, .work-content {
     margin-bottom: 0.75rem;
 
     strong {
@@ -373,11 +373,18 @@
     }
   }
 
-  .citation-actions, .link-actions {
+  .citation-actions, .link-actions, .work-actions {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
   }
+}
+
+// Per-work edit modal: size and position to cover only the left (migrated data) pane
+#generalDlg:has(.per-work-edit-form) .modal-dialog {
+  max-width: 42vw;
+  margin-left: 0;
+  margin-right: auto;
 }
 
 // Attachment Items
@@ -519,7 +526,8 @@
   }
 
   .citation-card .citation-actions,
-  .link-card .link-actions {
+  .link-card .link-actions,
+  .work-card .work-actions {
     flex-direction: row-reverse;
   }
 
