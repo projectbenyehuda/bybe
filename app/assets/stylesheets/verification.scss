@@ -380,11 +380,32 @@
   }
 }
 
-// Per-work edit modal: size and position to cover only the left (migrated data) pane
+// Per-work edit modal: full height, anchored to left (migrated data) pane
 #generalDlg:has(.per-work-edit-form) .modal-dialog {
   max-width: 42vw;
-  margin-left: 0;
-  margin-right: auto;
+  margin: 0;
+  height: 100vh;
+}
+
+#generalDlg:has(.per-work-edit-form) .modal-content {
+  height: 100%;
+  border-radius: 0;
+  overflow-y: auto;
+}
+
+// Auto-match works modal: wider with scrollable body
+#generalDlg:has(.auto-match-works-modal) .modal-dialog {
+  max-width: 70vw;
+}
+
+#generalDlg:has(.auto-match-works-modal) .modal-content {
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#generalDlg:has(.auto-match-works-modal) .modal-body {
+  overflow-y: auto;
 }
 
 // Attachment Items

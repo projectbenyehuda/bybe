@@ -24,6 +24,24 @@ function initVerification() {
         showToast(linkCheckToastMessage, linkCheckToastType);
     }
 
+    // Restore source iframe scroll position after any page reload.
+    var savedSourceScroll = sessionStorage.getItem('source_iframe_scroll');
+    if (savedSourceScroll !== null) {
+        sessionStorage.removeItem('source_iframe_scroll');
+        var scrollVal = parseInt(savedSourceScroll, 10);
+        var iframe = document.querySelector('.source-iframe');
+        if (iframe && scrollVal > 0) {
+            var doIframeScroll = function() {
+                try { iframe.contentWindow.scrollTo(0, scrollVal); } catch (e) {}
+            };
+            if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+                setTimeout(doIframeScroll, 50);
+            } else {
+                iframe.addEventListener('load', doIframeScroll);
+            }
+        }
+    }
+
     // Scroll to a section after a work edit + page reload.
     // Must scroll .migrated-content directly (the grid pane has overflow: hidden; the
     // window itself does not scroll in this layout, so scrollIntoView targets the wrong element).
@@ -104,10 +122,7 @@ function initVerification() {
         const newVerified = !isCurrentlyVerified;
 
         updateChecklistItem(updateUrl, path, newVerified, null, function() {
-            // Reload page to show updated section content
-            setTimeout(function() {
-                location.reload();
-            }, 300);
+            setTimeout(reloadPage, 300);
         });
     });
 
@@ -385,10 +400,7 @@ function onSectionEditSuccess(sectionId) {
             showToast(data.message || container.data('section-updated-text'));
 
             // Reload the page to show updated content
-            // This ensures the section content is refreshed with the new data
-            setTimeout(function() {
-                location.reload();
-            }, 500);
+            setTimeout(reloadPage, 500);
         }
     };
 }
@@ -401,14 +413,31 @@ function closeModalWithReload(reloadSelector) {
     if (reloadSelector) {
         const element = $(reloadSelector);
         if (element.length > 0) {
-            // Reload the section or trigger a refresh
-            location.reload(); // Simple approach - reload entire page
+            reloadPage();
         }
     }
 }
 
-// Reload the page and scroll to a named section after the reload
+// Save source iframe scroll position before any reload
+function saveScrollPositions() {
+    var iframe = document.querySelector('.source-iframe');
+    if (iframe) {
+        try {
+            var scrollY = iframe.contentWindow.scrollY || 0;
+            sessionStorage.setItem('source_iframe_scroll', String(scrollY));
+        } catch (e) {}
+    }
+}
+
+// Reload the page, preserving source pane scroll position
+function reloadPage() {
+    saveScrollPositions();
+    location.reload();
+}
+
+// Reload the page, preserving source pane scroll and scrolling migrated pane to a section
 function reloadScrollingToSection(sectionId) {
+    saveScrollPositions();
     sessionStorage.setItem('scroll_to_section', sectionId);
     location.reload();
 }

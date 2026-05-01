@@ -246,6 +246,7 @@ en:
         auto_match_works_heading: "Auto-match Works to Publications"
         auto_match_intro: "The following works have been automatically matched to publications based on title similarity. Confirm each match you want to apply."
         no_auto_match_proposals: "No automatic match proposals found. All works may already be matched, or title similarity was too low."
+        close: "Close"
       broken_link:
         badge: "Broken link (HTTP %{status})"
         unchecked_badge: "Link not checked"

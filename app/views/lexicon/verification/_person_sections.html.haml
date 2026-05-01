@@ -134,10 +134,13 @@
 .section.verification-section{id: 'section-works', class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
     %h5= t('lexicon.verification.sections.works_section')
-    .verification-badge{class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
-      - verified_count = checklist['works']&.dig('items')&.count { |_k, v| v['verified'] } || 0
-      - total_count = checklist['works']&.dig('items')&.size || 0
-      = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
+    .d-flex.align-items-center.gap-2
+      .verification-badge{ class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified' }
+        - verified_count = checklist['works']&.dig('items')&.count { |_k, v| v['verified'] } || 0
+        - total_count = checklist['works']&.dig('items')&.size || 0
+        = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
+      %button.btn.btn-sm.btn-outline-secondary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', function() { reloadScrollingToSection('section-works'); })" }
+        = t('lexicon.verification.sections.auto_match_works_btn')
   .section-content
     - works_size = item.works.size
     - if php_counts[:works] && php_counts[:works] != works_size
@@ -175,10 +178,6 @@
                 = t('lexicon.verification.migrated.mark_verified')
     - else
       %p.text-muted= t('lexicon.verification.sections.no_works')
-  .section-actions
-    = link_to t('lexicon.person_works.index.add_work'), new_lexicon_person_work_path(item), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href, function() { reloadScrollingToSection('section-works'); });"
-    %button.btn.btn-sm.btn-outline-secondary.ms-2{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', function() { reloadScrollingToSection('section-works'); })" }
-      = t('lexicon.verification.sections.auto_match_works_btn')
 
 -# Section 4: Citations (מראי מקום)
 .section.verification-section{id: 'section-citations', class: checklist['citations']&.dig('verified') ? 'verified' : 'not-verified'}

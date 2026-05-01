@@ -1,34 +1,36 @@
-%h4= t('lexicon.verification.sections.auto_match_works_heading')
+.auto-match-works-modal
+  %h4= t('lexicon.verification.sections.auto_match_works_heading')
 
-- if @work_matches.blank?
-  %p.text-muted= t('lexicon.verification.sections.no_auto_match_proposals')
-- else
-  %p= t('lexicon.verification.sections.auto_match_intro')
-  - @item.works.where(publication_id: nil).where(id: @work_matches.keys).order(:seqno).each do |work|
-    - match = @work_matches[work.id]
-    - next unless match
+  - if @work_matches.blank?
+    %p.text-muted= t('lexicon.verification.sections.no_auto_match_proposals')
+  - else
+    %p= t('lexicon.verification.sections.auto_match_intro')
+    - @item.works.where(publication_id: nil).where(id: @work_matches.keys).order(:seqno).each do |work|
+      - match = @work_matches[work.id]
+      - next unless match
 
-    .match-row.border-bottom.py-2.d-flex.justify-content-between.align-items-start{ id: "match-row-#{work.id}" }
-      .match-info
-        %strong= work.title
-        %span.mx-2 →
-        = match[:publication_title]
-        - if match[:collection_title].present?
-          %span.text-muted
-            = t('lexicon.verification.edit.proposed_collection', title: match[:collection_title])
-        %span.badge.bg-secondary.ms-2
-          #{match[:similarity]}%
-      .match-actions.ms-3
-        %button.btn.btn-sm.btn-success{
-          type: 'button',
-          data: {
-            'work-id': work.id,
-            'publication-id': match[:publication_id],
-            'collection-id': match[:collection_id],
-            'confirm-url': lexicon_confirm_work_match_verification_path(@entry)
-          },
-          onclick: 'confirmWorkMatch(this)'
-        }= t('lexicon.verification.edit.confirm_match')
+      .match-row.border-bottom.py-2.d-flex.justify-content-between.align-items-start{ id: "match-row-#{work.id}" }
+        .match-info
+          %strong= work.title
+          %span.mx-2 →
+          = match[:publication_title]
+          - if match[:collection_title].present?
+            %span.text-muted
+              = t('lexicon.verification.edit.proposed_collection', title: match[:collection_title])
+          %span.badge.bg-secondary.ms-2
+            #{match[:similarity]}%
+        .match-actions.ms-3
+          %button.btn.btn-sm.btn-success{
+            type: 'button',
+            data: {
+              'work-id': work.id,
+              'publication-id': match[:publication_id],
+              'collection-id': match[:collection_id],
+              'confirm-url': lexicon_confirm_work_match_verification_path(@entry)
+            },
+            onclick: 'confirmWorkMatch(this)'
+          }= t('lexicon.verification.edit.confirm_match')
 
-.text-end.mt-3
-  %button.btn.btn-secondary{ 'data-bs-dismiss': 'modal' }= t('cancel')
+  .text-end.mt-3
+    %button.btn.btn-secondary{ type: 'button', onclick: "$('#generalDlg').modal('hide')" }
+      = t('lexicon.verification.sections.close')
