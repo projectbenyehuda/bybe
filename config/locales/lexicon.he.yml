@@ -111,6 +111,8 @@ he:
         add_work: הוספת יצירה
         drag_to_reorder: גרור לשינוי סדר
         reordering_failed: שינוי הסדר נכשל
+      edit:
+        title: עריכת יצירה
       form:
         no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
         select_publication: בחר פרסום...
@@ -241,6 +243,11 @@ he:
         citation_pages: "עמ׳:"
         attachment_used_in_citation: "בשימוש במ״מ:"
         count_mismatch: "אי-התאמה בספירה: %{php_count} פריט/ים בקובץ המקור, אך %{migrated_count} פריטים מועברים. ייתכן שאי-ההתאמה מוצדקת ואינה מונעת את אישור הערך."
+        auto_match_works_btn: "התאמה אוטומטית של יצירות לפרסומים"
+        auto_match_works_heading: "התאמה אוטומטית של יצירות לפרסומים"
+        auto_match_intro: "היצירות הבאות הותאמו אוטומטית לפרסומים על בסיס דמיון בכותרת. אשר כל התאמה שברצונך להחיל."
+        no_auto_match_proposals: "לא נמצאו הצעות התאמה אוטומטית. ייתכן שכל היצירות כבר מותאמות, או שדמיון הכותרת היה נמוך מדי."
+        close: "סגור"
       broken_link:
         badge: "קישור שבור (HTTP %{status})"
         unchecked_badge: "קישור לא נבדק"

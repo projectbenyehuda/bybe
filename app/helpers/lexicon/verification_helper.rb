@@ -19,6 +19,11 @@ module Lexicon
       css
     end
 
+    # Returns the CSS classes for a work card.
+    def work_card_css(work, checklist)
+      checklist['works']&.dig('items', work.id.to_s, 'verified') ? 'verified' : 'not-verified'
+    end
+
     def badge_class_for_status(status)
       case status.to_sym
       when :draft then 'bg-secondary'

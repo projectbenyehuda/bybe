@@ -397,4 +397,49 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       expect(entry.reload).to be_status_escalated
     end
   end
+
+  describe 'GET /lex/verification/:id (show) - per-work cards' do
+    let(:person) { create(:lex_person) }
+    let(:entry) do
+      e = create(:lex_entry, :person, status: :verifying, lex_item: person)
+      e.start_verification!('editor@example.com')
+      e
+    end
+    let!(:work1) { create(:lex_person_work, person: person, title: 'First Work', work_type: 'original', seqno: 1) }
+    let!(:work2) { create(:lex_person_work, person: person, title: 'Second Work', work_type: 'original', seqno: 2) }
+
+    before { entry.sync_works_checklist! }
+
+    it 'renders individual work cards instead of a single works section' do
+      get "/lex/verification/#{entry.id}"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("work-#{work1.id}")
+      expect(response.body).to include("work-#{work2.id}")
+      expect(response.body).to include('work-card')
+    end
+
+    it 'renders per-work edit buttons linking to individual work edit paths' do
+      get "/lex/verification/#{entry.id}"
+
+      expect(response.body).to include("/lex/works/#{work1.id}/edit")
+      expect(response.body).to include("/lex/works/#{work2.id}/edit")
+    end
+
+    it 'renders per-work verify buttons with correct checklist paths' do
+      get "/lex/verification/#{entry.id}"
+
+      expect(response.body).to include("works.items.#{work1.id}")
+      expect(response.body).to include("works.items.#{work2.id}")
+    end
+
+    it 'shows verified count in the works badge' do
+      # Mark first work as verified
+      entry.update_checklist_item("works.items.#{work1.id}", true)
+
+      get "/lex/verification/#{entry.id}"
+
+      expect(response.body).to include('1/2')
+    end
+  end
 end
