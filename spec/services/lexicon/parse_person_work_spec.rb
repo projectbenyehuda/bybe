@@ -3,7 +3,9 @@
 require 'rails_helper'
 
 describe Lexicon::ParsePersonWork do
-  subject(:result) { described_class.call(line) }
+  subject(:result) { described_class.call(list_item) }
+
+  let(:list_item) { Nokogiri::HTML::DocumentFragment.parse("<li>#{line}</li>").at_css('li') }
 
   context 'when work string without comment is provided' do
     let(:line) { 'רוני צרצר לומד לעבוד (תל אביב : מ. ניומן, תשי"ג 1953)' }
@@ -44,6 +46,25 @@ describe Lexicon::ParsePersonWork do
         publisher: 'כתובים',
         publication_place: 'תל־אביב',
         publication_date: 'תרצ״ב',
+        comment: nil
+      )
+    end
+  end
+
+  context 'when line contains more than one colon and contains linebreaks' do
+    let(:line) do
+      <<~HTML
+        קום קרא (חבל מודיעין : דביר : הקשרים – המכון לחקר הספרות והתרבות היהודית
+          והישראלית, 2017)
+      HTML
+    end
+
+    it 'parses work successfully' do
+      expect(result).to have_attributes(
+        title: 'קום קרא',
+        publisher: 'דביר : הקשרים – המכון לחקר הספרות והתרבות היהודית והישראלית',
+        publication_place: 'חבל מודיעין',
+        publication_date: '2017',
         comment: nil
       )
     end
