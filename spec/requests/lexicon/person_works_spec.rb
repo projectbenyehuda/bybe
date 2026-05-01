@@ -76,13 +76,18 @@ describe '/lexicon/person_works' do
     end
   end
 
-  describe 'GET /lexicon/works/:id/edit' do
+  describe 'GET /lex/works/:id/edit' do
+    subject(:call) { get "/lex/works/#{work.id}/edit" }
+
     let!(:works) { create_list(:lex_person_work, 3, person: person) }
     let(:work) { works.first }
 
-    subject(:call) { get "/lex/works/#{work.id}/edit" }
-
     it { is_expected.to eq(200) }
+
+    it 'renders the per-work edit wrapper for modal positioning' do
+      call
+      expect(response.body).to include('per-work-edit-form')
+    end
   end
 
   describe 'PATCH /lex/works/:id' do

@@ -130,34 +130,55 @@
       ✓
       = t('lexicon.verification.migrated.mark_verified')
 
--# Section 3: Works
+-# Section 3: Works — one card per work, like citations
 .section.verification-section{id: 'section-works', class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
     %h5= t('lexicon.verification.sections.works_section')
-    .verification-badge{class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
-      = checklist['works']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+    .d-flex.align-items-center.gap-2
+      .verification-badge{ class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified' }
+        - verified_count = checklist['works']&.dig('items')&.count { |_k, v| v['verified'] } || 0
+        - total_count = checklist['works']&.dig('items')&.size || 0
+        = total_count > 0 ? "#{verified_count}/#{total_count} #{t('lexicon.verification.migrated.verified')}" : t('lexicon.verification.migrated.verified')
+      %button.btn.btn-sm.btn-outline-secondary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', function() { reloadScrollingToSection('section-works'); })" }
+        = t('lexicon.verification.sections.auto_match_works_btn')
   .section-content
-    - works_size = item.works.size
+    - all_works = item.works.includes(:publication, :collection)
+    - works_size = all_works.size
     - if php_counts[:works] && php_counts[:works] != works_size
       .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
         = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:works], migrated_count: works_size)
         %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
-    - if item.works.present?
-      .works-content
-        - item.works.group_by(&:work_type).each do |work_type, works|
-          %h6.mt-2= LexPersonWork.human_enum_name(:work_type, work_type)
-          %ul
-            - works.each do |work|
-              %li!= render_person_work(work)
+    - if all_works.present?
+      - all_works.group_by(&:work_type).each do |work_type, works|
+        %h6.mt-2= LexPersonWork.human_enum_name(:work_type, work_type)
+        - works.each do |work|
+          .work-card{ id: "work-#{work.id}", class: work_card_css(work, checklist) }
+            .work-content
+              %strong= work.title
+              - details = [work.publication_place, work.publisher, work.publication_date].compact_blank
+              - if details.any?
+                %br
+                %span.text-muted= details.join(', ')
+              - if work.publication.present?
+                %br
+                %span.text-muted
+                  = link_to work.publication.title, publication_path(work.publication), target: '_blank', rel: 'noopener'
+              - if work.collection.present?
+                %br
+                %span.text-muted
+                  = link_to work.collection.title, collection_path(work.collection), target: '_blank', rel: 'noopener'
+              - if work.comment.present?
+                %br
+                %span.text-muted= work.comment
+            .work-actions.mt-2
+              %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{edit_lexicon_work_path(work)}', function() { reloadScrollingToSection('section-works'); })" }
+                ✏️
+                = t('lexicon.verification.migrated.edit')
+              %button.btn.btn-sm{ class: checklist['works']&.dig('items', work.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: "works.items.#{work.id}" } }
+                ✓
+                = t('lexicon.verification.migrated.mark_verified')
     - else
       %p.text-muted= t('lexicon.verification.sections.no_works')
-  .section-actions
-    %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', onSectionEditSuccess('section-works'))"}
-      ✏️
-      = t('lexicon.verification.migrated.edit')
-    %button.btn.btn-sm{ class: checklist['works']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'works' } }
-      ✓
-      = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 4: Citations (מראי מקום)
 .section.verification-section{id: 'section-citations', class: checklist['citations']&.dig('verified') ? 'verified' : 'not-verified'}
