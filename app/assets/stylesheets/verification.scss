@@ -380,16 +380,26 @@
   }
 }
 
-// Per-work edit modal: full height, anchored to left (migrated data) pane
+// Per-work edit modal: full height, anchored to left (migrated data) pane.
+// margin-left:0 + margin-right:auto anchors to physical-left (= visual-left in RTL grid).
+// height:100% fills the fixed .modal container (= full viewport height).
+// Scroll goes on #generalDlgBody so the resize handles on .modal-content stay unclipped.
 #generalDlg:has(.per-work-edit-form) .modal-dialog {
   max-width: 42vw;
-  margin: 0;
-  height: 100vh;
+  margin-left: 0;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 100%;
 }
 
 #generalDlg:has(.per-work-edit-form) .modal-content {
   height: 100%;
   border-radius: 0;
+}
+
+#generalDlg:has(.per-work-edit-form) #generalDlgBody {
+  min-height: 0;
   overflow-y: auto;
 }
 
