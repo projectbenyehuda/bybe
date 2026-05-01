@@ -309,7 +309,7 @@
   }
 }
 
-.citation-card, .link-card {
+.citation-card, .link-card, .work-card {
   padding: 1rem;
   margin-bottom: 1rem;
   border: 2px solid #e9ecef;
@@ -349,7 +349,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
 
-  .citation-content, .link-content {
+  .citation-content, .link-content, .work-content {
     margin-bottom: 0.75rem;
 
     strong {
@@ -373,11 +373,50 @@
     }
   }
 
-  .citation-actions, .link-actions {
+  .citation-actions, .link-actions, .work-actions {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
   }
+}
+
+// Per-work edit modal: full height, anchored to left (migrated data) pane.
+// margin-left:0 + margin-right:auto anchors to physical-left (= visual-left in RTL grid).
+// Both dialog and content use 100vh directly — avoids Bootstrap 4 percentage-height resolution
+// issues where height:100% on a relative child resolves to auto when parent has no explicit height.
+// Scroll goes on #generalDlgBody so the resize handles on .modal-content stay unclipped.
+#generalDlg:has(.per-work-edit-form) .modal-dialog {
+  max-width: 42vw;
+  margin-left: 0;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 100vh;
+}
+
+#generalDlg:has(.per-work-edit-form) .modal-content {
+  height: 100vh;
+  border-radius: 0;
+}
+
+#generalDlg:has(.per-work-edit-form) #generalDlgBody {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// Auto-match works modal: wider with scrollable body
+#generalDlg:has(.auto-match-works-modal) .modal-dialog {
+  max-width: 70vw;
+}
+
+#generalDlg:has(.auto-match-works-modal) .modal-content {
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#generalDlg:has(.auto-match-works-modal) .modal-body {
+  overflow-y: auto;
 }
 
 // Attachment Items
@@ -519,7 +558,8 @@
   }
 
   .citation-card .citation-actions,
-  .link-card .link-actions {
+  .link-card .link-actions,
+  .work-card .work-actions {
     flex-direction: row-reverse;
   }
 
