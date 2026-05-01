@@ -457,8 +457,8 @@ function confirmWorkMatch(button) {
             collection_id: collectionId || ''
         },
         success: function(data) {
-            showToast(data.message || 'Match confirmed');
-            $('#match-row-' + workId).fadeOut();
+            $('#generalDlg').modal('hide');
+            reloadScrollingToSection('section-works');
         },
         error: function(xhr) {
             $btn.prop('disabled', false);

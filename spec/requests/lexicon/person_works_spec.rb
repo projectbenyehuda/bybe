@@ -76,7 +76,7 @@ describe '/lexicon/person_works' do
     end
   end
 
-  describe 'GET /lexicon/works/:id/edit' do
+  describe 'GET /lex/works/:id/edit' do
     subject(:call) { get "/lex/works/#{work.id}/edit" }
 
     let!(:works) { create_list(:lex_person_work, 3, person: person) }
