@@ -110,6 +110,8 @@ en:
         add_work: Add work
         drag_to_reorder: Drag to reorder
         reordering_failed: Reordering failed. Works list will be reloaded.
+      edit:
+        title: Edit Work
       form:
         no_authority_warning: Cannot associate works with publications without first associating this person with an Authority in the Ben-Yehuda database
         select_publication: Select publication...
@@ -240,6 +242,11 @@ en:
         citation_pages: "Pages:"
         attachment_used_in_citation: "Used in citation:"
         count_mismatch: "Count mismatch: %{php_count} item(s) in the source file, but %{migrated_count} migrated. The mismatch may be justified and does not block verification."
+        auto_match_works_btn: "Auto-match works to publications"
+        auto_match_works_heading: "Auto-match Works to Publications"
+        auto_match_intro: "The following works have been automatically matched to publications based on title similarity. Confirm each match you want to apply."
+        no_auto_match_proposals: "No automatic match proposals found. All works may already be matched, or title similarity was too low."
+        close: "Close"
       broken_link:
         badge: "Broken link (HTTP %{status})"
         unchecked_badge: "Link not checked"
