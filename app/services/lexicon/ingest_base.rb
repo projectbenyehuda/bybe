@@ -63,6 +63,9 @@ module Lexicon
         end
       end
 
+      # J9U is the new-generation NLI ID; prefer it over any legacy NLI value
+      identifiers['nli'] = identifiers.delete('j9u') if identifiers.key?('j9u')
+
       identifiers.presence # Return nil if empty, otherwise return the hash
     end
   end
