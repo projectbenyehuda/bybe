@@ -39,15 +39,37 @@ describe Lexicon::IngestPerson do
 
       expect(entry.english_title).to eq('Gabriela Avigur-Rotem')
 
-      # External identifiers
+      # External identifiers: J9U value overrides legacy NLI value, stored as nli
       expect(entry.external_identifiers).to include(
         'openlibrary' => 'OL4181279A',
         'wikidata' => 'Q12404844',
-        'j9u' => '987007258174105171',
-        'nli' => '000013455',
+        'nli' => '987007258174105171',
         'lc' => 'n82204318',
         'viaf' => '22255259'
       )
+      expect(entry.external_identifiers).not_to have_key('j9u')
+    end
+  end
+
+  context 'when only a J9U identifier is present (no legacy NLI)' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Test J9U Person',
+          fname: 'j9u_only.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/j9u_only.php')
+        }
+      )
+    end
+
+    it 'stores the J9U value as nli' do
+      call
+      entry = file.lex_entry
+      expect(entry.external_identifiers).to eq('nli' => '987007258174109999')
+      expect(entry.external_identifiers).not_to have_key('j9u')
     end
   end
 
