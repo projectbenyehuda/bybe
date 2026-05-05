@@ -61,8 +61,7 @@ module LexiconHelper
     'viaf' => 'VIAF',
     'nli' => 'NLI',
     'wikidata' => 'Wikidata',
-    'openlibrary' => 'OpenLibrary',
-    'j9u' => 'J9U'
+    'openlibrary' => 'OpenLibrary'
   }.freeze
 
   def render_external_identifiers(external_identifiers)
