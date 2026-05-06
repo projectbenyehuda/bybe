@@ -69,4 +69,40 @@ describe Lexicon::ParsePersonWork do
       )
     end
   end
+
+  context 'when several comments with links are provided' do
+    let(:line) do
+      <<~HTML
+        <a href="00397004.php">פולחן הסופר ודת המדינה</a> (אור־יהודה : דביר, תשע״א
+          2011) <font size="2">&lt;עריכה – <a href="02228.php">הילה בלום</a>&gt; &lt;על
+          <a href="00397.php">עמוס עוז</a>&gt;</font><br>
+          <font size="2"><a href="00397004.php">תוכן העניינים</a></font>
+      HTML
+    end
+
+    # We create a lex_entry only for one linked person (for editor)
+    let!(:editor_entry) { create(:lex_file, :person, title: 'הילה בלום', fname: '02228.php').lex_entry }
+
+    it 'parses work successfully' do
+      expect(result).to have_attributes(
+        title: 'פולחן הסופר ודת המדינה',
+        publisher: 'דביר',
+        publication_place: 'אור־יהודה',
+        publication_date: 'תשע״א 2011',
+        comment: ''
+      )
+
+      expect(result.linked_people.size).to eq(2)
+      expect(result.linked_people[0]).to have_attributes(
+        name: 'הילה בלום',
+        link_type: 'editor',
+        person_entry: editor_entry
+      )
+      expect(result.linked_people[1]).to have_attributes(
+        name: 'עמוס עוז',
+        link_type: 'about',
+        person_entry: nil
+      )
+    end
+  end
 end
