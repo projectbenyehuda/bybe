@@ -23,6 +23,7 @@ class LexLinkedPerson < ApplicationRecord
          author: 1,
          editor: 2,
          illustrator: 3,
+         collaborator: 4,
          about: 99
        },
        prefix: true
