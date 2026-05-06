@@ -66,6 +66,10 @@ he:
               link_with_entry_error: לא ניתן לציין קישור כאשר קיים ערך לקסיקון עבור המחבר
             entry:
               not_a_person: הערך חייב להיות ערך מסוג אדם
+        lex_linked_person:
+          attributes:
+            person_entry:
+              not_a_person: must be a Person entry
     attributes:
       authority:
         other_designation: כינויים אחרים
