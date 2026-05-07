@@ -3,12 +3,11 @@
 module Lexicon
   # Service to parse works of Lexicon Person
   class ParsePersonWork < ApplicationService
-    ABOUT_PREFIX = 'על'
-    COLLABORATOR_PREFIX = 'בשיתוף'
-
     ROLE_STRINGS = {
-      illustrator: ['איורים'],
-      editor: ['עריכה']
+      illustrator: ['איורים', 'איור'],
+      editor: ['עריכה'],
+      collaborator: ['בשיתוף'],
+      about: ['על']
     }.freeze
 
 
@@ -66,16 +65,11 @@ module Lexicon
 
       comments.each do |comment_line|
         # sometimes comment can contain several coauthor records separated by ';'
-        parts = comment_line.split(';')
+        parts = comment_line.split(';').map(&:strip) # in most cases it will a single-element array
 
         parts.each do |comment|
           # At first checking if this is a coauthor comment
-          linked_person = process_coauthor_comment(comment)
-
-          # Otherwise checking if this comment points to person about whom given work is
-          linked_person = process_prefix_comment(comment, ABOUT_PREFIX, :about) if linked_person.nil?
-          # Otherwise checking if this is a collaboration comment
-          linked_person = process_prefix_comment(comment, COLLABORATOR_PREFIX, :collaborator) if linked_person.nil?
+          linked_person = process_linked_person_comment(comment)
 
           if linked_person.present?
             link_person_to_lex_entry(linked_person, element)
@@ -87,34 +81,38 @@ module Lexicon
       end
 
       # All non-coauthor comments are stored as lines in coauthor comment field, separated by line breaks
-      person_work.comment = plain_comments.join("\n")
+      person_work.comment = plain_comments.join("\n") if plain_comments.present?
     end
 
-    # Coauthor comments are in the format "edited by – John Doe"
-    def process_coauthor_comment(comment)
-      parts = comment.split(' – ')
+    # Linked person comments are in the format 'editor – John Doe' (e.g. 'עריכה – יעל גובר')
+    # Sometimes role can be separated by comma: 'editor, John Doe' (e.g. 'עריכה, שרי גוטמן')
+    # There are also a cases when there are no special characters separating role and name, but role is still present:
+    #   'in collaboration with John Doe' (e.g. 'בשיתוף זהר שוורץ')
+    def process_linked_person_comment(comment)
+      link_type = nil
+      prefix = nil
 
-      return nil unless parts.size == 2 # Not a coauthor comment
-
-      role_string = parts[0].squish
-      name = parts[1].squish
-      role = ROLE_STRINGS.keys.detect { |role| ROLE_STRINGS[role].include?(role_string) }
-
-      if role.nil?
-        # raising an exception to find all relevant role strings
-        # This is intentional, please don't remove!
-        raise "Unknown role string: #{role_string}"
+      ROLE_STRINGS.each do |type, prefixes|
+        prefix = prefixes.detect do |p|
+          next false unless comment.start_with?(p)
+          remaining = comment[p.length..-1]
+          # prefix should be followed by ' ', ',', '–' or '-'
+          remaining.present? && [' ', ',', '-', '–'].include?(remaining[0])
+        end
+        if prefix.present?
+          link_type = type
+          break
+        end
       end
 
-      return LexLinkedPerson.new(name: name, link_type: role)
-    end
+      return nil if link_type.nil?
 
-    # some comments may have form 'about <Person name>'
-    def process_prefix_comment(comment, prefix, link_type)
-      if comment.start_with?("#{prefix} ")
-        name = comment[(prefix.length + 1)..].squish
-        return LexLinkedPerson.new(name: name, link_type: link_type)
-      end
+      name = comment[(prefix.length + 1)..].strip
+      name = name[1..].strip if %w(, – -).include?(name[0]) # removing optional separator character
+
+      return nil if name.blank?
+
+      return LexLinkedPerson.new(name: name, link_type: link_type)
     end
 
     # It is kind-of difficult to parse Html document as-is, so we initially parse plain text of the comment

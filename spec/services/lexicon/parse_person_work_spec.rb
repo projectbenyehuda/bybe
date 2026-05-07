@@ -89,7 +89,7 @@ describe Lexicon::ParsePersonWork do
         publisher: 'דביר',
         publication_place: 'אור־יהודה',
         publication_date: 'תשע״א 2011',
-        comment: ''
+        comment: nil
       )
 
       expect(result.linked_people.size).to eq(2)
@@ -120,7 +120,7 @@ describe Lexicon::ParsePersonWork do
         publisher: 'כנרת',
         publication_place: 'אור יהודה',
         publication_date: 'תש״ע 2010',
-        comment: ''
+        comment: nil
       )
 
       expect(result.linked_people.size).to eq(3)
@@ -134,6 +134,31 @@ describe Lexicon::ParsePersonWork do
       )
       expect(result.linked_people[2]).to have_attributes(
         name: 'יעל גובר',
+        link_type: 'editor'
+      )
+    end
+  end
+
+  context 'when coauthor comment is separated by commas' do
+    let(:line) do
+      <<~HTML
+        הלב הקבור (תל־אביב : אחוזת בית, תשס״ו 2006) <font size="2">&lt;עריכה, שרי גוטמן&gt;</font>
+      HTML
+    end
+
+    it 'parses work successfully' do
+      expect(result).to have_attributes(
+        title: 'הלב הקבור',
+        publisher: 'אחוזת בית',
+        publication_place: 'תל־אביב',
+        publication_date: 'תשס״ו 2006',
+        comment: nil
+      )
+
+      expect(result.linked_people.size).to eq(1)
+
+      expect(result.linked_people[0]).to have_attributes(
+        name: 'שרי גוטמן',
         link_type: 'editor'
       )
     end
