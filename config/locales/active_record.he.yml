@@ -157,6 +157,14 @@ he:
           verifying: בבדיקה
           verified: הסבה אושרה
           escalated: ממתין לבדיקה נוספת
+      lex_linked_person:
+        person_entry: Lexicon Entry for Person
+        link_type: Link Type
+        link_types:
+          illustrator: "Illustrator - "
+          editor: "Editor - "
+          collaborator: "In collaboration with "
+          about: "About "
       lex_person:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה

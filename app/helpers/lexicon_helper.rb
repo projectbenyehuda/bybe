@@ -34,8 +34,23 @@ module LexiconHelper
              end
 
     result += " (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
+
+    if work.linked_people.present?
+      work.linked_people.each do |person|
+        result += " < #{LexLinkedPerson.human_enum_name(:link_type, person.link_type)} "
+        if person.person_entry.present?
+          result += link_to(person.name, lexicon_entry_path(person.person_entry))
+        else
+          result += person.name
+        end
+        result += " > "
+      end
+    end
+
     if work.comment.present?
-      result += " < #{work.comment} >"
+      work.comment.split("\n").each do |comment|
+        result += " < #{comment} >"
+      end
     end
     raw result
   end
