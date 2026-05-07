@@ -40,6 +40,17 @@
 
   = f.submit t(:save)
 
+- unless @work.new_record?
+  %hr
+  %h4= LexLinkedPerson.model_name.human(count: 2)
+  .border.rounded.p-2#linked-people-list
+
+  :javascript
+    function reloadLinkedPeople() {
+      $('#linked-people-list').load(`/lex/works/#{@work.id}/linked_people`);
+    }
+    reloadLinkedPeople();
+
 :javascript
   (function() {
     const publicationSelect = document.getElementById('lex_person_work_publication_id');
