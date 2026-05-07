@@ -3,6 +3,9 @@
 module Lexicon
   # Service to parse works of Lexicon Person
   class ParsePersonWork < ApplicationService
+    ABOUT_PREFIX = 'על'
+    COLLABORATOR_PREFIX = 'בשיתוף'
+
     ROLE_STRINGS = {
       illustrator: ['איורים'],
       editor: ['עריכה']
@@ -23,6 +26,7 @@ module Lexicon
 
         process_comments(comments, result, element)
 
+        # removing all comments from the line
         line = line.gsub(/<[^>]+>/, '').squish
       end
 
@@ -57,24 +61,33 @@ module Lexicon
 
     def process_comments(comments, person_work, element)
       # removing comments representing coauthors
-      comments.reject! do |comment|
-        # At first checking if this is a coauthor comment
-        linked_person = process_coauthor_comment(comment)
 
-        # Otherwise checking if this comment points to person about whom given work is
-        linked_person = process_about_person_comment(comment) if linked_person.nil?
+      plain_comments = []
 
-        if linked_person.present?
-          link_person_to_lex_entry(linked_person, element)
-          person_work.linked_people << linked_person
-          true # removing line from the list of comments
-        else
-          false
+      comments.each do |comment_line|
+        # sometimes comment can contain several coauthor records separated by ';'
+        parts = comment_line.split(';')
+
+        parts.each do |comment|
+          # At first checking if this is a coauthor comment
+          linked_person = process_coauthor_comment(comment)
+
+          # Otherwise checking if this comment points to person about whom given work is
+          linked_person = process_prefix_comment(comment, ABOUT_PREFIX, :about) if linked_person.nil?
+          # Otherwise checking if this is a collaboration comment
+          linked_person = process_prefix_comment(comment, COLLABORATOR_PREFIX, :collaborator) if linked_person.nil?
+
+          if linked_person.present?
+            link_person_to_lex_entry(linked_person, element)
+            person_work.linked_people << linked_person
+          else
+            plain_comments << comment
+          end
         end
       end
 
       # All non-coauthor comments are stored as lines in coauthor comment field, separated by line breaks
-      person_work.comment = comments.join("\n")
+      person_work.comment = plain_comments.join("\n")
     end
 
     # Coauthor comments are in the format "edited by – John Doe"
@@ -97,10 +110,10 @@ module Lexicon
     end
 
     # some comments may have form 'about <Person name>'
-    def process_about_person_comment(comment)
-      if comment.start_with?('על ')
-        name = comment[3..].squish
-        return LexLinkedPerson.new(name: name, link_type: :about)
+    def process_prefix_comment(comment, prefix, link_type)
+      if comment.start_with?("#{prefix} ")
+        name = comment[(prefix.length + 1)..].squish
+        return LexLinkedPerson.new(name: name, link_type: link_type)
       end
     end
 

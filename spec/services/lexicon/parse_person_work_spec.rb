@@ -105,4 +105,37 @@ describe Lexicon::ParsePersonWork do
       )
     end
   end
+
+  context 'when complex comment with several coauthors present' do
+    let(:line) do
+      <<~HTML
+        ממה באמת עשוי הירח&nbsp; (אור יהודה : כנרת, תש״ע 2010) <font size="2">
+          &lt;בשיתוף זהר שוורץ ; איורים – רחלי שלו ; עריכה – יעל גובר&gt;</font>
+      HTML
+    end
+
+    it 'parses work successfully' do
+      expect(result).to have_attributes(
+        title: 'ממה באמת עשוי הירח',
+        publisher: 'כנרת',
+        publication_place: 'אור יהודה',
+        publication_date: 'תש״ע 2010',
+        comment: ''
+      )
+
+      expect(result.linked_people.size).to eq(3)
+      expect(result.linked_people[0]).to have_attributes(
+        name: 'זהר שוורץ',
+        link_type: 'collaborator'
+      )
+      expect(result.linked_people[1]).to have_attributes(
+        name: 'רחלי שלו',
+        link_type: 'illustrator'
+      )
+      expect(result.linked_people[2]).to have_attributes(
+        name: 'יעל גובר',
+        link_type: 'editor'
+      )
+    end
+  end
 end
