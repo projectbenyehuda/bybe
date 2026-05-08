@@ -12,10 +12,7 @@ module Lexicon
     layout false
 
     def index
-      @linked_people = @work
-                       .linked_people
-                       .preload(:person_entry)
-                       .sort_by { |person| [person.seqno, person.id] }
+      @linked_people = @work.linked_people.preload(:person_entry).sort_by(&:sort_value)
     end
 
     def create
@@ -39,14 +36,8 @@ module Lexicon
     def reorder
       new_index = params.fetch(:new_index).to_i # zero-based
       old_index = params.fetch(:old_index).to_i # zero-based
-      work_id = params.fetch(:work_id).to_i
 
-      if @work.id != work_id
-        render plain: "work mismatch, actual: #{@work.id}, got: #{work_id}", status: :bad_request
-        return
-      end
-
-      linked_people = @work.linked_people.sort_by { |person| [person.seqno, person.id] }
+      linked_people = @work.linked_people.sort_by(&:sort_value)
 
       real_old_index = linked_people.index(@linked_person)
       if old_index != real_old_index
@@ -60,15 +51,9 @@ module Lexicon
       linked_people.insert(new_index, @linked_person)
 
       LexLinkedPerson.transaction do
-        people_by_id = linked_people.index_by(&:id)
         linked_people.each_with_index do |person, index|
-          temporary_seqno = -(index + 1)
-          person.update_column(:seqno, temporary_seqno) if person.seqno != temporary_seqno
-        end
-        linked_people.map(&:id).each_with_index do |person_id, index|
-          person = people_by_id.fetch(person_id)
-          final_seqno = index + 1
-          person.update_column(:seqno, final_seqno) if person.seqno != final_seqno
+          new_seqno = index + 1
+          person.update_column(:seqno, new_seqno) if person.seqno != new_seqno
         end
       end
 

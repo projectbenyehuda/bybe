@@ -103,9 +103,12 @@ he:
         add_citation: הוספת מראה מקום
         drag_to_reorder: גרור לשינוי סדר
         reordering_failed: שינוי הסדר נכשל
-
       form:
         save_before_adding_authors: נא לשמור את מראה המקום לפני הוספת מחברים
+    linked_people:
+      index:
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
     person_works:
       index:
         add_work: הוספת יצירה

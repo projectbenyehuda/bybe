@@ -1,4 +1,4 @@
-%ul.linked-people-group{ data: { work_id: @work.id } }
+%ul.linked-people-list
   - @linked_people.each do |linked_person|
     %li{ data: { linked_person_id: linked_person.id } }
       %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
@@ -13,37 +13,30 @@
   = render partial: 'form', locals: { work: @work, linked_person: @work.linked_people.build }
 
 :javascript
-  (function() {
-    const list = document.querySelector('ul.linked-people-group');
-    if (!list) {
-      return;
-    }
+  const list = $('ul.linked-people-list');
 
-    const workId = list.dataset.workId;
-    Sortable.create(
-      list,
-      {
-        handle: '.drag-handle',
-        animation: 150,
-        onEnd: function(evt) {
-          const oldIndex = evt.oldIndex; // zero-based
-          const newIndex = evt.newIndex; // zero-based
-          if (newIndex !== oldIndex) {
-            $.post({
-              url: `/lex/linked_people/${evt.item.dataset.linkedPersonId}/reorder`,
-              data: {
-                new_index: newIndex,
-                old_index: oldIndex,
-                work_id: workId
-              },
-              error: function(xhr, _status, _error) {
-                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
-                alert('#{j(t('.reordering_failed'))}\n' + errorMsg);
-                reloadLinkedPeople();
-              }
-            });
-          }
+  Sortable.create(
+    list,
+    {
+      handle: '.drag-handle',
+      animation: 150,
+      onEnd: function(evt) {
+        const oldIndex = evt.oldIndex; // zero-based
+        const newIndex = evt.newIndex; // zero-based
+        if (newIndex !== oldIndex) {
+          $.post({
+            url: `/lex/linked_people/${evt.item.dataset.linkedPersonId}/reorder`,
+            data: {
+              new_index: newIndex,
+              old_index: oldIndex
+            },
+            error: function(xhr, _status, _error) {
+              const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+              alert('#{j(t('.reordering_failed'))}\n' + errorMsg);
+              reloadLinkedPeople();
+            }
+          });
         }
       }
-    );
-  })();
+    }
+  );

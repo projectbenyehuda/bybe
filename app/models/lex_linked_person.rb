@@ -32,6 +32,11 @@ class LexLinkedPerson < ApplicationRecord
 
   validate :validate_person_entry
 
+  # value used for sorting items in the list
+  def sort_value
+    [ seqno, id ]
+  end
+
   private
 
   def validate_person_entry

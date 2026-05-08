@@ -7,10 +7,6 @@ FactoryBot.define do
     person_work { create(:lex_person_work) }
     name { Faker::Name.name if person_entry.nil? }
     link_type { LexLinkedPerson.link_types.keys.sample }
-
-    # Assign seqno automatically in factory (it only guarantees uniqueness of values)
-    seqno do
-      generate(:lex_linked_person_seqno)
-    end
+    seqno { generate(:lex_linked_person_seqno) }
   end
 end
