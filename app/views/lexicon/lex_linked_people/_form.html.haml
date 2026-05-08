@@ -20,12 +20,6 @@
                 include_blank: false
     .col-sm-3
       = f.submit t(:add_linked_person), class: 'btn btn-primary'
-  .row
-    .col-sm-12
-      .text-danger
-        = f.error :name
-        = f.error :person_entry
-        = f.error :person_lex_entry_id
 
 :javascript
   $.ui.autocomplete.prototype._resizeMenu = function () {
