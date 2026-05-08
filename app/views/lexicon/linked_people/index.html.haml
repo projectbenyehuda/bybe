@@ -1,0 +1,44 @@
+%ul.linked-people-list
+  - @linked_people.each do |linked_person|
+    %li{ data: { linked_person_id: linked_person.id } }
+      %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
+        %span.handle ☰
+      != render_linked_person(linked_person)
+      = link_to t(:delete),
+                lexicon_linked_person_path(linked_person),
+                method: :delete,
+                data: { confirm: t(:are_you_sure) },
+                remote: true
+#new-linked-person-form
+  = render partial: 'form', locals: { work: @work, linked_person: @work.linked_people.build }
+
+:javascript
+  (function() {
+    const linkedPeopleList = document.querySelectorAll('ul.linked-people-list')[0];
+
+    Sortable.create(
+      linkedPeopleList,
+      {
+        handle: '.drag-handle',
+        animation: 150,
+        onEnd: function(evt) {
+          const oldIndex = evt.oldIndex; // zero-based
+          const newIndex = evt.newIndex; // zero-based
+          if (newIndex !== oldIndex) {
+            $.post({
+              url: `/lex/linked_people/${evt.item.dataset.linkedPersonId}/reorder`,
+              data: {
+                new_index: newIndex,
+                old_index: oldIndex
+              },
+              error: function(xhr, _status, _error) {
+                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+                alert('#{j(t('.reordering_failed'))}\n' + errorMsg);
+                reloadLinkedPeople();
+              }
+            });
+          }
+        }
+      }
+    );
+  })();

@@ -11,8 +11,11 @@ en:
     error_notification:
       default_message: "Please review the problems below:"
     hints:
-      lex_person:
-        authority: creator's page on Ben-Yehuda Project
       lex_citation:
         subject: should only be used if work is not present in works list
+      lex_person:
+        authority: creator's page on Ben-Yehuda Project
+      lex_person_work:
+        comment: each line represents a single comment
+
     placeholders:

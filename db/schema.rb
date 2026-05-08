@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_26_230722) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_080857) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -723,6 +723,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_26_230722) do
     t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
   end
 
+  create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "lex_person_work_id", null: false
+    t.integer "link_type", null: false
+    t.string "name", null: false
+    t.bigint "person_lex_entry_id"
+    t.integer "seqno", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lex_person_work_id"], name: "index_lex_linked_people_on_lex_person_work_id"
+    t.index ["person_lex_entry_id"], name: "index_lex_linked_people_on_person_lex_entry_id"
+  end
+
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.datetime "created_at", precision: nil, null: false
     t.string "description"
@@ -1217,6 +1229,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_26_230722) do
   add_foreign_key "lex_files", "lex_entries"
   add_foreign_key "lex_issues", "lex_publications"
   add_foreign_key "lex_legacy_links", "lex_entries"
+  add_foreign_key "lex_linked_people", "lex_entries", column: "person_lex_entry_id"
+  add_foreign_key "lex_linked_people", "lex_person_works"
   add_foreign_key "lex_people", "authorities"
   add_foreign_key "lex_people_items", "lex_people"
   add_foreign_key "lex_person_works", "collections"
