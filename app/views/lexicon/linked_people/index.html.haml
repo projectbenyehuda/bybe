@@ -13,30 +13,32 @@
   = render partial: 'form', locals: { work: @work, linked_person: @work.linked_people.build }
 
 :javascript
-  const list = $('ul.linked-people-list');
+  (function() {
+    const linkedPeopleList = document.querySelectorAll('ul.linked-people-list')[0];
 
-  Sortable.create(
-    list,
-    {
-      handle: '.drag-handle',
-      animation: 150,
-      onEnd: function(evt) {
-        const oldIndex = evt.oldIndex; // zero-based
-        const newIndex = evt.newIndex; // zero-based
-        if (newIndex !== oldIndex) {
-          $.post({
-            url: `/lex/linked_people/${evt.item.dataset.linkedPersonId}/reorder`,
-            data: {
-              new_index: newIndex,
-              old_index: oldIndex
-            },
-            error: function(xhr, _status, _error) {
-              const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
-              alert('#{j(t('.reordering_failed'))}\n' + errorMsg);
-              reloadLinkedPeople();
-            }
-          });
+    Sortable.create(
+      linkedPeopleList,
+      {
+        handle: '.drag-handle',
+        animation: 150,
+        onEnd: function(evt) {
+          const oldIndex = evt.oldIndex; // zero-based
+          const newIndex = evt.newIndex; // zero-based
+          if (newIndex !== oldIndex) {
+            $.post({
+              url: `/lex/linked_people/${evt.item.dataset.linkedPersonId}/reorder`,
+              data: {
+                new_index: newIndex,
+                old_index: oldIndex
+              },
+              error: function(xhr, _status, _error) {
+                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+                alert('#{j(t('.reordering_failed'))}\n' + errorMsg);
+                reloadLinkedPeople();
+              }
+            });
+          }
         }
       }
-    }
-  );
+    );
+  })();

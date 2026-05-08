@@ -42,7 +42,7 @@
 
 - unless @work.new_record?
   %hr
-  %h4= LexLinkedPerson.model_name.human(count: 2)
+  %h4= t('.associated_people')
   .border.rounded.p-2#linked-people-list
 
   :javascript
