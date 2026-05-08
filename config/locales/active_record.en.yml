@@ -21,6 +21,7 @@ en:
       lex_citation: Citation of Lexicon Entry
       lex_citation_author: Citation Author
       lex_entry: Lexicon Entry
+      lex_linked_person: Associated Person
       lex_person: Lexicon Person
       lex_person_work: Lexicon Person's Work
       lex_publication: Lexicon Publication
