@@ -110,18 +110,12 @@ def process_legacy_lexicon_entry(fname)
   end
   return unless should_process
 
-  entrytype = case fname
-              when /999.+\.php/
-                'bib'
-              when %r{/\d\d\d\d\d\.php}
-                'person'
-              when /0\d\d\d\d.?\d\d\d\.php/
-                'text'
-              else
-                @outbuf += "\nWhat to make of #{fname}?\n"
-                @unclassified += 1
-                'unknown'
-              end
+  entrytype = LexFile.entrytype_from_filename(filepart)
+
+  if entrytype == 'unknown'
+    @outbuf += "\nWhat to make of #{fname}?\n"
+    @unclassified += 1
+  end
 
   title = Lexicon::ExtractTitle.call(fname)
   title = validate_title(title, fname)

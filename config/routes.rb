@@ -71,10 +71,16 @@ Bybeconv::Application.routes.draw do
       end
       resources :works, controller: 'person_works', shallow: true, except: %i(show) do
         post :reorder, on: :member
+        resources :linked_people, only: %i(index create)
       end
     end
 
     resources :citation_authors, only: %i(update destroy)
+    resources :linked_people, only: %i(destroy) do
+      member do
+        post :reorder
+      end
+    end
 
     resources :publications, only: %i(edit update new create)
     resources :entries, except: %i(new create) do

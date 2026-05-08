@@ -1,0 +1,28 @@
+:ruby
+  link_type_options = LexLinkedPerson.link_types.keys.map do |k|
+    [LexLinkedPerson.human_enum_name(:link_type, k), k]
+  end
+
+= simple_form_for linked_person, url: lexicon_work_linked_people_path(work), remote: true do |f|
+  .row
+    = f.hidden_field :person_lex_entry_id
+    .col-sm-5
+      = f.input :name,
+                label: false,
+                id_element: '#lex_linked_person_person_lex_entry_id',
+                placeholder: LexLinkedPerson.human_attribute_name(:name),
+                url: autocomplete_lexicon_entries_path(entry_type: :person),
+                as: :autocomplete
+    .col-sm-4
+      = f.input :link_type,
+                label: false,
+                collection: link_type_options,
+                include_blank: false
+    .col-sm-3
+      = f.submit t(:add_linked_person), class: 'btn btn-primary'
+
+:javascript
+  $.ui.autocomplete.prototype._resizeMenu = function () {
+    const ul = this.menu.element;
+    ul.outerWidth(this.element.outerWidth());
+  }
