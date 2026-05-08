@@ -1,14 +1,7 @@
 %ul
   - @linked_people.each do |linked_person|
-    :ruby
-      linked_person_name =
-        if linked_person.person_entry.present?
-          link_to(linked_person.name, lexicon_entry_path(linked_person.person_entry))
-        else
-          linked_person.name
-        end
     %li
-      != "#{LexLinkedPerson.human_enum_name(:link_type, linked_person.link_type)} #{linked_person_name}"
+      != render_linked_person(linked_person)
       = link_to t(:delete),
                 lexicon_linked_person_path(linked_person),
                 method: :delete,

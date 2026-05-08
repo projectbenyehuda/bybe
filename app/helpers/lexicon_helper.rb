@@ -26,6 +26,15 @@ module LexiconHelper
     end
   end
 
+  def render_linked_person(linked_person)
+    name = if linked_person.person_entry.present?
+             link_to(linked_person.name, lexicon_entry_path(linked_person.person_entry))
+           else
+             linked_person.name
+           end
+    LexLinkedPerson.human_enum_name(:link_type, linked_person.link_type) + ' ' + name
+  end
+
   def render_person_work(work)
     result = if work.lex_publication.present?
                link_to(work.lex_publication.title, lexicon_entry_path(work.lex_publication.entry))
@@ -35,17 +44,7 @@ module LexiconHelper
 
     result += " (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
 
-    if work.linked_people.present?
-      work.linked_people.each do |person|
-        result += " < #{LexLinkedPerson.human_enum_name(:link_type, person.link_type)} "
-        if person.person_entry.present?
-          result += link_to(person.name, lexicon_entry_path(person.person_entry))
-        else
-          result += person.name
-        end
-        result += " > "
-      end
-    end
+    result += work.linked_people.map { |person| "<  #{render_linked_person(person)}  >" }.join(' ')
 
     if work.comment.present?
       work.comment.split("\n").each do |comment|
