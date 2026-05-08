@@ -162,11 +162,11 @@ he:
         person_entry: Lexicon Entry for Person
         link_type: Link Type
         link_types:
-          author: "Author - "
-          illustrator: "Illustrator - "
-          editor: "Editor - "
-          collaborator: "In collaboration with "
-          about: "About "
+          author: "Author -"
+          illustrator: "איורים -"
+          editor: "עריכה -"
+          collaborator: "בשיתוף"
+          about: "על"
       lex_person:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה
