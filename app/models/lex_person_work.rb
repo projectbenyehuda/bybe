@@ -14,6 +14,12 @@ class LexPersonWork < ApplicationRecord
            inverse_of: :person_work, class_name: 'LexCitation',
            dependent: :destroy
 
+  # Other people linked to this work
+  has_many :linked_people,
+           inverse_of: :person_work,
+           class_name: 'LexLinkedPerson',
+           dependent: :destroy
+
   validates :title, :work_type, presence: true
   validate :collection_belongs_to_publication
   validates :seqno, presence: true, numericality: { only_integer: true, greater_than: 0 }

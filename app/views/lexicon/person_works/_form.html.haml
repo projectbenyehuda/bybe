@@ -19,7 +19,7 @@
   = f.input :publisher
   = f.input :publication_place
   = f.input :publication_date
-  = f.input :comment
+  = f.input :comment, as: :text, input_html: { rows: 4 }
 
   - if authority
     = f.association :publication,
@@ -39,6 +39,17 @@
                     input_html: { id: 'lex_person_work_collection_id' }
 
   = f.submit t(:save)
+
+- unless @work.new_record?
+  %hr
+  %h4= t('.associated_people')
+  .border.rounded.p-2#linked-people-list
+
+  :javascript
+    function reloadLinkedPeople() {
+      $('#linked-people-list').load(`/lex/works/#{@work.id}/linked_people`);
+    }
+    reloadLinkedPeople();
 
 :javascript
   (function() {
