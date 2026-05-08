@@ -34,7 +34,7 @@ class LexLinkedPerson < ApplicationRecord
 
   # value used for sorting items in the list
   def sort_value
-    [ seqno, id ]
+    [seqno, id]
   end
 
   private

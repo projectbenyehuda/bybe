@@ -126,16 +126,17 @@ module Lexicon
     def find_person_entry(name, element)
       element.css('a').each do |link|
         link_text = link.text.squish
-        href = link['href']
+        next unless link_text == name
 
+        href = link['href']
         # At this point source HTML should already have links to other lexicon pages
-        # replaced with the links to corresponding LexEntries
-        if link_text == name && href.start_with?(lexicon_entries_path + '/')
-          entry_id = href.gsub(lexicon_entries_path + '/', '').to_i
-          # NOTE: it can be null if link is broken
-          entry = LexEntry.find_by(id: entry_id)
-          return entry if entry&.lex_file&.entrytype_person?
-        end
+        # replaced with the links to corresponding LexEntries so we're looking for a link leading to Person LexEntry
+        next unless href.start_with?(lexicon_entries_path + '/')
+
+        entry_id = href.gsub(lexicon_entries_path + '/', '').to_i
+        # NOTE: it can be null if link is broken
+        entry = LexEntry.find_by(id: entry_id)
+        return entry if entry&.lex_file&.entrytype_person?
       end
 
       return nil
