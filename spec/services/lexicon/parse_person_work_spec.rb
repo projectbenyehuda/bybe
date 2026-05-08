@@ -74,7 +74,7 @@ describe Lexicon::ParsePersonWork do
     let(:line) do
       <<~HTML
         <a href="00397004.php">פולחן הסופר ודת המדינה</a> (אור־יהודה : דביר, תשע״א
-          2011) <font size="2">&lt;עריכה – <a href="02228.php">הילה בלום</a>&gt; &lt;על
+          2011) <font size="2">&lt;עריכה – <a href="/lex/entries/#{editor_entry.id}">הילה בלום</a>&gt; &lt;על
           <a href="00397.php">עמוס עוז</a>&gt;</font><br>
           <font size="2"><a href="00397004.php">תוכן העניינים</a></font>
       HTML

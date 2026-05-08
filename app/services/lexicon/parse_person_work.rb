@@ -3,6 +3,8 @@
 module Lexicon
   # Service to parse works of Lexicon Person
   class ParsePersonWork < ApplicationService
+    include Rails.application.routes.url_helpers
+
     # rubocop:disable Style/WordArray
     ROLE_STRINGS = {
       illustrator: ['איורים', 'איור'],
@@ -126,9 +128,13 @@ module Lexicon
         link_text = link.text.squish
         href = link['href']
 
-        if link_text == name && LexFile.person_filename?(href)
+        # At this point source HTML should already have links to other lexicon pages
+        # replaced with the links to corresponding LexEntries
+        if link_text == name && href.start_with?(lexicon_entries_path + '/')
+          entry_id = href.gsub(lexicon_entries_path + '/', '').to_i
           # NOTE: it can be null if link is broken
-          return LexFile.find_by(fname: href)&.lex_entry
+          entry = LexEntry.find_by(id: entry_id)
+          return entry if entry&.lex_file&.entrytype_person?
         end
       end
 
