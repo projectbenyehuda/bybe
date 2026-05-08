@@ -8,8 +8,7 @@ class LexLinkedPerson < ApplicationRecord
   # types of entities
   belongs_to :person_work,
              class_name: 'LexPersonWork',
-             foreign_key: :lex_person_work_id,
-             dependent: :destroy
+             foreign_key: :lex_person_work_id
 
   # TODO: consider changing this relation to reference LexPeople instead of LexEntry, after whole lexicon migration
   #   will be done
