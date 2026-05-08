@@ -103,9 +103,12 @@ he:
         add_citation: הוספת מראה מקום
         drag_to_reorder: גרור לשינוי סדר
         reordering_failed: שינוי הסדר נכשל
-
       form:
         save_before_adding_authors: נא לשמור את מראה המקום לפני הוספת מחברים
+    linked_people:
+      index:
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
     person_works:
       index:
         add_work: הוספת יצירה
@@ -114,6 +117,7 @@ he:
       edit:
         title: עריכת יצירה
       form:
+        associated_people: Associated People
         no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
         select_publication: בחר פרסום...
         select_collection: בחר אוסף...
