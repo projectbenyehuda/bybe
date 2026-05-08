@@ -11,6 +11,11 @@ class LexEntry < ApplicationRecord
   # TODO: make relation mandatory after all PHP files will be migrated
   belongs_to :lex_item, polymorphic: true, optional: true, dependent: :destroy, inverse_of: :entry
 
+  has_many :linked_people,
+           class_name: 'LexLinkedPerson',
+           inverse_of: :person_entry,
+           dependent: :nullify
+
   # Statuses related to migration process
   MIGRATION_STATUSES = %w(raw migrating error verifying verified escalated).freeze
 
