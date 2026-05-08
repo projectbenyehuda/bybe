@@ -2,7 +2,7 @@
 
 module Lexicon
   # Controller for LexLinkedPerson records attached to LexPersonWork
-  class LexLinkedPeopleController < ApplicationController
+  class LinkedPeopleController < ApplicationController
     before_action do
       require_editor('edit_lexicon')
     end
