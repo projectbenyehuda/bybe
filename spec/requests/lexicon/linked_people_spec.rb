@@ -69,9 +69,10 @@ describe '/lexicon/linked_people' do
 
     let!(:linked_person) { create(:lex_linked_person, person_work: work) }
 
-    it 'destroys the requested linked person' do
+    it 'destroys the requested linked person but keeps LexPersonWork record' do
       expect { call }.to change { work.linked_people.count }.by(-1)
       expect(call).to eq(200)
+      expect { work.reload }.not_to raise_error
     end
   end
 end
