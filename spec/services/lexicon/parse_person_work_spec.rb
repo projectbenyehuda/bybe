@@ -96,12 +96,14 @@ describe Lexicon::ParsePersonWork do
       expect(result.linked_people[0]).to have_attributes(
         name: 'הילה בלום',
         link_type: 'editor',
-        person_entry: editor_entry
+        person_entry: editor_entry,
+        seqno: 1
       )
       expect(result.linked_people[1]).to have_attributes(
         name: 'עמוס עוז',
         link_type: 'about',
-        person_entry: nil
+        person_entry: nil,
+        seqno: 2
       )
     end
   end
@@ -126,15 +128,21 @@ describe Lexicon::ParsePersonWork do
       expect(result.linked_people.size).to eq(3)
       expect(result.linked_people[0]).to have_attributes(
         name: 'זהר שוורץ',
-        link_type: 'collaborator'
+        link_type: 'collaborator',
+        person_entry: nil,
+        seqno: 1
       )
       expect(result.linked_people[1]).to have_attributes(
         name: 'רחלי שלו',
-        link_type: 'illustrator'
+        link_type: 'illustrator',
+        person_entry: nil,
+        seqno: 2
       )
       expect(result.linked_people[2]).to have_attributes(
         name: 'יעל גובר',
-        link_type: 'editor'
+        link_type: 'editor',
+        person_entry: nil,
+        seqno: 3
       )
     end
   end
@@ -159,7 +167,9 @@ describe Lexicon::ParsePersonWork do
 
       expect(result.linked_people[0]).to have_attributes(
         name: 'שרי גוטמן',
-        link_type: 'editor'
+        link_type: 'editor',
+        person_entry: nil,
+        seqno: 1
       )
     end
   end

@@ -27,7 +27,7 @@ class LexLinkedPerson < ApplicationRecord
        },
        prefix: true
 
-  validates :name, presence: true
+  validates :name, :link_type, :seqno, presence: true
 
   validate :validate_person_entry
 

@@ -74,6 +74,7 @@ module Lexicon
           linked_person = process_linked_person_comment(comment, element)
 
           if linked_person.present?
+            linked_person.seqno = person_work.linked_people.size + 1
             person_work.linked_people << linked_person
           else
             plain_comments << comment

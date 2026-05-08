@@ -726,9 +726,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_080857) do
   create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "lex_person_work_id", null: false
-    t.integer "link_type"
-    t.string "name"
+    t.integer "link_type", null: false
+    t.string "name", null: false
     t.bigint "person_lex_entry_id"
+    t.integer "seqno", null: false
     t.datetime "updated_at", null: false
     t.index ["lex_person_work_id"], name: "index_lex_linked_people_on_lex_person_work_id"
     t.index ["person_lex_entry_id"], name: "index_lex_linked_people_on_person_lex_entry_id"
