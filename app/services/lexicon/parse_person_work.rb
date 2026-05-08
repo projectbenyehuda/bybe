@@ -3,12 +3,14 @@
 module Lexicon
   # Service to parse works of Lexicon Person
   class ParsePersonWork < ApplicationService
+    # rubocop:disable Style/WordArray
     ROLE_STRINGS = {
       illustrator: ['איורים', 'איור'],
       editor: ['עריכה'],
       collaborator: ['בשיתוף'],
       about: ['על']
     }.freeze
+    # rubocop:enable Style/WordArray
 
 
     # @param element [Nokogiri::XML::Element] element containing the work information, typically a list item
@@ -69,10 +71,9 @@ module Lexicon
 
         parts.each do |comment|
           # At first checking if this is a coauthor comment
-          linked_person = process_linked_person_comment(comment)
+          linked_person = process_linked_person_comment(comment, element)
 
           if linked_person.present?
-            link_person_to_lex_entry(linked_person, element)
             person_work.linked_people << linked_person
           else
             plain_comments << comment
@@ -88,14 +89,15 @@ module Lexicon
     # Sometimes role can be separated by comma: 'editor, John Doe' (e.g. 'עריכה, שרי גוטמן')
     # There are also a cases when there are no special characters separating role and name, but role is still present:
     #   'in collaboration with John Doe' (e.g. 'בשיתוף זהר שוורץ')
-    def process_linked_person_comment(comment)
+    def process_linked_person_comment(comment, element)
       link_type = nil
       prefix = nil
 
       ROLE_STRINGS.each do |type, prefixes|
         prefix = prefixes.detect do |p|
           next false unless comment.start_with?(p)
-          remaining = comment[p.length..-1]
+
+          remaining = comment[p.length..]
           # prefix should be followed by ' ', ',', '–' or '-'
           remaining.present? && [' ', ',', '-', '–'].include?(remaining[0])
         end
@@ -112,22 +114,24 @@ module Lexicon
 
       return nil if name.blank?
 
-      return LexLinkedPerson.new(name: name, link_type: link_type)
+      return LexLinkedPerson.new(name: name, link_type: link_type, person_entry: find_person_entry(name, element))
     end
 
     # It is kind-of difficult to parse Html document as-is, so we initially parse plain text of the comment
     # and then try to find in html element anchors with matching names in this method. In theory it can produce
     # false-positive findings, but in most cases it should be OK.
-    def link_person_to_lex_entry(linked_person, element)
+    def find_person_entry(name, element)
       element.css('a').each do |link|
         link_text = link.text.squish
         href = link['href']
 
-        if link_text == linked_person.name && LexFile.person_filename?(href)
+        if link_text == name && LexFile.person_filename?(href)
           # NOTE: it can be null if link is broken
-          linked_person.person_entry = LexFile.find_by(fname: href)&.lex_entry
+          return LexFile.find_by(fname: href)&.lex_entry
         end
       end
+
+      return nil
     end
   end
 end
