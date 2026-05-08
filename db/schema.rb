@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_080857) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_08_192000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -731,6 +731,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_080857) do
     t.bigint "person_lex_entry_id"
     t.integer "seqno", null: false
     t.datetime "updated_at", null: false
+    t.index ["lex_person_work_id", "seqno"], name: "index_lex_linked_people_on_lex_person_work_id_and_seqno", unique: true
     t.index ["lex_person_work_id"], name: "index_lex_linked_people_on_lex_person_work_id"
     t.index ["person_lex_entry_id"], name: "index_lex_linked_people_on_person_lex_entry_id"
   end

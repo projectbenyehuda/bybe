@@ -12,7 +12,10 @@ module Lexicon
     layout false
 
     def index
-      @linked_people = @work.linked_people.preload(:person_entry).sort_by { |person| [person.seqno || 1_000_000, person.id] }
+      @linked_people = @work
+                       .linked_people
+                       .preload(:person_entry)
+                       .sort_by { |person| [person.seqno || 1_000_000, person.id] }
     end
 
     def create
@@ -56,9 +59,17 @@ module Lexicon
       linked_people.delete_at(old_index)
       linked_people.insert(new_index, @linked_person)
 
-      linked_people.each_with_index do |person, index|
-        person.seqno = index + 1
-        person.save(validate: false) if person.attribute_changed?(:seqno)
+      LexLinkedPerson.transaction do
+        ordered_people_by_id = linked_people.index_by(&:id)
+        linked_people.each_with_index do |person, index|
+          temporary_seqno = -(index + 1)
+          person.update_column(:seqno, temporary_seqno) if person.seqno != temporary_seqno
+        end
+        linked_people.map(&:id).each_with_index do |person_id, index|
+          person = ordered_people_by_id.fetch(person_id)
+          final_seqno = index + 1
+          person.update_column(:seqno, final_seqno) if person.seqno != final_seqno
+        end
       end
 
       head :ok

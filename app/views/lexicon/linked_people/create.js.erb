@@ -2,6 +2,6 @@
 reloadLinkedPeople();
 <% else %>
 $('#new-linked-person-form').html(
-  '<%= j render(partial: "lexicon/lex_linked_people/form", locals: { work: @work, linked_person: @linked_person }) %>'
+  '<%= j render(partial: "lexicon/linked_people/form", locals: { work: @work, linked_person: @linked_person }) %>'
 );
 <% end %>
