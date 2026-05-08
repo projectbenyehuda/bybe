@@ -21,6 +21,7 @@ he:
       lex_citation: מראה מקום על אדם או חיבור
       lex_citation_author: מחבר/ת מראה המקום
       lex_entry: ערך בלקסיקון
+      lex_linked_person: Associated Person
       lex_person: אדם בלקסיקון
       lex_person_work: יצירת אדם בלקסיקון
       lex_publication: כותר בלקסיקון
@@ -66,6 +67,10 @@ he:
               link_with_entry_error: לא ניתן לציין קישור כאשר קיים ערך לקסיקון עבור המחבר
             entry:
               not_a_person: הערך חייב להיות ערך מסוג אדם
+        lex_linked_person:
+          attributes:
+            person_entry:
+              not_a_person: must be a Person entry
     attributes:
       authority:
         other_designation: כינויים אחרים
@@ -153,6 +158,15 @@ he:
           verifying: בבדיקה
           verified: הסבה אושרה
           escalated: ממתין לבדיקה נוספת
+      lex_linked_person:
+        person_entry: Lexicon Entry for Person
+        link_type: Link Type
+        link_types:
+          author: "Author -"
+          illustrator: "איורים -"
+          editor: "עריכה -"
+          collaborator: "בשיתוף"
+          about: "על"
       lex_person:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה

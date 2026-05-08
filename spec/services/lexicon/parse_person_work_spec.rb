@@ -69,4 +69,108 @@ describe Lexicon::ParsePersonWork do
       )
     end
   end
+
+  context 'when several comments with links are provided' do
+    let(:line) do
+      <<~HTML
+        <a href="00397004.php">פולחן הסופר ודת המדינה</a> (אור־יהודה : דביר, תשע״א
+          2011) <font size="2">&lt;עריכה – <a href="/lex/entries/#{editor_entry.id}">הילה בלום</a>&gt; &lt;על
+          <a href="00397.php">עמוס עוז</a>&gt;</font><br>
+          <font size="2"><a href="00397004.php">תוכן העניינים</a></font>
+      HTML
+    end
+
+    # We create a lex_entry only for one linked person (for editor)
+    let!(:editor_entry) { create(:lex_file, :person, title: 'הילה בלום', fname: '02228.php').lex_entry }
+
+    it 'parses work successfully' do
+      expect(result).to have_attributes(
+        title: 'פולחן הסופר ודת המדינה',
+        publisher: 'דביר',
+        publication_place: 'אור־יהודה',
+        publication_date: 'תשע״א 2011',
+        comment: nil
+      )
+
+      expect(result.linked_people.size).to eq(2)
+      expect(result.linked_people[0]).to have_attributes(
+        name: 'הילה בלום',
+        link_type: 'editor',
+        person_entry: editor_entry,
+        seqno: 1
+      )
+      expect(result.linked_people[1]).to have_attributes(
+        name: 'עמוס עוז',
+        link_type: 'about',
+        person_entry: nil,
+        seqno: 2
+      )
+    end
+  end
+
+  context 'when complex comment with several coauthors present' do
+    let(:line) do
+      <<~HTML
+        ממה באמת עשוי הירח&nbsp; (אור יהודה : כנרת, תש״ע 2010) <font size="2">
+          &lt;בשיתוף זהר שוורץ ; איורים – רחלי שלו ; עריכה – יעל גובר&gt;</font>
+      HTML
+    end
+
+    it 'parses work successfully' do
+      expect(result).to have_attributes(
+        title: 'ממה באמת עשוי הירח',
+        publisher: 'כנרת',
+        publication_place: 'אור יהודה',
+        publication_date: 'תש״ע 2010',
+        comment: nil
+      )
+
+      expect(result.linked_people.size).to eq(3)
+      expect(result.linked_people[0]).to have_attributes(
+        name: 'זהר שוורץ',
+        link_type: 'collaborator',
+        person_entry: nil,
+        seqno: 1
+      )
+      expect(result.linked_people[1]).to have_attributes(
+        name: 'רחלי שלו',
+        link_type: 'illustrator',
+        person_entry: nil,
+        seqno: 2
+      )
+      expect(result.linked_people[2]).to have_attributes(
+        name: 'יעל גובר',
+        link_type: 'editor',
+        person_entry: nil,
+        seqno: 3
+      )
+    end
+  end
+
+  context 'when coauthor comment is separated by commas' do
+    let(:line) do
+      <<~HTML
+        הלב הקבור (תל־אביב : אחוזת בית, תשס״ו 2006) <font size="2">&lt;עריכה, שרי גוטמן&gt;</font>
+      HTML
+    end
+
+    it 'parses work successfully' do
+      expect(result).to have_attributes(
+        title: 'הלב הקבור',
+        publisher: 'אחוזת בית',
+        publication_place: 'תל־אביב',
+        publication_date: 'תשס״ו 2006',
+        comment: nil
+      )
+
+      expect(result.linked_people.size).to eq(1)
+
+      expect(result.linked_people[0]).to have_attributes(
+        name: 'שרי גוטמן',
+        link_type: 'editor',
+        person_entry: nil,
+        seqno: 1
+      )
+    end
+  end
 end
