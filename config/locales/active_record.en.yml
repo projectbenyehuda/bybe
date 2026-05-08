@@ -153,6 +153,7 @@ en:
         person_entry: Lexicon Entry for Person
         link_type: Link Type
         link_types:
+          author: "Author - "
           illustrator: "Illustrator - "
           editor: "Editor - "
           collaborator: "In collaboration with "
