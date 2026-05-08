@@ -21,6 +21,7 @@ en:
       lex_citation: Citation of Lexicon Entry
       lex_citation_author: Citation Author
       lex_entry: Lexicon Entry
+      lex_linked_person: Associated Person
       lex_person: Lexicon Person
       lex_person_work: Lexicon Person's Work
       lex_publication: Lexicon Publication
@@ -61,6 +62,10 @@ en:
             link:
               link_with_entry_error: link can only be specified if we don't have a Lexicon entry for author
             entry:
+              not_a_person: must be a Person entry
+        lex_linked_person:
+          attributes:
+            person_entry:
               not_a_person: must be a Person entry
     attributes:
       authority:
@@ -145,6 +150,15 @@ en:
           error: Error
           verifying: Verifying
           verified: Verified
+      lex_linked_person:
+        person_entry: Lexicon Entry for Person
+        link_type: Link Type
+        link_types:
+          author: "Author - "
+          illustrator: "Illustrator - "
+          editor: "Editor - "
+          collaborator: "In collaboration with "
+          about: "About "
       lex_person:
         birthdate: Birthdate
         deathdate: Deathdate
