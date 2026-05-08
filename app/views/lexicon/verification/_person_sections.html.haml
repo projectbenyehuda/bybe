@@ -167,6 +167,9 @@
                 %br
                 %span.text-muted
                   = link_to work.collection.title, collection_path(work.collection), target: '_blank', rel: 'noopener'
+              - work.linked_people.sort_by(&:sort_value).each do |linked_person|
+                %br
+                %span.text-muted!= render_linked_person(linked_person)
               - if work.comment.present?
                 %br
                 %span.text-muted= work.comment
