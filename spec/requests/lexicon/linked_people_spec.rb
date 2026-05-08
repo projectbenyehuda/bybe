@@ -22,8 +22,9 @@ describe '/lexicon/linked_people' do
 
     it 'renders linked people in seqno order' do
       call
-      expect(response.body.index('first')).to be < response.body.index('second')
-      expect(response.body.index('second')).to be < response.body.index('third')
+      doc = Nokogiri::HTML.fragment(response.body)
+      rendered_order = doc.css('ul.linked-people-group > li').map { |li| li['data-linked-person-id'].to_i }
+      expect(rendered_order).to eq([linked_person_2.id, linked_person_3.id, linked_person_1.id])
     end
   end
 

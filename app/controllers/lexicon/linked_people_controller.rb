@@ -15,7 +15,7 @@ module Lexicon
       @linked_people = @work
                        .linked_people
                        .preload(:person_entry)
-                       .sort_by { |person| [person.seqno || 1_000_000, person.id] }
+                       .sort_by { |person| [person.seqno, person.id] }
     end
 
     def create
@@ -46,7 +46,7 @@ module Lexicon
         return
       end
 
-      linked_people = @work.linked_people.sort_by { |person| [person.seqno || 1_000_000, person.id] }
+      linked_people = @work.linked_people.sort_by { |person| [person.seqno, person.id] }
 
       real_old_index = linked_people.index(@linked_person)
       if old_index != real_old_index
@@ -60,13 +60,13 @@ module Lexicon
       linked_people.insert(new_index, @linked_person)
 
       LexLinkedPerson.transaction do
-        ordered_people_by_id = linked_people.index_by(&:id)
+        people_by_id = linked_people.index_by(&:id)
         linked_people.each_with_index do |person, index|
           temporary_seqno = -(index + 1)
           person.update_column(:seqno, temporary_seqno) if person.seqno != temporary_seqno
         end
         linked_people.map(&:id).each_with_index do |person_id, index|
-          person = ordered_people_by_id.fetch(person_id)
+          person = people_by_id.fetch(person_id)
           final_seqno = index + 1
           person.update_column(:seqno, final_seqno) if person.seqno != final_seqno
         end

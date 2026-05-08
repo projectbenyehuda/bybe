@@ -38,7 +38,7 @@
               },
               error: function(xhr, _status, _error) {
                 const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
-                alert('#{t('.reordering_failed')}\n' + errorMsg);
+                alert('#{j(t('.reordering_failed'))}\n' + errorMsg);
                 reloadLinkedPeople();
               }
             });
