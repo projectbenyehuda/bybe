@@ -38,6 +38,9 @@ module Lexicon
             work = ParsePersonWork.call(li)
             work.work_type = work_type
             work.seqno = index += 1
+            work.linked_people.each_with_index do |linked_person, person_index|
+              linked_person.seqno = person_index + 1
+            end
             lex_person.works << work
           end
         else
