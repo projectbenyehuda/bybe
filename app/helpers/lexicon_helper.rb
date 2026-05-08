@@ -44,7 +44,9 @@ module LexiconHelper
 
     result += " (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
 
-    result += work.linked_people.map { |person| "<  #{render_linked_person(person)}  >" }.join(' ')
+    result += work.linked_people
+                  .sort_by { |person| [person.seqno || 1_000_000, person.id] }
+                  .map { |person| "<  #{render_linked_person(person)}  >" }.join(' ')
 
     if work.comment.present?
       work.comment.split("\n").each do |comment|

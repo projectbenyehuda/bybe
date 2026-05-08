@@ -76,7 +76,9 @@ Bybeconv::Application.routes.draw do
     end
 
     resources :citation_authors, only: %i(update destroy)
-    resources :linked_people, only: %i(destroy)
+    resources :linked_people, only: %i(destroy) do
+      post :reorder, on: :member
+    end
 
     resources :publications, only: %i(edit update new create)
     resources :entries, except: %i(new create) do

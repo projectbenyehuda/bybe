@@ -3240,3 +3240,7 @@ en:
         drag_to_reorder: Drag to reorder
         reordering_failed: Reordering failed
         no_subject: General
+    linked_people:
+      index:
+        drag_to_reorder: Drag to reorder
+        reordering_failed: Reordering failed
