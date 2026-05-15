@@ -65,8 +65,4 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
-          script: |
-            cd bybe-staging
-            docker compose down web sidekiq
-            docker compose up web sidekiq -d --pull always
-            docker image prune -f
+          script: ./update_services.sh web sidekiq
