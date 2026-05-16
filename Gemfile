@@ -10,6 +10,7 @@ gem 'rails', '8.1.3'
 gem 'rails-i18n', '~> 8' # version should match major version of Rails
 gem 'sass-rails', '~> 6.0.0'
 gem 'sprockets', '~> 4.2.1'
+gem 'sidekiq', '~> 8.1'
 
 gem 'damerau-levenshtein' # string distance
 gem 'mysql2'
@@ -160,5 +161,3 @@ group :test, :development do
   gem 'capybara' # for integration tests
   gem 'selenium-webdriver' # For system tests with a browser driver like Chrome/Firefox
 end
-
-gem 'sidekiq', '~> 7.2'
