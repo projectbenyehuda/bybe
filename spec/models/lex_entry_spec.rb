@@ -355,9 +355,9 @@ RSpec.describe LexEntry, type: :model do
         expect(entry.reload.other_designation).to eq('שם א; שם ב')
       end
 
-      it 'sets status to verified' do
+      it 'sets status to published' do
         entry.mark_verified!
-        expect(entry.reload).to be_status_verified
+        expect(entry.reload).to be_status_published
       end
     end
 
