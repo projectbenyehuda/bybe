@@ -39,7 +39,6 @@ class LexEntry < ApplicationRecord
   # Scopes for verification queue
   scope :needs_verification, -> { where(status: %i(draft verifying error escalated)) }
   scope :in_verification, -> { where(status: :verifying) }
-  scope :verified_pending_publish, -> { where(status: :verified) }
 
   update_index('lex_entries') { self }
   update_index('lex_entries_autocomplete') { self }
@@ -152,7 +151,7 @@ class LexEntry < ApplicationRecord
     raise 'Verification not complete' unless verification_complete?
 
     updates = {
-      status: :verified,
+      status: :published,
       verification_progress: verification_progress.merge(
         'ready_for_publish' => true,
         'completed_at' => Time.current.iso8601
