@@ -30,7 +30,7 @@ module Lexicon
     # GET /lexicon/verification/:id
     def show
       # Initialize verification if not started
-      unless @entry.status_verifying? || @entry.status_verified? || @entry.status_escalated?
+      unless @entry.status_verifying? || @entry.status_verified? || @entry.status_escalated? || @entry.status_published?
         user_email = current_user&.email || 'anonymous@example.com'
         @entry.start_verification!(user_email)
       end
