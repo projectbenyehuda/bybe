@@ -535,6 +535,11 @@
 
 // RTL Support
 [dir="rtl"] {
+  .checklist-card .nested-checklist {
+    padding-left: 0;
+    padding-right: 1.5rem;
+  }
+
   .verification-section .section-header {
     text-align: right;
   }
