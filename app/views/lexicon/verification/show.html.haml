@@ -87,11 +87,11 @@
 
 #modal-container
 
-.modal#checklistModal{ tabindex: '-1', role: 'dialog', data: { keyboard: 'true', backdrop: 'true' } }
+.modal#checklistModal{ tabindex: '-1', role: 'dialog', aria: { hidden: true, labelledby: 'checklistModalTitle' }, data: { keyboard: 'true', backdrop: 'true' } }
   .modal-dialog.modal-lg{ role: 'document' }
     .modal-content
       .modal-header
-        %h5.modal-title= t('lexicon.verification.checklist.title')
+        %h5.modal-title{ id: 'checklistModalTitle' }= t('lexicon.verification.checklist.title')
         %button.close{ type: :button, data: { dismiss: :modal }, aria: { label: t(:close) } }
           %span{ aria: { hidden: true } } &times;
       .modal-body
