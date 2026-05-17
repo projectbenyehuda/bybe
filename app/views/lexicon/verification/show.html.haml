@@ -46,6 +46,8 @@
           %label.form-check-label{for: 'hide-verified-toggle'}
             = t('lexicon.verification.show.hide_verified')
       .actions
+        %button.btn.btn-outline-secondary{ type: 'button', data: { toggle: 'modal', target: '#checklistModal' } }
+          = t('lexicon.verification.checklist.title')
         - if @entry.verification_complete?
           = button_to t('lexicon.verification.show.mark_verified'), lexicon_mark_verified_verification_path(@entry), method: :post, class: 'btn btn-success', id: 'mark-verified-btn'
         - else
@@ -77,9 +79,6 @@
                      'link-check-toast-type': flash[:link_check_toast_type],
                      'link-check-toast-message': flash[:link_check_toast_message] }
 .verification-container{ data: container_data }
-  .verification-checklist
-    = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item
-
   .verification-source
     = render 'lexicon/verification/source_php', entry: @entry
 
@@ -87,3 +86,15 @@
     = render 'lexicon/verification/migrated_entry', entry: @entry, item: @item, checklist: @checklist, php_counts: @php_counts
 
 #modal-container
+
+.modal#checklistModal{ tabindex: '-1', role: 'dialog',
+                       aria: { hidden: true, labelledby: 'checklistModalTitle' },
+                       data: { keyboard: 'true', backdrop: 'true' } }
+  .modal-dialog.modal-lg{ role: 'document' }
+    .modal-content
+      .modal-header
+        %h5.modal-title#checklistModalTitle= t('lexicon.verification.checklist.title')
+        %button.close{ type: :button, data: { dismiss: :modal }, aria: { label: t(:close) } }
+          %span{ aria: { hidden: true } } &times;
+      .modal-body
+        = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item
