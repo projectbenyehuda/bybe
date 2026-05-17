@@ -27,35 +27,28 @@
 
 .verification-container {
   display: grid;
-  grid-template-columns: 280px 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   height: calc(100vh - 300px);
   max-height: calc(100vh - 300px);
 
-  @media (max-width: 1400px) {
-    grid-template-columns: 250px 1fr 1fr;
-  }
-
-  @media (max-width: 1200px) {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto 1fr;
-
-    .verification-checklist {
-      grid-column: 1 / -1;
-      height: auto;
-    }
-  }
-
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto auto;
   }
 }
 
-// Checklist Column
-.verification-checklist {
-  height: 100%;
+// Checklist Modal
+#checklistModal .modal-body {
   overflow-y: auto;
+  max-height: 70vh;
+}
+
+#checklistModal .checklist-card {
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
 }
 
 .checklist-card {
@@ -63,12 +56,6 @@
   padding: 1.5rem;
   border-radius: 8px;
   border: 1px solid #dee2e6;
-
-  .checklist-title {
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
 
   .checklist-items {
     list-style: none;
@@ -548,7 +535,7 @@
 
 // RTL Support
 [dir="rtl"] {
-  .verification-checklist ul li.nested-item {
+  .checklist-card .nested-checklist {
     padding-left: 0;
     padding-right: 1.5rem;
   }
