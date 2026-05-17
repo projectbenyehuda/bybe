@@ -200,7 +200,7 @@ function initVerification() {
         });
     });
 
-    // Handle checklist label clicks - scroll to section
+    // Handle checklist label clicks - close the checklist modal then scroll to section
     $('.checklist-items label').on('click', function(e) {
         // Only scroll if clicked on label text, not checkbox
         if ($(e.target).is('input[type="checkbox"]')) {
@@ -213,15 +213,28 @@ function initVerification() {
 
         if (sectionId) {
             const section = $('#' + sectionId);
-            if (section.length > 0) {
-                // Scroll to section
-                section[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (section.length === 0) { return; }
 
-                // Flash highlight
+            const scrollToTarget = function() {
+                var scrollParent = section[0].closest('.migrated-content');
+                if (scrollParent) {
+                    var offset = section[0].getBoundingClientRect().top
+                               - scrollParent.getBoundingClientRect().top
+                               + scrollParent.scrollTop;
+                    scrollParent.scrollTop = Math.max(0, offset - 8);
+                } else {
+                    section[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
                 section.addClass('highlight-flash');
-                setTimeout(function() {
-                    section.removeClass('highlight-flash');
-                }, 2000);
+                setTimeout(function() { section.removeClass('highlight-flash'); }, 2000);
+            };
+
+            const checklistModal = $('#checklistModal');
+            if (checklistModal.hasClass('show')) {
+                checklistModal.one('hidden.bs.modal', scrollToTarget);
+                checklistModal.modal('hide');
+            } else {
+                scrollToTarget();
             }
         }
     });
