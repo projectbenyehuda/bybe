@@ -123,3 +123,6 @@ FactoryBot/ExcessiveCreateList:
 
 FactoryBot/FactoryAssociationWithStrategy:
   Enabled: false
+
+Bundler/OrderedGems:
+  Enabled: false
