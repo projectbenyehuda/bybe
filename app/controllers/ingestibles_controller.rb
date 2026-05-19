@@ -11,7 +11,7 @@ class IngestiblesController < ApplicationController
   before_action { |c| c.require_editor('edit_catalog') }
   before_action :set_ingestible,
                 only: %i(show edit update update_markdown update_toc destroy review ingest edit_toc update_toc_list
-                         undo unlock)
+                         undo unlock purge_docx)
   before_action :try_to_lock_ingestible,
                 only: %i(edit update update_markdown destroy review update_toc update_toc_list edit_toc undo)
 
@@ -137,9 +137,18 @@ class IngestiblesController < ApplicationController
   # GET /ingestibles/1/edit
   def edit
     @ingestible.update_parsing # refresh markdown or text buffers if necessary
+    if @ingestible.docx_conversion_error
+      flash.now[:alert] = t('ingestible.docx_conversion_error', error: @ingestible.docx_conversion_error)
+    end
     prep(true) # rendering of HTML needed for editing screen
     @tab = params[:tab]
     @authority_by_name = Authority.all.to_h { |a| [a.name, a.id] }
+  end
+
+  # DELETE /ingestibles/1/purge_docx
+  def purge_docx
+    @ingestible.docx.purge
+    redirect_to edit_ingestible_url(@ingestible), notice: t('.success')
   end
 
   # POST /ingestibles or /ingestibles.json

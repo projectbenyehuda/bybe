@@ -132,6 +132,49 @@ describe IngestiblesController do
           expect(html.scan('id="fn:1"').count).to eq(0)
         end
       end
+
+      context 'when the attached docx cannot be converted' do
+        before do
+          allow(ingestible).to receive(:update_parsing) do
+            ingestible.instance_variable_set(:@docx_conversion_error, 'Zip::Error: not a zip file')
+          end
+          allow(Ingestible).to receive(:find).and_return(ingestible)
+        end
+
+        it 'renders the edit page successfully instead of raising 500' do
+          expect(call).to be_successful
+        end
+
+        it 'sets an alert flash message with the error details' do
+          call
+          expect(flash[:alert]).to include('Zip::Error: not a zip file')
+        end
+      end
+    end
+
+    describe '#purge_docx' do
+      subject(:call) { delete :purge_docx, params: { id: ingestible.id } }
+
+      context 'when a docx is attached' do
+        before do
+          ingestible.docx.attach(
+            fixture_file_upload(
+              Rails.root.join('spec/fixtures/docx/inherited_formatting_test.docx'),
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            )
+          )
+        end
+
+        it 'removes the attachment' do
+          call
+          expect(ingestible.reload.docx).not_to be_attached
+        end
+
+        it 'redirects to the edit page with a notice' do
+          expect(call).to redirect_to edit_ingestible_path(ingestible)
+          expect(flash[:notice]).to eq I18n.t('ingestibles.purge_docx.success')
+        end
+      end
     end
 
     describe '#update' do

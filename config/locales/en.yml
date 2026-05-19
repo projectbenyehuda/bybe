@@ -455,6 +455,8 @@ en:
       problem: Ingestibles Form Problem
     update:
       success: Ingestible was successfully updated
+    purge_docx:
+      success: The attached file was removed. You can now upload a valid file.
     destroy:
       success: Ingestible was successfully destroyed
     index:
@@ -777,6 +779,8 @@ en:
     create_new_volume: Ingestible Create New Volume
     credits: Ingestible Credits
     current_file: Ingestible Current File
+    remove_docx: Remove attached file
+    docx_conversion_error: 'Error converting the DOCX file: %{error}. You can remove the broken file and upload a valid one.'
     defaults: Ingestible Defaults
     end_upload_block: Ingestible End Upload Block
     included_in_upload: Ingestible Included In Upload

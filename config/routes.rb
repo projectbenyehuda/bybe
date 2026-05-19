@@ -88,6 +88,7 @@ Bybeconv::Application.routes.draw do
       post :ingest
       post :undo
       patch :unlock
+      delete :purge_docx
     end
   end
 
