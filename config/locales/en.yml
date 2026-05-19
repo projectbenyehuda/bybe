@@ -69,6 +69,7 @@ en:
   cover_image: Cover Image
   cover_text: Cover Text
   upload_cover_image: Upload Cover Image
+  remove_cover_image: Remove Cover Image
   issue_covers: Issue Covers
   add_feature_date: Add feature date
   feature_on: Featuring Periods

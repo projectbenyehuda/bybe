@@ -49,6 +49,9 @@
       %p
         %img{ src: url_for(collection.cover_image), alt: collection.title,
               style: 'max-width: 300px; max-height: 300px;' }
+      = button_to t(:remove_cover_image), collection_remove_cover_image_path(collection),
+                  method: :post, class: 'by-button-v02',
+                  data: { confirm: t(:are_you_sure) }
     = form_for collection, url: collection_path(collection.id), namespace: "cover_#{collection.id}", method: :put, multipart: true do |f|
       .form-group
         = f.file_field :cover_image, class: 'form-control', accept: 'image/*'

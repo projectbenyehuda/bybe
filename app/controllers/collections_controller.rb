@@ -297,6 +297,12 @@ class CollectionsController < ApplicationController
     render plain: e.message, status: :unprocessable_content
   end
 
+  def remove_cover_image
+    @collection = Collection.find(params[:collection_id])
+    @collection.cover_image.purge
+    redirect_back fallback_location: collection_manage_path(@collection), notice: t(:updated_successfully)
+  end
+
   # Display KWIC concordance browser for a collection
   def kwic
     @collection = Collection.find(params[:collection_id])
