@@ -1225,6 +1225,7 @@ he:
   cover_image: תמונת שער
   cover_text: כיתוב תמונת שער
   upload_cover_image: העלאת תמונת שער
+  remove_cover_image: הסרת תמונת שער
   issue_covers: שערי גיליונות
   link_description: "תיאור הקישורית, או מה ייכתב אחרי 'מוגש באדיבות:'"
   "BY blog": 'התייחסויות ביומן הרשת של פב"י'
@@ -1949,6 +1950,8 @@ he:
       problem: תיאור בעיה
     update:
       success: ההעלאה עודכנה
+    purge_docx:
+      success: הקובץ המצורף הוסר. ניתן כעת להעלות קובץ תקין.
     undo:
       undone: ההעלאה בוטלה. היצירות נמחקו, ואם נוצר כותר ולא נוספו לו פריטים מעבר להעלאה זו, גם הכותר נמחק.
     unlock:
@@ -2206,6 +2209,8 @@ he:
     invalid: 'שמירת הקובץ נמנעה בגלל:'
     current_file: קובץ נוכחי
     or_replace_file: 'או החלפת הקובץ בהעלאה מחדש:'
+    remove_docx: מחק קובץ מצורף
+    docx_conversion_error: 'שגיאה בהמרת קובץ ה-DOCX: %{error}. אפשר למחוק את הקובץ הבעייתי ולהעלות קובץ תקין.'
     any_volume: איתור כותר מכלל המאגר
     filter_by_type: סינון לפי סוג
     all_types: כל הסוגים

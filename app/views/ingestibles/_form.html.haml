@@ -150,11 +150,17 @@
           &nbsp;
           %span{id: 'explain_attach_photos'}= '[?]'
 
-        - if @ingestible.persisted? && @ingestible.docx.present?
+        - if @ingestible.persisted? && @ingestible.docx.attached?
           %p
             = t('ingestible.current_file')
             = link_to @ingestible.docx.filename.to_s, url_for(@ingestible.docx)
-            = t('ingestible.or_replace_file')
+            &nbsp;
+            = link_to t('ingestible.remove_docx'),
+                      purge_docx_ingestible_path(@ingestible),
+                      method: :delete,
+                      data: { confirm: t(:confirm) },
+                      class: 'btn btn-sm btn-warning'
+          %p= t('ingestible.or_replace_file')
         - else
           %b= t(:upload_file)
           = t(:file_can_be_skipped)

@@ -88,6 +88,7 @@ Bybeconv::Application.routes.draw do
       post :ingest
       post :undo
       patch :unlock
+      delete :purge_docx
     end
   end
 
@@ -109,6 +110,7 @@ Bybeconv::Application.routes.draw do
     post 'add_periodical_issue'
     post 'add_external_link'
     post 'remove_external_link'
+    post 'remove_cover_image'
   end
 
   # Not inside resources block because it doesn't require a collection_id (creates new periodical)
