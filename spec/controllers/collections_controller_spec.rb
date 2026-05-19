@@ -567,6 +567,29 @@ describe CollectionsController do
     end
   end
 
+  describe '#remove_cover_image' do
+    include_context 'when editor logged in'
+
+    let(:collection_with_cover) do
+      create(:collection).tap do |c|
+        c.cover_image.attach(io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
+                             filename: 'cover.jpg', content_type: 'image/jpeg')
+      end
+    end
+
+    it 'purges the cover image and redirects back' do
+      post :remove_cover_image, params: { collection_id: collection_with_cover.id }
+      expect(collection_with_cover.reload.cover_image).not_to be_attached
+      expect(response).to redirect_to(collection_manage_path(collection_with_cover))
+    end
+
+    it 'is a no-op when no cover image is attached' do
+      collection = create(:collection)
+      post :remove_cover_image, params: { collection_id: collection.id }
+      expect(response).to redirect_to(collection_manage_path(collection))
+    end
+  end
+
   describe 'cover image and cover_text' do
     let(:editor_user) { create(:user, :edit_catalog) }
 
