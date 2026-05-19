@@ -316,7 +316,8 @@ class Ingestible < ApplicationRecord
     rescue StandardError
       raise
     ensure
-      tmpfile.close
+      tmpfile.close!
+      tmpfile_pp.close!
     end
   end
 
