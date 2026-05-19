@@ -158,9 +158,10 @@ describe IngestiblesController do
       context 'when a docx is attached' do
         before do
           ingestible.docx.attach(
-            io: File.open(Rails.root.join('spec/fixtures/docx/inherited_formatting_test.docx')),
-            filename: 'test.docx',
-            content_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            fixture_file_upload(
+              Rails.root.join('spec/fixtures/docx/inherited_formatting_test.docx'),
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            )
           )
         end
 

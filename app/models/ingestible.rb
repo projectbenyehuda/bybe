@@ -201,7 +201,8 @@ class Ingestible < ApplicationRecord
       begin
         self.markdown = convert_to_markdown
       rescue StandardError => e
-        @docx_conversion_error = e.message
+        @docx_conversion_error = "#{e.class}: #{e.message}"
+        Rails.logger.error("Ingestible##{id} DOCX conversion failed: #{e.class}: #{e.message}")
       end
     end
 
@@ -312,8 +313,8 @@ class Ingestible < ApplicationRecord
       return postprocess(markdown)
 
     # docx too large for pandoc with mem_limit
-    rescue StandardError => e
-      raise "#{e.class}: #{e.message}"
+    rescue StandardError
+      raise
     ensure
       tmpfile.close
     end
