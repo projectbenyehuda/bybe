@@ -28,6 +28,8 @@ class Ingestible < ApplicationRecord
 
   has_one_attached :docx # ActiveStorage
 
+  attr_reader :docx_conversion_error
+
   before_save :update_timestamps
   before_save :populate_project_from_tasks_project_id
   before_create :init_timestamps
@@ -196,7 +198,11 @@ class Ingestible < ApplicationRecord
 
   def update_parsing
     if docx.attached? && (markdown.blank? || docx.attachment.created_at > markdown_updated_at)
-      self.markdown = convert_to_markdown
+      begin
+        self.markdown = convert_to_markdown
+      rescue StandardError => e
+        @docx_conversion_error = e.message
+      end
     end
 
     update_buffers if works_buffer.nil? || markdown_updated_at > works_buffer_updated_at
@@ -306,8 +312,8 @@ class Ingestible < ApplicationRecord
       return postprocess(markdown)
 
     # docx too large for pandoc with mem_limit
-    rescue StandardError
-      raise 'Conversion error'
+    rescue StandardError => e
+      raise "#{e.class}: #{e.message}"
     ensure
       tmpfile.close
     end
