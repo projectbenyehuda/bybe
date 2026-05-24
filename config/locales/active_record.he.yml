@@ -159,12 +159,12 @@ he:
           verified: הסבה אושרה
           escalated: ממתין לבדיקה נוספת
       lex_linked_person:
-        person_entry: Lexicon Entry for Person
-        link_type: Link Type
+        person_entry: רשומת לקסיקון לאדם זה
+        link_type: סוג המעורבות
         link_types:
-          author: "Author -"
-          illustrator: "איורים -"
-          editor: "עריכה -"
+          author: "יוצר/ת"
+          illustrator: "איורים"
+          editor: "עריכה"
           collaborator: "בשיתוף"
           about: "על"
       lex_person:
