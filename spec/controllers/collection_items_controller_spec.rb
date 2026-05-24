@@ -5,6 +5,32 @@ require 'rails_helper'
 describe CollectionItemsController do
   include_context 'when editor logged in'
 
+  describe '#create' do
+    let!(:collection) { create(:collection) }
+
+    context 'when creating a sub-collection with a blank title' do
+      subject(:call) do
+        post :create, format: :js, params: {
+          collection_item: {
+            collection_id: collection.id,
+            item_id: '',
+            item_type: 'volume',
+            alt_title: ''
+          }
+        }
+      end
+
+      it 'returns unprocessable_content instead of raising an exception' do
+        expect { call }.not_to raise_error
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+
+      it 'does not create a new Collection' do
+        expect { call }.not_to change(Collection, :count)
+      end
+    end
+  end
+
   describe '#drag_item' do
     subject(:call) do
       post :drag_item, params: {
