@@ -82,6 +82,20 @@ class LexEntry < ApplicationRecord
     end
   end
 
+  # Returns the latest updated_at across the entry and all its constituent entities.
+  def last_content_update
+    timestamps = [updated_at, lex_item&.updated_at]
+
+    if lex_item.is_a?(LexPerson)
+      timestamps << lex_item.citations.maximum(:updated_at)
+      timestamps << lex_item.works.maximum(:updated_at)
+    end
+
+    timestamps << lex_item&.links&.maximum(:updated_at)
+
+    timestamps.compact.max
+  end
+
   def self.cached_count
     Rails.cache.fetch('lex_entry_count', expires_in: 24.hours) do
       LexEntry.count

@@ -80,6 +80,7 @@ he:
         profile_image_alt: תמונת פרופיל
         profile_image_badge: תמונת פרופיל
         unpublished_warning: "אזהרה: סטטוס הערך הוא '%{status}', ולכן אינו גלוי לציבור."
+        last_updated: "עודכן לאחרונה ב: %{date}"
       show_person:
         pages: p.
         authority_identifiers: מזהים חיצוניים
