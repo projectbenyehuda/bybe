@@ -56,6 +56,16 @@ module LexiconHelper
     raw result
   end
 
+  def format_publication_details(work)
+    place = work.publication_place.presence
+    rest = [work.publisher, work.publication_date].compact_blank.join(', ')
+    if place
+      rest.present? ? "#{place}: #{rest}" : place
+    else
+      rest.presence
+    end
+  end
+
   def citations_subject_header(subject_title)
     if subject_title.present?
       t('lexicon.citations.header.subject_line', subject: subject_title)

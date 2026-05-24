@@ -155,10 +155,10 @@
           .work-card{ id: "work-#{work.id}", class: work_card_css(work, checklist) }
             .work-content
               %strong= work.title
-              - details = [work.publication_place, work.publisher, work.publication_date].compact_blank
-              - if details.any?
+              - pub_detail = format_publication_details(work)
+              - if pub_detail
                 %br
-                %span.text-muted= details.join(', ')
+                %span.text-muted= pub_detail
               - if work.publication.present?
                 %br
                 %span.text-muted
