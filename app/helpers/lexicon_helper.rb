@@ -90,6 +90,13 @@ module LexiconHelper
     'openlibrary' => 'OpenLibrary'
   }.freeze
 
+  def render_external_identifier_value(key, value)
+    url_builder = EXTERNAL_IDENTIFIER_URLS[key]
+    return value unless url_builder
+
+    link_to(value, url_builder.call(value), target: '_blank', rel: 'noopener noreferrer')
+  end
+
   def render_external_identifiers(external_identifiers)
     return nil if external_identifiers.blank?
 
