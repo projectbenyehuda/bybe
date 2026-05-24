@@ -117,7 +117,7 @@ he:
       edit:
         title: עריכת יצירה
       form:
-        associated_people: Associated People
+        associated_people: אישים מקושרים
         no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
         select_publication: בחר פרסום...
         select_collection: בחר אוסף...
