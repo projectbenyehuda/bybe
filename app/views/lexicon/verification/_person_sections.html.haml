@@ -252,7 +252,12 @@
           - value = entry.external_identifiers[key]
           - next if value.blank?
           %dt.col-sm-3= label
-          %dd.col-sm-9= value
+          %dd.col-sm-9
+            - url_builder = LexiconHelper::EXTERNAL_IDENTIFIER_URLS[key]
+            - if url_builder
+              = link_to value, url_builder.call(value), target: '_blank', rel: 'noopener noreferrer'
+            - else
+              = value
     - else
       %p.text-muted= t('lexicon.verification.sections.no_external_identifiers')
   .section-actions
