@@ -31,10 +31,15 @@ class CollectionItemsController < ApplicationController
           @collection_item.item_id = nil
           @collection_item.item_type = nil
         else
-          c = Collection.create!(title: params[:collection_item][:alt_title],
-                                 collection_type: params[:collection_item][:item_type])
-          @collection_item.item = c # this overrides the passed item_type which is actually collection_type
-          @collection_item.alt_title = nil
+          c = Collection.new(title: params[:collection_item][:alt_title],
+                             collection_type: params[:collection_item][:item_type])
+          if c.save
+            @collection_item.item = c # this overrides the passed item_type which is actually collection_type
+            @collection_item.alt_title = nil
+          else
+            c.errors.each { |e| @collection_item.errors.import(e) }
+            success = false
+          end
         end
       else
         success = false
@@ -57,6 +62,7 @@ class CollectionItemsController < ApplicationController
         format.js
       else
         format.html { render :new, status: :unprocessable_content }
+        format.js { head :unprocessable_content }
         format.json { render json: @collection_item.errors, status: :unprocessable_content }
       end
     end
