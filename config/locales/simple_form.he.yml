@@ -12,9 +12,9 @@ he:
       default_message: "נא לתקן את השגיאות להלן:"
     hints:
       lex_citation:
-        subject: should only be used if work is not present in works list
+        subject: יש להשתמש רק אם היצירה אינה מופיעה ברשימת היצירות
       lex_person:
         authority: דף יוצר בפרויקט בן־יהודה
       lex_person_work:
-        comment: each line represents a single comment
+        comment: הפרידו בין הערות בשורת רווח.
     placeholders:
