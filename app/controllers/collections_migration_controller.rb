@@ -52,7 +52,7 @@ class CollectionsMigrationController < ApplicationController
 
   def migrate
     @author = Authority.find(params[:id])
-    @author.legacy_credits = migrate_credits(@author.toc.credit_section)
+    @author.legacy_credits = migrate_credits(@author.toc&.credit_section)
     @author.legacy_toc_id = @author.toc_id # deliberately not destroying the legacy Toc entity for now
     @author.toc_id = nil
     @author.save!
