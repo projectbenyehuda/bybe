@@ -211,10 +211,10 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
       end
     end
 
-    it 'uses "all collections" as the mode label' do
+    it 'uses "all collections and uncollected texts" as the mode label' do
       allow(ARGV).to receive(:include?).with('--all').and_return(true)
       task.invoke
-      expect(parsed_output['mode']).to eq('all collections')
+      expect(parsed_output['mode']).to eq('all collections and uncollected texts')
     end
 
     it 'exports all qualifying collections beyond the default limit' do

@@ -90,7 +90,11 @@ task export_catalog: :environment do
   all_mode = ARGV.include?('--all')
   limit = ENV.fetch('EXPORT_CATALOG_LIMIT', '50').to_i
   output_file = ENV.fetch('EXPORT_CATALOG_OUTPUT', 'catalog_export.json')
-  mode_label = all_mode ? 'all collections' : "first #{limit} qualifying collections"
+  mode_label = if all_mode
+                 'all collections and uncollected texts'
+               else
+                 "first #{limit} qualifying collections and #{limit} uncollected texts"
+               end
 
   puts "Mode: #{mode_label}"
 
@@ -129,7 +133,9 @@ task export_catalog: :environment do
                            .joins(:collection)
                            .where(collections: { collection_type: Collection.collection_types[:uncollected] },
                                   item_type: 'Manifestation')
+                           .where.not(item_id: nil)
                            .select(:item_id)
+                           .distinct
 
     Manifestation
       .where(id: uncollected_item_ids, status: :published)
