@@ -126,6 +126,7 @@ en:
       lex_citation:
         authors: Authors
         from_publication: From Publication
+        notes: Context notes
         pages: Pages
         person_work: Work
       lex_file:
