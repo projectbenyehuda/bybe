@@ -86,8 +86,9 @@ task export_catalog: :environment do
     next unless collection.any_published_manifestations?
 
     qualifying << serialize_collection(collection, url_helpers, [collection.id])
+    print "#{qualifying.size} " if (qualifying.size % 50).zero?
     if !all_mode && qualifying.size >= limit
-      puts "Reached limit of #{limit}. Pass --all to export everything."
+      puts "\nReached limit of #{limit}. Pass --all to export everything."
       break
     end
   end
