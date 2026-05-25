@@ -80,6 +80,7 @@ en:
         profile_image_alt: Profile image
         profile_image_badge: Profile Image
         unpublished_warning: This entry has status '%{status}' and is not available to public
+        last_updated: "Last updated on %{date}"
       show_person:
         pages: p.
         authority_identifiers: External authority identifiers
