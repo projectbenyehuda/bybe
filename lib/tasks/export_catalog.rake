@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'bybe_utils'
 
 # rubocop:disable Style/Documentation
 module ExportCatalogHelpers
   # rubocop:enable Style/Documentation
+  include BybeUtils
+
   def authorities_by_role(record)
     result = {}
     InvolvedAuthority.roles.each_key do |role|
@@ -26,7 +29,7 @@ module ExportCatalogHelpers
     }
     alts = manifestation.alternate_titles.presence&.split('; ')&.reject(&:empty?) || []
     entry[:alternate_titles] = alts unless alts.empty?
-    entry[:original_language] = lang unless lang.blank? || lang == 'he'
+    entry[:original_language] = textify_lang(lang) unless lang.blank? || lang == 'he'
     entry
   end
 
