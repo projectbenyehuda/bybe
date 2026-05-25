@@ -14,10 +14,12 @@ module ExportCatalogHelpers
     result
   end
 
-  def serialize_manifestation(manifestation)
+  def serialize_manifestation(manifestation, url_helpers)
     lang = manifestation.expression.work.orig_lang
     entry = {
       type: 'manifestation',
+      id: manifestation.id,
+      url: url_helpers.manifestation_url(manifestation),
       title: manifestation.title,
       authorities: authorities_by_role(manifestation),
       tags: manifestation.tags.map(&:name)
@@ -52,7 +54,7 @@ module ExportCatalogHelpers
       next if ci.item.nil?
 
       if ci.item_type == 'Manifestation'
-        items << serialize_manifestation(ci.item)
+        items << serialize_manifestation(ci.item, url_helpers)
       else
         next if visited_ids.include?(ci.item_id)
 
