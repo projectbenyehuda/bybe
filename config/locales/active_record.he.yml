@@ -132,6 +132,7 @@ he:
       lex_citation:
         authors: מחברים
         from_publication: מתוך החיבור
+        notes: הקשר והערות
         pages: עמודים
         person_work: חיבור
       lex_file:
