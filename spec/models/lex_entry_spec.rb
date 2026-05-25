@@ -326,6 +326,93 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '#last_content_update' do
+    let(:person) { create(:lex_person) }
+    let(:entry) { create(:lex_entry, lex_item: person) }
+
+    let(:base_time)   { 3.days.ago.change(usec: 0) }
+    let(:newest_time) { 1.day.ago.change(usec: 0) }
+
+    before { entry.update_columns(updated_at: base_time) }
+
+    it 'returns the entry updated_at when nothing else is newer' do
+      person.update_columns(updated_at: base_time)
+      expect(entry.last_content_update).to eq(base_time)
+    end
+
+    it 'returns the lex_item updated_at when it is newest' do
+      person.update_columns(updated_at: newest_time)
+      expect(entry.last_content_update).to eq(newest_time)
+    end
+
+    it 'returns a citation updated_at when it is newest' do
+      person.update_columns(updated_at: base_time)
+      citation = create(:lex_citation, person: person)
+      citation.update_columns(updated_at: newest_time)
+      expect(entry.last_content_update).to eq(newest_time)
+    end
+
+    it 'returns a work updated_at when it is newest' do
+      person.update_columns(updated_at: base_time)
+      work = create(:lex_person_work, person: person)
+      work.update_columns(updated_at: newest_time)
+      expect(entry.last_content_update).to eq(newest_time)
+    end
+
+    it 'returns a lex_link updated_at when it is newest' do
+      person.update_columns(updated_at: base_time)
+      lex_link = create(:lex_link, item: person)
+      lex_link.update_columns(updated_at: newest_time)
+      expect(entry.last_content_update).to eq(newest_time)
+    end
+
+    context 'when syncing updated_at to the computed max' do
+      it 'syncs updated_at when constituent is more than 24h newer' do
+        person.update_columns(updated_at: newest_time) # 2 days after entry's base_time
+        entry.last_content_update
+        expect(entry.reload.updated_at).to eq(newest_time)
+      end
+
+      it 'does not sync updated_at when constituent is within 24h' do
+        within_24h = (base_time + 20.hours).change(usec: 0)
+        person.update_columns(updated_at: within_24h)
+        entry.last_content_update
+        expect(entry.reload.updated_at).to eq(base_time)
+      end
+
+      it 'does not sync when entry is already the newest' do
+        person.update_columns(updated_at: base_time)
+        entry.last_content_update
+        expect(entry.reload.updated_at).to eq(base_time)
+      end
+    end
+
+    context 'when entry has no lex_item' do
+      let(:bare_entry) { create(:lex_entry, status: :raw) }
+
+      before { bare_entry.update_columns(updated_at: base_time) }
+
+      it 'returns the entry updated_at' do
+        expect(bare_entry.last_content_update).to eq(base_time)
+      end
+    end
+
+    context 'with a LexPublication entry' do
+      let(:publication) { create(:lex_publication) }
+      let(:pub_entry) { create(:lex_entry, lex_item: publication) }
+
+      before do
+        pub_entry.update_columns(updated_at: base_time)
+        publication.update_columns(updated_at: base_time)
+      end
+
+      it 'returns publication updated_at when it is newest' do
+        publication.update_columns(updated_at: newest_time)
+        expect(pub_entry.last_content_update).to eq(newest_time)
+      end
+    end
+  end
+
   describe '#other_designation' do
     it 'can be read and written' do
       entry = create(:lex_entry, other_designation: 'alias1; alias2')
