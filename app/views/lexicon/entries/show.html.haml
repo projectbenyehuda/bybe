@@ -4,6 +4,8 @@
     = render partial: 'show_person', locals: { lex_person: lex_item }
   - elsif lex_item.is_a?(LexPublication)
     = render partial: 'show_publication', locals: { lex_publication: lex_item }
+  .lexicon-last-updated
+    = t('lexicon.entries.show.last_updated', date: l(@lex_entry.last_content_update.to_date))
 
 -# found mistake popup
 = render partial: 'shared/proof'

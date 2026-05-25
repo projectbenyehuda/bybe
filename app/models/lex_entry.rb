@@ -82,6 +82,25 @@ class LexEntry < ApplicationRecord
     end
   end
 
+  # Returns the latest updated_at across the entry, its lex_item (LexPerson/LexPublication),
+  # lex_item citations and works (LexPerson only), and lex_item links.
+  # As a side effect, if the computed date is more than 24 hours later than updated_at,
+  # silently syncs updated_at so list views eventually reflect the real last change.
+  def last_content_update
+    timestamps = [updated_at, lex_item&.updated_at]
+
+    if lex_item.is_a?(LexPerson)
+      timestamps << lex_item.citations.maximum(:updated_at)
+      timestamps << lex_item.works.maximum(:updated_at)
+    end
+
+    timestamps << lex_item&.links&.maximum(:updated_at)
+
+    max = timestamps.compact.max
+    update_column(:updated_at, max) if max > updated_at + 24.hours
+    max
+  end
+
   def self.cached_count
     Rails.cache.fetch('lex_entry_count', expires_in: 24.hours) do
       LexEntry.count
