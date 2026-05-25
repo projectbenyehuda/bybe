@@ -8,13 +8,23 @@ module ExportCatalogHelpers
   # rubocop:enable Style/Documentation
   include BybeUtils
 
+  def approved_tag_names(taggable)
+    taggable.taggings.to_a.select { |t| t.approved? && t.tag.approved? }.map { |t| t.tag.name }
+  end
+
   def authorities_by_role(record)
     result = {}
     InvolvedAuthority.roles.each_key do |role|
       auths = record.involved_authorities_by_role(role)
-      result[role] = auths.map(&:name) unless auths.empty?
+      result[role] = auths.map(&:name).sort unless auths.empty?
     end
     result
+  end
+
+  def split_alternate_titles(raw)
+    return [] if raw.blank?
+
+    raw.split(';').map(&:strip).compact_blank
   end
 
   def serialize_manifestation(manifestation, url_helpers)
@@ -25,9 +35,9 @@ module ExportCatalogHelpers
       url: url_helpers.manifestation_url(manifestation),
       title: manifestation.title,
       authorities: authorities_by_role(manifestation),
-      tags: manifestation.tags.map(&:name)
+      tags: approved_tag_names(manifestation)
     }
-    alts = manifestation.alternate_titles.presence&.split('; ')&.reject(&:empty?) || []
+    alts = split_alternate_titles(manifestation.alternate_titles)
     entry[:alternate_titles] = alts unless alts.empty?
     entry[:original_language] = textify_lang(lang) unless lang.blank? || lang == 'he'
     entry
@@ -40,11 +50,11 @@ module ExportCatalogHelpers
       url: url_helpers.collection_url(collection),
       title: collection.title,
       authorities: authorities_by_role(collection),
-      tags: collection.tags.map(&:name),
+      tags: approved_tag_names(collection),
       contents: serialize_contents(collection.collection_items, url_helpers, visited_ids)
     }
     entry[:subtitle] = collection.subtitle if collection.subtitle.present?
-    alts = collection.alternate_titles.presence&.split('; ')&.reject(&:empty?) || []
+    alts = split_alternate_titles(collection.alternate_titles)
     entry[:alternate_titles] = alts unless alts.empty?
     entry[:publisher_line] = collection.publisher_line if collection.publisher_line.present?
     entry
@@ -74,31 +84,37 @@ task export_catalog: :environment do
 
   all_mode = ARGV.include?('--all')
   limit = 50
-  output_file = 'catalog_export.json'
+  output_file = ENV.fetch('EXPORT_CATALOG_OUTPUT', 'catalog_export.json')
   mode_label = all_mode ? 'all collections' : "first #{limit} qualifying collections"
 
   puts "Mode: #{mode_label}"
 
   url_helpers = Rails.application.routes.url_helpers
+  count = 0
 
-  qualifying = []
-  Collection.where(collection_type: %i(volume periodical_issue)).find_each do |collection|
-    next unless collection.any_published_manifestations?
+  File.open(output_file, 'w') do |f|
+    f.write("{\n  \"mode\": #{JSON.generate(mode_label)},\n  \"collections\": [\n")
+    first = true
 
-    qualifying << serialize_collection(collection, url_helpers, [collection.id])
-    print "#{qualifying.size} " if (qualifying.size % 50).zero?
-    if !all_mode && qualifying.size >= limit
+    Collection.where(collection_type: %i(volume periodical_issue)).find_each do |collection|
+      next unless collection.any_published_manifestations?
+
+      serialized = serialize_collection(collection, url_helpers, [collection.id])
+      f.write(",\n") unless first
+      first = false
+      f.write(JSON.pretty_generate(serialized).split("\n").map { |l| "    #{l}" }.join("\n"))
+      count += 1
+      print "#{count} " if (count % 50).zero?
+
+      next if all_mode
+      next unless count >= limit
+
       puts "\nReached limit of #{limit}. Pass --all to export everything."
       break
     end
+
+    f.write("\n  ],\n  \"count\": #{count}\n}\n")
   end
 
-  output = {
-    mode: mode_label,
-    count: qualifying.size,
-    collections: qualifying
-  }
-
-  File.write(output_file, JSON.pretty_generate(output))
-  puts "Exported #{qualifying.size} collections to #{output_file}"
+  puts "Exported #{count} collections to #{output_file}"
 end
