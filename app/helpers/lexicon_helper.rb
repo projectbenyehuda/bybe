@@ -56,6 +56,16 @@ module LexiconHelper
     raw result
   end
 
+  def format_publication_details(work)
+    place = work.publication_place.presence
+    rest = [work.publisher, work.publication_date].compact_blank.join(', ')
+    if place
+      rest.present? ? "#{place}: #{rest}" : place
+    else
+      rest.presence
+    end
+  end
+
   def citations_subject_header(subject_title)
     if subject_title.present?
       t('lexicon.citations.header.subject_line', subject: subject_title)
@@ -79,6 +89,13 @@ module LexiconHelper
     'wikidata' => 'Wikidata',
     'openlibrary' => 'OpenLibrary'
   }.freeze
+
+  def render_external_identifier_value(key, value)
+    url_builder = EXTERNAL_IDENTIFIER_URLS[key]
+    return value unless url_builder
+
+    link_to(value, url_builder.call(value), target: '_blank', rel: 'noopener noreferrer')
+  end
 
   def render_external_identifiers(external_identifiers)
     return nil if external_identifiers.blank?

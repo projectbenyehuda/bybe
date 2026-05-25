@@ -155,10 +155,10 @@
           .work-card{ id: "work-#{work.id}", class: work_card_css(work, checklist) }
             .work-content
               %strong= work.title
-              - details = [work.publication_place, work.publisher, work.publication_date].compact_blank
-              - if details.any?
+              - pub_detail = format_publication_details(work)
+              - if pub_detail
                 %br
-                %span.text-muted= details.join(', ')
+                %span.text-muted= pub_detail
               - if work.publication.present?
                 %br
                 %span.text-muted
@@ -252,7 +252,7 @@
           - value = entry.external_identifiers[key]
           - next if value.blank?
           %dt.col-sm-3= label
-          %dd.col-sm-9= value
+          %dd.col-sm-9= render_external_identifier_value(key, value)
     - else
       %p.text-muted= t('lexicon.verification.sections.no_external_identifiers')
   .section-actions
