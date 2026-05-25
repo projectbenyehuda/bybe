@@ -83,6 +83,8 @@ class LexEntry < ApplicationRecord
   end
 
   # Returns the latest updated_at across the entry and all its constituent entities.
+  # As a side effect, if the computed date is more than 24 hours later than updated_at,
+  # silently syncs updated_at so list views eventually reflect the real last change.
   def last_content_update
     timestamps = [updated_at, lex_item&.updated_at]
 
@@ -93,7 +95,9 @@ class LexEntry < ApplicationRecord
 
     timestamps << lex_item&.links&.maximum(:updated_at)
 
-    timestamps.compact.max
+    max = timestamps.compact.max
+    update_column(:updated_at, max) if max > updated_at + 24.hours
+    max
   end
 
   def self.cached_count

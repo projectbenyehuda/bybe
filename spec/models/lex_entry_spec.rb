@@ -367,6 +367,27 @@ RSpec.describe LexEntry, type: :model do
       expect(entry.last_content_update).to eq(newest_time)
     end
 
+    context 'when syncing updated_at to the computed max' do
+      it 'syncs updated_at when constituent is more than 24h newer' do
+        person.update_columns(updated_at: newest_time) # 2 days after entry's base_time
+        entry.last_content_update
+        expect(entry.reload.updated_at).to eq(newest_time)
+      end
+
+      it 'does not sync updated_at when constituent is within 24h' do
+        within_24h = (base_time + 20.hours).change(usec: 0)
+        person.update_columns(updated_at: within_24h)
+        entry.last_content_update
+        expect(entry.reload.updated_at).to eq(base_time)
+      end
+
+      it 'does not sync when entry is already the newest' do
+        person.update_columns(updated_at: base_time)
+        entry.last_content_update
+        expect(entry.reload.updated_at).to eq(base_time)
+      end
+    end
+
     context 'when entry has no lex_item' do
       let(:bare_entry) { create(:lex_entry, status: :raw) }
 
