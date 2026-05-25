@@ -89,7 +89,7 @@
           - value = entry.external_identifiers[key]
           - next if value.blank?
           %dt.col-sm-3= label
-          %dd.col-sm-9= value
+          %dd.col-sm-9= render_external_identifier_value(key, value)
     - else
       %p.text-muted= t('lexicon.verification.sections.no_external_identifiers')
   .section-actions
