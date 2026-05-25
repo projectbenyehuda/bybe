@@ -330,9 +330,8 @@ RSpec.describe LexEntry, type: :model do
     let(:person) { create(:lex_person) }
     let(:entry) { create(:lex_entry, lex_item: person) }
 
-    let(:base_time)    { 3.days.ago.change(usec: 0) }
-    let(:newer_time)   { 2.days.ago.change(usec: 0) }
-    let(:newest_time)  { 1.day.ago.change(usec: 0) }
+    let(:base_time)   { 3.days.ago.change(usec: 0) }
+    let(:newest_time) { 1.day.ago.change(usec: 0) }
 
     before { entry.update_columns(updated_at: base_time) }
 

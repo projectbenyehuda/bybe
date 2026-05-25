@@ -82,7 +82,8 @@ class LexEntry < ApplicationRecord
     end
   end
 
-  # Returns the latest updated_at across the entry and all its constituent entities.
+  # Returns the latest updated_at across the entry, its lex_item (LexPerson/LexPublication),
+  # lex_item citations and works (LexPerson only), and lex_item links.
   # As a side effect, if the computed date is more than 24 hours later than updated_at,
   # silently syncs updated_at so list views eventually reflect the real last change.
   def last_content_update
