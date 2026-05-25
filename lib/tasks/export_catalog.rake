@@ -9,7 +9,7 @@ module ExportCatalogHelpers
   include BybeUtils
 
   def approved_tag_names(taggable)
-    taggable.taggings.to_a.select { |t| t.approved? && t.tag.approved? }.map { |t| t.tag.name }
+    taggable.taggings.preload(:tag).select(&:approved?).select { |t| t.tag.approved? }.map { |t| t.tag.name }
   end
 
   def authorities_by_role(record)
@@ -83,7 +83,7 @@ task export_catalog: :environment do
   extend ExportCatalogHelpers
 
   all_mode = ARGV.include?('--all')
-  limit = 50
+  limit = ENV.fetch('EXPORT_CATALOG_LIMIT', '50').to_i
   output_file = ENV.fetch('EXPORT_CATALOG_OUTPUT', 'catalog_export.json')
   mode_label = all_mode ? 'all collections' : "first #{limit} qualifying collections"
 
@@ -92,26 +92,29 @@ task export_catalog: :environment do
   url_helpers = Rails.application.routes.url_helpers
   count = 0
 
-  File.open(output_file, 'w') do |f|
+  File.open(output_file, 'w:UTF-8') do |f|
     f.write("{\n  \"mode\": #{JSON.generate(mode_label)},\n  \"collections\": [\n")
     first = true
 
-    Collection.where(collection_type: %i(volume periodical_issue)).find_each do |collection|
-      next unless collection.any_published_manifestations?
+    Collection
+      .where(collection_type: %i(volume periodical_issue))
+      .preload({ taggings: :tag }, { involved_authorities: :authority })
+      .find_each do |collection|
+        next unless collection.any_published_manifestations?
 
-      serialized = serialize_collection(collection, url_helpers, [collection.id])
-      f.write(",\n") unless first
-      first = false
-      f.write(JSON.pretty_generate(serialized).split("\n").map { |l| "    #{l}" }.join("\n"))
-      count += 1
-      print "#{count} " if (count % 50).zero?
+        serialized = serialize_collection(collection, url_helpers, [collection.id])
+        f.write(",\n") unless first
+        first = false
+        f.write(JSON.pretty_generate(serialized).split("\n").map { |l| "    #{l}" }.join("\n"))
+        count += 1
+        print "#{count} " if (count % 50).zero?
 
-      next if all_mode
-      next unless count >= limit
+        next if all_mode
+        next unless count >= limit
 
-      puts "\nReached limit of #{limit}. Pass --all to export everything."
-      break
-    end
+        puts "\nReached limit of #{limit}. Pass --all to export everything."
+        break
+      end
 
     f.write("\n  ],\n  \"count\": #{count}\n}\n")
   end

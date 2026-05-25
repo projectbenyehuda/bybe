@@ -10,8 +10,10 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
     Rake::Task.define_task(:environment)
   end
 
+  let(:output_tempfile) { Tempfile.new(['catalog_export', '.json']) }
+  let(:output_file) { output_tempfile.path }
+
   let(:task) { Rake::Task['export_catalog'] }
-  let(:output_file) { Tempfile.new(['catalog_export', '.json']).path }
 
   before do
     task.reenable
@@ -21,7 +23,9 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
 
   after do
     ENV.delete('EXPORT_CATALOG_OUTPUT')
-    FileUtils.rm_f(output_file)
+    ENV.delete('EXPORT_CATALOG_LIMIT')
+    output_tempfile.close
+    output_tempfile.unlink
   end
 
   def parsed_output
@@ -109,17 +113,28 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
       create(:collection, collection_type: :volume, manifestations: [manifestation])
     end
     let!(:approved_tag) { create(:tag, status: :approved) }
-    let!(:pending_tag) { create(:tag, status: :approved) }
 
     before do
       create(:tagging, taggable: collection, tag: approved_tag, status: :approved)
-      create(:tagging, taggable: collection, tag: pending_tag, status: :pending)
     end
 
-    it 'exports only approved tags' do
+    it 'exports approved tags' do
       task.invoke
-      c = parsed_output['collections'].first
-      expect(c['tags']).to eq([approved_tag.name])
+      expect(parsed_output['collections'].first['tags']).to eq([approved_tag.name])
+    end
+
+    it 'excludes tags whose tagging is pending' do
+      pending_tagging_tag = create(:tag, status: :approved)
+      create(:tagging, taggable: collection, tag: pending_tagging_tag, status: :pending)
+      task.invoke
+      expect(parsed_output['collections'].first['tags']).not_to include(pending_tagging_tag.name)
+    end
+
+    it 'excludes tags where the tag itself is not approved even if the tagging is approved' do
+      pending_tag = create(:tag, status: :pending)
+      create(:tagging, taggable: collection, tag: pending_tag, status: :approved)
+      task.invoke
+      expect(parsed_output['collections'].first['tags']).not_to include(pending_tag.name)
     end
   end
 
@@ -157,6 +172,60 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
       task.invoke
       m = parsed_output['collections'].first['contents'].first
       expect(m['authorities']['author']).to eq(['Aaron Author', 'Zara Author'])
+    end
+  end
+
+  context 'with nested sub-collections' do
+    let!(:manifestation) { create(:manifestation, status: :published) }
+    let!(:sub_collection) do
+      create(:collection, collection_type: :volume, title: 'Sub Collection', manifestations: [manifestation])
+    end
+    let!(:parent_collection) do
+      create(:collection, collection_type: :volume, title: 'Parent Collection',
+                          included_collections: [sub_collection])
+    end
+
+    it 'includes the sub-collection in the parent contents tree' do
+      task.invoke
+      parent = parsed_output['collections'].find { |c| c['id'] == parent_collection.id }
+      expect(parent).not_to be_nil
+      nested = parent['contents'].find { |c| c['type'] == 'collection' }
+      expect(nested).to include('id' => sub_collection.id, 'title' => 'Sub Collection')
+    end
+
+    it 'includes the manifestation nested inside the sub-collection' do
+      task.invoke
+      parent = parsed_output['collections'].find { |c| c['id'] == parent_collection.id }
+      nested_col = parent['contents'].find { |c| c['type'] == 'collection' }
+      expect(nested_col['contents'].first).to include('id' => manifestation.id)
+    end
+  end
+
+  context 'with --all mode' do
+    before { ENV['EXPORT_CATALOG_LIMIT'] = '2' }
+
+    let!(:manifestations) { create_list(:manifestation, 3, status: :published) }
+    let!(:collections) do
+      manifestations.map do |m|
+        create(:collection, collection_type: :volume, manifestations: [m])
+      end
+    end
+
+    it 'uses "all collections" as the mode label' do
+      allow(ARGV).to receive(:include?).with('--all').and_return(true)
+      task.invoke
+      expect(parsed_output['mode']).to eq('all collections')
+    end
+
+    it 'exports all qualifying collections beyond the default limit' do
+      allow(ARGV).to receive(:include?).with('--all').and_return(true)
+      task.invoke
+      expect(parsed_output['count']).to eq(3)
+    end
+
+    it 'stops at the limit in default mode' do
+      task.invoke
+      expect(parsed_output['count']).to eq(2)
     end
   end
 end
