@@ -221,6 +221,9 @@
                   %span.text-muted
                     = t('lexicon.verification.sections.citation_pages')
                     = citation.pages
+                - if citation.notes.present?
+                  %br
+                  %span.text-muted= citation.notes
                 - if citation.link.present?
                   %br
                   - if citation.link_broken?
