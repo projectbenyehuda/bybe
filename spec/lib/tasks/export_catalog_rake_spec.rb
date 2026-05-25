@@ -228,4 +228,88 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
       expect(parsed_output['count']).to eq(2)
     end
   end
+
+  context 'with uncollected texts' do
+    let!(:uncollected_col) { create(:collection, :uncollected) }
+    let!(:published_m) { create(:manifestation, status: :published, orig_lang: 'fr') }
+    let!(:unpublished_m) { create(:manifestation, status: :unpublished) }
+
+    before do
+      uncollected_col.append_item(published_m)
+      uncollected_col.append_item(unpublished_m)
+    end
+
+    it 'includes uncollected_texts and uncollected_count in the output' do
+      task.invoke
+      data = parsed_output
+      expect(data).to include('uncollected_texts', 'uncollected_count')
+    end
+
+    it 'exports published manifestations from uncollected collections' do
+      task.invoke
+      ids = parsed_output['uncollected_texts'].map { |m| m['id'] } # rubocop:disable Rails/Pluck
+      expect(ids).to include(published_m.id)
+    end
+
+    it 'excludes unpublished manifestations from uncollected collections' do
+      task.invoke
+      ids = parsed_output['uncollected_texts'].map { |m| m['id'] } # rubocop:disable Rails/Pluck
+      expect(ids).not_to include(unpublished_m.id)
+    end
+
+    it 'serializes uncollected manifestations with the standard manifestation fields' do
+      task.invoke
+      m = parsed_output['uncollected_texts'].find { |x| x['id'] == published_m.id }
+      expect(m).to include('type' => 'manifestation')
+      expect(m.keys).to include('id', 'url', 'title', 'authorities', 'tags')
+      expect(m['url']).to match(%r{/read/#{published_m.id}})
+      expect(m['original_language']).to eq('צרפתית')
+    end
+
+    it 'includes source_edition and date for uncollected manifestations when present' do
+      published_m.expression.update!(source_edition: 'First Ed.', date: '1920')
+      task.invoke
+      m = parsed_output['uncollected_texts'].find { |x| x['id'] == published_m.id }
+      expect(m['source_edition']).to eq('First Ed.')
+      expect(m['date']).to eq('1920')
+    end
+
+    it 'does not include source_edition and date for collected manifestations' do
+      m_in_vol = create(:manifestation, status: :published)
+      m_in_vol.expression.update!(source_edition: 'First Ed.', date: '1920')
+      create(:collection, collection_type: :volume, manifestations: [m_in_vol])
+      task.invoke
+      collected = parsed_output['collections'].flat_map { |c| c['contents'] }
+                                              .find { |x| x['id'] == m_in_vol.id }
+      expect(collected).not_to have_key('source_edition')
+      expect(collected).not_to have_key('date')
+    end
+
+    it 'does not include the uncollected collection itself in collections' do
+      task.invoke
+      ids = parsed_output['collections'].map { |c| c['id'] } # rubocop:disable Rails/Pluck
+      expect(ids).not_to include(uncollected_col.id)
+    end
+  end
+
+  context 'with uncollected limit' do
+    let!(:uncollected_col) { create(:collection, :uncollected) }
+    let!(:manifestations) { create_list(:manifestation, 3, status: :published) }
+
+    before do
+      ENV['EXPORT_CATALOG_LIMIT'] = '2'
+      manifestations.each { |m| uncollected_col.append_item(m) }
+    end
+
+    it 'stops at the limit in default mode' do
+      task.invoke
+      expect(parsed_output['uncollected_count']).to eq(2)
+    end
+
+    it 'exports all uncollected texts in --all mode' do
+      allow(ARGV).to receive(:include?).with('--all').and_return(true)
+      task.invoke
+      expect(parsed_output['uncollected_count']).to eq(3)
+    end
+  end
 end
