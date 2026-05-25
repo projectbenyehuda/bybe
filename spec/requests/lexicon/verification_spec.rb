@@ -197,7 +197,8 @@ RSpec.describe 'Lexicon::Verification', type: :request do
   end
 
   describe 'GET /lex/verification/:id - PHP source file count mismatch warnings' do
-    # tsifroni.php has 3 work bullets, 0 citation bullets, 0 link bullets
+    # tsifroni.php has 3 EMPTY (whitespace-only) work bullets — 0 non-empty works.
+    # Empty <li> items are excluded from the count to match migration behaviour.
     let(:fixture_path) { Rails.root.join('spec/fixtures/files/lexicon/tsifroni.php').to_s }
 
     let(:entry) do
@@ -206,30 +207,28 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       e
     end
 
-    context 'with a lex_file pointing to tsifroni.php (3 work bullets)' do
+    context 'with a lex_file pointing to tsifroni.php (0 non-empty work bullets)' do
       before do
         lex_file = create(:lex_file, :person, lex_entry: entry)
         lex_file.update_columns(full_path: fixture_path)
       end
 
-      context 'when migrated works count matches PHP file (3 works == 3 bullets)' do
-        before { 3.times { create(:lex_person_work, person: entry.lex_item) } }
-
-        it 'does not show works count mismatch warning' do
+      context 'when migrated works count matches PHP file (0 works == 0 non-empty bullets)' do
+        it 'does not show works count mismatch warning even though PHP has 3 empty <li> items' do
           get "/lex/verification/#{entry.id}"
 
-          expect(response.body).not_to include(
-            I18n.t('lexicon.verification.sections.count_mismatch', php_count: 3, migrated_count: 3)
-          )
+          expect(response.body).not_to include('count_mismatch')
         end
       end
 
-      context 'when migrated works count does not match PHP file (0 works vs 3 bullets)' do
+      context 'when migrated works count does not match PHP file (1 DB work vs 0 non-empty bullets)' do
+        before { create(:lex_person_work, person: entry.lex_item) }
+
         it 'shows works count mismatch warning' do
           get "/lex/verification/#{entry.id}"
 
           expect(response.body).to include(
-            I18n.t('lexicon.verification.sections.count_mismatch', php_count: 3, migrated_count: 0)
+            I18n.t('lexicon.verification.sections.count_mismatch', php_count: 0, migrated_count: 1)
           )
         end
       end
