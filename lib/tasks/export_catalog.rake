@@ -27,7 +27,7 @@ module ExportCatalogHelpers
     raw.split(';').map(&:strip).compact_blank
   end
 
-  def serialize_manifestation(manifestation, url_helpers)
+  def serialize_manifestation(manifestation, url_helpers, edition_details: false)
     lang = manifestation.expression.work.orig_lang
     entry = {
       type: 'manifestation',
@@ -40,6 +40,11 @@ module ExportCatalogHelpers
     alts = split_alternate_titles(manifestation.alternate_titles)
     entry[:alternate_titles] = alts unless alts.empty?
     entry[:original_language] = textify_lang(lang) unless lang.blank? || lang == 'he'
+    if edition_details
+      expr = manifestation.expression
+      entry[:source_edition] = expr.source_edition if expr.source_edition.present?
+      entry[:date] = expr.date if expr.date.present?
+    end
     entry
   end
 
@@ -85,12 +90,17 @@ task export_catalog: :environment do
   all_mode = ARGV.include?('--all')
   limit = ENV.fetch('EXPORT_CATALOG_LIMIT', '50').to_i
   output_file = ENV.fetch('EXPORT_CATALOG_OUTPUT', 'catalog_export.json')
-  mode_label = all_mode ? 'all collections' : "first #{limit} qualifying collections"
+  mode_label = if all_mode
+                 'all collections and uncollected texts'
+               else
+                 "first #{limit} qualifying collections and #{limit} uncollected texts"
+               end
 
   puts "Mode: #{mode_label}"
 
   url_helpers = Rails.application.routes.url_helpers
   count = 0
+  ucount = 0
 
   File.open(output_file, 'w:UTF-8') do |f|
     f.write("{\n  \"mode\": #{JSON.generate(mode_label)},\n  \"collections\": [\n")
@@ -116,8 +126,38 @@ task export_catalog: :environment do
         break
       end
 
-    f.write("\n  ],\n  \"count\": #{count}\n}\n")
+    f.write("\n  ],\n  \"count\": #{count},\n  \"uncollected_texts\": [\n")
+    ufirst = true
+
+    uncollected_item_ids = CollectionItem
+                           .joins(:collection)
+                           .where(collections: { collection_type: Collection.collection_types[:uncollected] },
+                                  item_type: 'Manifestation')
+                           .where.not(item_id: nil)
+                           .select(:item_id)
+                           .distinct
+
+    Manifestation
+      .where(id: uncollected_item_ids, status: :published)
+      .preload(expression: [{ involved_authorities: :authority }, { work: { involved_authorities: :authority } }],
+               taggings: :tag)
+      .find_each do |manifestation|
+        serialized = serialize_manifestation(manifestation, url_helpers, edition_details: true)
+        f.write(",\n") unless ufirst
+        ufirst = false
+        f.write(JSON.pretty_generate(serialized).split("\n").map { |l| "    #{l}" }.join("\n"))
+        ucount += 1
+        print "u#{ucount} " if (ucount % 50).zero?
+
+        next if all_mode
+        next unless ucount >= limit
+
+        puts "\nReached uncollected limit of #{limit}. Pass --all to export everything."
+        break
+      end
+
+    f.write("\n  ],\n  \"uncollected_count\": #{ucount}\n}\n")
   end
 
-  puts "Exported #{count} collections to #{output_file}"
+  puts "Exported #{count} collections and #{ucount} uncollected texts to #{output_file}"
 end
