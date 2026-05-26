@@ -30,6 +30,24 @@ describe '/lexicon/files' do
       end
     end
 
+    context 'when entry has verifying status but no lex_item (stuck after NFS error)' do
+      let(:params) { { entry_statuses: ['verifying'] } }
+
+      let!(:stuck_file) do
+        file = create(:lex_file, :person, status: :classified, entry_status: :raw,
+                                          error_message: 'No such file or directory @ rb_sysopen - /lexicon/00044.php')
+        file.lex_entry.update_columns(status: LexEntry.statuses[:verifying])
+        file
+      end
+
+      it 'renders the redo_migration button so the entry is not stuck' do
+        expect(stuck_file.lex_entry.lex_item).to be_nil # entry_status: :raw factory trait guarantees nil lex_item
+        call
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(redo_migration_lexicon_file_path(stuck_file))
+      end
+    end
+
     context 'when filtering applied' do
       context 'when filtering by title' do
         let!(:file1) do
@@ -257,7 +275,7 @@ describe '/lexicon/files' do
     end
 
     context 'when entry_status is not draft or verifying' do
-      let(:entry_status) { LexEntry.statuses.keys.find { |status| !%w(draft verifying).include?(status) } }
+      let(:entry_status) { LexEntry.statuses.keys.find { |status| %w(draft verifying).exclude?(status) } }
 
       it 'does not queue job and simply re-renders tr' do
         expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
