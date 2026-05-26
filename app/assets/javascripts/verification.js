@@ -37,12 +37,15 @@ function initVerification() {
         }
     }
 
-    // Scroll to a section after a work edit + page reload.
+    // Scroll to a section after a work edit + page reload, OR restore migrated pane scroll.
+    // section scroll takes precedence; plain scroll restore is used when no section is targeted.
     // Must scroll .migrated-content directly (the grid pane has overflow: hidden; the
     // window itself does not scroll in this layout, so scrollIntoView targets the wrong element).
     const scrollToSection = sessionStorage.getItem('scroll_to_section');
+    const savedMigratedScroll = sessionStorage.getItem('migrated_scroll_top');
     if (scrollToSection) {
         sessionStorage.removeItem('scroll_to_section');
+        sessionStorage.removeItem('migrated_scroll_top');
         setTimeout(function() {
             var el = document.getElementById(scrollToSection);
             if (!el) return;
@@ -56,6 +59,15 @@ function initVerification() {
                 el.scrollIntoView({ block: 'start' });
             }
         }, 150);
+    } else if (savedMigratedScroll !== null) {
+        sessionStorage.removeItem('migrated_scroll_top');
+        var migratedScrollVal = parseInt(savedMigratedScroll, 10);
+        if (migratedScrollVal > 0) {
+            setTimeout(function() {
+                var migratedContent = document.querySelector('.migrated-content');
+                if (migratedContent) { migratedContent.scrollTop = migratedScrollVal; }
+            }, 100);
+        }
     }
 
     // Handle checklist checkbox toggles
@@ -426,11 +438,15 @@ function closeModalWithReload(reloadSelector) {
     }
 }
 
-// Save source pane scroll position before any reload
+// Save both pane scroll positions before any reload
 function saveScrollPositions() {
     var sourceContent = document.querySelector('.source-content');
     if (sourceContent) {
         sessionStorage.setItem('source_scroll_top', String(sourceContent.scrollTop));
+    }
+    var migratedContent = document.querySelector('.migrated-content');
+    if (migratedContent) {
+        sessionStorage.setItem('migrated_scroll_top', String(migratedContent.scrollTop));
     }
 }
 
