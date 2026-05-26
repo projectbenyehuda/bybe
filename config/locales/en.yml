@@ -3249,3 +3249,20 @@ en:
         drag_to_reorder: Drag to reorder
         reordering_failed: Reordering failed
         no_subject: General
+      edit:
+        title: Edit Citation
+    links:
+      edit:
+        title: Edit Link
+  lex_issues:
+    index:
+      title: Lex Issues
+      new: New Lex Issue
+    new:
+      title: New Lex Issue
+    edit:
+      title: Edit Lex Issue
+    form:
+      errors_header:
+        one: "1 error prevented this lex issue from being saved"
+        other: "%{count} errors prevented this lex issue from being saved"

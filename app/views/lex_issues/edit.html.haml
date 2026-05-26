@@ -1,7 +1,7 @@
-%h1 Editing lex_issue
+%h1= t('.title')
 
 = render 'form'
 
-= link_to 'Show', @lex_issue
+= link_to t(:show), @lex_issue
 \|
-= link_to 'Back', lex_issues_path
+= link_to t(:back), lex_issues_path
