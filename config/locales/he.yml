@@ -2502,3 +2502,21 @@ he:
         drag_to_reorder: גרור לשינוי סדר
         reordering_failed: שינוי הסדר נכשל
         no_subject: כללי
+      edit:
+        title: עריכת מראה מקום
+    links:
+      edit:
+        title: עריכת קישור
+  lex_issues:
+    index:
+      title: גיליונות
+      new: גיליון חדש
+    new:
+      title: גיליון חדש
+    edit:
+      title: עריכת גיליון
+    form:
+      errors_header:
+        one: "שגיאה אחת מנעה שמירת גיליון זה"
+        other: "%{count} שגיאות מנעו שמירת גיליון זה"
+  type: סוג

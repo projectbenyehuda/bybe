@@ -1,14 +1,14 @@
-%h1 Listing lex_issues
+%h1= t('.title')
 
 %table
   %thead
     %tr
-      %th Subtitle
-      %th Volume
-      %th Issue
-      %th Seq num
-      %th Toc
-      %th Lex publication
+      %th= LexIssue.human_attribute_name(:subtitle)
+      %th= LexIssue.human_attribute_name(:volume)
+      %th= LexIssue.human_attribute_name(:issue)
+      %th= LexIssue.human_attribute_name(:seq_num)
+      %th= LexIssue.human_attribute_name(:toc)
+      %th= LexIssue.human_attribute_name(:lex_publication)
       %th
       %th
       %th
@@ -22,10 +22,10 @@
         %td= lex_issue.seq_num
         %td= lex_issue.toc
         %td= lex_issue.lex_publication
-        %td= link_to 'Show', lex_issue
-        %td= link_to 'Edit', edit_lex_issue_path(lex_issue)
-        %td= link_to 'Destroy', lex_issue, method: :delete, data: { confirm: 'Are you sure?' }
+        %td= link_to t(:show), lex_issue
+        %td= link_to t(:edit), edit_lex_issue_path(lex_issue)
+        %td= link_to t(:destroy), lex_issue, method: :delete, data: { confirm: t(:are_you_sure) }
 
 %br
 
-= link_to 'New Lex issue', new_lex_issue_path
+= link_to t('.new'), new_lex_issue_path
