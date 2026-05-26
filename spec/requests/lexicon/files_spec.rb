@@ -41,8 +41,9 @@ describe '/lexicon/files' do
       end
 
       it 'renders the redo_migration button so the entry is not stuck' do
+        expect(stuck_file.lex_entry.lex_item).to be_nil # entry_status: :raw factory trait guarantees nil lex_item
         call
-        expect(call).to eq(200)
+        expect(response).to have_http_status(:ok)
         expect(response.body).to include(redo_migration_lexicon_file_path(stuck_file))
       end
     end
