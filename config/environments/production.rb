@@ -1,4 +1,5 @@
 require "active_support/core_ext/integer/time"
+require 'deployment_helpers'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -95,6 +96,8 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
-  routes.default_url_options = { host: ENV.fetch('APP_HOSTNAME', 'benyehuda.org'), protocol: 'https' }
-  config.action_mailer.default_url_options = { host: ENV.fetch('APP_HOSTNAME', 'benyehuda.org') }
+  unless DeploymentHelpers.assets_compilation?
+    routes.default_url_options = { host: SiteConstants::APP_HOSTNAME, protocol: 'https' }
+    config.action_mailer.default_url_options = { host: SiteConstants::APP_HOSTNAME }
+  end
 end
