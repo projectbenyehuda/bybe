@@ -3,6 +3,18 @@
 module Lexicon
   # Helper methods for verification workbench views
   module VerificationHelper
+    # Returns 'ltr' if text has fewer than 20% Hebrew characters, nil otherwise.
+    # nil omits the dir attribute in HAML, so the parent RTL context is inherited.
+    def text_dir(text)
+      return nil if text.blank?
+
+      total = text.length
+      return nil if total.zero?
+
+      hebrew_count = text.each_codepoint.count { |cp| cp.between?(HEB_UTF8_START, HEB_UTF8_END) }
+      (hebrew_count.to_f / total) < 0.2 ? 'ltr' : nil
+    end
+
     # Returns the CSS classes for a citation card, including broken-link if needed.
     def citation_card_css(citation, checklist)
       verified = checklist['citations']&.dig('items', citation.id.to_s, 'verified')
