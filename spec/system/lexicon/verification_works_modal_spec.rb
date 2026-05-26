@@ -33,9 +33,11 @@ describe 'Verification Works Modal UX', :js do
     before do
       visit "/lex/verification/#{entry.id}"
       within '#section-works' do
-        click_button 'ערוך'
+        click_button I18n.t('lexicon.verification.sections.auto_match_works_btn')
       end
+      # rubocop:disable RSpec/ExpectInHook
       expect(page).to have_css('#generalDlg.show', wait: 5)
+      # rubocop:enable RSpec/ExpectInHook
     end
 
     it 'modal appears near the top of the viewport' do
@@ -49,8 +51,8 @@ describe 'Verification Works Modal UX', :js do
       modal_height = page.evaluate_script(
         "document.querySelector('#generalDlg .modal-content').getBoundingClientRect().height"
       )
-      viewport_height = page.evaluate_script("window.innerHeight")
-      expect(modal_height).to be <= (viewport_height * 0.33 + 10) # +10px tolerance
+      viewport_height = page.evaluate_script('window.innerHeight')
+      expect(modal_height).to be <= ((viewport_height * 0.33) + 10) # +10px tolerance
     end
 
     it 'modal header shows move cursor indicating draggability' do
@@ -64,7 +66,7 @@ describe 'Verification Works Modal UX', :js do
       handle_classes = page.evaluate_script(
         "Array.from(document.querySelectorAll('#generalDlg .modal-resize-handle')).map(h => h.className)"
       )
-      %w[dlg-n dlg-ne dlg-e dlg-se dlg-s dlg-sw dlg-w dlg-nw].each do |dir|
+      %w(dlg-n dlg-ne dlg-e dlg-se dlg-s dlg-sw dlg-w dlg-nw).each do |dir|
         expect(handle_classes.any? { |c| c.include?(dir) }).to be true
       end
     end

@@ -109,7 +109,8 @@ describe 'Lexicon Verification Workbench' do
     end
 
     it 'displays the three-column layout' do
-      expect(page).to have_css('.verification-checklist')
+      # Checklist moved into #checklistModal; main layout has source + migrated panels
+      expect(page).to have_css('#checklistModal', visible: :all)
       expect(page).to have_css('.verification-source')
       expect(page).to have_css('.verification-migrated')
     end
@@ -127,24 +128,19 @@ describe 'Lexicon Verification Workbench' do
     end
 
     it 'displays the verification checklist' do
-      within('.verification-checklist') do
-        expect(page).to have_content('רשימת בדיקה')
-        expect(page).to have_content('כותרת')
-        expect(page).to have_content('שנות חיים')
-        expect(page).to have_content('ביוגרפיה')
-        expect(page).to have_content('יצירות')
-        expect(page).to have_content('מראי מקום')  # Citations in Hebrew
-        expect(page).to have_content('קישוריוֹת')
-        expect(page).to have_content('קבצים מצורפים')
-      end
+      # Checklist is now inside #checklistModal (opened via button in the header)
+      expect(page).to have_css('#checklistModal', text: 'רשימת בדיקה', visible: :all)
+      expect(page).to have_css('#checklistModal', text: 'כותרת', visible: :all)
+      expect(page).to have_css('#checklistModal', text: 'שנות חיים', visible: :all)
+      expect(page).to have_css('#checklistModal', text: 'ביוגרפיה', visible: :all)
+      expect(page).to have_css('#checklistModal', text: 'יצירות', visible: :all)
+      expect(page).to have_css('#checklistModal', text: 'מראי מקום', visible: :all)
+      expect(page).to have_css('#checklistModal', text: 'קישוריוֹת', visible: :all)
+      expect(page).to have_css('#checklistModal', text: 'קבצים מצורפים', visible: :all)
     end
 
     it 'shows nested citation items in checklist' do
-      within('.verification-checklist') do
-        within('.nested-checklist', match: :first) do
-          expect(page).to have_content('Test Citation')
-        end
-      end
+      expect(page).to have_css('#checklistModal .nested-checklist', text: 'Test Citation', visible: :all)
     end
 
     it 'displays source PHP in iframe' do
@@ -165,18 +161,16 @@ describe 'Lexicon Verification Workbench' do
 
     it 'shows citations section with proper Hebrew label' do
       within('.verification-migrated') do
-        expect(page).to have_content('מראי מקום')  # Not ציטוטים
+        expect(page).to have_content('מראי מקום') # Not ציטוטים
         expect(page).to have_content('Test Citation')
         expect(page).to have_content('Test Publication')
       end
     end
 
     it 'displays checklist checkboxes as disabled (read-only indicators)' do
-      within('.verification-checklist') do
-        checkboxes = all('input[type="checkbox"]')
-        expect(checkboxes.count).to be > 0
-        expect(checkboxes).to all(be_disabled)
-      end
+      checkboxes = all('#checklistModal input[type="checkbox"]', visible: :all)
+      expect(checkboxes.count).to be > 0
+      expect(checkboxes).to all(be_disabled)
     end
 
     it 'disables mark verified button when incomplete' do
@@ -199,10 +193,8 @@ describe 'Lexicon Verification Workbench' do
     end
 
     it 'displays overall notes textarea' do
-      within('.verification-checklist') do
-        expect(page).to have_css('#overall_notes')
-        expect(page).to have_content('הערות כלליות')
-      end
+      expect(page).to have_css('#checklistModal #overall_notes', visible: :all)
+      expect(page).to have_css('#checklistModal', text: 'הערות כלליות', visible: :all)
     end
 
     it 'displays gender in localized form (Hebrew)' do
@@ -270,14 +262,16 @@ describe 'Lexicon Verification Workbench' do
     it 'updates progress when using quick verify buttons (checkboxes are read-only)', :js do
       skip 'WebDriver not available or misconfigured' unless webdriver_available?
 
-      # Checkboxes are now disabled and read-only
-      # Progress is updated via quick verify buttons on individual items
-      within('.verification-checklist') do
+      # Checklist is now in #checklistModal — open it to verify checkboxes are read-only
+      find('button', text: I18n.t('lexicon.verification.checklist.title')).click
+      expect(page).to have_css('#checklistModal', visible: true, wait: 3)
+
+      within('#checklistModal') do
         checkbox = find('input[data-path="title"]')
         expect(checkbox).to be_disabled
       end
 
-      # Verify progress bar exists
+      # Verify progress bar exists in the main view
       expect(page).to have_css('#main-progress-bar', visible: :all)
     end
 
@@ -319,7 +313,7 @@ describe 'Lexicon Verification Workbench' do
       visit "/lex/verification/#{entry.id}"
 
       # Wait for page to load and initialization to complete
-      expect(page).to have_css('.verification-checklist')
+      expect(page).to have_css('.verification-migrated')
       entry.reload
 
       # Check all items programmatically for speed
@@ -415,14 +409,12 @@ describe 'Lexicon Verification Workbench' do
         find('#hide-verified-toggle').click
       end
 
-      # Find the title checklist item (should be checked/verified)
-      # Capybara waits automatically for the DOM changes
-      within('.verification-checklist') do
-        # The parent li of the checked checkbox should be hidden
-        title_checkbox = find('input[data-path="title"]', visible: :all)
-        title_li = title_checkbox.find(:xpath, 'ancestor::li', visible: :all)
-        expect(title_li[:class]).to include('hidden-verified')
-      end
+      # Checklist is in #checklistModal; JS applies 'hidden-verified' to LI elements
+      # of verified checkboxes even when the modal is closed
+      modal = find('#checklistModal', visible: :all)
+      title_checkbox = modal.find('input[data-path="title"]', visible: :all)
+      title_li = title_checkbox.find(:xpath, 'ancestor::li', visible: :all)
+      expect(title_li[:class]).to include('hidden-verified')
     end
 
     it 'persists the hide verified state across page reloads' do
@@ -480,7 +472,7 @@ describe 'Lexicon Verification Workbench' do
       skip 'WebDriver not available or misconfigured' unless webdriver_available?
 
       # Attach some test images to the entry
-      File.open("#{Rails.root.join('spec/fixtures/images/male.png')}", 'rb') do |io|
+      File.open(Rails.root.join('spec/fixtures/images/male.png').to_s, 'rb') do |io|
         entry.attachments.attach(
           io: io,
           filename: 'male.png',
@@ -488,7 +480,7 @@ describe 'Lexicon Verification Workbench' do
         )
       end
 
-      File.open("#{Rails.root.join('spec/fixtures/images/female.png')}", 'rb') do |io|
+      File.open(Rails.root.join('spec/fixtures/images/female.png').to_s, 'rb') do |io|
         entry.attachments.attach(
           io: io,
           filename: 'female.png',

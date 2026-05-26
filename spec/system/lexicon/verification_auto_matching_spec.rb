@@ -4,6 +4,7 @@ require 'rails_helper'
 
 describe 'Lexicon Verification Auto-Matching', :js do
   before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
     login_as_lexicon_editor
   end
 
@@ -99,59 +100,54 @@ describe 'Lexicon Verification Auto-Matching', :js do
     FileUtils.rm_f(lex_file.full_path)
   end
 
+  def open_auto_match_modal
+    within '#section-works' do
+      click_button I18n.t('lexicon.verification.sections.auto_match_works_btn')
+    end
+    expect(page).to have_css('#generalDlg.show', wait: 5)
+    expect(page).to have_css('.auto-match-works-modal', wait: 5)
+  end
+
   describe 'Auto-matching works to publications' do
     # rubocop:disable RSpec/ExampleLength
     it 'shows proposed matches without persisting' do
       visit "/lex/verification/#{entry.id}"
+      open_auto_match_modal
 
-      # Open the works modal
-      within '#section-works' do
-        click_button 'ערוך'
-      end
-
-      # Wait for modal to load
-      expect(page).to have_css('#works-section', wait: 5)
-
-      # Should show success message with count
+      # Should show auto-match intro text
       expect(page).to have_content(/הותאמו אוטומטית לפרסומים/)
 
-      # Verify work1 shows proposed match (exact match)
-      within "#publication-cell-#{work1.id}" do
-        expect(page).to have_css('.proposed-match')
+      # work1 should have an exact match row
+      expect(page).to have_css("#match-row-#{work1.id}")
+      within "#match-row-#{work1.id}" do
         expect(page).to have_content('Tmol Shilshom')
-        expect(page).to have_css('.similarity-badge', text: '100%')
-        expect(page).to have_css('.btn-confirm-match')
-        expect(page).to have_css('.btn-reject-match')
+        expect(page).to have_css('.badge', text: '100%')
+        expect(page).to have_button(I18n.t('lexicon.verification.edit.confirm_match'))
       end
 
-      # Verify work2 shows proposed match (after removing author name)
-      within "#publication-cell-#{work2.id}" do
-        expect(page).to have_css('.proposed-match')
+      # work2 should match pub2 (after stripping author name prefix)
+      expect(page).to have_css("#match-row-#{work2.id}")
+      within "#match-row-#{work2.id}" do
         expect(page).to have_content('Agnon Shmuel Yosef / Sippur Pashut')
-        expect(page).to have_css('.similarity-badge', text: '100%')
+        expect(page).to have_css('.badge', text: '100%')
       end
 
-      # Verify work3 shows proposed match despite typo (fuzzy match)
-      within "#publication-cell-#{work3.id}" do
-        expect(page).to have_css('.proposed-match')
+      # work3 should match despite the typo (fuzzy match)
+      expect(page).to have_css("#match-row-#{work3.id}")
+      within "#match-row-#{work3.id}" do
         expect(page).to have_content('Tmol Shilshom')
-        # Similarity should be high but not 100%
-        badge = find('.similarity-badge')
+        badge = find('.badge')
         expect(badge.text.to_i).to be >= 70
       end
 
-      # Verify work4 did not match (too different)
-      within "#publication-cell-#{work4.id}" do
-        expect(page).not_to have_css('.proposed-match')
-      end
+      # work4 should NOT have a match row (too different)
+      expect(page).not_to have_css("#match-row-#{work4.id}")
 
-      # Close modal and verify database was NOT updated
-      within '.modal-footer' do
-        click_button 'סגירה'
-      end
+      # Close without confirming
+      find('button', text: I18n.t('lexicon.verification.sections.close')).click
       expect(page).not_to have_css('#generalDlg.show', wait: 5)
 
-      # Verify works were NOT persisted
+      # Verify no changes were persisted
       work1.reload
       work2.reload
       work3.reload
@@ -164,120 +160,59 @@ describe 'Lexicon Verification Auto-Matching', :js do
     end
     # rubocop:enable RSpec/ExampleLength
 
-    # rubocop:disable RSpec/ExampleLength
     it 'confirms match when user clicks confirm button' do
       visit "/lex/verification/#{entry.id}"
+      open_auto_match_modal
 
-      # Open the works modal
-      within '#section-works' do
-        click_button 'ערוך'
+      # Confirm the match for work1
+      within "#match-row-#{work1.id}" do
+        find('button', text: I18n.t('lexicon.verification.edit.confirm_match')).click
       end
 
-      expect(page).to have_css('#works-section', wait: 5)
+      # After confirmation the modal closes and the page reloads
+      expect(page).to have_css('#section-works', wait: 10)
 
-      # Click confirm button for work1
-      within "#publication-cell-#{work1.id}" do
-        find('.btn-confirm-match').click
+      # After reload, work1's card should display the linked publication and collection
+      within "#work-#{work1.id}" do
+        expect(page).to have_link('Tmol Shilshom')
+        expect(page).to have_link('Tmol Shilshom Collection')
       end
 
-      # Wait for AJAX to complete and page to reload
-      expect(page).to have_css('#works-section', wait: 5)
-
-      # Verify work1 now shows as linked (persisted)
-      within "tr[data-work-id='#{work1.id}']" do
-        expect(page).to have_link('Tmol Shilshom', href: publication_path(pub1))
-      end
-
-      # Verify collection was also set
-      within "#collection-cell-#{work1.id}" do
-        expect(page).to have_link('Tmol Shilshom Collection', href: collection_path(collection1))
-      end
-
-      # Close modal and verify database was updated
-      within '.modal-footer' do
-        click_button 'סגירה'
-      end
-      expect(page).not_to have_css('#generalDlg.show', wait: 5)
-
+      # Verify the database was updated
       work1.reload
       expect(work1.publication_id).to eq(pub1.id)
       expect(work1.collection_id).to eq(collection1.id)
     end
-    # rubocop:enable RSpec/ExampleLength
-
-    it 'rejects match when user clicks reject button' do
-      visit "/lex/verification/#{entry.id}"
-
-      # Open the works modal
-      within '#section-works' do
-        click_button 'ערוך'
-      end
-
-      expect(page).to have_css('#works-section', wait: 5)
-
-      # Click reject button for work1
-      within "#publication-cell-#{work1.id}" do
-        find('.btn-reject-match').click
-        # Capybara will wait for the proposed match to disappear
-        expect(page).not_to have_css('.proposed-match')
-      end
-
-      # Close modal and verify database was NOT updated
-      within '.modal-footer' do
-        click_button 'סגירה'
-      end
-      expect(page).not_to have_css('#generalDlg.show', wait: 5)
-
-      work1.reload
-      expect(work1.publication_id).to be_nil
-    end
 
     it 'does not propose matches for existing publication assignments' do
-      # Manually assign work1 to a different publication
       other_pub = create(:publication, authority: authority, title: 'Other Publication')
       work1.update!(publication_id: other_pub.id)
 
       visit "/lex/verification/#{entry.id}"
+      open_auto_match_modal
 
-      # Open the works modal
-      within '#section-works' do
-        click_button 'ערוך'
-      end
+      # work1 already has a publication — should not appear as a proposed match
+      expect(page).not_to have_css("#match-row-#{work1.id}")
 
-      expect(page).to have_css('#works-section', wait: 5)
-
-      # Verify work1 still has the original publication (no proposed match)
-      within "tr[data-work-id='#{work1.id}']" do
-        expect(page).to have_link('Other Publication', href: publication_path(other_pub))
-        # Should NOT show proposed match
-        expect(page).not_to have_css('.proposed-match')
-      end
-
-      # But work2 should still have proposed match
-      within "#publication-cell-#{work2.id}" do
-        expect(page).to have_css('.proposed-match')
-        expect(page).to have_content('Agnon Shmuel Yosef / Sippur Pashut')
-        expect(page).to have_css('.similarity-badge', text: '100%')
+      # work2 should still have a proposed match
+      expect(page).to have_css("#match-row-#{work2.id}")
+      within "#match-row-#{work2.id}" do
+        expect(page).to have_css('.badge', text: '100%')
       end
     end
 
     it 'shows different similarity percentages for different match qualities' do
       visit "/lex/verification/#{entry.id}"
+      open_auto_match_modal
 
-      within '#section-works' do
-        click_button 'ערוך'
+      # Exact match shows 100%
+      within "#match-row-#{work1.id}" do
+        expect(page).to have_css('.badge', text: '100%')
       end
 
-      expect(page).to have_css('#works-section', wait: 5)
-
-      # Exact match should show 100%
-      within "#publication-cell-#{work1.id}" do
-        expect(page).to have_css('.similarity-badge', text: '100%')
-      end
-
-      # Fuzzy match should show lower percentage (but still >= 70%)
-      within "#publication-cell-#{work3.id}" do
-        badge = find('.similarity-badge')
+      # Fuzzy match shows lower percentage (but still >= 70%)
+      within "#match-row-#{work3.id}" do
+        badge = find('.badge')
         percentage = badge.text.gsub('%', '').to_i
         expect(percentage).to be >= 70
         expect(percentage).to be < 100
@@ -314,37 +249,28 @@ describe 'Lexicon Verification Auto-Matching', :js do
       visit "/lex/verification/#{entry_no_auth.id}"
 
       within '#section-works' do
-        click_button 'ערוך'
+        click_button I18n.t('lexicon.verification.sections.auto_match_works_btn')
       end
+      expect(page).to have_css('#generalDlg.show', wait: 5)
 
-      expect(page).to have_css('#works-section', wait: 5)
+      # Should show the "no proposals" message when no authority is linked
+      expect(page).to have_content(I18n.t('lexicon.verification.sections.no_auto_match_proposals'))
 
-      # Should show warning about no authority
-      expect(page).to have_css('.alert-warning')
-
-      # Should NOT show auto-matching success message
+      # Should NOT show the auto-matching success intro text
       expect(page).not_to have_content(/הותאמו אוטומטית/)
 
-      # Work should have no proposed match
-      within "#publication-cell-#{work_no_auth.id}" do
-        expect(page).not_to have_css('.proposed-match')
-      end
+      # The unmatched work should not appear as a proposed match row
+      expect(page).not_to have_css("#match-row-#{work_no_auth.id}")
     end
   end
 
   describe 'Similarity badge styling' do
     it 'displays similarity badge in proposed matches' do
       visit "/lex/verification/#{entry.id}"
+      open_auto_match_modal
 
-      within '#section-works' do
-        click_button 'ערוך'
-      end
-
-      expect(page).to have_css('#works-section', wait: 5)
-
-      within "#publication-cell-#{work1.id}" do
-        # Verify similarity badge exists in proposed match
-        expect(page).to have_css('.similarity-badge', text: '100%')
+      within "#match-row-#{work1.id}" do
+        expect(page).to have_css('.badge', text: '100%')
       end
     end
   end
