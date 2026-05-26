@@ -57,8 +57,11 @@ module Lexicon
       # to avoid validation errors
       lex_person.save!
 
-      # Authority can already be filled in ExtractAuthority service so we call AssociateAuthority only if it is nil
-      AssociateAuthority.call(lex_person, html_doc) if lex_person.authority.nil?
+      # Authority can already be filled in ExtractAuthority service so we call AssociateAuthority only if it is nil.
+      # Pass @lex_entry.title explicitly: at this point the DB association between LexPerson and LexEntry
+      # has not been committed yet (lex_entry.lex_item= is set after create_lex_item returns), so
+      # lex_person.entry would return nil inside AssociateAuthority.
+      AssociateAuthority.call(lex_person, html_doc, entry_title: @lex_entry&.title) if lex_person.authority.nil?
       link_citations_to_works(lex_person)
       lex_person
     end
