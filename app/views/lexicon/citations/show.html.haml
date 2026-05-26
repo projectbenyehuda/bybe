@@ -1,27 +1,27 @@
 %p#notice= notice
 
 %p
-  %b Title:
+  %b #{LexCitation.human_attribute_name(:title)}:
   = @lex_citation.title
 %p
-  %b From publication:
+  %b #{LexCitation.human_attribute_name(:from_publication)}:
   = @lex_citation.from_publication
 %p
-  %b Authors:
+  %b #{LexCitation.human_attribute_name(:authors)}:
   = @lex_citation.authors
 %p
-  %b Pages:
+  %b #{LexCitation.human_attribute_name(:pages)}:
   = @lex_citation.pages
 %p
-  %b Link:
+  %b #{LexCitation.human_attribute_name(:link)}:
   = @lex_citation.link
 %p
-  %b Item:
+  %b #{LexCitation.human_attribute_name(:item)}:
   = @lex_citation.item
 %p
-  %b Manifestation:
+  %b #{LexCitation.human_attribute_name(:manifestation)}:
   = @lex_citation.manifestation
 
-= link_to 'Edit', edit_lex_citation_path(@lex_citation)
+= link_to t(:edit), edit_lex_citation_path(@lex_citation)
 \|
-= link_to 'Back', lex_citations_path
+= link_to t(:back), lex_citations_path

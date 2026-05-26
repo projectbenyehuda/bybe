@@ -1,7 +1,7 @@
 = form_for @lex_issue do |f|
   - if @lex_issue.errors.any?
     #error_explanation
-      %h2= "#{pluralize(@lex_issue.errors.count, "error")} prohibited this lex_issue from being saved:"
+      %h2= t('.errors_header', count: @lex_issue.errors.count)
       %ul
         - @lex_issue.errors.full_messages.each do |message|
           %li= message
@@ -25,4 +25,4 @@
     = f.label :lex_publication
     = f.text_field :lex_publication
   .actions
-    = f.submit 'Save'
+    = f.submit t(:save)
