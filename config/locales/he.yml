@@ -2503,6 +2503,12 @@ he:
       unlock:
         success: הנעילה שוחררה בהצלחה!
         not_locked_by_you: הרשומה אינה נעולה על ידך!
+    people:
+      new:
+        title: "ערך %{model} חדש"
+    publications:
+      new:
+        title: "ערך %{model} חדש"
     person_works:
       index:
         add_work: הוספת יצירה

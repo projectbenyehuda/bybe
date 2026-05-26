@@ -3255,6 +3255,12 @@ en:
       unlock:
         success: Lock released successfully!
         not_locked_by_you: This entry is not locked by you!
+    people:
+      new:
+        title: "New %{model}"
+    publications:
+      new:
+        title: "New %{model}"
     person_works:
       index:
         add_work: Add Work
