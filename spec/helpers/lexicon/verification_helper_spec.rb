@@ -14,7 +14,8 @@ RSpec.describe Lexicon::VerificationHelper, type: :helper do
     end
 
     it 'returns ltr when fewer than 20% Hebrew characters' do
-      # 1 Hebrew char out of 10 total = 10% < 20%
+      # "Hello Worldא" = 12 chars (5 letters + 1 space + 5 letters + 1 Hebrew)
+      # 1 Hebrew char out of 12 total ≈ 8.3% < 20%
       expect(helper.text_dir("Hello Worldא")).to eq('ltr')
     end
 
