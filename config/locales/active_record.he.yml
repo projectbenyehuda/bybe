@@ -147,7 +147,7 @@ he:
           other: אחר
       lex_entry:
         title: כותרת
-        english_title: כותרת באנגלית
+        english_title: English title
         other_designation: כינויים אחרים
         statuses:
           draft: טיוטה

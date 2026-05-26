@@ -88,10 +88,10 @@
     .verification-badge{class: checklist['title']&.dig('verified') ? 'verified' : 'not-verified'}
       = checklist['title']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
-    %p
+    %p{dir: text_dir(entry.title)}
       %strong= t('lexicon.verification.checklist.person.title') + ':'
       = entry.title
-    %p
+    %p{dir: text_dir(entry.english_title.to_s)}
       %strong= t('activerecord.attributes.lex_entry.english_title') + ':'
       = entry.english_title.presence || t('unknown')
     %p
@@ -153,7 +153,7 @@
         %h6.mt-2= LexPersonWork.human_enum_name(:work_type, work_type)
         - works.each do |work|
           .work-card{ id: "work-#{work.id}", class: work_card_css(work, checklist) }
-            .work-content
+            .work-content{dir: text_dir(work.title)}
               %strong= work.title
               - pub_detail = format_publication_details(work)
               - if pub_detail
@@ -203,7 +203,7 @@
           %h6.subject-header= subject.presence || t('lexicon.citations.header.general')
           - citations.each do |citation|
             .citation-card{ id: "citation-#{citation.id}", class: citation_card_css(citation, checklist) }
-              .citation-content
+              .citation-content{dir: text_dir(citation.title.to_s)}
                 - if citation.title.present?
                   %strong= citation.title
                 - if citation.authors.any?
@@ -283,7 +283,7 @@
     - if item.links.any?
       - item.links.each do |link|
         .link-card{ id: "link-#{link.id}", class: link_card_css(link, checklist['links']) }
-          .link-content
+          .link-content{dir: text_dir(link.description.to_s)}
             - if link.broken?
               - broken_badge = t('lexicon.verification.broken_link.badge', status: link.http_status)
               %span.broken-link-badge= broken_badge
