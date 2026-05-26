@@ -535,6 +535,16 @@
   }
 }
 
+// LTR fields: override RTL body text-align when dir="ltr" is set on a container
+// (Bootstrap RTL explicitly sets body { text-align: right }, so dir="ltr" alone
+// changes direction but not alignment — this rule restores left alignment.)
+.work-content[dir="ltr"],
+.citation-content[dir="ltr"],
+.link-content[dir="ltr"],
+p[dir="ltr"] {
+  text-align: left;
+}
+
 // RTL Support
 [dir="rtl"] {
   .checklist-card .nested-checklist {
