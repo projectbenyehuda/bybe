@@ -49,7 +49,7 @@ module Lexicon
 
     def redo_migration
       lex_entry = @lex_file.lex_entry
-      return unless lex_entry.status_draft? || lex_entry.status_verifying?
+      return unless lex_entry.status_draft? || lex_entry.status_verifying? || lex_entry.status_escalated?
 
       lex_entry.reset_ingestion!
       @lex_file.reload
