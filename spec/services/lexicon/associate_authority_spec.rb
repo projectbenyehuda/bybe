@@ -206,6 +206,29 @@ describe Lexicon::AssociateAuthority do
     it_behaves_like 'does not associate authority'
   end
 
+  context 'when exactly one Authority has the entry title as an other_designation alias' do
+    let(:expected_authority) { create(:authority, other_designation: "#{entry_title}; Other Alias") }
+
+    before { expected_authority }
+
+    it_behaves_like 'associates authority'
+  end
+
+  context 'when multiple Authorities share the same other_designation alias' do
+    before { create_list(:authority, 2, other_designation: entry_title) }
+
+    it_behaves_like 'does not associate authority'
+  end
+
+  context 'when one Authority matches by name and another matches the same title by other_designation' do
+    before do
+      create(:authority, name: entry_title)
+      create(:authority, other_designation: entry_title)
+    end
+
+    it_behaves_like 'does not associate authority'
+  end
+
   context 'when both a benyehuda.org link and a name match exist' do
     let(:authority_by_link) { create(:authority) }
     let(:html_body) do

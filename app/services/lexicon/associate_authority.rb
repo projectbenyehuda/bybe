@@ -108,8 +108,18 @@ module Lexicon
       name = entry_title.presence || lex_person.entry&.title
       return nil if name.blank?
 
-      authorities = Authority.where(name: name)
-      authorities.one? ? authorities.first : nil
+      by_name        = Authority.where(name: name).to_a
+      by_designation = authorities_by_designation(name)
+      matches        = (by_name + by_designation).uniq
+      matches.one? ? matches.first : nil
+    end
+
+    def authorities_by_designation(name)
+      escaped    = ActiveRecord::Base.sanitize_sql_like(name)
+      candidates = Authority.where('other_designation LIKE ?', "%#{escaped}%")
+      candidates.select do |auth|
+        auth.other_designation.to_s.split(';').map(&:strip).include?(name)
+      end
     end
   end
 end
