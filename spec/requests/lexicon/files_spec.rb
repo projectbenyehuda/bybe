@@ -274,8 +274,21 @@ describe '/lexicon/files' do
       end
     end
 
-    context 'when entry_status is not draft or verifying' do
-      let(:entry_status) { LexEntry.statuses.keys.find { |status| %w(draft verifying).exclude?(status) } }
+    context 'when entry_status is escalated' do
+      let(:entry_status) { :escalated }
+
+      it 'resets the lex_item, queues the job, and sets entry status to migrating' do
+        expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+        expect(call).to eq(200)
+        expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
+        expect(file.lex_entry.reload.status).to eq('migrating')
+        expect(file.lex_entry.lex_item).to be_nil
+        expect(file.reload.status).to eq('classified')
+      end
+    end
+
+    context 'when entry_status is not draft, verifying, or escalated' do
+      let(:entry_status) { LexEntry.statuses.keys.find { |status| %w(draft verifying escalated).exclude?(status) } }
 
       it 'does not queue job and simply re-renders tr' do
         expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
