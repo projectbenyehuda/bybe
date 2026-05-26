@@ -108,11 +108,12 @@ describe 'Lexicon Verification Workbench' do
       visit "/lex/verification/#{entry.id}"
     end
 
-    it 'displays the three-column layout' do
-      # Checklist moved into #checklistModal; main layout has source + migrated panels
-      expect(page).to have_css('#checklistModal', visible: :all)
+    it 'displays the two-column layout with checklist accessible via modal' do
+      # Source + migrated panels are the two visible columns
       expect(page).to have_css('.verification-source')
       expect(page).to have_css('.verification-migrated')
+      # Checklist is in a modal opened via the header button
+      expect(page).to have_css('#checklistModal', visible: :all)
     end
 
     it 'shows the entry title and back button' do
