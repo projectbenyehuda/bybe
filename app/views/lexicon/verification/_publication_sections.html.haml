@@ -5,10 +5,10 @@
     .verification-badge{class: checklist['title']&.dig('verified') ? 'verified' : 'not-verified'}
       = checklist['title']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
-    %p
+    %p{dir: text_dir(entry.title)}
       %strong= t('lexicon.verification.checklist.publication.title') + ':'
       = entry.title
-    %p
+    %p{dir: text_dir(entry.english_title.to_s)}
       %strong= t('activerecord.attributes.lex_entry.english_title') + ':'
       = entry.english_title.presence || t('unknown')
   .section-actions
@@ -116,7 +116,7 @@
     - if item.links.any?
       - item.links.each do |link|
         .link-card{ id: "link-#{link.id}", class: link_card_css(link, checklist['links']) }
-          .link-content
+          .link-content{dir: text_dir(link.description.to_s)}
             - if link.broken?
               - broken_badge = t('lexicon.verification.broken_link.badge', status: link.http_status)
               %span.broken-link-badge= broken_badge
