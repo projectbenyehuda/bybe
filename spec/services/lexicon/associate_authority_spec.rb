@@ -214,6 +214,14 @@ describe Lexicon::AssociateAuthority do
     it_behaves_like 'associates authority'
   end
 
+  context 'when the alias has extra whitespace around the semicolon separator' do
+    let(:expected_authority) { create(:authority, other_designation: "Other Alias ;  #{entry_title}  ; Yet Another") }
+
+    before { expected_authority }
+
+    it_behaves_like 'associates authority'
+  end
+
   context 'when multiple Authorities share the same other_designation alias' do
     before { create_list(:authority, 2, other_designation: entry_title) }
 
