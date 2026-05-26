@@ -28,7 +28,11 @@ module Lexicon
       end
 
       if heading_table.parent.name == 'span'
-        heading_table = heading_table.parent
+        span = heading_table.parent
+        # Only move up to the span level if content continues outside it.
+        # When the span has no next sibling, it wraps all page content, so we
+        # stay at the table level and iterate its siblings (which are inside the span).
+        heading_table = span if span.next_element.present?
       end
 
       next_elem = heading_table.next_element

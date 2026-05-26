@@ -73,6 +73,36 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when span wraps all page content (no </span> before Books section)' do
+    # Regression test for 00633.php: when the <span dir="rtl"> before <body> is never closed
+    # before the Books section, Nokogiri parses everything inside the span. The original code
+    # jumped to the span's parent level and called next_element, finding nothing (span has no
+    # next sibling), resulting in 0 LexPersonWorks.
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Example Author',
+          fname: 'span_wraps_all.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/span_wraps_all.php')
+        }
+      )
+    end
+
+    it 'parses works correctly even when span wraps all content' do
+      expect { call }.to change(LexPerson, :count).by(1)
+      expect(file.reload).to be_status_ingested
+
+      person = file.lex_entry.lex_item
+      expect(person).to be_an_instance_of(LexPerson)
+      expect(person.works.count).to eq(2)
+      expect(person.works.map(&:title)).to include('ספר ראשון : שירים', 'ספר שני : פרוזה')
+      expect(person.works.all?(&:work_type_original?)).to be true
+    end
+  end
+
   context 'when a link has href as its only attribute (no target="_blank")' do
     let!(:file) do
       create(
