@@ -338,6 +338,8 @@
 
   .citation-content, .link-content, .work-content {
     margin-bottom: 0.75rem;
+    overflow-wrap: break-word;
+    word-break: break-all;
 
     strong {
       display: block;
