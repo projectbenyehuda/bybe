@@ -182,6 +182,20 @@ describe Lexicon::AssociateAuthority do
     it_behaves_like 'associates authority'
   end
 
+  context 'when entry_title is passed explicitly (lex_person.entry not yet associated, as during initial migration)' do
+    subject(:call) { described_class.call(lex_person_without_entry, html_doc, entry_title: entry_title) }
+
+    let(:lex_person_without_entry) { create(:lex_person) }
+    let(:expected_authority) { create(:authority, name: entry_title) }
+
+    before { expected_authority }
+
+    it 'associates authority using the supplied entry_title' do
+      call
+      expect(lex_person_without_entry.reload.authority).to eq(expected_authority)
+    end
+  end
+
   context 'when multiple Authorities have the same name' do
     before { create_list(:authority, 2, name: entry_title) }
 

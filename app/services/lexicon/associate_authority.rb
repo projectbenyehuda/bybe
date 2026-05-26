@@ -18,10 +18,10 @@ module Lexicon
     # P7507 = Project Ben-Yehuda author ID property on Wikidata
     WIKIDATA_PBY_PROPERTY = 'P7507'
 
-    def call(lex_person, html_doc)
+    def call(lex_person, html_doc, entry_title: nil)
       authority = find_by_benyehuda_link(html_doc) ||
                   find_by_wikidata(html_doc) ||
-                  find_by_name(lex_person)
+                  find_by_name(lex_person, entry_title)
 
       return lex_person if authority.nil?
 
@@ -104,11 +104,8 @@ module Lexicon
       nil
     end
 
-    def find_by_name(lex_person)
-      entry = lex_person.entry
-      return nil unless entry
-
-      name = entry.title
+    def find_by_name(lex_person, entry_title = nil)
+      name = entry_title.presence || lex_person.entry&.title
       return nil if name.blank?
 
       authorities = Authority.where(name: name)
