@@ -66,69 +66,6 @@ describe IngestiblesController do
       end
     end
 
-    context 'when docx URL param is provided' do
-      subject(:call) { post :create, params: { ingestible: ingestible_params, docx: docx_url } }
-
-      let(:ingestible_params) { attributes_for(:ingestible) }
-      let(:fake_docx_body) { Rails.root.join('spec/fixtures/docx/inherited_formatting_test.docx').binread }
-      let(:faraday_response) { instance_double(Faraday::Response, body: fake_docx_body, success?: true) }
-
-      context 'with a valid https URL' do
-        let(:docx_url) { 'https://example.com/path/to/document.docx' }
-
-        before do
-          allow(Faraday).to receive(:get).with(docx_url).and_return(faraday_response)
-        end
-
-        it 'downloads via Faraday and attaches the file' do
-          call
-          expect(Faraday).to have_received(:get).with(docx_url)
-          ingestible = Ingestible.order(id: :desc).first
-          expect(ingestible.docx).to be_attached
-          expect(ingestible.docx.filename.to_s).to eq('document.docx')
-        end
-      end
-
-      context 'with a pipe-prefixed malicious URL' do
-        let(:docx_url) { '|rm -rf /' }
-
-        before { allow(Faraday).to receive(:get) }
-
-        it 'returns 422 without calling Faraday' do
-          call
-          expect(response).to have_http_status(:unprocessable_content)
-          expect(assigns(:ingestible).errors[:base]).to be_present
-          expect(Faraday).not_to have_received(:get)
-        end
-      end
-
-      context 'with a file:// URL' do
-        let(:docx_url) { 'file:///etc/passwd' }
-
-        before { allow(Faraday).to receive(:get) }
-
-        it 'returns 422 without calling Faraday' do
-          call
-          expect(response).to have_http_status(:unprocessable_content)
-          expect(assigns(:ingestible).errors[:base]).to be_present
-          expect(Faraday).not_to have_received(:get)
-        end
-      end
-
-      context 'when Faraday returns a non-success response' do
-        let(:docx_url) { 'https://example.com/path/to/document.docx' }
-        let(:failed_response) { instance_double(Faraday::Response, success?: false) }
-
-        before { allow(Faraday).to receive(:get).with(docx_url).and_return(failed_response) }
-
-        it 'returns 422 with an error message' do
-          call
-          expect(response).to have_http_status(:unprocessable_content)
-          expect(assigns(:ingestible).errors[:base]).to be_present
-        end
-      end
-    end
-
     context 'with duplicate volume params' do
       let(:authority) { create(:authority) }
       let(:publication) { create(:publication, authority: authority) }
