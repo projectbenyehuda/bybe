@@ -3,11 +3,14 @@
 module Lexicon
   # Controller to work with Lexicon Person Works
   class PersonWorksController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
     before_action :set_work, only: %i(edit update destroy reorder)
     before_action :set_person, only: %i(new create index)
+    before_action :try_to_lock_lex_entry, only: %i(create edit update destroy reorder)
     after_action :sync_verification_checklist, only: %i(create update destroy reorder)
 
     layout false
@@ -89,6 +92,10 @@ module Lexicon
     end
 
     private
+
+    def lex_entry_to_lock
+      @person&.entry
+    end
 
     def set_person
       @person = LexPerson.find(params[:person_id])

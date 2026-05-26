@@ -3,11 +3,14 @@
 module Lexicon
   # Controller to work with Lexicon Links
   class LinksController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
     before_action :set_link, only: %i(edit update destroy)
     before_action :set_entry, only: %i(new create index)
+    before_action :try_to_lock_lex_entry, only: %i(create edit update destroy)
 
     layout false
 

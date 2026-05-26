@@ -3,11 +3,14 @@
 module Lexicon
   # Controller for LexLinkedPerson records attached to LexPersonWork
   class LinkedPeopleController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
     before_action :set_work, only: %i(index create)
     before_action :set_linked_person, only: %i(destroy reorder)
+    before_action :try_to_lock_lex_entry, only: %i(create destroy reorder)
 
     layout false
 
@@ -64,6 +67,10 @@ module Lexicon
 
     def linked_person_params
       params.expect(lex_linked_person: %i(name link_type person_lex_entry_id))
+    end
+
+    def lex_entry_to_lock
+      @work&.person&.entry
     end
 
     def set_work

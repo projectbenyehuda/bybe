@@ -2484,6 +2484,25 @@ he:
           show_filters: "הצגת סינון"
           hide_filters: "הסתרת סינון"
           filter_panel: "פאנל סינון"
+      entry_locked: הרשומה נעולה לעריכה על ידי %{user}
+      index:
+        title: ניהול ערכי לקסיקון
+        add_person: ערך אדם חדש
+        add_publication: ערך פרסום חדש
+        filter_title: כותרת
+        filter_title_placeholder: סינון לפי כותרת
+        filter_status: סטטוס
+        all_statuses: כל הסטטוסים
+        filter: סינון
+        clear_filters: נקה סינון
+        my_locked_title: ערכים נעולים על ידי
+        locked_by_others_title: ערכים נעולים על ידי עורכים אחרים
+        other_title: ערכים אחרים
+        locked_by: נעול על ידי
+        unlock_confirm: לשחרר את הנעילה?
+      unlock:
+        success: הנעילה שוחררה בהצלחה!
+        not_locked_by_you: הרשומה אינה נעולה על ידך!
     person_works:
       index:
         add_work: הוספת יצירה

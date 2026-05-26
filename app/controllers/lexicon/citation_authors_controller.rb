@@ -3,11 +3,14 @@
 module Lexicon
   # Controller for LexCitationAuthor
   class CitationAuthorsController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
     before_action :set_citation, only: %i(index create)
     before_action :set_author, only: %i(destroy)
+    before_action :try_to_lock_lex_entry, only: %i(create destroy)
 
     layout false
 
@@ -42,6 +45,10 @@ module Lexicon
 
     def author_params
       params.expect(lex_citation_author: %i(name link lex_entry_id))
+    end
+
+    def lex_entry_to_lock
+      @citation&.person&.entry
     end
 
     def set_citation

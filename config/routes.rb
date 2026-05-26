@@ -87,6 +87,9 @@ Bybeconv::Application.routes.draw do
       collection do
         get :autocomplete
       end
+      member do
+        patch :unlock
+      end
       resources :attachments, only: %i(index create destroy)
       resources :links, shallow: true, except: %i(show)
     end

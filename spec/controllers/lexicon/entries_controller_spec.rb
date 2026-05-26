@@ -503,4 +503,61 @@ RSpec.describe Lexicon::EntriesController, type: :controller do
       end
     end
   end
+
+  describe 'locking' do
+    let(:entry) { create(:lex_entry, :person, status: :draft) }
+    let(:editor) { login_as_lexicon_editor }
+    let(:other_user) { create(:user, editor: true) }
+
+    before { editor }
+
+    describe 'GET #edit' do
+      it 'acquires a lock on the entry' do
+        get :edit, params: { id: entry.id }
+        expect(response).to be_successful
+        expect(entry.reload.locked_by_user_id).to eq(editor.id)
+      end
+
+      it 'blocks edit when entry is locked by another user' do
+        entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: other_user.id)
+        get :edit, params: { id: entry.id }
+        expect(response).to redirect_to(lexicon_entries_path)
+      end
+    end
+
+    describe 'PATCH #unlock' do
+      it 'releases the lock when locked by current user' do
+        entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: editor.id)
+        patch :unlock, params: { id: entry.id }
+        expect(response).to redirect_to(lexicon_entries_url)
+        expect(entry.reload.locked_at).to be_nil
+        expect(entry.reload.locked_by_user_id).to be_nil
+      end
+
+      it 'redirects with error when not locked by current user' do
+        entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: other_user.id)
+        patch :unlock, params: { id: entry.id }
+        expect(response).to redirect_to(lexicon_entries_url)
+        expect(entry.reload.locked_by_user_id).to eq(other_user.id)
+      end
+    end
+
+    describe 'GET #index' do
+      let!(:my_locked_entry) { create(:lex_entry, :person, status: :draft) }
+      let!(:others_locked_entry) { create(:lex_entry, :person, status: :draft) }
+
+      before do
+        my_locked_entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: editor.id)
+        others_locked_entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: other_user.id)
+      end
+
+      it 'separates my locked entries from others locked entries' do
+        get :index
+        expect(assigns(:my_locked_entries)).to include(my_locked_entry)
+        expect(assigns(:locked_by_others_entries)).to include(others_locked_entry)
+        expect(assigns(:lex_entries)).not_to include(my_locked_entry)
+        expect(assigns(:lex_entries)).not_to include(others_locked_entry)
+      end
+    end
+  end
 end

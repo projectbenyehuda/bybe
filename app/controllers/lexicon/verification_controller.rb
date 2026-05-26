@@ -3,12 +3,17 @@
 module Lexicon
   # Controller for migration verification workbench
   class VerificationController < ApplicationController
+    include LockLexEntryConcern
+
     EXTERNAL_IDENTIFIER_KEYS = LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys.freeze
 
     before_action :set_entry, except: %i(index)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
+    before_action :try_to_lock_lex_entry,
+                  only: %i(show update_checklist save_progress set_profile_image remove_attachment
+                           mark_verified escalate update_section edit_section confirm_work_match)
     layout 'lexicon_backend'
 
     # GET /lexicon/verification/queue
@@ -336,6 +341,10 @@ module Lexicon
     end
 
     private
+
+    def lex_entry_to_lock
+      @entry
+    end
 
     def set_entry
       @entry = LexEntry.includes(:lex_item, :lex_file).find(params[:id])

@@ -1,0 +1,22 @@
+%table.table
+  %thead
+    %tr
+      %th= t(:title)
+      %th= t(:status)
+      %th= t(:type)
+      %th= t('lexicon.entries.index.locked_by')
+      %th
+      %th
+  %tbody
+    - entries.each do |lex_entry|
+      - item = lex_entry.lex_item
+      %tr
+        %td= lex_entry.title
+        %td= LexEntry.human_enum_name(:status, lex_entry.status)
+        %td= item&.model_name&.human
+        %td= lex_entry.locked_by_user&.name
+        %td
+          = link_to t(:edit), edit_lexicon_entry_path(lex_entry)
+        %td
+          - if unlockable
+            = link_to t(:unlock), unlock_lexicon_entry_path(lex_entry), method: :patch, class: 'btn btn-sm btn-warning'

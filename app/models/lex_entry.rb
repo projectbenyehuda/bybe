@@ -5,6 +5,8 @@ class LexEntry < ApplicationRecord
   include SortedTitle
   include DownloadLink
 
+  LOCK_TIMEOUT_IN_SECONDS = 60 * 15 # 15 minutes
+
   has_one :lex_file, dependent: :nullify
 
   # this can be LexPerson or LexPublication (or...?)
@@ -33,6 +35,7 @@ class LexEntry < ApplicationRecord
 
   has_many_attached :attachments # attachments referenced by link or image on the entry page
   has_many :legacy_links, class_name: 'LexLegacyLink', dependent: :destroy, inverse_of: :lex_entry
+  belongs_to :locked_by_user, class_name: 'User', optional: true
 
   validates :title, :sort_title, :status, presence: true
 
@@ -272,6 +275,24 @@ class LexEntry < ApplicationRecord
 
     progress['last_updated_at'] = Time.current.iso8601
     update!(verification_progress: progress)
+  end
+
+  def locked?
+    locked_at.present? && locked_at > LOCK_TIMEOUT_IN_SECONDS.seconds.ago
+  end
+
+  def obtain_lock(user)
+    return false if locked? && locked_by_user_id != user.id
+
+    if locked_at.nil? || locked_at < 10.seconds.ago
+      update_columns(locked_at: Time.zone.now, locked_by_user_id: user.id)
+    end
+
+    true
+  end
+
+  def release_lock!
+    update_columns(locked_at: nil, locked_by_user_id: nil)
   end
 
   private

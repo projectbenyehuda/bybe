@@ -3,10 +3,13 @@
 module Lexicon
   # Controller to render list of all Lexicon entries
   class EntriesController < ApplicationController
+    include LockLexEntryConcern
+
     before_action except: %i(show list) do |c|
       c.require_editor('edit_lexicon')
     end
-    before_action :set_lex_entry, only: %i(show edit update destroy)
+    before_action :set_lex_entry, only: %i(show edit update destroy unlock)
+    before_action :try_to_lock_lex_entry, only: %i(edit update destroy)
 
     layout 'lexicon_backend', except: %i(show list)
 
@@ -23,19 +26,21 @@ module Lexicon
 
     # GET /lex_entries or /lex_entries.json
     def index
-      @lex_entries = LexEntry.where.not(lex_item: nil)
+      scope = LexEntry.where.not(lex_item: nil)
 
       # Filter by status if provided
-      if params[:status].present?
-        @lex_entries = @lex_entries.where(status: params[:status])
-      end
+      scope = scope.where(status: params[:status]) if params[:status].present?
 
       # Filter by title substring if provided (case-insensitive)
-      if params[:title].present?
-        @lex_entries = @lex_entries.where('LOWER(title) LIKE LOWER(?)', "%#{params[:title]}%")
-      end
+      scope = scope.where('LOWER(title) LIKE LOWER(?)', "%#{params[:title]}%") if params[:title].present?
 
-      @lex_entries = @lex_entries.page(params[:page])
+      locked_scope = scope.where('locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
+      @my_locked_entries = locked_scope.where(locked_by_user: current_user)
+      @locked_by_others_entries = locked_scope.where.not(locked_by_user: current_user)
+                                              .includes(:locked_by_user)
+
+      locked_ids = locked_scope.pluck(:id)
+      @lex_entries = scope.where.not(id: locked_ids).page(params[:page])
     end
 
     # Public listing of lexicon entries with filtering and sorting
@@ -131,6 +136,16 @@ module Lexicon
     def destroy
       @lex_entry.destroy
       redirect_to lexicon_entries_url, alert: t('.success')
+    end
+
+    # PATCH /lex/entries/:id/unlock
+    def unlock
+      if @lex_entry.locked_by_user == current_user
+        @lex_entry.release_lock!
+        redirect_to lexicon_entries_url, notice: t('.success')
+      else
+        redirect_to lexicon_entries_url, alert: t('.not_locked_by_you')
+      end
     end
 
     private

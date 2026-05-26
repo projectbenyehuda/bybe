@@ -3,10 +3,13 @@
 module Lexicon
   # Controller to work with People records in Lexicon
   class PeopleController < ::ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
     before_action :set_lex_person, only: %i(edit update)
+    before_action :try_to_lock_lex_entry, only: %i(edit update)
 
     layout false
 
@@ -37,6 +40,10 @@ module Lexicon
     end
 
     private
+
+    def lex_entry_to_lock
+      @lex_person&.entry
+    end
 
     # Use callbacks to share common setup or constraints between actions.
     def set_lex_person

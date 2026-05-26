@@ -3,10 +3,13 @@
 module Lexicon
   # Controller to work with Lexicon Publications
   class PublicationsController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
     before_action :set_lex_publication, only: %i(edit update)
+    before_action :try_to_lock_lex_entry, only: %i(edit update)
 
     layout false
 
@@ -37,6 +40,10 @@ module Lexicon
     end
 
     private
+
+    def lex_entry_to_lock
+      @lex_publication&.entry
+    end
 
     # Use callbacks to share common setup or constraints between actions.
     def set_lex_publication

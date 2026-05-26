@@ -483,4 +483,60 @@ RSpec.describe LexEntry, type: :model do
       end
     end
   end
+
+  describe 'locking' do
+    let(:entry) { create(:lex_entry) }
+    let(:user1) { create(:user) }
+    let(:user2) { create(:user) }
+
+    describe '#locked?' do
+      it 'returns false when locked_at is nil' do
+        expect(entry.locked?).to be false
+      end
+
+      it 'returns true when locked within the timeout' do
+        entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: user1.id)
+        expect(entry.locked?).to be true
+      end
+
+      it 'returns false when lock has expired' do
+        entry.update_columns(locked_at: 20.minutes.ago, locked_by_user_id: user1.id)
+        expect(entry.locked?).to be false
+      end
+    end
+
+    describe '#obtain_lock' do
+      it 'acquires lock for a user when entry is unlocked' do
+        expect(entry.obtain_lock(user1)).to be true
+        expect(entry.reload.locked_by_user_id).to eq(user1.id)
+        expect(entry.locked?).to be true
+      end
+
+      it 'allows the same user to re-acquire their lock' do
+        entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: user1.id)
+        expect(entry.obtain_lock(user1)).to be true
+      end
+
+      it 'prevents another user from acquiring a locked entry' do
+        entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: user1.id)
+        expect(entry.obtain_lock(user2)).to be false
+      end
+
+      it 'allows acquiring a lock after expiry' do
+        entry.update_columns(locked_at: 20.minutes.ago, locked_by_user_id: user1.id)
+        expect(entry.obtain_lock(user2)).to be true
+        expect(entry.reload.locked_by_user_id).to eq(user2.id)
+      end
+    end
+
+    describe '#release_lock!' do
+      it 'clears the lock' do
+        entry.update_columns(locked_at: Time.zone.now, locked_by_user_id: user1.id)
+        entry.release_lock!
+        entry.reload
+        expect(entry.locked_at).to be_nil
+        expect(entry.locked_by_user_id).to be_nil
+      end
+    end
+  end
 end

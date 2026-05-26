@@ -3236,6 +3236,25 @@ en:
           show_filters: "Show Filters"
           hide_filters: "Hide Filters"
           filter_panel: "Filter Panel"
+      entry_locked: Entry is locked for editing by %{user}
+      index:
+        title: Lexicon Entries Admin
+        add_person: New Person Entry
+        add_publication: New Publication Entry
+        filter_title: Title
+        filter_title_placeholder: Filter by title
+        filter_status: Status
+        all_statuses: All statuses
+        filter: Filter
+        clear_filters: Clear filters
+        my_locked_title: Entries locked by me
+        locked_by_others_title: Entries locked by other editors
+        other_title: Other entries
+        locked_by: Locked by
+        unlock_confirm: Release this lock?
+      unlock:
+        success: Lock released successfully!
+        not_locked_by_you: This entry is not locked by you!
     person_works:
       index:
         add_work: Add Work
