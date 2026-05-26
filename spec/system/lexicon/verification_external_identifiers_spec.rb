@@ -66,9 +66,10 @@ describe 'Lexicon Verification Workbench – External Identifiers', :js do
 
   describe 'checklist' do
     it 'shows external_identifiers in the verification checklist' do
-      within('.verification-checklist') do
-        expect(page).to have_content(I18n.t('lexicon.verification.checklist.person.external_identifiers'))
-      end
+      # Checklist is now inside #checklistModal (opened via button)
+      expect(page).to have_css('#checklistModal',
+                               text: I18n.t('lexicon.verification.checklist.person.external_identifiers'),
+                               visible: :all)
     end
 
     it 'can mark external_identifiers as verified via the quick verify button' do

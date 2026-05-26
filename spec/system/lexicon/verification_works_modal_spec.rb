@@ -27,30 +27,39 @@ describe 'Verification Works Modal UX', :js do
            entrytype: :person)
   end
 
+  # A work is required to get a per-work edit button in #section-works
+  let!(:work) do
+    create(:lex_person_work, person: person, title: 'Test Work', work_type: :original)
+  end
+
   after { FileUtils.rm_f(lex_file.full_path) }
 
-  describe 'works modal positioning and draggability' do
+  describe 'per-work edit modal positioning and draggability' do
     before do
       visit "/lex/verification/#{entry.id}"
-      within '#section-works' do
-        click_button 'ערוך'
+      within "#work-#{work.id}" do
+        click_button I18n.t('lexicon.verification.migrated.edit')
       end
+      # rubocop:disable RSpec/ExpectInHook
       expect(page).to have_css('#generalDlg.show', wait: 5)
+      # rubocop:enable RSpec/ExpectInHook
     end
 
-    it 'modal appears near the top of the viewport' do
+    it 'modal appears at the top of the viewport' do
       modal_top = page.evaluate_script(
         "document.querySelector('#generalDlg .modal-dialog').getBoundingClientRect().top"
       )
-      expect(modal_top).to be < 50
+      # Per-work edit modal has margin-top: 0 (full-height side panel)
+      expect(modal_top).to be < 10
     end
 
-    it 'modal content height is capped at one third of the viewport' do
+    it 'modal content fills the viewport height as a full-height side panel' do
       modal_height = page.evaluate_script(
         "document.querySelector('#generalDlg .modal-content').getBoundingClientRect().height"
       )
-      viewport_height = page.evaluate_script("window.innerHeight")
-      expect(modal_height).to be <= (viewport_height * 0.33 + 10) # +10px tolerance
+      viewport_height = page.evaluate_script('window.innerHeight')
+      # Per-work edit modal uses height: 100vh
+      expect(modal_height).to be >= (viewport_height * 0.9)
     end
 
     it 'modal header shows move cursor indicating draggability' do
@@ -64,7 +73,7 @@ describe 'Verification Works Modal UX', :js do
       handle_classes = page.evaluate_script(
         "Array.from(document.querySelectorAll('#generalDlg .modal-resize-handle')).map(h => h.className)"
       )
-      %w[dlg-n dlg-ne dlg-e dlg-se dlg-s dlg-sw dlg-w dlg-nw].each do |dir|
+      %w(dlg-n dlg-ne dlg-e dlg-se dlg-s dlg-sw dlg-w dlg-nw).each do |dir|
         expect(handle_classes.any? { |c| c.include?(dir) }).to be true
       end
     end
