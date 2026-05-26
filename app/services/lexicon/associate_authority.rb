@@ -108,8 +108,21 @@ module Lexicon
       name = entry_title.presence || lex_person.entry&.title
       return nil if name.blank?
 
-      authorities = Authority.where(name: name)
-      authorities.one? ? authorities.first : nil
+      by_name = Authority.where(name: name).to_a
+      return nil if by_name.size > 1
+
+      by_designation = authorities_by_designation(name)
+      matches        = (by_name + by_designation).uniq
+      matches.one? ? matches.first : nil
+    end
+
+    # Scans authorities with non-blank other_designation in Ruby to avoid
+    # an unindexable leading-wildcard LIKE. The authority table is small
+    # (~thousands of rows) so loading qualifying rows is inexpensive.
+    def authorities_by_designation(name)
+      Authority.where.not(other_designation: [nil, '']).select do |auth|
+        auth.other_designation.split(';').map(&:strip).include?(name)
+      end
     end
   end
 end
