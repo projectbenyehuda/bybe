@@ -22,3 +22,8 @@
       -# for now we only show the migrate link for person entries (stage 1)
       = link_to t('lexicon.files.migrate.title'), migrate_lexicon_file_path(lf),
                 remote: true, method: :post, class: 'migrate-link'
+    - elsif (lex_entry.status_draft? || lex_entry.status_verifying?) && lex_entry.lex_item.nil? && lf.entrytype_person?
+      -# lex_item is nil despite a post-migration status — allow re-running migration
+      = link_to t('lexicon.files.redo_migrate.title'), redo_migration_lexicon_file_path(lf),
+                remote: true, method: :post, class: 'btn btn-sm btn-outline-warning ms-1',
+                data: { confirm: t('lexicon.files.redo_migrate.confirm') }
