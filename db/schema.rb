@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_22_215030) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_17_172942) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -637,7 +637,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_215030) do
     t.datetime "created_at", null: false
     t.bigint "lex_citation_id", null: false
     t.bigint "lex_entry_id"
-    t.string "link"
+    t.string "link", limit: 1024
     t.string "name"
     t.datetime "updated_at", null: false
     t.index ["lex_citation_id", "lex_entry_id"], name: "index_lex_citation_authors_on_lex_citation_id_and_lex_entry_id", unique: true
@@ -650,7 +650,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_215030) do
     t.string "from_publication"
     t.bigint "lex_person_id", null: false
     t.bigint "lex_person_work_id"
-    t.string "link", limit: 300
+    t.string "link", limit: 1024
     t.integer "link_http_status"
     t.integer "manifestation_id"
     t.text "notes"
@@ -720,7 +720,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_215030) do
     t.string "new_path", null: false
     t.string "old_path", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
+  end
+
+  create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "lex_person_work_id", null: false
+    t.integer "link_type", null: false
+    t.string "name", null: false
+    t.bigint "person_lex_entry_id"
+    t.integer "seqno", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lex_person_work_id"], name: "index_lex_linked_people_on_lex_person_work_id"
+    t.index ["person_lex_entry_id"], name: "index_lex_linked_people_on_person_lex_entry_id"
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1217,6 +1229,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_215030) do
   add_foreign_key "lex_files", "lex_entries"
   add_foreign_key "lex_issues", "lex_publications"
   add_foreign_key "lex_legacy_links", "lex_entries"
+  add_foreign_key "lex_linked_people", "lex_entries", column: "person_lex_entry_id"
+  add_foreign_key "lex_linked_people", "lex_person_works"
   add_foreign_key "lex_people", "authorities"
   add_foreign_key "lex_people_items", "lex_people"
   add_foreign_key "lex_person_works", "collections"
