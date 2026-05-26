@@ -34,7 +34,6 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
-  config.action_mailer.delivery_method = :sendmail # let's start sending mail :)
   config.i18n.available_locales = :he # to not load other locales in memory
 
   # Store Active Storage files on the S3 service
@@ -96,13 +95,6 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
-  pwd = `pwd`
-  if pwd =~ /staging/
-    routes.default_url_options[:host] = 'staging.benyehuda.org'
-    config.action_mailer.default_url_options = { host: 'staging.benyehuda.org' }
-  else
-    routes.default_url_options[:host] = 'benyehuda.org'
-    config.action_mailer.default_url_options = { host: 'benyehuda.org' }
-  end
-  routes.default_url_options[:protocol] = 'https'
+  routes.default_url_options = { host: SiteConstants::APP_HOSTNAME, protocol: 'https' }
+  config.action_mailer.default_url_options = { host: SiteConstants::APP_HOSTNAME }
 end
