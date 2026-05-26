@@ -10,7 +10,8 @@ unless DeploymentHelpers.assets_compilation?
     TAGGING_POLICY_URL = 'https://benyehuda.org/page/tagging'
     YOUTUBE_CHANNEL_ID = 'UClsusG2EWu45WZ-yNJsdFAw' # Ben-Yehuda YouTube channel ID
 
-    APP_HOSTNAME = ENV.fetch('APP_HOSTNAME', 'benyehuda.org')
+    # Domain name we use for app (to use in emails)
+    APP_HOSTNAME = ENV.fetch('APP_HOSTNAME')
 
     TASK_SYSTEM_HOST = ENV.fetch('TASK_SYSTEM_HOST')
     TASK_SYSTEM_PORT = Integer(ENV.fetch('TASK_SYSTEM_PORT'))
