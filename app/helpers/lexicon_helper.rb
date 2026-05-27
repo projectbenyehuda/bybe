@@ -45,22 +45,23 @@ module LexiconHelper
       entry = work.lex_publication.entry
       link_to(entry.title, lexicon_entry_path(entry))
     elsif work.title_links.present?
-      html = work.title.dup
+      html = ERB::Util.html_escape(work.title)
       work.title_links.each do |tl|
         entry = LexEntry.find_by(id: tl['entry_id'])
         next unless entry
 
+        escaped_text = ERB::Util.html_escape(tl['text'])
         # Block form of sub avoids interpreting & or \1 in the replacement string
-        html = html.sub(tl['text']) { link_to(tl['text'], lexicon_entry_path(entry)) }
+        html = html.sub(escaped_text) { link_to(tl['text'], lexicon_entry_path(entry)) }
       end
-      html
+      html.html_safe
     else
       work.title
     end
   end
 
   def render_person_work(work)
-    result = render_person_work_title(work)
+    result = String.new(render_person_work_title(work))
 
     result += " (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
 

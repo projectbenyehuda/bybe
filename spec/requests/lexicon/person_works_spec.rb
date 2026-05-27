@@ -260,14 +260,14 @@ describe '/lexicon/person_works' do
   end
 
   describe 'POST /lex/works/:id/add_title_link' do
-    let!(:work) { create(:lex_person_work, person: person, title: 'ספר זכרון לאפרת דנון') }
-    let!(:target_entry) { create(:lex_file, :person, title: 'אפרת דנון').lex_entry }
-
     subject(:call) do
       post "/lex/works/#{work.id}/add_title_link",
            params: { text: 'אפרת דנון', entry_id: target_entry.id },
            xhr: true
     end
+
+    let!(:work) { create(:lex_person_work, person: person, title: 'ספר זכרון לאפרת דנון') }
+    let!(:target_entry) { create(:lex_file, :person, title: 'אפרת דנון').lex_entry }
 
     it 'adds the title link and returns 200' do
       expect(call).to eq(200)
@@ -302,19 +302,34 @@ describe '/lexicon/person_works' do
         expect(call).to eq(422)
       end
     end
+
+    context 'when entry is not a person' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_title_link",
+             params: { text: 'ספר כלשהו', entry_id: publication_entry.id },
+             xhr: true
+      end
+
+      let!(:publication_entry) { create(:lex_file, :publication, title: 'ספר כלשהו').lex_entry }
+
+      it 'returns 422' do
+        expect(call).to eq(422)
+      end
+    end
   end
 
   describe 'DELETE /lex/works/:id/remove_title_link' do
+    subject(:call) do
+      delete "/lex/works/#{work.id}/remove_title_link", params: { index: 0 }, xhr: true
+    end
+
     let!(:work) do
-      create(:lex_person_work, person: person,
+      create(:lex_person_work,
+             person: person,
              title_links: [
                { 'text' => 'אפרת דנון', 'entry_id' => 1 },
                { 'text' => 'שמואל כץ', 'entry_id' => 2 }
              ])
-    end
-
-    subject(:call) do
-      delete "/lex/works/#{work.id}/remove_title_link", params: { index: 0 }, xhr: true
     end
 
     it 'removes the link at the given index and returns 200' do

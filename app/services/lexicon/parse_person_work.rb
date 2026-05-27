@@ -39,13 +39,13 @@ module Lexicon
       if !last_open_paren || !last_close_paren || last_open_paren >= last_close_paren
         # no valid parenthesis found, return title only
         result.title = line
-        result.title_links = extract_title_links(element, line)
+        result.title_links = extract_title_links(element, line) if result.respond_to?(:title_links=)
         return result
       end
 
       # Extract title (everything before last '(')
       result.title = line[0...last_open_paren].strip
-      result.title_links = extract_title_links(element, result.title)
+      result.title_links = extract_title_links(element, result.title) if result.respond_to?(:title_links=)
 
       # Extract inner content
       inner = line[(last_open_paren + 1)...last_close_paren].strip

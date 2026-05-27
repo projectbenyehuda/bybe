@@ -154,7 +154,7 @@
         - works.each do |work|
           .work-card{ id: "work-#{work.id}", class: work_card_css(work, checklist) }
             .work-content{dir: text_dir(work.title)}
-              %strong!= render_person_work_title(work)
+              %strong= render_person_work_title(work)
               - pub_detail = format_publication_details(work)
               - if pub_detail
                 %br

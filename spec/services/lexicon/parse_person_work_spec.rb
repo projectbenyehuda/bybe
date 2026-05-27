@@ -192,7 +192,7 @@ describe Lexicon::ParsePersonWork do
   context 'when a comment contains a person link but the title does not' do
     let!(:editor_entry) { create(:lex_file, :person, title: 'יעל גובר').lex_entry }
     let(:line) do
-      "ילדים מהנים (תל-אביב : הקיבוץ, 2010) <font size=\"2\">&lt;עריכה – " \
+      'ילדים מהנים (תל-אביב : הקיבוץ, 2010) <font size="2">&lt;עריכה – ' \
         "<a href=\"/lex/entries/#{editor_entry.id}\">יעל גובר</a>&gt;</font>"
     end
 

@@ -55,14 +55,17 @@ module Lexicon
       @work.destroy!
     end
 
-    def title_links; end
+    def title_links
+      entry_ids = Array(@work.title_links).filter_map { |l| l['entry_id'] }
+      @title_link_entries = LexEntry.where(id: entry_ids).index_by(&:id)
+    end
 
     def add_title_link
       text = params[:text].to_s.strip
       entry_id = params[:entry_id].to_i
       entry = LexEntry.find_by(id: entry_id)
 
-      if text.blank? || entry.nil?
+      if text.blank? || entry.nil? || !entry.lex_file&.entrytype_person?
         head :unprocessable_content
         return
       end
@@ -77,6 +80,11 @@ module Lexicon
     end
 
     def remove_title_link
+      if params[:index].blank?
+        head :unprocessable_content
+        return
+      end
+
       index = params[:index].to_i
       links = Array(@work.title_links)
       links.delete_at(index) if index >= 0 && index < links.size
