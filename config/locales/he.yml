@@ -2486,6 +2486,12 @@ he:
           show_filters: "הצגת סינון"
           hide_filters: "הסתרת סינון"
           filter_panel: "פאנל סינון"
+    people:
+      new:
+        title: "ערך %{model} חדש"
+    publications:
+      new:
+        title: "ערך %{model} חדש"
     person_works:
       index:
         add_work: הוספת יצירה

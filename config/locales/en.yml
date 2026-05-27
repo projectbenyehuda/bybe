@@ -3238,6 +3238,12 @@ en:
           show_filters: "Show Filters"
           hide_filters: "Hide Filters"
           filter_panel: "Filter Panel"
+    people:
+      new:
+        title: "New %{model}"
+    publications:
+      new:
+        title: "New %{model}"
     person_works:
       index:
         add_work: Add Work
