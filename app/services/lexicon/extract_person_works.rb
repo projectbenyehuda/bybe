@@ -7,7 +7,9 @@ module Lexicon
 
     WORK_TYPE_HEADERS = {
       'edited' => ['כתיבה, עריכה ושכתוב:', 'עריכה:', 'עריכה: (מבחר)'],
-      'translated' => ['תרגום:']
+      'translated' => ['תרגום:'],
+      'festschrift' => ['ספר זכרון:', 'ספרי יובל', 'ספרי יובל:',
+                        'ספרי יובל וזכרון', 'ספרי יובל וזכרון:', 'ספרי יובל וזיכרון:']
     }.freeze
 
     def call(works_header, lex_person)
