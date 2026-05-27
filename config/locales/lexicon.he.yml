@@ -133,6 +133,7 @@ he:
         title_placeholder: חיפוש לפי כותרת...
         fname_placeholder: חפש לפי שם קובץ...
         entry_status_filter: סטטוס ערך
+        locked_by_you: נעול על ידך
       migrate:
         success: ההסבה החלה
         title: התחל הסבה

@@ -27,6 +27,7 @@
         %th= t(:title)
         %th= "#{t(:status)} (#{t(:file)} / #{t(:entry)})"
         %th= t(:entrytype)
+        %th= t('lexicon.entries.index.locked_by')
         %th= t(:actions)
       - @lex_files.each do |lf|
         = render partial: 'file_row', locals: { lf: lf }

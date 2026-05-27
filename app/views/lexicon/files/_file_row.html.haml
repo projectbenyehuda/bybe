@@ -7,6 +7,12 @@
   %td #{t(lf.status)} / #{LexEntry.human_enum_name(:status, lf.lex_entry&.status)}
   %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
   %td
+    - if lex_entry.locked?
+      - if lex_entry.locked_by_user_id == current_user.id
+        %span.badge.bg-warning.text-dark= t('lexicon.files.index.locked_by_you')
+      - else
+        %span.badge.bg-danger= lex_entry.locked_by_user&.name || t('lexicon.entries.unknown_user')
+  %td
     - if lex_entry.status_migrating?
       %span= LexEntry.human_enum_name(:status, lex_entry.status)
     - elsif lex_entry.status_published?

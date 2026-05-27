@@ -133,6 +133,7 @@ en:
         title_placeholder: Search by title...
         fname_placeholder: Search by filename...
         entry_status_filter: Entry Status
+        locked_by_you: Locked by you
       migrate:
         success: Migration queued
         title: Analyze

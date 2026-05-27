@@ -23,7 +23,7 @@ module Lexicon
       @lex_files = @lex_files.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
       @lex_files = @lex_files.where(lex_entries: { status: @entry_statuses })
 
-      @lex_files = @lex_files.preload(:lex_entry)
+      @lex_files = @lex_files.preload(lex_entry: :locked_by_user)
                              .order(:fname)
                              .page(@page)
     end
