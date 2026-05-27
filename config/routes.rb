@@ -72,6 +72,11 @@ Bybeconv::Application.routes.draw do
       resources :works, controller: 'person_works', shallow: true, except: %i(show) do
         post :reorder, on: :member
         resources :linked_people, only: %i(index create)
+        member do
+          get :title_links
+          post :add_title_link
+          delete :remove_title_link
+        end
       end
     end
 

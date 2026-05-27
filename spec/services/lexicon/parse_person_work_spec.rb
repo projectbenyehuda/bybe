@@ -173,4 +173,44 @@ describe Lexicon::ParsePersonWork do
       )
     end
   end
+
+  context 'when the title contains a link to a person LexEntry' do
+    let!(:person_entry) { create(:lex_file, :person, title: 'אפרת דנון').lex_entry }
+    let(:line) do
+      "ספר זכרון: <a href=\"/lex/entries/#{person_entry.id}\">אפרת דנון</a> (ירושלים : מוסד ביאליק, 1995)"
+    end
+
+    it 'extracts the title without HTML tags' do
+      expect(result.title).to eq('ספר זכרון: אפרת דנון')
+    end
+
+    it 'stores the title link with text and entry_id' do
+      expect(result.title_links).to eq([{ 'text' => 'אפרת דנון', 'entry_id' => person_entry.id }])
+    end
+  end
+
+  context 'when a comment contains a person link but the title does not' do
+    let!(:editor_entry) { create(:lex_file, :person, title: 'יעל גובר').lex_entry }
+    let(:line) do
+      "ילדים מהנים (תל-אביב : הקיבוץ, 2010) <font size=\"2\">&lt;עריכה – " \
+        "<a href=\"/lex/entries/#{editor_entry.id}\">יעל גובר</a>&gt;</font>"
+    end
+
+    it 'does not add title_links for comment-only person links' do
+      expect(result.title_links).to be_nil
+    end
+
+    it 'adds the person as a linked_person instead' do
+      expect(result.linked_people.size).to eq(1)
+      expect(result.linked_people[0]).to have_attributes(name: 'יעל גובר', link_type: 'editor')
+    end
+  end
+
+  context 'when there are no links anywhere' do
+    let(:line) { 'ספרי שירה (תל-אביב : שוקן, 2005)' }
+
+    it 'returns nil for title_links' do
+      expect(result.title_links).to be_nil
+    end
+  end
 end

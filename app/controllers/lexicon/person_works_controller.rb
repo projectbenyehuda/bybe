@@ -6,7 +6,7 @@ module Lexicon
     before_action do
       require_editor('edit_lexicon')
     end
-    before_action :set_work, only: %i(edit update destroy reorder)
+    before_action :set_work, only: %i(edit update destroy reorder title_links add_title_link remove_title_link)
     before_action :set_person, only: %i(new create index)
     after_action :sync_verification_checklist, only: %i(create update destroy reorder)
 
@@ -53,6 +53,35 @@ module Lexicon
 
     def destroy
       @work.destroy!
+    end
+
+    def title_links; end
+
+    def add_title_link
+      text = params[:text].to_s.strip
+      entry_id = params[:entry_id].to_i
+      entry = LexEntry.find_by(id: entry_id)
+
+      if text.blank? || entry.nil?
+        head :unprocessable_content
+        return
+      end
+
+      links = Array(@work.title_links)
+      unless links.any? { |l| l['text'] == text }
+        links << { 'text' => text, 'entry_id' => entry_id }
+        @work.update!(title_links: links)
+      end
+
+      head :ok
+    end
+
+    def remove_title_link
+      index = params[:index].to_i
+      links = Array(@work.title_links)
+      links.delete_at(index) if index >= 0 && index < links.size
+      @work.update!(title_links: links.presence)
+      head :ok
     end
 
     def reorder

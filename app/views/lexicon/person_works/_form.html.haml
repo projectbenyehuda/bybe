@@ -1,3 +1,4 @@
+-# haml-lint:disable ViewLength
 :ruby
   path = @work.new_record? ? lexicon_person_works_path(@person) : lexicon_work_path(@work)
   authority = @person.authority
@@ -45,11 +46,44 @@
   %h4= t('.associated_people')
   .border.rounded.p-2#linked-people-list
 
+  %hr
+  %h4= t('lexicon.person_works.title_links.section_heading')
+  .border.rounded.p-2#title-links-list
+
   :javascript
     function reloadLinkedPeople() {
       $('#linked-people-list').load(`/lex/works/#{@work.id}/linked_people`);
     }
     reloadLinkedPeople();
+
+    function reloadTitleLinks() {
+      $('#title-links-list').load(`/lex/works/#{@work.id}/title_links`);
+    }
+    reloadTitleLinks();
+
+    function addTitleLink(workId) {
+      var text = $('#title_link_text').val();
+      var entryId = $('#title_link_entry_id').val();
+      if (!text || !entryId) { return; }
+      $.ajax({
+        url: '/lex/works/' + workId + '/add_title_link',
+        method: 'POST',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { text: text, entry_id: entryId },
+        success: reloadTitleLinks
+      });
+    }
+
+    function removeTitleLink(workId, index) {
+      if (!confirm('#{j(t(:are_you_sure))}')) { return; }
+      $.ajax({
+        url: '/lex/works/' + workId + '/remove_title_link',
+        method: 'DELETE',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { index: index },
+        success: reloadTitleLinks
+      });
+    }
 
 :javascript
   (function() {
