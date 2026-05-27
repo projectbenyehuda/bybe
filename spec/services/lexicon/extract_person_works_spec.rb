@@ -96,6 +96,33 @@ describe Lexicon::ExtractPersonWorks do
     end
   end
 
+  context 'when works list includes a festschrift section' do
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <span dir="rtl">
+          <ul>
+            <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+          </ul>
+          <font size="4" color="#0000FF">ספר זכרון:</font>
+          <ul>
+            <li>ספר יובל לפלוני (ירושלים : מוסד ביאליק, 2000)</li>
+          </ul>
+          <font color="#FF0000">ספרי יובל וזכרון</font>
+          <ul>
+            <li>ספר יובל לאלמוני (תל אביב : הוצאה, 2005)</li>
+          </ul>
+        </span>
+      HTML
+    end
+
+    it 'classifies works under ספר זכרון: and ספרי יובל וזכרון as festschrift' do
+      expect(lex_person.works.select(&:work_type_original?).size).to eq(1)
+      expect(lex_person.works.select(&:work_type_festschrift?).size).to eq(2)
+      expect(lex_person.works.select(&:work_type_festschrift?).map(&:seqno)).to eq([1, 2])
+    end
+  end
+
   context 'when citations header appears inside the works span (malformed)' do
     let(:html) do
       <<~HTML
