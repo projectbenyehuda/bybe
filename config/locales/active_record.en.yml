@@ -186,6 +186,7 @@ en:
           original: Original
           translated: Translated
           edited: Edited
+          festschrift: Festschriften
       lex_publication:
         toc: Table of Contents
         az_navbar: Show AZ navbar?
