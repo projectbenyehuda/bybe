@@ -281,7 +281,7 @@ class LexEntry < ApplicationRecord
     locked_at.present? && locked_at > LOCK_TIMEOUT_IN_SECONDS.seconds.ago
   end
 
-  def obtain_lock(user)
+  def obtain_lock(user) # rubocop:disable Naming/PredicateMethod
     return false if locked? && locked_by_user_id != user.id
 
     if locked_at.nil? || locked_at < 10.seconds.ago

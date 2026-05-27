@@ -36,11 +36,11 @@ module Lexicon
 
       locked_scope = scope.where('locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
       @my_locked_entries = locked_scope.where(locked_by_user: current_user)
+                                       .includes(:locked_by_user)
       @locked_by_others_entries = locked_scope.where.not(locked_by_user: current_user)
                                               .includes(:locked_by_user)
 
-      locked_ids = locked_scope.pluck(:id)
-      @lex_entries = scope.where.not(id: locked_ids).page(params[:page])
+      @lex_entries = scope.where.not(id: locked_scope.select(:id)).page(params[:page])
     end
 
     # Public listing of lexicon entries with filtering and sorting

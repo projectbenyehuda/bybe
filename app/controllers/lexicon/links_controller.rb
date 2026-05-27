@@ -56,6 +56,10 @@ module Lexicon
       @entry = @item.entry
     end
 
+    def lex_entry_to_lock
+      @entry
+    end
+
     # Only allow a list of trusted parameters through.
     def lex_link_params
       params.expect(lex_link: %i(url description))

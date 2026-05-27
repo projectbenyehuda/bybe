@@ -2484,6 +2484,7 @@ he:
           show_filters: "הצגת סינון"
           hide_filters: "הסתרת סינון"
           filter_panel: "פאנל סינון"
+      unknown_user: משתמש/ת לא ידוע/ה
       entry_locked: הרשומה נעולה לעריכה על ידי %{user}
       index:
         title: ניהול ערכי לקסיקון

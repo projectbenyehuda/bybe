@@ -9,7 +9,8 @@ module LockLexEntryConcern
     return unless entry
     return if entry.obtain_lock(current_user)
 
-    error_msg = t('lexicon.entries.entry_locked', user: entry.locked_by_user.name)
+    locked_by = entry.locked_by_user&.name || t('lexicon.entries.unknown_user')
+    error_msg = t('lexicon.entries.entry_locked', user: locked_by)
 
     respond_to do |format|
       format.html do

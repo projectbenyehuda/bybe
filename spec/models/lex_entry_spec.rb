@@ -517,6 +517,12 @@ RSpec.describe LexEntry, type: :model do
         expect(entry.obtain_lock(user1)).to be true
       end
 
+      it 'does not refresh locked_at when the same user re-acquires within 10 seconds' do
+        recent_lock_time = 5.seconds.ago
+        entry.update_columns(locked_at: recent_lock_time, locked_by_user_id: user1.id)
+        expect { entry.obtain_lock(user1) }.not_to change { entry.reload.locked_at }
+      end
+
       it 'prevents another user from acquiring a locked entry' do
         entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: user1.id)
         expect(entry.obtain_lock(user2)).to be false

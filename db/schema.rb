@@ -672,7 +672,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_26_225222) do
     t.bigint "lex_item_id"
     t.string "lex_item_type"
     t.datetime "locked_at"
-    t.bigint "locked_by_user_id"
+    t.integer "locked_by_user_id"
     t.string "other_designation", limit: 1024
     t.bigint "profile_image_id"
     t.string "sort_title"

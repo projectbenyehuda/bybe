@@ -3236,6 +3236,7 @@ en:
           show_filters: "Show Filters"
           hide_filters: "Hide Filters"
           filter_panel: "Filter Panel"
+      unknown_user: unknown user
       entry_locked: Entry is locked for editing by %{user}
       index:
         title: Lexicon Entries Admin
