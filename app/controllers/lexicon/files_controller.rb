@@ -3,10 +3,13 @@
 module Lexicon
   # Controller to manage Lexicon migration from static php files to Ben-Yehuda project
   class FilesController < ApplicationController
+    include LockLexEntryConcern
+
     before_action :set_lex_file, only: %i(migrate redo_migration)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
+    before_action :try_to_lock_lex_entry, only: %i(migrate redo_migration)
     layout 'lexicon_backend'
 
     def index
@@ -62,6 +65,10 @@ module Lexicon
 
     def set_lex_file
       @lex_file = LexFile.find(params[:id])
+    end
+
+    def lex_entry_to_lock
+      @lex_file&.lex_entry
     end
   end
 end
