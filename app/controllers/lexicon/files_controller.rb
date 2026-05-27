@@ -29,21 +29,18 @@ module Lexicon
     end
 
     def migrate
+      lex_entry = @lex_file.lex_entry
+
       # From the stale page we can try to migrate file already being migrated or already migrated
       # In this case we simply re-render row
-      return unless @lex_file.lex_entry.status_raw? || @lex_file.lex_entry.status_error?
+      return unless lex_entry.status_raw? || lex_entry.status_error?
 
-      if @lex_file.error_message.present?
-        @lex_file.update!(error_message: nil)
+      if lex_entry.status_error?
+        lex_entry.reset_ingestion!
       end
 
-      lex_entry = @lex_file.lex_entry
-      lex_item = lex_entry.lex_item
-      lex_entry.lex_item = nil
       lex_entry.status_migrating!
 
-      # Cleaning up any existing LexItem before re-ingesting
-      lex_item&.destroy!
       Lexicon::IngestFile.perform_async(@lex_file.id)
     end
 
