@@ -44,9 +44,14 @@ module Lexicon
         # We know URL should not contain escaped characters at this point so we can safely escape whole URL
         uri = URI.parse(URI::DEFAULT_PARSER.escape(full_url))
 
+        # Without explicit reloading this code sometimes produces error: Mysql2::Error: Duplicate entry '<...>'
+        # for key 'active_storage_attachments.index_active_storage_attachments_uniqueness'
+        # (Active Storage Bug?)
+        file_entry.attachments.reload
+
         file_entry.attachments.attach(io: uri.open, filename: filename)
         new_path = file_entry.download_path(filename)
-        link = file_entry.legacy_links.create(old_path: src, new_path: new_path)
+        link = file_entry.legacy_links.create!(old_path: src, new_path: new_path)
       end
 
       if anchor.blank?
