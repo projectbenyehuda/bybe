@@ -30,6 +30,9 @@ RUN bundle install --deployment --without test development --jobs "$(grep -c ^pr
     && find vendor/bundle/ -path "*/cache/*" -name "*.gem"   -delete \
     && find vendor/bundle/ -path "*/gems/*"  -name "*.[c|o]" -delete
 
+# Copying public static assets
+COPY public ./public
+
 # rake tasks requires SECRET_KEY_BASE to be set, but we don't need it to be valid at this stage
 RUN SECRET_KEY_BASE=1 bundle exec rake assets:precompile
 
