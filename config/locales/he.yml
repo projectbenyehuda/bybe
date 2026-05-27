@@ -2507,9 +2507,6 @@ he:
     people:
       new:
         title: "ערך %{model} חדש"
-    publications:
-      new:
-        title: "ערך %{model} חדש"
     person_works:
       index:
         add_work: הוספת יצירה

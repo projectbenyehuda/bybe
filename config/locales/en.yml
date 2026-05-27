@@ -3259,9 +3259,6 @@ en:
     people:
       new:
         title: "New %{model}"
-    publications:
-      new:
-        title: "New %{model}"
     person_works:
       index:
         add_work: Add Work
