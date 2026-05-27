@@ -24,7 +24,7 @@ class LexPersonWork < ApplicationRecord
   validate :collection_belongs_to_publication
   validates :seqno, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  enum :work_type, { original: 0, translated: 1, edited: 2 }, prefix: true
+  enum :work_type, { original: 0, translated: 1, edited: 2, festschrift: 3 }, prefix: true
 
   private
 
