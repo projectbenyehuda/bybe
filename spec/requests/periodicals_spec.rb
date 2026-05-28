@@ -90,7 +90,7 @@ RSpec.describe 'Periodicals', type: :request do
   end
 
   describe '@periodical_first_covers assignment' do
-    let!(:periodical) { create(:collection, collection_type: 'periodical') }
+    let!(:periodical) { create(:collection, collection_type: 'periodical', title: 'Test Periodical Title') }
     let!(:issue_no_cover) { create(:collection, collection_type: 'periodical_issue') }
     let!(:issue_with_cover) do
       c = create(:collection, collection_type: 'periodical_issue')
