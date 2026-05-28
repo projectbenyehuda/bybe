@@ -259,6 +259,7 @@ he:
         now_accessible: "הקישור כעת נגיש"
         still_broken: "הקישור עדיין שבור (HTTP %{status})"
         check_failed: "לא ניתן לבדוק את הקישור (שגיאת רשת)"
+        internet_archive: "ארכיון האינטרנט"
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
         entry_verified: הערך אומת בהצלחה
