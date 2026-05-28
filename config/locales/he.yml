@@ -2501,6 +2501,15 @@ he:
         no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
         select_publication: בחר פרסום...
         select_collection: בחר אוסף...
+        associated_people: אנשים קשורים
+      title_links:
+        section_heading: קישורים בכותרת
+        add_link: הוספת קישור בכותרת
+        text_in_title: טקסט בכותרת
+        text_placeholder: טקסט שיהפוך לקישור
+        target_person: אדם ביעד
+        person_placeholder: חפש ערך אדם...
+        entry_not_found: ערך לא נמצא
     citations:
       index:
         add_citation: הוספת מראה מקום

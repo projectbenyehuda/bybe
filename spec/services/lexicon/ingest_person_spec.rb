@@ -103,6 +103,35 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when bio is inside the heading span but works header is outside it' do
+    # Regression test for 00118.php: the <span dir="rtl"> wraps only the heading table
+    # and the bio <p>, but the Books header <font> and works are siblings of the span.
+    # The old promotion logic (heading_table = span) caused the bio <p> to be skipped
+    # because span.next_element immediately hit the Books header.
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'סופרת לדוגמה',
+          fname: 'bio_in_span_works_outside.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/bio_in_span_works_outside.php')
+        }
+      )
+    end
+
+    it 'ingests bio and works correctly' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.bio).to be_present
+      expect(person.bio).to include('ביוגרפיה קצרה')
+      expect(person.works.count).to eq(2)
+      expect(person.works.map(&:title)).to include('ספר ראשון : שירים', 'ספר שני : פרוזה')
+    end
+  end
+
   context 'when a link has href as its only attribute (no target="_blank")' do
     let!(:file) do
       create(

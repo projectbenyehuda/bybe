@@ -16,7 +16,7 @@ module Lexicon
 
     def person_works_text(lex_person)
       lex_person.works.map do |work|
-        title = work.lex_publication&.title || work.title
+        title = work.lex_publication&.entry&.title || work.title
 
         result = "#{title} (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
         if work.comment.present?
