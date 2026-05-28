@@ -14,7 +14,6 @@ module Lexicon
     }.freeze
     # rubocop:enable Style/WordArray
 
-
     # @param element [Nokogiri::XML::Element] element containing the work information, typically a list item
     def call(element)
       line = element.text&.squish
@@ -40,11 +39,13 @@ module Lexicon
       if !last_open_paren || !last_close_paren || last_open_paren >= last_close_paren
         # no valid parenthesis found, return title only
         result.title = line
+        result.title_links = extract_title_links(element, line) if result.respond_to?(:title_links=)
         return result
       end
 
       # Extract title (everything before last '(')
       result.title = line[0...last_open_paren].strip
+      result.title_links = extract_title_links(element, result.title) if result.respond_to?(:title_links=)
 
       # Extract inner content
       inner = line[(last_open_paren + 1)...last_close_paren].strip
@@ -118,6 +119,35 @@ module Lexicon
       return nil if name.blank?
 
       return LexLinkedPerson.new(name: name, link_type: link_type, person_entry: find_person_entry(name, element))
+    end
+
+    # Scans the HTML element for <a> tags whose text appears in the title portion (not in comment brackets)
+    # and that link to person LexEntries. Returns an array of {text:, entry_id:} hashes.
+    def extract_title_links(element, title_text)
+      links = []
+      # Comments in angle brackets are stripped from the line before the title is extracted,
+      # and comment nodes in HTML are typically inside <font size="2"> wrappers.
+      # We skip any anchor that is a descendant of such a comment wrapper.
+      comment_hrefs = Set.new(element.css('font[size="2"] a').pluck('href'))
+
+      element.css('a').each do |anchor|
+        href = anchor['href']
+        next unless href&.start_with?(lexicon_entries_path + '/')
+        # skip anchors that belong to comment sections
+        next if comment_hrefs.include?(href)
+
+        link_text = anchor.text.squish
+        # Only include if the link text actually appears in the title (not in publication details)
+        next unless title_text.include?(link_text)
+
+        entry_id = href.delete_prefix(lexicon_entries_path + '/').to_i
+        entry = LexEntry.find_by(id: entry_id)
+        next unless entry&.lex_file&.entrytype_person?
+
+        links << { 'text' => link_text, 'entry_id' => entry_id }
+      end
+
+      links.presence
     end
 
     # It is kind-of difficult to parse Html document as-is, so we initially parse plain text of the comment

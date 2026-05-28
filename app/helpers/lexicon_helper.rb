@@ -35,12 +35,33 @@ module LexiconHelper
     LexLinkedPerson.human_enum_name(:link_type, linked_person.link_type) + ' ' + name
   end
 
+  # Renders a work title, applying hyperlinks from title_links if present.
+  # When the work has a lex_publication, the whole title links to that publication and
+  # title_links are not applied (nested anchors are invalid HTML).
+  # Returns a plain String (possibly containing HTML) so that render_person_work can
+  # safely concatenate further HTML before calling raw() at the end.
+  def render_person_work_title(work)
+    if work.lex_publication.present?
+      entry = work.lex_publication.entry
+      link_to(entry.title, lexicon_entry_path(entry))
+    elsif work.title_links.is_a?(Array) && work.title_links.present?
+      html = ERB::Util.html_escape(work.title)
+      work.title_links.each do |tl|
+        entry = LexEntry.find_by(id: tl['entry_id'])
+        next unless entry
+
+        escaped_text = ERB::Util.html_escape(tl['text'])
+        # Block form of sub avoids interpreting & or \1 in the replacement string
+        html = html.sub(escaped_text) { link_to(tl['text'], lexicon_entry_path(entry)) }
+      end
+      html.html_safe
+    else
+      work.title
+    end
+  end
+
   def render_person_work(work)
-    result = if work.lex_publication.present?
-               link_to(work.lex_publication.title, lexicon_entry_path(work.lex_publication.entry))
-             else
-               work.title
-             end
+    result = String.new(render_person_work_title(work))
 
     result += " (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
 
