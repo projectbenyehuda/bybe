@@ -150,11 +150,11 @@
         %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
     - if all_works.present?
       - all_works.group_by(&:work_type).each do |work_type, works|
-        %h6.mt-2= LexPersonWork.human_enum_name(:work_type, work_type)
+        %h5.mt-3.mb-1.work-type-heading= LexPersonWork.human_enum_name(:work_type, work_type)
         - works.each do |work|
           .work-card{ id: "work-#{work.id}", class: work_card_css(work, checklist) }
             .work-content{dir: text_dir(work.title)}
-              %strong= work.title
+              %strong= render_person_work_title(work)
               - pub_detail = format_publication_details(work)
               - if pub_detail
                 %br
