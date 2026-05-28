@@ -27,13 +27,13 @@
                       %img.periodical-cover-img{ src: cover_src, alt: periodical.title }/
                       .author-name-area
                         .author-name-v02= periodical.title
-                        .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
+                        .author-name-v02= t('.x_issues', x: periodical.collection_items.size)
                         .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
                   - else
                     .author-card-v02{ style: 'margin-left: 0; margin-right: 0;' }
                       %img.author-pic-v02{ src: periodical.logo_image.present? ? url_for(periodical.logo_image) : '', alt: periodical.title }/
                       .author-name-area
-                        .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
+                        .author-name-v02= t('.x_issues', x: periodical.collection_items.size)
                         .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
               - i += 1
           .link-to-all-v02.pointer
