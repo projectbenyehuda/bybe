@@ -22,7 +22,33 @@ class PeriodicalsController < ApplicationController
     end
     @periodical_authors_in_genre = cached_periodical_authors_in_genre
     @periodical_works_by_genre = Manifestation.cached_periodical_work_counts_by_genre
+    @periodical_first_covers = build_periodical_first_covers(@periodicals)
   end
 
   def show; end
+
+  private
+
+  def build_periodical_first_covers(periodicals)
+    issue_ids_by_periodical = {}
+    periodicals.each do |p|
+      ids = p.collection_items.select { |ci| ci.item_type == 'Collection' }.map(&:item_id)
+      issue_ids_by_periodical[p.id] = ids
+    end
+
+    all_issue_ids = issue_ids_by_periodical.values.flatten.uniq
+    return {} if all_issue_ids.empty?
+
+    all_issues = Collection.where(id: all_issue_ids).to_a
+    ActiveRecord::Associations::Preloader.new(
+      records: all_issues,
+      associations: { cover_image_attachment: :blob }
+    ).call
+    issues_by_id = all_issues.index_by(&:id)
+
+    periodicals.each_with_object({}) do |p, hash|
+      ids = issue_ids_by_periodical[p.id]
+      hash[p.id] = ids.lazy.map { |id| issues_by_id[id] }.find { |i| i&.cover_image&.attached? }
+    end
+  end
 end
