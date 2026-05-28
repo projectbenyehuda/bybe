@@ -44,22 +44,20 @@
 - unless @work.new_record?
   %hr
   %h4= t('.associated_people')
-  .border.rounded.p-2#linked-people-list
+  .border.rounded.p-2#linked-people-list{ data: { ajax_url: lexicon_work_linked_people_path(@work) } }
 
   %hr
   %h4= t('lexicon.person_works.title_links.section_heading')
-  .border.rounded.p-2#title-links-list
+  .border.rounded.p-2#title-links-list{ data: { ajax_url: title_links_lexicon_work_path(@work) } }
 
   :javascript
     function reloadLinkedPeople() {
-      $('#linked-people-list').load(`/lex/works/#{@work.id}/linked_people`);
+      $('#linked-people-list').load('#{lexicon_work_linked_people_path(@work)}');
     }
-    reloadLinkedPeople();
 
     function reloadTitleLinks() {
-      $('#title-links-list').load(`/lex/works/#{@work.id}/title_links`);
+      $('#title-links-list').load('#{title_links_lexicon_work_path(@work)}');
     }
-    reloadTitleLinks();
 
     function addTitleLink(workId) {
       var text = $('#title_link_text').val();

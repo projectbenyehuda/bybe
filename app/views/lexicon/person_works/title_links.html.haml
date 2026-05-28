@@ -1,6 +1,6 @@
 -# haml-lint:disable LineLength
 %ul.title-links-list.list-unstyled.mb-2
-  - (@work.title_links || []).each_with_index do |link, idx|
+  - Array(@work.title_links).each_with_index do |link, idx|
     - entry = @title_link_entries[link['entry_id']]
     %li.d-flex.align-items-center.gap-2.mb-1
       %span.badge.bg-light.text-dark.border= link['text']

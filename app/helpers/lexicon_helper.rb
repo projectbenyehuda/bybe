@@ -44,7 +44,7 @@ module LexiconHelper
     if work.lex_publication.present?
       entry = work.lex_publication.entry
       link_to(entry.title, lexicon_entry_path(entry))
-    elsif work.title_links.present?
+    elsif work.title_links.is_a?(Array) && work.title_links.present?
       html = ERB::Util.html_escape(work.title)
       work.title_links.each do |tl|
         entry = LexEntry.find_by(id: tl['entry_id'])
