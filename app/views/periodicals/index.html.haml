@@ -26,6 +26,7 @@
                     .author-card-v02.periodical-with-cover{ style: 'margin-left: 0; margin-right: 0;' }
                       %img.periodical-cover-img{ src: cover_src, alt: periodical.title }/
                       .author-name-area
+                        .author-name-v02= periodical.title
                         .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
                         .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
                   - else

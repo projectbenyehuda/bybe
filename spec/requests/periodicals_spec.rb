@@ -121,6 +121,7 @@ RSpec.describe 'Periodicals', type: :request do
       get '/periodicals'
       expect(response.body).to include('periodical-with-cover')
       expect(response.body).to include('periodical-cover-img')
+      expect(response.body).to include(periodical.title)
     end
   end
 
