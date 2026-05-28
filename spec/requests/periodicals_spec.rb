@@ -88,4 +88,59 @@ RSpec.describe 'Periodicals', type: :request do
       expect(response).to have_http_status(:success)
     end
   end
+
+  describe '@periodical_first_covers assignment' do
+    let!(:periodical) { create(:collection, collection_type: 'periodical', title: 'Test Periodical Title') }
+    let!(:issue_no_cover) { create(:collection, collection_type: 'periodical_issue') }
+    let!(:issue_with_cover) do
+      c = create(:collection, collection_type: 'periodical_issue')
+      c.cover_image.attach(
+        io: StringIO.new(Rails.root.join('spec/fixtures/files/test_image.jpg').binread),
+        filename: 'cover.jpg',
+        content_type: 'image/jpeg'
+      )
+      c
+    end
+
+    before do
+      create(:collection_item, collection: periodical, item: issue_no_cover, seqno: 1)
+      create(:collection_item, collection: periodical, item: issue_with_cover, seqno: 2)
+    end
+
+    it 'assigns @periodical_first_covers as a hash' do
+      get '/periodicals'
+      expect(assigns(:periodical_first_covers)).to be_a(Hash)
+    end
+
+    it 'maps the periodical to the first issue with a cover image' do
+      get '/periodicals'
+      expect(assigns(:periodical_first_covers)[periodical.id]).to eq(issue_with_cover)
+    end
+
+    it 'renders the cover image tile for periodicals with a covered issue' do
+      get '/periodicals'
+      expect(response.body).to include('periodical-with-cover')
+      expect(response.body).to include('periodical-cover-img')
+      expect(response.body).to include(periodical.title)
+    end
+  end
+
+  describe '@periodical_first_covers with no covered issues' do
+    let!(:periodical) { create(:collection, collection_type: 'periodical') }
+    let!(:issue_no_cover) { create(:collection, collection_type: 'periodical_issue') }
+
+    before do
+      create(:collection_item, collection: periodical, item: issue_no_cover, seqno: 1)
+    end
+
+    it 'maps the periodical to nil when no issues have a cover' do
+      get '/periodicals'
+      expect(assigns(:periodical_first_covers)[periodical.id]).to be_nil
+    end
+
+    it 'does not render the cover image tile' do
+      get '/periodicals'
+      expect(response.body).not_to include('periodical-with-cover')
+    end
+  end
 end
