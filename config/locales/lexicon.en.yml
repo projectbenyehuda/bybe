@@ -259,6 +259,7 @@ en:
         now_accessible: "Link is now accessible"
         still_broken: "Link is still broken (HTTP %{status})"
         check_failed: "Could not check link (network error)"
+        internet_archive: "Internet Archive"
       messages:
         progress_saved: Progress saved successfully
         entry_verified: Entry verified successfully
