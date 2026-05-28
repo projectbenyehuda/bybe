@@ -22,4 +22,25 @@ describe Lexicon::ExtractCitations do
       expect(result.size).to eq(53)
     end
   end
+
+  context 'when a stray </span> inside a <li> prematurely closes the parent span' do
+    # Regression test for 00034.php: a stray </span> after </b> inside a citation <li>
+    # caused Nokogiri to prematurely close the <span dir="rtl"> wrapping the citations section.
+    # This displaced all remaining content (title text, subsequent citation groups) as siblings
+    # of the closed <span>, causing ExtractCitations to miss them entirely and the LLM to
+    # receive a truncated <li> with no title, triggering a validation failure.
+    let(:filename) { Rails.root.join('spec/fixtures/files/lexicon/stray_span_closing.php') }
+
+    it 'includes displaced citation content from span siblings in the HTML sent to ParseCitations' do
+      captured_html = nil
+      allow(Lexicon::ParseCitations).to receive(:call) do |html|
+        captured_html = html
+        []
+      end
+
+      result
+
+      expect(captured_html).to include('כותרת שעברה לחוץ')
+    end
+  end
 end
