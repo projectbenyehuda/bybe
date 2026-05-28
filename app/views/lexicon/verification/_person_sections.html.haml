@@ -192,13 +192,14 @@
       - total_count = checklist['citations']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
-    - cit_size = item.citations.size
+    - all_citations = item.citations.includes(authors: :entry)
+    - cit_size = all_citations.size
     - if php_counts[:citations] && php_counts[:citations] != cit_size
       .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
         = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:citations], migrated_count: cit_size)
         %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
-    - if item.citations.any?
-      - item.citations.group_by(&:subject_title).each do |subject, citations|
+    - if all_citations.any?
+      - all_citations.group_by(&:subject_title).each do |subject, citations|
         .citation-group.mb-3
           %h6.subject-header= subject.presence || t('lexicon.citations.header.general')
           - citations.each do |citation|
@@ -210,7 +211,7 @@
                   %br
                   %span.text-muted
                     #{citation.authors.count > 1 ? t(:authors) : t(:author)}:
-                    = citation.authors.map(&:display_name).join(', ')
+                    = safe_join(citation.authors.map { |a| a.entry ? link_to(a.display_name, lexicon_entry_path(a.entry)) : a.display_name }, ', ')
                 - if citation.from_publication.present?
                   %br
                   %span.text-muted
