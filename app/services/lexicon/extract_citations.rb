@@ -21,7 +21,7 @@ module Lexicon
       # So we check if citations_node does not contains other section header (e.g. Links), and if so
       # consider following li and ul nodes as part of citations section
       # Another common issue is when part of following list is wrapped in a font tag with size = 2
-      unless citations_node.at_css("a[name]").present?
+      if citations_node.at_css('a[name]').blank?
         next_elem = next_element_skipping_blank(citations_node)
 
         while next_elem&.name == 'li' || next_elem&.name == 'ul' ||
@@ -31,19 +31,33 @@ module Lexicon
         end
       end
 
-      result = Lexicon::ParseCitations.call(html_nodes.map(&:to_html).join)
+      html = html_nodes.map(&:to_html).join
+
+      # A stray </span> inside a citation <li> can prematurely close the <span> that wraps the
+      # citations section. When this happens, Nokogiri displaces all remaining citation content
+      # as siblings of the closed <span> rather than keeping it inside the citations node.
+      # Collect those displaced siblings to avoid losing citation data.
+      if citations_node.at_css('a[name]').blank? && citations_node.parent.name == 'span'
+        node = citations_node.parent.next_sibling
+        while node
+          break if node.element? && (node['name'].present? || node.at_css('a[name]').present?)
+
+          html += node.to_html
+          node = node.next_sibling
+        end
+      end
 
       # We used to delete parsed nodes earlier, but it turned out in some files citations node contains other
       # sections (e.g. Links block, so we cannot simply remove it)
       # header.remove
       # citations_node.remove
-      result
+      Lexicon::ParseCitations.call(html)
     end
 
     private
 
     def header_element(html_doc)
-      header = html_doc.at_css("a[name=\"Bib.\"]")
+      header = html_doc.at_css('a[name="Bib."]')
 
       return nil if header.nil?
 
