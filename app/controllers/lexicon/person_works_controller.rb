@@ -60,12 +60,16 @@ module Lexicon
       @title_link_entries = LexEntry.where(id: entry_ids).index_by(&:id)
     end
 
+    def person_entry_for_title_link?(entry)
+      entry&.lex_file&.entrytype_person? || entry&.lex_item_type == 'LexPerson'
+    end
+
     def add_title_link
       text = params[:text].to_s.strip
       entry_id = params[:entry_id].to_i
       entry = LexEntry.find_by(id: entry_id)
 
-      if text.blank? || entry.nil? || !entry.lex_file&.entrytype_person?
+      if text.blank? || entry.nil? || !person_entry_for_title_link?(entry)
         head :unprocessable_content
         return
       end
