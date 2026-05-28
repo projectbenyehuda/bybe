@@ -441,8 +441,9 @@ en:
       enter_manifestation_ids: Please enter *work* IDs (separated by space or newline)
       fetch: Load Works
       title: Batch Operations
+  lock_record:
+    record_locked: This %{model_name} is locked by user %{user}
   ingestibles:
-    ingestible_locked: Ingestible locked by user %{user}
     clear_defaults: Clear defaults
     authorities:
       or_new_person: or type a new authority name

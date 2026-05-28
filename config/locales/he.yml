@@ -1939,8 +1939,9 @@ he:
       columns:
         db_intellectual_property: מצב זכויות יוצרים במערכת
         has_non_public_domain_authority: זכויות הישות טרם פקעו
+  lock_record:
+    record_locked: "%{model_name} נעולה לטיפול %{user}"
   ingestibles:
-    ingestible_locked: ההעלאה נעולה לטיפול מידֵי %{user}
     replace_with_authority: החלף ביישות קיימת!
     clear_defaults: הסרת ברירות מחדל
     # _authorities partial
