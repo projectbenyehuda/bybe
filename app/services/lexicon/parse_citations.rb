@@ -70,9 +70,15 @@ PROMPT
       json_response['result'].each do |subject_works|
         subject = subject_works['subject']
         subject_works['works'].each.with_index do |work, index|
+          title = sanitize_smart_quotes(work['title'])
+          if title.blank?
+            Rails.logger.warn("ParseCitations: skipping citation with blank title (subject=#{subject.inspect})")
+            next
+          end
+
           citation = LexCitation.new(
             subject: sanitize_smart_quotes(subject),
-            title: sanitize_smart_quotes(work['title']),
+            title: title,
             from_publication: sanitize_smart_quotes(work['from_publication']),
             pages: sanitize_smart_quotes(work['pages']),
             link: work['link'],
