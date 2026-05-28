@@ -70,6 +70,10 @@ function openModal(path, onSuccess = null) {
 function setupModalContent(content) {
     $('#generalDlgBody').html(content);
 
+    $('#generalDlgBody [data-ajax-url]').each(function() {
+        $(this).load($(this).data('ajax-url'));
+    });
+
     // Extracting title from content
 	var title = '';
 	var h1 = $('#generalDlgBody').find('h1').first();
