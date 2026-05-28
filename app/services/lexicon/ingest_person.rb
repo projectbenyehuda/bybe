@@ -27,19 +27,34 @@ module Lexicon
         lex_person.deathdate = match[2]
       end
 
-      if heading_table.parent.name == 'span'
-        span = heading_table.parent
-        # Only move up to the span level if content continues outside it.
-        # When the span has no next sibling, it wraps all page content, so we
-        # stay at the table level and iterate its siblings (which are inside the span).
-        heading_table = span if span.next_element.present?
+      # Bio content may be inside a wrapping span (as siblings of the heading table),
+      # or outside the span (as siblings of the span itself). We first iterate table
+      # siblings; if exhausted, we fall through to span siblings to find remaining bio
+      # and the works header.
+      next_elem = heading_table.next_element
+      at_span_level = false
+
+      # When the table has no siblings inside its wrapping span, jump directly
+      # to the span's siblings where bio content lives.
+      if next_elem.nil? && heading_table.parent.name == 'span'
+        next_elem = heading_table.parent.next_element
+        at_span_level = true
       end
 
-      next_elem = heading_table.next_element
       bio = []
       while next_elem.present? && !header?(next_elem, WORKS_HEADER)
         bio << next_elem.to_html
         next_elem = next_elem.next_element
+      end
+
+      # Bio was inside the wrapping span but the works header is outside it.
+      # Continue from span siblings to find the works header.
+      if next_elem.nil? && !at_span_level && heading_table.parent.name == 'span'
+        next_elem = heading_table.parent.next_element
+        while next_elem.present? && !header?(next_elem, WORKS_HEADER)
+          bio << next_elem.to_html
+          next_elem = next_elem.next_element
+        end
       end
 
       lex_person.bio = HtmlToMarkdown.call(bio.join("\n"))
