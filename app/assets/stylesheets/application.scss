@@ -1157,3 +1157,33 @@ p.by-genre-name-v02.headline-2-v02 {
 .donation-btn-v02 {
   min-width: 122px;
 }
+
+.author-card-v02.periodical-with-cover {
+  .periodical-cover-img {
+    width: 160px;
+    height: 280px;
+    border-radius: 3px;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .author-name-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    min-height: 50px;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.55);
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    padding: 6px 4px;
+
+    .author-name-v02 {
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    }
+  }
+}

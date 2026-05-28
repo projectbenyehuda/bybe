@@ -15,13 +15,25 @@
           %div{style: 'display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 15px;'}
             - i = 0
             - @periodicals.each do |periodical|
+              - cover_issue = @periodical_first_covers[periodical.id]
               .slide{ style: i >= 5 ? 'display: none;' : '' }
                 %a{ href: collection_path(periodical) }
-                  .author-card-v02{style: 'margin-left: 0; margin-right: 0;'}
-                    %img.author-pic-v02{src: periodical.logo_image.present? ? url_for(periodical.logo_image) : '', alt: periodical.title }/
-                    .author-name-area
-                      .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
-                      .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
+                  - if cover_issue
+                    - if cover_issue.cover_image.variable?
+                      - cover_src = url_for(cover_issue.cover_image.variant(resize_to_fill: [160, 280]))
+                    - else
+                      - cover_src = url_for(cover_issue.cover_image)
+                    .author-card-v02.periodical-with-cover{ style: 'margin-left: 0; margin-right: 0;' }
+                      %img.periodical-cover-img{ src: cover_src, alt: periodical.title }/
+                      .author-name-area
+                        .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
+                        .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
+                  - else
+                    .author-card-v02{ style: 'margin-left: 0; margin-right: 0;' }
+                      %img.author-pic-v02{ src: periodical.logo_image.present? ? url_for(periodical.logo_image) : '', alt: periodical.title }/
+                      .author-name-area
+                        .author-name-v02= t('.x_issues', x: periodical.collection_items.count)
+                        .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
               - i += 1
           .link-to-all-v02.pointer
             %a#periodicals-view-all{:href => "#"}
