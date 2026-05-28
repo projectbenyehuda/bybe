@@ -132,4 +132,47 @@ RSpec.describe LexiconHelper, type: :helper do
       expect(result).to include('rel="noopener noreferrer"')
     end
   end
+
+  describe '#render_person_work_title' do
+    let(:work) { build(:lex_person_work, title: 'ספר זכרון לאפרת דנון', title_links: nil) }
+
+    context 'when no lex_publication and no title_links' do
+      it 'returns the plain title string' do
+        expect(helper.render_person_work_title(work)).to eq('ספר זכרון לאפרת דנון')
+      end
+    end
+
+    context 'when title_links are present' do
+      let!(:target_entry) { create(:lex_entry, :person, title: 'אפרת דנון') }
+
+      before do
+        work.title_links = [{ 'text' => 'אפרת דנון', 'entry_id' => target_entry.id }]
+      end
+
+      it 'replaces the linked text with an anchor tag' do
+        result = helper.render_person_work_title(work)
+        expect(result).to include('<a ')
+        expect(result).to include('אפרת דנון')
+        expect(result).to include(lexicon_entry_path(target_entry))
+      end
+
+      it 'preserves surrounding title text' do
+        result = helper.render_person_work_title(work)
+        expect(result).to include('ספר זכרון ל')
+      end
+    end
+
+    context 'when lex_publication is present' do
+      let!(:publication_entry) { create(:lex_entry, :publication, title: 'כותרת הפרסום') }
+
+      before { work.lex_publication = publication_entry.lex_item }
+
+      it 'links the title to the publication entry regardless of title_links' do
+        work.title_links = [{ 'text' => 'אפרת דנון', 'entry_id' => 999 }]
+        result = helper.render_person_work_title(work)
+        expect(result).to include(lexicon_entry_path(publication_entry))
+        expect(result).to include('כותרת הפרסום')
+      end
+    end
+  end
 end
