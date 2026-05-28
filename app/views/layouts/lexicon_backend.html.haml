@@ -21,9 +21,10 @@
   %body{ class: ('staging' if staging?) }
     %header.container-fluid
       - flash.each do |name, msg|
-        .alert.alert-dismissable{ class: %w(error alert).include?(name) ? 'alert-danger' : 'alert-success' }
-          %button.close{ type: :button, data: { dismiss: :alert } } &times;
-          = msg
+        - if %w(notice alert error success).include?(name)
+          .alert.alert-dismissable{ class: %w(error alert).include?(name) ? 'alert-danger' : 'alert-success' }
+            %button.close{ type: :button, data: { dismiss: :alert } } &times;
+            = msg
 
       %nav.navbar-expand-md.navbar-light.bg-light
         %a.navbar-brand{ href: lexicon_root_path }= t('lexicon.layout.title')

@@ -92,4 +92,31 @@ describe Lexicon::ParseCitations do
       expect(result[3].authors.first).to have_attributes(name: 'ברוידס, אברהם', link: '01063.php')
     end
   end
+
+  context 'when the LLM returns citations with blank titles' do
+    let(:html) { '<ul><li>some html</li></ul>' }
+
+    it 'skips citations with blank titles instead of raising a validation error' do
+      chat_double = instance_double(RubyLLM::Chat)
+      response_double = instance_double(RubyLLM::Message, content: {
+        result: [
+          { subject: nil, works: [
+            { title: 'כותרת תקינה', authors: [{ name: 'מחבר א', link: nil }],
+              from_publication: 'עיתון', pages: '5', link: nil, notes: nil },
+            { title: nil, authors: [{ name: 'מחבר ב', link: nil }],
+              from_publication: 'עיתון', pages: '6', link: nil, notes: nil },
+            { title: '', authors: [{ name: 'מחבר ג', link: nil }],
+              from_publication: 'עיתון', pages: '7', link: nil, notes: nil }
+          ] }
+        ]
+      }.to_json)
+
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double,
+                                             ask: response_double)
+
+      expect(result.size).to eq(1)
+      expect(result.first.title).to eq('כותרת תקינה')
+    end
+  end
 end
