@@ -93,6 +93,109 @@ describe Lexicon::ParseCitations do
     end
   end
 
+  context 'when a citation ends with an asterisk link' do
+    let(:html) do
+      <<~HTML
+        <ul>
+          <li><b>מחבר, שם.</b> כותרת המאמר. <u>עיתון</u>, 2024, עמ' 1-5.
+            <a href="https://archive.today/abc123">*</a></li>
+        </ul>
+      HTML
+    end
+
+    it 'pre-processes the HTML so the asterisk link href is in data-file-link and the asterisk is removed' do
+      chat_double = instance_double(RubyLLM::Chat)
+      sent_html = nil
+
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+      allow(chat_double).to receive(:ask) do |html_arg|
+        sent_html = html_arg
+        instance_double(RubyLLM::Message, content: {
+          result: [{ subject: nil, works: [
+            { title: 'כותרת המאמר', authors: [{ name: 'מחבר, שם', link: nil }],
+              from_publication: 'עיתון, 2024', pages: '1-5',
+              link: nil, backup_url: 'https://archive.today/abc123', notes: nil }
+          ] }]
+        }.to_json)
+      end
+
+      result = described_class.call(html)
+
+      expect(sent_html).to include('data-file-link="https://archive.today/abc123"')
+      expect(sent_html).not_to match(%r{<a[^>]*>\s*\*\s*</a>}i)
+      expect(result.first.link).to be_nil
+      expect(result.first.backup_url).to eq('https://archive.today/abc123')
+    end
+  end
+
+  context 'when a citation has multiple asterisk links' do
+    let(:html) do
+      <<~HTML
+        <ul>
+          <li>כותרת. עיתון, 2024.
+            <a href="https://first.example.com/file.pdf">*</a>
+            &lt;פורסם גם ב<a href="http://other.example.com/">אתר</a>
+            <a href="https://second.example.com/alt.pdf">*</a>&gt;</li>
+        </ul>
+      HTML
+    end
+
+    it 'uses the first asterisk link href as data-file-link' do
+      chat_double = instance_double(RubyLLM::Chat)
+      sent_html = nil
+
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+      allow(chat_double).to receive(:ask) do |html_arg|
+        sent_html = html_arg
+        instance_double(RubyLLM::Message, content: {
+          result: [{ subject: nil, works: [
+            { title: 'כותרת', authors: [], from_publication: 'עיתון, 2024',
+              pages: nil, link: nil, backup_url: 'https://first.example.com/file.pdf', notes: nil }
+          ] }]
+        }.to_json)
+      end
+
+      described_class.call(html)
+
+      expect(sent_html).to include('data-file-link="https://first.example.com/file.pdf"')
+      expect(sent_html).not_to include('second.example.com')
+    end
+  end
+
+  context 'when an asterisk link has a blank href' do
+    let(:html) do
+      <<~HTML
+        <ul>
+          <li>כותרת. עיתון, 2024. <a>*</a></li>
+        </ul>
+      HTML
+    end
+
+    it 'removes the asterisk anchor but does not set data-file-link' do
+      chat_double = instance_double(RubyLLM::Chat)
+      sent_html = nil
+
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+      allow(chat_double).to receive(:ask) do |html_arg|
+        sent_html = html_arg
+        instance_double(RubyLLM::Message, content: {
+          result: [{ subject: nil, works: [
+            { title: 'כותרת', authors: [], from_publication: 'עיתון, 2024',
+              pages: nil, link: nil, backup_url: nil, notes: nil }
+          ] }]
+        }.to_json)
+      end
+
+      described_class.call(html)
+
+      expect(sent_html).not_to match(%r{<a[^>]*>\s*\*\s*</a>}i)
+      expect(sent_html).not_to include('data-file-link')
+    end
+  end
+
   context 'when the LLM returns citations with blank titles' do
     let(:html) { '<ul><li>some html</li></ul>' }
 

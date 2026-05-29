@@ -78,6 +78,7 @@ module Lexicon
       # lex_person.entry would return nil inside AssociateAuthority.
       AssociateAuthority.call(lex_person, html_doc, entry_title: @lex_entry&.title) if lex_person.authority.nil?
       link_citations_to_works(lex_person)
+      attach_backup_files(lex_person)
       lex_person
     end
 
@@ -97,6 +98,22 @@ module Lexicon
 
         citation.person_work = work
         citation.subject = nil # clear the subject since it's now linked to PersonWork
+        citation.save!
+      end
+    end
+
+    def attach_backup_files(lex_person)
+      lex_person.citations.each do |citation|
+        next if citation.backup_url.blank?
+
+        url = citation.backup_url.split('#').first
+        legacy_link = LexLegacyLink.find_by(new_path: url)
+        next if legacy_link.nil?
+
+        blob = legacy_link.lex_entry.blob_by_filename(File.basename(url))
+        next if blob.nil?
+
+        citation.backup_file.attach(blob)
         citation.save!
       end
     end
