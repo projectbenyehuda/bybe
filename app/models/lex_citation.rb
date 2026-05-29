@@ -18,6 +18,8 @@ class LexCitation < ApplicationRecord
 
   has_many :authors, class_name: 'LexCitationAuthor', inverse_of: :citation, dependent: :destroy
 
+  has_one_attached :backup_file
+
   validates :title, presence: true
 
   validate :person_work_belongs_to_same_person
