@@ -18,7 +18,13 @@ module LockRecordConcern
         model_name: rec.class.model_name.human
       )
 
-      format.html { redirect_to redirect_if_locked_path, alert: alert }
+      format.html do
+        if request.xhr?
+          render plain: alert, status: :locked
+        else
+          redirect_to redirect_if_locked_path, alert: alert
+        end
+      end
       format.js do
         flash.alert = alert
         render js: "window.location.href = '#{redirect_if_locked_path}';"
