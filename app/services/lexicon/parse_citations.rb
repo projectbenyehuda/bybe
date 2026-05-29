@@ -33,7 +33,9 @@ module Lexicon
     journal where article was published, etc). You should include there additional information helping to identify
     publication, like year and number of issue for journal article, volume number for multivolume collection, etc.
   - pages - string representing page, or pages interval, e.g. "7", "5-12"
-  - link - (optional) sometimes the HTML will contain a link to the actual work or article.
+  - link - (optional) link to the actual work or article. If the `<li>` element has a `data-file-link` attribute,
+    that URL is the direct link to the cited document — use it as the `link` field. Otherwise use any link in the
+    citation that points to the actual work or article.
   - notes - (optional) some additional notes, not fitting into other fields (like 'First published at...')
 
   Example of work JSON:
@@ -60,6 +62,7 @@ PROMPT
 
     def call(html)
       Rails.logger.info('Parsing citations HTML with LLM API started.')
+      html = preprocess_asterisk_links(html)
       chat = RubyLLM.chat(model: 'gpt-4.1-mini')
       chat.with_instructions(SYSTEM_PROMPT).with_params(response_format: { type: :json_object })
 
@@ -117,7 +120,22 @@ PROMPT
     end
 
     def sanitize_smart_quotes(text)
-      text&.gsub(/[“”״]/, '"')&.gsub(/[‘’]/, "'")
+      text&.gsub(/[\u201C\u201D\u05F4]/, 34.chr)&.gsub(/[\u2018\u2019]/, 39.chr)
+    end
+
+    def preprocess_asterisk_links(html)
+      doc = Nokogiri::HTML::DocumentFragment.parse(html)
+      doc.css('li').each do |li|
+        asterisk_links = li.css('a').select { |a| a.text.strip == '*' }
+        next if asterisk_links.empty?
+
+        href = asterisk_links.first['href']
+        next if href.blank?
+
+        li['data-file-link'] = href
+        asterisk_links.each(&:remove)
+      end
+      doc.to_html
     end
   end
 end
