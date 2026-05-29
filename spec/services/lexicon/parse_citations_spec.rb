@@ -115,7 +115,7 @@ describe Lexicon::ParseCitations do
           result: [{ subject: nil, works: [
             { title: 'כותרת המאמר', authors: [{ name: 'מחבר, שם', link: nil }],
               from_publication: 'עיתון, 2024', pages: '1-5',
-              link: 'https://archive.today/abc123', notes: nil }
+              link: nil, backup_url: 'https://archive.today/abc123', notes: nil }
           ] }]
         }.to_json)
       end
@@ -124,7 +124,8 @@ describe Lexicon::ParseCitations do
 
       expect(sent_html).to include('data-file-link="https://archive.today/abc123"')
       expect(sent_html).not_to include('>*<')
-      expect(result.first.link).to eq('https://archive.today/abc123')
+      expect(result.first.link).to be_nil
+      expect(result.first.backup_url).to eq('https://archive.today/abc123')
     end
   end
 
@@ -151,7 +152,7 @@ describe Lexicon::ParseCitations do
         instance_double(RubyLLM::Message, content: {
           result: [{ subject: nil, works: [
             { title: 'כותרת', authors: [], from_publication: 'עיתון, 2024',
-              pages: nil, link: 'https://first.example.com/file.pdf', notes: nil }
+              pages: nil, link: nil, backup_url: 'https://first.example.com/file.pdf', notes: nil }
           ] }]
         }.to_json)
       end

@@ -282,4 +282,47 @@ describe Lexicon::IngestPerson do
       )
     end
   end
+
+  describe '#attach_backup_files (private)' do
+    it 'attaches the blob from LexEntry to the citation backup_file when backup_url matches a LexLegacyLink' do
+      entry = create(:lex_entry)
+      entry.attachments.attach(
+        io: StringIO.new('pdf content'),
+        filename: 'article.pdf',
+        content_type: 'application/pdf'
+      )
+      blob = entry.attachments.first.blob
+      new_path = entry.download_path('article.pdf')
+
+      create(:lex_legacy_link, lex_entry: entry, old_path: '00024-files/article.pdf', new_path: new_path)
+
+      lex_person = create(:lex_person)
+      citation = create(:lex_citation, person: lex_person, title: 'Test', backup_url: new_path)
+
+      expect do
+        described_class.new.send(:attach_backup_files, lex_person)
+      end.to change { citation.reload.backup_file.attached? }.from(false).to(true)
+
+      expect(citation.backup_file.blob).to eq(blob)
+    end
+
+    it 'skips citations with no backup_url' do
+      lex_person = create(:lex_person)
+      create(:lex_citation, person: lex_person, title: 'No backup', backup_url: nil)
+
+      expect do
+        described_class.new.send(:attach_backup_files, lex_person)
+      end.not_to(change(ActiveStorage::Attachment, :count))
+    end
+
+    it 'skips citations whose backup_url has no matching LexLegacyLink' do
+      lex_person = create(:lex_person)
+      create(:lex_citation, person: lex_person, title: 'External only',
+                            backup_url: 'https://archive.today/abc123')
+
+      expect do
+        described_class.new.send(:attach_backup_files, lex_person)
+      end.not_to(change(ActiveStorage::Attachment, :count))
+    end
+  end
 end

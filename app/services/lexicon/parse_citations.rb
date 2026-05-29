@@ -33,9 +33,10 @@ module Lexicon
     journal where article was published, etc). You should include there additional information helping to identify
     publication, like year and number of issue for journal article, volume number for multivolume collection, etc.
   - pages - string representing page, or pages interval, e.g. "7", "5-12"
-  - link - (optional) link to the actual work or article. If the `<li>` element has a `data-file-link` attribute,
-    that URL is the direct link to the cited document — use it as the `link` field. Otherwise use any link in the
-    citation that points to the actual work or article.
+  - link - (optional) URL of the article or work, from an inline link in the citation text (title or other
+    anchor). Do NOT use the `data-file-link` attribute value for this field.
+  - backup_url - (optional) if the `<li>` element has a `data-file-link` attribute, set this field to that URL.
+    Otherwise leave it null.
   - notes - (optional) some additional notes, not fitting into other fields (like 'First published at...')
 
   Example of work JSON:
@@ -85,6 +86,7 @@ PROMPT
             from_publication: sanitize_smart_quotes(work['from_publication']),
             pages: sanitize_smart_quotes(work['pages']),
             link: work['link'],
+            backup_url: work['backup_url'],
             notes: sanitize_smart_quotes(work['notes']),
             seqno: index + 1
           )
