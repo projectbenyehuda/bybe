@@ -2,10 +2,12 @@
 
 class PeriodicalsController < ApplicationController
   def index
-    @periodicals = Collection.includes(:collection_items).where(collection_type: 'periodical').order(:title) # TODO: what order would make sense?
-    @periodicals_count = Rails.cache.fetch('periodicals_count', expires_in: 60.minutes) do
-      Collection.where(collection_type: 'periodical').count
-    end
+    @periodicals = Collection.includes(:collection_items)
+                             .where(collection_type: 'periodical')
+                             .where(id: CollectionItem.where(item_type: 'Collection').select(:collection_id))
+                             .order(:title)
+                             .to_a
+    @periodicals_count = @periodicals.size
     @popular_works = ManifestationsIndex.query(match: { in_periodical: true })
                                         .filter(range: { impressions_count: { gte: 1 } })
                                         .order(impressions_count: :desc)

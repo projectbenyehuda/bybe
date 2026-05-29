@@ -143,4 +143,34 @@ RSpec.describe 'Periodicals', type: :request do
       expect(response.body).not_to include('periodical-with-cover')
     end
   end
+
+  describe 'suppression of zero-issue periodicals' do
+    let!(:periodical_with_issue) do
+      create(:collection, collection_type: 'periodical', title: 'Has Issues Periodical')
+    end
+    let!(:periodical_no_issues) do
+      create(:collection, collection_type: 'periodical', title: 'No Issues Periodical')
+    end
+    let!(:issue) { create(:collection, collection_type: 'periodical_issue') }
+
+    before do
+      create(:collection_item, collection: periodical_with_issue, item: issue, seqno: 1)
+    end
+
+    it 'does not include zero-issue periodicals in @periodicals' do
+      get '/periodicals'
+      expect(assigns(:periodicals)).to include(periodical_with_issue)
+      expect(assigns(:periodicals)).not_to include(periodical_no_issues)
+    end
+
+    it 'does not render the zero-issue periodical title on the page' do
+      get '/periodicals'
+      expect(response.body).not_to include('No Issues Periodical')
+    end
+
+    it 'sets @periodicals_count to only count periodicals with issues' do
+      get '/periodicals'
+      expect(assigns(:periodicals_count)).to eq(assigns(:periodicals).size)
+    end
+  end
 end
