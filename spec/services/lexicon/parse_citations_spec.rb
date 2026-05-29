@@ -123,7 +123,7 @@ describe Lexicon::ParseCitations do
       result = described_class.call(html)
 
       expect(sent_html).to include('data-file-link="https://archive.today/abc123"')
-      expect(sent_html).not_to include('>*<')
+      expect(sent_html).not_to match(%r{<a[^>]*>\s*\*\s*</a>}i)
       expect(result.first.link).to be_nil
       expect(result.first.backup_url).to eq('https://archive.today/abc123')
     end
@@ -161,6 +161,38 @@ describe Lexicon::ParseCitations do
 
       expect(sent_html).to include('data-file-link="https://first.example.com/file.pdf"')
       expect(sent_html).not_to include('second.example.com')
+    end
+  end
+
+  context 'when an asterisk link has a blank href' do
+    let(:html) do
+      <<~HTML
+        <ul>
+          <li>כותרת. עיתון, 2024. <a>*</a></li>
+        </ul>
+      HTML
+    end
+
+    it 'removes the asterisk anchor but does not set data-file-link' do
+      chat_double = instance_double(RubyLLM::Chat)
+      sent_html = nil
+
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+      allow(chat_double).to receive(:ask) do |html_arg|
+        sent_html = html_arg
+        instance_double(RubyLLM::Message, content: {
+          result: [{ subject: nil, works: [
+            { title: 'כותרת', authors: [], from_publication: 'עיתון, 2024',
+              pages: nil, link: nil, backup_url: nil, notes: nil }
+          ] }]
+        }.to_json)
+      end
+
+      described_class.call(html)
+
+      expect(sent_html).not_to match(%r{<a[^>]*>\s*\*\s*</a>}i)
+      expect(sent_html).not_to include('data-file-link')
     end
   end
 

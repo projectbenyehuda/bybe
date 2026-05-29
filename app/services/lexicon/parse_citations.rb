@@ -127,15 +127,17 @@ PROMPT
 
     def preprocess_asterisk_links(html)
       doc = Nokogiri::HTML::DocumentFragment.parse(html)
+      modified = false
       doc.css('li').each do |li|
         asterisk_links = li.css('a').select { |a| a.text.strip == '*' }
         next if asterisk_links.empty?
 
+        modified = true
         href = asterisk_links.map { |a| a['href'] }.find(&:present?)
         li['data-file-link'] = href if href.present?
         asterisk_links.each(&:remove)
       end
-      doc.to_html
+      modified ? doc.to_html : html
     end
   end
 end
