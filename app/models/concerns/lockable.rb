@@ -20,12 +20,13 @@ module Lockable
     locked_at.present? && locked_at > LOCK_TIMEOUT_IN_SECONDS.seconds.ago
   end
 
-  def obtain_lock(user)
+  def obtain_lock?(user)
     return false if locked? && locked_by_user_id != user.id
 
     # To avoid excessive updates we only refresh lock if more than 10 seconds passed since previous lock refresh
     if locked_at.nil? || locked_at < 10.seconds.ago
-      update_columns(locked_at: Time.zone.now, locked_by_user_id: user.id, last_editor_id: user.id) # we deliberately skip validations here
+      # we deliberately skip validations here
+      update_columns(locked_at: Time.zone.now, locked_by_user_id: user.id, last_editor_id: user.id)
     end
 
     return true

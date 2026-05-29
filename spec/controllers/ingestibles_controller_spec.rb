@@ -116,7 +116,7 @@ describe IngestiblesController do
 
       context 'when ingestible is locked by another user' do
         let(:locked_by_user) { create(:user, name: 'John Connor') }
-        let(:locked_at) { Time.zone.now - 2.minutes }
+        let(:locked_at) { 2.minutes.ago }
 
         it 'redirects to ingestible index page' do
           expect(call).to redirect_to ingestibles_path

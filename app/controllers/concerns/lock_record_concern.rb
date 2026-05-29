@@ -9,17 +9,23 @@ module LockRecordConcern
   # Should be used as `before_action` hook
   def try_to_lock_record
     rec = record_to_lock
-    return if rec.obtain_lock(current_user)
+    return if rec.obtain_lock?(current_user)
 
     respond_to do |format|
-      flash.alert = t(
+      alert = t(
         'lock_record.record_locked',
         user: rec.locked_by_user.name,
         model_name: rec.class.model_name.human
       )
 
-      format.html { redirect_to redirect_if_locked_path }
-      format.js { render js: "window.location.href = '#{redirect_if_locked_path}';" }
+      format.html { redirect_to redirect_if_locked_path, alert: alert }
+      format.js do
+        flash.alert = alert
+        render js: "window.location.href = '#{redirect_if_locked_path}';"
+      end
+      format.json do
+        render json: { success: false, error: alert, redirect_to: redirect_if_locked_path }, status: :locked
+      end
     end
   end
 
