@@ -2,9 +2,10 @@
 
 class PeriodicalsController < ApplicationController
   def index
+    issue_ids = Collection.where(collection_type: 'periodical_issue').select(:id)
     @periodicals = Collection.includes(:collection_items)
                              .where(collection_type: 'periodical')
-                             .where(id: CollectionItem.where(item_type: 'Collection').select(:collection_id))
+                             .where(id: CollectionItem.where(item_type: 'Collection', item_id: issue_ids).select(:collection_id))
                              .order(:title)
                              .to_a
     @periodicals_count = @periodicals.size
