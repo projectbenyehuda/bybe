@@ -131,10 +131,8 @@ PROMPT
         asterisk_links = li.css('a').select { |a| a.text.strip == '*' }
         next if asterisk_links.empty?
 
-        href = asterisk_links.first['href']
-        next if href.blank?
-
-        li['data-file-link'] = href
+        href = asterisk_links.map { |a| a['href'] }.find(&:present?)
+        li['data-file-link'] = href if href.present?
         asterisk_links.each(&:remove)
       end
       doc.to_html
