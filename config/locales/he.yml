@@ -2014,6 +2014,8 @@ he:
       show_all: הצג את כל ההעלאות
       pending_ingestibles: ישנן %{count} העלאות ממתינות ליצירת ישויות
       last_editor: עורך/ת אחרון/ה
+      title_filter_placeholder: סינון לפי כותרת
+      title_filter_button: סנן
     destroy:
       success: ההעלאה נמחקה
   ingestible_texts:

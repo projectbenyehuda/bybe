@@ -470,6 +470,8 @@ en:
       show_all: Ingestibles Index Show All
       show_uningested_only: Ingestibles Index Show Uningested Only
       start_new: Ingestibles Index Start New
+      title_filter_placeholder: Filter by title
+      title_filter_button: Filter
     ingest:
       errors: Ingestibles Ingest Errors
       failures: Ingestibles Ingest Failures

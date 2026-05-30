@@ -13,6 +13,57 @@ describe IngestiblesController do
     end
 
     it { is_expected.to be_successful }
+
+    context 'with title_filter param' do
+      let!(:matching)     { create(:ingestible, title: 'Unique Filtered Title') }
+      let!(:non_matching) { create(:ingestible, title: 'Something Else Entirely') }
+
+      it 'includes only ingestibles whose title contains the filter string' do
+        get :index, params: { title_filter: 'Filtered' }
+        expect(assigns(:other_ingestibles)).to include(matching)
+        expect(assigns(:other_ingestibles)).not_to include(non_matching)
+      end
+
+      it 'matches on a substring anywhere in the title' do
+        get :index, params: { title_filter: 'iltered Titl' }
+        expect(assigns(:other_ingestibles)).to include(matching)
+        expect(assigns(:other_ingestibles)).not_to include(non_matching)
+      end
+
+      it 'returns no results when the filter matches nothing' do
+        get :index, params: { title_filter: 'XYZZY_NO_MATCH' }
+        expect(assigns(:other_ingestibles)).to be_empty
+      end
+
+      it 'does not filter when title_filter is blank' do
+        get :index, params: { title_filter: '' }
+        expect(assigns(:other_ingestibles)).to include(matching)
+        expect(assigns(:other_ingestibles)).to include(non_matching)
+      end
+    end
+
+    context 'with title_filter and show_all params' do
+      let!(:ingested) { create(:ingestible, title: 'Matching Work Ingested', status: 'ingested') }
+      let!(:draft)    { create(:ingestible, title: 'Matching Work Draft',    status: 'draft') }
+
+      def all_listed
+        assigns(:other_ingestibles).to_a +
+          assigns(:my_ingestibles).to_a +
+          assigns(:locked_ingestibles).to_a
+      end
+
+      it 'includes ingested ingestibles when show_all is set' do
+        get :index, params: { title_filter: 'Matching Work', show_all: '1' }
+        expect(all_listed).to include(ingested)
+        expect(all_listed).to include(draft)
+      end
+
+      it 'excludes ingested ingestibles without show_all' do
+        get :index, params: { title_filter: 'Matching Work' }
+        expect(all_listed).not_to include(ingested)
+        expect(all_listed).to include(draft)
+      end
+    end
   end
 
   describe '#new' do

@@ -22,6 +22,9 @@ class IngestiblesController < ApplicationController
     show_all = params[:show_all] == '1'
     base = show_all ? Ingestible.all : Ingestible.where.not(status: 'ingested')
 
+    title_filter = params[:title_filter].presence
+    base = base.where('title LIKE ?', "%#{title_filter}%") if title_filter
+
     # Unmodified scopes for building subqueries (must not have a custom SELECT)
     locked      = base.where('locked_at > ?', 1.hour.ago)
     my_locked   = locked.where(locked_by_user_id: current_user.id)
