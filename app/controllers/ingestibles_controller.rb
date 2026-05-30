@@ -20,14 +20,25 @@ class IngestiblesController < ApplicationController
   # GET /ingestibles or /ingestibles.json
   def index
     show_all = params[:show_all] == '1'
-    scope = show_all ? Ingestible.all : Ingestible.where.not(status: 'ingested')
+    base = show_all ? Ingestible.all : Ingestible.where.not(status: 'ingested')
 
-    @locked_ingestibles = scope.where('locked_at > ?', 1.hour.ago)
-    @my_ingestibles = @locked_ingestibles.where(locked_by_user_id: current_user.id)
-    @locked_ingestibles = @locked_ingestibles.where.not(id: @my_ingestibles)
+    # Unmodified scopes for building subqueries (must not have a custom SELECT)
+    locked      = base.where('locked_at > ?', 1.hour.ago)
+    my_locked   = locked.where(locked_by_user_id: current_user.id)
+    other_locked = locked.where.not(id: my_locked.select(:id))
 
-    @other_ingestibles = scope.where.not(id: @locked_ingestibles.pluck(:id)).order(updated_at: :desc).page(params[:page])
-    @ingestibles_pending = scope.where(status: 'awaiting_authorities').order(updated_at: :desc)
+    # Narrow select avoids loading works_buffer/toc_buffer/textarea_cache/ingested_changes
+    # (all large TEXT/LONGTEXT columns not rendered in the list view).
+    listing = base.select(:id, :title, :status, :publisher, :comments, :last_editor_id,
+                          :locked_at, :locked_by_user_id, :updated_at, :markdown)
+                  .includes(:last_editor)
+
+    @my_ingestibles     = listing.merge(my_locked)
+    @locked_ingestibles = listing.merge(other_locked)
+    @other_ingestibles  = listing.where.not(id: other_locked.select(:id))
+                                 .order(updated_at: :desc)
+                                 .page(params[:page])
+    @ingestibles_pending = base.select(:id).where(status: 'awaiting_authorities')
   end
 
   # GET /ingestibles/1 or /ingestibles/1.json
