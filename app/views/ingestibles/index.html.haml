@@ -1,6 +1,14 @@
 - show_all = params[:show_all] == '1'
 = link_to t('.start_new'), new_ingestible_path, class: 'btn btn-primary'
 = link_to(show_all ? t('.show_uningested_only') : t('.show_all'), ingestibles_path(show_all: show_all ? nil : 1), class: 'btn btn-secondary')
+= form_with url: ingestibles_path, method: :get, local: true, class: 'd-inline-block ms-2' do |f|
+  = hidden_field_tag :show_all, (show_all ? '1' : nil)
+  = f.text_field :title_filter,
+                 value: params[:title_filter],
+                 placeholder: t('.title_filter_placeholder'),
+                 class: 'form-control d-inline-block w-auto',
+                 style: 'vertical-align: middle'
+  = f.submit t('.title_filter_button'), class: 'btn btn-outline-secondary ms-1'
 - if current_user.has_bit?('edit_people') && @ingestibles_pending.any?
   %h3{style:'color:purple'}= t('.pending_ingestibles', count: @ingestibles_pending.count)
 = render partial: 'ingestibles_table', locals: { title: t('.my_title'), ingestibles: @my_ingestibles, editable: true, unlockable: true }
