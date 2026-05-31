@@ -6,7 +6,7 @@
 
   .source-content
     - if entry.lex_file&.full_path && File.exist?(entry.lex_file.full_path)
-      %iframe.source-iframe{src: lexicon_verification_source_path(entry), style: 'width: 100%; height: calc(100vh - 250px); border: 1px solid #ddd; border-radius: 4px;'}
+      %iframe.source-iframe{ src: lexicon_verification_source_path(entry) }
     - else
       .alert.alert-warning
         = t('lexicon.verification.source.file_not_found')
