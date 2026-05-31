@@ -24,16 +24,38 @@ function initVerification() {
         showToast(linkCheckToastMessage, linkCheckToastType);
     }
 
-    // Restore source pane scroll position after any page reload.
-    var savedSourceScroll = sessionStorage.getItem('source_scroll_top');
-    if (savedSourceScroll !== null) {
-        sessionStorage.removeItem('source_scroll_top');
-        var scrollVal = parseInt(savedSourceScroll, 10);
-        if (scrollVal > 0) {
-            setTimeout(function() {
-                var sourceContent = document.querySelector('.source-content');
-                if (sourceContent) { sourceContent.scrollTop = scrollVal; }
-            }, 100);
+    // Remove legacy key left by older code versions (no-op if already absent).
+    sessionStorage.removeItem('source_scroll_top');
+
+    // Restore source iframe scroll position after any page reload.
+    // Chromium-based browsers (Chrome, Edge) do not auto-preserve iframe internal
+    // scroll across reloads (unlike Firefox which restores it via session history),
+    // so we save/restore iframe.contentWindow.scrollY explicitly.
+    var savedIframeScroll = sessionStorage.getItem('source_iframe_scroll_y');
+    if (savedIframeScroll !== null) {
+        sessionStorage.removeItem('source_iframe_scroll_y');
+        var iframeScrollY = parseInt(savedIframeScroll, 10);
+        if (iframeScrollY > 0) {
+            var iframe = document.querySelector('.source-iframe');
+            if (iframe) {
+                var applyIframeScroll = function() {
+                    try { iframe.contentWindow.scrollTo(0, iframeScrollY); } catch (e) {}
+                };
+                // Always register the load listener so we catch the src loading after
+                // DOMContentLoaded.  The readyState === 'complete' check alone is a
+                // false positive: the initial about:blank document reports 'complete'
+                // before the real src has even started loading.
+                iframe.addEventListener('load', applyIframeScroll);
+                // Also apply immediately if the iframe already holds real source content
+                // (e.g. loaded from cache before DOMContentLoaded fired).
+                try {
+                    if (iframe.contentDocument &&
+                            iframe.contentDocument.readyState === 'complete' &&
+                            iframe.contentWindow.location.href !== 'about:blank') {
+                        applyIframeScroll();
+                    }
+                } catch (e) {}
+            }
         }
     }
 
@@ -63,10 +85,13 @@ function initVerification() {
         sessionStorage.removeItem('migrated_scroll_top');
         var migratedScrollVal = parseInt(savedMigratedScroll, 10);
         if (migratedScrollVal > 0) {
-            setTimeout(function() {
-                var migratedContent = document.querySelector('.migrated-content');
-                if (migratedContent) { migratedContent.scrollTop = migratedScrollVal; }
-            }, 100);
+            var migratedContent = document.querySelector('.migrated-content');
+            if (migratedContent) {
+                // Use rAF-based retry instead of a fixed timeout so that layout changes
+                // (e.g. Edge applying its own scroll restoration after JS runs) are
+                // detected and corrected within ~500 ms across all browsers.
+                restoreScrollWithRetry(migratedContent, migratedScrollVal);
+            }
         }
     }
 
@@ -438,16 +463,35 @@ function closeModalWithReload(reloadSelector) {
     }
 }
 
-// Save both pane scroll positions before any reload
+// Save both pane scroll positions before any reload.
+// For the source pane we save the iframe's internal scrollY, not the outer
+// container's scrollTop, because the meaningful scroll is inside the iframe.
 function saveScrollPositions() {
-    var sourceContent = document.querySelector('.source-content');
-    if (sourceContent) {
-        sessionStorage.setItem('source_scroll_top', String(sourceContent.scrollTop));
+    var iframe = document.querySelector('.source-iframe');
+    if (iframe) {
+        try {
+            sessionStorage.setItem('source_iframe_scroll_y', String(iframe.contentWindow.scrollY || 0));
+        } catch (e) {}
     }
     var migratedContent = document.querySelector('.migrated-content');
     if (migratedContent) {
         sessionStorage.setItem('migrated_scroll_top', String(migratedContent.scrollTop));
     }
+}
+
+// Retry setting scrollTop on every animation frame until it takes effect or 500 ms
+// elapses.  A fixed setTimeout(100) is not reliable on some browsers (e.g. Edge)
+// where the browser's own scroll-restoration can run and override our value after
+// DOMContentLoaded but before the first paint.
+function restoreScrollWithRetry(el, scrollVal) {
+    var deadline = Date.now() + 500;
+    function tryScroll() {
+        el.scrollTop = scrollVal;
+        if (el.scrollTop < scrollVal - 1 && Date.now() < deadline) {
+            requestAnimationFrame(tryScroll);
+        }
+    }
+    requestAnimationFrame(tryScroll);
 }
 
 // Reload the page, preserving source pane scroll position
