@@ -27,6 +27,13 @@ RSpec.describe Lexicon::EntriesController, type: :controller do
       expect(assigns(:lex_entries)).not_to include(deprecated_person_entry)
     end
 
+    it 'excludes secondary (non-main) entries from @lex_entries' do
+      secondary_entry = create(:lex_entry, :person, status: :published, title: 'Secondary Author', main: false)
+      call
+      expect(assigns(:lex_entries)).to include(published_person_entry)
+      expect(assigns(:lex_entries)).not_to include(secondary_entry)
+    end
+
     it 'orders entries by title' do
       # Create entries with different titles
       create(:lex_entry, :person, status: :published, title: 'Zebra')

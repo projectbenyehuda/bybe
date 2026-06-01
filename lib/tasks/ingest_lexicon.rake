@@ -121,10 +121,17 @@ def process_legacy_lexicon_entry(fname)
   title = validate_title(title, fname)
 
   status = entrytype == 'unknown' ? :unclassified : :classified
+
+  # Main entries (shown in /lex) have a filename of precisely five digits, e.g.
+  # 00001.php. Other numeric filenames (e.g. 02645001.php) are secondary entries,
+  # reachable only via internal links from another entry.
+  is_main = filepart.match?(/\A\d{5}\.php\z/)
+
   if lf.nil?
     lex_entry = LexEntry.create!(
       title: title,
-      status: :raw
+      status: :raw,
+      main: is_main
     )
 
     LexFile.create!(
@@ -139,6 +146,7 @@ def process_legacy_lexicon_entry(fname)
   else
     lf.update!(entrytype: entrytype, status: status)
     lex_entry = lf.lex_entry
+    lex_entry.update!(main: is_main) if lex_entry.main != is_main
     lex_item = lex_entry.lex_item
     # destroying item to be recreated during ingestion
     if lex_item.present?
