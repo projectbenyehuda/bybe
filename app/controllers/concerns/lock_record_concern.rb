@@ -30,7 +30,7 @@ module LockRecordConcern
         render js: "window.location.href = '#{redirect_if_locked_path}';"
       end
       format.json do
-        render json: { success: false, error: alert, redirect_to: redirect_if_locked_path }, status: :locked
+        render json: { success: false, errors: [alert], redirect_to: redirect_if_locked_path }, status: :locked
       end
     end
   end
