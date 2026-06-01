@@ -114,6 +114,20 @@ describe IngestiblesController do
 
       it { is_expected.to be_successful }
 
+      context 'when ingestible is locked by another user' do
+        let(:locked_by_user) { create(:user, name: 'John Connor') }
+        let(:locked_at) { 2.minutes.ago }
+
+        it 'redirects to ingestible index page' do
+          expect(call).to redirect_to ingestibles_path
+          expect(flash.alert).to eq I18n.t(
+            'lock_record.record_locked',
+            user: 'John Connor',
+            model_name: Ingestible.model_name.human
+          )
+        end
+      end
+
       context 'when ingestible has works with footnotes' do
         let(:ingestible) { create(:ingestible, :with_footnotes) }
 

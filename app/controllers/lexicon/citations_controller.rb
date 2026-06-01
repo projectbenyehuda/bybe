@@ -3,12 +3,15 @@
 module Lexicon
   # Controller to work with Lexicon Citations
   class CitationsController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
 
     before_action :set_citation, only: %i(edit update destroy reorder)
     before_action :set_person, only: %i(new create index)
+    before_action :try_to_lock_record
 
     layout false
 
@@ -98,6 +101,10 @@ module Lexicon
     def set_citation
       @citation = LexCitation.find(params[:id])
       @person = @citation.person
+    end
+
+    def record_to_lock
+      @person.lex_entry
     end
 
     # Only allow a list of trusted parameters through.
