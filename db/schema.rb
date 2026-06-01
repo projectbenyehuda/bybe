@@ -670,9 +670,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_031027) do
     t.datetime "created_at", precision: nil, null: false
     t.string "english_title"
     t.json "external_identifiers"
+    t.integer "last_editor_id"
     t.bigint "lex_item_id"
     t.string "lex_item_type"
-    t.datetime "locked_at"
+    t.timestamp "locked_at"
     t.integer "locked_by_user_id"
     t.string "other_designation", limit: 1024
     t.bigint "profile_image_id"
@@ -681,6 +682,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_031027) do
     t.string "title", limit: 1024
     t.datetime "updated_at", precision: nil, null: false
     t.json "verification_progress"
+    t.index ["last_editor_id"], name: "index_lex_entries_on_last_editor_id"
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["locked_by_user_id"], name: "index_lex_entries_on_locked_by_user_id"
     t.index ["profile_image_id"], name: "index_lex_entries_on_profile_image_id"
@@ -724,7 +726,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_031027) do
     t.string "new_path", null: false
     t.string "old_path", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
   end
 
   create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -1231,6 +1233,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_031027) do
   add_foreign_key "lex_citations", "lex_person_works"
   add_foreign_key "lex_citations", "manifestations"
   add_foreign_key "lex_entries", "active_storage_attachments", column: "profile_image_id", on_delete: :nullify
+  add_foreign_key "lex_entries", "users", column: "last_editor_id"
+  add_foreign_key "lex_entries", "users", column: "locked_by_user_id"
   add_foreign_key "lex_files", "lex_entries"
   add_foreign_key "lex_issues", "lex_publications"
   add_foreign_key "lex_legacy_links", "lex_entries"
