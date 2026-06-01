@@ -70,11 +70,12 @@ module Lexicon
         at_span_level = true
       end
 
-      bio = collect_bio_until_works(next_elem)
+      bio, next_elem = collect_bio_until_works(next_elem)
 
       # Bio was inside the wrapping span but the works header is outside it.
       if next_elem.nil? && !at_span_level && heading_table.parent.name == 'span'
-        bio += collect_bio_until_works(heading_table.parent.next_element)
+        extra_bio, = collect_bio_until_works(heading_table.parent.next_element)
+        bio += extra_bio
       end
 
       bio.join("\n")
@@ -86,7 +87,7 @@ module Lexicon
         bio << elem.to_html
         elem = elem.next_element
       end
-      bio
+      [bio, elem]
     end
 
     def words_from_html(html)
