@@ -65,7 +65,7 @@ module Lexicon
                                @death_year_from.present? || @death_year_to.present?
 
       # Start with base scope
-      # We render all not-completed migrations (they will redirected to old site) plus published entries.
+      # We render all not-completed migrations (they will be redirected to old site) plus published entries.
       # Only main entries are listed; secondary entries are reachable via internal links only.
       @lex_entries = LexEntry.main.includes(:lex_item).where(status: LexEntry::MIGRATION_STATUSES + %w(published))
 
