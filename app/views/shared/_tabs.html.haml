@@ -19,8 +19,7 @@
                 %span.by-icon-v02 T
                 = t(:list_all_authors)
               .by-dropdown-divider
-              -# TODO: update link below to public lexicon root path
-              %a{href: lexicon_entries_path}
+              %a{href: lexicon_root_path}
                 -# ICON TBD # %span.by-icon-v02 L
                 = t(:lexicon_name)
                 %span{style:'color:black'}= " - #{LexEntry.cached_published_count} #{t(:authors)}"
