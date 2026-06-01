@@ -43,6 +43,9 @@ module Lexicon
       @checklist = @entry.verification_progress['checklist']
       @item = @entry.lex_item # LexPerson or LexPublication
 
+      # Bio word-count comparison against the legacy PHP bio portion (LexPerson only)
+      @bio_comparison = Lexicon::BioComparison.call(@item, @source_content) if @item.is_a?(LexPerson)
+
       # Auto-calculate copyrighted status when not set during migration.
       # Death year takes precedence: if known, use the 71-year rule.
       # Otherwise fall back to copying from the linked Authority.
@@ -227,6 +230,16 @@ module Lexicon
     rescue StandardError => e
       redirect_to lexicon_verification_path(@entry),
                   alert: e.message
+    end
+
+    # GET /lexicon/verification/:id/bio_comparison
+    # Renders the side-by-side bio diff modal (LexPerson only).
+    def bio_comparison
+      @item = @entry.lex_item
+      return head :not_found unless @item.is_a?(LexPerson)
+
+      @comparison = Lexicon::BioComparison.call(@item, load_source_php)
+      render partial: 'lexicon/verification/bio_comparison'
     end
 
     # GET /lex/verification/:id/escalate_form
