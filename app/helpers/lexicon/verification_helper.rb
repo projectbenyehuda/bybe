@@ -36,6 +36,22 @@ module Lexicon
       checklist['works']&.dig('items', work.id.to_s, 'verified') ? 'verified' : 'not-verified'
     end
 
+    # Builds the side-by-side word-level diff for the bio comparison modal.
+    # Each pane is the full flowing text of one buffer with the words that differ
+    # from the other side highlighted inline (see CSS in _bio_comparison).
+    # Returns { migrated:, legacy: } of html_safe strings.
+    def bio_diff_panes(comparison)
+      diff = Diffy::SplitDiff.new(
+        comparison.migrated_words.join("\n"),
+        comparison.legacy_words.join("\n"),
+        format: :html
+      )
+      {
+        migrated: strip_empty_diff_li(diff.left),
+        legacy: strip_empty_diff_li(diff.right)
+      }
+    end
+
     def badge_class_for_status(status)
       case status.to_sym
       when :draft then 'bg-secondary'
@@ -45,6 +61,16 @@ module Lexicon
       when :published then 'bg-primary'
       else 'bg-light text-dark'
       end
+    end
+
+    private
+
+    # Diffy emits a trailing empty <li> when one side has more lines than the
+    # other; drop any list item with no visible text so empty rows don't render.
+    def strip_empty_diff_li(html)
+      frag = Nokogiri::HTML.fragment(html)
+      frag.css('li').each { |li| li.remove if li.text.strip.empty? }
+      frag.to_html.html_safe
     end
   end
 end
