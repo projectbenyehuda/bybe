@@ -2469,6 +2469,8 @@ he:
         entries_count:
           one: ערך אחד
           other: "%{count} ערכים"
+        not_migrated_badge: PHP
+        not_migrated_badge_title: טרם הוסב מהלקסיקון הישן (PHP)
         filters:
           entry_name: "שם הערך"
           name_placeholder: "חיפוש לפי שם"
