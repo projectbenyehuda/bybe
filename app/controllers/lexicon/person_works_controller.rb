@@ -3,6 +3,8 @@
 module Lexicon
   # Controller to work with Lexicon Person Works
   class PersonWorksController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
@@ -139,6 +141,10 @@ module Lexicon
     def set_work
       @work = LexPersonWork.find(params[:id])
       @person = @work.person
+    end
+
+    def record_to_lock
+      @person.lex_entry
     end
 
     # Only allow a list of trusted parameters through.

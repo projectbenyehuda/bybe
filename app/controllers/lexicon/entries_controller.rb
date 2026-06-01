@@ -3,10 +3,14 @@
 module Lexicon
   # Controller to render list of all Lexicon entries
   class EntriesController < ApplicationController
+    include LockLexEntryConcern
+
     before_action except: %i(show list) do |c|
       c.require_editor('edit_lexicon')
     end
     before_action :set_lex_entry, only: %i(show edit update destroy)
+
+    before_action :try_to_lock_record, only: %i(edit update destroy)
 
     layout 'lexicon_backend', except: %i(show list)
 

@@ -3,11 +3,14 @@
 module Lexicon
   # Controller to work with Lexicon Links
   class LinksController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
     before_action :set_link, only: %i(edit update destroy)
     before_action :set_entry, only: %i(new create index)
+    before_action :try_to_lock_record
 
     layout false
 
@@ -50,7 +53,10 @@ module Lexicon
     def set_link
       @link = LexLink.find(params[:id])
       @item = @link.item
-      @entry = @item.entry
+    end
+
+    def record_to_lock
+      @item.entry
     end
 
     # Only allow a list of trusted parameters through.
