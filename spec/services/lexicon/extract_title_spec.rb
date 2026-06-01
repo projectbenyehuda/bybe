@@ -8,18 +8,18 @@ describe Lexicon::ExtractTitle do
   context 'when person file is provided' do
     let(:file) { Rails.root.join('spec/fixtures/files/lexicon/00024.php') }
 
-    it { is_expected.to eq('שמואל בס (1899־1949)') }
+    it { is_expected.to eq('שמואל בס') }
 
     context 'when title is written in several spans' do
       let(:file) { Rails.root.join('spec/fixtures/files/lexicon/tsifroni.php') }
 
-      it { is_expected.to eq('גבריאל צפרוני (1915־2011)') }
+      it { is_expected.to eq('גבריאל צפרוני') }
     end
   end
 
   context 'when publication file is provided' do
     let(:file) { Rails.root.join('spec/fixtures/files/lexicon/02645001.php') }
 
-    it { is_expected.to eq('אליעזר ירושלמי (1900–1962)') }
+    it { is_expected.to eq('אליעזר ירושלמי') }
   end
 end
