@@ -3222,6 +3222,8 @@ en:
         entries_count:
           one: 1 entry
           other: "%{count} entries"
+        not_migrated_badge: PHP
+        not_migrated_badge_title: Not yet migrated from the old (PHP) lexicon
         filters:
           entry_name: "Entry Name"
           name_placeholder: "Search by name"
