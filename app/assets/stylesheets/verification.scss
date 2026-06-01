@@ -2,14 +2,27 @@
 
 .verification-header {
   background: #f8f9fa;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 8px;
   border: 1px solid #dee2e6;
 
+  // Collapse the Bootstrap utility margins used in the markup (mb-3/mb-2) to
+  // keep the header compact. !important is required because Bootstrap's
+  // spacing utilities are themselves declared with !important.
+  .d-flex {
+    margin-bottom: 0 !important;
+  }
+
+  .progress-indicator,
+  .hide-verified-toggle {
+    margin-bottom: 0.25rem !important;
+  }
+
   .title-section {
     h2 {
-      margin-bottom: 0.5rem;
-      font-size: 1.75rem;
+      margin-bottom: 0.25rem;
+      font-size: 1.25rem;
     }
   }
 
@@ -25,16 +38,34 @@
   }
 }
 
+// Fill the viewport exactly so the two panes take all remaining vertical space
+// (only the panes scroll internally) instead of relying on a hardcoded offset.
+// Scoped to this page via :has() so other pages using the layout are unaffected.
+body:has(.verification-container) {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  main.container-fluid {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 .verification-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-  height: calc(100vh - 300px);
-  max-height: calc(100vh - 300px);
+  flex: 1 1 auto;
+  min-height: 0;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
+    grid-template-rows: 1fr 1fr;
   }
 }
 
