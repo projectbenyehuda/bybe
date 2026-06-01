@@ -118,6 +118,12 @@
     .verification-badge{class: checklist['bio']&.dig('verified') ? 'verified' : 'not-verified'}
       = checklist['bio']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
+    - if bio_comparison&.discrepancy?
+      .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
+        = t('lexicon.verification.sections.bio_count_mismatch', migrated_count: bio_comparison.migrated_count, legacy_count: bio_comparison.legacy_count)
+        %button.btn.btn-sm.btn-light.ms-2.align-baseline{type: 'button', onclick: "openModal('#{lexicon_bio_comparison_verification_path(entry)}')"}
+          = t('lexicon.verification.sections.compare_button')
+        %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
     - if item.bio.present?
       .bio-content!= MarkdownToHtml.call(bio_for_display(item.bio, entry))
     - else
