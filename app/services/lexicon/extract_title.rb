@@ -3,6 +3,10 @@
 module Lexicon
   # Service to extract title from Lexicon entry
   class ExtractTitle < ApplicationService
+    # Matches trailing life years in parentheses: (YYYY) or (YYYY─YYYY)
+    # Handles Hebrew maqaf (U+05BE), en-dash (U+2013), and regular hyphen.
+    LIFE_YEARS_PATTERN = /\s*\(\d{4}(?:[-–־]\d{4})?\)\s*\z/
+
     def call(fname)
       html_doc = File.open(fname) { |f| Nokogiri::HTML(f) }
 
@@ -13,7 +17,7 @@ module Lexicon
       end
       title = html_doc.css('title')&.text if title.blank?
 
-      title.strip.gsub('&nbsp;', ' ').squish if title.present?
+      title.strip.gsub('&nbsp;', ' ').squish.sub(LIFE_YEARS_PATTERN, '') if title.present?
     end
   end
 end
