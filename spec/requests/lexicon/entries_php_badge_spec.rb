@@ -14,8 +14,9 @@ describe 'PHP badge on public lexicon list (/lex)' do
     it 'shows the PHP badge only next to non-published entries' do
       expect(call).to eq(200)
       # One badge total, for the single non-published (not-yet-migrated) entry
-      expect(response.body.scan('lex-php-badge').size).to eq(1)
-      expect(response.body).to include(I18n.t('lexicon.entries.list.not_migrated_badge'))
+      doc = Nokogiri::HTML(response.body)
+      expect(doc.css('.lex-php-badge').size).to eq(1)
+      expect(doc.css('.lex-php-badge').text).to include(I18n.t('lexicon.entries.list.not_migrated_badge'))
     end
   end
 
