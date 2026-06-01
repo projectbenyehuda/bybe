@@ -4,6 +4,7 @@
 class LexEntry < ApplicationRecord
   include SortedTitle
   include DownloadLink
+  include Lockable
 
   has_one :lex_file, dependent: :nullify
 

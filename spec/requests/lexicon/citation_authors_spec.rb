@@ -7,7 +7,7 @@ describe '/lexicon/citation_authors' do
     login_as_lexicon_editor
   end
 
-  let(:person) { create(:lex_person) }
+  let(:person) { create(:lex_entry, :person).lex_item }
   let!(:citation) { create(:lex_citation, person: person) }
   let(:author) { citation.authors.first }
 

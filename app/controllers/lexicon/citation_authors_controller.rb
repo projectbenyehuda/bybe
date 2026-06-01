@@ -3,11 +3,14 @@
 module Lexicon
   # Controller for LexCitationAuthor
   class CitationAuthorsController < ApplicationController
+    include LockLexEntryConcern
+
     before_action do
       require_editor('edit_lexicon')
     end
     before_action :set_citation, only: %i(index create)
     before_action :set_author, only: %i(destroy)
+    before_action :try_to_lock_record
 
     layout false
 
@@ -51,6 +54,10 @@ module Lexicon
     def set_author
       @author = LexCitationAuthor.find(params[:id])
       @citation = @author.citation
+    end
+
+    def record_to_lock
+      @citation.person.lex_entry
     end
   end
 end
