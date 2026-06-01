@@ -726,7 +726,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_031027) do
     t.string "new_path", null: false
     t.string "old_path", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
   end
 
   create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
