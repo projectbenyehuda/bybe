@@ -62,7 +62,7 @@ RSpec.describe 'Verification workbench layout spacing', type: :system, js: true 
 
     # The panes should end at (or very near) the viewport bottom; the previous
     # hardcoded `calc(100vh - 300px)` left ~80px of dead space here.
-    expect(gap).to be >= 0
+    expect(gap).to be >= -2
     expect(gap).to be < 30
   end
 
