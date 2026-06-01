@@ -37,7 +37,7 @@ describe Lexicon::BioComparison do
       expect(result.legacy_words).not_to include('ספרים', 'ספר', 'ראשון', 'נספר')
     end
 
-    it 'does not exclude the heading-table years from being counted as bio' do
+    it 'excludes the heading-table years from being counted as bio' do
       # The years live inside the heading table, before the bio prose begins.
       expect(result.legacy_words).not_to include('1900', '1970')
     end
