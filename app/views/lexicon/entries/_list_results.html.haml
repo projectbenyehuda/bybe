@@ -39,6 +39,9 @@
         - @lex_entries.each do |entry|
           %li
             = link_to entry.title, lexicon_entry_path(entry)
+            - if current_user&.editor? && !entry.status_published?
+              - badge_title = t('lexicon.entries.list.not_migrated_badge_title')
+              %span.lex-php-badge{ title: badge_title }= t('lexicon.entries.list.not_migrated_badge')
             - if entry.lex_item.is_a?(LexPerson) && entry.lex_item.life_years.present?
               - life_years_str = " (#{entry.lex_item.life_years})"
               .authors-list-years!= life_years_str
