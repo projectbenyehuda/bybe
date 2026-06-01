@@ -31,10 +31,12 @@ module Lexicon
       # Parse from the heading cell's plain text instead.
       if lex_person.birthdate.blank? && heading_table.present?
         cell_node = heading_table.at_css('td p[align="center"]')
-        cell_text = cell_node&.text&.gsub(/\s+/, ' ')&.strip
-        if (match = cell_text&.match(/\((\d{4})(?:[-–־](\d{4}))?\)/))
-          lex_person.birthdate = match[1]
-          lex_person.deathdate = match[2]
+        if cell_node
+          cell_text = cell_node.text.gsub(/\s+/, ' ').strip
+          if (match = cell_text.match(/\((\d{4})(?:[-–־](\d{4}))?\)/))
+            lex_person.birthdate = match[1]
+            lex_person.deathdate = match[2]
+          end
         end
       end
 
