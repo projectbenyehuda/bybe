@@ -375,7 +375,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       get "/lex/verification/#{entry.id}/escalate_form"
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('העברה לבדיקה נוספת') # Title in Hebrew
+      expect(response.body).to include(I18n.t('lexicon.verification.show.escalate'))
       expect(response.body).to include('some existing notes')
     end
   end
