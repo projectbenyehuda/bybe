@@ -3,9 +3,12 @@
 module Lexicon
   # Controller for migration verification workbench
   class VerificationController < ApplicationController
+    include LockLexEntryConcern
+
     EXTERNAL_IDENTIFIER_KEYS = LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys.freeze
 
     before_action :set_entry, except: %i(index)
+    before_action :try_to_lock_record, except: %i(index)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
@@ -339,6 +342,10 @@ module Lexicon
 
     def set_entry
       @entry = LexEntry.includes(:lex_item, :lex_file).find(params[:id])
+    end
+
+    def record_to_lock
+      @entry
     end
 
     # Maps Authority's intellectual_property to a LexPerson copyrighted boolean.
