@@ -21,10 +21,21 @@ module Lexicon
 
       heading_table = html_doc.at_css('table[width="100%"]')
       heading_table_html = heading_table.to_html
-      # Match both patterns: (YYYY) and (YYYY-YYYY)
-      if (match = heading_table_html.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:־(\d{4}))?\)\s*</font>}))
+      # Match both patterns: (YYYY) and (YYYY-YYYY); handles maqaf, en-dash, hyphen
+      if (match = heading_table_html.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:[-–־](\d{4}))?\)\s*</font>}))
         lex_person.birthdate = match[1]
         lex_person.deathdate = match[2]
+      end
+
+      # Fallback: years may be split across multiple font elements (e.g. tsifroni.php).
+      # Parse from the heading cell's plain text instead.
+      if lex_person.birthdate.blank? && heading_table.present?
+        cell_node = heading_table.at_css('td p[align="center"]')
+        cell_text = cell_node&.text&.gsub(/\s+/, ' ')&.strip
+        if (match = cell_text&.match(/\((\d{4})(?:[-–־](\d{4}))?\)/))
+          lex_person.birthdate = match[1]
+          lex_person.deathdate = match[2]
+        end
       end
 
       # Bio content may be inside a wrapping span (as siblings of the heading table),
