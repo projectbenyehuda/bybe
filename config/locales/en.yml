@@ -441,6 +441,9 @@ en:
       enter_manifestation_ids: Please enter *work* IDs (separated by space or newline)
       fetch: Load Works
       title: Batch Operations
+  lockable:
+    locked_at_human: "%{minutes_ago} ago"
+    locked_by_human: "Locked by %{name}"
   lock_record:
     record_locked: This %{model_name} is locked by user %{user}
   ingestibles:
