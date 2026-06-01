@@ -2,6 +2,21 @@ ul.lex {
   list-style-type:disc;
 }
 
+/* Editor-only badge marking entries not yet migrated from the old PHP lexicon */
+.lex-php-badge {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #7B1935;
+  background-color: #f9e6e0;
+  border: solid 1px #efbfb7;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
 /* OSU partner logo - displayed alongside the lexicon logo */
 .osu-partner-logo {
   height: 48px;
