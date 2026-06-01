@@ -41,6 +41,10 @@ class LexEntry < ApplicationRecord
   scope :needs_verification, -> { where(status: %i(draft verifying error escalated)) }
   scope :in_verification, -> { where(status: :verifying) }
 
+  # Main entries are shown in /lex; secondary entries (main: false) are only
+  # reachable via internal links from another entry.
+  scope :main, -> { where(main: true) }
+
   update_index('lex_entries') { self }
   update_index('lex_entries_autocomplete') { self }
 
