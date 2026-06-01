@@ -132,6 +132,34 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when life years are split across font elements in the heading table' do
+    # tsifroni.php has "(1915" and "─2011)" in separate <font> elements, so the
+    # HTML-regex path fails. The fallback must parse years from the cell's text content.
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'גבריאל צפרוני',
+          fname: 'tsifroni.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/tsifroni.php')
+        }
+      )
+    end
+
+    before { allow(Lexicon::ParseCitations).to receive(:call).and_return([]) }
+
+    it 'extracts birthdate and deathdate from heading cell text' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person).to be_an_instance_of(LexPerson)
+      expect(person).to have_attributes(birthdate: '1915', deathdate: '2011')
+      expect(person.gender).to eq('male')
+    end
+  end
+
   context 'when a link has href as its only attribute (no target="_blank")' do
     let!(:file) do
       create(
@@ -260,7 +288,7 @@ describe Lexicon::IngestPerson do
       entry = file.lex_entry
       person = entry.lex_item
       expect(person).to be_an_instance_of(LexPerson)
-      expect(person).to have_attributes(birthdate: nil, deathdate: nil)
+      expect(person).to have_attributes(birthdate: '1826', deathdate: '1894')
       expect(person.gender).to eq('male')
       expect(person.citations.count).to eq(2)
       expect(person.citations.select { |c| c.subject.nil? && c.person_work.nil? }.size).to eq(2)
