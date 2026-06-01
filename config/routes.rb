@@ -108,6 +108,7 @@ Bybeconv::Application.routes.draw do
       delete ':id/remove_attachment', to: 'verification#remove_attachment', as: :remove_attachment_verification
       patch ':id/confirm_work_match', to: 'verification#confirm_work_match', as: :confirm_work_match_verification
       post ':id/mark_verified', to: 'verification#mark_verified', as: :mark_verified_verification
+      get ':id/bio_comparison', to: 'verification#bio_comparison', as: :bio_comparison_verification
       get ':id/escalate_form', to: 'verification#escalate_form', as: :escalate_form_verification
       post ':id/escalate', to: 'verification#escalate', as: :escalate_verification
       get ':id/edit_section', to: 'verification#edit_section', as: :edit_section_verification
