@@ -46,7 +46,12 @@ function reloadContent(tabContent) {
         loadUrl,
         function( response, status, xhr ) {
             if ( status == 'error' ) {
-                tabContent.html('<h2 class="text-danger">Error: ' + xhr.status + " " + xhr.statusText + '</h2>');
+                let content = '<h2 class="text-danger">Error: ' + xhr.status + " " + xhr.statusText + '</h2>';
+                if (xhr.status == '423') {
+                  // Message about locked object
+                  content += '<h3>' + xhr.responseText + '</h3>';
+                }
+                tabContent.html(content);
                 tabContent.data('load-complete', null);
             } else {
                 tabContent.data('load-complete', true);

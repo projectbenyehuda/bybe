@@ -4,23 +4,20 @@ require 'pandoc-ruby' # for generic DOCX-to-HTML conversions
 
 # Ingestible is a set of text being prepared for inclusion into a main database
 class Ingestible < ApplicationRecord
-  LOCK_TIMEOUT_IN_SECONDS = 60 * 15 # 15 minutes
+  include Lockable
+
   COPYRIGHTED_IP_OPTIONS = %w(by_permission orphan).freeze
 
   enum :status, { draft: 0, ingested: 1, failed: 2, awaiting_authorities: 3 }
   enum :scenario, { single: 0, multiple: 1, mixed: 2 }
 
   belongs_to :user, optional: true
-  belongs_to :locked_by_user, class_name: 'User', optional: true
-  belongs_to :last_editor, class_name: 'User', optional: true
   belongs_to :volume, optional: true, class_name: 'Collection'
   belongs_to :project, optional: true
 
   DEFAULTS_SCHEMA = {}.freeze
   validates :title, presence: true
   validates :status, presence: true
-  validates :locked_at, presence: true, if: -> { locked_by_user.present? }
-  validates :locked_at, absence: true, unless: -> { locked_by_user.present? }
   validate :volume_decision
   validate :check_duplicate_volume, if: :should_check_duplicate_volume?
   #  validates :scenario, presence: true
@@ -509,25 +506,6 @@ class Ingestible < ApplicationRecord
       cache.shift if cache.length > TEXTAREA_CACHE_MAX_VERSIONS
       update_columns(textarea_cache: cache.to_json)
     end
-  end
-
-  def locked?
-    locked_at.present? && locked_at > LOCK_TIMEOUT_IN_SECONDS.seconds.ago
-  end
-
-  def obtain_lock(user)
-    return false if locked? && locked_by_user_id != user.id
-
-    # To avoid excessive updates we only refresh lock if more than 10 seconds passed since previous lock refresh
-    if locked_at.nil? || locked_at < 10.seconds.ago
-      update_columns(locked_at: Time.zone.now, locked_by_user_id: user.id, last_editor_id: user.id) # we deliberately skip validations here
-    end
-
-    return true
-  end
-
-  def release_lock!
-    update_columns(locked_at: nil, locked_by_user_id: nil) # we deliberately skip validations here
   end
 
   # Calculate expected copyright status based on involved authorities

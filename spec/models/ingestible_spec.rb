@@ -123,8 +123,8 @@ describe Ingestible do
     end
   end
 
-  describe '.obtain_lock' do
-    subject(:result) { ingestible.obtain_lock(user) }
+  describe '.obtain_lock?' do
+    subject(:result) { ingestible.obtain_lock?(user) }
 
     let(:user) { create(:user) }
     let(:ingestible) { create(:ingestible, locked_by_user: other_user, locked_at: locked_at) }
