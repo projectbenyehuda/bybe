@@ -65,8 +65,9 @@ module Lexicon
                                @death_year_from.present? || @death_year_to.present?
 
       # Start with base scope
-      # We render all not-completed migrations (they will redirected to old site) plus published entries
-      @lex_entries = LexEntry.includes(:lex_item).where(status: LexEntry::MIGRATION_STATUSES + %w(published))
+      # We render all not-completed migrations (they will redirected to old site) plus published entries.
+      # Only main entries are listed; secondary entries are reachable via internal links only.
+      @lex_entries = LexEntry.main.includes(:lex_item).where(status: LexEntry::MIGRATION_STATUSES + %w(published))
 
       # Calculate gender facets (before applying gender filter)
       @gender_facet = calculate_gender_facets

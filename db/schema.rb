@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_29_031027) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_01_200000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -675,6 +675,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_031027) do
     t.string "lex_item_type"
     t.timestamp "locked_at"
     t.integer "locked_by_user_id"
+    t.boolean "main", default: true, null: false
     t.string "other_designation", limit: 1024
     t.bigint "profile_image_id"
     t.string "sort_title"
