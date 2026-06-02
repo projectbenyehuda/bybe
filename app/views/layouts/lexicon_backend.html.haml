@@ -6,17 +6,10 @@
     %meta{ content: 'width=device-width, initial-scale=1', name: 'viewport' }
     %title= @page_title || t(:default_page_title)
 
-    %link{ crossorigin: :anonymous,
-           href: 'https://cdn.rtlcss.com/bootstrap/v4.2.1/css/bootstrap.min.css',
-           integrity: 'sha384-vus3nQHTD+5mpDiZ4rkEPlnkcyTP+49BhJ4wJeJunw06ZAp+wzzeBPUXr42fi8If',
-           rel: :stylesheet }
     %link{ href: 'https://fonts.googleapis.com/css?family=Alef', rel: 'stylesheet' }
 
     = stylesheet_link_tag 'lexicon_backend'
     = javascript_include_tag 'lexicon_backend'
-    %script{ src: 'https://cdn.rtlcss.com/bootstrap/v4.2.1/js/bootstrap.bundle.min.js',
-             integrity: 'sha384-K/wjzuoV8a4rD2q1L2clnXIYLNmQiFganXCXSzSWUpFGF04s38f9vwnQFj2NUhDy',
-             crossorigin: :anonymous }
     = csrf_meta_tags
   %body{ class: ('staging' if staging?) }
     %header.container-fluid
