@@ -3,6 +3,7 @@
 //= require autocomplete_init
 //= require sortable.min
 //= require verification
+//= require bootstrap-rtl-4.2.1.bundle.min
 
 $(function() {
     // Firefox paint bug: <select> options appear blank when the element was injected into a
