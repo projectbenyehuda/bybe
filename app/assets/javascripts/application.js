@@ -18,6 +18,7 @@
 //= require tempusdominus-bootstrap-4
 //= require ahoy
 //= require rails.validations
+//= require bootstrap-rtl-4.2.1.bundle.min
 
 //= stub jquery.ddslick.min
 //= require_tree .
