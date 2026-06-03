@@ -114,12 +114,12 @@ module Lexicon
 
     def check_link_synchronously
       if @citation.link.blank?
-        @citation.update_column(:link_http_status, nil)
+        @citation.update_columns(link_http_status: nil, link_checked_at: nil)
         return
       end
 
       status = CheckExternalLinks.new.check_url(@citation.link)
-      @citation.update_column(:link_http_status, status)
+      @citation.update_columns(link_http_status: status, link_checked_at: Time.current)
       @link_check_performed = true
       @link_toast_type, @link_toast_message = link_toast_for(status)
       # rubocop:disable Rails/ActionControllerFlashBeforeRender
@@ -130,7 +130,7 @@ module Lexicon
 
     def link_toast_for(status)
       if status.nil?
-        ['warning', t('lexicon.verification.broken_link.check_failed')]
+        ['error', t('lexicon.verification.broken_link.inaccessible')]
       elsif status < 400
         ['success', t('lexicon.verification.broken_link.now_accessible')]
       else
