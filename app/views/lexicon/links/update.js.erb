@@ -6,7 +6,7 @@ if ($('#links').length) {
   <% end %>
 } else {
   // Verification view: store toast data in sessionStorage so it survives the page reload.
-  // flash.now (set by the controller) only lives for the current JS response, not the reload.
+  // flash (set by the controller) is also embedded into the reloaded page as a fallback if sessionStorage isn't available.
 <% if @link_check_performed %>
   sessionStorage.setItem('link-check-toast-type', <%= @link_toast_type.to_json %>);
   sessionStorage.setItem('link-check-toast-message', <%= @link_toast_message.to_json %>);
