@@ -143,12 +143,13 @@ module Lexicon
 
     # PATCH /lex/entries/:id/unlock
     # Lets an editor deliberately release a lock they hold on an entry.
+    # Redirects back to the originating page (entries admin index or files queue).
     def unlock
       if @lex_entry.locked_by_user == current_user
         @lex_entry.release_lock!
-        redirect_to lexicon_entries_url, notice: t('.success')
+        redirect_back_or_to lexicon_entries_url, notice: t('.success')
       else
-        redirect_to lexicon_entries_url, alert: t('.not_locked_by_you')
+        redirect_back_or_to lexicon_entries_url, alert: t('.not_locked_by_you')
       end
     end
 

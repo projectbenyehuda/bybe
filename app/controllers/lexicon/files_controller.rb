@@ -14,18 +14,27 @@ module Lexicon
       @title = params[:title]
       @fname = params[:fname]
       @page = params[:page]
-      @entry_statuses = params[:entry_statuses].presence || %w(raw migrating error draft)
+      @entry_statuses = params[:entry_statuses].presence || %w(raw migrating error draft verifying)
 
-      @lex_files = LexFile.joins(:lex_entry)
+      scope = LexFile.joins(:lex_entry)
 
-      @lex_files = @lex_files.where(entrytype: @entrytype) if @entrytype.present?
-      @lex_files = @lex_files.where('lex_entries.title LIKE ?', "%#{@title}%") if @title.present?
-      @lex_files = @lex_files.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
-      @lex_files = @lex_files.where(lex_entries: { status: @entry_statuses })
+      scope = scope.where(entrytype: @entrytype) if @entrytype.present?
+      scope = scope.where('lex_entries.title LIKE ?', "%#{@title}%") if @title.present?
+      scope = scope.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
+      scope = scope.where(lex_entries: { status: @entry_statuses })
 
-      @lex_files = @lex_files.preload(:lex_entry)
-                             .order(:fname)
-                             .page(@page)
+      # Files whose entry is currently locked are surfaced in their own sections (mine vs. others')
+      # and excluded from the main paginated list to avoid showing the same file twice.
+      locked_files = scope.where('lex_entries.locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
+      @my_locked_files = locked_files.where(lex_entries: { locked_by_user_id: current_user.id })
+                                     .preload(:lex_entry).order(:fname)
+      @locked_by_others_files = locked_files.where.not(lex_entries: { locked_by_user_id: current_user.id })
+                                            .preload(:lex_entry).order(:fname)
+
+      @lex_files = scope.where.not(id: locked_files.select('lex_files.id'))
+                        .preload(:lex_entry)
+                        .order(:fname)
+                        .page(@page)
     end
 
     def migrate

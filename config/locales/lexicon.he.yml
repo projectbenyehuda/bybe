@@ -141,6 +141,9 @@ he:
         title_placeholder: חיפוש לפי כותרת...
         fname_placeholder: חפש לפי שם קובץ...
         entry_status_filter: סטטוס ערך
+        my_locked_title: קבצים נעולים על ידי
+        locked_by_others_title: קבצים נעולים על ידי עורכים אחרים
+        other_title: קבצים אחרים
       migrate:
         success: ההסבה החלה
         title: התחל הסבה

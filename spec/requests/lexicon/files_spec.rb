@@ -143,6 +143,7 @@ describe '/lexicon/files' do
         let!(:migrating_file) { create(:lex_file, :person, entry_status: :migrating) }
         let!(:error_file) { create(:lex_file, :person, entry_status: :error) }
         let!(:draft_file) { create(:lex_file, :person, entry_status: :draft) }
+        let!(:verifying_file) { create(:lex_file, :person, entry_status: :verifying) }
         let!(:verified_file) { create(:lex_file, :person, entry_status: :verified) }
 
         context 'when a single status is requested' do
@@ -166,11 +167,51 @@ describe '/lexicon/files' do
         context 'when no entry_statuses param is provided (default)' do
           let(:params) { {} }
 
-          it 'defaults to raw, migrating, error and draft statuses' do
+          it 'defaults to raw, migrating, error, draft and verifying statuses' do
             call
-            expect(file_ids).to contain_exactly(raw_file.id, error_file.id, migrating_file.id, draft_file.id)
+            expect(file_ids).to contain_exactly(
+              raw_file.id, error_file.id, migrating_file.id, draft_file.id, verifying_file.id
+            )
           end
         end
+      end
+    end
+
+    context 'with locked entries' do
+      subject(:call) { get '/lex/files' }
+
+      let(:current_user) { login_as_lexicon_editor }
+      let(:other_user) { create(:user) }
+
+      let!(:my_locked) { create(:lex_file, :person, entry_status: :verifying) }
+      let!(:other_locked) { create(:lex_file, :person, entry_status: :verifying) }
+      let!(:unlocked) { create(:lex_file, :person, entry_status: :draft) }
+
+      before do
+        my_locked.lex_entry.obtain_lock?(current_user)
+        other_locked.lex_entry.obtain_lock?(other_user)
+      end
+
+      it 'assigns my locked files to @my_locked_files' do
+        call
+        expect(assigns(:my_locked_files).map(&:id)).to contain_exactly(my_locked.id)
+      end
+
+      it "assigns others' locked files to @locked_by_others_files" do
+        call
+        expect(assigns(:locked_by_others_files).map(&:id)).to contain_exactly(other_locked.id)
+      end
+
+      it 'excludes locked files from the main @lex_files list' do
+        call
+        expect(assigns(:lex_files).map(&:id)).to contain_exactly(unlocked.id)
+      end
+
+      it 'shows an unlock button only for files locked by me' do
+        call
+        expect(response.body).to include(I18n.t('lexicon.files.index.my_locked_title'))
+        expect(response.body).to include(unlock_lexicon_entry_path(my_locked.lex_entry))
+        expect(response.body).not_to include(unlock_lexicon_entry_path(other_locked.lex_entry))
       end
     end
   end

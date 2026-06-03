@@ -141,6 +141,9 @@ en:
         title_placeholder: Search by title...
         fname_placeholder: Search by filename...
         entry_status_filter: Entry Status
+        my_locked_title: Files locked by me
+        locked_by_others_title: Files locked by other editors
+        other_title: Other files
       migrate:
         success: Migration queued
         title: Analyze
