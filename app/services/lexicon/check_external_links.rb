@@ -51,14 +51,14 @@ module Lexicon
     def check_item_links(item)
       item.links.find_each do |lex_link|
         status = fetch_status(lex_link.url)
-        lex_link.update_column(:http_status, status)
+        lex_link.update_columns(http_status: status, checked_at: Time.current)
       end
     end
 
     def check_citation_links(person)
       person.citations.where.not(link: [nil, '']).find_each do |citation|
         status = fetch_status(citation.link)
-        citation.update_column(:link_http_status, status)
+        citation.update_columns(link_http_status: status, link_checked_at: Time.current)
       end
     end
 
