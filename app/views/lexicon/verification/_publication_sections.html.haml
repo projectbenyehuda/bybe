@@ -118,8 +118,7 @@
         .link-card{ id: "link-#{link.id}", class: link_card_css(link, checklist['links']) }
           .link-content{dir: text_dir(link.description.to_s)}
             - if link.broken?
-              - broken_badge = t('lexicon.verification.broken_link.badge', status: link.http_status)
-              %span.broken-link-badge= broken_badge
+              %span.broken-link-badge= broken_link_badge(link.http_status)
             = link_to link.url, link.url, target: '_blank'
             - if link.description.present?
               %br

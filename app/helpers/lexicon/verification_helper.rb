@@ -52,6 +52,17 @@ module Lexicon
       }
     end
 
+    # Badge text for a broken link. A nil status means the check could not
+    # retrieve the URL (dead host, invalid URL, blocked address, redirect loop,
+    # etc.); a numeric status is a 4xx/5xx HTTP code.
+    def broken_link_badge(status)
+      if status.nil?
+        t('lexicon.verification.broken_link.inaccessible')
+      else
+        t('lexicon.verification.broken_link.badge', status: status)
+      end
+    end
+
     def badge_class_for_status(status)
       case status.to_sym
       when :draft then 'bg-secondary'
