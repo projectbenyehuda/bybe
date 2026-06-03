@@ -244,6 +244,12 @@ describe '/lexicon/files' do
           expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
           expect(file.lex_entry.reload.status).to eq('migrating')
         end
+
+        it 'redirects the editor to the verification queue via the JS response' do
+          call
+          expect(response.body).to include('window.location')
+          expect(response.body).to include(lexicon_verification_queue_path)
+        end
       end
 
       context 'when entry_status is error' do
@@ -269,6 +275,12 @@ describe '/lexicon/files' do
           expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
           expect(call).to eq(200)
           expect(file.lex_entry.reload.status).to eq(entry_status)
+        end
+
+        it 'does not redirect to the verification queue when no job is launched' do
+          call
+          expect(response.body).not_to include('window.location')
+          expect(response.body).to include("lex-file-#{file.id}")
         end
       end
     end
@@ -299,6 +311,12 @@ describe '/lexicon/files' do
         expect(file.lex_entry.reload.status).to eq('migrating')
         expect(file.lex_entry.lex_item).to be_nil
         expect(file.reload.status).to eq('classified')
+      end
+
+      it 'redirects the editor to the verification queue via the JS response' do
+        call
+        expect(response.body).to include('window.location')
+        expect(response.body).to include(lexicon_verification_queue_path)
       end
     end
 

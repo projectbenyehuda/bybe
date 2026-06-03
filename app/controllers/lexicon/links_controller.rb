@@ -4,6 +4,7 @@ module Lexicon
   # Controller to work with Lexicon Links
   class LinksController < ApplicationController
     include LockLexEntryConcern
+    include LinkCheckingConcern
 
     before_action do
       require_editor('edit_lexicon')
@@ -33,7 +34,14 @@ module Lexicon
     def edit; end
 
     def update
-      return if @link.update(lex_link_params)
+      if @link.update(lex_link_params)
+        # Re-check the link only when its URL actually changed, so a previously-broken
+        # link (e.g. HTTP 403) is re-evaluated instead of keeping its stale status.
+        if @link.saved_change_to_url?
+          check_link_synchronously(@link, @link.url, status_column: :http_status, checked_at_column: :checked_at)
+        end
+        return
+      end
 
       render :edit, status: :unprocessable_content
     end
