@@ -3,10 +3,15 @@
 module Lexicon
   # Controller to manage Lexicon migration from static php files to Ben-Yehuda project
   class FilesController < ApplicationController
+    include LockRecordConcern
+
     before_action :set_lex_file, only: %i(migrate redo_migration)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
+    # Starting (or redoing) a migration locks the entry to the current editor, and refuses
+    # if another editor already holds the lock.
+    before_action :try_to_lock_record, only: %i(migrate redo_migration)
     layout 'lexicon_backend'
 
     def index
@@ -68,6 +73,16 @@ module Lexicon
 
     def set_lex_file
       @lex_file = LexFile.find(params[:id])
+    end
+
+    # LockRecordConcern hooks: the lockable record is the file's entry, and a blocked
+    # request returns to the files queue.
+    def record_to_lock
+      @lex_file.lex_entry
+    end
+
+    def redirect_if_locked_path
+      lexicon_files_path
     end
   end
 end

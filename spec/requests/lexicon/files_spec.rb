@@ -337,4 +337,58 @@ describe '/lexicon/files' do
       end
     end
   end
+
+  describe 'locking when starting a migration' do
+    before { Sidekiq::Testing.fake! }
+    after { Sidekiq::Worker.clear_all }
+
+    let(:current_user) { login_as_lexicon_editor }
+    let(:other_user) { create(:user) }
+
+    describe 'POST /migrate' do
+      let!(:file) { create(:lex_file, :person, status: :classified, entry_status: :raw) }
+
+      it 'locks the entry for the current user' do
+        current_user # stub current_user before the request
+        post "/lex/files/#{file.id}/migrate", xhr: true
+        expect(file.lex_entry.reload).to be_locked
+        expect(file.lex_entry.locked_by_user).to eq(current_user)
+      end
+
+      context 'when the entry is already locked by another user' do
+        before { file.lex_entry.obtain_lock?(other_user) }
+
+        it 'does not start the migration' do
+          current_user
+          expect { post "/lex/files/#{file.id}/migrate", xhr: true }
+            .not_to(change { Lexicon::IngestFile.jobs.size })
+          expect(file.lex_entry.reload.status).to eq('raw')
+          expect(file.lex_entry.locked_by_user).to eq(other_user)
+        end
+      end
+    end
+
+    describe 'POST /redo_migration' do
+      let!(:file) { create(:lex_file, :person, status: :ingested, entry_status: :draft) }
+
+      it 'locks the entry for the current user' do
+        current_user
+        post "/lex/files/#{file.id}/redo_migration", xhr: true
+        expect(file.lex_entry.reload).to be_locked
+        expect(file.lex_entry.locked_by_user).to eq(current_user)
+      end
+
+      context 'when the entry is already locked by another user' do
+        before { file.lex_entry.obtain_lock?(other_user) }
+
+        it 'does not redo the migration' do
+          current_user
+          expect { post "/lex/files/#{file.id}/redo_migration", xhr: true }
+            .not_to(change { Lexicon::IngestFile.jobs.size })
+          expect(file.lex_entry.reload.status).to eq('draft')
+          expect(file.lex_entry.locked_by_user).to eq(other_user)
+        end
+      end
+    end
+  end
 end
