@@ -153,18 +153,21 @@ describe '/lexicon/citations' do
         end
       end
 
-      context 'when the link check fails (network error)' do
+      context 'when the link is unreachable (host defunct)' do
         before { allow(checker).to receive(:check_url).and_return(nil) }
 
-        it 'stores nil for link_http_status' do
+        it 'stores nil status but records the check time and flags it broken' do
           call
-          expect(citation.reload.link_http_status).to be_nil
+          citation.reload
+          expect(citation.link_http_status).to be_nil
+          expect(citation.link_checked_at).to be_present
+          expect(citation).to be_link_broken
         end
 
-        it 'includes a warning toast in the response' do
+        it 'includes an error toast in the response' do
           call
           expect(response.body).to include('showToast')
-          expect(response.body).to include('warning')
+          expect(response.body).to include('error')
         end
       end
     end
@@ -173,11 +176,13 @@ describe '/lexicon/citations' do
       let(:citation) { create(:lex_citation, person: person, link: 'https://old.example.com/', link_http_status: 404) }
       let(:citation_params) { { link: '' } }
 
-      it 'resets link_http_status to nil without making a network request' do
+      it 'resets link_http_status and link_checked_at to nil without making a network request' do
         allow(Lexicon::CheckExternalLinks).to receive(:new).and_call_original
         call
         expect(Lexicon::CheckExternalLinks).not_to have_received(:new)
-        expect(citation.reload.link_http_status).to be_nil
+        citation.reload
+        expect(citation.link_http_status).to be_nil
+        expect(citation.link_checked_at).to be_nil
       end
     end
 

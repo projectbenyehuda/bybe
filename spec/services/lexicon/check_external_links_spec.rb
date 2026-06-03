@@ -134,6 +134,13 @@ describe Lexicon::CheckExternalLinks do
       call
       expect(link.reload.http_status).to be_nil
     end
+
+    it 'marks the link broken and records when it was checked' do
+      call
+      link.reload
+      expect(link).to be_broken
+      expect(link.checked_at).to be_present
+    end
   end
 
   context 'with an invalid URL' do
@@ -194,6 +201,13 @@ describe Lexicon::CheckExternalLinks do
         call
         expect(link.reload.http_status).to be_nil
       end
+
+      it 'marks the link broken (host is defunct)' do
+        call
+        link.reload
+        expect(link).to be_broken
+        expect(link.checked_at).to be_present
+      end
     end
   end
 
@@ -252,6 +266,13 @@ describe Lexicon::CheckExternalLinks do
       citation.update_column(:link_http_status, 200) # simulate prior check
       call
       expect(citation.reload.link_http_status).to be_nil
+    end
+
+    it 'marks the citation link broken and records when it was checked' do
+      call
+      citation.reload
+      expect(citation).to be_link_broken
+      expect(citation.link_checked_at).to be_present
     end
   end
 

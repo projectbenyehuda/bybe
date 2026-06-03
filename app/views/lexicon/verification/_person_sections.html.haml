@@ -234,8 +234,7 @@
                 - if citation.link.present?
                   %br
                   - if citation.link_broken?
-                    - broken_badge = t('lexicon.verification.broken_link.badge', status: citation.link_http_status)
-                    %span.broken-link-badge= broken_badge
+                    %span.broken-link-badge= broken_link_badge(citation.link_http_status)
                     = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{citation.link}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
               .citation-actions.mt-2
@@ -293,8 +292,7 @@
         .link-card{ id: "link-#{link.id}", class: link_card_css(link, checklist['links']) }
           .link-content{dir: text_dir(link.description.to_s)}
             - if link.broken?
-              - broken_badge = t('lexicon.verification.broken_link.badge', status: link.http_status)
-              %span.broken-link-badge= broken_badge
+              %span.broken-link-badge= broken_link_badge(link.http_status)
               = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{link.url}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
             = link_to link.url, link.url, target: '_blank'
             - if link.description.present?
