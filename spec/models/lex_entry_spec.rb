@@ -326,6 +326,27 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '#redo_migration_eligible?' do
+    it 'is true for draft, verifying, and escalated entries that have a lex_file' do
+      %i(draft verifying escalated).each do |status|
+        file = create(:lex_file, :person, entry_status: status)
+        expect(file.lex_entry.redo_migration_eligible?).to be(true)
+      end
+    end
+
+    it 'is false for entries in other statuses even with a lex_file' do
+      %i(raw migrating error verified published).each do |status|
+        file = create(:lex_file, :person, entry_status: status)
+        expect(file.lex_entry.redo_migration_eligible?).to be(false)
+      end
+    end
+
+    it 'is false when the entry has no lex_file' do
+      entry = create(:lex_entry, status: :verifying, verification_progress: { 'checklist' => {} })
+      expect(entry.redo_migration_eligible?).to be(false)
+    end
+  end
+
   describe '#last_content_update' do
     let(:person) { create(:lex_person) }
     let(:entry) { create(:lex_entry, lex_item: person) }

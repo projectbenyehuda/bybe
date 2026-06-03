@@ -225,8 +225,8 @@ module Lexicon
     # POST /lexicon/verification/:id/mark_verified
     def mark_verified
       @entry.mark_verified!
-      redirect_to lexicon_verification_queue_path,
-                  notice: I18n.t('lexicon.verification.messages.entry_verified')
+      redirect_to lexicon_entry_path(@entry),
+                  notice: I18n.t('lexicon.verification.messages.entry_verified_public')
     rescue StandardError => e
       redirect_to lexicon_verification_path(@entry),
                   alert: e.message
