@@ -130,7 +130,7 @@ module Lexicon
 
     def link_toast_for(status)
       if status.nil?
-        ['error', t('lexicon.verification.broken_link.unreachable')]
+        ['error', t('lexicon.verification.broken_link.inaccessible')]
       elsif status < 400
         ['success', t('lexicon.verification.broken_link.now_accessible')]
       else

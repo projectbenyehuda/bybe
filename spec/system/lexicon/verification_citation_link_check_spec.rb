@@ -86,7 +86,7 @@ RSpec.describe 'Citation link check feedback on verification page', type: :syste
     end
   end
 
-  context 'when the new link is unreachable (host defunct / nil status)' do
+  context 'when the new link could not be retrieved (nil status)' do
     let(:check_url_result) { nil }
 
     it 'reloads the page and shows a red error toast' do
@@ -94,7 +94,7 @@ RSpec.describe 'Citation link check feedback on verification page', type: :syste
       open_citation_edit_modal
       submit_link_change('https://unreachable.example.com/')
 
-      expected = I18n.t('lexicon.verification.broken_link.unreachable')
+      expected = I18n.t('lexicon.verification.broken_link.inaccessible')
       expect(page).to have_css('.toast-notification.toast-error', text: expected, wait: 8)
     end
 

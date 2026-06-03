@@ -276,7 +276,7 @@ en:
         unchecked_badge: "Link not checked"
         now_accessible: "Link is now accessible"
         still_broken: "Link is still broken (HTTP %{status})"
-        unreachable: "Inaccessible link (host unreachable)"
+        inaccessible: "Inaccessible link (could not be retrieved)"
         internet_archive: "Internet Archive"
       messages:
         progress_saved: Progress saved successfully

@@ -276,7 +276,7 @@ he:
         unchecked_badge: "קישור לא נבדק"
         now_accessible: "הקישור כעת נגיש"
         still_broken: "הקישור עדיין שבור (HTTP %{status})"
-        unreachable: "קישור לא נגיש (השרת לא נמצא)"
+        inaccessible: "קישור לא נגיש (לא ניתן לאחזר אותו)"
         internet_archive: "ארכיון האינטרנט"
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
