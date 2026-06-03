@@ -1,0 +1,12 @@
+%table.table
+  %tr
+    %th= LexFile.human_attribute_name(:error_message)
+    %th= LexFile.human_attribute_name(:fname)
+    %th= t(:title)
+    %th #{t(:status)} (#{t(:file)} / #{t(:entry)})
+    %th= t(:entrytype)
+    - if show_locked_by
+      %th= t('lexicon.entries.index.locked_by')
+    %th= t(:actions)
+  - files.each do |lf|
+    = render partial: 'file_row', locals: { lf: lf, show_locked_by: show_locked_by, unlockable: unlockable }

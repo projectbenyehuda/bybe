@@ -3,10 +3,15 @@
 module Lexicon
   # Controller to manage Lexicon migration from static php files to Ben-Yehuda project
   class FilesController < ApplicationController
+    include LockRecordConcern
+
     before_action :set_lex_file, only: %i(migrate redo_migration)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
+    # Starting (or redoing) a migration locks the entry to the current editor, and refuses
+    # if another editor already holds the lock.
+    before_action :try_to_lock_record, only: %i(migrate redo_migration)
     layout 'lexicon_backend'
 
     def index
@@ -14,18 +19,27 @@ module Lexicon
       @title = params[:title]
       @fname = params[:fname]
       @page = params[:page]
-      @entry_statuses = params[:entry_statuses].presence || %w(raw migrating error draft)
+      @entry_statuses = params[:entry_statuses].presence || %w(raw migrating error draft verifying)
 
-      @lex_files = LexFile.joins(:lex_entry)
+      scope = LexFile.joins(:lex_entry)
 
-      @lex_files = @lex_files.where(entrytype: @entrytype) if @entrytype.present?
-      @lex_files = @lex_files.where('lex_entries.title LIKE ?', "%#{@title}%") if @title.present?
-      @lex_files = @lex_files.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
-      @lex_files = @lex_files.where(lex_entries: { status: @entry_statuses })
+      scope = scope.where(entrytype: @entrytype) if @entrytype.present?
+      scope = scope.where('lex_entries.title LIKE ?', "%#{@title}%") if @title.present?
+      scope = scope.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
+      scope = scope.where(lex_entries: { status: @entry_statuses })
 
-      @lex_files = @lex_files.preload(:lex_entry)
-                             .order(:fname)
-                             .page(@page)
+      # Files whose entry is currently locked are surfaced in their own sections (mine vs. others')
+      # and excluded from the main paginated list to avoid showing the same file twice.
+      locked_files = scope.where('lex_entries.locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
+      @my_locked_files = locked_files.where(lex_entries: { locked_by_user_id: current_user.id })
+                                     .preload(:lex_entry).order(:fname)
+      @locked_by_others_files = locked_files.where.not(lex_entries: { locked_by_user_id: current_user.id })
+                                            .preload(:lex_entry).order(:fname)
+
+      @lex_files = scope.where.not(id: locked_files.select('lex_files.id'))
+                        .preload(:lex_entry)
+                        .order(:fname)
+                        .page(@page)
     end
 
     def migrate
@@ -59,6 +73,16 @@ module Lexicon
 
     def set_lex_file
       @lex_file = LexFile.find(params[:id])
+    end
+
+    # LockRecordConcern hooks: the lockable record is the file's entry, and a blocked
+    # request returns to the files queue.
+    def record_to_lock
+      @lex_file.lex_entry
+    end
+
+    def redirect_if_locked_path
+      lexicon_files_path
     end
   end
 end
