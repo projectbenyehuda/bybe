@@ -35,4 +35,43 @@ describe LexCitation do
       end
     end
   end
+
+  describe '#link_broken?' do
+    subject { build(:lex_citation, link_checked_at: checked_at, link_http_status: status).link_broken? }
+
+    context 'when never checked (checked_at nil)' do
+      let(:checked_at) { nil }
+      let(:status) { nil }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when checked and unreachable (status nil)' do
+      let(:checked_at) { Time.current }
+      let(:status) { nil }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when checked and healthy (status 200)' do
+      let(:checked_at) { Time.current }
+      let(:status) { 200 }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when checked and 404' do
+      let(:checked_at) { Time.current }
+      let(:status) { 404 }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when checked and 500' do
+      let(:checked_at) { Time.current }
+      let(:status) { 500 }
+
+      it { is_expected.to be true }
+    end
+  end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_01_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_221500) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -652,6 +652,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_200000) do
     t.bigint "lex_person_id", null: false
     t.bigint "lex_person_work_id"
     t.string "link", limit: 1024
+    t.datetime "link_checked_at"
     t.integer "link_http_status"
     t.integer "manifestation_id"
     t.text "notes"
@@ -743,6 +744,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_200000) do
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "checked_at"
     t.datetime "created_at", precision: nil, null: false
     t.string "description"
     t.integer "http_status"

@@ -38,9 +38,11 @@ class LexCitation < ApplicationRecord
     return person_work&.title || subject
   end
 
-  # Returns true if the citation link was checked and returned a 4xx or 5xx status code.
+  # Returns true if the citation link was checked and is inaccessible: either it
+  # returned a 4xx/5xx status, or the host was unreachable (nil status after a
+  # check). link_checked_at distinguishes "checked and dead" from "never checked".
   def link_broken?
-    link_http_status.present? && link_http_status >= 400
+    link_checked_at.present? && (link_http_status.nil? || link_http_status >= 400)
   end
 
   private
