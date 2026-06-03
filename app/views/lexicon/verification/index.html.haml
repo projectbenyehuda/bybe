@@ -53,9 +53,11 @@
             %span.text-sm-left.text-muted= entry.locked_at_human
           - else
             - if entry.status_verifying? || entry.status_escalated?
-              = link_to t('lexicon.verification.queue.actions.continue'), lexicon_verification_path(entry), class: 'btn btn-sm btn-primary'
+              = link_to t('lexicon.verification.queue.actions.continue'), lexicon_verification_path(entry),
+                        class: 'btn btn-sm btn-primary'
             - else
-              = link_to t('lexicon.verification.queue.actions.start'), lexicon_verification_path(entry), class: 'btn btn-sm btn-success'
+              = link_to t('lexicon.verification.queue.actions.start'), lexicon_verification_path(entry),
+                        class: 'btn btn-sm btn-success'
             - if entry.redo_migration_eligible?
               = link_to t('lexicon.files.redo_migrate.title'), redo_migration_lexicon_file_path(entry.lex_file),
                         remote: true, method: :post, class: 'btn btn-sm btn-outline-warning ms-1',

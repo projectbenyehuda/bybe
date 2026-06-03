@@ -344,10 +344,12 @@ RSpec.describe 'Lexicon::Verification', type: :request do
           entry.update_checklist_item(key, true)
         end
         entry.reload
-        raise 'fixture entry is not verification-complete' unless entry.verification_complete?
       end
 
       it "redirects to the entry's public view with a verified flash" do
+        # Precondition: the fixture must be complete, else mark_verified! raises.
+        expect(entry.verification_complete?).to be(true)
+
         post url
 
         expect(response).to redirect_to(lexicon_entry_path(entry))
@@ -355,6 +357,8 @@ RSpec.describe 'Lexicon::Verification', type: :request do
       end
 
       it 'marks the entry as published' do
+        expect(entry.verification_complete?).to be(true)
+
         post url
 
         expect(entry.reload).to be_status_published
