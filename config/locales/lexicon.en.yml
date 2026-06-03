@@ -281,6 +281,7 @@ en:
       messages:
         progress_saved: Progress saved successfully
         entry_verified: Entry verified successfully
+        entry_verified_public: Entry marked as verified. Here is its public view.
         entry_escalated: Entry escalated for review
         error_escalating_entry: Error escalating entry
         add_escalation_notes: Add notes for the reviewer...

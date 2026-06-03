@@ -4,6 +4,7 @@ module Lexicon
   # Controller to work with Lexicon Citations
   class CitationsController < ApplicationController
     include LockLexEntryConcern
+    include LinkCheckingConcern
 
     before_action do
       require_editor('edit_lexicon')
@@ -46,7 +47,10 @@ module Lexicon
       end
 
       if @citation.save
-        check_link_synchronously if @citation.saved_change_to_link?
+        if @citation.saved_change_to_link?
+          check_link_synchronously(@citation, @citation.link,
+                                   status_column: :link_http_status, checked_at_column: :link_checked_at)
+        end
         return
       end
 
@@ -110,32 +114,6 @@ module Lexicon
     # Only allow a list of trusted parameters through.
     def lex_citation_params
       params.expect(lex_citation: %i(title from_publication pages link manifestation_id subject lex_person_work_id))
-    end
-
-    def check_link_synchronously
-      if @citation.link.blank?
-        @citation.update_columns(link_http_status: nil, link_checked_at: nil)
-        return
-      end
-
-      status = CheckExternalLinks.new.check_url(@citation.link)
-      @citation.update_columns(link_http_status: status, link_checked_at: Time.current)
-      @link_check_performed = true
-      @link_toast_type, @link_toast_message = link_toast_for(status)
-      # rubocop:disable Rails/ActionControllerFlashBeforeRender
-      flash[:link_check_toast_type] = @link_toast_type
-      flash[:link_check_toast_message] = @link_toast_message
-      # rubocop:enable Rails/ActionControllerFlashBeforeRender
-    end
-
-    def link_toast_for(status)
-      if status.nil?
-        ['error', t('lexicon.verification.broken_link.inaccessible')]
-      elsif status < 400
-        ['success', t('lexicon.verification.broken_link.now_accessible')]
-      else
-        ['error', t('lexicon.verification.broken_link.still_broken', status: status)]
-      end
     end
   end
 end

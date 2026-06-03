@@ -10,7 +10,6 @@ describe '/lexicon/links' do
   let(:entry) { create(:lex_entry, :person) }
   let(:person) { entry.lex_item }
 
-
   let!(:links) { create_list(:lex_link, 3, item: person) }
 
   let(:link) { links.first }
@@ -65,6 +64,13 @@ describe '/lexicon/links' do
     context 'when valid params' do
       let(:link_params) { attributes_for(:lex_link) }
 
+      before do
+        # attributes_for changes the URL, which now triggers a synchronous re-check.
+        # Stub the network call so this example stays offline.
+        allow(Lexicon::CheckExternalLinks).to receive(:new)
+          .and_return(instance_double(Lexicon::CheckExternalLinks, check_url: 200))
+      end
+
       it 'updates record' do
         expect(call).to eq(200)
         expect(link.reload).to have_attributes(link_params.except(:item))
@@ -77,6 +83,65 @@ describe '/lexicon/links' do
       it 're-renders edit form' do
         expect(call).to eq(422)
         expect(call).to render_template(:edit)
+      end
+    end
+
+    context 'when the URL is changed' do
+      let(:checker) { instance_double(Lexicon::CheckExternalLinks) }
+      let(:link_params) { { url: 'https://new.example.com/' } }
+
+      before do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+        link.update_columns(http_status: 403, checked_at: 1.day.ago)
+      end
+
+      context 'when the new link is accessible' do
+        before { allow(checker).to receive(:check_url).and_return(200) }
+
+        it 'launches a fresh check and stores the new status' do
+          call
+          expect(checker).to have_received(:check_url).with('https://new.example.com/')
+          expect(link.reload.http_status).to eq(200)
+          expect(link).not_to be_broken
+        end
+
+        it 'includes a success toast in the response' do
+          call
+          expect(response.body).to include('showToast')
+          expect(response.body).to include('success')
+        end
+      end
+
+      context 'when the new link is still broken' do
+        before { allow(checker).to receive(:check_url).and_return(404) }
+
+        it 'stores the new broken status' do
+          call
+          expect(link.reload.http_status).to eq(404)
+          expect(link).to be_broken
+        end
+      end
+
+      context 'when the link is unreachable (host defunct)' do
+        before { allow(checker).to receive(:check_url).and_return(nil) }
+
+        it 'stores nil status but records the check time and flags it broken' do
+          call
+          link.reload
+          expect(link.http_status).to be_nil
+          expect(link.checked_at).to be_present
+          expect(link).to be_broken
+        end
+      end
+    end
+
+    context 'when the URL is not changed' do
+      let(:link_params) { { description: 'Updated description', url: link.url } }
+
+      it 'does not check the link' do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_call_original
+        call
+        expect(Lexicon::CheckExternalLinks).not_to have_received(:new)
       end
     end
   end

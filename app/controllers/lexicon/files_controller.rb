@@ -56,17 +56,20 @@ module Lexicon
       lex_entry.status_migrating!
 
       Lexicon::IngestFile.perform_async(@lex_file.id)
+      # Signals the JS response to send the editor to the verification queue (see migrate.js.erb).
+      @migration_launched = true
     end
 
     def redo_migration
       lex_entry = @lex_file.lex_entry
-      return unless lex_entry.status_draft? || lex_entry.status_verifying? || lex_entry.status_escalated?
+      return unless lex_entry.redo_migration_eligible?
 
       lex_entry.reset_ingestion!
       @lex_file.reload
       @lex_file.status_classified! if @lex_file.status_ingested?
       lex_entry.status_migrating!
       Lexicon::IngestFile.perform_async(@lex_file.id)
+      @migration_launched = true
     end
 
     private
