@@ -6,8 +6,10 @@ class LexLink < ApplicationRecord
 
   validates :url, presence: true
 
-  # Returns true if the link was checked and returned a 4xx or 5xx status code.
+  # Returns true if the link was checked and is inaccessible: either it returned
+  # a 4xx/5xx status, or the host was unreachable (nil status after a check).
+  # checked_at distinguishes "checked and dead" from "never checked".
   def broken?
-    http_status.present? && http_status >= 400
+    checked_at.present? && (http_status.nil? || http_status >= 400)
   end
 end

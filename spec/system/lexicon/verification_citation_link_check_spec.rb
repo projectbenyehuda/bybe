@@ -16,7 +16,8 @@ RSpec.describe 'Citation link check feedback on verification page', type: :syste
            person: person,
            title: 'Test Article',
            link: 'https://broken.example.com/old',
-           link_http_status: 404)
+           link_http_status: 404,
+           link_checked_at: Time.current)
   end
 
   def visit_verification_page
@@ -85,16 +86,24 @@ RSpec.describe 'Citation link check feedback on verification page', type: :syste
     end
   end
 
-  context 'when the link check fails (network error / nil)' do
+  context 'when the new link could not be retrieved (nil status)' do
     let(:check_url_result) { nil }
 
-    it 'reloads the page and shows an amber warning toast' do
+    it 'reloads the page and shows a red error toast' do
       visit_verification_page
       open_citation_edit_modal
       submit_link_change('https://unreachable.example.com/')
 
-      expected = I18n.t('lexicon.verification.broken_link.check_failed')
-      expect(page).to have_css('.toast-notification.toast-warning', text: expected, wait: 8)
+      expected = I18n.t('lexicon.verification.broken_link.inaccessible')
+      expect(page).to have_css('.toast-notification.toast-error', text: expected, wait: 8)
+    end
+
+    it 'keeps the broken-link badge after reload' do
+      visit_verification_page
+      open_citation_edit_modal
+      submit_link_change('https://unreachable.example.com/')
+
+      expect(page).to have_css('.broken-link-badge', wait: 8)
     end
   end
 
