@@ -124,7 +124,7 @@
               %br
               %span.text-muted= link.description
           .link-actions.mt-2
-            %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_link_path(link)}', onSectionEditSuccess('section-links'))"}
+            %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_link_path(link)}', function() { location.reload(); })"}
               ✏️
               = t('lexicon.verification.migrated.edit')
             %button.btn.btn-sm{class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "links.items.#{link.id}"}}

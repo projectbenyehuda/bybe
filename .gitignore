@@ -31,6 +31,7 @@
 /config/newrelic.yml
 /config/s3.yml
 /config/behead.payload
+/config/sidekiq.yml
 
 /vendor/analysis*
 /public/assets/*

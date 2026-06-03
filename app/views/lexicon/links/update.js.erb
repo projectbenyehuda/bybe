@@ -1,0 +1,16 @@
+if ($('#links').length) {
+  // Entry-edit view: lazy-reload just the links section
+  reloadContent($('#links'));
+  <% if @link_check_performed %>
+  showToast(<%= @link_toast_message.to_json %>, '<%= @link_toast_type %>');
+  <% end %>
+} else {
+  // Verification view: store toast data in sessionStorage so it survives the page reload.
+  // flash (set by the controller) is also embedded into the reloaded page as a fallback if sessionStorage isn't available.
+<% if @link_check_performed %>
+  sessionStorage.setItem('link-check-toast-type', <%= @link_toast_type.to_json %>);
+  sessionStorage.setItem('link-check-toast-message', <%= @link_toast_message.to_json %>);
+<% end %>
+  // Reload is triggered by the edit-button onSuccess callback; setTimeout is a safety fallback.
+  setTimeout(function() { location.reload(); }, 300);
+}
