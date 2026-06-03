@@ -27,7 +27,7 @@ module Lexicon
 
     # GET /lex_entries or /lex_entries.json
     def index
-      scope = LexEntry.where.not(lex_item: nil)
+scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
 
       # Filter by status if provided
       scope = scope.where(status: params[:status]) if params[:status].present?
