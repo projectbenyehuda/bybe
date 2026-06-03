@@ -20,16 +20,17 @@
           = label_tag "entry_status_#{status}", LexEntry.human_enum_name(:status, status),
                       class: 'form-check-label'
 
-    %table.table
-      %tr
-        %th= LexFile.human_attribute_name(:error_message)
-        %th= LexFile.human_attribute_name(:fname)
-        %th= t(:title)
-        %th= "#{t(:status)} (#{t(:file)} / #{t(:entry)})"
-        %th= t(:entrytype)
-        %th= t(:actions)
-      - @lex_files.each do |lf|
-        = render partial: 'file_row', locals: { lf: lf }
+    - if @my_locked_files.any?
+      %h3= t('.my_locked_title')
+      = render partial: 'files_table', locals: { files: @my_locked_files, show_locked_by: true, unlockable: true }
+
+    - if @locked_by_others_files.any?
+      %h3= t('.locked_by_others_title')
+      = render partial: 'files_table',
+               locals: { files: @locked_by_others_files, show_locked_by: true, unlockable: false }
+
+    %h3= t('.other_title')
+    = render partial: 'files_table', locals: { files: @lex_files, show_locked_by: false, unlockable: false }
   = paginate @lex_files
 :javascript
   $(function() {
