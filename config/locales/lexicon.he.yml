@@ -46,6 +46,14 @@ he:
         all_statuses: כל הסטטוסים
         filter: סנן
         clear_filters: נקה סינונים
+        my_locked_title: ערכים נעולים על ידך
+        locked_by_others_title: ערכים נעולים על ידי עורכים אחרים
+        other_title: ערכים אחרים
+        locked_by: נעול על ידי
+        unlock_confirm: לשחרר את הנעילה?
+      unlock:
+        success: הנעילה שוחררה בהצלחה!
+        not_locked_by_you: הרשומה אינה נעולה על ידך!
       list:
         page_title: רשימת ערכי לקסיקון הספרות העברית החדשה
         page_header: רשימת הערכים - לקסיקון הספרות העברית החדשה
@@ -133,6 +141,9 @@ he:
         title_placeholder: חיפוש לפי כותרת...
         fname_placeholder: חפש לפי שם קובץ...
         entry_status_filter: סטטוס ערך
+        my_locked_title: קבצים נעולים על ידי
+        locked_by_others_title: קבצים נעולים על ידי עורכים אחרים
+        other_title: קבצים אחרים
       migrate:
         success: ההסבה החלה
         title: התחל הסבה
