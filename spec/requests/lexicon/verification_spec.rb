@@ -326,6 +326,84 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     end
   end
 
+  describe 'POST /lex/verification/:id/mark_verified' do
+    let(:entry) do
+      e = create(:lex_entry, :person, status: :verifying)
+      e.start_verification!('editor@example.com')
+      e
+    end
+    let(:url) { "/lex/verification/#{entry.id}/mark_verified" }
+
+    context 'when verification is complete' do
+      before do
+        # mark_verified! guards on verification_complete?, so check every checklist item.
+        # A bare person entry has no works/citations/links items.
+        entry.verification_progress['checklist'].each_key do |key|
+          next if %w(works citations links).include?(key)
+
+          entry.update_checklist_item(key, true)
+        end
+        entry.reload
+      end
+
+      it "redirects to the entry's public view with a verified flash" do
+        # Precondition: the fixture must be complete, else mark_verified! raises.
+        expect(entry.verification_complete?).to be(true)
+
+        post url
+
+        expect(response).to redirect_to(lexicon_entry_path(entry))
+        expect(flash[:notice]).to eq(I18n.t('lexicon.verification.messages.entry_verified_public'))
+      end
+
+      it 'marks the entry as published' do
+        expect(entry.verification_complete?).to be(true)
+
+        post url
+
+        expect(entry.reload).to be_status_published
+      end
+    end
+
+    context 'when verification is not complete' do
+      it 'redirects back to the workbench with the raised error' do
+        post url
+
+        expect(response).to redirect_to(lexicon_verification_path(entry))
+        expect(flash[:alert]).to be_present
+      end
+    end
+  end
+
+  describe 'GET /lex/verification/queue' do
+    it 'auto-refreshes the page periodically' do
+      get '/lex/verification/queue'
+
+      expect(response.body).to include('window.location.reload()')
+    end
+
+    context 'with a re-migrate button' do
+      let!(:verifying_file) { create(:lex_file, :person, entry_status: :verifying) }
+      let!(:escalated_file) { create(:lex_file, :person, entry_status: :escalated) }
+      let!(:draft_file) { create(:lex_file, :person, entry_status: :draft) }
+      let!(:error_file) { create(:lex_file, :person, entry_status: :error) }
+
+      it 'shows the re-migrate button for redo-eligible entries' do
+        get '/lex/verification/queue'
+
+        expect(response.body).to include(redo_migration_lexicon_file_path(verifying_file))
+        expect(response.body).to include(redo_migration_lexicon_file_path(escalated_file))
+        expect(response.body).to include(redo_migration_lexicon_file_path(draft_file))
+      end
+
+      it 'does not show the re-migrate button for entries in error status' do
+        get '/lex/verification/queue'
+
+        expect(response.body).not_to include(redo_migration_lexicon_file_path(error_file))
+      end
+    end
+  end
+
   describe 'POST /lex/verification/:id/escalate' do
     let(:entry) do
       e = create(:lex_entry, :person, status: :verifying)

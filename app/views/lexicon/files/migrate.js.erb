@@ -1,3 +1,7 @@
+<% if @migration_launched %>
+window.location.href = '<%= lexicon_verification_queue_path %>';
+<% else %>
 $('tr#lex-file-<%= @lex_file.id %>').replaceWith(
   '<%= j render(partial: "lexicon/files/file_row", locals: { lf: @lex_file }) %>'
 );
+<% end %>

@@ -74,6 +74,13 @@ class LexEntry < ApplicationRecord
     attachments.find_by(id: profile_image_id)
   end
 
+  # Whether a (re-)migration can be launched for this entry. This is the single source of
+  # truth for redo eligibility, used by Lexicon::FilesController#redo_migration and the
+  # verification queue. A lex_file is required to re-run ingestion.
+  def redo_migration_eligible?
+    lex_file.present? && (status_draft? || status_verifying? || status_escalated?)
+  end
+
   # Should be called if we want to re-ingest the lex file
   def reset_ingestion!
     return if lex_file.nil? # Should not be called for entries without lex_file
