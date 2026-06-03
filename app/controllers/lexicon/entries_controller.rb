@@ -8,7 +8,7 @@ module Lexicon
     before_action except: %i(show list) do |c|
       c.require_editor('edit_lexicon')
     end
-    before_action :set_lex_entry, only: %i(show edit update destroy)
+    before_action :set_lex_entry, only: %i(show edit update destroy unlock)
 
     before_action :try_to_lock_record, only: %i(edit update destroy)
 
@@ -27,19 +27,22 @@ module Lexicon
 
     # GET /lex_entries or /lex_entries.json
     def index
-      @lex_entries = LexEntry.where.not(lex_item: nil)
+scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
 
       # Filter by status if provided
-      if params[:status].present?
-        @lex_entries = @lex_entries.where(status: params[:status])
-      end
+      scope = scope.where(status: params[:status]) if params[:status].present?
 
       # Filter by title substring if provided (case-insensitive)
-      if params[:title].present?
-        @lex_entries = @lex_entries.where('LOWER(title) LIKE LOWER(?)', "%#{params[:title]}%")
-      end
+      scope = scope.where('LOWER(title) LIKE LOWER(?)', "%#{params[:title]}%") if params[:title].present?
 
-      @lex_entries = @lex_entries.page(params[:page])
+      # Separate currently-locked entries into their own sections (mine vs. others') and exclude
+      # them from the main paginated list to avoid showing the same entry twice.
+      locked_scope = scope.where('locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
+                          .includes(:locked_by_user)
+      @my_locked_entries = locked_scope.where(locked_by_user: current_user)
+      @locked_by_others_entries = locked_scope.where.not(locked_by_user: current_user)
+
+      @lex_entries = scope.where.not(id: locked_scope.select(:id)).page(params[:page])
     end
 
     # Public listing of lexicon entries with filtering and sorting
@@ -136,6 +139,18 @@ module Lexicon
     def destroy
       @lex_entry.destroy
       redirect_to lexicon_entries_url, alert: t('.success')
+    end
+
+    # PATCH /lex/entries/:id/unlock
+    # Lets an editor deliberately release a lock they hold on an entry.
+    # Redirects back to the originating page (entries admin index or files queue).
+    def unlock
+      if @lex_entry.locked_by_user == current_user
+        @lex_entry.release_lock!
+        redirect_back_or_to lexicon_entries_url, notice: t('.success')
+      else
+        redirect_back_or_to lexicon_entries_url, alert: t('.not_locked_by_you')
+      end
     end
 
     private

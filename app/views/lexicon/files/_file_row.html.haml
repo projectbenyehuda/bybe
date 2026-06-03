@@ -6,6 +6,8 @@
   %td= lf.lex_entry.title
   %td #{t(lf.status)} / #{LexEntry.human_enum_name(:status, lf.lex_entry&.status)}
   %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
+  - if local_assigns.fetch(:show_locked_by, false)
+    %td= lex_entry.locked_by_user&.name
   %td
     - if lex_entry.status_migrating?
       %span= LexEntry.human_enum_name(:status, lex_entry.status)
@@ -28,3 +30,7 @@
       = link_to t('lexicon.files.redo_migrate.title'), redo_migration_lexicon_file_path(lf),
                 remote: true, method: :post, class: 'btn btn-sm btn-outline-warning ms-1',
                 data: { confirm: t('lexicon.files.redo_migrate.confirm') }
+    - if local_assigns.fetch(:unlockable, false)
+      = link_to t(:unlock), unlock_lexicon_entry_path(lex_entry),
+                method: :patch, class: 'btn btn-sm btn-warning ms-1',
+                data: { confirm: t('lexicon.entries.index.unlock_confirm') }
