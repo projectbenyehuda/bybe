@@ -421,6 +421,83 @@ RSpec.describe Lexicon::EntriesController, type: :controller do
     end
   end
 
+  describe '#index' do
+    let!(:current_user) { login_as_lexicon_editor }
+    let(:other_user) { create(:user) }
+
+    let!(:unlocked_entry) { create(:lex_entry, :person, status: :published, title: 'Unlocked') }
+    let!(:my_locked_entry) { create(:lex_entry, :person, status: :published, title: 'Locked by me') }
+    let!(:other_locked_entry) { create(:lex_entry, :person, status: :published, title: 'Locked by other') }
+
+    before do
+      my_locked_entry.obtain_lock?(current_user)
+      other_locked_entry.obtain_lock?(other_user)
+    end
+
+    it 'assigns my locked entries to @my_locked_entries' do
+      get :index
+      expect(assigns(:my_locked_entries)).to contain_exactly(my_locked_entry)
+    end
+
+    it "assigns others' locked entries to @locked_by_others_entries" do
+      get :index
+      expect(assigns(:locked_by_others_entries)).to contain_exactly(other_locked_entry)
+    end
+
+    it 'excludes locked entries from the main @lex_entries list' do
+      get :index
+      expect(assigns(:lex_entries)).to include(unlocked_entry)
+      expect(assigns(:lex_entries)).not_to include(my_locked_entry, other_locked_entry)
+    end
+
+    it 'treats an expired lock as unlocked (back in the main list)' do
+      my_locked_entry.update_columns(locked_at: (LexEntry::LOCK_TIMEOUT_IN_SECONDS + 60).seconds.ago)
+      get :index
+      expect(assigns(:my_locked_entries)).to be_empty
+      expect(assigns(:lex_entries)).to include(my_locked_entry)
+    end
+
+    context 'when rendering the view' do
+      render_views
+
+      it 'shows the locked sections and an unlock button only for my locked entries' do
+        get :index
+        expect(response.body).to include(I18n.t('lexicon.entries.index.my_locked_title'))
+        expect(response.body).to include(I18n.t('lexicon.entries.index.locked_by_others_title'))
+        expect(response.body).to include(unlock_lexicon_entry_path(my_locked_entry))
+        expect(response.body).not_to include(unlock_lexicon_entry_path(other_locked_entry))
+      end
+    end
+  end
+
+  describe '#unlock' do
+    let!(:current_user) { login_as_lexicon_editor }
+    let(:other_user) { create(:user) }
+    let(:entry) { create(:lex_entry, :person, status: :published) }
+
+    context 'when the entry is locked by the current user' do
+      before { entry.obtain_lock?(current_user) }
+
+      it 'releases the lock and redirects with a success notice' do
+        patch :unlock, params: { id: entry.id }
+        expect(entry.reload).not_to be_locked
+        expect(response).to redirect_to(lexicon_entries_url)
+        expect(flash[:notice]).to eq(I18n.t('lexicon.entries.unlock.success'))
+      end
+    end
+
+    context 'when the entry is locked by another user' do
+      before { entry.obtain_lock?(other_user) }
+
+      it 'does not release the lock and redirects with an alert' do
+        patch :unlock, params: { id: entry.id }
+        expect(entry.reload).to be_locked
+        expect(entry.locked_by_user).to eq(other_user)
+        expect(flash[:alert]).to eq(I18n.t('lexicon.entries.unlock.not_locked_by_you'))
+      end
+    end
+  end
+
   describe '#edit' do
     render_views
 
