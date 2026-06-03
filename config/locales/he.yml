@@ -249,7 +249,7 @@ he:
   x_of_y_items_available: "%{x} מתוך %{y} פריטים מ%{ctype} זה הועלו למאגר"
   full_collection_available: כל פריטי %{ctype} זה זמינים להלן
   x_issues_available: "%{x} גליונות מצויים במאגר"
-  issue_of: גליון של כתב העת
+  issue_of: גיליון של כתב העת
   author_table_of_contents: דף יוצר
   new_person: "יוצר/ת חדש/ה"
   new_corporate_body: ארגון חדש
@@ -2132,7 +2132,7 @@ he:
       volume: כותר
       anthology: אסופה
       periodical: כתב עת
-      periodical_issue: גליון
+      periodical_issue: גיליון
       series: סדרה, מחזור, או שער
       volume_series: סדרת כרכים
       other: אחר
@@ -2141,7 +2141,7 @@ he:
       volume: לתצוגת הכותר
       anthology: לתצוגת האסופה
       periodical: לתצוגת כתב העת
-      periodical_issue: לתצוגת הגליון
+      periodical_issue: לתצוגת הגיליון
       series: לתצוגת המחזור/שער כולו
       volume_series: לתצוגת סדרת הכרכים
       other: לאוסף המלא
@@ -2235,14 +2235,14 @@ he:
     create_new_volume: צור כותר חדש שלא מתוך כותרים ידועים לסדנה הביבליוגרפית
     matched_in_markdown: תואם כותרת במארקדאון?
     pick_periodical: בחירת כתב עת
-    pick_issue: בחירת גליון
-    add_new_issue: (הוספת גליון חדש)
-    new_issue_title: 'כותרת הגליון החדש (לדוגמה: "חדרים 4" או "גליון 56")'
+    pick_issue: בחירת גיליון
+    add_new_issue: (הוספת גיליון חדש)
+    new_issue_title: 'כותרת הגיליון החדש (לדוגמה: "חדרים 4" או "גיליון 56")'
     create_new_periodical: צור כתב עת חדש
     create_new_periodical_button: צור כתב עת חדש
     periodical_title: שם כתב העת
-    first_issue_title: שם הגליון הראשון
-    both_titles_required: יש להזין את שם כתב העת ושם הגליון הראשון
+    first_issue_title: שם הגיליון הראשון
+    both_titles_required: יש להזין את שם כתב העת ושם הגיליון הראשון
     creation_failed: יצירת כתב העת נכשלה
     need_to_save: יש לשמור את ההעלאה לאחר עדכון כותר
     need_to_save_explanation: השמירה תעדכן אישים מקושרים להעלאה (לפי הכותר)
