@@ -11,6 +11,14 @@
   = f.input :from_publication
   = f.input :pages
   = f.input :link
+  = f.input :backup_url
+  - if @citation.backup_file.attached?
+    .form-group
+      %label= LexCitation.human_attribute_name(:backup_file)
+      %div
+        = link_to @citation.backup_file.filename,
+                  rails_blob_path(@citation.backup_file, disposition: :inline),
+                  target: '_blank', rel: 'noopener'
   = f.input :notes
   = f.submit t(:save)
 %hr
