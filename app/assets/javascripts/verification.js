@@ -9,6 +9,12 @@ $(function() {
 
 function initVerification() {
     const container = $('.verification-container');
+
+    // Make the checklist modal draggable/resizable, matching the #generalDlg modals.
+    if (typeof initModalManipulation === 'function') {
+        initModalManipulation('#checklistModal');
+    }
+
     const entryId = container.data('verification-entry-id');
     const updateUrl = container.data('verification-update-url');
     const saveProgressUrl = container.data('verification-save-progress-url');
