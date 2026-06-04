@@ -530,8 +530,21 @@ function confirmWorkMatch(button) {
             collection_id: collectionId || ''
         },
         success: function(data) {
-            $('#generalDlg').modal('hide');
-            reloadScrollingToSection('section-works');
+            // Keep the modal open so the reviewer can approve (or skip) the
+            // remaining proposals. Mark just this row as confirmed.
+            var $row = $('#match-row-' + workId);
+            $row.addClass('text-muted');
+            $row.find('.match-actions').html(
+                $('<span>', { 'class': 'text-success fw-bold', text: '✓ ' + (data.message || '') })
+            );
+            showToast(data.message);
+            // Refresh the works section once, when the reviewer closes the modal,
+            // so the underlying page reflects the confirmed matches.
+            $('#generalDlg')
+                .off('hidden.bs.modal.workmatch')
+                .one('hidden.bs.modal.workmatch', function() {
+                    reloadScrollingToSection('section-works');
+                });
         },
         error: function(xhr) {
             $btn.prop('disabled', false);
