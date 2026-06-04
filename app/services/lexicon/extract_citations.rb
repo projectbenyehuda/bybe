@@ -17,15 +17,18 @@ module Lexicon
 
       html_nodes = [citations_node]
 
-      # Sometimes we have not a single node with citations, but a node with following li or ul tags (malformed document)
-      # So we check if citations_node does not contains other section header (e.g. Links), and if so
-      # consider following li and ul nodes as part of citations section
-      # Another common issue is when part of following list is wrapped in a font tag with size = 2
+      # Sometimes we have not a single node with citations, but a node with following li or ul tags.
+      # In malformed documents an unclosed <font> wrapper used to nest the whole bibliography, but in
+      # well-formed documents each subject is a separate, properly-closed <font> header (e.g.
+      # <font color="#FF0000">) sitting as a flat sibling alongside its <ul>. So we walk forward
+      # collecting li, ul and any non-header <font> nodes (subject headers, or the legacy size=2
+      # list fragments), stopping at the next real section header (e.g. the Links block), which is a
+      # <font>/<p> carrying an a[name] anchor.
       if citations_node.at_css('a[name]').blank?
         next_elem = next_element_skipping_blank(citations_node)
 
-        while next_elem&.name == 'li' || next_elem&.name == 'ul' ||
-              (next_elem&.name == 'font' && next_elem['size'] == '2')
+        while next_elem && (%w(li ul).include?(next_elem.name) ||
+              (next_elem.name == 'font' && !header?(next_elem)))
           html_nodes << next_elem
           next_elem = next_element_skipping_blank(next_elem)
         end
