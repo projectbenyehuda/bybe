@@ -120,31 +120,41 @@ function closeModal() {
     $('#generalDlg').data('onSuccess', null);
 };
 
-function initModalManipulation() {
-    var $modal = $('#generalDlg');
+// Make a Bootstrap modal draggable (by its header) and resizable (via edge handles).
+// Defaults to '#generalDlg' to preserve existing behavior; pass another selector to
+// apply the same manipulation to a different modal (e.g. '#checklistModal').
+function initModalManipulation(modalSelector) {
+    modalSelector = modalSelector || '#generalDlg';
+    var $modal = $(modalSelector);
     if (!$modal.length) return;
 
     var $dialog = $modal.find('.modal-dialog');
     var $content = $modal.find('.modal-content');
 
-    // Inject resize handle CSS once
-    $('head').append(
-        '<style id="generalDlg-manip-style">' +
-        '#generalDlg .modal-resize-handle{position:absolute;z-index:10;}' +
-        '#generalDlg .modal-resize-handle.dlg-n {top:-3px;left:12px;right:12px;height:6px;cursor:n-resize;}' +
-        '#generalDlg .modal-resize-handle.dlg-s {bottom:-3px;left:12px;right:12px;height:6px;cursor:s-resize;}' +
-        '#generalDlg .modal-resize-handle.dlg-e {right:-3px;top:12px;bottom:12px;width:6px;cursor:e-resize;}' +
-        '#generalDlg .modal-resize-handle.dlg-w {left:-3px;top:12px;bottom:12px;width:6px;cursor:w-resize;}' +
-        '#generalDlg .modal-resize-handle.dlg-ne{top:-3px;right:-3px;width:14px;height:14px;cursor:ne-resize;}' +
-        '#generalDlg .modal-resize-handle.dlg-se{bottom:-3px;right:-3px;width:14px;height:14px;cursor:se-resize;}' +
-        '#generalDlg .modal-resize-handle.dlg-sw{bottom:-3px;left:-3px;width:14px;height:14px;cursor:sw-resize;}' +
-        '#generalDlg .modal-resize-handle.dlg-nw{top:-3px;left:-3px;width:14px;height:14px;cursor:nw-resize;}' +
-        '</style>'
-    );
+    // Inject resize handle + draggable-header CSS once per modal
+    var styleId = ($modal.attr('id') || 'modal') + '-manip-style';
+    if (!document.getElementById(styleId)) {
+        $('head').append(
+            '<style id="' + styleId + '">' +
+            modalSelector + ' .modal-header{cursor:move;user-select:none;}' +
+            modalSelector + ' .modal-resize-handle{position:absolute;z-index:10;}' +
+            modalSelector + ' .modal-resize-handle.dlg-n {top:-3px;left:12px;right:12px;height:6px;cursor:n-resize;}' +
+            modalSelector + ' .modal-resize-handle.dlg-s {bottom:-3px;left:12px;right:12px;height:6px;cursor:s-resize;}' +
+            modalSelector + ' .modal-resize-handle.dlg-e {right:-3px;top:12px;bottom:12px;width:6px;cursor:e-resize;}' +
+            modalSelector + ' .modal-resize-handle.dlg-w {left:-3px;top:12px;bottom:12px;width:6px;cursor:w-resize;}' +
+            modalSelector + ' .modal-resize-handle.dlg-ne{top:-3px;right:-3px;width:14px;height:14px;cursor:ne-resize;}' +
+            modalSelector + ' .modal-resize-handle.dlg-se{bottom:-3px;right:-3px;width:14px;height:14px;cursor:se-resize;}' +
+            modalSelector + ' .modal-resize-handle.dlg-sw{bottom:-3px;left:-3px;width:14px;height:14px;cursor:sw-resize;}' +
+            modalSelector + ' .modal-resize-handle.dlg-nw{top:-3px;left:-3px;width:14px;height:14px;cursor:nw-resize;}' +
+            '</style>'
+        );
+    }
 
-    $.each(['n','ne','e','se','s','sw','w','nw'], function(_, dir) {
-        $content.append('<div class="modal-resize-handle dlg-' + dir + '"></div>');
-    });
+    if ($content.find('.modal-resize-handle').length === 0) {
+        $.each(['n','ne','e','se','s','sw','w','nw'], function(_, dir) {
+            $content.append('<div class="modal-resize-handle dlg-' + dir + '"></div>');
+        });
+    }
 
     var MIN_W = 300, MIN_H = 100;
 
