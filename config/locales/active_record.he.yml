@@ -132,6 +132,8 @@ he:
           failed: ההעלאה נכשלה
       lex_citation:
         authors: מחברים
+        backup_file: קובץ גיבוי
+        backup_url: כתובת גיבוי
         from_publication: מתוך החיבור
         notes: הקשר והערות
         pages: עמודים
