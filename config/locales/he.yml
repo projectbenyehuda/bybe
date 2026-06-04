@@ -248,7 +248,7 @@ he:
   table_of_contents: תוכן עניינים
   x_of_y_items_available: "%{x} מתוך %{y} פריטים מ%{ctype} זה הועלו למאגר"
   full_collection_available: כל פריטי %{ctype} זה זמינים להלן
-  x_issues_available: "%{x} גליונות מצויים במאגר"
+  x_issues_available: "%{x} גיליונות מצויים במאגר"
   issue_of: גיליון של כתב העת
   author_table_of_contents: דף יוצר
   new_person: "יוצר/ת חדש/ה"
@@ -2124,7 +2124,7 @@ he:
       email_missing: נא לציין כתובת דואל, כדי שנוכל להשיב לך.
   periodicals:
     index:
-      x_issues: "%{x} גליונות"
+      x_issues: "%{x} גיליונות"
       x_texts: "%{x} יצירות"
   manifestation:
   collection:
