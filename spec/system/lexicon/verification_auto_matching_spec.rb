@@ -160,7 +160,7 @@ describe 'Lexicon Verification Auto-Matching', :js do
     end
     # rubocop:enable RSpec/ExampleLength
 
-    it 'confirms match when user clicks confirm button' do
+    it 'confirms match when user clicks confirm button and keeps the modal open' do
       visit "/lex/verification/#{entry.id}"
       open_auto_match_modal
 
@@ -169,19 +169,46 @@ describe 'Lexicon Verification Auto-Matching', :js do
         find('button', text: I18n.t('lexicon.verification.edit.confirm_match')).click
       end
 
-      # After confirmation the modal closes and the page reloads
-      expect(page).to have_css('#section-works', wait: 10)
+      # The modal stays open and the confirmed row shows a success indicator
+      expect(page).to have_css('#generalDlg.show')
+      within "#match-row-#{work1.id}" do
+        expect(page).to have_content(I18n.t('lexicon.verification.messages.work_match_confirmed'))
+        expect(page).not_to have_button(I18n.t('lexicon.verification.edit.confirm_match'))
+      end
 
-      # After reload, work1's card should display the linked publication and collection
+      # The match was persisted via the AJAX call without a page reload
+      expect(work1.reload.publication_id).to eq(pub1.id)
+      expect(work1.collection_id).to eq(collection1.id)
+
+      # Closing the modal refreshes the works section to reflect the change
+      find('button', text: I18n.t('lexicon.verification.sections.close')).click
+      expect(page).not_to have_css('#generalDlg.show', wait: 5)
       within "#work-#{work1.id}" do
         expect(page).to have_link('Tmol Shilshom')
         expect(page).to have_link('Tmol Shilshom Collection')
       end
+    end
 
-      # Verify the database was updated
-      work1.reload
-      expect(work1.publication_id).to eq(pub1.id)
-      expect(work1.collection_id).to eq(collection1.id)
+    it 'allows confirming multiple matches in a single modal session' do
+      visit "/lex/verification/#{entry.id}"
+      open_auto_match_modal
+
+      # Confirm work1
+      within "#match-row-#{work1.id}" do
+        find('button', text: I18n.t('lexicon.verification.edit.confirm_match')).click
+        expect(page).to have_content(I18n.t('lexicon.verification.messages.work_match_confirmed'))
+      end
+
+      # The modal is still open, so work2 can be confirmed in the same session
+      expect(page).to have_css('#generalDlg.show')
+      within "#match-row-#{work2.id}" do
+        find('button', text: I18n.t('lexicon.verification.edit.confirm_match')).click
+        expect(page).to have_content(I18n.t('lexicon.verification.messages.work_match_confirmed'))
+      end
+
+      # Both matches were persisted
+      expect(work1.reload.publication_id).to eq(pub1.id)
+      expect(work2.reload.publication_id).to eq(pub2.id)
     end
 
     it 'does not propose matches for existing publication assignments' do
