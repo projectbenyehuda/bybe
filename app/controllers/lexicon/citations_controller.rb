@@ -113,7 +113,8 @@ module Lexicon
 
     # Only allow a list of trusted parameters through.
     def lex_citation_params
-      params.expect(lex_citation: %i(title from_publication pages link manifestation_id subject lex_person_work_id))
+      params.expect(lex_citation: %i(title from_publication pages link backup_url manifestation_id subject
+                                     lex_person_work_id))
     end
   end
 end

@@ -126,6 +126,8 @@ en:
           failed: Upload failed
       lex_citation:
         authors: Authors
+        backup_file: Backup File
+        backup_url: Backup URL
         from_publication: From Publication
         notes: Context notes
         pages: Pages
