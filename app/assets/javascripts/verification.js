@@ -535,7 +535,7 @@ function confirmWorkMatch(button) {
             var $row = $('#match-row-' + workId);
             $row.addClass('text-muted');
             $row.find('.match-actions').html(
-                $('<span>', { 'class': 'text-success fw-bold', text: '✓ ' + (data.message || '') })
+                $('<span>', { 'class': 'text-success font-weight-bold', text: '✓ ' + (data.message || '') })
             );
             showToast(data.message);
             // Refresh the works section once, when the reviewer closes the modal,
