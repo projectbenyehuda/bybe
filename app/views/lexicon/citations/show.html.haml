@@ -16,6 +16,15 @@
   %b #{LexCitation.human_attribute_name(:link)}:
   = @lex_citation.link
 %p
+  %b #{LexCitation.human_attribute_name(:backup_url)}:
+  = @lex_citation.backup_url
+- if @lex_citation.backup_file.attached?
+  %p
+    %b #{LexCitation.human_attribute_name(:backup_file)}:
+    = link_to @lex_citation.backup_file.filename,
+              rails_blob_path(@lex_citation.backup_file, disposition: :inline),
+              target: '_blank', rel: 'noopener'
+%p
   %b #{LexCitation.human_attribute_name(:item)}:
   = @lex_citation.item
 %p
