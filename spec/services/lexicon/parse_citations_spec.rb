@@ -196,6 +196,65 @@ describe Lexicon::ParseCitations do
     end
   end
 
+  # The LLM frequently omits backup_url even when data-file-link is present, so
+  # ParseCitations recovers it deterministically from the asterisk link.
+  context 'when the LLM omits backup_url for an asterisk citation' do
+    def stub_llm(works)
+      chat_double = instance_double(RubyLLM::Chat)
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+      allow(chat_double).to receive(:ask).and_return(
+        instance_double(RubyLLM::Message, content: { result: [{ subject: nil, works: works }] }.to_json)
+      )
+    end
+
+    context 'when the citation has an inline link matching the asterisk <li>' do
+      let(:html) do
+        <<~HTML
+          <ul>
+            <li><b>הראל, מעין.</b>
+              <a href="https://www.haaretz.co.il/literature/1.1311393">להיות אשה</a>. הארץ, 2008, עמ' 4.
+              <a href="/files/lex/5013/00022200.pdf">*</a></li>
+          </ul>
+        HTML
+      end
+
+      it 'recovers backup_url by matching the citation link' do
+        stub_llm([
+                   { title: 'להיות אשה פירושו להיות חולה', authors: [{ name: 'הראל, מעין', link: nil }],
+                     from_publication: 'הארץ, 2008', pages: '4',
+                     link: 'https://www.haaretz.co.il/literature/1.1311393', backup_url: nil, notes: nil }
+                 ])
+
+        result = described_class.call(html)
+
+        expect(result.first.backup_url).to eq('/files/lex/5013/00022200.pdf')
+      end
+    end
+
+    context 'when the citation has no inline link' do
+      let(:html) do
+        <<~HTML
+          <ul>
+            <li>כותרת ייחודית ארוכה למאמר. עיתון, 2024, עמ' 1-5.
+              <a href="/files/lex/5013/00022200.pdf">*</a></li>
+          </ul>
+        HTML
+      end
+
+      it 'recovers backup_url by matching the citation title text' do
+        stub_llm([
+                   { title: 'כותרת ייחודית ארוכה למאמר', authors: [], from_publication: 'עיתון, 2024',
+                     pages: '1-5', link: nil, backup_url: nil, notes: nil }
+                 ])
+
+        result = described_class.call(html)
+
+        expect(result.first.backup_url).to eq('/files/lex/5013/00022200.pdf')
+      end
+    end
+  end
+
   context 'when the LLM returns citations with blank titles' do
     let(:html) { '<ul><li>some html</li></ul>' }
 

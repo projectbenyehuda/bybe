@@ -90,6 +90,11 @@ describe '/lexicon/citations' do
     subject(:call) { get "/lex/citations/#{citation.id}/edit" }
 
     it { is_expected.to eq(200) }
+
+    it 'renders the backup_url field' do
+      call
+      expect(response.body).to include('lex_citation[backup_url]')
+    end
   end
 
   describe 'PATCH /lex/citations/:id' do
@@ -101,6 +106,15 @@ describe '/lexicon/citations' do
       it 'updates record' do
         expect(call).to eq(200)
         expect(citation.reload).to have_attributes(citation_params)
+      end
+    end
+
+    context 'when editing backup_url' do
+      let(:citation_params) { { backup_url: '/files/lex/5013/00022200.pdf' } }
+
+      it 'persists the backup_url' do
+        expect(call).to eq(200)
+        expect(citation.reload.backup_url).to eq('/files/lex/5013/00022200.pdf')
       end
     end
 
