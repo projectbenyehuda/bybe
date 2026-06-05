@@ -82,7 +82,7 @@
                       %a{href: dict_entry_path(id: @m.id, entry: link.id)}= link.defhead
 :javascript
   $(document).ready(function() {
-    sefaria.link({whitelistSelector: '.deftext', contentLang: 'hebrew', interfaceLang: 'hebrew'});
+    sefaria.link({whitelistSelector: '.deftext', contentLang: 'hebrew', interfaceLang: 'hebrew', mode: 'popup-click'});
     $('#dict_autocomplete').on('railsAutocomplete.select', function(event, data){
       event.preventDefault();
       entry_id = data.item.id.toString();

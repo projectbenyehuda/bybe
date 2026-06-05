@@ -300,7 +300,7 @@
       $('#recommendationDlg').modal('show');
     });
     if("#{@m.sefaria_linker}" != '') {
-      sefaria.link({whitelistSelector: '#actualtext', contentLang: 'hebrew', interfaceLang: 'hebrew'});
+      sefaria.link({whitelistSelector: '#actualtext', contentLang: 'hebrew', interfaceLang: 'hebrew', mode: 'popup-click'});
     }
     // Handle originating task lookup
     $('#originating-task-btn a').click(function(e) {
