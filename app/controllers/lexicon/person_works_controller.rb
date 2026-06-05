@@ -87,12 +87,9 @@ module Lexicon
     end
 
     def remove_title_link
-      if params[:index].blank?
-        head :unprocessable_content
-        return
-      end
+      index = link_index_param
+      return head :unprocessable_content if index.nil?
 
-      index = params[:index].to_i
       links = Array(@work.title_links)
       links.delete_at(index) if index >= 0 && index < links.size
       @work.update!(title_links: links.presence)
@@ -124,12 +121,9 @@ module Lexicon
     end
 
     def remove_comment_link
-      if params[:index].blank?
-        head :unprocessable_content
-        return
-      end
+      index = link_index_param
+      return head :unprocessable_content if index.nil?
 
-      index = params[:index].to_i
       links = Array(@work.comment_links)
       links.delete_at(index) if index >= 0 && index < links.size
       @work.update!(comment_links: links.presence)
@@ -170,6 +164,12 @@ module Lexicon
     end
 
     private
+
+    # Parses the :index param as an integer, returning nil when it is missing or not a valid
+    # integer, so a non-numeric value (e.g. 'abc'.to_i == 0) can't silently delete the first link.
+    def link_index_param
+      Integer(params[:index], exception: false)
+    end
 
     def set_person
       @person = LexPerson.find(params[:person_id])

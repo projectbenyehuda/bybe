@@ -81,9 +81,14 @@ module LexiconHelper
   # comment_links mirror title_links ([{ 'text' => ..., 'entry_id' => ... }]). Returns an
   # HTML-safe String with the comment text escaped and matched names replaced by links.
   def render_person_work_comment(comment, comment_links)
+    links = Array(comment_links)
     html = ERB::Util.html_escape(comment)
-    Array(comment_links).each do |cl|
-      entry = LexEntry.find_by(id: cl['entry_id'])
+    return html.html_safe if links.empty?
+
+    # Preload all referenced entries in a single query to avoid an N+1 over the links
+    entries = LexEntry.where(id: links.filter_map { |cl| cl['entry_id'] }).index_by(&:id)
+    links.each do |cl|
+      entry = entries[cl['entry_id']]
       next unless entry
 
       escaped_text = ERB::Util.html_escape(cl['text'])

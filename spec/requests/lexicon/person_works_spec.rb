@@ -342,6 +342,12 @@ describe '/lexicon/person_works' do
       delete "/lex/works/#{work.id}/remove_title_link", params: { index: 0 }, xhr: true
       expect(work.reload.title_links).to be_nil
     end
+
+    it 'returns 422 and removes nothing when the index is not an integer' do
+      delete "/lex/works/#{work.id}/remove_title_link", params: { index: 'abc' }, xhr: true
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(work.reload.title_links.size).to eq(2)
+    end
   end
 
   describe 'GET /lex/works/:id/comment_links' do
@@ -422,6 +428,12 @@ describe '/lexicon/person_works' do
       work.update!(comment_links: [{ 'text' => 'יגאל שוורץ', 'entry_id' => 1 }])
       delete "/lex/works/#{work.id}/remove_comment_link", params: { index: 0 }, xhr: true
       expect(work.reload.comment_links).to be_nil
+    end
+
+    it 'returns 422 and removes nothing when the index is not an integer' do
+      delete "/lex/works/#{work.id}/remove_comment_link", params: { index: 'abc' }, xhr: true
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(work.reload.comment_links.size).to eq(2)
     end
   end
 end
