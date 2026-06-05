@@ -3263,6 +3263,14 @@ en:
         target_person: Target person
         person_placeholder: Search person entry...
         entry_not_found: Entry not found
+      comment_links:
+        section_heading: Comment Links
+        add_link: Add Comment Link
+        text_in_comment: Text in comment
+        text_placeholder: Text that becomes a link
+        target_person: Target person
+        person_placeholder: Search person entry...
+        entry_not_found: Entry not found
     citations:
       index:
         add_citation: Add Citation

@@ -50,6 +50,10 @@
   %h4= t('lexicon.person_works.title_links.section_heading')
   .border.rounded.p-2#title-links-list{ data: { ajax_url: title_links_lexicon_work_path(@work) } }
 
+  %hr
+  %h4= t('lexicon.person_works.comment_links.section_heading')
+  .border.rounded.p-2#comment-links-list{ data: { ajax_url: comment_links_lexicon_work_path(@work) } }
+
   :javascript
     function reloadLinkedPeople() {
       $('#linked-people-list').load('#{lexicon_work_linked_people_path(@work)}');
@@ -57,6 +61,10 @@
 
     function reloadTitleLinks() {
       $('#title-links-list').load('#{title_links_lexicon_work_path(@work)}');
+    }
+
+    function reloadCommentLinks() {
+      $('#comment-links-list').load('#{comment_links_lexicon_work_path(@work)}');
     }
 
     function addTitleLink(workId) {
@@ -80,6 +88,30 @@
         headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
         data: { index: index },
         success: reloadTitleLinks
+      });
+    }
+
+    function addCommentLink(workId) {
+      var text = $('#comment_link_text').val();
+      var entryId = $('#comment_link_entry_id').val();
+      if (!text || !entryId) { return; }
+      $.ajax({
+        url: '/lex/works/' + workId + '/add_comment_link',
+        method: 'POST',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { text: text, entry_id: entryId },
+        success: reloadCommentLinks
+      });
+    }
+
+    function removeCommentLink(workId, index) {
+      if (!confirm('#{j(t(:are_you_sure))}')) { return; }
+      $.ajax({
+        url: '/lex/works/' + workId + '/remove_comment_link',
+        method: 'DELETE',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { index: index },
+        success: reloadCommentLinks
       });
     }
 

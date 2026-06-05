@@ -71,10 +71,26 @@ module LexiconHelper
 
     if work.comment.present?
       work.comment.split("\n").each do |comment|
-        result += " < #{comment} >"
+        result += " < #{render_person_work_comment(comment, work.comment_links)} >"
       end
     end
     raw result
+  end
+
+  # Renders a work comment, hyperlinking any names listed in comment_links to their LexEntry.
+  # comment_links mirror title_links ([{ 'text' => ..., 'entry_id' => ... }]). Returns an
+  # HTML-safe String with the comment text escaped and matched names replaced by links.
+  def render_person_work_comment(comment, comment_links)
+    html = ERB::Util.html_escape(comment)
+    Array(comment_links).each do |cl|
+      entry = LexEntry.find_by(id: cl['entry_id'])
+      next unless entry
+
+      escaped_text = ERB::Util.html_escape(cl['text'])
+      # Block form of sub avoids interpreting & or \1 in the replacement string
+      html = html.sub(escaped_text) { link_to(cl['text'], lexicon_entry_path(entry)) }
+    end
+    html.html_safe
   end
 
   def format_publication_details(work)

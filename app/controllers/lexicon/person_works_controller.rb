@@ -8,7 +8,8 @@ module Lexicon
     before_action do
       require_editor('edit_lexicon')
     end
-    before_action :set_work, only: %i(edit update destroy reorder title_links add_title_link remove_title_link)
+    before_action :set_work, only: %i(edit update destroy reorder title_links add_title_link remove_title_link
+                                      comment_links add_comment_link remove_comment_link)
     before_action :set_person, only: %i(new create index)
     after_action :sync_verification_checklist, only: %i(create update destroy reorder)
 
@@ -95,6 +96,43 @@ module Lexicon
       links = Array(@work.title_links)
       links.delete_at(index) if index >= 0 && index < links.size
       @work.update!(title_links: links.presence)
+      head :ok
+    end
+
+    def comment_links
+      entry_ids = Array(@work.comment_links).filter_map { |l| l['entry_id'] }
+      @comment_link_entries = LexEntry.where(id: entry_ids).index_by(&:id)
+    end
+
+    def add_comment_link
+      text = params[:text].to_s.strip
+      entry_id = params[:entry_id].to_i
+      entry = LexEntry.find_by(id: entry_id)
+
+      if text.blank? || entry.nil? || !person_entry_for_title_link?(entry)
+        head :unprocessable_content
+        return
+      end
+
+      links = Array(@work.comment_links)
+      unless links.any? { |l| l['text'] == text }
+        links << { 'text' => text, 'entry_id' => entry_id }
+        @work.update!(comment_links: links)
+      end
+
+      head :ok
+    end
+
+    def remove_comment_link
+      if params[:index].blank?
+        head :unprocessable_content
+        return
+      end
+
+      index = params[:index].to_i
+      links = Array(@work.comment_links)
+      links.delete_at(index) if index >= 0 && index < links.size
+      @work.update!(comment_links: links.presence)
       head :ok
     end
 
