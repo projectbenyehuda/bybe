@@ -342,5 +342,98 @@ describe '/lexicon/person_works' do
       delete "/lex/works/#{work.id}/remove_title_link", params: { index: 0 }, xhr: true
       expect(work.reload.title_links).to be_nil
     end
+
+    it 'returns 422 and removes nothing when the index is not an integer' do
+      delete "/lex/works/#{work.id}/remove_title_link", params: { index: 'abc' }, xhr: true
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(work.reload.title_links.size).to eq(2)
+    end
+  end
+
+  describe 'GET /lex/works/:id/comment_links' do
+    let(:work) { create(:lex_person_work, person: person) }
+
+    it 'returns 200' do
+      expect(get("/lex/works/#{work.id}/comment_links", xhr: true)).to eq(200)
+    end
+  end
+
+  describe 'POST /lex/works/:id/add_comment_link' do
+    subject(:call) do
+      post "/lex/works/#{work.id}/add_comment_link",
+           params: { text: 'יגאל שוורץ', entry_id: target_entry.id },
+           xhr: true
+    end
+
+    let!(:work) { create(:lex_person_work, person: person, comment: 'כולל אחרית דבר מאת יגאל שוורץ') }
+    let!(:target_entry) { create(:lex_file, :person, title: 'יגאל שוורץ').lex_entry }
+
+    it 'adds the comment link and returns 200' do
+      expect(call).to eq(200)
+      expect(work.reload.comment_links).to eq([{ 'text' => 'יגאל שוורץ', 'entry_id' => target_entry.id }])
+    end
+
+    it 'does not duplicate an existing link with the same text' do
+      work.update!(comment_links: [{ 'text' => 'יגאל שוורץ', 'entry_id' => target_entry.id }])
+      expect { call }.not_to(change { work.reload.comment_links.size })
+    end
+
+    context 'when text is blank' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_comment_link",
+             params: { text: '', entry_id: target_entry.id },
+             xhr: true
+      end
+
+      it 'returns 422' do
+        expect(call).to eq(422)
+      end
+    end
+
+    context 'when entry is not a person' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_comment_link",
+             params: { text: 'ספר כלשהו', entry_id: publication_entry.id },
+             xhr: true
+      end
+
+      let!(:publication_entry) { create(:lex_file, :publication, title: 'ספר כלשהו').lex_entry }
+
+      it 'returns 422' do
+        expect(call).to eq(422)
+      end
+    end
+  end
+
+  describe 'DELETE /lex/works/:id/remove_comment_link' do
+    subject(:call) do
+      delete "/lex/works/#{work.id}/remove_comment_link", params: { index: 0 }, xhr: true
+    end
+
+    let!(:work) do
+      create(:lex_person_work,
+             person: person,
+             comment_links: [
+               { 'text' => 'יגאל שוורץ', 'entry_id' => 1 },
+               { 'text' => 'שמואל כץ', 'entry_id' => 2 }
+             ])
+    end
+
+    it 'removes the link at the given index and returns 200' do
+      expect(call).to eq(200)
+      expect(work.reload.comment_links).to eq([{ 'text' => 'שמואל כץ', 'entry_id' => 2 }])
+    end
+
+    it 'sets comment_links to nil when removing the last link' do
+      work.update!(comment_links: [{ 'text' => 'יגאל שוורץ', 'entry_id' => 1 }])
+      delete "/lex/works/#{work.id}/remove_comment_link", params: { index: 0 }, xhr: true
+      expect(work.reload.comment_links).to be_nil
+    end
+
+    it 'returns 422 and removes nothing when the index is not an integer' do
+      delete "/lex/works/#{work.id}/remove_comment_link", params: { index: 'abc' }, xhr: true
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(work.reload.comment_links.size).to eq(2)
+    end
   end
 end

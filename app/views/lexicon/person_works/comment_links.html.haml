@@ -1,0 +1,38 @@
+-# haml-lint:disable LineLength
+%ul.comment-links-list.list-unstyled.mb-2
+  - Array(@work.comment_links).each_with_index do |link, idx|
+    - entry = @comment_link_entries[link['entry_id']]
+    %li.d-flex.align-items-center.gap-2.mb-1
+      %span.badge.bg-light.text-dark.border= link['text']
+      %span →
+      - if entry
+        = link_to entry.title, lexicon_entry_path(entry), target: '_blank', rel: 'noopener'
+      - else
+        %span.text-muted= t('lexicon.person_works.comment_links.entry_not_found')
+      %button.btn.btn-sm.btn-outline-danger{ onclick: "removeCommentLink(#{@work.id}, #{idx})" }
+        = t(:delete)
+
+%hr.my-2
+%strong= t('lexicon.person_works.comment_links.add_link')
+.row.g-2.align-items-end.mt-1#add-comment-link-form
+  .col-sm-5
+    = label_tag :comment_link_text, t('lexicon.person_works.comment_links.text_in_comment'), class: 'form-label form-label-sm'
+    = text_field_tag :comment_link_text, nil, class: 'form-control form-control-sm', id: 'comment_link_text', placeholder: t('lexicon.person_works.comment_links.text_placeholder')
+  .col-sm-5
+    = label_tag :comment_link_entry_autocomplete, t('lexicon.person_works.comment_links.target_person'), class: 'form-label form-label-sm'
+    = hidden_field_tag :comment_link_entry_id, nil, id: 'comment_link_entry_id'
+    = autocomplete_field_tag :comment_link_entry_autocomplete,
+                             nil,
+                             autocomplete_lexicon_entries_path(entry_type: :person),
+                             id_element: '#comment_link_entry_id',
+                             class: 'form-control form-control-sm',
+                             placeholder: t('lexicon.person_works.comment_links.person_placeholder')
+  .col-sm-2
+    %button.btn.btn-sm.btn-primary.w-100{ onclick: "addCommentLink(#{@work.id})" }
+      = t(:add)
+
+:javascript
+  $.ui.autocomplete.prototype._resizeMenu = function () {
+    const ul = this.menu.element;
+    ul.outerWidth(this.element.outerWidth());
+  };

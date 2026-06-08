@@ -178,7 +178,7 @@
                 %span.text-muted!= render_linked_person(linked_person)
               - if work.comment.present?
                 %br
-                %span.text-muted= work.comment
+                %span.text-muted!= render_person_work_comment(work.comment, work.comment_links)
             .work-actions.mt-2
               %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{edit_lexicon_work_path(work)}', function() { reloadScrollingToSection('section-works'); })" }
                 ✏️

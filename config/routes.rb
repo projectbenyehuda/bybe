@@ -76,6 +76,9 @@ Bybeconv::Application.routes.draw do
           get :title_links
           post :add_title_link
           delete :remove_title_link
+          get :comment_links
+          post :add_comment_link
+          delete :remove_comment_link
         end
       end
     end
