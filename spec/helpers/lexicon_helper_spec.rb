@@ -175,4 +175,40 @@ RSpec.describe LexiconHelper, type: :helper do
       end
     end
   end
+
+  describe '#render_person_work_comment' do
+    let!(:target_entry) { create(:lex_entry, :person, title: 'יגאל שוורץ') }
+    let(:comment) { 'כולל אחרית דבר מאת יגאל שוורץ' }
+
+    context 'when comment_links match a name in the comment' do
+      let(:comment_links) { [{ 'text' => 'יגאל שוורץ', 'entry_id' => target_entry.id }] }
+
+      it 'hyperlinks the matched name and keeps the surrounding text' do
+        result = helper.render_person_work_comment(comment, comment_links)
+        expect(result).to include('<a ')
+        expect(result).to include(lexicon_entry_path(target_entry))
+        expect(result).to include('כולל אחרית דבר מאת')
+      end
+    end
+
+    context 'when comment_links is nil' do
+      it 'returns the escaped comment unchanged' do
+        expect(helper.render_person_work_comment(comment, nil)).to eq(comment)
+      end
+    end
+
+    context 'when the comment contains HTML-special characters' do
+      it 'escapes them' do
+        expect(helper.render_person_work_comment('a < b & c', nil)).to eq('a &lt; b &amp; c')
+      end
+    end
+
+    context 'when the linked entry no longer exists' do
+      it 'leaves the name as plain (escaped) text' do
+        result = helper.render_person_work_comment(comment, [{ 'text' => 'יגאל שוורץ', 'entry_id' => 999_999 }])
+        expect(result).not_to include('<a ')
+        expect(result).to include('יגאל שוורץ')
+      end
+    end
+  end
 end
