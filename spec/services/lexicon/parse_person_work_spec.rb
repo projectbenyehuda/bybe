@@ -206,6 +206,42 @@ describe Lexicon::ParsePersonWork do
     end
   end
 
+  context 'when a plain (non-role) comment contains a person link' do
+    let!(:person_entry) { create(:lex_file, :person, title: 'יגאל שוורץ', fname: '00032.php').lex_entry }
+    let(:line) do
+      'מעיל קטון (אור יהודה : זמורה-ביתן, 2008) <font size="2">&lt;כולל אחרית דבר מאת ' \
+        "<a href=\"/lex/entries/#{person_entry.id}\">יגאל שוורץ</a>&gt;</font>"
+    end
+
+    it 'stores the comment as plain text' do
+      expect(result.comment).to eq('כולל אחרית דבר מאת יגאל שוורץ')
+    end
+
+    it 'preserves the embedded person link in comment_links' do
+      expect(result.comment_links).to eq([{ 'text' => 'יגאל שוורץ', 'entry_id' => person_entry.id }])
+    end
+
+    it 'does not create a linked_person for the plain comment' do
+      expect(result.linked_people).to be_empty
+    end
+  end
+
+  context 'when a role-prefixed comment contains a person link' do
+    let!(:editor_entry) { create(:lex_file, :person, title: 'יגאל שוורץ', fname: '00032.php').lex_entry }
+    let(:line) do
+      'זרה בגן עדן (אור יהודה : זמורה-ביתן, 2008) <font size="2">&lt;עריכה – ' \
+        "<a href=\"/lex/entries/#{editor_entry.id}\">יגאל שוורץ</a>&gt;</font>"
+    end
+
+    it 'captures it as a linked_person and not in comment_links' do
+      expect(result.linked_people.size).to eq(1)
+      expect(result.linked_people[0]).to have_attributes(
+        name: 'יגאל שוורץ', link_type: 'editor', person_entry: editor_entry
+      )
+      expect(result.comment_links).to be_nil
+    end
+  end
+
   context 'when there are no links anywhere' do
     let(:line) { 'ספרי שירה (תל-אביב : שוקן, 2005)' }
 
