@@ -2517,6 +2517,14 @@ he:
         target_person: אדם ביעד
         person_placeholder: חפש ערך אדם...
         entry_not_found: ערך לא נמצא
+      comment_links:
+        section_heading: קישורים בהערה
+        add_link: הוספת קישור בהערה
+        text_in_comment: טקסט בהערה
+        text_placeholder: טקסט שיהפוך לקישור
+        target_person: אדם ביעד
+        person_placeholder: חפש ערך אדם...
+        entry_not_found: ערך לא נמצא
     citations:
       index:
         add_citation: הוספת מראה מקום
