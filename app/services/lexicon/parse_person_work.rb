@@ -67,6 +67,7 @@ module Lexicon
       # removing comments representing coauthors
 
       plain_comments = []
+      comment_links = []
 
       comments.each do |comment_line|
         # sometimes comment can contain several coauthor records separated by ';'
@@ -81,12 +82,18 @@ module Lexicon
             person_work.linked_people << linked_person
           else
             plain_comments << comment
+            # Plain comments may still embed person links (e.g. 'כולל אחרית דבר מאת <a>יגאל שוורץ</a>').
+            # The comment is stored as plain text, so capture the links separately to keep them.
+            comment_links.concat(extract_comment_links(comment, element))
           end
         end
       end
 
       # All non-coauthor comments are stored as lines in coauthor comment field, separated by line breaks
       person_work.comment = plain_comments.join("\n") if plain_comments.present?
+      return unless person_work.respond_to?(:comment_links=)
+
+      person_work.comment_links = comment_links.uniq { |link| link['text'] }.presence
     end
 
     # Linked person comments are in the format 'editor – John Doe' (e.g. 'עריכה – יעל גובר')
@@ -148,6 +155,32 @@ module Lexicon
       end
 
       links.presence
+    end
+
+    # Scans the comment-section <a> tags (inside <font size="2"> wrappers, the same convention
+    # extract_title_links relies on to tell comment anchors apart from title anchors) whose text
+    # appears within the given plain comment and that link to person LexEntries. Returns an array
+    # of {text:, entry_id:} hashes so the link can be reconstructed when rendering the
+    # (otherwise plain-text) comment.
+    def extract_comment_links(comment, element)
+      links = []
+      element.css('font[size="2"] a').each do |anchor|
+        href = anchor['href']
+        next unless href&.start_with?(lexicon_entries_path + '/')
+
+        link_text = anchor.text.squish
+        next if link_text.blank?
+        # Only include anchors whose text actually appears in this comment
+        next unless comment.include?(link_text)
+        next if links.any? { |l| l['text'] == link_text }
+
+        entry_id = href.delete_prefix(lexicon_entries_path + '/').to_i
+        entry = LexEntry.find_by(id: entry_id)
+        next unless entry&.lex_file&.entrytype_person?
+
+        links << { 'text' => link_text, 'entry_id' => entry_id }
+      end
+      links
     end
 
     # It is kind-of difficult to parse Html document as-is, so we initially parse plain text of the comment
