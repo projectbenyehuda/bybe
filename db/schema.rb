@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_22_215030) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -649,7 +649,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_215030) do
   end
 
   create_table "manifestations", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
-    t.string "alternate_titles", limit: 512
+    t.string "alternate_titles", limit: 1024
     t.text "cached_heading_lines"
     t.text "cached_people"
     t.text "comment", size: :medium
