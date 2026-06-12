@@ -26,8 +26,10 @@ namespace :dict do
             created += 1
           else # merge into existing entry
             @de = des.first
-            @de.update(defhead: row['defhead'], deftext: deftext, sort_defhead: sort_defhead)
-            updated += 1
+            if @de.defhead != row['defhead'] || @de.deftext != deftext || @de.sort_defhead != sort_defhead
+              @de.update(defhead: row['defhead'], deftext: deftext, sort_defhead: sort_defhead)
+              updated += 1
+            end
           end
           @de.save!
           
