@@ -972,4 +972,69 @@ describe Collection do
       expect(doc.css("a[href=\"/manifestations/#{manifestation.id}\"]").count).to eq(1)
     end
   end
+
+  describe '#invalidate_cached_credits!' do
+    let(:collection) { create(:collection, collection_type: :volume) }
+    let(:authority) { create(:authority) }
+
+    before do
+      collection.update!(cached_credits: 'some credits')
+      authority.update!(cached_credits: 'some credits')
+      create(:involved_authority, item: collection, authority: authority, role: 'editor')
+    end
+
+    it 'invalidates the cached credits of the collection itself' do
+      collection.invalidate_cached_credits!
+      expect(collection.reload.cached_credits).to be_nil
+    end
+
+    it 'invalidates the cached credits of every involved authority' do
+      collection.invalidate_cached_credits!
+      expect(authority.reload.cached_credits).to be_nil
+    end
+
+    context 'when the collection is of type volume and has a parent of type volume_series' do
+      let(:parent_series) { create(:collection, collection_type: :volume_series) }
+
+      before do
+        parent_series.update!(cached_credits: 'parent credits')
+        create(:collection_item, collection: parent_series, item: collection)
+      end
+
+      it "invalidates the parent collection's cached credits" do
+        collection.invalidate_cached_credits!
+        expect(parent_series.reload.cached_credits).to be_nil
+      end
+    end
+
+    context 'when the collection is not of type volume' do
+      let(:collection) { create(:collection, collection_type: :series) }
+      let(:parent_series) { create(:collection, collection_type: :volume_series) }
+
+      before do
+        collection.update!(cached_credits: 'some credits')
+        parent_series.update!(cached_credits: 'parent credits')
+        create(:collection_item, collection: parent_series, item: collection)
+      end
+
+      it "does not invalidate the parent collection's cached credits" do
+        collection.invalidate_cached_credits!
+        expect(parent_series.reload.cached_credits).to eq('parent credits')
+      end
+    end
+
+    context 'when the parent collection is not of type volume_series' do
+      let(:parent_other) { create(:collection, collection_type: :other) }
+
+      before do
+        parent_other.update!(cached_credits: 'parent credits')
+        create(:collection_item, collection: parent_other, item: collection)
+      end
+
+      it "does not invalidate the parent collection's cached credits" do
+        collection.invalidate_cached_credits!
+        expect(parent_other.reload.cached_credits).to eq('parent credits')
+      end
+    end
+  end
 end
