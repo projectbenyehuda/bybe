@@ -993,47 +993,39 @@ describe Collection do
       expect(authority.reload.cached_credits).to be_nil
     end
 
-    context 'when the collection is of type volume and has a parent of type volume_series' do
-      let(:parent_series) { create(:collection, collection_type: :volume_series) }
+    context 'when the collection has parent collections' do
+      let(:parent1) { create(:collection, collection_type: :volume_series) }
+      let(:parent2) { create(:collection, collection_type: :other) }
 
       before do
-        parent_series.update!(cached_credits: 'parent credits')
-        create(:collection_item, collection: parent_series, item: collection)
+        parent1.update!(cached_credits: 'parent 1 credits')
+        parent2.update!(cached_credits: 'parent 2 credits')
+        create(:collection_item, collection: parent1, item: collection)
+        create(:collection_item, collection: parent2, item: collection)
       end
 
-      it "invalidates the parent collection's cached credits" do
+      it 'invalidates the cached credits of all parent collections' do
         collection.invalidate_cached_credits!
-        expect(parent_series.reload.cached_credits).to be_nil
+        expect(parent1.reload.cached_credits).to be_nil
+        expect(parent2.reload.cached_credits).to be_nil
       end
     end
 
-    context 'when the collection is not of type volume' do
-      let(:collection) { create(:collection, collection_type: :series) }
-      let(:parent_series) { create(:collection, collection_type: :volume_series) }
+    context 'when parent collections have parent collections themselves (recursive invalidation)' do
+      let(:parent) { create(:collection, collection_type: :volume_series) }
+      let(:grandparent) { create(:collection, collection_type: :other) }
 
       before do
-        collection.update!(cached_credits: 'some credits')
-        parent_series.update!(cached_credits: 'parent credits')
-        create(:collection_item, collection: parent_series, item: collection)
+        parent.update!(cached_credits: 'parent credits')
+        grandparent.update!(cached_credits: 'grandparent credits')
+        create(:collection_item, collection: parent, item: collection)
+        create(:collection_item, collection: grandparent, item: parent)
       end
 
-      it "does not invalidate the parent collection's cached credits" do
+      it 'recursively invalidates the cached credits of all ancestor collections' do
         collection.invalidate_cached_credits!
-        expect(parent_series.reload.cached_credits).to eq('parent credits')
-      end
-    end
-
-    context 'when the parent collection is not of type volume_series' do
-      let(:parent_other) { create(:collection, collection_type: :other) }
-
-      before do
-        parent_other.update!(cached_credits: 'parent credits')
-        create(:collection_item, collection: parent_other, item: collection)
-      end
-
-      it "does not invalidate the parent collection's cached credits" do
-        collection.invalidate_cached_credits!
-        expect(parent_other.reload.cached_credits).to eq('parent credits')
+        expect(parent.reload.cached_credits).to be_nil
+        expect(grandparent.reload.cached_credits).to be_nil
       end
     end
   end

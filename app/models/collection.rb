@@ -570,11 +570,7 @@ class Collection < ApplicationRecord
       ia.authority&.invalidate_cached_credits!
     end
 
-    if volume?
-      parent_collections.each do |parent|
-        parent.invalidate_cached_credits! if parent.volume_series?
-      end
-    end
+    parent_collections.each(&:invalidate_cached_credits!)
   end
 
   def parent_collections
