@@ -381,6 +381,18 @@ describe ManifestationController do
         it { is_expected.to be_successful }
       end
 
+      context 'when there is a title footnote at the beginning of the markdown' do
+        let(:manifestation) do
+          create(:manifestation, markdown: "[^1]\r\nSome body text\r\n\r\n[^1]: This is the footnote.")
+        end
+
+        it 'prepends an RLM marker to the footnote reference' do
+          get :read, params: { id: manifestation.id }
+          expect(response).to be_successful
+          expect(assigns(:title_footnote)).to start_with("\u200F")
+        end
+      end
+
       context 'when it is a translation and work has other translations' do
         let(:orig_lang) { 'ru' }
 
