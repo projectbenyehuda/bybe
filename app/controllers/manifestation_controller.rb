@@ -441,6 +441,9 @@ class ManifestationController < ApplicationController
       redirect_to action: 'dict', id: @m.id
     else
       prep_for_read
+      if @title_footnote.present?
+        @title_footnote = "\u200F#{@title_footnote}"
+      end
       @proof = Proof.new
       @new_recommendation = Recommendation.new
       @tagging = Tagging.new
