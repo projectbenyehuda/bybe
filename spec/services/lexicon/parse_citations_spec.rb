@@ -129,6 +129,38 @@ describe Lexicon::ParseCitations do
     end
   end
 
+  context 'when an asterisk link has surrounding whitespace in its text' do
+    ['* ', ' *'].each do |text|
+      it "treats #{text.inspect} as a backup URL link" do
+        html = <<~HTML
+          <ul>
+            <li>כותרת. עיתון, 2024. <a href="https://archive.today/abc123">#{text}</a></li>
+          </ul>
+        HTML
+
+        chat_double = instance_double(RubyLLM::Chat)
+        sent_html = nil
+
+        allow(RubyLLM).to receive(:chat).and_return(chat_double)
+        allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+        allow(chat_double).to receive(:ask) do |html_arg|
+          sent_html = html_arg
+          instance_double(RubyLLM::Message, content: {
+            result: [{ subject: nil, works: [
+              { title: 'כותרת', authors: [], from_publication: 'עיתון, 2024',
+                pages: nil, link: nil, backup_url: 'https://archive.today/abc123', notes: nil }
+            ] }]
+          }.to_json)
+        end
+
+        result = described_class.call(html)
+
+        expect(sent_html).to include('data-file-link="https://archive.today/abc123"')
+        expect(result.first.backup_url).to eq('https://archive.today/abc123')
+      end
+    end
+  end
+
   context 'when a citation has multiple asterisk links' do
     let(:html) do
       <<~HTML
