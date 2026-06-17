@@ -257,6 +257,7 @@ en:
         no_external_identifiers: "(No authority control identifiers)"
         citation_from_publication: "From:"
         citation_pages: "Pages:"
+        citation_backup_file: "Backup:"
         attachment_used_in_citation: "Used in citation:"
         count_mismatch: "Count mismatch: %{php_count} item(s) in the source file, but %{migrated_count} migrated. The mismatch may be justified and does not block verification."
         bio_count_mismatch: "Word-count mismatch: the migrated biography has %{migrated_count} words, but the legacy source has %{legacy_count}. The mismatch may be justified and does not block verification."
