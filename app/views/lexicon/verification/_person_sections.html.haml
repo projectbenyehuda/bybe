@@ -237,6 +237,11 @@
                     %span.broken-link-badge= broken_link_badge(citation.link_http_status)
                     = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{citation.link}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
+                - if citation.backup_url.present?
+                  %br
+                  %span.text-muted
+                    = t('lexicon.verification.sections.citation_backup_file')
+                    = link_to File.basename(citation.backup_url), citation.backup_url, target: '_blank', rel: 'noopener'
               .citation-actions.mt-2
                 %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_citation_path(citation)}', function() { location.reload(); })"}
                   ✏️
@@ -318,7 +323,10 @@
       = checklist['attachments']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if entry.attachments.any?
-      - citations_by_link = item.citations.reject { |c| c.link.blank? }.group_by { |c| c.link.split('#').first }
+      - citations_by_file = Hash.new { |h, k| h[k] = [] }
+      - item.citations.each do |c|
+        - citations_by_file[c.link.split('#').first] << c if c.link.present?
+        - citations_by_file[c.backup_url.split('#').first] << c if c.backup_url.present?
       - entry.attachments.each do |attachment|
         .attachment-item{id: "attachment-#{attachment.id}", class: entry.profile_image_id == attachment.id ? 'profile-image-selected' : ''}
           - if attachment.variable?
@@ -329,7 +337,8 @@
             %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
             - if entry.profile_image_id == attachment.id
               %span.badge.profile-image-badge.bg-primary.ms-2= t('lexicon.verification.migrated.profile_image_badge')
-            - (citations_by_link[entry.download_path(attachment.filename.to_s)] || []).each do |citation|
+            - download_path = entry.download_path(attachment.filename.to_s)
+            - citations_by_file[download_path].each do |citation|
               %small.d-block.text-muted #{t('lexicon.verification.sections.attachment_used_in_citation')} #{citation.title}
           .attachment-actions.mt-2
             - if attachment.content_type.to_s.start_with?('image/')
