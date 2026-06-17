@@ -135,7 +135,7 @@ PROMPT
       doc = Nokogiri::HTML::DocumentFragment.parse(html)
       modified = false
       doc.css('li').each do |li|
-        asterisk_links = li.css('a').select { |a| a.text.strip == '*' }
+        asterisk_links = li.css('a').select { |a| a.text =~ /\A[[:space:]]*\*[[:space:]]*\z/ }
         next if asterisk_links.empty?
 
         modified = true
