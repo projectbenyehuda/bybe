@@ -589,27 +589,38 @@ describe 'Lexicon Verification Workbench' do
       skip 'WebDriver not available or misconfigured' unless webdriver_available?
     end
 
-    it 'shows "used in citation" label for attachments linked via backup_url' do
-      # Create a citation whose backup is a PDF attached to the entry
-      backup_filename = 'backup_doc.pdf'
-      backup_path = entry.download_path(backup_filename)
-      citation_with_backup = create(:lex_citation,
-                                    person: person,
-                                    title: 'Citation With Backup',
-                                    backup_url: backup_path,
-                                    link: nil)
+    let!(:backup_filename) { 'backup_doc.pdf' }
+    let!(:backup_path) { entry.download_path(backup_filename) }
+    let!(:citation_with_backup) do
+      create(:lex_citation,
+             person: person,
+             title: 'Citation With Backup',
+             backup_url: backup_path,
+             link: nil)
+    end
 
+    before do
       File.open(Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem.pdf').to_s, 'rb') do |io|
         entry.attachments.attach(io: io, filename: backup_filename, content_type: 'application/pdf')
       end
-
       visit "/lex/verification/#{entry.id}"
+    end
 
+    it 'shows "used in citation" label for attachments linked via backup_url' do
       within('#section-attachments') do
         attachment = entry.attachments.find { |a| a.filename.to_s == backup_filename }
         within("#attachment-#{attachment.id}") do
           expect(page).to have_content(I18n.t('lexicon.verification.sections.attachment_used_in_citation'))
           expect(page).to have_content(citation_with_backup.title)
+        end
+      end
+    end
+
+    it 'shows backup_url as a link in the citation card' do
+      within('#section-citations') do
+        within("#citation-#{citation_with_backup.id}") do
+          expect(page).to have_content(I18n.t('lexicon.verification.sections.citation_backup_file'))
+          expect(page).to have_link(backup_filename, href: backup_path)
         end
       end
     end

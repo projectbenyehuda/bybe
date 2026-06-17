@@ -237,6 +237,11 @@
                     %span.broken-link-badge= broken_link_badge(citation.link_http_status)
                     = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{citation.link}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
+                - if citation.backup_url.present?
+                  %br
+                  %span.text-muted
+                    = t('lexicon.verification.sections.citation_backup_file')
+                    = link_to File.basename(citation.backup_url), citation.backup_url, target: '_blank', rel: 'noopener'
               .citation-actions.mt-2
                 %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_citation_path(citation)}', function() { location.reload(); })"}
                   ✏️
