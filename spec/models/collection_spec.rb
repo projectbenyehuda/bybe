@@ -972,4 +972,61 @@ describe Collection do
       expect(doc.css("a[href=\"/manifestations/#{manifestation.id}\"]").count).to eq(1)
     end
   end
+
+  describe '#invalidate_cached_credits!' do
+    let(:collection) { create(:collection, collection_type: :volume) }
+    let(:authority) { create(:authority) }
+
+    before do
+      collection.update!(cached_credits: 'some credits')
+      authority.update!(cached_credits: 'some credits')
+      create(:involved_authority, item: collection, authority: authority, role: 'editor')
+    end
+
+    it 'invalidates the cached credits of the collection itself' do
+      collection.invalidate_cached_credits!
+      expect(collection.reload.cached_credits).to be_nil
+    end
+
+    it 'invalidates the cached credits of every involved authority' do
+      collection.invalidate_cached_credits!
+      expect(authority.reload.cached_credits).to be_nil
+    end
+
+    context 'when the collection has parent collections' do
+      let(:parent1) { create(:collection, collection_type: :volume_series) }
+      let(:parent2) { create(:collection, collection_type: :other) }
+
+      before do
+        parent1.update!(cached_credits: 'parent 1 credits')
+        parent2.update!(cached_credits: 'parent 2 credits')
+        create(:collection_item, collection: parent1, item: collection)
+        create(:collection_item, collection: parent2, item: collection)
+      end
+
+      it 'invalidates the cached credits of all parent collections' do
+        collection.invalidate_cached_credits!
+        expect(parent1.reload.cached_credits).to be_nil
+        expect(parent2.reload.cached_credits).to be_nil
+      end
+    end
+
+    context 'when parent collections have parent collections themselves (recursive invalidation)' do
+      let(:parent) { create(:collection, collection_type: :volume_series) }
+      let(:grandparent) { create(:collection, collection_type: :other) }
+
+      before do
+        parent.update!(cached_credits: 'parent credits')
+        grandparent.update!(cached_credits: 'grandparent credits')
+        create(:collection_item, collection: parent, item: collection)
+        create(:collection_item, collection: grandparent, item: parent)
+      end
+
+      it 'recursively invalidates the cached credits of all ancestor collections' do
+        collection.invalidate_cached_credits!
+        expect(parent.reload.cached_credits).to be_nil
+        expect(grandparent.reload.cached_credits).to be_nil
+      end
+    end
+  end
 end

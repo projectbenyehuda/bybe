@@ -565,6 +565,14 @@ class Collection < ApplicationRecord
   def invalidate_cached_credits!
     self.cached_credits = nil
     save!
+
+    involved_authorities.includes(:authority)
+                        .map(&:authority)
+                        .compact
+                        .uniq(&:id)
+                        .each(&:invalidate_cached_credits!)
+
+    parent_collections.each(&:invalidate_cached_credits!)
   end
 
   def parent_collections
