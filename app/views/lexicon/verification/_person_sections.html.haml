@@ -319,6 +319,7 @@
   .section-content
     - if entry.attachments.any?
       - citations_by_link = item.citations.reject { |c| c.link.blank? }.group_by { |c| c.link.split('#').first }
+      - citations_by_backup_url = item.citations.reject { |c| c.backup_url.blank? }.group_by { |c| c.backup_url.split('#').first }
       - entry.attachments.each do |attachment|
         .attachment-item{id: "attachment-#{attachment.id}", class: entry.profile_image_id == attachment.id ? 'profile-image-selected' : ''}
           - if attachment.variable?
@@ -329,7 +330,8 @@
             %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
             - if entry.profile_image_id == attachment.id
               %span.badge.profile-image-badge.bg-primary.ms-2= t('lexicon.verification.migrated.profile_image_badge')
-            - (citations_by_link[entry.download_path(attachment.filename.to_s)] || []).each do |citation|
+            - download_path = entry.download_path(attachment.filename.to_s)
+            - ((citations_by_link[download_path] || []) + (citations_by_backup_url[download_path] || [])).each do |citation|
               %small.d-block.text-muted #{t('lexicon.verification.sections.attachment_used_in_citation')} #{citation.title}
           .attachment-actions.mt-2
             - if attachment.content_type.to_s.start_with?('image/')
