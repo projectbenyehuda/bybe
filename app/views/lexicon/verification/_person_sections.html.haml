@@ -172,8 +172,8 @@
                   = work.publication.title
               - if work.collection.present?
                 %br
-                = t('lexicon.verification.sections.work_from_collection')
                 %span.text-muted
+                  = t('lexicon.verification.sections.work_from_collection')
                   = link_to work.collection.title, collection_path(work.collection), target: '_blank', rel: 'noopener'
               - work.linked_people.sort_by(&:sort_value).each do |linked_person|
                 %br
