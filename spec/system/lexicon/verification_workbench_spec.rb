@@ -585,10 +585,6 @@ describe 'Lexicon Verification Workbench' do
   end
 
   describe 'Attachment section shows backup citations', :js do
-    before do
-      skip 'WebDriver not available or misconfigured' unless webdriver_available?
-    end
-
     let!(:backup_filename) { 'backup_doc.pdf' }
     let!(:backup_path) { entry.download_path(backup_filename) }
     let!(:citation_with_backup) do
@@ -600,6 +596,8 @@ describe 'Lexicon Verification Workbench' do
     end
 
     before do
+      skip 'WebDriver not available or misconfigured' unless webdriver_available?
+
       File.open(Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem.pdf').to_s, 'rb') do |io|
         entry.attachments.attach(io: io, filename: backup_filename, content_type: 'application/pdf')
       end
