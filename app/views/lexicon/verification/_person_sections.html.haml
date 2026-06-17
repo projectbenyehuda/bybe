@@ -168,10 +168,12 @@
               - if work.publication.present?
                 %br
                 %span.text-muted
-                  = link_to work.publication.title, publication_path(work.publication), target: '_blank', rel: 'noopener'
+                  = t('lexicon.verification.sections.work_from_publication')
+                  = work.publication.title
               - if work.collection.present?
                 %br
                 %span.text-muted
+                  = t('lexicon.verification.sections.work_from_collection')
                   = link_to work.collection.title, collection_path(work.collection), target: '_blank', rel: 'noopener'
               - work.linked_people.sort_by(&:sort_value).each do |linked_person|
                 %br
