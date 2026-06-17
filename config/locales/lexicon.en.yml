@@ -267,6 +267,8 @@ en:
         auto_match_intro: "The following works have been automatically matched to publications based on title similarity. Confirm each match you want to apply."
         no_auto_match_proposals: "No automatic match proposals found. All works may already be matched, or title similarity was too low."
         close: "Close"
+        work_from_publication: "From bibliography:"
+        work_from_collection: "From title:"
       bio_comparison:
         title: "Biography comparison"
         note: "Both texts are shown with HTML tags and punctuation stripped, so they are not editable here. Differing words are highlighted. To fix a discrepancy, close this dialog and click Edit in the biography pane."
