@@ -255,7 +255,8 @@ class CollectionsController < ApplicationController
   # DELETE /collections/1 or /collections/1.json
   def destroy
     @destroyed_id = @collection.id
-    @collection.destroy
+    @collection_item_ids = @collection.parent_collection_items.pluck(:id)
+    @collection.destroy!
 
     respond_to do |format|
       format.html { redirect_to collections_url, notice: t(:deleted_successfully) }
