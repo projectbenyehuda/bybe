@@ -50,6 +50,8 @@ module Lexicon
 
     def check_item_links(item)
       item.links.find_each do |lex_link|
+        next unless external_url?(lex_link.url)
+
         status = fetch_status(lex_link.url)
         lex_link.update_columns(http_status: status, checked_at: Time.current)
       end
@@ -57,9 +59,15 @@ module Lexicon
 
     def check_citation_links(person)
       person.citations.where.not(link: [nil, '']).find_each do |citation|
+        next unless external_url?(citation.link)
+
         status = fetch_status(citation.link)
         citation.update_columns(link_http_status: status, link_checked_at: Time.current)
       end
+    end
+
+    def external_url?(url)
+      url.to_s.start_with?('http://', 'https://')
     end
 
     # Returns the final HTTP status code after following redirects, or nil on error.

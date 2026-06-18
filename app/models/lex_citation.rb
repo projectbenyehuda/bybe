@@ -41,7 +41,11 @@ class LexCitation < ApplicationRecord
   # Returns true if the citation link was checked and is inaccessible: either it
   # returned a 4xx/5xx status, or the host was unreachable (nil status after a
   # check). link_checked_at distinguishes "checked and dead" from "never checked".
+  # Local/relative URLs (e.g. /files/lex/...) are never considered broken — they
+  # are served by our own application and cannot be checked via HTTP HEAD.
   def link_broken?
+    return false if link.blank? || !link.start_with?('http://', 'https://')
+
     link_checked_at.present? && (link_http_status.nil? || link_http_status >= 400)
   end
 
