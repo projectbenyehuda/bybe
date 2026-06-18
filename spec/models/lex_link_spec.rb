@@ -40,5 +40,11 @@ describe LexLink do
 
       it { is_expected.to be true }
     end
+
+    context 'when url is a local path (e.g. /files/...)' do
+      subject { build(:lex_link, url: '/files/lex/7635/doc.pdf', checked_at: Time.current, http_status: nil).broken? }
+
+      it { is_expected.to be false }
+    end
   end
 end

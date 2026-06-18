@@ -73,5 +73,23 @@ describe LexCitation do
 
       it { is_expected.to be true }
     end
+
+    context 'when link is a local file path (e.g. /files/lex/...)' do
+      subject do
+        build(:lex_citation, link: '/files/lex/7635/article.pdf',
+                             link_checked_at: Time.current, link_http_status: nil).link_broken?
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when link is a local internal URL (e.g. /lex/entries/...)' do
+      subject do
+        build(:lex_citation, link: '/lex/entries/1234#no5',
+                             link_checked_at: Time.current, link_http_status: nil).link_broken?
+      end
+
+      it { is_expected.to be false }
+    end
   end
 end
