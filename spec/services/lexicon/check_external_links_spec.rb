@@ -161,6 +161,21 @@ describe Lexicon::CheckExternalLinks do
     end
   end
 
+  context 'with a local file path URL (e.g. /files/lex/...)' do
+    let!(:link) { create(:lex_link, item: person, url: '/files/lex/7635/doc.pdf') }
+
+    it 'does not attempt to check the URL' do
+      call
+      expect(link.reload.checked_at).to be_nil
+      expect(link.reload.http_status).to be_nil
+    end
+
+    it 'does not mark the link as broken' do
+      call
+      expect(link.reload).not_to be_broken
+    end
+  end
+
   context 'with SSRF protection against private/loopback addresses' do
     context 'when the URL resolves to a loopback address (127.0.0.1)' do
       let!(:link) { create(:lex_link, item: person, url: 'http://internal.example.com/secret') }
@@ -251,6 +266,31 @@ describe Lexicon::CheckExternalLinks do
     it 'does not check and leaves link_http_status nil' do
       call
       expect(citation.reload.link_http_status).to be_nil
+    end
+  end
+
+  context 'when person has a citation with a local file path link' do
+    let!(:citation) { create(:lex_citation, person: person, link: '/files/lex/7635/article.pdf') }
+
+    it 'does not attempt to check the URL' do
+      call
+      expect(citation.reload.link_checked_at).to be_nil
+      expect(citation.reload.link_http_status).to be_nil
+    end
+
+    it 'does not mark the citation link as broken' do
+      call
+      expect(citation.reload).not_to be_link_broken
+    end
+  end
+
+  context 'when person has a citation with a local internal URL' do
+    let!(:citation) { create(:lex_citation, person: person, link: '/lex/entries/1234#no5') }
+
+    it 'does not attempt to check the URL and does not mark broken' do
+      call
+      expect(citation.reload.link_checked_at).to be_nil
+      expect(citation.reload).not_to be_link_broken
     end
   end
 
