@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'rails_helper'
+
 describe HtmlToMarkdown do
   subject(:result) { described_class.call(html) }
 
