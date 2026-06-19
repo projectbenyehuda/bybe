@@ -14,6 +14,7 @@ class Collection < ApplicationRecord
   before_save :norm_dates
   before_save :prevent_uncollected_type_change
   before_save :update_alternate_titles, if: :title_changed?
+  before_save :clear_cached_credits, if: :credits_changed?
 
   validates :collection_type, presence: true
 
@@ -609,6 +610,10 @@ class Collection < ApplicationRecord
     else
       CollectionItem.new(collection: self, item: item)
     end
+  end
+
+  def clear_cached_credits
+    self.cached_credits = nil
   end
 
   def norm_dates
