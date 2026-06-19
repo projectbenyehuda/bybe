@@ -13,6 +13,6 @@
     - @authors.each do |au|
       %tr
         %td= link_to au.name, authors_show_path(id: au.id)
-        %td= link_to au.publications.length.to_s, bib_authority_path(authority_id: au.id)
-        %td= au.publications.where(status: 'uploaded').length
-        %td= au.publications.where(status: 'todo').length
+        %td= link_to au.publications.size.to_s, bib_authority_path(authority_id: au.id)
+        %td= au.publications.count(&:uploaded?)
+        %td= au.publications.count(&:todo?)
