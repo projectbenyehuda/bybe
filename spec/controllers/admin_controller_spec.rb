@@ -1199,4 +1199,181 @@ describe AdminController do
       end
     end
   end
+
+  describe '#raw_tocs' do
+    subject(:call) { get :raw_tocs }
+
+    include_context 'Admin user logged in'
+
+    let!(:raw_toc) { create(:toc, status: :raw) }
+    let!(:processed_toc) { create(:toc, status: :ready) }
+    let!(:authority_with_raw) { create(:authority, toc: raw_toc) }
+    let!(:authority_with_processed) { create(:authority, toc: processed_toc) }
+
+    before { allow(Rails.cache).to receive(:write) }
+
+    it 'is successful' do
+      expect(call).to be_successful
+    end
+
+    it 'assigns only authorities with raw (status=0) tocs' do
+      call
+      expect(assigns(:authors)).to include(authority_with_raw)
+      expect(assigns(:authors)).not_to include(authority_with_processed)
+    end
+
+    it 'assigns total count and writes to cache' do
+      call
+      expect(assigns(:total)).to eq(1)
+      expect(Rails.cache).to have_received(:write).with('report_raw_tocs', 1)
+    end
+  end
+
+  describe '#missing_images' do
+    subject(:call) { get :missing_images }
+
+    include_context 'Admin user logged in'
+
+    let!(:authority_without_image) { create(:authority) }
+    let!(:authority_with_image) { create(:authority, :with_image) }
+
+    before { allow(Rails.cache).to receive(:write) }
+
+    it 'is successful' do
+      expect(call).to be_successful
+    end
+
+    it 'assigns only authorities without a profile image' do
+      call
+      author_ids = assigns(:authors).map(&:id)
+      expect(author_ids).to include(authority_without_image.id)
+      expect(author_ids).not_to include(authority_with_image.id)
+    end
+
+    it 'writes count to cache' do
+      call
+      expect(Rails.cache).to have_received(:write).with('report_missing_images', anything)
+    end
+  end
+
+  describe '#similar_titles' do
+    subject(:call) { get :similar_titles }
+
+    include_context 'Admin user logged in'
+
+    # Use the same author and orig_lang='he' (no translator) to ensure identical cached_people
+    let(:shared_author) { create(:authority) }
+    let!(:man1) { create(:manifestation, title: 'שירים נבחרים', author: shared_author, orig_lang: 'he') }
+    let!(:man2) { create(:manifestation, title: 'שירים נבחרים', author: shared_author, orig_lang: 'he') }
+    let!(:unique_man) { create(:manifestation, title: 'כותרת ייחודית', author: shared_author, orig_lang: 'he') }
+
+    before { allow(Rails.cache).to receive(:write) }
+
+    it 'is successful' do
+      expect(call).to be_successful
+    end
+
+    it 'groups manifestations with similar title prefix and author into similarities' do
+      call
+      similarities = assigns(:similarities)
+      all_similar_works = similarities.values.flatten
+      expect(all_similar_works).to include(man1, man2)
+      expect(all_similar_works).not_to include(unique_man)
+    end
+
+    it 'writes count to cache' do
+      call
+      expect(Rails.cache).to have_received(:write).with('report_similar_titles', anything)
+    end
+
+    context 'when a manifestation is whitelisted' do
+      before { ListItem.create!(listkey: 'similar_title_whitelist', item: man1) }
+
+      it 'excludes whitelisted manifestations from results' do
+        call
+        all_similar_works = assigns(:similarities).values.flatten
+        expect(all_similar_works).not_to include(man1)
+      end
+    end
+  end
+
+  describe '#texts_between_dates' do
+    subject(:call) { get :texts_between_dates, params: { from: from_date.to_s, to: to_date.to_s } }
+
+    include_context 'when editor logged in'
+
+    let(:from_date) { Date.new(2023, 1, 1) }
+    let(:to_date) { Date.new(2023, 12, 31) }
+
+    let!(:in_range_text) do
+      travel_to(Date.new(2023, 6, 1)) { create(:manifestation) }
+    end
+    let!(:before_range_text) do
+      travel_to(Date.new(2022, 6, 1)) { create(:manifestation) }
+    end
+    let!(:after_range_text) do
+      travel_to(Date.new(2024, 6, 1)) { create(:manifestation) }
+    end
+
+    it 'is successful' do
+      expect(call).to be_successful
+    end
+
+    it 'returns only manifestations created within the date range' do
+      call
+      expect(assigns(:texts)).to include(in_range_text)
+      expect(assigns(:texts)).not_to include(before_range_text, after_range_text)
+      expect(assigns(:total)).to eq(1)
+    end
+
+    context 'when no date params given' do
+      subject(:call) { get :texts_between_dates }
+
+      it 'is successful and returns no results' do
+        expect(call).to be_successful
+        expect(assigns(:texts)).to be_nil
+      end
+    end
+  end
+
+  describe '#authority_records_between_dates' do
+    subject(:call) do
+      get :authority_records_between_dates, params: { from: from_date.to_s, to: to_date.to_s }
+    end
+
+    include_context 'when editor logged in'
+
+    let(:from_date) { Date.new(2023, 1, 1) }
+    let(:to_date) { Date.new(2023, 12, 31) }
+
+    let!(:in_range_authority) do
+      travel_to(Date.new(2023, 6, 1)) { create(:authority) }
+    end
+    let!(:before_range_authority) do
+      travel_to(Date.new(2022, 6, 1)) { create(:authority) }
+    end
+    let!(:after_range_authority) do
+      travel_to(Date.new(2024, 6, 1)) { create(:authority) }
+    end
+
+    it 'is successful' do
+      expect(call).to be_successful
+    end
+
+    it 'returns only authority records created within the date range' do
+      call
+      expect(assigns(:records)).to include(in_range_authority)
+      expect(assigns(:records)).not_to include(before_range_authority, after_range_authority)
+      expect(assigns(:total)).to eq(1)
+    end
+
+    context 'when no date params given' do
+      subject(:call) { get :authority_records_between_dates }
+
+      it 'is successful and returns no results' do
+        expect(call).to be_successful
+        expect(assigns(:records)).to be_nil
+      end
+    end
+  end
 end

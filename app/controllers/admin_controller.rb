@@ -97,15 +97,16 @@ class AdminController < ApplicationController
   ##############################################
   ## Reports
   def raw_tocs
-    @authors = Person.joins(:toc).where('tocs.status = 0').page(params[:page]).per(15)
-    @total = Person.joins(:toc).where('tocs.status = 0').count
+    scope = Authority.joins(:toc).merge(Toc.raw)
+    @authors = scope.page(params[:page]).per(15)
+    @total = @authors.total_count
     @page_title = t(:raw_tocs)
     Rails.cache.write('report_raw_tocs', @total)
   end
 
   def messy_tocs
     @authors = []
-    Person.has_toc.joins(:toc).includes(:toc).find_each do |p|
+    Authority.has_toc.includes(:toc).find_each do |p|
       unless p.toc.structure_okay?
         @authors << p
       end
@@ -114,14 +115,17 @@ class AdminController < ApplicationController
   end
 
   def missing_languages
-    ex = Expression.joins(%i(involved_authorities work))
-                   .where(works: { orig_lang: :he })
-                   .merge(InvolvedAuthority.role_translator)
-    mans = ex.map { |e| e.manifestations[0] }
-    @total = mans.length
-    @mans = Kaminari.paginate_array(mans).page(params[:page]).per(50)
+    mans = Manifestation
+           .joins(expression: %i(work involved_authorities))
+           .where(works: { orig_lang: :he })
+           .merge(InvolvedAuthority.role_translator)
+           .distinct
+    @total = mans.count
+    @mans = mans.preload(expression: { work: { involved_authorities: :authority },
+                                       involved_authorities: :authority })
+                .page(params[:page]).per(50)
     @page_title = t(:missing_language_report)
-    Rails.cache.write('report_missing_languages', mans.length)
+    Rails.cache.write('report_missing_languages', @total)
   end
 
   def missing_genres
@@ -133,13 +137,13 @@ class AdminController < ApplicationController
   end
 
   def missing_images
-    @authors = Person.where(profile_image_file_name: nil).order(:name)
+    @authors = Authority.where(profile_image_file_name: nil).select(:id, :name).order(:name).to_a
     @page_title = t(:missing_images)
     Rails.cache.write('report_missing_images', @authors.count)
   end
 
   def missing_copyright
-    @authors = Authority.intellectual_property_unknown
+    @authors = Authority.intellectual_property_unknown.includes(:person)
     records = Manifestation.joins(:expression).merge(Expression.intellectual_property_unknown)
     @total = records.count
     @mans = records.page(params[:page]).per(50)
@@ -150,10 +154,8 @@ class AdminController < ApplicationController
   def similar_titles
     prefixes = {}
     @similarities = {}
-    whitelisted_ids = ListItem.where(listkey: 'similar_title_whitelist').pluck(:item_id)
-    Manifestation.find_each do |m|
-      next if whitelisted_ids.include?(m.id) # skip whitelisted works
-
+    whitelisted_ids = ListItem.where(listkey: 'similar_title_whitelist', item_type: 'Manifestation').pluck(:item_id)
+    Manifestation.select(:id, :title, :cached_people).where.not(id: whitelisted_ids).find_each do |m|
       prefix = [m.cached_people, m.title[0..(m.title.length > 8 ? 8 : -1)]]
       if prefixes[prefix].nil?
         prefixes[prefix] = [m]
@@ -198,7 +200,9 @@ class AdminController < ApplicationController
                              InvolvedAuthority.roles[:translator]
                            )
     @total = records.count
-    @mans = records.page(params[:page])
+    @mans = records.preload(expression: { work: { involved_authorities: :authority },
+                                          involved_authorities: :authority })
+                   .page(params[:page])
     @page_title = t(:suspicious_translations_report)
     Rails.cache.write('report_suspicious_translations', @total)
   end
@@ -240,13 +244,9 @@ class AdminController < ApplicationController
       translator_sets.length > 1
     end
 
-    # Sort by author name for consistent display
-    # Cache author names to avoid N+1 queries
-    author_names = {}
-    @duplicate_clusters.each_key do |key|
-      author_id = key[0]
-      author_names[author_id] ||= Authority.find(author_id).name
-    end
+    # Sort by author name for consistent display - batch load names to avoid N+1
+    author_ids = @duplicate_clusters.keys.map(&:first).uniq
+    author_names = Authority.where(id: author_ids).pluck(:id, :name).to_h
 
     @duplicate_clusters = @duplicate_clusters.sort_by do |key, _expressions|
       author_names[key[0]]
@@ -355,14 +355,44 @@ class AdminController < ApplicationController
   end
 
   def periodless
-    @authors = Authority.joins(:person).merge(Person.where(period: nil)).select(&:any_hebrew_works?)
+    @authors = Authority
+               .joins(:person)
+               .where(people: { period: nil })
+               .where(
+                 <<~SQL.squish,
+                   EXISTS (
+                     SELECT 1 FROM manifestations m
+                     JOIN expressions e ON m.expression_id = e.id
+                     JOIN works w ON e.work_id = w.id
+                     JOIN involved_authorities ia ON ia.item_id = w.id AND ia.item_type = 'Work'
+                     WHERE ia.authority_id = authorities.id
+                       AND ia.role = ?
+                       AND m.status = ?
+                       AND w.orig_lang = 'he'
+                   )
+                   OR EXISTS (
+                     SELECT 1 FROM manifestations m
+                     JOIN expressions e ON m.expression_id = e.id
+                     JOIN involved_authorities ia ON ia.item_id = e.id AND ia.item_type = 'Expression'
+                     WHERE ia.authority_id = authorities.id
+                       AND ia.role = ?
+                       AND m.status = ?
+                       AND e.language = 'he'
+                   )
+                 SQL
+                 InvolvedAuthority.roles[:author],
+                 Manifestation.statuses[:published],
+                 InvolvedAuthority.roles[:translator],
+                 Manifestation.statuses[:published]
+               )
+               .includes(:person)
     Rails.cache.write('report_periodless', @authors.length)
   end
 
   def authors_without_works
     @authors = Authority.where(
       'not exists (select 1 from involved_authorities ia where ia.authority_id = authorities.id)'
-    ).order(:name)
+    ).includes(:publications).order(:name)
     Rails.cache.write('report_authors_without_works', @authors.length)
   end
 
@@ -588,46 +618,54 @@ class AdminController < ApplicationController
     from_date = Date.parse(params[:from])
     to_date = Date.parse(params[:to])
 
-    # Step 1: Get all published manifestations within the date range
-    manifestations_in_range = Manifestation.published
-                                           .where(created_at: from_date..to_date)
-                                           .includes(expression: { work: :involved_authorities,
-                                                                   involved_authorities: :authority })
+    # Single GROUP BY query: find authority_id => first_published_date pairs
+    # where the authority's all-time first published manifestation falls in the date range.
+    # Avoids loading all manifestations in range into memory.
+    authority_first_dates = Manifestation
+                            .joins(expression: { work: :involved_authorities })
+                            .all_published
+                            .group('involved_authorities.authority_id')
+                            .having(
+                              'MIN(manifestations.created_at) > ? AND MIN(manifestations.created_at) < ?',
+                              from_date, to_date
+                            )
+                            .pluck(Arel.sql('involved_authorities.authority_id, MIN(manifestations.created_at)'))
 
-    # Step 2: Extract unique authorities from these manifestations
-    authority_ids_in_range = []
-    manifestations_in_range.each do |m|
-      authority_ids_in_range.concat(m.involved_authorities.map(&:authority_id))
-    end
-    authority_ids_in_range.uniq!
+    authority_ids = authority_first_dates.map(&:first)
+    authorities_by_id = Authority.where(id: authority_ids).index_by(&:id)
 
-    # Step 3: For each authority, check if the manifestation in range is their first
-    authorities_with_first_manifestations = []
+    # Bounded N+1: number of qualifying authorities is small (new authors in a date range)
+    @authorities = authority_first_dates.filter_map do |authority_id, _|
+      authority = authorities_by_id[authority_id]
+      next unless authority
 
-    Authority.where(id: authority_ids_in_range).find_each do |authority|
-      first_manifestation = authority.published_manifestations.order(:created_at).first
-      next if first_manifestation.nil?
+      manifestation = Manifestation
+                      .joins(expression: { work: :involved_authorities })
+                      .all_published
+                      .where(involved_authorities: { authority_id: authority_id })
+                      .select(:id, :title, :created_at)
+                      .order('manifestations.created_at')
+                      .first
+      next unless manifestation
 
-      # Check if first manifestation was created within the date range (using exclusive bounds for consistency)
-      if first_manifestation.created_at > from_date && first_manifestation.created_at < to_date
-        authorities_with_first_manifestations << [authority, first_manifestation]
-      end
-    end
+      [authority, manifestation]
+    end.sort_by { |_, m| m.created_at }
 
-    # Sort by first manifestation date
-    @authorities = authorities_with_first_manifestations.sort_by do |_authority, manifestation|
-      manifestation.created_at
-    end
     @total = @authorities.count
   end
 
   def suspicious_titles
-    @suspicious = Manifestation.where('(title like "%קבוצה %") OR (title like "%.")').reject { |x| x.title =~ /\.\.\./ }
+    @suspicious = Manifestation
+                  .where('(title like ?) OR (title like ?)', '%קבוצה %', '%.')
+                  .where('title NOT LIKE ?', '%...%')
+                  .preload(expression: { work: { involved_authorities: :authority } })
     Rails.cache.write('report_suspicious_titles', @suspicious.length)
   end
 
   def suspicious_headings
-    mm = Manifestation.where('length(cached_heading_lines)>3')
+    mm = Manifestation
+         .where('length(cached_heading_lines)>3')
+         .preload(expression: { work: { involved_authorities: :authority } })
     @suspicious = []
     mm.each do |m|
       suspicious = false
