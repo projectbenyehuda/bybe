@@ -1205,8 +1205,8 @@ describe AdminController do
 
     include_context 'Admin user logged in'
 
-    let!(:raw_toc) { create(:toc, status: 0) }
-    let!(:processed_toc) { create(:toc, status: 1) }
+    let!(:raw_toc) { create(:toc, status: :raw) }
+    let!(:processed_toc) { create(:toc, status: :ready) }
     let!(:authority_with_raw) { create(:authority, toc: raw_toc) }
     let!(:authority_with_processed) { create(:authority, toc: processed_toc) }
 

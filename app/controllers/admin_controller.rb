@@ -97,7 +97,7 @@ class AdminController < ApplicationController
   ##############################################
   ## Reports
   def raw_tocs
-    scope = Authority.joins(:toc).where('tocs.status = 0')
+    scope = Authority.joins(:toc).merge(Toc.raw)
     @authors = scope.page(params[:page]).per(15)
     @total = @authors.total_count
     @page_title = t(:raw_tocs)
@@ -154,10 +154,8 @@ class AdminController < ApplicationController
   def similar_titles
     prefixes = {}
     @similarities = {}
-    whitelisted_ids = ListItem.where(listkey: 'similar_title_whitelist').pluck(:item_id)
-    Manifestation.select(:id, :title, :cached_people).find_each do |m|
-      next if whitelisted_ids.include?(m.id) # skip whitelisted works
-
+    whitelisted_ids = ListItem.where(listkey: 'similar_title_whitelist', item_type: 'Manifestation').pluck(:item_id)
+    Manifestation.select(:id, :title, :cached_people).where.not(id: whitelisted_ids).find_each do |m|
       prefix = [m.cached_people, m.title[0..(m.title.length > 8 ? 8 : -1)]]
       if prefixes[prefix].nil?
         prefixes[prefix] = [m]
