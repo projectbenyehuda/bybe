@@ -33,6 +33,8 @@
     = f.text_field :alternate_titles, class: 'form-control', style: 'width: 75%;'
     = f.label :description, t(:description)
     = f.text_area :description, class: 'form-control', style: 'width: 75%;', rows: 4
+    = f.label :credits, t('activerecord.attributes.collection.credits')
+    = f.text_area :credits, class: 'form-control', style: 'width: 75%;', rows: 3
     %br
     = f.label :publisher, t(:edition_details)
     = f.text_field :publisher_line, class: 'form-control', style: 'width: 65%;'
