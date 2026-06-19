@@ -156,6 +156,24 @@ describe Collection do
     expect(c.publication).to eq p
   end
 
+  describe 'credits cache invalidation' do
+    it 'clears cached_credits when credits changes' do
+      c = create(:collection, credits: 'Original credits')
+      c.update_column(:cached_credits, 'Cached value')
+      c.reload
+      c.update!(credits: 'Updated credits')
+      expect(c.reload.cached_credits).to be_nil
+    end
+
+    it 'does not clear cached_credits when credits is unchanged' do
+      c = create(:collection, credits: 'Some credits')
+      c.update_column(:cached_credits, 'Cached value')
+      c.reload
+      c.update!(title: 'New Title')
+      expect(c.reload.cached_credits).to eq 'Cached value'
+    end
+  end
+
   pending 'lists people associated with it, optionally filtered by role'
 
   it 'lists tags associated with it' do

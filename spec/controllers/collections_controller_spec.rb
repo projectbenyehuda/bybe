@@ -405,6 +405,24 @@ describe CollectionsController do
           expect(collection.description).to eq 'This is a test description for the collection'
         end
       end
+
+      context 'when updating credits' do
+        let(:title) { Faker::Book.title }
+        let(:collection_params) do
+          {
+            title: title,
+            credits: 'Translated by Jane Doe'
+          }
+        end
+
+        it 'updates the credits field and clears cached_credits' do
+          collection.update_column(:cached_credits, 'stale cache')
+          expect(call).to redirect_to collection
+          collection.reload
+          expect(collection.credits).to eq 'Translated by Jane Doe'
+          expect(collection.cached_credits).to be_nil
+        end
+      end
     end
 
     describe '#destroy' do
