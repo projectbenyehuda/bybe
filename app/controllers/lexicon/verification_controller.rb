@@ -412,6 +412,12 @@ module Lexicon
       Rails.cache.fetch(cache_key, expires_in: 1.hour) do
         html_doc = File.open(file_path) { |f| Nokogiri::HTML(f) }
 
+        # libxml2 drops dir="rtl" from <body> when an implicit body is created before
+        # the explicit <body dir="rtl"> tag (e.g. when a <span> precedes the body tag).
+        # Explicitly restore RTL since all lexicon files are Hebrew.
+        html_doc.at('html')&.set_attribute('dir', 'rtl')
+        html_doc.at('body')&.set_attribute('dir', 'rtl')
+
         html_doc.css('img').each do |img|
           src = img['src']
           if src =~ %r{^\d+[_-]{1}files/}
