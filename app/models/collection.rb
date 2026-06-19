@@ -614,6 +614,7 @@ class Collection < ApplicationRecord
 
   def clear_cached_credits
     self.cached_credits = nil
+    parent_collections.each { |pc| pc.update_column(:cached_credits, nil) }
   end
 
   def norm_dates
