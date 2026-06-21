@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Verification Scroll Position Preservation', type: :system, js: true do
+RSpec.describe 'Verification Scroll Position Preservation', :js, type: :system do
   let!(:person) do
     create(:lex_person,
            birthdate: '1138',

@@ -12,5 +12,5 @@ if ($('#citations').length) {
   sessionStorage.setItem('link-check-toast-message', <%= @link_toast_message.to_json %>);
 <% end %>
   // Reload is triggered by the openModal onSuccess callback; setTimeout is a safety fallback.
-  setTimeout(function() { location.reload(); }, 300);
+  setTimeout(function() { reloadPage(); }, 300);
 }
