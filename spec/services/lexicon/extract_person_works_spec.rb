@@ -123,6 +123,40 @@ describe Lexicon::ExtractPersonWorks do
     end
   end
 
+  context 'when all content is inside a span embedded within the works header paragraph' do
+    # Mirrors the structure produced by Nokogiri for files like 00032.php where the raw PHP has
+    # <span dir="rtl"> before <body>, so the parser nests everything inside that span, which itself
+    # ends up as a child of the <p><a name="Books"> element.
+    let(:html) do
+      <<~HTML
+        <p><font><a name="Books">ספריו:</a></font><span dir="rtl">
+          <ul>
+            <li>ספר ראשון (תל אביב : דביר, 1990)</li>
+            <li>ספר שני (ירושלים : כתר, 2000)</li>
+          </ul>
+          <p><font>עריכה:</font><font><a href="list.pdf">רשימה מפורטת</a></font></p>
+          <ul>
+            <li>ספר נערך (תל אביב : הוצאה, 2005)</li>
+          </ul>
+          <font><a name="Bib.">על המחבר:</a></font>
+        </span></p>
+      HTML
+    end
+
+    it 'extracts original works from the embedded span' do
+      expect(lex_person.works.select(&:work_type_original?).size).to eq(2)
+    end
+
+    it 'recognizes the edited section header even when paragraph contains extra content' do
+      expect(lex_person.works.select(&:work_type_edited?).size).to eq(1)
+    end
+
+    it 'stops at the citations header and returns it' do
+      expect(result).to be_present
+      expect(result.at_css('a[name="Bib."]')).to be_present
+    end
+  end
+
   context 'when citations header appears inside the works span (malformed)' do
     let(:html) do
       <<~HTML
