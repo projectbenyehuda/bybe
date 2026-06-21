@@ -16,6 +16,11 @@ module Lexicon
       next_elem = next_element_skipping_blank(works_header)
       if next_elem.present? && next_elem.name == 'span'
         next_elem = next_elem.first_element_child
+      elsif next_elem.nil?
+        # Works may be embedded inside a span within the works header element itself
+        # (e.g. when a <span dir="rtl"> wrapping the whole page is parsed as a child of the <p>)
+        inner_span = works_header.at_css('> span')
+        next_elem = inner_span&.first_element_child
       end
 
       index = 0
@@ -24,7 +29,8 @@ module Lexicon
         header_line = next_elem.text.strip
         if %w(p font).include?(next_elem.name)
           work_type = WORK_TYPE_HEADERS.keys.detect do |wt|
-            WORK_TYPE_HEADERS[wt].include?(header_line)
+            WORK_TYPE_HEADERS[wt].include?(header_line) ||
+              WORK_TYPE_HEADERS[wt].any? { |h| header_line.start_with?(h) }
           end
 
           if work_type.nil?
