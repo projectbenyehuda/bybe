@@ -124,7 +124,7 @@
               %br
               %span.text-muted= link.description
           .link-actions.mt-2
-            %button.btn.btn-sm.btn-outline-primary{onclick: "openModal('#{edit_lexicon_link_path(link)}', function() { reloadPage(); })"}
+            %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{edit_lexicon_link_path(link)}', function() { reloadPage(); })" }
               ✏️
               = t('lexicon.verification.migrated.edit')
             %button.btn.btn-sm{class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "links.items.#{link.id}"}}
@@ -133,7 +133,7 @@
     - else
       %p.text-muted= t('lexicon.verification.sections.no_links')
   .section-actions
-    = link_to t('lexicon.verification.migrated.add_link'), new_lexicon_entry_link_path(entry), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href, function() { reloadPage(); });"
+    = link_to t('lexicon.verification.migrated.add_link'), new_lexicon_entry_link_path(entry), class: 'btn btn-sm btn-success', onclick: 'event.preventDefault(); openModal(this.href, function() { reloadPage(); });'
 
 -# Section 7: Attachments
 .section.verification-section{id: 'section-attachments', class: checklist['attachments']&.dig('verified') ? 'verified' : 'not-verified'}
