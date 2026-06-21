@@ -475,6 +475,35 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     end
   end
 
+  describe 'GET /lex/verification/:id (show) - citation and link edit buttons use reloadPage' do
+    let(:person) { create(:lex_person) }
+    let(:entry) do
+      e = create(:lex_entry, :person, status: :verifying, lex_item: person)
+      e.start_verification!('editor@example.com')
+      e
+    end
+    let!(:citation) { create(:lex_citation, person: person, title: 'Test Citation', from_publication: 'Test Pub') }
+    let!(:link) { create(:lex_link, item: person) }
+
+    it 'citation edit button callback uses reloadPage() not location.reload()' do
+      get "/lex/verification/#{entry.id}"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("/lex/citations/#{citation.id}/edit")
+      expect(response.body).to include('reloadPage()')
+      expect(response.body).not_to include('location.reload()')
+    end
+
+    it 'link edit button callback uses reloadPage() not location.reload()' do
+      get "/lex/verification/#{entry.id}"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("/lex/links/#{link.id}/edit")
+      expect(response.body).to include('reloadPage()')
+      expect(response.body).not_to include('location.reload()')
+    end
+  end
+
   describe 'GET /lex/verification/:id (show) - per-work cards' do
     let(:person) { create(:lex_person) }
     let(:entry) do
