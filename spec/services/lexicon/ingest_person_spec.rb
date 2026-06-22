@@ -355,4 +355,23 @@ describe Lexicon::IngestPerson do
       end.not_to(change(ActiveStorage::Attachment, :count))
     end
   end
+
+  context 'when the date of manual update is wrapped in square brackets' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'ישראלי, ישראל',
+          fname: 'bracketed_date.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/bracketed_date.php')
+        }
+      )
+    end
+
+    it 'extracts the date without the brackets' do
+      expect(call.date_of_manual_update).to eq('15 במרץ 2024')
+    end
+  end
 end
