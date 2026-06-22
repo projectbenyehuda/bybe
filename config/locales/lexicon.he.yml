@@ -250,6 +250,8 @@ he:
         no_citations: "(אין מראי מקום)"
         no_links: "(אין קישוריוֹת)"
         no_attachments: "(אין קבצים מצורפים)"
+        date_of_manual_update_section: תאריך עדכון ידני אחרון
+        no_date_of_manual_update: "(אין תאריך עדכון ידני)"
         no_description: "(אין תיאור)"
         no_toc: "(אין תוכן עניינים)"
         no_az_navbar: "(אין ניווט א-ב)"

@@ -48,6 +48,7 @@ describe Lexicon::IngestPerson do
         'viaf' => '22255259'
       )
       expect(entry.external_identifiers).not_to have_key('j9u')
+      expect(entry.date_of_manual_update).to eq('12 ביולי 2023')
     end
   end
 
@@ -308,6 +309,7 @@ describe Lexicon::IngestPerson do
           'wikidata' => 'Q12409731'
         }
       )
+      expect(entry.date_of_manual_update).to eq('24 באפריל 2025')
     end
   end
 

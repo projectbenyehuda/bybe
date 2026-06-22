@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_22_233652) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -590,6 +590,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
     t.index ["originating_task"], name: "index_ingestibles_on_originating_task"
     t.index ["project_id"], name: "index_ingestibles_on_project_id"
     t.index ["status"], name: "index_ingestibles_on_status"
+    t.index ["tasks_project_id"], name: "index_ingestibles_on_tasks_project_id"
     t.index ["title"], name: "index_ingestibles_on_title"
     t.index ["user_id"], name: "index_ingestibles_on_user_id"
     t.index ["volume_id"], name: "index_ingestibles_on_volume_id"
@@ -668,6 +669,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
 
   create_table "lex_entries", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.datetime "created_at", precision: nil, null: false
+    t.string "date_of_manual_update"
     t.string "english_title"
     t.json "external_identifiers"
     t.integer "last_editor_id"
@@ -727,7 +729,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
     t.string "new_path", null: false
     t.string "old_path", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
   end
 
   create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -917,6 +919,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
     t.date "start_date"
     t.integer "tasks_project_id"
     t.datetime "updated_at", null: false
+    t.index ["tasks_project_id"], name: "index_projects_on_tasks_project_id", unique: true
   end
 
   create_table "proofs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|

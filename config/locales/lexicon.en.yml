@@ -250,6 +250,8 @@ en:
         no_citations: "(No citations)"
         no_links: "(No links)"
         no_attachments: "(No attachments)"
+        date_of_manual_update_section: Date of Last Manual Update
+        no_date_of_manual_update: "(No manual update date)"
         no_description: "(No description)"
         no_toc: "(No table of contents)"
         no_az_navbar: "(No A-Z navigation)"

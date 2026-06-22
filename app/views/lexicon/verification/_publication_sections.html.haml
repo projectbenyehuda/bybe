@@ -170,3 +170,13 @@
     %button.btn.btn-sm{class: checklist['attachments']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: 'attachments'}}
       ✓
       = t('lexicon.verification.migrated.mark_verified')
+
+-# Section 8: Date of Manual Update
+.section.verification-section{ id: 'section-date-of-manual-update' }
+  .section-header
+    %h5= t('lexicon.verification.sections.date_of_manual_update_section')
+  .section-content
+    - if entry.date_of_manual_update.present?
+      %p= entry.date_of_manual_update
+    - else
+      %p.text-muted= t('lexicon.verification.sections.no_date_of_manual_update')
