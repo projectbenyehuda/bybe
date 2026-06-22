@@ -214,6 +214,62 @@ function initVerification() {
         });
     });
 
+    // Handle general "Report to Monday" button — opens a modal with a textarea
+    $('#monday-report-btn').on('click', function() {
+        $('#monday-report-description').val('');
+        $('#mondayReportModal').modal('show');
+    });
+
+    $('#monday-report-submit').on('click', function() {
+        var btn = $(this);
+        var reportUrl = $('#monday-report-btn').data('report-url');
+        var description = $('#monday-report-description').val();
+
+        btn.prop('disabled', true);
+        $.ajax({
+            url: reportUrl,
+            type: 'POST',
+            dataType: 'json',
+            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+            data: { type: 'general', description: description },
+            success: function(data) {
+                $('#mondayReportModal').modal('hide');
+                showToast(data.message);
+            },
+            error: function(xhr) {
+                var err = (xhr.responseJSON && xhr.responseJSON.error) || 'Error sending report';
+                showToast(err);
+            },
+            complete: function() {
+                btn.prop('disabled', false);
+            }
+        });
+    });
+
+    // Handle per-work "missing work" report buttons
+    $(document).on('click', '.monday-missing-work-btn', function() {
+        var btn = $(this);
+        var reportUrl = btn.data('report-url');
+        var workTitle = btn.data('work-title');
+
+        btn.prop('disabled', true);
+        $.ajax({
+            url: reportUrl,
+            type: 'POST',
+            dataType: 'json',
+            headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+            data: { type: 'missing_work', work_title: workTitle },
+            success: function(data) {
+                showToast(data.message);
+            },
+            error: function(xhr) {
+                var err = (xhr.responseJSON && xhr.responseJSON.error) || 'Error sending report';
+                showToast(err);
+                btn.prop('disabled', false);
+            }
+        });
+    });
+
     // Handle remove attachment buttons
     $('[data-action="click->verification#removeAttachment"]').on('click', function(e) {
         e.preventDefault();
