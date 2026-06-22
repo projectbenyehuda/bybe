@@ -331,3 +331,14 @@ he:
           nli: NLI
           wikidata: Wikidata
           openlibrary: OpenLibrary
+      monday:
+        report_button: דיווח ב-Monday
+        missing_work_button: "דווח: חיבור חסר בלקסיקון"
+        modal_title: שליחת דיווח ל-Monday
+        textarea_placeholder: "תאר את הבעיה..."
+        submit: שלח דיווח
+        report_sent: הדיווח נשלח בהצלחה
+        report_error: שגיאה בשליחת הדיווח
+        link_text: קישורית לערך המוסב
+        general_name: ראה תיאור נרחב
+        missing_work_name: "החיבור %{title} ידוע בביבליוגרפיה אך לא מופיע בערך הלקסיקון."

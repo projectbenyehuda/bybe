@@ -119,6 +119,7 @@ Bybeconv::Application.routes.draw do
       post ':id/escalate', to: 'verification#escalate', as: :escalate_verification
       get ':id/edit_section', to: 'verification#edit_section', as: :edit_section_verification
       patch ':id/update_section', to: 'verification#update_section', as: :update_section_verification
+      post ':id/report_to_monday', to: 'verification#report_to_monday', as: :report_to_monday_verification
     end
 
     resources :files, only: :index do
