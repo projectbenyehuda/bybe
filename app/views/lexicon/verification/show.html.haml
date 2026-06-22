@@ -55,6 +55,9 @@
             = t('lexicon.verification.show.mark_verified')
         %button.btn#escalate-btn{ type: 'button', style: 'background-color: #f8d7da; border-color: #f5c6cb;' }
           = t('lexicon.verification.show.escalate')
+        - monday_report_url = lexicon_report_to_monday_verification_path(@entry)
+        %button.btn.btn-outline-info#monday-report-btn{ type: 'button', data: { 'report-url': monday_report_url } }
+          = t('lexicon.verification.monday.report_button')
 
 - container_data = { controller: 'verification',
                      'verification-entry-id': @entry.id,
@@ -86,6 +89,27 @@
     = render 'lexicon/verification/migrated_entry', entry: @entry, item: @item, checklist: @checklist, php_counts: @php_counts, bio_comparison: @bio_comparison
 
 #modal-container
+
+.modal#mondayReportModal{ tabindex: '-1', role: 'dialog',
+                          aria: { hidden: true, labelledby: 'mondayReportModalTitle' },
+                          data: { keyboard: 'true', backdrop: 'true' } }
+  .modal-dialog{ role: 'document' }
+    .modal-content
+      .modal-header
+        %h5.modal-title#mondayReportModalTitle= t('lexicon.verification.monday.modal_title')
+        %button.close{ type: :button, data: { dismiss: :modal }, aria: { label: t(:close) } }
+          %span{ aria: { hidden: true } } &times;
+      .modal-body
+        .form-group
+          = text_area_tag :monday_report_description, nil,
+                          rows: 5, id: 'monday-report-description',
+                          class: 'form-control',
+                          placeholder: t('lexicon.verification.monday.textarea_placeholder')
+      .modal-footer
+        %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }
+          = t('cancel')
+        %button.btn.btn-primary#monday-report-submit{ type: 'button' }
+          = t('lexicon.verification.monday.submit')
 
 .modal#checklistModal{ tabindex: '-1', role: 'dialog',
                        aria: { hidden: true, labelledby: 'checklistModalTitle' },

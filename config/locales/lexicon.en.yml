@@ -331,3 +331,14 @@ en:
           nli: NLI
           wikidata: Wikidata
           openlibrary: OpenLibrary
+      monday:
+        report_button: Report to Monday
+        missing_work_button: "Report: Work missing from lexicon"
+        modal_title: Send Report to Monday
+        textarea_placeholder: "Describe the issue..."
+        submit: Submit Report
+        report_sent: Report sent successfully
+        report_error: Error sending report
+        link_text: Link to entry under review
+        general_name: See extended description
+        missing_work_name: "The work %{title} is known in the bibliography but does not appear in the lexicon entry."

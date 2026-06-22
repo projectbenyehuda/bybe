@@ -188,6 +188,9 @@
               %button.btn.btn-sm{ class: checklist['works']&.dig('items', work.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: "works.items.#{work.id}" } }
                 ✓
                 = t('lexicon.verification.migrated.mark_verified')
+              - if work.publication.present?
+                %button.btn.btn-sm.btn-outline-warning.monday-missing-work-btn{ type: 'button', data: { 'work-title': work.title, 'report-url': lexicon_report_to_monday_verification_path(entry) } }
+                  = t('lexicon.verification.monday.missing_work_button')
     - else
       %p.text-muted= t('lexicon.verification.sections.no_works')
 
