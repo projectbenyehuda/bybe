@@ -47,7 +47,6 @@ module Lexicon
 
     def build_column_values
       values = {
-        'name' => item_name_column,
         'text_mm2tn5yc' => @entry.title,
         'link_mm2t7e9n' => { 'url' => @current_url, 'text' => I18n.t('lexicon.verification.monday.link_text') }
       }
@@ -67,7 +66,7 @@ module Lexicon
       # column_values in Monday's API is a JSON *string* argument inside GraphQL.
       # Double-encode: .to_json converts the hash to a JSON string, then .to_json
       # JSON-encodes that string (adding surrounding quotes + escaping inner quotes).
-      mutation = "mutation { create_item(board_id: #{board_id} item_name: #{@entry.title.to_json} " \
+      mutation = "mutation { create_item(board_id: #{board_id}, item_name: #{item_name_column.to_json}, " \
                  "column_values: #{column_values.to_json.to_json}) { id name url } }"
       { query: mutation }.to_json
     end
