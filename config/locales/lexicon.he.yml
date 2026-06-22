@@ -333,7 +333,7 @@ he:
           openlibrary: OpenLibrary
       monday:
         report_button: דיווח ב-Monday
-        missing_work_button: דווח&#58; חיבור חסר בלקסיקון
+        missing_work_button: "דווח: חיבור חסר בלקסיקון"
         modal_title: שליחת דיווח ל-Monday
         textarea_placeholder: "תאר את הבעיה..."
         submit: שלח דיווח
