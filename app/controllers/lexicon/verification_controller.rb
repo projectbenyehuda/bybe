@@ -272,6 +272,27 @@ module Lexicon
       end
     end
 
+    # POST /lexicon/verification/:id/report_to_monday
+    def report_to_monday
+      report_type = params[:type] == 'missing_work' ? :missing_work : :general
+      description = params[:description].presence
+      work_title = params[:work_title].presence
+
+      result = Lexicon::MondayReport.call(
+        entry: @entry,
+        report_type: report_type,
+        current_url: lexicon_verification_url(@entry),
+        description: description,
+        work_title: work_title
+      )
+
+      if result[:success]
+        render json: { success: true, message: I18n.t('lexicon.verification.monday.report_sent') }
+      else
+        render json: { success: false, error: result[:error] }, status: :unprocessable_content
+      end
+    end
+
     # GET /lexicon/verification/:id/edit_section?section=title
     def edit_section
       @section = params[:section]
