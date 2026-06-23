@@ -182,7 +182,7 @@
                 %br
                 %span.text-muted!= render_person_work_comment(work.comment, work.comment_links)
             .work-actions.mt-2
-              %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{edit_lexicon_work_path(work)}', function() { reloadScrollingToSection('section-works'); })" }
+              %button.btn.btn-sm.btn-outline-primary{ onclick: "openWorkEditPanel('#{edit_lexicon_work_path(work)}', function() { reloadScrollingToSection('section-works'); })" }
                 ✏️
                 = t('lexicon.verification.migrated.edit')
               %button.btn.btn-sm{ class: checklist['works']&.dig('items', work.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: "works.items.#{work.id}" } }
