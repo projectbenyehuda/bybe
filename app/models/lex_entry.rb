@@ -233,8 +233,8 @@ class LexEntry < ApplicationRecord
     end
   end
 
-  # Sync works collection in verification checklist when works are added/deleted
-  def sync_works_checklist!
+  # Add a single work to the verification checklist (called synchronously when a work is created)
+  def add_work_to_checklist!(work_id)
     return unless lex_item_type == 'LexPerson'
 
     with_lock do
@@ -242,26 +242,28 @@ class LexEntry < ApplicationRecord
 
       progress = verification_progress.deep_dup
       checklist = progress['checklist']
-      return unless checklist
+      return unless checklist&.dig('works')
 
-      # Get current works from database
-      works = lex_item&.works
-      current_work_ids = works ? works.pluck(:id).map(&:to_s) : []
-      existing_items = checklist.dig('works', 'items') || {}
+      checklist['works']['items'] ||= {}
+      checklist['works']['items'][work_id.to_s] ||= { 'verified' => false, 'notes' => '' }
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
 
-      # Add new works
-      current_work_ids.each do |work_id|
-        existing_items[work_id] ||= { 'verified' => false, 'notes' => '' }
-      end
+  # Remove a single work from the verification checklist (called synchronously when a work is destroyed)
+  def remove_work_from_checklist!(work_id)
+    return unless lex_item_type == 'LexPerson'
 
-      # Remove deleted works
-      existing_items.select! { |work_id, _| current_work_ids.include?(work_id) }
+    with_lock do
+      return if verification_progress.blank?
 
-      checklist['works']['items'] = existing_items
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist&.dig('works', 'items')&.key?(work_id.to_s)
 
-      # Auto-verify parent collection if all items verified
+      checklist['works']['items'].delete(work_id.to_s)
       auto_verify_collections!(checklist)
-
       progress['last_updated_at'] = Time.current.iso8601
       update!(verification_progress: progress)
     end

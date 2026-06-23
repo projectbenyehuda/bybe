@@ -577,7 +577,10 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     let!(:work1) { create(:lex_person_work, person: person, title: 'First Work', work_type: 'original', seqno: 1) }
     let!(:work2) { create(:lex_person_work, person: person, title: 'Second Work', work_type: 'original', seqno: 2) }
 
-    before { entry.sync_works_checklist! }
+    before do
+      entry.add_work_to_checklist!(work1.id)
+      entry.add_work_to_checklist!(work2.id)
+    end
 
     it 'renders individual work cards instead of a single works section' do
       get "/lex/verification/#{entry.id}"
