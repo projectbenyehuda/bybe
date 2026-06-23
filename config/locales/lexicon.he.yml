@@ -187,6 +187,9 @@ he:
           person: יוצר/ת
           publication: פרסום
         time_updated: "לפני %{time}"
+        my_locked_title: ערכים נעולים על ידי
+        locked_by_others_title: ערכים נעולים על ידי עורכים אחרים
+        other_title: ערכים אחרים
       show:
         title: "אימות: %{entry_title}"
         back_to_queue: חזור לרשימה
