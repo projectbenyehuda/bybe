@@ -1,0 +1,19 @@
+-# haml-lint:disable LineLength
+= form_with url: lexicon_update_section_verification_path(@entry), method: :patch, local: false, html: { class: 'verification-edit-form' } do |f|
+  = hidden_field_tag :section, 'date_of_manual_update'
+
+  %p.text-muted= t('lexicon.verification.edit.date_of_manual_update.instructions')
+
+  .mb-3
+    = label_tag :entry_date_of_manual_update, t('activerecord.attributes.lex_entry.date_of_manual_update'), class: 'form-label'
+    = text_field_tag :entry_date_of_manual_update, @entry.date_of_manual_update, class: 'form-control'
+
+  .form-check.mt-3
+    - already_verified = @entry.verification_progress&.dig('checklist', 'date_of_manual_update', 'verified') || false
+    = check_box_tag :mark_verified, '1', already_verified, class: 'form-check-input'
+    = label_tag :mark_verified, t('lexicon.verification.edit.mark_as_verified'), class: 'form-check-label'
+
+  .modal-footer
+    %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }
+      = t('cancel')
+    = f.submit t('save'), class: 'btn btn-primary'

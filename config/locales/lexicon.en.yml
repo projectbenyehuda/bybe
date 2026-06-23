@@ -210,6 +210,7 @@ en:
           links: Links
           attachments: Attachments
           external_identifiers: Authority Control Identifiers
+          date_of_manual_update: Date of Last Manual Update
         publication:
           title: Title
           description: Description
@@ -218,6 +219,7 @@ en:
           links: Links
           attachments: Attachments
           external_identifiers: Authority Control Identifiers
+          date_of_manual_update: Date of Last Manual Update
       source:
         header: Source File
         file_not_found: "⚠️ Source file not found"
@@ -325,6 +327,8 @@ en:
         confirm_match: Confirm match
         reject_match: Reject match
         proposed_collection: "(proposed: %{title})"
+        date_of_manual_update:
+          instructions: "Enter the date of the last manual update as it appears in the source file. You may correct it if it was parsed incorrectly."
         external_identifiers:
           instructions: "Enter identifier values for authority control systems. Leave a field blank to remove that identifier."
           leave_blank_to_remove: "Leave blank to remove"

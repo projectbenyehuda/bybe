@@ -172,11 +172,20 @@
       = t('lexicon.verification.migrated.mark_verified')
 
 -# Section 8: Date of Manual Update
-.section.verification-section{ id: 'section-date-of-manual-update' }
+.section.verification-section{ id: 'section-date-of-manual-update', class: checklist['date_of_manual_update']&.dig('verified') ? 'verified' : 'not-verified' }
   .section-header
     %h5= t('lexicon.verification.sections.date_of_manual_update_section')
+    .verification-badge{ class: checklist['date_of_manual_update']&.dig('verified') ? 'verified' : 'not-verified' }
+      = checklist['date_of_manual_update']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
     - if entry.date_of_manual_update.present?
       %p= entry.date_of_manual_update
     - else
       %p.text-muted= t('lexicon.verification.sections.no_date_of_manual_update')
+  .section-actions
+    %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'date_of_manual_update')}', onSectionEditSuccess('section-date-of-manual-update'))" }
+      ✏️
+      = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: checklist['date_of_manual_update']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'date_of_manual_update' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
