@@ -387,7 +387,7 @@ describe Lexicon::IngestPerson do
       # img with no alt and unknown filename → no logo text appended
       unknown_link = descriptions.find { |d| d.include?('כתבה כלשהי') }
       expect(unknown_link).to be_present
-      expect(unknown_link).not_to match(/[^\s]{5,}$/) # no unexpected trailing token
+      expect(unknown_link.strip).to eq('כתבה כלשהי')
     end
   end
 
