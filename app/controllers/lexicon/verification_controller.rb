@@ -16,18 +16,19 @@ module Lexicon
 
     # GET /lexicon/verification/queue
     def index
-      @entries = LexEntry.needs_verification
-                         .includes(:lex_item, :lex_file)
-                         .order(updated_at: :desc)
-                         .page(params[:page])
+      scope = LexEntry.needs_verification.includes(:lex_item, :lex_file)
 
-      # Filter by status if provided
-      @entries = @entries.where(status: params[:status]) if params[:status].present?
+      scope = scope.where(status: params[:status]) if params[:status].present?
+      scope = scope.where(lex_item_type: params[:type]) if params[:type].present?
 
-      # Filter by type if provided
-      return if params[:type].blank?
+      locked_scope = scope.where('locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
+                          .includes(:locked_by_user)
+      @my_locked_entries = locked_scope.where(locked_by_user_id: current_user.id).order(updated_at: :desc)
+      @locked_by_others_entries = locked_scope.where.not(locked_by_user_id: current_user.id).order(updated_at: :desc)
 
-      @entries = @entries.where(lex_item_type: params[:type])
+      @entries = scope.where.not(id: locked_scope.select(:id))
+                      .order(updated_at: :desc)
+                      .page(params[:page])
     end
 
     # GET /lexicon/verification/:id
