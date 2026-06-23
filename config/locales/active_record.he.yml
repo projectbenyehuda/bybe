@@ -152,6 +152,7 @@ he:
         title: כותרת
         english_title: English title
         other_designation: כינויים אחרים
+        date_of_manual_update: תאריך עדכון ידני אחרון
         statuses:
           draft: טיוטה
           deprecated: מבוטל
