@@ -66,6 +66,49 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     end
   end
 
+  describe 'PATCH /lex/verification/:id/update_section – date_of_manual_update' do
+    let(:entry) do
+      e = create(:lex_entry, :person, status: :verifying, date_of_manual_update: '12 בינואר 2024')
+      e.start_verification!('editor@example.com')
+      e
+    end
+    let(:url) { "/lex/verification/#{entry.id}/update_section" }
+
+    it 'saves the updated date_of_manual_update value' do
+      patch url,
+            params: { section: 'date_of_manual_update',
+                      entry_date_of_manual_update: '15 במרץ 2024' },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      entry.reload
+      expect(entry.date_of_manual_update).to eq('15 במרץ 2024')
+    end
+
+    it 'clears date_of_manual_update when blank value is submitted' do
+      patch url,
+            params: { section: 'date_of_manual_update',
+                      entry_date_of_manual_update: '' },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      entry.reload
+      expect(entry.date_of_manual_update).to be_nil
+    end
+
+    it 'marks the section verified when mark_verified is set' do
+      patch url,
+            params: { section: 'date_of_manual_update',
+                      entry_date_of_manual_update: '12 בינואר 2024',
+                      mark_verified: '1' },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      entry.reload
+      expect(entry.verification_progress.dig('checklist', 'date_of_manual_update', 'verified')).to be true
+    end
+  end
+
   describe 'PATCH /lex/verification/:id/update_checklist' do
     context 'when verifying the title section for a LexPerson' do
       let(:entry) do
@@ -103,11 +146,31 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         patch url, params: { path: 'bio', verified: 'true' }, as: :json
         patch url, params: { path: 'external_identifiers', verified: 'true' }, as: :json
         patch url, params: { path: 'attachments', verified: 'true' }, as: :json
+        patch url, params: { path: 'date_of_manual_update', verified: 'true' }, as: :json
 
         # Verify all collection items (citations, links, works are empty for this entry)
         entry.reload
         expect(entry.verification_percentage).to eq(100)
         expect(entry.verification_complete?).to be true
+      end
+
+      it 'persists date_of_manual_update verification to the database' do
+        patch url, params: { path: 'date_of_manual_update', verified: 'true' }, as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['success']).to be true
+        entry.reload
+        expect(entry.verification_progress.dig('checklist', 'date_of_manual_update', 'verified')).to be true
+      end
+
+      it 'unverifies date_of_manual_update when verified: false is sent' do
+        entry.update_checklist_item('date_of_manual_update', true)
+
+        patch url, params: { path: 'date_of_manual_update', verified: 'false' }, as: :json
+
+        expect(response).to have_http_status(:success)
+        entry.reload
+        expect(entry.verification_progress.dig('checklist', 'date_of_manual_update', 'verified')).to be false
       end
     end
   end
@@ -514,7 +577,10 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     let!(:work1) { create(:lex_person_work, person: person, title: 'First Work', work_type: 'original', seqno: 1) }
     let!(:work2) { create(:lex_person_work, person: person, title: 'Second Work', work_type: 'original', seqno: 2) }
 
-    before { entry.sync_works_checklist! }
+    before do
+      entry.add_work_to_checklist!(work1.id)
+      entry.add_work_to_checklist!(work2.id)
+    end
 
     it 'renders individual work cards instead of a single works section' do
       get "/lex/verification/#{entry.id}"

@@ -3,6 +3,7 @@
   = f.simple_fields_for :entry do |ef|
     = ef.input :title
     = ef.input :other_designation
+    = ef.input :date_of_manual_update
     = ef.input :status do
       .form-control
         %span.badge.badge-primary= LexEntry.human_enum_name(:status, @lex_publication.entry.status)
