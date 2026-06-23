@@ -8,6 +8,21 @@ module Lexicon
     WORKS_HEADER = 'Books'
     CITATIONS_HEADER = 'Bib.'
 
+    # Maps 00000_files logo filenames to Hebrew site names for img tags that lack alt text.
+    IMG_LOGO_TEXT = {
+      'Ben-Yehuda-s.jpg' => 'פרויקט בן יהודה',
+      'dafdaf.gif' => 'דפדף',
+      'icast-free.png' => 'icast',
+      'icast-logo.png' => 'icast',
+      'icast-od.jpg' => 'icast',
+      'nli.png' => 'הספרייה הלאומית',
+      'onesh.jpg' => 'עונג שבת',
+      'pdf_icon.gif' => 'PDF',
+      'text.gif' => 'טקסט',
+      'ynet.gif' => 'Ynet',
+      'youtube.jpg' => 'YouTube'
+    }.freeze
+
     def call(lex_file)
       raw = File.read(lex_file.full_path, encoding: 'UTF-8')
       @female = raw.include?('על המחברת ויצירתה')
@@ -145,9 +160,20 @@ module Lexicon
 
         person.links.build(
           url: ::Regexp.last_match(2),
-          description: "#{html2txt(::Regexp.last_match(1))} #{html2txt(::Regexp.last_match(3))} " \
-                       "#{html2txt(::Regexp.last_match(4))}"
+          description: "#{html2txt(img_to_text(::Regexp.last_match(1)))} " \
+                       "#{html2txt(img_to_text(::Regexp.last_match(3)))} " \
+                       "#{html2txt(img_to_text(::Regexp.last_match(4)))}"
         )
+      end
+    end
+
+    def img_to_text(html)
+      html.gsub(/<img\b[^>]*>/i) do |img_tag|
+        alt = img_tag[/\balt="([^"]*)"/i, 1].to_s.strip
+        next alt if alt.present?
+
+        filename = File.basename(img_tag[/\bsrc="([^"]*)"/i, 1].to_s)
+        IMG_LOGO_TEXT[filename].to_s
       end
     end
   end
