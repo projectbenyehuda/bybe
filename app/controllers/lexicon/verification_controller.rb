@@ -323,6 +323,10 @@ module Lexicon
       # For english_title we check key presence rather than value presence so that
       # submitting an empty string will clear the field instead of being ignored.
       entry_updates[:english_title] = params[:english_title] if params.key?(:english_title)
+      # date_of_manual_update: allow blank so editors can clear the field
+      if params.key?(:entry_date_of_manual_update)
+        entry_updates[:date_of_manual_update] = params[:entry_date_of_manual_update]&.strip.presence
+      end
 
       # Update external_identifiers if submitted: blank values are removed, nil if all blank
       if params.key?(:external_identifiers)

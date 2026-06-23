@@ -62,67 +62,81 @@ RSpec.describe LexEntry, type: :model do
       end
     end
 
-    describe '#sync_works_checklist!' do
+    describe '#add_work_to_checklist!' do
       before do
         entry.start_verification!('test@example.com')
       end
 
-      context 'when works are added' do
-        it 'adds new works to the checklist' do
-          initial_items = entry.verification_progress.dig('checklist', 'works', 'items')
-          expect(initial_items).to eq({})
+      it 'adds the work ID to checklist items' do
+        work = create(:lex_person_work, person: person, title: 'New Work')
+        entry.add_work_to_checklist!(work.id)
+
+        items = entry.reload.verification_progress.dig('checklist', 'works', 'items')
+        expect(items[work.id.to_s]).to eq({ 'verified' => false, 'notes' => '' })
+      end
+
+      it 'is idempotent when work already exists in checklist' do
+        work = create(:lex_person_work, person: person, title: 'Existing Work')
+        entry.add_work_to_checklist!(work.id)
+        entry.update_checklist_item("works.items.#{work.id}", true)
+        entry.add_work_to_checklist!(work.id)
+
+        items = entry.reload.verification_progress.dig('checklist', 'works', 'items')
+        expect(items[work.id.to_s]['verified']).to be true
+      end
+
+      it 'does nothing when verification_progress is blank' do
+        entry.update_column(:verification_progress, nil)
+        work = create(:lex_person_work, person: person, title: 'New Work')
+        expect { entry.add_work_to_checklist!(work.id) }.not_to raise_error
+      end
+
+      context 'when called on a stale instance after a concurrent update_checklist_item' do
+        it 'does not overwrite the committed change (with_lock prevents lost update)' do
+          stale_entry = described_class.find(entry.id)
+
+          entry.update_checklist_item('date_of_manual_update', true)
+
+          expect(stale_entry.verification_progress.dig('checklist', 'date_of_manual_update', 'verified')).to be false
 
           work = create(:lex_person_work, person: person, title: 'New Work')
-          entry.sync_works_checklist!
+          stale_entry.add_work_to_checklist!(work.id)
 
-          updated_items = entry.verification_progress.dig('checklist', 'works', 'items')
-          expect(updated_items.size).to eq(1)
-          expect(updated_items[work.id.to_s]).to eq({ 'verified' => false, 'notes' => '' })
+          expect(entry.reload.verification_progress.dig('checklist', 'date_of_manual_update', 'verified')).to be true
         end
       end
+    end
 
-      context 'when works are deleted' do
-        let!(:work1) { create(:lex_person_work, person: person, title: 'Work 1') }
-        let!(:work2) { create(:lex_person_work, person: person, title: 'Work 2') }
+    describe '#remove_work_from_checklist!' do
+      let!(:work1) { create(:lex_person_work, person: person, title: 'Work 1') }
+      let!(:work2) { create(:lex_person_work, person: person, title: 'Work 2') }
 
-        before do
-          entry.sync_works_checklist!
-        end
-
-        it 'removes deleted works from the checklist' do
-          expect(entry.verification_progress.dig('checklist', 'works', 'items').size).to eq(2)
-
-          work1.destroy!
-          entry.reload.sync_works_checklist!
-
-          updated_items = entry.verification_progress.dig('checklist', 'works', 'items')
-          expect(updated_items.size).to eq(1)
-          expect(updated_items[work2.id.to_s]).to be_present
-          expect(updated_items[work1.id.to_s]).to be_nil
-        end
+      before do
+        person.reload
+        entry.start_verification!('test@example.com')
       end
 
-      context 'when works are verified and then deleted' do
-        let!(:work1) { create(:lex_person_work, person: person, title: 'Work 1') }
-        let!(:work2) { create(:lex_person_work, person: person, title: 'Work 2') }
+      it 'removes the work ID from checklist items' do
+        work1.destroy!
+        entry.remove_work_from_checklist!(work1.id)
 
-        before do
-          entry.sync_works_checklist!
-          entry.update_checklist_item("works.items.#{work1.id}", true, '')
-          entry.update_checklist_item("works.items.#{work2.id}", true, '')
-        end
+        items = entry.reload.verification_progress.dig('checklist', 'works', 'items')
+        expect(items[work1.id.to_s]).to be_nil
+        expect(items[work2.id.to_s]).to be_present
+      end
 
-        it 'auto-verifies collection when all works verified' do
-          expect(entry.verification_progress.dig('checklist', 'works', 'verified')).to be true
-        end
+      it 'does nothing when the work ID is not in the checklist' do
+        expect { entry.remove_work_from_checklist!(999_999) }.not_to raise_error
+      end
 
-        it 'removes auto-verification when a verified work is deleted' do
-          work1.destroy!
-          entry.sync_works_checklist!
+      it 'auto-verifies collection when all remaining works are verified' do
+        entry.update_checklist_item("works.items.#{work1.id}", true)
+        entry.update_checklist_item("works.items.#{work2.id}", true)
 
-          # Collection should still be verified if all remaining items are verified
-          expect(entry.verification_progress.dig('checklist', 'works', 'verified')).to be true
-        end
+        work1.destroy!
+        entry.remove_work_from_checklist!(work1.id)
+
+        expect(entry.reload.verification_progress.dig('checklist', 'works', 'verified')).to be true
       end
     end
 
