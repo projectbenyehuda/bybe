@@ -356,6 +356,41 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when link descriptions contain img tags' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'ישראלי, ישראל',
+          fname: 'links_with_img.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/links_with_img.php')
+        }
+      )
+    end
+
+    it 'substitutes img with alt text when present, falls back to filename lookup, and omits unknown logos' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.links.count).to eq(3)
+
+      descriptions = person.links.map(&:description)
+
+      # img with alt="טקסט" → alt text is used
+      expect(descriptions).to include(a_string_including('כותרת הספר', 'באתר', 'טקסט'))
+
+      # img with no alt but filename text.gif → lookup resolves to טקסט
+      expect(descriptions).to include(a_string_including('ספר אחר', 'באתר', 'טקסט'))
+
+      # img with no alt and unknown filename → no logo text appended
+      unknown_link = descriptions.find { |d| d.include?('כתבה כלשהי') }
+      expect(unknown_link).to be_present
+      expect(unknown_link.strip).to eq('כתבה כלשהי')
+    end
+  end
+
   context 'when the date of manual update is wrapped in square brackets' do
     let!(:file) do
       create(
