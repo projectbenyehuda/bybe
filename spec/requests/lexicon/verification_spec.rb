@@ -465,6 +465,124 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         expect(response.body).not_to include(redo_migration_lexicon_file_path(error_file))
       end
     end
+
+    context 'with locked entries' do
+      let(:other_editor) do
+        user = create(:user, editor: true)
+        ListItem.create!(listkey: 'edit_lexicon', item: user)
+        user
+      end
+
+      describe 'my-locked section' do
+        context 'when the current editor has a locked entry' do
+          let!(:mine) do
+            entry = create(:lex_entry, :person, status: :draft)
+            entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: create_lexicon_editor.id)
+            entry
+          end
+
+          it 'shows the "Entries locked by me" heading' do
+            get '/lex/verification/queue'
+            expect(response.body).to include(I18n.t('lexicon.verification.queue.my_locked_title'))
+          end
+
+          it 'excludes the locked entry from the other-entries section (appears exactly once)' do
+            get '/lex/verification/queue'
+            expect(response.body.scan(mine.title).size).to eq(1)
+          end
+        end
+
+        it 'omits the my-locked heading when no entries are locked by the current editor' do
+          get '/lex/verification/queue'
+          expect(response.body).not_to include(I18n.t('lexicon.verification.queue.my_locked_title'))
+        end
+      end
+
+      describe 'locked-by-others section' do
+        context 'when another editor has a locked entry' do
+          let!(:theirs) do
+            entry = create(:lex_entry, :person, status: :draft)
+            entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: other_editor.id)
+            entry
+          end
+
+          it 'shows the "Entries locked by other editors" heading' do
+            get '/lex/verification/queue'
+            expect(response.body).to include(I18n.t('lexicon.verification.queue.locked_by_others_title'))
+          end
+
+          it "shows the locking editor's name in the row" do
+            get '/lex/verification/queue'
+            expect(response.body).to include(I18n.t('lockable.locked_by_human', name: other_editor.name))
+          end
+
+          it 'excludes the locked entry from the other-entries section (appears exactly once)' do
+            get '/lex/verification/queue'
+            expect(response.body.scan(theirs.title).size).to eq(1)
+          end
+        end
+
+        it 'omits the locked-by-others heading when no entries are locked by other editors' do
+          get '/lex/verification/queue'
+          expect(response.body).not_to include(I18n.t('lexicon.verification.queue.locked_by_others_title'))
+        end
+      end
+
+      describe 'expired locks' do
+        let!(:expired) do
+          entry = create(:lex_entry, :person, status: :draft)
+          entry.update_columns(
+            locked_at: (Lockable::LOCK_TIMEOUT_IN_SECONDS + 60).seconds.ago,
+            locked_by_user_id: create_lexicon_editor.id
+          )
+          entry
+        end
+
+        it 'treats an expired lock as unlocked (no my-locked heading shown)' do
+          get '/lex/verification/queue'
+          expect(response.body).not_to include(I18n.t('lexicon.verification.queue.my_locked_title'))
+        end
+
+        it 'includes an expired-lock entry in the other-entries section' do
+          get '/lex/verification/queue'
+          expect(response.body).to include(expired.title)
+        end
+      end
+
+      describe 'filter consistency across sections' do
+        let!(:draft_mine) do
+          entry = create(:lex_entry, :person, status: :draft)
+          entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: create_lexicon_editor.id)
+          entry
+        end
+
+        let!(:verifying_mine) do
+          entry = create(:lex_entry, :person, status: :verifying)
+          entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: create_lexicon_editor.id)
+          entry
+        end
+
+        it 'status filter applies to the my-locked section' do
+          get '/lex/verification/queue', params: { status: 'draft' }
+          expect(response.body).to include(draft_mine.title)
+          expect(response.body).not_to include(verifying_mine.title)
+        end
+
+        context 'with a publication also locked by me' do
+          let!(:pub_mine) do
+            entry = create(:lex_entry, :publication, status: :draft)
+            entry.update_columns(locked_at: 5.minutes.ago, locked_by_user_id: create_lexicon_editor.id)
+            entry
+          end
+
+          it 'type filter applies to the my-locked section' do
+            get '/lex/verification/queue', params: { type: 'LexPerson' }
+            expect(response.body).to include(draft_mine.title)
+            expect(response.body).not_to include(pub_mine.title)
+          end
+        end
+      end
+    end
   end
 
   describe 'POST /lex/verification/:id/escalate' do
