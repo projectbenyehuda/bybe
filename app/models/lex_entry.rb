@@ -246,6 +246,7 @@ class LexEntry < ApplicationRecord
 
       checklist['works']['items'] ||= {}
       checklist['works']['items'][work_id.to_s] ||= { 'verified' => false, 'notes' => '' }
+      auto_verify_collections!(checklist)
       progress['last_updated_at'] = Time.current.iso8601
       update!(verification_progress: progress)
     end
