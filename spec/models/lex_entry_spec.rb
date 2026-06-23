@@ -124,6 +124,27 @@ RSpec.describe LexEntry, type: :model do
           expect(entry.verification_progress.dig('checklist', 'works', 'verified')).to be true
         end
       end
+
+      context 'when called on a stale instance after a concurrent update_checklist_item' do
+        it 'does not overwrite the committed change (with_lock prevents lost update)' do
+          # Load stale_entry BEFORE update_checklist_item commits (simulates
+          # PersonWorksController reading the entry on an overlapping request)
+          stale_entry = described_class.find(entry.id)
+          expect(stale_entry.verification_progress.dig('checklist', 'date_of_manual_update', 'verified')).to be false
+
+          # quickVerify commits true to DB
+          entry.update_checklist_item('date_of_manual_update', true)
+
+          # stale_entry still has the old in-memory value
+          expect(stale_entry.verification_progress.dig('checklist', 'date_of_manual_update', 'verified')).to be false
+
+          # PersonWorksController after_action fires on the stale instance
+          stale_entry.sync_works_checklist!
+
+          # with_lock must have reloaded fresh data, so true must survive
+          expect(entry.reload.verification_progress.dig('checklist', 'date_of_manual_update', 'verified')).to be true
+        end
+      end
     end
 
     describe '#verification_percentage' do

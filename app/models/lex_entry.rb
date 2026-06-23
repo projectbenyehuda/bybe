@@ -199,92 +199,102 @@ class LexEntry < ApplicationRecord
 
   # Update a specific checklist item
   def update_checklist_item(path, verified, notes = '')
-    progress = verification_progress.deep_dup
-    checklist = progress['checklist']
+    with_lock do
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
 
-    # Navigate to nested key and update
-    keys = path.split('.')
+      # Navigate to nested key and update
+      keys = path.split('.')
 
-    if keys.length > 1
-      # For nested paths like "works.items.123", navigate to parent and update child
-      parent_keys = keys[0..-2]
-      last_key = keys.last
+      if keys.length > 1
+        # For nested paths like "works.items.123", navigate to parent and update child
+        parent_keys = keys[0..-2]
+        last_key = keys.last
 
-      # Navigate to the parent hash, ensuring it exists
-      target = checklist
-      parent_keys.each do |key|
-        target[key] ||= {}
-        target = target[key]
+        # Navigate to the parent hash, ensuring it exists
+        target = checklist
+        parent_keys.each do |key|
+          target[key] ||= {}
+          target = target[key]
+        end
+
+        # Set the value on the target
+        target[last_key] = { 'verified' => verified, 'notes' => notes }
+      else
+        # For top-level paths like "title"
+        checklist[keys.first] = { 'verified' => verified, 'notes' => notes }
       end
 
-      # Set the value on the target
-      target[last_key] = { 'verified' => verified, 'notes' => notes }
-    else
-      # For top-level paths like "title"
-      checklist[keys.first] = { 'verified' => verified, 'notes' => notes }
+      # Auto-verify parent collections when all items are verified
+      auto_verify_collections!(checklist)
+
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
     end
-
-    # Auto-verify parent collections when all items are verified
-    auto_verify_collections!(checklist)
-
-    progress['last_updated_at'] = Time.current.iso8601
-    update!(verification_progress: progress)
   end
 
   # Sync works collection in verification checklist when works are added/deleted
   def sync_works_checklist!
-    return unless verification_progress.present? && lex_item_type == 'LexPerson'
+    return unless lex_item_type == 'LexPerson'
 
-    progress = verification_progress.deep_dup
-    checklist = progress['checklist']
-    return unless checklist
+    with_lock do
+      return if verification_progress.blank?
 
-    # Get current works from database
-    works = lex_item&.works
-    current_work_ids = works ? works.pluck(:id).map(&:to_s) : []
-    existing_items = checklist.dig('works', 'items') || {}
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist
 
-    # Add new works
-    current_work_ids.each do |work_id|
-      existing_items[work_id] ||= { 'verified' => false, 'notes' => '' }
+      # Get current works from database
+      works = lex_item&.works
+      current_work_ids = works ? works.pluck(:id).map(&:to_s) : []
+      existing_items = checklist.dig('works', 'items') || {}
+
+      # Add new works
+      current_work_ids.each do |work_id|
+        existing_items[work_id] ||= { 'verified' => false, 'notes' => '' }
+      end
+
+      # Remove deleted works
+      existing_items.select! { |work_id, _| current_work_ids.include?(work_id) }
+
+      checklist['works']['items'] = existing_items
+
+      # Auto-verify parent collection if all items verified
+      auto_verify_collections!(checklist)
+
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
     end
-
-    # Remove deleted works
-    existing_items.select! { |work_id, _| current_work_ids.include?(work_id) }
-
-    checklist['works']['items'] = existing_items
-
-    # Auto-verify parent collection if all items verified
-    auto_verify_collections!(checklist)
-
-    progress['last_updated_at'] = Time.current.iso8601
-    update!(verification_progress: progress)
   end
 
   # Mark all works as verified (called when marking entire works section as verified)
   def mark_all_works_verified!(notes = '')
-    return unless verification_progress.present? && lex_item_type == 'LexPerson'
+    return unless lex_item_type == 'LexPerson'
 
-    progress = verification_progress.deep_dup
-    checklist = progress['checklist']
-    return unless checklist && checklist['works']
+    with_lock do
+      return if verification_progress.blank?
 
-    # Get all current work IDs from database
-    works = lex_item&.works
-    work_ids = works ? works.pluck(:id).map(&:to_s) : []
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist && checklist['works']
 
-    # Mark each individual work as verified
-    work_ids.each do |work_id|
-      checklist['works']['items'] ||= {}
-      checklist['works']['items'][work_id] = { 'verified' => true, 'notes' => notes }
+      # Get all current work IDs from database
+      works = lex_item&.works
+      work_ids = works ? works.pluck(:id).map(&:to_s) : []
+
+      # Mark each individual work as verified
+      work_ids.each do |work_id|
+        checklist['works']['items'] ||= {}
+        checklist['works']['items'][work_id] = { 'verified' => true, 'notes' => notes }
+      end
+
+      # Mark the works section itself as verified
+      checklist['works']['verified'] = true
+      checklist['works']['notes'] = notes
+
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
     end
-
-    # Mark the works section itself as verified
-    checklist['works']['verified'] = true
-    checklist['works']['notes'] = notes
-
-    progress['last_updated_at'] = Time.current.iso8601
-    update!(verification_progress: progress)
   end
 
   private
