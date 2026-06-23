@@ -569,8 +569,7 @@ function openWorkEditPanel(path, onSuccess) {
         // Apply non-modal class before show so CSS takes effect from the first frame.
         $('#generalDlg').addClass('no-modal-mode');
 
-        $('#generalDlg').modal({ show: true, keyboard: true, backdrop: false });
-
+        $('#generalDlg').modal({ show: true, keyboard: true, backdrop: false, focus: false });
         // Bootstrap 4 adds 'modal-open' to <body> synchronously inside show().
         // Remove it immediately so background scrolling/interaction stays available.
         $('body').removeClass('modal-open');
