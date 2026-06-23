@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Verification Works Modal UX', :js do
+describe 'Verification Works Edit Panel UX', :js do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
     login_as_lexicon_editor
@@ -34,7 +34,7 @@ describe 'Verification Works Modal UX', :js do
 
   after { FileUtils.rm_f(lex_file.full_path) }
 
-  describe 'per-work edit modal positioning and draggability' do
+  describe 'per-work edit panel positioning and draggability' do
     before do
       visit "/lex/verification/#{entry.id}"
       within "#work-#{work.id}" do
@@ -45,24 +45,24 @@ describe 'Verification Works Modal UX', :js do
       # rubocop:enable RSpec/ExpectInHook
     end
 
-    it 'modal appears at the top of the viewport' do
+    it 'panel appears at the top of the viewport' do
       modal_top = page.evaluate_script(
         "document.querySelector('#generalDlg .modal-dialog').getBoundingClientRect().top"
       )
-      # Per-work edit modal has margin-top: 0 (full-height side panel)
+      # Per-work edit panel has margin-top: 0 (full-height side panel)
       expect(modal_top).to be < 10
     end
 
-    it 'modal content fills the viewport height as a full-height side panel' do
+    it 'panel content fills the viewport height as a full-height side panel' do
       modal_height = page.evaluate_script(
         "document.querySelector('#generalDlg .modal-content').getBoundingClientRect().height"
       )
       viewport_height = page.evaluate_script('window.innerHeight')
-      # Per-work edit modal uses height: 100vh
+      # Per-work edit panel uses height: 100vh
       expect(modal_height).to be >= (viewport_height * 0.9)
     end
 
-    it 'modal header shows move cursor indicating draggability' do
+    it 'panel header shows move cursor indicating draggability' do
       cursor = page.evaluate_script(
         "window.getComputedStyle(document.querySelector('#generalDlg .modal-header')).cursor"
       )
@@ -78,7 +78,7 @@ describe 'Verification Works Modal UX', :js do
       end
     end
 
-    it 'dragging the SE corner handle increases modal size' do
+    it 'dragging the SE corner handle increases panel size' do
       initial_w = page.evaluate_script(
         "document.querySelector('#generalDlg .modal-dialog').getBoundingClientRect().width"
       )
@@ -108,7 +108,7 @@ describe 'Verification Works Modal UX', :js do
       expect(new_h).to be > initial_h
     end
 
-    it 'dragging the modal header repositions the dialog' do
+    it 'dragging the panel header repositions the dialog' do
       initial_top = page.evaluate_script(
         "document.querySelector('#generalDlg .modal-dialog').getBoundingClientRect().top"
       )
@@ -130,6 +130,23 @@ describe 'Verification Works Modal UX', :js do
         "document.querySelector('#generalDlg .modal-dialog').getBoundingClientRect().top"
       )
       expect(new_top).to be > initial_top
+    end
+
+    it 'does not show a modal backdrop so the source pane remains accessible' do
+      expect(page).not_to have_css('.modal-backdrop')
+    end
+
+    it 'removes modal-open from body so background interaction is not blocked' do
+      expect(page).not_to have_css('body.modal-open')
+    end
+
+    it 'marks the overlay as no-modal-mode for pointer-event passthrough' do
+      expect(page).to have_css('#generalDlg.no-modal-mode', wait: 5)
+    end
+
+    it 'closes when Esc is pressed' do
+      find('body').send_keys(:escape)
+      expect(page).not_to have_css('#generalDlg.show', wait: 5)
     end
   end
 end
