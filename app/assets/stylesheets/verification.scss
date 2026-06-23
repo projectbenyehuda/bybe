@@ -407,6 +407,17 @@ body:has(.verification-container) {
   }
 }
 
+// Per-work edit panel: non-modal mode.
+// pointer-events:none on the overlay lets clicks pass through to the source (PHP) pane;
+// pointer-events:auto restores interaction for the dialog itself.
+#generalDlg.no-modal-mode {
+  pointer-events: none;
+}
+
+#generalDlg.no-modal-mode .modal-dialog {
+  pointer-events: auto;
+}
+
 // Per-work edit modal: full height, anchored to left (migrated data) pane.
 // margin-left:0 + margin-right:auto anchors to physical-left (= visual-left in RTL grid).
 // Both dialog and content use 100vh directly — avoids Bootstrap 4 percentage-height resolution

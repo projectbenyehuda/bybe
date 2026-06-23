@@ -556,6 +556,33 @@ function restoreScrollWithRetry(el, scrollVal) {
     requestAnimationFrame(tryScroll);
 }
 
+// Open the per-work edit form as a non-modal panel.
+// Unlike openModal(), this version uses backdrop:false and makes the overlay
+// transparent to pointer events so the source (PHP) pane remains interactive.
+// Esc still dismisses the panel via Bootstrap's keyboard:true option.
+function openWorkEditPanel(path, onSuccess) {
+    $('#generalDlg').data('onSuccess', onSuccess);
+
+    $.get(path).done(function(htmlContent) {
+        setupModalContent(htmlContent);
+
+        // Apply non-modal class before show so CSS takes effect from the first frame.
+        $('#generalDlg').addClass('no-modal-mode');
+
+        $('#generalDlg').modal({ show: true, keyboard: true, backdrop: false });
+
+        // Bootstrap 4 adds 'modal-open' to <body> synchronously inside show().
+        // Remove it immediately so background scrolling/interaction stays available.
+        $('body').removeClass('modal-open');
+
+        $('#generalDlg').one('hidden.bs.modal', function() {
+            $(this).removeClass('no-modal-mode');
+        });
+    }).fail(function(xhr, status, error) {
+        alert('Failed to load: ' + status + ' - ' + error);
+    });
+}
+
 // Reload the page, preserving source pane scroll position
 function reloadPage() {
     saveScrollPositions();
