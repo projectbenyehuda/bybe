@@ -187,6 +187,9 @@ en:
           person: Person
           publication: Publication
         time_updated: "%{time} ago"
+        my_locked_title: Entries locked by me
+        locked_by_others_title: Entries locked by other editors
+        other_title: Other entries
       show:
         title: "Verifying: %{entry_title}"
         back_to_queue: Back to Queue

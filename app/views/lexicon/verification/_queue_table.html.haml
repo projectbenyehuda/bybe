@@ -1,0 +1,47 @@
+%table.table.table-striped.verification-queue-table
+  %thead
+    %tr
+      %th= t('lexicon.verification.queue.columns.title')
+      %th= t('lexicon.verification.queue.columns.type')
+      %th= t('lexicon.verification.queue.columns.status')
+      %th= t('lexicon.verification.queue.columns.progress')
+      %th= t('lexicon.verification.queue.columns.last_updated')
+      %th= t('lexicon.verification.queue.columns.actions')
+  %tbody
+    - entries.each do |entry|
+      %tr{ class: "status-#{entry.status}" }
+        %td= entry.title
+        - type_filter_key = { 'LexPerson' => 'person', 'LexPublication' => 'publication' }[entry.lex_item_type]
+        %td
+          - if type_filter_key
+            = t("lexicon.verification.queue.filters.#{type_filter_key}")
+          - else
+            = entry.lex_item_type&.demodulize.presence || t('unknown')
+        %td
+          %span.badge{ class: badge_class_for_status(entry.status) }
+            = t("lexicon.verification.queue.filters.#{entry.status}", default: entry.status.humanize)
+        %td
+          - if entry.status_verifying? || entry.status_verified? || entry.status_escalated?
+            - percentage = entry.verification_percentage
+            .progress{ style: 'width: 150px; height: 20px;' }
+              .progress-bar{ role: 'progressbar', style: "width: #{percentage}%", 'aria-valuenow': percentage, 'aria-valuemin': '0', 'aria-valuemax': '100' }
+                #{percentage}%
+          - else
+            %span.text-muted 0%
+        %td
+          = t('lexicon.verification.queue.time_updated', time: time_ago_in_words(entry.updated_at))
+        %td
+          - if entry.locked? && entry.locked_by_user != current_user
+            .label.label-warning= entry.locked_by_human
+            %span.text-sm-left.text-muted= entry.locked_at_human
+          - else
+            - if entry.status_verifying? || entry.status_escalated?
+              = link_to t('lexicon.verification.queue.actions.continue'), lexicon_verification_path(entry),
+                        class: 'btn btn-sm btn-primary'
+            - else
+              = link_to t('lexicon.verification.queue.actions.start'), lexicon_verification_path(entry),
+                        class: 'btn btn-sm btn-success'
+            - if entry.redo_migration_eligible?
+              = link_to t('lexicon.files.redo_migrate.title'), redo_migration_lexicon_file_path(entry.lex_file),
+                        remote: true, method: :post, class: 'btn btn-sm btn-outline-warning ms-1',
+                        data: { confirm: t('lexicon.files.redo_migrate.confirm') }
