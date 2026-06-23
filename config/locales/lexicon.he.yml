@@ -187,7 +187,7 @@ he:
           person: יוצר/ת
           publication: פרסום
         time_updated: "לפני %{time}"
-        my_locked_title: ערכים נעולים על ידי
+        my_locked_title: ערכים שנעלתי
         locked_by_others_title: ערכים נעולים על ידי עורכים אחרים
         other_title: ערכים אחרים
       show:
