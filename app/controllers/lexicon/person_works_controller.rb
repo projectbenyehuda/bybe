@@ -11,7 +11,6 @@ module Lexicon
     before_action :set_work, only: %i(edit update destroy reorder title_links add_title_link remove_title_link
                                       comment_links add_comment_link remove_comment_link)
     before_action :set_person, only: %i(new create index)
-    after_action :sync_verification_checklist, only: %i(create update destroy reorder)
 
     layout false
 
@@ -34,7 +33,10 @@ module Lexicon
 
       @work.person = @person
 
-      return if @work.save
+      if @work.save
+        @person.entry&.add_work_to_checklist!(@work.id)
+        return
+      end
 
       render :new, status: :unprocessable_content
     end
@@ -55,7 +57,9 @@ module Lexicon
     end
 
     def destroy
+      work_id = @work.id
       @work.destroy!
+      @person.entry&.remove_work_from_checklist!(work_id)
     end
 
     def title_links
@@ -192,15 +196,6 @@ module Lexicon
           title work_type publisher publication_date publication_place comment publication_id collection_id
         )
       )
-    end
-
-    # Sync verification checklist when works are added/updated/deleted
-    def sync_verification_checklist
-      # Get the entry for this person if it exists and is being verified
-      entry = @person.entry
-      return if entry&.verification_progress.blank?
-
-      entry.sync_works_checklist!
     end
   end
 end

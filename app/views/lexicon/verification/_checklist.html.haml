@@ -106,6 +106,14 @@
         %input{type: 'checkbox', checked: checklist['attachments']&.dig('verified'), disabled: true, data: {path: 'attachments', 'section-id': 'section-attachments'}}
         = t('lexicon.verification.checklist.person.attachments')
 
+    -# Date of Manual Update
+    %li.checklist-item
+      %label
+        -# haml-lint:disable LineLength
+        %input{ type: 'checkbox', checked: checklist['date_of_manual_update']&.dig('verified'), disabled: true, data: { path: 'date_of_manual_update', 'section-id': 'section-date-of-manual-update' } }
+        -# haml-lint:enable LineLength
+        = t('lexicon.verification.checklist.person.date_of_manual_update')
+
   .overall-notes.mt-3
     %label.form-label
       %strong= t('lexicon.verification.checklist.overall_notes')

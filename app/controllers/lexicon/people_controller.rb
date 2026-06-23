@@ -58,7 +58,7 @@ module Lexicon
           :birthdate,
           :deathdate,
           :bio,
-          { entry_attributes: %i(title other_designation) }
+          { entry_attributes: %i(title other_designation date_of_manual_update) }
         ]
       )
     end

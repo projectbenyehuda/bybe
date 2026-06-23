@@ -210,6 +210,7 @@ he:
           links: קישוריוֹת
           attachments: קבצים מצורפים
           external_identifiers: מזהים חיצוניים
+          date_of_manual_update: תאריך עדכון ידני אחרון
         publication:
           title: כותרת
           description: תיאור
@@ -218,6 +219,7 @@ he:
           links: קישוריוֹת
           attachments: קבצים מצורפים
           external_identifiers: מזהים חיצוניים
+          date_of_manual_update: תאריך עדכון ידני אחרון
       source:
         header: קובץ מקור
         file_not_found: "⚠️ קובץ מקור לא נמצא"
@@ -250,6 +252,8 @@ he:
         no_citations: "(אין מראי מקום)"
         no_links: "(אין קישוריוֹת)"
         no_attachments: "(אין קבצים מצורפים)"
+        date_of_manual_update_section: תאריך עדכון ידני אחרון
+        no_date_of_manual_update: "(אין תאריך עדכון ידני)"
         no_description: "(אין תיאור)"
         no_toc: "(אין תוכן עניינים)"
         no_az_navbar: "(אין ניווט א-ב)"
@@ -323,6 +327,8 @@ he:
         confirm_match: אשר התאמה
         reject_match: דחה התאמה
         proposed_collection: "(הצעה: %{title})"
+        date_of_manual_update:
+          instructions: "הכנס את תאריך העדכון הידני האחרון כפי שמופיע בקובץ המקור. ניתן לתקן אם נקלט בצורה שגויה."
         external_identifiers:
           instructions: "הכנס ערכי מזהה עבור מערכות בקרת סמכות. השאר שדה ריק כדי להסיר את המזהה."
           leave_blank_to_remove: "השאר ריק כדי להסיר"
