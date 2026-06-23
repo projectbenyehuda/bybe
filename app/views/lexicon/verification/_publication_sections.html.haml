@@ -186,6 +186,3 @@
     %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'date_of_manual_update')}', onSectionEditSuccess('section-date-of-manual-update'))" }
       ✏️
       = t('lexicon.verification.migrated.edit')
-    %button.btn.btn-sm{ class: checklist['date_of_manual_update']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: 'date_of_manual_update' } }
-      ✓
-      = t('lexicon.verification.migrated.mark_verified')
