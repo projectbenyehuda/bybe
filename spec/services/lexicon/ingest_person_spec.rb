@@ -48,6 +48,7 @@ describe Lexicon::IngestPerson do
         'viaf' => '22255259'
       )
       expect(entry.external_identifiers).not_to have_key('j9u')
+      expect(entry.date_of_manual_update).to eq('12 ביולי 2023')
     end
   end
 
@@ -308,6 +309,7 @@ describe Lexicon::IngestPerson do
           'wikidata' => 'Q12409731'
         }
       )
+      expect(entry.date_of_manual_update).to eq('24 באפריל 2025')
     end
   end
 
@@ -351,6 +353,25 @@ describe Lexicon::IngestPerson do
       expect do
         described_class.new.send(:attach_backup_files, lex_person)
       end.not_to(change(ActiveStorage::Attachment, :count))
+    end
+  end
+
+  context 'when the date of manual update is wrapped in square brackets' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'ישראלי, ישראל',
+          fname: 'bracketed_date.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/bracketed_date.php')
+        }
+      )
+    end
+
+    it 'extracts the date without the brackets' do
+      expect(call.date_of_manual_update).to eq('15 במרץ 2024')
     end
   end
 end

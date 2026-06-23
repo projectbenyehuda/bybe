@@ -13,6 +13,7 @@ module Lexicon
       @lex_entry.lex_item = create_lex_item(html_doc)
       @lex_entry.english_title = extract_english_title(html_doc)
       @lex_entry.external_identifiers = extract_external_identifiers(html_doc)
+      @lex_entry.date_of_manual_update = extract_date_of_manual_update(html_doc)
       @lex_entry.status_draft!
 
       lex_file.status_ingested!
@@ -27,6 +28,18 @@ module Lexicon
     end
 
     private
+
+    # Extract the "עודכן לאחרונה:" date string from the PHP footer area.
+    # The label may be surrounded by brackets (e.g. "[עודכן לאחרונה: DATE]").
+    def extract_date_of_manual_update(html_doc)
+      html_doc.css('font[size="2"]').each do |node|
+        text = node.text.strip
+        next unless text.include?('עודכן לאחרונה:')
+
+        return text.sub(/.*עודכן לאחרונה:\s*/, '').gsub(/\]$/, '').strip.presence
+      end
+      nil
+    end
 
     # Extract English title from the header table
     def extract_english_title(html_doc)
