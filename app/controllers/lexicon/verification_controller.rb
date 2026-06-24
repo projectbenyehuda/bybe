@@ -444,12 +444,6 @@ module Lexicon
         html_doc.at('html')&.set_attribute('dir', 'rtl')
         html_doc.at('body')&.set_attribute('dir', 'rtl')
 
-        html_doc.css('img').each do |img|
-          src = img['src']
-          if src =~ %r{^\d+[_-]{1}files/}
-            img['src'] = OLD_LEXICON_URL + '/' + src
-          end
-        end
         html_doc.to_s
       end
     rescue StandardError => e
