@@ -434,7 +434,7 @@ module Lexicon
       return nil unless File.exist?(file_path)
 
       # Cache file content in session to avoid repeated disk reads
-      cache_key = "lex_file_content_#{@entry.lex_file.id}"
+      cache_key = "lex_file_content_#{@entry.lex_file.id}_#{File.mtime(file_path).to_i}"
       Rails.cache.fetch(cache_key, expires_in: 1.hour) do
         html_doc = File.open(file_path) { |f| Nokogiri::HTML(f) }
 
