@@ -10,8 +10,13 @@ module Lexicon
       return [] if header.nil?
 
       # The next element should be a 'font' tag containing all citations. Sometimes there could be one or more blank
-      # paragraphs before it, so we need to skip them.
-      citations_node = next_element_skipping_blank(header)
+      # paragraphs before it, so we skip blank non-font elements. Font elements are always potential
+      # citations-section markers even when their content is empty (e.g. <font color="#FF0000"></font>),
+      # so we must not skip them.
+      citations_node = header.next_element
+      while citations_node.present? && citations_node.name != 'font' && citations_node.text.blank?
+        citations_node = citations_node.next_element
+      end
 
       return [] if citations_node&.name != 'font'
 
