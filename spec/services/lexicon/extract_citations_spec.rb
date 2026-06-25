@@ -49,6 +49,29 @@ describe Lexicon::ExtractCitations do
     end
   end
 
+  context 'when an empty <font> precedes the citation lists (new-style PHP export)' do
+    # Regression: updated PHP files place an empty <font color="#FF0000"></font> immediately after
+    # the Bib. anchor header, with no blank <p> buffer before the <ul> lists. The original
+    # next_element_skipping_blank call skipped that empty font (blank text) and landed on the <ul>,
+    # which failed the "must be a font" guard and returned []. Fix: only skip blank non-font elements.
+    let(:filename) { Rails.root.join('spec/fixtures/files/lexicon/empty_font_before_citations.php') }
+
+    it 'extracts all citations across every subject group' do
+      captured_html = nil
+      allow(Lexicon::ParseCitations).to receive(:call) do |html|
+        captured_html = html
+        []
+      end
+
+      result
+
+      expect(captured_html).not_to be_nil
+      expect(Nokogiri::HTML(captured_html).css('li').size).to eq(3)
+      expect(captured_html).to include('כהן, דוד')
+      expect(captured_html).to include('על ״ספר ראשון״')
+    end
+  end
+
   context 'when a stray </span> inside a <li> prematurely closes the parent span' do
     # Regression test for 00034.php: a stray </span> after </b> inside a citation <li>
     # caused Nokogiri to prematurely close the <span dir="rtl"> wrapping the citations section.
