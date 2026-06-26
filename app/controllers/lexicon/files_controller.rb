@@ -14,12 +14,17 @@ module Lexicon
     before_action :try_to_lock_record, only: %i(migrate redo_migration)
     layout 'lexicon_backend'
 
+    SORTABLE_COLUMNS = %w(fname migration_item_count).freeze
+    SORT_DIRECTIONS = %w(asc desc).freeze
+
     def index
       @entrytype = params[:entrytype]
       @title = params[:title]
       @fname = params[:fname]
       @page = params[:page]
       @entry_statuses = params[:entry_statuses].presence || %w(raw migrating error draft verifying)
+      @sort = params[:sort].presence_in(SORTABLE_COLUMNS) || 'fname'
+      @direction = params[:direction].presence_in(SORT_DIRECTIONS) || 'asc'
 
       scope = LexFile.joins(:lex_entry)
 
@@ -27,6 +32,12 @@ module Lexicon
       scope = scope.where('lex_entries.title LIKE ?', "%#{@title}%") if @title.present?
       scope = scope.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
       scope = scope.where(lex_entries: { status: @entry_statuses })
+
+      sort_clause = if @sort == 'migration_item_count'
+                      "lex_entries.migration_item_count #{@direction}"
+                    else
+                      "#{@sort} #{@direction}"
+                    end
 
       # Files whose entry is currently locked are surfaced in their own sections (mine vs. others')
       # and excluded from the main paginated list to avoid showing the same file twice.
@@ -38,7 +49,7 @@ module Lexicon
 
       @lex_files = scope.where.not(id: locked_files.select('lex_files.id'))
                         .preload(:lex_entry)
-                        .order(:fname)
+                        .order(Arel.sql(sort_clause))
                         .page(@page)
     end
 

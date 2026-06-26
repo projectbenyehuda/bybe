@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_22_233652) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_26_092951) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -678,6 +678,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_233652) do
     t.timestamp "locked_at"
     t.integer "locked_by_user_id"
     t.boolean "main", default: true, null: false
+    t.integer "migration_item_count"
     t.string "other_designation", limit: 1024
     t.bigint "profile_image_id"
     t.string "sort_title"
@@ -729,7 +730,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_233652) do
     t.string "new_path", null: false
     t.string "old_path", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
   end
 
   create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
