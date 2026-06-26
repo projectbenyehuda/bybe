@@ -34,9 +34,9 @@ module Lexicon
       scope = scope.where(lex_entries: { status: @entry_statuses })
 
       sort_clause = if @sort == 'migration_item_count'
-                      "lex_entries.migration_item_count #{@direction}"
+                      "lex_entries.migration_item_count #{@direction}, lex_files.id ASC"
                     else
-                      "#{@sort} #{@direction}"
+                      "#{@sort} #{@direction}, lex_files.id ASC"
                     end
 
       # Files whose entry is currently locked are surfaced in their own sections (mine vs. others')

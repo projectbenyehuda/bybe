@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_26_092951) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_26_134102) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -689,6 +689,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_26_092951) do
     t.index ["last_editor_id"], name: "index_lex_entries_on_last_editor_id"
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["locked_by_user_id"], name: "index_lex_entries_on_locked_by_user_id"
+    t.index ["migration_item_count"], name: "index_lex_entries_on_migration_item_count"
     t.index ["profile_image_id"], name: "index_lex_entries_on_profile_image_id"
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"
@@ -730,7 +731,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_26_092951) do
     t.string "new_path", null: false
     t.string "old_path", null: false
     t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
-    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path"
+    t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
   end
 
   create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|

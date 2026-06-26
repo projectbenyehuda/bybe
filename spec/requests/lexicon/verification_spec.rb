@@ -456,6 +456,12 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         entry_ids = assigns(:entries).map(&:id)
         expect(entry_ids).to include(small_entry.id, large_entry.id, nil_entry.id)
       end
+
+      it 'ignores a non-numeric max_items and returns all entries' do
+        get '/lex/verification/queue', params: { max_items: 'abc' }
+        entry_ids = assigns(:entries).map(&:id)
+        expect(entry_ids).to include(small_entry.id, large_entry.id, nil_entry.id)
+      end
     end
 
     context 'when sorting by migration_item_count' do

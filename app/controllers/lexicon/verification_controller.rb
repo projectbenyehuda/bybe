@@ -23,9 +23,10 @@ module Lexicon
 
       scope = scope.where(status: params[:status]) if params[:status].present?
       scope = scope.where(lex_item_type: params[:type]) if params[:type].present?
-      scope = scope.where(migration_item_count: ..params[:max_items].to_i) if params[:max_items].present?
-
       @max_items = params[:max_items]
+      if @max_items.present? && @max_items.strip.match?(/\A\d+\z/)
+        scope = scope.where(migration_item_count: ..@max_items.to_i)
+      end
       @sort = params[:sort].presence_in(QUEUE_SORTABLE_COLUMNS) || 'updated_at'
       @direction = params[:direction].presence_in(QUEUE_SORT_DIRECTIONS) || (@sort == 'updated_at' ? 'desc' : 'asc')
 
@@ -35,7 +36,7 @@ module Lexicon
       @locked_by_others_entries = locked_scope.where.not(locked_by_user_id: current_user.id).order(updated_at: :desc)
 
       @entries = scope.where.not(id: locked_scope.select(:id))
-                      .order(@sort => @direction)
+                      .order(@sort => @direction, id: :asc)
                       .page(params[:page])
     end
 
