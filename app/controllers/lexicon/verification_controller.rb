@@ -14,12 +14,21 @@ module Lexicon
     end
     layout 'lexicon_backend'
 
+    QUEUE_SORTABLE_COLUMNS = %w(updated_at migration_item_count).freeze
+    QUEUE_SORT_DIRECTIONS = %w(asc desc).freeze
+
     # GET /lexicon/verification/queue
     def index
       scope = LexEntry.needs_verification.includes(:lex_item, :lex_file)
 
       scope = scope.where(status: params[:status]) if params[:status].present?
       scope = scope.where(lex_item_type: params[:type]) if params[:type].present?
+      @max_items = params[:max_items]
+      if @max_items.present? && @max_items.strip.match?(/\A\d+\z/)
+        scope = scope.where(migration_item_count: ..@max_items.to_i)
+      end
+      @sort = params[:sort].presence_in(QUEUE_SORTABLE_COLUMNS) || 'updated_at'
+      @direction = params[:direction].presence_in(QUEUE_SORT_DIRECTIONS) || (@sort == 'updated_at' ? 'desc' : 'asc')
 
       locked_scope = scope.where('locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
                           .includes(:locked_by_user)
@@ -27,7 +36,7 @@ module Lexicon
       @locked_by_others_entries = locked_scope.where.not(locked_by_user_id: current_user.id).order(updated_at: :desc)
 
       @entries = scope.where.not(id: locked_scope.select(:id))
-                      .order(updated_at: :desc)
+                      .order(@sort => @direction, id: :asc)
                       .page(params[:page])
     end
 

@@ -2,15 +2,27 @@
 
 .filters.mb-3
   = form_tag lexicon_verification_queue_path, method: :get, class: 'form-inline' do
+    = hidden_field_tag :sort, @sort if @sort.present?
+    = hidden_field_tag :direction, @direction if @direction.present?
     .form-group.me-2
       = label_tag :status, t('lexicon.verification.queue.columns.status'), class: 'me-1'
-      - status_options = [[t('lexicon.verification.queue.filters.all'), ''], [t('lexicon.verification.queue.filters.draft'), 'draft'], [t('lexicon.verification.queue.filters.verifying'), 'verifying'], [t('lexicon.verification.queue.filters.error'), 'error'], [t('lexicon.verification.queue.filters.escalated'), 'escalated']]
+      - q = 'lexicon.verification.queue.filters'
+      - status_options = [[t("#{q}.all"), ''], [t("#{q}.draft"), 'draft'],
+                          [t("#{q}.verifying"), 'verifying'], [t("#{q}.error"), 'error'],
+                          [t("#{q}.escalated"), 'escalated']]
       = select_tag :status, options_for_select(status_options, params[:status]), class: 'form-control'
 
     .form-group.me-2
       = label_tag :type, t('lexicon.verification.queue.columns.type'), class: 'me-1'
-      - type_options = [[t('lexicon.verification.queue.filters.all'), ''], [t('lexicon.verification.queue.filters.person'), 'LexPerson'], [t('lexicon.verification.queue.filters.publication'), 'LexPublication']]
+      - type_options = [[t("#{q}.all"), ''], [t("#{q}.person"), 'LexPerson'],
+                        [t("#{q}.publication"), 'LexPublication']]
       = select_tag :type, options_for_select(type_options, params[:type]), class: 'form-control'
+
+    .form-group.me-2
+      = label_tag :max_items, t("#{q}.max_items_label"), class: 'me-1'
+      - max_items_opts = { min: 0, placeholder: t("#{q}.max_items_placeholder"),
+                           class: 'form-control', style: 'width: 80px' }
+      = number_field_tag :max_items, @max_items, max_items_opts
 
     = submit_tag t('lexicon.entries.index.filter'), class: 'btn btn-sm btn-primary'
 
@@ -23,7 +35,7 @@
   = render partial: 'queue_table', locals: { entries: @locked_by_others_entries }
 
 %h3= t('lexicon.verification.queue.other_title')
-= render partial: 'queue_table', locals: { entries: @entries }
+= render partial: 'queue_table', locals: { entries: @entries, sortable: true }
 
 = paginate @entries
 

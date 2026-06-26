@@ -439,6 +439,49 @@ RSpec.describe 'Lexicon::Verification', type: :request do
   end
 
   describe 'GET /lex/verification/queue' do
+    context 'when filtering by max_items' do
+      let!(:small_entry) { create(:lex_entry, :person, status: :draft, migration_item_count: 10) }
+      let!(:large_entry) { create(:lex_entry, :person, status: :draft, migration_item_count: 100) }
+      let!(:nil_entry)   { create(:lex_entry, :person, status: :draft, migration_item_count: nil) }
+
+      it 'returns only entries with migration_item_count <= max_items' do
+        get '/lex/verification/queue', params: { max_items: '30' }
+        entry_ids = assigns(:entries).map(&:id)
+        expect(entry_ids).to include(small_entry.id)
+        expect(entry_ids).not_to include(large_entry.id, nil_entry.id)
+      end
+
+      it 'returns all entries when max_items is blank' do
+        get '/lex/verification/queue'
+        entry_ids = assigns(:entries).map(&:id)
+        expect(entry_ids).to include(small_entry.id, large_entry.id, nil_entry.id)
+      end
+
+      it 'ignores a non-numeric max_items and returns all entries' do
+        get '/lex/verification/queue', params: { max_items: 'abc' }
+        entry_ids = assigns(:entries).map(&:id)
+        expect(entry_ids).to include(small_entry.id, large_entry.id, nil_entry.id)
+      end
+    end
+
+    context 'when sorting by migration_item_count' do
+      let!(:entry_low) { create(:lex_entry, :person, status: :draft, migration_item_count: 5) }
+      let!(:entry_high) { create(:lex_entry, :person, status: :draft, migration_item_count: 50) }
+      let!(:entry_mid)  { create(:lex_entry, :person, status: :draft, migration_item_count: 20) }
+
+      it 'sorts ascending when direction=asc' do
+        get '/lex/verification/queue', params: { sort: 'migration_item_count', direction: 'asc' }
+        ids = assigns(:entries).map(&:id)
+        expect(ids).to eq([entry_low.id, entry_mid.id, entry_high.id])
+      end
+
+      it 'sorts descending when direction=desc' do
+        get '/lex/verification/queue', params: { sort: 'migration_item_count', direction: 'desc' }
+        ids = assigns(:entries).map(&:id)
+        expect(ids).to eq([entry_high.id, entry_mid.id, entry_low.id])
+      end
+    end
+
     it 'auto-refreshes the page periodically' do
       get '/lex/verification/queue'
 

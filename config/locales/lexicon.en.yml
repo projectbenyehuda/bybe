@@ -144,6 +144,7 @@ en:
         my_locked_title: Files locked by me
         locked_by_others_title: Files locked by other editors
         other_title: Other files
+        migration_item_count: Items
       migrate:
         success: Migration queued
         title: Analyze
@@ -171,6 +172,7 @@ en:
           type: Type
           status: Status
           progress: Progress
+          migration_item_count: Items
           last_updated: Last Updated
           actions: Actions
         actions:
@@ -186,6 +188,8 @@ en:
           escalated: Escalated
           person: Person
           publication: Publication
+          max_items_label: "Max items"
+          max_items_placeholder: "e.g. 20"
         time_updated: "%{time} ago"
         my_locked_title: Entries locked by me
         locked_by_others_title: Entries locked by other editors

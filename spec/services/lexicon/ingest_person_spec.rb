@@ -49,6 +49,11 @@ describe Lexicon::IngestPerson do
       )
       expect(entry.external_identifiers).not_to have_key('j9u')
       expect(entry.date_of_manual_update).to eq('12 ביולי 2023')
+
+      # migration_item_count = works + citations + links + attachments
+      expected_count = person.works.count + person.citations.count + person.links.count + entry.attachments.count
+      expect(entry.migration_item_count).to eq(expected_count)
+      expect(entry.migration_item_count).to be > 0
     end
   end
 
