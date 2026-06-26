@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_22_233652) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_26_134102) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -678,6 +678,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_233652) do
     t.timestamp "locked_at"
     t.integer "locked_by_user_id"
     t.boolean "main", default: true, null: false
+    t.integer "migration_item_count"
     t.string "other_designation", limit: 1024
     t.bigint "profile_image_id"
     t.string "sort_title"
@@ -688,6 +689,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_22_233652) do
     t.index ["last_editor_id"], name: "index_lex_entries_on_last_editor_id"
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["locked_by_user_id"], name: "index_lex_entries_on_locked_by_user_id"
+    t.index ["migration_item_count"], name: "index_lex_entries_on_migration_item_count"
     t.index ["profile_image_id"], name: "index_lex_entries_on_profile_image_id"
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"

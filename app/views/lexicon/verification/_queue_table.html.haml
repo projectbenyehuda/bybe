@@ -1,3 +1,4 @@
+- sortable = local_assigns.fetch(:sortable, false)
 %table.table.table-striped.verification-queue-table
   %thead
     %tr
@@ -5,7 +6,24 @@
       %th= t('lexicon.verification.queue.columns.type')
       %th= t('lexicon.verification.queue.columns.status')
       %th= t('lexicon.verification.queue.columns.progress')
-      %th= t('lexicon.verification.queue.columns.last_updated')
+      %th
+        - if sortable
+          - next_dir = @sort == 'migration_item_count' && @direction == 'asc' ? 'desc' : 'asc'
+          - sort_url = request.params.merge(sort: 'migration_item_count', direction: next_dir)
+          = link_to t('lexicon.verification.queue.columns.migration_item_count'), sort_url
+          - if @sort == 'migration_item_count'
+            = @direction == 'asc' ? '▲' : '▼'
+        - else
+          = t('lexicon.verification.queue.columns.migration_item_count')
+      %th
+        - if sortable
+          - next_dir = @sort == 'updated_at' && @direction == 'desc' ? 'asc' : 'desc'
+          - updated_url = request.params.merge(sort: 'updated_at', direction: next_dir)
+          = link_to t('lexicon.verification.queue.columns.last_updated'), updated_url
+          - if @sort == 'updated_at'
+            = @direction == 'desc' ? '▼' : '▲'
+        - else
+          = t('lexicon.verification.queue.columns.last_updated')
       %th= t('lexicon.verification.queue.columns.actions')
   %tbody
     - entries.each do |entry|
@@ -24,10 +42,12 @@
           - if entry.status_verifying? || entry.status_verified? || entry.status_escalated?
             - percentage = entry.verification_percentage
             .progress{ style: 'width: 150px; height: 20px;' }
-              .progress-bar{ role: 'progressbar', style: "width: #{percentage}%", 'aria-valuenow': percentage, 'aria-valuemin': '0', 'aria-valuemax': '100' }
+              .progress-bar{ role: 'progressbar', style: "width: #{percentage}%",
+                             aria: { valuenow: percentage, valuemin: '0', valuemax: '100' } }
                 #{percentage}%
           - else
             %span.text-muted 0%
+        %td= entry.migration_item_count
         %td
           = t('lexicon.verification.queue.time_updated', time: time_ago_in_words(entry.updated_at))
         %td
