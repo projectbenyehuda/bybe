@@ -144,6 +144,7 @@ he:
         my_locked_title: קבצים נעולים על ידי
         locked_by_others_title: קבצים נעולים על ידי עורכים אחרים
         other_title: קבצים אחרים
+        migration_item_count: פריטים
       migrate:
         success: ההסבה החלה
         title: התחל הסבה
@@ -171,6 +172,7 @@ he:
           type: סוג
           status: סטטוס
           progress: התקדמות
+          migration_item_count: פריטים
           last_updated: עדכון אחרון
           actions: פעולות
         actions:
@@ -186,6 +188,8 @@ he:
           escalated: הועבר לבדיקה נוספת
           person: יוצר/ת
           publication: פרסום
+          max_items_label: "מקסימום פריטים"
+          max_items_placeholder: "למשל 20"
         time_updated: "לפני %{time}"
         my_locked_title: ערכים שנעלתי
         locked_by_others_title: ערכים נעולים על ידי עורכים אחרים
