@@ -7,7 +7,7 @@ if ENV['RACK_ENV'] == 'production'
   environment 'production'
   workers Integer(ENV['WEB_CONCURRENCY'] || 8)
   bind "unix://#{shared_dir}/tmp/sockets/puma.sock"
-  stdout_redirect "#{shared_dir}/log/puma.stdout.log", "#{shared_dir}/log/puma.stderr.log", true
+  # stdout_redirect "#{shared_dir}/log/puma.stdout.log", "#{shared_dir}/log/puma.stderr.log", true
 else
   workers 3
   environment 'development'
