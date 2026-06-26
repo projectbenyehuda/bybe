@@ -6,6 +6,7 @@
   %td= lf.lex_entry.title
   %td #{t(lf.status)} / #{LexEntry.human_enum_name(:status, lf.lex_entry&.status)}
   %td= LexFile.human_enum_name(:entrytype, lf.entrytype)
+  %td= lf.lex_entry&.migration_item_count
   - if local_assigns.fetch(:show_locked_by, false)
     %td= lex_entry.locked_by_user&.name
   %td
