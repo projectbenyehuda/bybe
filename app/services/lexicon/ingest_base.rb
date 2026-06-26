@@ -14,6 +14,7 @@ module Lexicon
       @lex_entry.english_title = extract_english_title(html_doc)
       @lex_entry.external_identifiers = extract_external_identifiers(html_doc)
       @lex_entry.date_of_manual_update = extract_date_of_manual_update(html_doc)
+      @lex_entry.migration_item_count = compute_migration_item_count
       @lex_entry.status_draft!
 
       lex_file.status_ingested!
@@ -28,6 +29,16 @@ module Lexicon
     end
 
     private
+
+    def compute_migration_item_count
+      lex_item = @lex_entry.lex_item
+      count = 0
+      count += lex_item.works.count if lex_item.respond_to?(:works)
+      count += lex_item.citations.count if lex_item.respond_to?(:citations)
+      count += lex_item.links.count
+      count += @lex_entry.attachments.count
+      count
+    end
 
     # Extract the "עודכן לאחרונה:" date string from the PHP footer area.
     # The label may be surrounded by brackets (e.g. "[עודכן לאחרונה: DATE]").
