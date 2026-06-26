@@ -30,7 +30,8 @@
                locals: { files: @locked_by_others_files, show_locked_by: true, unlockable: false }
 
     %h3= t('.other_title')
-    = render partial: 'files_table', locals: { files: @lex_files, show_locked_by: false, unlockable: false }
+    = render partial: 'files_table',
+             locals: { files: @lex_files, show_locked_by: false, unlockable: false, sortable: true }
   = paginate @lex_files
 :javascript
   $(function() {

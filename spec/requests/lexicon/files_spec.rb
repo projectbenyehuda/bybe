@@ -177,6 +177,38 @@ describe '/lexicon/files' do
       end
     end
 
+    context 'when sorting by migration_item_count' do
+      let!(:file_low) do
+        f = create(:lex_file, :person, entry_status: :draft)
+        f.lex_entry.update_columns(migration_item_count: 5)
+        f
+      end
+
+      let!(:file_high) do
+        f = create(:lex_file, :person, entry_status: :draft)
+        f.lex_entry.update_columns(migration_item_count: 50)
+        f
+      end
+
+      let!(:file_mid) do
+        f = create(:lex_file, :person, entry_status: :draft)
+        f.lex_entry.update_columns(migration_item_count: 20)
+        f
+      end
+
+      it 'sorts ascending when direction=asc' do
+        get '/lex/files', params: { sort: 'migration_item_count', direction: 'asc', entry_statuses: ['draft'] }
+        ids = assigns(:lex_files).map(&:id)
+        expect(ids).to eq([file_low.id, file_mid.id, file_high.id])
+      end
+
+      it 'sorts descending when direction=desc' do
+        get '/lex/files', params: { sort: 'migration_item_count', direction: 'desc', entry_statuses: ['draft'] }
+        ids = assigns(:lex_files).map(&:id)
+        expect(ids).to eq([file_high.id, file_mid.id, file_low.id])
+      end
+    end
+
     context 'with locked entries' do
       subject(:call) { get '/lex/files' }
 
