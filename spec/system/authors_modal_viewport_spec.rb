@@ -25,16 +25,15 @@ RSpec.describe 'Multi-author selection modal', :js, type: :system do
 
   it 'shows action buttons within the viewport without scrolling the modal overlay' do
     # Use a constrained desktop viewport height to reliably trigger the overflow
-    page.driver.browser.manage.window.resize_to(1280, 768)
-    visit '/works'
-
+page.driver.browser.manage.window.resize_to(1280, 768)
+visit works_path
     # Switch to author-name mode to reveal the multiselect link
     find('.opt_authorname', wait: 5).click
 
     # Open the multi-author dialog
-    find('[data-target="#authorsDlg"]', wait: 5).click
+find('[data-target="#authorsDlg"]', wait: 5).click
 
-    expect(page).to have_css('#authorsDlg', visible: true, wait: 10)
+expect(page).to have_css('#authorsDlg.show', wait: 10)
 
     # Action buttons must sit fully inside the viewport; they must never be
     # pushed below the fold by an overflowing modal dialog.
@@ -51,13 +50,12 @@ RSpec.describe 'Multi-author selection modal', :js, type: :system do
   end
 
   it 'does not scroll the modal overlay itself' do
-    page.driver.browser.manage.window.resize_to(1280, 768)
-    visit '/works'
-
+page.driver.browser.manage.window.resize_to(1280, 768)
+visit works_path
     find('.opt_authorname', wait: 5).click
-    find('[data-target="#authorsDlg"]', wait: 5).click
+find('[data-target="#authorsDlg"]', wait: 5).click
 
-    expect(page).to have_css('#authorsDlg', visible: true, wait: 10)
+expect(page).to have_css('#authorsDlg.show', wait: 10)
 
     # The modal overlay must compute overflow:hidden so it never gets a scrollbar
     overflow = page.evaluate_script(
