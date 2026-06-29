@@ -4,10 +4,13 @@
 class TagSimilarityJob < ApplicationJob
   def perform(tag_id)
     tag = Tag.find(tag_id)
+    tag_name = tag.tag_names.first
+    return if tag_name.nil?
+
     TagName.pluck(:tag_id, :name).each do |other_tag_id, name|
       next if other_tag_id == tag.id
 
-      idx = tag.tag_names.first.similar_to?(name) # returns false if not similar, or the similarity index if similar
+      idx = tag_name.similar_to?(name) # returns false if not similar, or the similarity index if similar
       if idx
         ListItem.create!(listkey: 'tag_similarity', item: tag, extra: "#{idx}%:#{other_tag_id}")
       end
