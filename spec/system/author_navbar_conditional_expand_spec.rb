@@ -8,12 +8,14 @@ describe 'Author navbar conditional expand and bottom collapse button', :js do
   end
 
   let!(:author) { create(:authority, name: 'Test Author') }
+  let!(:volume_collection) { create(:collection, collection_type: :volume) }
 
   after { Chewy.massacre }
 
   def create_manifestations(count)
     Chewy.strategy(:atomic) do
-      create_list(:manifestation, count, status: :published, author: author)
+      create_list(:manifestation, count, status: :published, author: author,
+                  collections: [volume_collection])
     end
   end
 
