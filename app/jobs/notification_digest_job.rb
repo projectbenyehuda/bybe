@@ -2,7 +2,6 @@
 
 # ActiveJob to send digest emails for users with daily/weekly email frequency preferences
 class NotificationDigestJob < ApplicationJob
-
   def perform(frequency)
     # Validate frequency parameter
     unless %w(daily weekly).include?(frequency)
@@ -19,12 +18,15 @@ class NotificationDigestJob < ApplicationJob
                   end
 
     # Get all users with this email frequency preference
+    preferences_join = 'INNER JOIN base_user_preferences ' \
+                       'ON base_user_preferences.base_user_id = base_users.id'
     users_with_frequency = BaseUser.joins(:user)
-                                   .joins("INNER JOIN base_user_preferences ON base_user_preferences.base_user_id = base_users.id")
-                                   .where("base_user_preferences.name = 'email_frequency' AND base_user_preferences.value = ?", frequency)
+                                   .joins(preferences_join)
+                                   .where("base_user_preferences.name = 'email_frequency' " \
+                                          'AND base_user_preferences.value = ?', frequency)
 
     users_with_frequency.find_each do |base_user|
-      next unless base_user.user&.email.present?
+      next if base_user.user&.email.blank?
 
       send_digest_for_user(base_user.user.email, cutoff_time)
     end
