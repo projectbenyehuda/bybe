@@ -93,6 +93,40 @@ RSpec.describe 'Author navbar collection type filtering', :js, type: :system do
     end
   end
 
+  describe 'nested collection rendering' do
+    let!(:volume_series) { create(:collection, title: 'Test Volume Series', collection_type: :volume_series) }
+    let!(:nested_volume) { create(:collection, title: 'Nested Volume', collection_type: :volume) }
+    let!(:nested_series) { create(:collection, title: 'Nested Series', collection_type: :series) }
+
+    before do
+      create(:involved_authority, authority: author, item: volume_series, role: 'author')
+      create(:collection_item, collection: volume_series, item: nested_volume)
+      create(:collection_item, collection: volume_series, item: nested_series)
+      Chewy.strategy(:atomic) do
+        vol_work = create(:manifestation, title: 'Volume Work', status: :published)
+        create(:collection_item, collection: nested_volume, item: vol_work)
+        series_work = create(:manifestation, title: 'Series Work', status: :published)
+        create(:collection_item, collection: nested_series, item: series_work)
+      end
+    end
+
+    it 'shows a nested allowed collection (volume) within volume_series in the sidebar' do
+      visit authority_path(author)
+      expect(page).to have_css('.book-nav-full')
+      within('.book-nav-full') do
+        expect(page).to have_css('.collection-anchor-link', text: 'Nested Volume', visible: :all)
+      end
+    end
+
+    it 'does not show a nested non-allowed collection (series) within volume_series in the sidebar' do
+      visit authority_path(author)
+      expect(page).to have_css('.book-nav-full')
+      within('.book-nav-full') do
+        expect(page).not_to have_content('Nested Series')
+      end
+    end
+  end
+
   describe 'uncollected works section' do
     before do
       Chewy.strategy(:atomic) do

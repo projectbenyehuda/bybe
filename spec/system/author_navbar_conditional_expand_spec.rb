@@ -14,8 +14,7 @@ describe 'Author navbar conditional expand and bottom collapse button', :js do
 
   def create_manifestations(count)
     Chewy.strategy(:atomic) do
-      create_list(:manifestation, count, status: :published, author: author,
-                  collections: [volume_collection])
+      create_list(:manifestation, count, status: :published, author: author, collections: [volume_collection])
     end
   end
 
