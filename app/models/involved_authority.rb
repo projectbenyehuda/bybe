@@ -32,7 +32,7 @@ class InvolvedAuthority < ApplicationRecord
 
   def update_manifestation_responsibility_statement
     manifestation_ids = find_related_manifestation_ids
-    UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
+    UpdateManifestationResponsibilityStatementsJob.perform_later(manifestation_ids) unless manifestation_ids.empty?
   end
 
   def find_related_manifestation_ids

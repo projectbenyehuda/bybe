@@ -3,6 +3,14 @@
 require 'rails_helper'
 
 describe RefreshUncollectedWorksCollectionJob do
+  include ActiveJob::TestHelper
+
+  before do
+    ActiveJob::Base.queue_adapter = :test
+    clear_enqueued_jobs
+    clear_performed_jobs
+  end
+
   describe '#perform' do
     subject(:call) { described_class.new.perform(uncollected_works_collection_ids) }
 
@@ -43,6 +51,12 @@ describe RefreshUncollectedWorksCollectionJob do
       it 'does not call RefreshUncollectedWorksCollection' do
         expect(RefreshUncollectedWorksCollection).not_to have_received(:call)
       end
+    end
+  end
+
+  describe 'enqueuing' do
+    it 'enqueues a job' do
+      expect { described_class.perform_later([1, 2]) }.to have_enqueued_job(described_class).with([1, 2])
     end
   end
 end

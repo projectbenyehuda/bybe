@@ -1,10 +1,16 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'sidekiq/testing'
-Sidekiq::Testing.fake!
 
 RSpec.describe UpdateManifestationResponsibilityStatementsJob, type: :job do
+  include ActiveJob::TestHelper
+
+  before do
+    ActiveJob::Base.queue_adapter = :test
+    clear_enqueued_jobs
+    clear_performed_jobs
+  end
+
   describe '#perform' do
     let(:author) { create(:authority, name: 'Test Author') }
     let(:translator) { create(:authority, name: 'Test Translator') }
@@ -16,8 +22,7 @@ RSpec.describe UpdateManifestationResponsibilityStatementsJob, type: :job do
       manifestation1.update_column(:responsibility_statement, 'Old Statement 1')
       manifestation2.update_column(:responsibility_statement, 'Old Statement 2')
 
-      job = described_class.new
-      job.perform([manifestation1.id, manifestation2.id])
+      described_class.perform_now([manifestation1.id, manifestation2.id])
 
       manifestation1.reload
       manifestation2.reload
@@ -30,24 +35,21 @@ RSpec.describe UpdateManifestationResponsibilityStatementsJob, type: :job do
       allow_any_instance_of(Manifestation).to receive(:recalc_responsibility_statement!).and_raise(StandardError.new('Test error'))
       expect(Rails.logger).to receive(:error).at_least(:once)
 
-      job = described_class.new
-      expect { job.perform([manifestation1.id]) }.not_to raise_error
+      expect { described_class.perform_now([manifestation1.id]) }.not_to raise_error
     end
 
     it 'does nothing when manifestation_ids is empty' do
-      job = described_class.new
-      expect { job.perform([]) }.not_to raise_error
+      expect { described_class.perform_now([]) }.not_to raise_error
     end
 
     it 'does nothing when manifestation_ids is nil' do
-      job = described_class.new
-      expect { job.perform(nil) }.not_to raise_error
+      expect { described_class.perform_now(nil) }.not_to raise_error
     end
 
     it 'enqueues a job' do
       expect do
-        UpdateManifestationResponsibilityStatementsJob.perform_async([manifestation1.id, manifestation2.id])
-      end.to change(UpdateManifestationResponsibilityStatementsJob.jobs, :size).by(1)
+        described_class.perform_later([manifestation1.id, manifestation2.id])
+      end.to have_enqueued_job(described_class).with([manifestation1.id, manifestation2.id])
     end
   end
 end
