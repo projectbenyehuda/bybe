@@ -2,9 +2,10 @@
   - collection = toc_node.collection
   - type_prefix = collection.collection_type == 'uncollected' ? '' : textify_collection_type(collection.collection_type)
   - uncollected = collection.collection_type == 'uncollected'
-  - children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
-  - children.reject!{ |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.status != 'published' } # don't show deleted or unpublished manifestations in the TOC
-  - if !uncollected && children.present?
+  - all_children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
+  - all_children.reject!{ |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.status != 'published' } # don't show deleted or unpublished manifestations in the TOC
+  - work_children = all_children.reject { |child| child.is_a?(TocTree::CollectionNode) }
+  - if !uncollected && all_children.present?
     %li.nav-author{"aria-expanded" => "false", :role => "treeitem"}
       .nav-link-chapter{ 'data-collection-id' => collection.id, 'data-scroll-target' => "#cwrapper_#{collection.id}" }
         .by-icon-v02.iconNearText-v02{ title: textify_collection_type(collection.collection_type) }= 'J'
@@ -14,7 +15,7 @@
           %a.collection-anchor-link{ href: "#cwrapper_#{collection.id}" }= ctitle
         - if manifestation_count > 0
           %div= " (#{manifestation_count})"
-      - unless children.empty?
+      - unless work_children.empty?
         %ul{role: 'group'}
-          = render partial: 'shared/navbar/toc_node', collection: children, locals: { role: role, authority_id: authority_id, uncollected: uncollected, involved_on_collection_level: involved_on_collection_level }
+          = render partial: 'shared/navbar/toc_node', collection: work_children, locals: { role: role, authority_id: authority_id, uncollected: uncollected, involved_on_collection_level: involved_on_collection_level }
 -# rubocop:enable Style/CaseLikeIf
