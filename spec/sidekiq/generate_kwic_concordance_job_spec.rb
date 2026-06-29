@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'sidekiq/testing'
 
 RSpec.describe GenerateKwicConcordanceJob, type: :job do
   describe '.in_progress?' do
@@ -20,13 +19,11 @@ RSpec.describe GenerateKwicConcordanceJob, type: :job do
 
     context 'when job is queued' do
       before do
-        Sidekiq::Testing.fake! do
-          described_class.perform_async('Authority', authority.id)
-        end
+        described_class.perform_later('Authority', authority.id)
       end
 
       after do
-        Sidekiq::Worker.clear_all
+        clear_enqueued_jobs
       end
 
       it 'returns true for the queued Authority job' do
@@ -48,16 +45,14 @@ RSpec.describe GenerateKwicConcordanceJob, type: :job do
       let(:collection2) { create(:collection) }
 
       before do
-        Sidekiq::Testing.fake! do
-          described_class.perform_async('Authority', authority.id)
-          described_class.perform_async('Authority', authority2.id)
-          described_class.perform_async('Collection', collection.id)
-          described_class.perform_async('Collection', collection2.id)
-        end
+        described_class.perform_later('Authority', authority.id)
+        described_class.perform_later('Authority', authority2.id)
+        described_class.perform_later('Collection', collection.id)
+        described_class.perform_later('Collection', collection2.id)
       end
 
       after do
-        Sidekiq::Worker.clear_all
+        clear_enqueued_jobs
       end
 
       it 'correctly identifies each queued job' do
