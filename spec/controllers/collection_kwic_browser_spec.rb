@@ -172,26 +172,23 @@ describe CollectionsController do
       end
 
       it 'only queues one job even with multiple requests' do
+        collection_jobs_count = lambda do
+          enqueued_jobs.count do |job|
+            job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Collection', collection.id]
+          end
+        end
+
         # First request should queue a job
         get :kwic, params: { collection_id: collection.id }
-        collection_jobs = enqueued_jobs.count do |job|
-          job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Collection', collection.id]
-        end
-        expect(collection_jobs).to eq(1)
+        expect(collection_jobs_count.call).to eq(1)
 
         # Second request should not queue another job
         get :kwic, params: { collection_id: collection.id }
-        collection_jobs = enqueued_jobs.count do |job|
-          job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Collection', collection.id]
-        end
-        expect(collection_jobs).to eq(1)
+        expect(collection_jobs_count.call).to eq(1)
 
         # Third request should also not queue another job
         get :kwic, params: { collection_id: collection.id }
-        collection_jobs = enqueued_jobs.count do |job|
-          job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Collection', collection.id]
-        end
-        expect(collection_jobs).to eq(1)
+        expect(collection_jobs_count.call).to eq(1)
       end
     end
 

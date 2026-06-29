@@ -118,26 +118,23 @@ describe AuthorsController do
       end
 
       it 'only queues one job even with multiple requests' do
+        authority_jobs_count = lambda do
+          enqueued_jobs.count do |job|
+            job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Authority', authority.id]
+          end
+        end
+
         # First request should queue a job
         get :kwic, params: { id: authority.id }
-        authority_jobs = enqueued_jobs.count do |job|
-          job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Authority', authority.id]
-        end
-        expect(authority_jobs).to eq(1)
+        expect(authority_jobs_count.call).to eq(1)
 
         # Second request should not queue another job
         get :kwic, params: { id: authority.id }
-        authority_jobs = enqueued_jobs.count do |job|
-          job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Authority', authority.id]
-        end
-        expect(authority_jobs).to eq(1)
+        expect(authority_jobs_count.call).to eq(1)
 
         # Third request should also not queue another job
         get :kwic, params: { id: authority.id }
-        authority_jobs = enqueued_jobs.count do |job|
-          job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Authority', authority.id]
-        end
-        expect(authority_jobs).to eq(1)
+        expect(authority_jobs_count.call).to eq(1)
       end
     end
 

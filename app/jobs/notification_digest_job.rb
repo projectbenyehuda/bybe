@@ -26,9 +26,10 @@ class NotificationDigestJob < ApplicationJob
                                           'AND base_user_preferences.value = ?', frequency)
 
     users_with_frequency.find_each do |base_user|
-      next if base_user.user&.email.blank?
+      email = base_user.user&.email
+      next if email.blank?
 
-      send_digest_for_user(base_user.user.email, cutoff_time)
+      send_digest_for_user(email, cutoff_time)
     end
   end
 
