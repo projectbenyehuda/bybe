@@ -1,8 +1,6 @@
 require 'rails_helper'
 
 describe ManifestationController do
-  include ActiveJob::TestHelper
-
   describe '#browse' do
     before(:all) do
       clean_tables
@@ -428,12 +426,6 @@ describe ManifestationController do
         let(:uncollected_collection) { create(:collection, :uncollected) }
         let!(:volume_collection) { create(:collection, collection_type: :volume) }
         let(:manifestation) { create(:manifestation, collections: [uncollected_collection, volume_collection]) }
-
-        before do
-          ActiveJob::Base.queue_adapter = :test
-          clear_enqueued_jobs
-          clear_performed_jobs
-        end
 
         it 'hides uncollected collection and schedules uncollected collection refresh' do
           expect { call }.to have_enqueued_job(RefreshUncollectedWorksCollectionJob).with([uncollected_collection.id])
