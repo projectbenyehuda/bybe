@@ -176,7 +176,7 @@ class CollectionsController < ApplicationController
 
       if format == 'kwic'
         # Trigger async job for KWIC concordance generation
-        GenerateKwicConcordanceJob.perform_async('Collection', @collection.id)
+        GenerateKwicConcordanceJob.perform_later('Collection', @collection.id)
         flash[:notice] = t(:kwic_being_generated)
         redirect_to @collection
         return

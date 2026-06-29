@@ -2,10 +2,9 @@
 
 require 'sidekiq/api'
 
-# Sidekiq job to generate KWIC concordance asynchronously for Authority and Collection entities
+# ActiveJob to generate KWIC concordance asynchronously for Authority and Collection entities
 # This is used for larger entities where concordance generation may take a long time
-class GenerateKwicConcordanceJob
-  include Sidekiq::Job
+class GenerateKwicConcordanceJob < ApplicationJob
   include BybeUtils
 
   # Check if a job for this entity is already queued or running
@@ -13,12 +12,9 @@ class GenerateKwicConcordanceJob
   # @param entity_id [Integer] The ID of the entity
   # @return [Boolean] true if a job is already in progress, false otherwise
   def self.in_progress?(entity_type, entity_id)
-    # In test mode with fake jobs, check the jobs array
-    # Note: inline mode executes jobs immediately, so there's no queueing issue
-    # We need to check if Sidekiq::Testing is defined because it's only loaded in test environment
-    if defined?(Sidekiq::Testing) && Sidekiq::Testing.fake?
-      return jobs.any? do |job|
-        job['args'][0] == entity_type && job['args'][1] == entity_id
+    if ActiveJob::Base.queue_adapter.respond_to?(:enqueued_jobs)
+      return ActiveJob::Base.queue_adapter.enqueued_jobs.any? do |job|
+        job[:job] == self && job[:args] == [entity_type, entity_id]
       end
     end
 
@@ -26,9 +22,7 @@ class GenerateKwicConcordanceJob
     # Using any? for efficient early termination
     queue = Sidekiq::Queue.new
     queued = queue.any? do |job|
-      job.klass == 'GenerateKwicConcordanceJob' &&
-        job.args[0] == entity_type &&
-        job.args[1] == entity_id
+      sidekiq_job_matches?(job, entity_type, entity_id)
     end
 
     return true if queued
@@ -39,10 +33,7 @@ class GenerateKwicConcordanceJob
       # Guard against race condition where work may be a String instead of Hash
       next unless work.is_a?(Hash)
 
-      # Use dig to safely access nested hash values
-      work.dig('payload', 'class') == 'GenerateKwicConcordanceJob' &&
-        work.dig('payload', 'args', 0) == entity_type &&
-        work.dig('payload', 'args', 1) == entity_id
+      sidekiq_payload_matches?(work['payload'], entity_type, entity_id)
     end
   end
 
@@ -98,4 +89,23 @@ class GenerateKwicConcordanceJob
     austr = authority.name
     MakeFreshDownloadable.call('kwic', filename, '', authority, austr, kwic_text: kwic_text)
   end
+
+  def self.sidekiq_job_matches?(job, entity_type, entity_id)
+    if job.klass == name
+      return job.args[0] == entity_type && job.args[1] == entity_id
+    end
+
+    return false unless job.klass == 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper'
+
+    sidekiq_payload_matches?(job.args.first, entity_type, entity_id)
+  end
+
+  def self.sidekiq_payload_matches?(payload, entity_type, entity_id)
+    return false unless payload.is_a?(Hash)
+    return false unless payload['wrapped'] == name || payload['class'] == name
+
+    args = payload['class'] == name ? payload['args'] : payload.dig('args', 0, 'arguments')
+    args == [entity_type, entity_id]
+  end
+  private_class_method :sidekiq_job_matches?, :sidekiq_payload_matches?
 end

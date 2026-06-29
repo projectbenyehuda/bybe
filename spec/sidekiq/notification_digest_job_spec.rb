@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'sidekiq/testing'
-Sidekiq::Testing.fake!
 
 RSpec.describe NotificationDigestJob, type: :job do
   let(:user) { create(:user, email: 'test@example.com') }
@@ -84,8 +82,8 @@ RSpec.describe NotificationDigestJob, type: :job do
   describe 'enqueuing' do
     it 'enqueues a job' do
       expect do
-        NotificationDigestJob.perform_async('daily')
-      end.to change(NotificationDigestJob.jobs, :size).by(1)
+        described_class.perform_later('daily')
+      end.to have_enqueued_job(described_class).with('daily')
     end
   end
 end

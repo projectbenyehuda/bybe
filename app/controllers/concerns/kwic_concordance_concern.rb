@@ -55,7 +55,7 @@ module KwicConcordanceConcern
       # Check if a job is already in progress for this entity
       unless GenerateKwicConcordanceJob.in_progress?(entity.class.name, entity.id)
         # Trigger async job for large entities
-        GenerateKwicConcordanceJob.perform_async(entity.class.name, entity.id)
+        GenerateKwicConcordanceJob.perform_later(entity.class.name, entity.id)
       end
       nil # Return nil to signal async generation is in progress
     when Manifestation

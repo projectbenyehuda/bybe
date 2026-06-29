@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-# Sidekiq job to send digest emails for users with daily/weekly email frequency preferences
-class NotificationDigestJob
-  include Sidekiq::Job
+# ActiveJob to send digest emails for users with daily/weekly email frequency preferences
+class NotificationDigestJob < ApplicationJob
 
   def perform(frequency)
     # Validate frequency parameter

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'sidekiq/testing'
 
 describe CollectionsController do
   describe '#kwic' do
@@ -169,23 +168,21 @@ describe CollectionsController do
 
       before do
         create(:collection_item, collection: collection, item: manifestation)
-        GenerateKwicConcordanceJob.jobs.clear
+        clear_enqueued_jobs
       end
 
       it 'only queues one job even with multiple requests' do
-        Sidekiq::Testing.fake! do
-          # First request should queue a job
-          get :kwic, params: { collection_id: collection.id }
-          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+        # First request should queue a job
+        get :kwic, params: { collection_id: collection.id }
+        expect(enqueued_jobs.count { |job| job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Collection', collection.id] }).to eq(1)
 
-          # Second request should not queue another job
-          get :kwic, params: { collection_id: collection.id }
-          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+        # Second request should not queue another job
+        get :kwic, params: { collection_id: collection.id }
+        expect(enqueued_jobs.count { |job| job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Collection', collection.id] }).to eq(1)
 
-          # Third request should also not queue another job
-          get :kwic, params: { collection_id: collection.id }
-          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
-        end
+        # Third request should also not queue another job
+        get :kwic, params: { collection_id: collection.id }
+        expect(enqueued_jobs.count { |job| job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Collection', collection.id] }).to eq(1)
       end
     end
 
