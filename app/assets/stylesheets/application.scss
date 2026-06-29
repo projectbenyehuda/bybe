@@ -1240,6 +1240,16 @@ p.by-genre-name-v02.headline-2-v02 {
     overflow-x: hidden;
   }
 
+  // Same fix as desktop (min-width: 992px block below): prevent the content col
+  // from wrapping past the spacer and overlapping the sticky nav column.
+  .author-page-content .col-12.col-lg-8 > .row {
+    flex-wrap: nowrap;
+  }
+
+  .author-page-content .col-12.col-lg-8 > .row > .col:not(.author-side-menu-area) {
+    min-width: 0;
+  }
+
   .peach2-lexicon .side-menu-area {
     position: sticky;
     top: 60px;
