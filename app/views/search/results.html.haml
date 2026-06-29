@@ -46,7 +46,7 @@
                           @search.index_types.blank? || @search.index_types.include?('lex_entries'),
                           class: 'form-check-input',
                           id: 'index_type_lex_entries'
-          = label_tag 'index_type_lex_entries', LexEntry.model_name.human.pluralize, class: 'form-check-label'
+          = label_tag 'index_type_lex_entries', t(:galron_entries), class: 'form-check-label'
       = submit_tag t(:filter), class: 'btn btn-primary btn-sm', style: 'width: 70%;'
     
     %p
