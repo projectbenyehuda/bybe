@@ -1377,3 +1377,43 @@ p.by-genre-name-v02.headline-2-v02 {
     display: block;
   }
 }
+
+// Fix #authorsDlg (multi-author selection modal) on desktop:
+// The original bug: .modal-dialog has margin-top:100px (BY CSS) and .by-popup-v02
+// adds margin-top:5vh, so the total height is 100px + 5vh + popup-height which can
+// exceed 100vh, causing Bootstrap to add overflow-y:auto (a second scrollbar) to the
+// modal overlay. .authors-names-area's own overflow:auto creates a third.
+//
+// Fix: cap the flex-popup and the popup itself at (100vh - 100px), remove the extra
+// 5vh margin, and give the list a specific max-height so it is the only thing that
+// scrolls. Follows the same pattern used for #texts-about-author-popup in BY CSS.
+@media screen and (min-width: 992px) {
+  #authorsDlg {
+    overflow: hidden !important; // prevent Bootstrap from adding overflow-y:auto
+
+    // Cap at viewport minus the 100px top margin so nothing overflows the modal
+    .flex-popup {
+      max-height: calc(100vh - 100px);
+      overflow: hidden;
+    }
+
+    .by-popup-v02 {
+      margin-top: 0; // remove 5vh that compounds with the 100px dialog margin
+      max-height: calc(100vh - 100px);
+      overflow: hidden;
+    }
+
+    // Only this element scrolls.
+    // 310px = 100px dialog margin + ~100px card header + 30px card padding
+    //        + ~47px bottom buttons + 33px buffer
+    .limited-height-popup-content-v02 {
+      max-height: calc(100vh - 310px);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .authors-names-area {
+      overflow: visible; // no nested scrollbar; parent handles it
+    }
+  }
+}
