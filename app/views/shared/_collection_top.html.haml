@@ -35,8 +35,10 @@
               - elsif eds.present?
                 #{t(:edited_by)}:
                 %span= eds
+          - short_title = @collection.title.split(/: | – /, 2).first if @collection.periodical?
+          - strip_coll_prefix = ->(t) { short_title ? t.sub(/\A#{Regexp.escape(short_title)}(?:: | – )/, '') : t }
           .field-v02.work-chapters-dropdown-field-desktop{style: 'background-color: unset;'}
-            = select_tag 'collitem', options_for_select(@htmls.reject{|x| x[0].blank?}.map{ |title, authors, html, is_curated, genre, i, ci, nesting_level, parent_authorities| [("– " * nesting_level) + title, i] }, 0), class: 'dropdown-v02', id: 'collitem_dropdown', style: 'width: 100%;'
+            = select_tag 'collitem', options_for_select(@htmls.reject{|x| x[0].blank?}.map{ |title, authors, html, is_curated, genre, i, ci, nesting_level, parent_authorities| [("– " * nesting_level) + strip_coll_prefix.call(title), i] }, 0), class: 'dropdown-v02', id: 'collitem_dropdown', style: 'width: 100%;'
 
           .work-page-top-icons-desktop
             %button.btn-small-outline-v02.btn-text-v02.reading-mode-btn-v02{href: "#"}
@@ -67,8 +69,9 @@
             - li_attrs = { id: "collitem_#{i}_button", 'data-target' => "collitem_text_#{i}" }
             - li_attrs[:style] = "padding-right: #{nesting_level * 10}px;" if nesting_level > 0
             %li.nav-item.side-menu-item{ li_attrs }
-              %a{'class' => 'nav-link nav-chapter-name nav-link-chapter pointer linkcolor '+(first ? ' active' : ''), "aria-controls" => "#", "aria-selected" => "false", 'data-toggle' => 'tooltip', 'title' => title, 'data-placement' => 'top', 'data-delay' => { "show": 500, "hide": 100 }, href: "#"}
-                .nav-chapter-name= title
+              - nav_title = strip_coll_prefix.call(title)
+              %a{'class' => 'nav-link nav-chapter-name nav-link-chapter pointer linkcolor '+(first ? ' active' : ''), "aria-controls" => "#", "aria-selected" => "false", 'data-toggle' => 'tooltip', 'title' => nav_title, 'data-placement' => 'top', 'data-delay' => { "show": 500, "hide": 100 }, href: "#"}
+                .nav-chapter-name= nav_title
                 - first = false
 
     .col{style: "z-order:-1;height:0;"}
