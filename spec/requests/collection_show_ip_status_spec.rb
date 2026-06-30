@@ -5,8 +5,6 @@ require 'rails_helper'
 RSpec.describe 'Collection show - intellectual property display', type: :request do
   after { Chewy.massacre }
 
-  let!(:author) { create(:authority) }
-
   def build_published_manifestation(title:, ip:)
     Chewy.strategy(:atomic) do
       create(:manifestation, title: title, markdown: "Content of #{title}", status: :published,
@@ -25,16 +23,23 @@ RSpec.describe 'Collection show - intellectual property display', type: :request
     end
   end
 
+  # Returns the text content of the collection info card (.work-info-card), which
+  # is the only place where the collection-level IP status should appear.
+  def info_card_text(html)
+    Nokogiri::HTML(html).at_css('.work-info-card')&.text || ''
+  end
+
   describe 'collection-level IP status display' do
     context 'when all items share the same IP status' do
       let!(:m1) { build_published_manifestation(title: 'Work One', ip: :public_domain) }
       let!(:m2) { build_published_manifestation(title: 'Work Two', ip: :public_domain) }
       let!(:collection) { build_collection_with_manifestations([m1, m2]) }
 
-      it 'shows the single IP status, not mixed' do
+      it 'shows the single IP status in the collection info card, not mixed' do
         get collection_path(collection)
-        expect(response.body).to include(I18n.t('intellectual_property.public_domain'))
-        expect(response.body).not_to include(I18n.t('intellectual_property.mixed'))
+        card = info_card_text(response.body)
+        expect(card).to include(I18n.t('intellectual_property.public_domain'))
+        expect(card).not_to include(I18n.t('intellectual_property.mixed'))
       end
     end
 
@@ -43,18 +48,12 @@ RSpec.describe 'Collection show - intellectual property display', type: :request
       let!(:m2) { build_published_manifestation(title: 'Work Two', ip: :copyrighted) }
       let!(:collection) { build_collection_with_manifestations([m1, m2]) }
 
-      it 'shows "mixed" label instead of individual statuses' do
+      it 'shows only the mixed label in the collection info card, not individual statuses' do
         get collection_path(collection)
-        expect(response.body).to include(I18n.t('intellectual_property.mixed'))
-      end
-
-      it 'does not show individual IP statuses at collection level' do
-        get collection_path(collection)
-        # The collection-level metadata should only have 'mixed', not individual statuses.
-        # Individual statuses appear on each item card (tested separately).
-        # Count occurrences: public_domain text should appear only in item cards, not the collection header.
-        # We verify 'mixed' is present, which confirms the conditional was triggered.
-        expect(response.body).to include(I18n.t('intellectual_property.mixed'))
+        card = info_card_text(response.body)
+        expect(card).to include(I18n.t('intellectual_property.mixed'))
+        expect(card).not_to include(I18n.t('intellectual_property.public_domain'))
+        expect(card).not_to include(I18n.t('intellectual_property.copyrighted'))
       end
     end
   end
@@ -64,10 +63,12 @@ RSpec.describe 'Collection show - intellectual property display', type: :request
     let!(:m2) { build_published_manifestation(title: 'Copyrighted Work', ip: :copyrighted) }
     let!(:collection) { build_collection_with_manifestations([m1, m2]) }
 
-    it 'shows each item IP status in its card' do
+    it 'shows each item IP status in its own card' do
       get collection_path(collection)
-      expect(response.body).to include(I18n.t('intellectual_property.public_domain'))
-      expect(response.body).to include(I18n.t('intellectual_property.copyrighted'))
+      doc = Nokogiri::HTML(response.body)
+      item_cards_text = doc.css('.proofable').map(&:text).join
+      expect(item_cards_text).to include(I18n.t('intellectual_property.public_domain'))
+      expect(item_cards_text).to include(I18n.t('intellectual_property.copyrighted'))
     end
   end
 end

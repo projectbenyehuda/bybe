@@ -98,10 +98,11 @@
                 .metadata{style: "gap: 20px"}
                   - ips = @collection.intellectual_property_statuses
                   - if ips.size > 1
-                    = render partial: 'shared/intellectual_property', locals: {intellectual_property: 'mixed'}
+                    = render partial: 'shared/intellectual_property', locals: { intellectual_property: 'mixed' }
                   - else
                     - ips.each do |intellectual_property|
-                      = render partial: 'shared/intellectual_property', locals: {intellectual_property: intellectual_property}
+                      - ip_locals = { intellectual_property: intellectual_property }
+                      = render partial: 'shared/intellectual_property', locals: ip_locals
                 .metadata{style: "gap: 20px"}
                   - @collection.included_genres.each do |genre|
                     %div
