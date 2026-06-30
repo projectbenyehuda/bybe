@@ -44,7 +44,44 @@ class FindSiblings < ApplicationService
         skipped += 1
         next
       end
+      if ci.item_type == 'Collection'
+        m = step > 0 ? first_manifestation_in(ci.item) : last_manifestation_in(ci.item)
+        if m.present?
+          return { item: m, skipped: skipped }
+        else
+          skipped += 1
+          next
+        end
+      end
       return { item: ci.item, skipped: skipped }
+    end
+    nil
+  end
+
+  def first_manifestation_in(collection)
+    CollectionItem.where(collection: collection).order(:seqno).each do |ci|
+      next if ci.item_id.nil?
+
+      return ci.item if ci.item_type == 'Manifestation'
+
+      if ci.item_type == 'Collection' && ci.item.present?
+        found = first_manifestation_in(ci.item)
+        return found if found.present?
+      end
+    end
+    nil
+  end
+
+  def last_manifestation_in(collection)
+    CollectionItem.where(collection: collection).order(seqno: :desc).each do |ci|
+      next if ci.item_id.nil?
+
+      return ci.item if ci.item_type == 'Manifestation'
+
+      if ci.item_type == 'Collection' && ci.item.present?
+        found = last_manifestation_in(ci.item)
+        return found if found.present?
+      end
     end
     nil
   end
