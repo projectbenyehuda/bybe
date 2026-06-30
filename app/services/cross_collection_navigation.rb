@@ -46,11 +46,11 @@ class CrossCollectionNavigation < ApplicationService
   end
 
   def flatten_manifestations(collection)
-    # Use a direct query to avoid stale inverse_of association caches
-    CollectionItem.where(collection: collection).order(:seqno).flat_map do |ci|
+    # Direct query avoids stale inverse_of cache; preload :item avoids N+1 per row
+    CollectionItem.where(collection: collection).order(:seqno).preload(:item).flat_map do |ci|
       next [] if ci.item_id.nil?
 
-      if ci.item_type == 'Manifestation'
+      if ci.item_type == 'Manifestation' && ci.item.present?
         [ci.item]
       elsif ci.item_type == 'Collection' && ci.item.present?
         flatten_manifestations(ci.item)

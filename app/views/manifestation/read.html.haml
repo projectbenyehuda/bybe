@@ -30,9 +30,10 @@
                 siblings = FindSiblings.call(@m, ci.collection)
                 prev = siblings.previous_sibling
                 nextsib = siblings.next_sibling
-                cross_nav = CrossCollectionNavigation.call(@m, ci.collection)
-                cross_prev = prev.nil? && !siblings.more_before? ? cross_nav.prev_in_parent : nil
-                cross_next = nextsib.nil? && !siblings.more_after? ? cross_nav.next_in_parent : nil
+                needs_cross_nav = (prev.nil? && !siblings.more_before?) || (nextsib.nil? && !siblings.more_after?)
+                cross_nav = needs_cross_nav ? CrossCollectionNavigation.call(@m, ci.collection) : nil
+                cross_prev = prev.nil? && !siblings.more_before? ? cross_nav&.prev_in_parent : nil
+                cross_next = nextsib.nil? && !siblings.more_after? ? cross_nav&.next_in_parent : nil
                 show_collection_link = !ci.collection.system?
                 show_nav = prev.present? || nextsib.present? || show_collection_link ||
                            siblings.more_before? || siblings.more_after? ||
