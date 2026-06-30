@@ -8,7 +8,7 @@ describe 'Author navbar mobile expansion', :js do
   end
 
   let!(:collection) do
-    create(:collection, title: 'Test Collection')
+    create(:collection, title: 'Test Collection', collection_type: :volume)
   end
 
   let!(:manifestation) do
@@ -25,6 +25,10 @@ describe 'Author navbar mobile expansion', :js do
            authority: author,
            item: collection,
            role: 'editor')
+  end
+
+  let!(:collection_item) do
+    create(:collection_item, collection: collection, item: manifestation)
   end
 
   after do
