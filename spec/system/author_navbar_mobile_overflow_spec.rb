@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe 'Author page mobile sticky navbar overflow', :js, type: :system do
   let!(:author) { create(:authority, name: 'Test Author') }
-  let!(:collection) { create(:collection, title: 'Test Collection') }
+  let!(:collection) { create(:collection, title: 'Test Collection', collection_type: :volume) }
 
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
