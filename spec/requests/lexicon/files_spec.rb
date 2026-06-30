@@ -251,8 +251,8 @@ describe '/lexicon/files' do
   describe 'POST /migrate' do
     subject(:call) { post "/lex/files/#{file.id}/migrate", xhr: true }
 
-    before { Sidekiq::Testing.fake! }
-    after { Sidekiq::Worker.clear_all }
+    before { clear_enqueued_jobs }
+    after { clear_enqueued_jobs }
 
     context 'when person file is provided', vcr: { cassette_name: 'lexicon/ingest_person/00002' } do
       let!(:file) do
@@ -271,9 +271,8 @@ describe '/lexicon/files' do
         let(:entry_status) { :raw }
 
         it 'add ingestion job to queue and sets entry status to `migrating`' do
-          expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+          expect { call }.to have_enqueued_job(Lexicon::IngestFile).with(file.id)
           expect(call).to eq(200)
-          expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
           expect(file.lex_entry.reload.status).to eq('migrating')
         end
 
@@ -292,9 +291,8 @@ describe '/lexicon/files' do
         end
 
         it 'resets error message and add ingestion job to queue and sets entry status to `migrating`' do
-          expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+          expect { call }.to have_enqueued_job(Lexicon::IngestFile).with(file.id)
           expect(call).to eq(200)
-          expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
           expect(file.lex_entry.reload.status).to eq('migrating')
           expect(file.reload.error_message).to be_nil
         end
@@ -304,7 +302,7 @@ describe '/lexicon/files' do
         let(:entry_status) { (LexEntry.statuses.keys - %w(raw error)).sample }
 
         it 'does not queue job and simply re-renders tr' do
-          expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
+          expect { call }.not_to have_enqueued_job(Lexicon::IngestFile)
           expect(call).to eq(200)
           expect(file.lex_entry.reload.status).to eq(entry_status)
         end
@@ -321,8 +319,8 @@ describe '/lexicon/files' do
   describe 'POST /redo_migration' do
     subject(:call) { post "/lex/files/#{file.id}/redo_migration", xhr: true }
 
-    before { Sidekiq::Testing.fake! }
-    after { Sidekiq::Worker.clear_all }
+    before { clear_enqueued_jobs }
+    after { clear_enqueued_jobs }
 
     let!(:file) do
       create(
@@ -337,9 +335,8 @@ describe '/lexicon/files' do
       let(:entry_status) { :draft }
 
       it 'resets the lex_item, queues the job, and sets entry status to migrating' do
-        expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+        expect { call }.to have_enqueued_job(Lexicon::IngestFile).with(file.id)
         expect(call).to eq(200)
-        expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
         expect(file.lex_entry.reload.status).to eq('migrating')
         expect(file.lex_entry.lex_item).to be_nil
         expect(file.reload.status).to eq('classified')
@@ -356,9 +353,8 @@ describe '/lexicon/files' do
       let(:entry_status) { :verifying }
 
       it 'resets the lex_item, queues the job, and sets entry status to migrating' do
-        expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+        expect { call }.to have_enqueued_job(Lexicon::IngestFile).with(file.id)
         expect(call).to eq(200)
-        expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
         expect(file.lex_entry.reload.status).to eq('migrating')
         expect(file.lex_entry.lex_item).to be_nil
         expect(file.reload.status).to eq('classified')
@@ -369,9 +365,8 @@ describe '/lexicon/files' do
       let(:entry_status) { :escalated }
 
       it 'resets the lex_item, queues the job, and sets entry status to migrating' do
-        expect { call }.to change { Lexicon::IngestFile.jobs.size }.by(1)
+        expect { call }.to have_enqueued_job(Lexicon::IngestFile).with(file.id)
         expect(call).to eq(200)
-        expect(Lexicon::IngestFile.jobs.last['args']).to eq([file.id])
         expect(file.lex_entry.reload.status).to eq('migrating')
         expect(file.lex_entry.lex_item).to be_nil
         expect(file.reload.status).to eq('classified')
@@ -382,15 +377,15 @@ describe '/lexicon/files' do
       let(:entry_status) { LexEntry.statuses.keys.find { |status| %w(draft verifying escalated).exclude?(status) } }
 
       it 'does not queue job and simply re-renders tr' do
-        expect { call }.not_to(change { Lexicon::IngestFile.jobs.size })
+        expect { call }.not_to have_enqueued_job(Lexicon::IngestFile)
         expect(call).to eq(200)
       end
     end
   end
 
   describe 'locking when starting a migration' do
-    before { Sidekiq::Testing.fake! }
-    after { Sidekiq::Worker.clear_all }
+    before { clear_enqueued_jobs }
+    after { clear_enqueued_jobs }
 
     let(:current_user) { login_as_lexicon_editor }
     let(:other_user) { create(:user) }
@@ -411,7 +406,7 @@ describe '/lexicon/files' do
         it 'does not start the migration' do
           current_user
           expect { post "/lex/files/#{file.id}/migrate", xhr: true }
-            .not_to(change { Lexicon::IngestFile.jobs.size })
+            .not_to(have_enqueued_job(Lexicon::IngestFile))
           expect(file.lex_entry.reload.status).to eq('raw')
           expect(file.lex_entry.locked_by_user).to eq(other_user)
         end
@@ -434,7 +429,7 @@ describe '/lexicon/files' do
         it 'does not redo the migration' do
           current_user
           expect { post "/lex/files/#{file.id}/redo_migration", xhr: true }
-            .not_to(change { Lexicon::IngestFile.jobs.size })
+            .not_to(have_enqueued_job(Lexicon::IngestFile))
           expect(file.lex_entry.reload.status).to eq('draft')
           expect(file.lex_entry.locked_by_user).to eq(other_user)
         end

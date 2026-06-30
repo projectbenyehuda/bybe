@@ -2,8 +2,7 @@
 
 module Lexicon
   # Job to ingest a LexFile into a Lexicon asynchronously
-  class IngestFile
-    include Sidekiq::Job
+  class IngestFile < ApplicationJob
 
     def perform(lex_file_id)
       Rails.logger.info("Started ingestion of LexFile:#{lex_file_id}")
