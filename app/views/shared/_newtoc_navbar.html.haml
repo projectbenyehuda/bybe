@@ -4,6 +4,7 @@
 -# Calculate visibility for all roles upfront to share between full and thin navbars
 :ruby
   max_expanded_works = 20
+  sidebar_collection_types = %w(volume_series volume periodical)
 
   visible_roles = []
   roles_data = {}
@@ -12,12 +13,23 @@
     role_counts = @toc_counts ? @toc_counts[role] : nil
     next unless role_counts && role_counts[:total] > 0
 
-    involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
-                                            .sort_by(&:sort_term)
-    involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
-                                      .sort_by(&:sort_term)
-    uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
-    involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+    all_collection_level_nodes = top_nodes.select { |node| node.visible?(role, authority_id, true) }
+    involved_on_collection_level = all_collection_level_nodes
+                                   .select { |node| sidebar_collection_types.include?(node.collection.collection_type) }
+                                   .sort_by(&:sort_term)
+    filtered_collection_level_count = involved_on_collection_level.sum do |node|
+      node.count_manifestations(role, authority_id, true)
+    end
+    all_work_level_nodes = top_nodes.select { |node| node.visible?(role, authority_id, false) }
+                                    .sort_by(&:sort_term)
+    uncollected_node = all_work_level_nodes.detect { |node| node.collection.uncollected? }
+    non_uncollected = all_work_level_nodes - [uncollected_node].compact
+    involved_on_work_level = non_uncollected.select do |node|
+      sidebar_collection_types.include?(node.collection.collection_type)
+    end
+    filtered_work_level_count = involved_on_work_level.sum do |node|
+      node.count_manifestations(role, authority_id, false)
+    end
 
     # Determine the first visible scroll target for this role (for thin navbar)
     first_scroll_target = if role_counts[:collection_level] > 0
@@ -32,7 +44,9 @@
     roles_data[role] = {
       counts: role_counts,
       involved_on_collection_level: involved_on_collection_level,
+      filtered_collection_level_count: filtered_collection_level_count,
       involved_on_work_level: involved_on_work_level,
+      filtered_work_level_count: filtered_work_level_count,
       uncollected_node: uncollected_node,
       first_scroll_target: first_scroll_target
     }
@@ -52,17 +66,19 @@
     - involved_on_work_level = data[:involved_on_work_level]
     - uncollected_node = data[:uncollected_node]
     - ul_class = start_expanded ? 'collapse navbar-nav show' : 'collapse navbar-nav'
+    - filtered_collection_level_count = data[:filtered_collection_level_count]
+    - filtered_work_level_count = data[:filtered_work_level_count]
 
     %div{ class: first ? "nav-book-group selected" : "nav-book-group" }
       .headline-2-v02
         = t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
         - if role_counts[:total] > 0
           = " (#{role_counts[:total]})"
-      - if role_counts[:collection_level] > 0
+      - if involved_on_collection_level.present?
         %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
           .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-collection-level"}
             = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
-            %span.count-badge= " (#{role_counts[:collection_level]})"
+            %span.count-badge= " (#{filtered_collection_level_count})"
             %span.collapse-arrow ↓
         %ul{ id: "collection-#{role}-collapse", class: ul_class, 'aria-label' => 'file-navigator', role: 'tree' }
           = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
@@ -70,11 +86,11 @@
             %button.section-collapse-link{ type: 'button', 'aria-label': t(:collapse_section) }
               ▲
         - first = false
-      - if role_counts[:work_level] > 0
+      - if involved_on_work_level.present?
         %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
           .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level" }
             = t('toc_by_role.involved_on_work_level')
-            %span.count-badge= " (#{role_counts[:work_level]})"
+            %span.count-badge= " (#{filtered_work_level_count})"
             %span.collapse-arrow ↓
         %ul{ id: "work-#{role}-collapse", class: ul_class, 'aria-label' => 'file-navigator', role: 'tree' }
           = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
@@ -84,14 +100,11 @@
         - first = false
       - if role_counts[:uncollected] > 0
         %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
-          .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#uncollected-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-uncollected" }
+          .truncate{ 'data-scroll-target' => "#works-#{role}-uncollected" }
             = t('toc_by_role.uncollected_works')
             %span.count-badge= " (#{role_counts[:uncollected]})"
-        %ul{ id: "uncollected-#{role}-collapse", class: ul_class, 'aria-label' => 'file-navigator', role: 'tree' }
+        %ul.navbar-nav{ 'aria-label' => 'file-navigator', role: 'tree' }
           = render partial: 'shared/navbar/toc_node', collection: [uncollected_node], locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
-          %li.section-collapse-btn{ role: 'none' }
-            %button.section-collapse-link{ type: 'button', 'aria-label': t(:collapse_section) }
-              ▲
         - first = false
 
   .nav-book-group.editorial-nav
