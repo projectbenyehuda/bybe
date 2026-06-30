@@ -594,6 +594,7 @@ en:
         permission_for_selected: permission for specific titles only
         public_domain: what does public domain mean?
         unknown: what does unknown rights status mean?
+        mixed: what does mixed copyright status mean?
       popover:
         by_permission: Although the work is still copyrighted, Project Ben-Yehuda
           has received *explicit permission to publish* the work in Project Ben-Yehuda's
@@ -620,6 +621,7 @@ en:
           of anyone.
         unknown: The copyright status of this work is unknown to us. If you have information
           about it, please contact us.
+        mixed: This collection contains works with different copyright statuses. Each work's copyright status is shown individually on its card.
     latest_works_by_author:
       latest_added_works: latest works published in the project
       to_latest_x_works: to latest %{x} works
@@ -714,6 +716,7 @@ en:
     permission_for_selected: certain works accessed with permission
     public_domain: public domain
     unknown: unknown
+    mixed: mixed
   collection_type_in_volume: In a volume
   collection_type_in_periodical: In a periodical
   collection_type_uncollected: Uncollected

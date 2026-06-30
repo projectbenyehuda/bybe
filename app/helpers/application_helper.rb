@@ -204,7 +204,7 @@ module ApplicationHelper
     case intellectual_property
     when 'public_domain'
       return 'm'
-    when 'copyrighted', 'by_permission', 'permission_for_all', 'permission_for_selected', 'orphan'
+    when 'copyrighted', 'by_permission', 'permission_for_all', 'permission_for_selected', 'orphan', 'mixed'
       return 'x'
     end
   end
