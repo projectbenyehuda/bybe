@@ -70,13 +70,23 @@ module TocTree
       ]
     end
 
-    # Count manifestations recursively in this collection and its children
+    # Count manifestations recursively in this collection and its children.
+    # Result is memoized per (role, authority_id, involved_on_collection_level); parent_collection
+    # is accepted for interface consistency with ManifestationNode but is unused here since
+    # CollectionNode#visible? derives involvement from its own involved_authorities.
     def count_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
-      return 0 unless visible?(role, authority_id, involved_on_collection_level, parent_collection)
+      @manifestation_counts ||= {}
+      cache_key = "#{role}_#{authority_id}_#{involved_on_collection_level}"
+      return @manifestation_counts[cache_key] if @manifestation_counts.key?(cache_key)
 
-      children_by_role(role, authority_id, involved_on_collection_level).sum do |child|
-        child.count_manifestations(role, authority_id, involved_on_collection_level, @collection)
-      end
+      count = if visible?(role, authority_id, involved_on_collection_level, parent_collection)
+                children_by_role(role, authority_id, involved_on_collection_level).sum do |child|
+                  child.count_manifestations(role, authority_id, involved_on_collection_level, @collection)
+                end
+              else
+                0
+              end
+      @manifestation_counts[cache_key] = count
     end
   end
 end
