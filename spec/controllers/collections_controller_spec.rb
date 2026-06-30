@@ -82,6 +82,38 @@ describe CollectionsController do
       end
     end
 
+    context 'when collection contains non-published manifestations' do
+      let(:published_manifestation) { create(:manifestation, title: 'Published Work', status: :published) }
+      let(:unpublished_manifestation) { create(:manifestation, title: 'Unpublished Work', status: :unpublished) }
+      let(:deprecated_manifestation) { create(:manifestation, title: 'Deprecated Work', status: :deprecated) }
+
+      let(:collection) do
+        create(:collection, collection_type: 'volume').tap do |coll|
+          coll.collection_items.create!(item: published_manifestation, seqno: 1)
+          coll.collection_items.create!(item: unpublished_manifestation, seqno: 2)
+          coll.collection_items.create!(item: deprecated_manifestation, seqno: 3)
+        end
+      end
+
+      before { get :show, params: { id: collection.id } }
+
+      it 'shows all three items (published + non-published as placeholders)' do
+        expect(response.body).to have_css('.by-card-v02.proofable', count: 3)
+      end
+
+      it 'shows the published manifestation as a clickable link' do
+        expect(response.body).to have_css("a[href='#{manifestation_path(published_manifestation)}']",
+                                          text: 'Published Work')
+      end
+
+      it 'shows non-published manifestations as unclickable title placeholders' do
+        expect(response.body).to include('Unpublished Work')
+        expect(response.body).to include('Deprecated Work')
+        expect(response.body).not_to have_css("a[href='#{manifestation_path(unpublished_manifestation)}']")
+        expect(response.body).not_to have_css("a[href='#{manifestation_path(deprecated_manifestation)}']")
+      end
+    end
+
     context 'when collection is periodical' do
       let(:issues) { create_list(:collection, 3, collection_type: 'periodical_issue') }
       let(:nested_collections) do

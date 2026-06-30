@@ -700,7 +700,13 @@ class CollectionsController < ApplicationController
 
   def build_htmls_recursively(collection_items, parent_authorities, nesting_level, counter)
     collection_items.each do |ci|
-      next if ci.item.present? && ci.item_type == 'Manifestation' && ci.item.status != 'published' # deleted or unpublished manifestations
+      if ci.item.present? && ci.item_type == 'Manifestation' && ci.item.status != 'published'
+        # Non-published manifestation: show as unclickable placeholder title
+        @htmls << [ci.title, ci.involved_authorities, '', false, ci.genre, counter[:value], ci,
+                   nesting_level, parent_authorities, nil]
+        counter[:value] += 1
+        next
+      end
 
       if ci.item.present? && ci.item_type == 'Collection'
         # This is a sub-collection - render it with full detail
