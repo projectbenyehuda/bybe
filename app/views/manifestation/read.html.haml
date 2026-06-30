@@ -30,9 +30,13 @@
                 siblings = FindSiblings.call(@m, ci.collection)
                 prev = siblings.previous_sibling
                 nextsib = siblings.next_sibling
+                cross_nav = CrossCollectionNavigation.call(@m, ci.collection)
+                cross_prev = prev.nil? && !siblings.more_before? ? cross_nav.prev_in_parent : nil
+                cross_next = nextsib.nil? && !siblings.more_after? ? cross_nav.next_in_parent : nil
                 show_collection_link = !ci.collection.system?
                 show_nav = prev.present? || nextsib.present? || show_collection_link ||
-                           siblings.more_before? || siblings.more_after?
+                           siblings.more_before? || siblings.more_after? ||
+                           cross_prev.present? || cross_next.present?
               - next unless show_nav
               .author-works-nav
                 .topNavEntry
@@ -40,6 +44,10 @@
                     - if prev.present?
                       - extra = prev[:skipped] > 0 ? "?skipped=#{prev[:skipped]}" : ''
                       = link_to "#{default_link_by_class(prev[:item].class, prev[:item].id)}#{extra}" do
+                        %span.right-arrow= '2'
+                        = t(:to_previous_item)
+                    - elsif cross_prev.present?
+                      = link_to default_link_by_class(cross_prev.class, cross_prev.id) do
                         %span.right-arrow= '2'
                         = t(:to_previous_item)
                     - elsif siblings.more_before?
@@ -56,6 +64,10 @@
                     - if nextsib.present?
                       - extra = nextsib[:skipped] > 0 ? "?skipped=#{nextsib[:skipped]}" : ''
                       = link_to "#{default_link_by_class(nextsib[:item].class, nextsib[:item].id)}#{extra}" do
+                        = t(:to_next_item)
+                        %span.left-arrow= '1'
+                    - elsif cross_next.present?
+                      = link_to default_link_by_class(cross_next.class, cross_next.id) do
                         = t(:to_next_item)
                         %span.left-arrow= '1'
                     - elsif siblings.more_after?
