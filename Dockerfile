@@ -1,8 +1,12 @@
 FROM ruby:3.3.9-trixie AS base
 
+ADD https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-amd64.deb /tmp/pandoc.deb
+
 RUN apt-get update -qq \
-  && apt-get install -y yaz libmagickwand-7.q16-10 libmariadb3 libcap2 libvips42t64 libyaml-0-2 pandoc chromium \
-  && apt-get clean && rm -rf /tmp/* /var/tmp/*
+  && apt-get install -y yaz libmagickwand-7.q16-10 libmariadb3 libcap2 libvips42t64 libyaml-0-2 chromium \
+  && dpkg -i /tmp/pandoc.deb \
+  && apt-get clean \
+  && rm -rf /tmp/* /var/tmp/*
 
 WORKDIR /app
 
