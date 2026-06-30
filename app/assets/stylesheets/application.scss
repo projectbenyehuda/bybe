@@ -302,6 +302,7 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
 @media screen and (max-width: 991px) {
   #moreMobile .dropdown-menu{ transform: translate3d(5px, 42px, 0px) !important;}
   #moreMobile-author .dropdown-menu{ transform: translate3d(5px, 72px, 0px) !important;}
+  .error-found-text { display: none; }
 }
 @media screen and (max-width: 399px) {
   #moreMobile .dropdown-menu{ transform: translate3d(5px, 28px, 0px) !important;}
