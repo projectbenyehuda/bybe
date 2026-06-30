@@ -125,6 +125,41 @@ describe AuthorsController do
         end
       end
 
+      context 'when collection contains non-published manifestations' do
+        let(:uncollected_collection) { create(:collection, :uncollected) }
+        let!(:author) { create(:authority, uncollected_works_collection: uncollected_collection) }
+        let(:published_manifestation) { create(:manifestation, title: 'Published Work', author: author, status: :published) }
+        let(:unpublished_manifestation) { create(:manifestation, title: 'Unpublished Work', author: author, status: :unpublished) }
+        let(:deprecated_manifestation) { create(:manifestation, title: 'Deprecated Work', author: author, status: :deprecated) }
+        let!(:collection) do
+          create(:collection, collection_type: 'volume', authors: [author]).tap do |coll|
+            coll.collection_items.create!(item: published_manifestation, seqno: 1)
+            coll.collection_items.create!(item: unpublished_manifestation, seqno: 2)
+            coll.collection_items.create!(item: deprecated_manifestation, seqno: 3)
+          end
+        end
+
+        before { request }
+
+        it 'renders successfully' do
+          expect(response).to be_successful
+        end
+
+        it 'shows published manifestation as a link' do
+          expect(response.body).to have_css("a[href='#{manifestation_path(published_manifestation)}']",
+                                            text: 'Published Work')
+        end
+
+        it 'shows unpublished manifestation as unclickable placeholder text' do
+          expect(response.body).to include('Unpublished Work')
+          expect(response.body).not_to have_css("a[href='#{manifestation_path(unpublished_manifestation)}']")
+        end
+
+        it 'excludes deprecated (soft-deleted) manifestations entirely' do
+          expect(response.body).not_to include('Deprecated Work')
+        end
+      end
+
       context 'when author has lex_person with general citations' do
         let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
         let(:lex_person) { lex_entry.lex_item }

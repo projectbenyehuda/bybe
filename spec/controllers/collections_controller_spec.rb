@@ -97,8 +97,8 @@ describe CollectionsController do
 
       before { get :show, params: { id: collection.id } }
 
-      it 'shows all three items (published + non-published as placeholders)' do
-        expect(response.body).to have_css('.by-card-v02.proofable', count: 3)
+      it 'shows published and unpublished items but not deprecated (2 proofable cards)' do
+        expect(response.body).to have_css('.by-card-v02.proofable', count: 2)
       end
 
       it 'shows the published manifestation as a clickable link' do
@@ -106,11 +106,13 @@ describe CollectionsController do
                                           text: 'Published Work')
       end
 
-      it 'shows non-published manifestations as unclickable title placeholders' do
+      it 'shows unpublished manifestation as an unclickable placeholder' do
         expect(response.body).to include('Unpublished Work')
-        expect(response.body).to include('Deprecated Work')
         expect(response.body).not_to have_css("a[href='#{manifestation_path(unpublished_manifestation)}']")
-        expect(response.body).not_to have_css("a[href='#{manifestation_path(deprecated_manifestation)}']")
+      end
+
+      it 'excludes deprecated (soft-deleted) manifestations entirely' do
+        expect(response.body).not_to include('Deprecated Work')
       end
     end
 
