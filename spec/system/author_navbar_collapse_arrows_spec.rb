@@ -12,7 +12,7 @@ describe 'Author navbar collapse arrows', :js do
   end
 
   let!(:collection) do
-    create(:collection, title: 'Test Collection')
+    create(:collection, title: 'Test Collection', collection_type: :volume)
   end
 
   let!(:manifestation) do
@@ -107,9 +107,6 @@ describe 'Author navbar collapse arrows', :js do
       within('.book-nav-full') do
         all('.collapse.navbar-nav').each do |collapse_target|
           target_id = collapse_target['id']
-          # Skip uncollected sections as they don't have arrows anymore
-          next if target_id.include?('uncollected')
-
           trigger = find(".truncate[data-bs-target='##{target_id}']")
           arrow = trigger.find('.collapse-arrow').text
 

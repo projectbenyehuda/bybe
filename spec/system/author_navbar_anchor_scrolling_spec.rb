@@ -8,7 +8,7 @@ describe 'Author navbar anchor scrolling', :js do
   end
 
   let!(:collection) do
-    create(:collection, title: 'Test Collection')
+    create(:collection, title: 'Test Collection', collection_type: :volume)
   end
 
   let!(:manifestation) do
