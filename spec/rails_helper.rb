@@ -65,6 +65,8 @@ RSpec.configure do |config|
   # Grape support
   config.include RSpec::Rails::RequestExampleGroup, type: :request, file_path: %r{spec/api}
 
+  config.include ActiveJob::TestHelper
+
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:

@@ -26,7 +26,7 @@ Users can set their `email_frequency` preference to one of four values:
 
 ### Jobs
 
-- **NotificationDigestJob** - Sidekiq job that runs on a schedule to send digest emails
+- **NotificationDigestJob** - ActiveJob that runs on a schedule to send digest emails
   - Daily digests: Every day at 9:00 AM
   - Weekly digests: Every Monday at 9:00 AM
 
@@ -79,7 +79,7 @@ docker compose run --rm test-app rspec spec/controllers/user_preferences_control
 docker compose run --rm test-app rspec spec/sidekiq/notification_digest_job_spec.rb
 ```
 
-Note: The NotificationDigestJob is placed in `app/sidekiq/` following the existing pattern in this codebase (see TagSimilarityJob).
+Note: The NotificationDigestJob is placed in `app/jobs/`.
 
 ## Migration
 

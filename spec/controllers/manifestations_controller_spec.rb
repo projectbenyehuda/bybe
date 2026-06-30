@@ -1,8 +1,6 @@
 require 'rails_helper'
-require 'sidekiq/testing'
 
 describe ManifestationController do
-
   describe '#browse' do
     before(:all) do
       clean_tables
@@ -429,17 +427,9 @@ describe ManifestationController do
         let!(:volume_collection) { create(:collection, collection_type: :volume) }
         let(:manifestation) { create(:manifestation, collections: [uncollected_collection, volume_collection]) }
 
-        before do
-          Sidekiq::Testing.fake!
-          Sidekiq::Worker.clear_all
-        end
-
         it 'hides uncollected collection and schedules uncollected collection refresh' do
-          expect { call }.to change { RefreshUncollectedWorksCollectionJob.jobs.size }.by(1)
+          expect { call }.to have_enqueued_job(RefreshUncollectedWorksCollectionJob).with([uncollected_collection.id])
           expect(call).to be_successful
-
-          job_args = RefreshUncollectedWorksCollectionJob.jobs.first['args']
-          expect(job_args).to eq([[uncollected_collection.id]])
 
           expect(assigns(:containments).size).to eq(1)
           expect(assigns(:containments).first.collection).to eq(volume_collection)

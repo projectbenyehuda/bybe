@@ -31,7 +31,7 @@ module Bybeconv
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     config.active_job.queue_adapter = :sidekiq
-    config.active_job.queue_name_prefix = Rails.env
+    # config.active_job.queue_name_prefix = Rails.env
 
     config.i18n.default_locale = :he
     config.i18n.available_locales = %i(he en)
