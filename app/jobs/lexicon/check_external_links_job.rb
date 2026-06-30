@@ -5,7 +5,6 @@ module Lexicon
   # Runs asynchronously after ingestion so that the ingestion job itself
   # is not delayed by per-link network round-trips.
   class CheckExternalLinksJob < ApplicationJob
-
     def perform(lex_entry_id)
       lex_entry = LexEntry.includes(:lex_item).find(lex_entry_id)
       CheckExternalLinks.call(lex_entry)
