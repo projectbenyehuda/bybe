@@ -2,7 +2,10 @@
 
 module CollectionsHelper
   def url_for_collection_item(collitem)
-    collitem.item.nil? ? nil : url_for(collitem.item)
+    return nil if collitem.item.nil?
+    return nil unless collitem.public?
+
+    url_for(collitem.item)
   end
 
   def render_external_link_item(link, collection_id)
