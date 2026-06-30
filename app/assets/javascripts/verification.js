@@ -559,7 +559,8 @@ function restoreScrollWithRetry(el, scrollVal) {
 // Open the per-work edit form as a non-modal panel.
 // Unlike openModal(), this version uses backdrop:false and makes the overlay
 // transparent to pointer events so the source (PHP) pane remains interactive.
-// Esc still dismisses the panel via Bootstrap's keyboard:true option.
+// Bootstrap's keyboard:true only fires when focus is inside the modal element;
+// with focus:false we add an explicit document-level Esc handler instead.
 function openWorkEditPanel(path, onSuccess) {
     $('#generalDlg').data('onSuccess', onSuccess);
 
@@ -569,12 +570,20 @@ function openWorkEditPanel(path, onSuccess) {
         // Apply non-modal class before show so CSS takes effect from the first frame.
         $('#generalDlg').addClass('no-modal-mode');
 
-        $('#generalDlg').modal({ show: true, keyboard: true, backdrop: false, focus: false });
+        $('#generalDlg').modal({ show: true, keyboard: false, backdrop: false, focus: false });
         // Bootstrap 4 adds 'modal-open' to <body> synchronously inside show().
         // Remove it immediately so background scrolling/interaction stays available.
         $('body').removeClass('modal-open');
 
+        // Bootstrap 4 attaches the keyboard:true Esc handler to #generalDlg itself,
+        // not to document. With focus:false, focus may be outside the modal so keydown
+        // never bubbles through #generalDlg. Add a document-level handler instead.
+        $(document).on('keydown.workpanel', function(e) {
+            if (e.which === 27) { $('#generalDlg').modal('hide'); }
+        });
+
         $('#generalDlg').one('hidden.bs.modal', function() {
+            $(document).off('keydown.workpanel');
             $(this).removeClass('no-modal-mode');
         });
     }).fail(function(xhr, status, error) {
