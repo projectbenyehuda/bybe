@@ -36,7 +36,7 @@
                 #{t(:edited_by)}:
                 %span= eds
           - short_title = @collection.title.split(/: | – /, 2).first if @collection.periodical?
-          - strip_coll_prefix = ->(t) { short_title ? t.sub(/\A#{Regexp.escape(short_title)}(?:: | – )/, '') : t }
+          - strip_coll_prefix = ->(issue_title) { short_title ? issue_title.sub(/\A#{Regexp.escape(short_title)}(?:: | – )/, '') : issue_title }
           .field-v02.work-chapters-dropdown-field-desktop{style: 'background-color: unset;'}
             = select_tag 'collitem', options_for_select(@htmls.reject{|x| x[0].blank?}.map{ |title, authors, html, is_curated, genre, i, ci, nesting_level, parent_authorities| [("– " * nesting_level) + strip_coll_prefix.call(title), i] }, 0), class: 'dropdown-v02', id: 'collitem_dropdown', style: 'width: 100%;'
 
