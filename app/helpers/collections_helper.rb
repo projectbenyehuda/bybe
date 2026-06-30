@@ -3,7 +3,7 @@
 module CollectionsHelper
   def url_for_collection_item(collitem)
     return nil if collitem.item.nil?
-    return nil if collitem.item_type == 'Manifestation' && collitem.item.status != 'published'
+    return nil unless collitem.public?
 
     url_for(collitem.item)
   end
