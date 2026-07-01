@@ -948,6 +948,11 @@ small p{
   line-height: 1.2;
 }
 
+.collection_toc ul ul {
+  padding-right: 20px;
+  padding-left: 0;
+}
+
 .mainlist .toclist {
   list-style-type:none;
   margin-top: 5px;
