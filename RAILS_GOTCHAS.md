@@ -118,6 +118,82 @@ If you must use `link_to`, test thoroughly in:
 
 ---
 
+## `inverse_of` Pre-Populates `collection_items` with Stale Cache
+
+**Date Discovered:** 2026-07-01
+**Time Spent Debugging:** ~2 hours
+**Affected Rails Version:** Rails 8.1.3
+
+### Symptoms
+
+When you load a Collection's `collection_items` after the collection was loaded via `parent_collection_items.map(&:collection)` (or any `has_many ... inverse_of: :item` loaded association chain), `collection_items` appears pre-loaded but contains fewer items than the database actually has:
+
+```ruby
+series.parent_collection_items.first.collection.collection_items.loaded?  # => true  (!!)
+series.parent_collection_items.first.collection.collection_items.count    # => 2  (wrong, DB has 3)
+series.parent_collection_items.first.collection.collection_items.reset.count  # => 3  (correct)
+```
+
+### What Triggers It
+
+The exact chain that causes the stale cache:
+
+1. A Collection (e.g. `volume`) has `has_many :collection_items, inverse_of: :collection`
+2. `volume.collection_items.create!(item: sub_collection)` is called — at this moment, Rails caches `volume.collection_items` in memory (say, with 2 items)
+3. Later, more items are added to `volume.collection_items` (cache grows to 3 items), but the CollectionItem created in step 2 still carries an internal reference to the volume as it was at that moment
+4. `sub_collection.parent_collection_items` is loaded (via `has_many :parent_collection_items, as: :item, inverse_of: :item`)
+5. `.first.collection` is called on the loaded CollectionItem — Rails's `inverse_of` mechanism loads a *new* Ruby object for the volume, but pre-populates its `collection_items` from the in-memory state at step 2 (only 2 items), not from the DB
+
+### Root Cause
+
+Rails's `inverse_of` association pre-populates the `has_many` side when loading via the `belongs_to` side. When the `CollectionItem` is loaded as part of a `has_many ... as: :item, inverse_of: :item` association, the resulting Ruby object carries a reference back to the original in-memory collection object. When `.collection` is subsequently called on that CollectionItem, Rails creates a new Collection object but pre-populates its `collection_items` association from whatever was already in memory — which may be a stale snapshot from when the CollectionItem was originally created through `collection.collection_items.create!`.
+
+This is invisible to normal queries (`loaded?` returns `true`) and silently returns incomplete data.
+
+### Which Patterns Are Safe vs. Unsafe
+
+```ruby
+# UNSAFE — triggers stale pre-population:
+parent_collection = ci.collection  # when ci loaded via has_many ... inverse_of: :item
+parent_collection.collection_items  # may return stale/incomplete list
+
+# SAFE — bypasses the association cache entirely:
+CollectionItem.where(collection: parent_collection).order(:seqno)
+
+# SAFE — forces a fresh DB query on the existing object:
+parent_collection.collection_items.reset
+
+# SAFE — loading a collection directly never has this issue:
+Collection.find(id).collection_items
+CollectionItem.find(id).collection  # when loaded standalone, not via a has_many
+```
+
+### Where This Exists in This Codebase
+
+**`CrossCollectionNavigation` (fixed):** The original `flatten_manifestations` used `collection.collection_items`; it was fixed to use `CollectionItem.where(collection: collection)` directly (see PR #1406).
+
+**`propagate_count_update_to_parents` → `recalculate_manifestations_count!` (theoretical risk):**
+
+```ruby
+def propagate_count_update_to_parents
+  stack = parent_collections.to_a  # parent_collections uses parent_collection_items.map(&:collection)
+  ...
+  collections_to_update.each do |collection|
+    collection.recalculate_manifestations_count!  # accesses collection.collection_items — may be stale
+  end
+end
+```
+
+Each `collection` here was obtained via `parent_collection_items.first.collection`, so its `collection_items` could be stale. In practice this only produces wrong counts if a parent collection's own `collection_items` was modified in the same request *before* the callback fires; in normal usage the parent's items are unchanged at that point, so the stale cache happens to be correct. However, if you ever perform multiple CollectionItem operations on the same parent in one request, verify that `recalculate_manifestations_count!` is producing the right result.
+
+**`Collection#parent_collections` (safe):** The result is used only to check `pc.volume?`, traverse further up the tree, or call `pc.authorities` / `pc.invalidate_cached_credits!` — none of which iterate `collection_items` on the returned objects.
+
+### Prevention
+
+Any time you navigate upward via `parent_collections` (or `parent_collection_items.map(&:collection)`) and then need to iterate `collection_items` on the resulting parent, use one of the safe patterns above. Add a comment explaining why.
+
+---
+
 ## Template for Future Gotchas
 
 When adding new entries, include:
