@@ -160,33 +160,67 @@ class Collection < ApplicationRecord
     false
   end
 
-  # produce HTML for a table of contents of the collection - used for periodicals, and skips paratexts
+  # produce HTML for a table of contents of the collection - used for periodicals and volume series,
+  # and skips paratexts. Sub-collections are rendered as nested <ul>s (indented), preserving the
+  # collection hierarchy instead of flattening it; leaf items (typically Manifestations) are linked.
   # url_builder: optional callable (e.g. method(:url_for)) to generate links for each item
   def toc_html(url_builder: nil)
-    ret = '<div class="collection_toc"><ul>'
-    flatten_items.each do |ci|
-      next if ci.item.nil? && ci.markdown.blank? && ci.alt_title.blank?
-      next if ci.paratext # Skip items of type paratext in periodical toc display
+    "<div class=\"collection_toc\">#{toc_html_list(url_builder)}</div>"
+  end
 
-      item_text = if ci.item.present?
-                    ERB::Util.html_escape(ci.title_and_authors)
-                  elsif ci.alt_title.present?
-                    ERB::Util.html_escape(ci.alt_title)
-                  elsif ci.markdown.present?
-                    ERB::Util.html_escape(ci.first_contentful_markdown.to_s)
+  # renders this collection's items as a <ul>, recursing into sub-collections as nested <ul>s;
+  # returns '' if there is nothing to show (so empty sub-collections don't produce an empty <ul>)
+  def toc_html_list(url_builder)
+    items_html = collection_items.filter_map { |coll_item| toc_html_item(coll_item, url_builder) }
+    return '' if items_html.empty?
+
+    "<ul>#{items_html.join}</ul>"
+  end
+
+  def toc_html_item(coll_item, url_builder)
+    return nil if coll_item.paratext # Skip items of type paratext in periodical/volume-series toc display
+
+    if coll_item.item.present? && coll_item.item.instance_of?(Collection)
+      label = ERB::Util.html_escape(coll_item.title_and_authors)
+      return nil if label.blank?
+
+      if url_builder
+        url = ERB::Util.html_escape(url_builder.call(coll_item.item))
+        label = "<a href=\"#{url}\">#{label}</a>"
+      end
+      "<li>#{label}#{coll_item.item.toc_html_list(url_builder)}</li>"
+    else
+      return nil if coll_item.item.nil? && coll_item.markdown.blank? && coll_item.alt_title.blank?
+
+      item_text = if coll_item.item.present?
+                    ERB::Util.html_escape(coll_item.title_and_authors)
+                  elsif coll_item.alt_title.present?
+                    ERB::Util.html_escape(coll_item.alt_title)
+                  elsif coll_item.markdown.present?
+                    ERB::Util.html_escape(coll_item.first_contentful_markdown.to_s)
                   end
+      return nil if item_text.blank?
 
-      next if item_text.blank?
+      genre_glyph = ''
+      if coll_item.item_type == 'Manifestation'
+        genre_glyph = "#{toc_html_genre_glyph(coll_item.genre)}&nbsp;"
+        item_text = "‏#{item_text}" # RLM character to help with LTR elements in title. Fixes #664
+      end
 
-      ret += if url_builder && ci.item.present?
-               url = ERB::Util.html_escape(url_builder.call(ci.item))
-               "<li><a href=\"#{url}\">#{item_text}</a></li>"
-             else
-               "<li>#{item_text}</li>"
-             end
+      if url_builder && coll_item.item.present?
+        url = ERB::Util.html_escape(url_builder.call(coll_item.item))
+        "<li>#{genre_glyph}<a href=\"#{url}\">#{item_text}</a></li>"
+      else
+        "<li>#{genre_glyph}#{item_text}</li>"
+      end
     end
-    ret += '</ul></div>'
-    ret
+  end
+
+  # same genre-glyph markup used elsewhere in Collection#show for non-periodical/volume_series items
+  def toc_html_genre_glyph(genre)
+    helpers = ApplicationController.helpers
+    title_attr = ERB::Util.html_escape(helpers.textify_genre(genre))
+    "<span class=\"by-icon-v02\" title=\"#{title_attr}\">#{helpers.glyph_for_genre(genre)}</span>"
   end
 
   def flatten_items
