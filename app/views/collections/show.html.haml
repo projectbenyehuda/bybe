@@ -328,6 +328,9 @@
 #printDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
   = render partial: 'shared/print_modal', locals: {entity: @collection}
 
+#tagPolicyDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
+  = render partial: 'manifestation/tag_policy', locals: { taggable: @collection }
+
 = render partial: 'shared/proof'
 = render partial: 'shared/propose_link'
 
