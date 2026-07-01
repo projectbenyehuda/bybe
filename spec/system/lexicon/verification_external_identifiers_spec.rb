@@ -77,6 +77,11 @@ describe 'Lexicon Verification Workbench – External Identifiers', :js do
         find('button[data-action="click->verification#quickVerify"]').click
       end
 
+      # quickVerify's PATCH is async and the click returns before it completes;
+      # the section reloads with the persisted state once it succeeds, so wait
+      # for that reload instead of racing entry.reload against the AJAX call.
+      expect(page).to have_css('#section-external-identifiers.verified', wait: 5)
+
       entry.reload
       expect(entry.verification_progress.dig('checklist', 'external_identifiers', 'verified')).to be true
     end
