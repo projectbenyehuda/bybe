@@ -212,6 +212,8 @@
 = render partial: 'shared/propose_link'
 -# found mistake popup
 = render partial: 'shared/proof'
+#tagPolicyDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
+  = render partial: 'manifestation/tag_policy', locals: { taggable: @author }
 
 :javascript
   // Global function to apply genre filters based on toggle states
