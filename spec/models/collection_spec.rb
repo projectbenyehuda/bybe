@@ -969,10 +969,11 @@ describe Collection do
       html = issue.toc_html
       doc = Nokogiri::HTML.fragment(html)
 
-      li = doc.css('li').find { |node| node.text.include?(poem.title) }
-      expect(li.at_css('span.by-icon-v02').text).to eq('t') # glyph_for_genre('poetry')
-      expect(li.text).to include("‏#{poem.title}")
-      expect(html).to include('by-icon-v02" title="שירה">t</span>&nbsp;')
+li = doc.css('li').find { |node| node.text.include?(poem.title) }
+expect(li.at_css('span.by-icon-v02').text).to eq('t') # glyph_for_genre('poetry')
+expect(li.text).to include("‏#{poem.title}")
+expected_genre_title = ApplicationController.helpers.textify_genre('poetry')
+expect(html).to include("by-icon-v02\" title=\"#{expected_genre_title}\">t</span>&nbsp;")
     end
 
     it 'skips items with no content' do
