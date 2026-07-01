@@ -35,6 +35,7 @@ class CrossCollectionNavigation < ApplicationService
     visited = Set.new
     while queue.any?
       pc = queue.shift
+      next if pc.nil?
       next if visited.include?(pc.id)
 
       visited.add(pc.id)
