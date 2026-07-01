@@ -981,6 +981,19 @@ describe Collection do
       expect(html).to include(manifestation.title)
     end
 
+    it 'prepends the genre glyph and an RLM character before manifestation titles' do
+      poem = create(:manifestation, genre: 'poetry')
+      create(:collection_item, collection: issue, item: poem, seqno: 2)
+      html = issue.toc_html
+      doc = Nokogiri::HTML.fragment(html)
+
+li = doc.css('li').find { |node| node.text.include?(poem.title) }
+expect(li.at_css('span.by-icon-v02').text).to eq('t') # glyph_for_genre('poetry')
+expect(li.text).to include("‏#{poem.title}")
+expected_genre_title = ApplicationController.helpers.textify_genre('poetry')
+expect(html).to include("by-icon-v02\" title=\"#{expected_genre_title}\">t</span>&nbsp;")
+    end
+
     it 'skips items with no content' do
       create(:collection_item, collection: issue, item: nil, alt_title: nil, markdown: nil, seqno: 2)
       url_builder = ->(item) { "/manifestations/#{item.id}" }
@@ -988,6 +1001,39 @@ describe Collection do
       doc = Nokogiri::HTML.fragment(html)
       expect(doc.css('li').count).to eq(1)
       expect(doc.css("a[href=\"/manifestations/#{manifestation.id}\"]").count).to eq(1)
+    end
+
+    context 'with nested sub-collections (e.g. a volume containing a section containing a manifestation)' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+      let(:section) { create(:collection, collection_type: :series) }
+      let(:url_builder) do
+        lambda do |item|
+          item.is_a?(Manifestation) ? "/manifestations/#{item.id}" : "/collections/#{item.id}"
+        end
+      end
+
+      before do
+        create(:collection_item, collection: volume, item: section, seqno: 1)
+        create(:collection_item, collection: section, item: manifestation, seqno: 1)
+      end
+
+      it 'renders sub-collections as nested <ul>s instead of a flat list' do
+        html = volume.toc_html(url_builder: url_builder)
+        doc = Nokogiri::HTML.fragment(html)
+
+        section_li = doc.at_css('li')
+        expect(section_li.at_css("> a[href=\"/collections/#{section.id}\"]")).to be_present
+        expect(section_li.at_css('ul')).to be_present
+      end
+
+      it 'renders the leaf manifestation as a clickable link within the nested list' do
+        html = volume.toc_html(url_builder: url_builder)
+        doc = Nokogiri::HTML.fragment(html)
+
+        nested_link = doc.at_css("li ul a[href=\"/manifestations/#{manifestation.id}\"]")
+        expect(nested_link).to be_present
+        expect(nested_link.text).to include(manifestation.title)
+      end
     end
   end
 
