@@ -13,8 +13,21 @@ class Rack::Attack
   Rack::Attack.blocklist "Block IPs from Environment Variable" do |req|
     BAD_IPS.include?(req.ip)
   end
-  # Throttle requests to 100 requests per 3 minutes per IP
+
+  ASSET_PATH_PREFIXES = ['/assets', '/rails/active_storage'].freeze
+
+  def self.asset_request?(req)
+    ASSET_PATH_PREFIXES.any? { |prefix| req.path.start_with?(prefix) }
+  end
+
+  # A single page can load dozens of images (Active Storage) or static assets,
+  # so give these paths a much higher allowance than regular page/API requests.
+  throttle('req/ip/assets', limit: 1500, period: 5.minutes) do |req|
+    req.ip if asset_request?(req)
+  end
+
+  # Throttle other requests to 100 requests per 3 minutes per IP
   throttle('req/ip', limit: 100, period: 3.minutes) do |req|
-    req.ip unless req.path.start_with?('/assets')
+    req.ip unless asset_request?(req)
   end
 end
