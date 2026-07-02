@@ -2297,7 +2297,7 @@ he:
     project_help: אם ההעלאה משוייכת למיזם, הקישורית לדף ההוצאה המוגדרת במיזם תתווסף אוטומטית לאוסף וליצירות
   toc_by_role:
     involved_on_collection_level: בכותרים של%{gender_letter}
-    involved_on_work_level: בכותרים אחרים
+    involved_on_work_level: בכותרים של אחרים
     uncollected_works: יצירות נוספות שליקטנו
     headers:
       author: יצירות מקור
