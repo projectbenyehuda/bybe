@@ -45,7 +45,8 @@ class Collection < ApplicationRecord
 
   # enum :status, { published: 0, nonpd: 1, unpublished: 2, deprecated: 3 }
 
-  # series express anything from a cycle of poems to a multi-volume work or a series of detective novels;
+  # series express things like a cycle of poems or a series of essays or any other sub-volume grouping
+  # volume_series is for multi-volume works or a series of novels;
   # anthologies are collections of texts by multiple authors, such as festschrifts, almanacs,
   #   or collective anthologies;
   # periodicals are journals, magazines, newspapers, etc., where there is a known sequence of issues;
