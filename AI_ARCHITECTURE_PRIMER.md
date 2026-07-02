@@ -35,7 +35,7 @@ Work (abstract work, e.g., "Torah")
   - `origlang_title`: the work's title in its original language (shown in `.origlang_details` on Manifestation#read)
 
 - **Expression** (`expression.rb`): Specific version/translation of Work
-  - Enums: `language` (the **language of this expression**, i.e. what it's translated into, or same as `work.orig_lang` if untranslated), `period` (ancient/medieval/enlightenment/revival/modern)
+  - Attributes: `language` (string; the **language of this expression**, i.e. what it's translated into, or same as `work.orig_lang` if untranslated); Enum: `period` (ancient/medieval/enlightenment/revival/modern)
   - Boolean: `translation` — auto-set in `set_translation` callback: `language != work.orig_lang`
   - To find "original language of a translated text" from a Manifestation: `manifestation.expression.work.orig_lang`, formatted for display via `orig_lang_label()` / `textify_lang()` in `lib/bybe_utils.rb` (mixed into `ApplicationHelper`, so available in all views)
 
