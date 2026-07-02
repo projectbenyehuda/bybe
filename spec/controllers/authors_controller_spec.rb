@@ -161,6 +161,28 @@ describe AuthorsController do
         end
       end
 
+      context 'when a series is nested under a volume' do
+        let(:series_manifestation) { create(:manifestation, title: 'Series Poem', author: author) }
+        let!(:series) do
+          create(:collection, title: 'My Poem Cycle', collection_type: :series,
+                              manifestations: [series_manifestation])
+        end
+        let!(:volume) do
+          create(:collection, title: 'The Big Volume', collection_type: :volume, included_collections: [series])
+        end
+
+        before { request }
+
+        it 'renders the series title but not as a link to the series' do
+          expect(response.body).to include('My Poem Cycle')
+          expect(response.body).not_to have_css("a[href='#{collection_path(series)}']")
+        end
+
+        it 'still renders the containing volume title as a link' do
+          expect(response.body).to have_css("a[href='#{collection_path(volume)}']", text: 'The Big Volume')
+        end
+      end
+
       context 'when author has lex_person with general citations' do
         let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
         let(:lex_person) { lex_entry.lex_item }
