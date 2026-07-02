@@ -14,7 +14,7 @@
         .author-sort-area
           .author-page-top-sort-desktop.notyet
             = t(:sort_and_filter)
-            = link_to '[?]', '#', 'class' => 'help', 'data-toggle' => 'popover', 'data-trigger' => 'focus', title: t(:about_sort_and_filter), 'data-content' => t(:sort_and_filter_popover)
+            = link_to '[?]', '#', 'class' => 'help', 'tabindex' => 0, 'data-toggle' => 'popover', 'data-trigger' => 'focus', title: t(:about_sort_and_filter), 'data-content' => t(:sort_and_filter_popover)
             .toggle-background-no{title: t(:toggle_filters_tt)}
               .toggle-button-no
           .author-page-top-sort-mobile
