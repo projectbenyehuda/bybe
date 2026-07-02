@@ -1,6 +1,7 @@
 %span.by-icon-v02.copyright-icon= intellectual_property_glyph(intellectual_property)
 = link_to textify_intellectual_property(intellectual_property), '#',
           class: :help,
+          tabindex: 0,
           onclick: 'return false;',
           data: { toggle: :popover, trigger: :focus, content: t(".popover.#{intellectual_property}") },
           title: t(".about.#{intellectual_property}")
