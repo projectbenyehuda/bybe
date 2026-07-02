@@ -27,6 +27,20 @@ module CollectionsHelper
     collection_path(result.id, q: query)
   end
 
+  # Path for the "up link" shown in Manifestation#read navigation for a containing collection.
+  # Sub-volume/sub-issue collections (type 'series' or 'periodical_issue') aren't the focus of a
+  # Collection#show view, so the link points to the volume/issue-level parent's show page plus an
+  # anchor leading to the sub-collection within that view. Collections that are themselves a
+  # volume/issue (or have no such ancestor) link to their own show page as usual.
+  def collection_up_link_path(collection)
+    if collection.series? || collection.periodical_issue?
+      parent = collection.parent_volume_or_isssue
+      return collection_path(parent.id, anchor: "collection_#{collection.id}") if parent.present?
+    end
+
+    collection_path(collection)
+  end
+
   def render_external_link_item(link, collection_id)
     content_tag(:div, class: 'external_link_item', id: "external_link_#{link.id}",
                       style: 'margin-bottom: 10px; padding: 5px; background-color: white;') do

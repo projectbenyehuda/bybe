@@ -58,6 +58,37 @@ RSpec.describe CollectionsHelper, type: :helper do
     end
   end
 
+  describe '#collection_up_link_path' do
+    it 'links a series to its volume parent plus an anchor to the sub-collection' do
+      series = create(:collection, collection_type: :series)
+      volume = create(:collection, collection_type: :volume, included_collections: [series])
+
+      expect(helper.collection_up_link_path(series))
+        .to eq(collection_path(volume.id, anchor: "collection_#{series.id}"))
+    end
+
+    it 'bubbles up to the nearest volume/issue ancestor for a nested series' do
+      inner = create(:collection, collection_type: :series)
+      outer = create(:collection, collection_type: :series, included_collections: [inner])
+      volume = create(:collection, collection_type: :volume, included_collections: [outer])
+
+      expect(helper.collection_up_link_path(inner))
+        .to eq(collection_path(volume.id, anchor: "collection_#{inner.id}"))
+    end
+
+    it 'links a series with no volume/issue ancestor to its own show page' do
+      series = create(:collection, collection_type: :series)
+
+      expect(helper.collection_up_link_path(series)).to eq(collection_path(series))
+    end
+
+    it 'links a volume collection to its own show page' do
+      volume = create(:collection, collection_type: :volume)
+
+      expect(helper.collection_up_link_path(volume)).to eq(collection_path(volume))
+    end
+  end
+
   describe '#convert_internal_links_to_relative' do
     let(:base_url) { 'https://example.com' }
 
