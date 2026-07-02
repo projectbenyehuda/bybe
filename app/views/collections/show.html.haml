@@ -187,6 +187,8 @@
             - card_attrs[:style] = "margin-right: #{nesting_level * 10}px;" if nesting_level > 0
             - if html.nil? && ci.item_type == 'Collection'
               -# This is a sub-collection header - render with full detail
+              -# Stable anchor (keyed by sub-collection id) so search results and deep links can jump here
+              %a{ name: "collection_#{ci.item_id}" }
               .by-card-v02.proofable{ card_attrs }
                 .by-card-header-v02
                   .by-icon-v02
