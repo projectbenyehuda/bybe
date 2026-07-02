@@ -14,6 +14,24 @@ class CollectionsController < ApplicationController
 
   # GET /collections/1 or /collections/1.json
   def show
+    # Sub-volume/sub-issue collections (type 'series') and uncollected-works collections should
+    # never be the focus of a Collection#show view. Redirect them to a more appropriate target
+    # (to prevent URL-hacking or stale links to sub-collections). If there is no suitable target
+    # (e.g. an orphan series with no volume/issue ancestor), fall through and render normally.
+    if @collection.series?
+      parent = @collection.parent_volume_or_isssue
+      if parent.present?
+        redirect_to collection_path(parent.id, q: params[:q])
+        return
+      end
+    elsif @collection.uncollected?
+      authority = Authority.find_by(uncollected_works_collection_id: @collection.id)
+      if authority.present?
+        redirect_to authority_path(authority)
+        return
+      end
+    end
+
     data = FetchCollection.call(@collection)
 
     if data.all_manifestations.size == 1

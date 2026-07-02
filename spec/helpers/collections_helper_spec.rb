@@ -3,6 +3,92 @@
 require 'rails_helper'
 
 RSpec.describe CollectionsHelper, type: :helper do
+  describe '#url_for_collection_item' do
+    it 'returns nil when the item is a series sub-collection (not clickable)' do
+      series = create(:collection, collection_type: :series)
+      ci = build(:collection_item, item: series)
+      expect(helper.url_for_collection_item(ci)).to be_nil
+    end
+
+    it 'returns nil when the item is a periodical_issue sub-collection (not clickable)' do
+      issue = create(:collection, collection_type: :periodical_issue)
+      ci = build(:collection_item, item: issue)
+      expect(helper.url_for_collection_item(ci)).to be_nil
+    end
+
+    it 'returns a URL for a volume sub-collection (still clickable)' do
+      volume = create(:collection, collection_type: :volume)
+      ci = build(:collection_item, item: volume)
+      expect(helper.url_for_collection_item(ci)).to eq(url_for(volume))
+    end
+
+    it 'returns a URL for a manifestation item' do
+      manifestation = create(:manifestation)
+      ci = build(:collection_item, item: manifestation)
+      expect(helper.url_for_collection_item(ci)).to eq(url_for(manifestation))
+    end
+  end
+
+  describe '#collection_search_result_path' do
+    let(:query) { 'search term' }
+
+    it 'links a series result to its volume parent plus an anchor to the sub-collection' do
+      series = create(:collection, collection_type: :series)
+      volume = create(:collection, collection_type: :volume, included_collections: [series])
+      result = Struct.new(:id, :collection_type).new(series.id, 'series')
+
+      expect(helper.collection_search_result_path(result, query))
+        .to eq(collection_path(volume.id, q: query, anchor: "collection_#{series.id}"))
+    end
+
+    it 'links a series result with no volume/issue ancestor to its own show page' do
+      series = create(:collection, collection_type: :series)
+      result = Struct.new(:id, :collection_type).new(series.id, 'series')
+
+      expect(helper.collection_search_result_path(result, query))
+        .to eq(collection_path(series.id, q: query))
+    end
+
+    it 'links a non-series result to its own show page' do
+      volume = create(:collection, collection_type: :volume)
+      result = Struct.new(:id, :collection_type).new(volume.id, 'volume')
+
+      expect(helper.collection_search_result_path(result, query))
+        .to eq(collection_path(volume.id, q: query))
+    end
+  end
+
+  describe '#collection_up_link_path' do
+    it 'links a series to its volume parent plus an anchor to the sub-collection' do
+      series = create(:collection, collection_type: :series)
+      volume = create(:collection, collection_type: :volume, included_collections: [series])
+
+      expect(helper.collection_up_link_path(series))
+        .to eq(collection_path(volume.id, anchor: "collection_#{series.id}"))
+    end
+
+    it 'bubbles up to the nearest volume/issue ancestor for a nested series' do
+      inner = create(:collection, collection_type: :series)
+      outer = create(:collection, collection_type: :series, included_collections: [inner])
+      volume = create(:collection, collection_type: :volume, included_collections: [outer])
+
+      expect(helper.collection_up_link_path(inner))
+        .to eq(collection_path(volume.id, anchor: "collection_#{inner.id}"))
+    end
+
+    it 'links a series with no volume/issue ancestor to its own show page' do
+      series = create(:collection, collection_type: :series)
+
+      expect(helper.collection_up_link_path(series)).to eq(collection_path(series))
+    end
+
+    it 'links a volume collection to its own show page' do
+      volume = create(:collection, collection_type: :volume)
+
+      expect(helper.collection_up_link_path(volume)).to eq(collection_path(volume))
+    end
+  end
+
   describe '#convert_internal_links_to_relative' do
     let(:base_url) { 'https://example.com' }
 
