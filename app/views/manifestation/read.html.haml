@@ -56,7 +56,7 @@
                 .topNavEntry
                   .link-nav{style: 'margin-left:20px; margin-right:20px;'}
                     - if show_collection_link
-                      = link_to default_link_by_class(ci.collection.class, ci.collection.id) do
+                      = link_to collection_up_link_path(ci.collection) do
                         %span.right-arrow= '🢁'
                         = textify_collection_up_link(ci.collection)
                         %span.left-arrow= '🢁'
