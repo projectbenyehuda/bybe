@@ -233,7 +233,10 @@
                         != ' ' + title_footnote
                       - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
                       - if translators.present?
-                        %p= "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
+                        %p
+                          = "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
+                          - if ci.item_type == 'Manifestation' && ci.item&.expression&.work.present?
+                            = " (#{orig_lang_label(ci.item.expression.work.orig_lang)})"
                     - if ci.item_type == 'Manifestation' && ci.item.present?
                       - item_ip = ci.item.expression.intellectual_property
                       .metadata{ style: 'gap: 10px; padding-top: 4px;' }
