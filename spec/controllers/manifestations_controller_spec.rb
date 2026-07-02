@@ -455,6 +455,22 @@ describe ManifestationController do
           expect(response.body).to include(I18n.t(:to_next_item))
         end
       end
+
+      context 'when manifestation is in a series nested under a volume' do
+        let!(:volume_collection) { create(:collection, collection_type: :volume) }
+        let!(:series_collection) do
+          create(:collection, collection_type: :series, manifestations: [manifestation]).tap do |series|
+            volume_collection.append_item(series)
+          end
+        end
+
+        it 'points the collection up-link to the volume parent with an anchor to the series' do
+          expect(call).to be_successful
+          expect(assigns(:containments).first.collection).to eq(series_collection)
+          expected_href = collection_path(volume_collection.id, anchor: "collection_#{series_collection.id}")
+          expect(response.body).to include("href=\"#{expected_href}\"")
+        end
+      end
     end
 
     describe '#readmode' do

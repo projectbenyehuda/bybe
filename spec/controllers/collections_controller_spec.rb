@@ -30,6 +30,51 @@ describe CollectionsController do
       it { is_expected.to redirect_to manifestation_path(manifestation) }
     end
 
+    context 'when collection is a series with a volume ancestor' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+      let(:collection) do
+        series = create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+        volume.append_item(series)
+        series
+      end
+
+      it { is_expected.to redirect_to collection_path(volume.id) }
+    end
+
+    context 'when collection is a series nested under a series under a volume' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+      let(:collection) do
+        inner = create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+        outer = create(:collection, collection_type: :series)
+        outer.append_item(inner)
+        volume.append_item(outer)
+        inner
+      end
+
+      it 'bubbles up to the nearest volume/issue ancestor' do
+        expect(response).to redirect_to(collection_path(volume.id))
+      end
+    end
+
+    context 'when collection is a series with no volume/issue ancestor' do
+      let(:collection) do
+        create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+      end
+
+      it { is_expected.to be_successful }
+    end
+
+    context 'when collection is an uncollected-works collection' do
+      let(:authority) { create(:authority) }
+      let(:collection) do
+        coll = create(:collection, :uncollected)
+        authority.update!(uncollected_works_collection: coll)
+        coll
+      end
+
+      it { is_expected.to redirect_to authority_path(authority) }
+    end
+
     context 'when collection is not periodical' do
       let(:collection_type) { (Collection.collection_types.keys - %w(periodical volume_series) - Collection::SYSTEM_TYPES).sample }
 
@@ -79,6 +124,41 @@ describe CollectionsController do
             ".proofable[data-item-id='#{nested_manifestation.id}'][data-item-type='Manifestation']"
           )
         end
+      end
+    end
+
+    context 'when a sub-collection is a series (sub-volume)' do
+      let(:series) do
+        create(:collection, title: 'My Sub Series', collection_type: :series,
+                            manifestations: create_list(:manifestation, 2))
+      end
+      let(:collection) do
+        create(:collection, collection_type: :volume, included_collections: [series],
+                            manifestations: [create(:manifestation)])
+      end
+
+      it 'shows the series title in the card header but not as a clickable link' do
+        expect(response.body).to have_css('.by-card-header-v02 .headline-1-v02', text: 'My Sub Series')
+        expect(response.body).not_to have_css('.by-card-header-v02 a', text: 'My Sub Series')
+      end
+
+      it 'renders a stable anchor for the sub-collection so search results can jump to it' do
+        series_item = collection.collection_items.find { |ci| ci.item_type == 'Collection' }
+        expect(response.body).to have_css("a[name='collection_#{series_item.item_id}']", visible: :all)
+      end
+    end
+
+    context 'when a sub-collection is a volume (still clickable)' do
+      let(:inner_volume) do
+        create(:collection, title: 'My Sub Volume', collection_type: :volume,
+                            manifestations: create_list(:manifestation, 2))
+      end
+      let(:collection) do
+        create(:collection, collection_type: :volume_series, included_collections: [inner_volume])
+      end
+
+      it 'shows the volume title as a clickable link' do
+        expect(response.body).to have_css('a', text: 'My Sub Volume')
       end
     end
 
