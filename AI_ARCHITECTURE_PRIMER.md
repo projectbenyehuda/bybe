@@ -31,10 +31,13 @@ Work (abstract work, e.g., "Torah")
 
 - **Work** (`work.rb`): Abstract work concept
   - Enums: `genre` (poetry/prose/drama/fables/article/memoir/letters/reference/lexicon)
+  - `orig_lang` (string, ISO-ish code e.g. `he`/`ru`/`en`/`unk`): the work's **original composition language** — lives on Work, not Expression
+  - `origlang_title`: the work's title in its original language (shown in `.origlang_details` on Manifestation#read)
 
 - **Expression** (`expression.rb`): Specific version/translation of Work
-  - Enums: `language`, `period` (ancient/medieval/enlightenment/revival/modern)
-  - Boolean: `translation`
+  - Enums: `language` (the **language of this expression**, i.e. what it's translated into, or same as `work.orig_lang` if untranslated), `period` (ancient/medieval/enlightenment/revival/modern)
+  - Boolean: `translation` — auto-set in `set_translation` callback: `language != work.orig_lang`
+  - To find "original language of a translated text" from a Manifestation: `manifestation.expression.work.orig_lang`, formatted for display via `orig_lang_label()` / `textify_lang()` in `lib/bybe_utils.rb` (mixed into `ApplicationHelper`, so available in all views)
 
 - **Manifestation** (`manifestation.rb`): Actual content realization
   - Content: `markdown` (raw), `html` (converted), `sort_title`
@@ -43,8 +46,9 @@ Work (abstract work, e.g., "Torah")
 
 #### **InvolvedAuthority** (`involved_authority.rb`)
 - Polymorphic join: Authority → (Work | Expression) with role
-- Enums: `role` (author/editor/illustrator/translator/photographer/designer/contributor)
-- Validation: WORK_ROLES exclude translator; EXPRESSION_ROLES exclude author
+- Enums: `role` (author/editor/illustrator/translator/photographer/designer/contributor/other), ordered for display via `ROLES_PRESENTATION_ORDER`
+- Validation: `WORK_ROLES` excludes translator; `EXPRESSION_ROLES` excludes author — **translator always lives on Expression, author always lives on Work**, never the reverse. This is a common source of confusion; don't assume `work.involved_authorities` includes translators.
+- `Manifestation#involved_authorities` = `(expression.involved_authorities + expression.work.involved_authorities).uniq` — merges both levels
 - Triggers: Updates manifestation responsibility statements on changes
 
 #### **Collection Ecosystem**
@@ -214,6 +218,48 @@ Work
 1. AuthorsController#toc calls GenerateTocTree
 2. Builds tree from: (a) authority's direct collections, (b) authority's manifestations grouped by collection
 3. Renders as nested list with manifestation counts
+
+---
+
+### VIEW INTERNALS: Collection#show & Manifestation#read
+
+These two views are the most-visited and most-modified in the app. Re-deriving their structure is expensive, so it's captured here.
+
+#### **Collection#show** (`app/views/collections/show.html.haml`, ~350 lines)
+- Controller builds `@htmls`, an array of tuples via `CollectionsController#prep_for_show` → `build_htmls_recursively`:
+  `[title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities, title_footnote]`
+  - `ias` = that item's `InvolvedAuthority` records (already merged Expression+Work level, see `CollectionItem#involved_authorities`)
+  - `ci` = the `CollectionItem` itself — use `ci.item_type` (`'Manifestation'` vs `'Collection'`) to know which branch is rendering, and `ci.item` to reach the actual Manifestation/sub-Collection
+  - `html` is `nil` when `ci.item_type == 'Collection'` (sub-collection header, rendered with its own author/editor/translator summary); otherwise it's the item's rendered HTML body
+- The view loops `@htmls.each do |title, ias, html, is_curated, genre, i, ci, nesting_level, parent_authorities, title_footnote|` twice: once to build the sidebar TOC (`.binder-texts-list`), once to render each card (`.by-card-v02.proofable`)
+- Per-item translator display (manifestation branch, not sub-collection branch): filter `ias` by `ia.role == 'translator'`, reject any authority already shown at the collection level (`ctranslators`), render `%p= "#{t(:translated_by)} #{names}"`. To get that item's original language: `ci.item.expression.work.orig_lang` (only valid when `ci.item_type == 'Manifestation'` — sub-collections have no single Work/Expression)
+- Collection-level (not per-item) authors/editors/translators/etc. come from `@collection.translators` / `.authors` / `.editors` / `.involved_authorities_by_role(:x)`, shown once in the top `.work-info-card` header
+- `FetchCollection.call(@collection)` preloads before `prep_for_show` runs, to avoid N+1 across nested collection items
+
+#### **Manifestation#read** (`app/views/manifestation/read.html.haml` → renders `_metadata.html.haml` partial + `_work_top.haml`)
+- Instance vars used in the metadata partial: `@m` (Manifestation), `@e` (Expression), `@w`/`@e.work` (Work), `@translators`
+- Translator + original-language display pattern (the canonical visual design other views should mirror):
+  ```haml
+  - if @e.translation && @e.translators.size > 0
+    %br
+    = "#{t(:translation)}: "
+    != @translators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+    - linktext = orig_lang_label(@e.work.orig_lang)
+    != " (#{linktext})"
+  ```
+  i.e. original language is shown as **parenthetical text immediately after the translator name(s)**, produced by `orig_lang_label()`
+- Separate `.origlang_details` block (only when `@w.origlang_title.present?`) shows the work's title in its original language, plus a link to the source text if an `ExternalLink` of `linktype: source_text` exists
+- `.metadata` row variant (used elsewhere, e.g. filtered-search context): bold label + link to `works_path` filtered by that language: `t(:orig_lang)+': '` then `link_to textify_lang(@e.work.orig_lang), works_path + '?ckb_languages[]=' + @e.work.orig_lang`
+
+#### **Shared visual vocabulary** (reuse these, don't reinvent)
+- `.by-card-v02` / `.by-card-header-v02` / `.by-card-content-v02` — the card container system used on nearly every content page
+- `.headline-1-v02` / `.headline-2-v02` / `.headline-3-v02` — title/author/secondary-role text sizes
+- `.by-icon-v02` — glyph-font icon span (genre icons via `glyph_for_genre`/`textify_genre`), not used for language
+- `.origlang_details` (CSS in `application.scss`, `margin-top: -5px; font-size: 80%;`) — small print under the title for original-language title/source-link
+- Language formatting helpers, both in `lib/bybe_utils.rb` (mixed into `ApplicationHelper`, callable in any view):
+  - `textify_lang(iso)` → localized language name (`I18n.t(:russian)` etc.), falls back to `I18n.t(:unknown)`
+  - `orig_lang_label(orig_lang)` → ready-to-display fragment like `"מרוסית"`/`"from Russian"`, or `I18n.t(:translated_from_unknown_lang)` if `orig_lang` is blank/`'unk'`/unrecognized — this is what gets wrapped in parens next to translator names
+- Relevant existing i18n keys (already defined in both `he.yml`/`en.yml`, rarely need new ones): `orig_lang`, `origlang_title`, `from_lang`, `translation`, `translated_from`, `translated_from_unknown_lang`, `translated_by`, `in_orig_lang`, `involved_authority.role.translator`, `involved_authority.abstract_roles.translator`, plus per-language keys (`hebrew`, `russian`, `german`, ...)
 
 ---
 
