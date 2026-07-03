@@ -1474,3 +1474,29 @@ p.by-genre-name-v02.headline-2-v02 {
     }
   }
 }
+
+// Authority TOC flat-list filters pane (bead ln5)
+// JS-controlled date range slider positioning + histogram bars.
+// (BY_*.css supplies the base look; these only enable dynamic control.)
+#toc-date-range {
+  position: relative;
+  margin-top: 4px;
+}
+#toc-date-range-inside {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#toc-date-histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+}
+.toc-hist-bar {
+  flex: 1 1 auto;
+  min-width: 1px;
+  background-color: #907989;
+}
+.toc-facet-count {
+  color: #907989;
+}
