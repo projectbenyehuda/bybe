@@ -112,7 +112,7 @@
     .book-type
       .truncate= t(:latest_updates)
     .book-type
-      .truncate= t(:works_about_this_author)
+      .truncate= t(:works_about_this_author, gender_suffix: @author.person&.gender == 'female' ? '/ת' : '')
     .book-type
       .truncate= t(:external_links)
     .book-type
