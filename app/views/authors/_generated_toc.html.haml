@@ -82,6 +82,10 @@
               $(this).children('.by-icon-v02').remove();
               $(this).prepend(manifs.find('.by-icon-v02').clone());
               manifs.hide();
+              // this volume is now shown as a single link, so there is nothing left
+              // to collapse: drop the per-volume toggle and its ARIA expanded state
+              $(this).find('.volume-collapse-toggle').remove();
+              $(this).closest('.by-card-v02[role="treeitem"]').removeAttr('aria-expanded');
             }
           }
         }

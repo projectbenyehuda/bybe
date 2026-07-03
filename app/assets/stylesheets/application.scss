@@ -15,6 +15,22 @@
  *= require_self
  *= require slick
 */
+// Per-volume collapse toggle in the Authority TOC: uses the ben-yehuda chevron
+// glyph ")" (same as the navbar .dropdown-arrow). Expanded points up, collapsed points down.
+.volume-collapse-toggle {
+  font-family: ben-yehuda;
+  font-size: 0.7em;
+  cursor: pointer;
+  display: inline-block;
+  margin-inline-start: 8px;
+  transform: rotate(180deg); // expanded state: chevron points up
+  transition: transform 0.2s ease;
+
+  &.collapsed {
+    transform: rotate(0deg); // collapsed state: chevron points down
+  }
+}
+
 // Staging environment indicator: diagonal stripe overlay
 body.staging::before {
   content: '';
