@@ -111,4 +111,36 @@ Capybara automatically waits (default 2 seconds, configurable) for:
 - `find`, `have_content`, `have_css`, `have_xpath`, `have_text`
 - All matchers and finders
 
+### Subtle trap: RSpec predicate matchers and attribute reads do NOT wait
+
+`sleep` is not the only source of flakiness. **RSpec predicate matchers and
+snapshot attribute reads on a Capybara node read the DOM exactly once — they do
+NOT poll.** After an animation (jQuery `slideUp`/`slideToggle`, fades, CSS
+transitions) or any async DOM update, they will observe the *pre-transition*
+state and fail intermittently.
+
+**DO NOT** (these snapshot state once, no retry):
+```ruby
+toggle.click
+expect(child_list).not_to be_visible            # ❌ be_visible = one-shot predicate
+expect(toggle[:class]).to include('collapsed')  # ❌ [:class] read once
+expect(card['aria-expanded']).to eq('false')    # ❌ attribute read once
+```
+
+**DO** — assert through a waiting Capybara matcher first, so the animation
+settles before you read any snapshot values:
+```ruby
+toggle.click
+# have_css with a visibility filter polls until the element is actually hidden:
+expect(cwrapper).to have_css('ul.toclist', visible: :hidden)   # ✅ waits
+# Only NOW read snapshot attributes — the DOM has settled:
+expect(toggle[:class]).to include('collapsed')
+expect(card['aria-expanded']).to eq('false')
+```
+
+Use `visible: :visible` / `visible: :hidden` on `have_css`/`have_selector` to
+wait for visibility changes. Reach for `matches_css?`/`match_selector` when you
+must wait on a specific element's class. **Never** gate correctness on a bare
+`be_visible`, `[:attr]`, or `['aria-*']` read immediately after an interaction.
+
 **Remember**: A feature without tests is an incomplete feature.
