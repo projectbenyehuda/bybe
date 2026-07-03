@@ -100,7 +100,7 @@
             .by-card-content-v02
               %ul
                 - @other_parent_collections.each do |coll|
-                  %li= link_to coll.title, collection_path(coll)
+                  %li= link_to coll.title, collection_up_link_path(coll)
         -# Works about this work
         - if @works_about.count > 0
           = render partial: 'public_aboutnesses', locals: {edit: false, add: false}
