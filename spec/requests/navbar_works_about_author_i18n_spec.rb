@@ -10,6 +10,9 @@ RSpec.describe 'Author navbar "works about this author" label', type: :request d
   # the literal placeholder that must never reach the page (not a format token here)
   let(:raw_placeholder) { '%{gender_suffix}' } # rubocop:disable Style/FormatStringToken
 
+  around do |example|
+    I18n.with_locale(:he) { example.run }
+  end
   def visit_author(author)
     work = create(:manifestation, author: author)
     create(:collection_item, collection: volume, item: work)
