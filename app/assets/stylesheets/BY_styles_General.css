@@ -55,7 +55,8 @@ p {
   font-size: 14pt;
   line-height: 15pt;
   font-weight: bold;
-  margin-bottom: 6px;
+	margin-top: 4px;
+  margin-bottom: 4px;
 	text-wrap: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -736,7 +737,8 @@ input::placeholder {
   background-color: #eeeced;
   border-radius: 3px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-  margin-top: 15px; }
+  margin-top: 15px; 
+	}
 .under-surprize{
 	margin-top: 12px;
 }
@@ -1102,6 +1104,9 @@ align-content: space-between;
   margin-top: -6px;
   position: absolute;
 	z-index: 10;
+	display: flex;
+flex-direction: column;
+overflow: hidden;
 }
 .about-author-card-v02 {
   width: 160px;
@@ -1116,7 +1121,10 @@ align-content: space-between;
   margin-top: -6px;
   float: right;
   z-index: 2;
-  position: relative;}
+  position: relative;
+display: flex;
+flex-direction: column;
+overflow: hidden;}
 
 .surprise-author-card-v02:hover {
   background-color: #430230; }
@@ -1160,8 +1168,7 @@ align-content: space-between;
   z-index: 1; }
 
 .surprise-author-pic-v02 {
-  width: 160px;
-  height: 230px;
+  flex:1;
   border-radius: 3px 0 0 0;
   object-fit: cover; }
 .surprise-author-card-v02:hover .surprise-author-pic-v02{
@@ -1915,6 +1922,7 @@ ul #menuMobile {
 	display: flex;
     align-items: baseline;
 	flex-flow: wrap;
+	gap: 8px;
 }
 .author-page-top-years{
 	display: inline;
@@ -2018,6 +2026,9 @@ display: flex;
 	display: flex;
 	flex-direction: column;
 }
+.navbar-nav.by-card-v02{
+	overflow:hidden;
+}
 .navbar-nav .nav-link{
 	padding: 6px 10px;
 }
@@ -2050,7 +2061,7 @@ display: flex;
 }
 .nav-chapter-name{
 	white-space: nowrap; 
-  	width: 120px; 
+  	width: 100%; 
   overflow: hidden;
   text-overflow: ellipsis; 
 }
@@ -2132,9 +2143,9 @@ display: flex;
 	padding: 0;
 }
 .work-content{
-	width: 75%;
+	flex: 1;
 	padding: 15px;
-	padding-left: 35px;
+	padding-left: 15px;
 }
 .collections .work-content{
 	padding-left: 15px;
@@ -2148,6 +2159,9 @@ display: flex;
 }
 .collection-side-icon{
   background-image: url("/assets/work side icons_collection.svg");
+}
+.volume-side-icon{
+	background-image: url("/assets/work side icons_volume.svg");
 }
 .prose-side-icon{
   background-image: url("/assets/work side icons_prose.svg");
@@ -2484,11 +2498,13 @@ display: none;}
   margin-top: -5px;
   float: right;
   z-index: 2;
-  position: relative;}
+  position: relative;
+display: flex;
+	flex-direction: column;
+	overflow: hidden;}
 
 .about-work-author-pic-v02 {
-  width: 132px;
-  height: 190px;
+  flex: 1;
   border-radius: 3px 0 0 0;
   object-fit: cover; }
 
@@ -4040,29 +4056,6 @@ a .by-icon-v02:disabled{
 	color: #660248;
 }
 
-/* Link-x button styling (for delete buttons on pending links) */
-.link-x, button.link-x {
-  /* Remove default button styling */
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-
-  /* Make it look like the tag-x link */
-  font-family: ben-yehuda;
-  font-size: 12px;
-  color: #907989;
-  margin-right: 4px;
-  cursor: pointer;
-  display: inline;
-
-  /* Remove focus outline */
-  outline: none;
-}
-
-.link-x:hover, button.link-x:hover {
-  color: #660248;
-}
 
 #sort-by{
 	width: auto;
@@ -5977,13 +5970,17 @@ a.help:hover{
 	display: none;
 }
 .work-and-author-names-desktop{
-	display: block;
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
 	width: 38%;
 	padding-left: 8px;
 }
-.work-and-author-names-desktop.periodicals{
+.work-and-author-names-desktop.periodicals {
 	width: 66%;
-	padding-left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 .work-and-author-names-mobile{
 	display: none;
@@ -5991,6 +5988,7 @@ a.help:hover{
 	.work-page-top-info-card .row .col-12{
 		padding: 0;
 		display: flex;
+		gap: 8px;
 		justify-content: space-between;
 			align-content: flex-end;
 	}
@@ -6187,6 +6185,7 @@ margin-top: 12px;
 }
 .to-pby{
 	margin-top: 6px;
+	margin-bottom: 6px;
 }
 .lexicon-entry-header{
 	display: flex;
@@ -6202,6 +6201,7 @@ margin-top: 12px;
 	border-radius: 3px;
 	align-items: center;
 	margin-right: 8px;
+	gap:8px;
 }
 .lexicon-entry-under-construction-mobile{
 	display: none;
@@ -6439,6 +6439,7 @@ a .new-headline-v02:hover{
 
 .peach2-lexicon .nav-link.active{
 	background-color: #A23535;
+	color: white;
 }
 .peach2-lexicon .nav-link.active:hover{
 	background-color: #882727;
@@ -7892,8 +7893,11 @@ ul.books{
 .side-nav-in-page {
     display: flex;
 	align-items: center;
-	padding:4px;
+    padding: 4px;
 	gap: 4px;
+    color: var(--white);
+    font-size: 14pt;
+    background-color: var(--grey-60);
 }
 .side-nav-in-page .horizontal-collapse-expand{
 	position: relative;
@@ -7948,4 +7952,56 @@ a.lexicon-background-color:hover{
 }
 .sticky-fold-stuck{
 	border: 2px solid var(--pink-100);
+}
+.buttons-row-after-header{
+	display: inline-flex;
+    gap: 12px;
+    flex-direction: row-reverse;
+    float: left;
+}
+.flex-header{
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	justify-content: space-between;
+}
+.peach2-lexicon a.to-byp{
+    color: #660248;
+}
+.flex-container .headline-1-v02{
+	margin-bottom: 0;
+	margin-left: 0;
+}
+.indication{
+	color: var(--white);
+	background-color: var(--pink-100);
+	padding: 0 4px;
+	border-radius: 4px;
+	align-self: flex-start;
+	margin-top: 4px;
+}
+.work-and-author-names-desktop .flex-container{
+	align-items: baseline;
+}
+.volume-pic-header{
+	color: var(--white);
+	background-color: var(--pink-100);
+	width: 100%;
+	text-align: center;
+	padding: 4px 0;
+}
+.work-area .flex-container{
+	justify-content: space-between;
+	align-items: flex-start;
+}
+.work-area .link-to-all-v02{
+	margin-top: 0;
+}
+.includes-curated-content{
+	padding: 4px 6px;
+	background-color: var(--white);
+	margin-top: 8px;
+}
+.book-nav-full.by-card-v02 {
+    overflow: hidden;
 }
