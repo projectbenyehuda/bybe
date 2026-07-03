@@ -2,10 +2,9 @@
 
 require 'sidekiq/api'
 
-# Sidekiq job to generate KWIC concordance asynchronously for Authority and Collection entities
+# ActiveJob to generate KWIC concordance asynchronously for Authority and Collection entities
 # This is used for larger entities where concordance generation may take a long time
-class GenerateKwicConcordanceJob
-  include Sidekiq::Job
+class GenerateKwicConcordanceJob < ApplicationJob
   include BybeUtils
 
   # Check if a job for this entity is already queued or running
