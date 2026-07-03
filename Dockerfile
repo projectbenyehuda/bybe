@@ -30,9 +30,12 @@ FROM base AS builder
 RUN apt-get install -y libyaz-dev libmagickwand-7.q16-dev default-libmysqlclient-dev libpcap-dev libyaml-dev \
     libvips-dev
 
+ADD https://bybedev.s3.us-east-1.amazonaws.com/stuff/kindlegen-2.9.tar.bz2 /usr/bin/
+
 RUN bundle install --deployment --without test development --jobs "$(grep -c ^processor /proc/cpuinfo)" \
     && find vendor/bundle/ -path "*/cache/*" -name "*.gem"   -delete \
-    && find vendor/bundle/ -path "*/gems/*"  -name "*.[c|o]" -delete
+    && find vendor/bundle/ -path "*/gems/*"  -name "*.[c|o]" -delete \
+    && cd /usr/bin && tar xfj kindlegen-2.9.tar.bz2 && rm kindlegen-2.9.tar.bz2
 
 # Copying public static assets
 COPY public ./public
@@ -46,6 +49,7 @@ COPY --from=builder /app/bin                 ./bin
 COPY --from=builder /app/vendor/bundle       ./vendor/bundle
 COPY --from=builder /usr/local/bundle/config /usr/local/bundle/config
 COPY --from=builder /app/public ./public
+COPY --from=builder /usr/bin/kindlegen /usr/bin
 
 EXPOSE 3000
 
