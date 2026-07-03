@@ -701,10 +701,10 @@
   padding-left: 15px;
 }
 	.chapters-and-icons-mobile{
-		width: 100%;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		align-self: flex-end;
 	}
 	.work-page-top-icons-mobile{
 		display: flex;
@@ -1126,6 +1126,7 @@
  }
 .author-page-top-info-card{
   padding: 10px 15px 10px 10px;
+	flex-direction: column;
 }
 	.BYD-rights{
 	display: none;
@@ -1212,17 +1213,18 @@
 .sticky-fold{
 	top: 120px;
 }
+	#sort-btn{
+		display: block;
+	}
 .editorial-nav{
 	display: block;
 }
 .side-nav-in-page .horizontal-collapse-expand{
 	display: block;
 }
-.book-nav-full{
-	display: none;
-}
 .book-nav-thin{
 	display: block;
+	margin-top: 0;
 }
 .book-nav-thin .horizontal-collapse-expand {
     display: flex;
@@ -1256,10 +1258,21 @@
 	.nav-books.lexicon-background-color:active, .nav-books.lexicon-background-color.selected{
 	color: var(--white);
 	background-color: #7B1935;
+}
+.author-content{
+	width: calc(100% - 34px);
+		padding-left: 15px;
+	padding-right: 15px;
+}
+	.book-nav-full{
+		margin-top: 0;
 	}
 }
 
 
+.work-and-author-names-desktop.periodicals {
+	width: 80%;
+}
 
 
 
