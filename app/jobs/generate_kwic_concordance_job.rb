@@ -12,15 +12,6 @@ class GenerateKwicConcordanceJob < ApplicationJob
   # @param entity_id [Integer] The ID of the entity
   # @return [Boolean] true if a job is already in progress, false otherwise
   def self.in_progress?(entity_type, entity_id)
-    # In test mode with fake jobs, check the jobs array
-    # Note: inline mode executes jobs immediately, so there's no queueing issue
-    # We need to check if Sidekiq::Testing is defined because it's only loaded in test environment
-    if defined?(Sidekiq::Testing) && Sidekiq::Testing.fake?
-      return jobs.any? do |job|
-        job['args'][0] == entity_type && job['args'][1] == entity_id
-      end
-    end
-
     # Check queued jobs (not yet started)
     # Using any? for efficient early termination
     queue = Sidekiq::Queue.new
