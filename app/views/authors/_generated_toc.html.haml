@@ -92,6 +92,7 @@
       });
     }
     $('#sort_by').change(function(){
+      var flat = isFlatSort(this.value);
       if(this.value == 'colls') {
         $('#browse_mainlist').html(orig_mainlist);
         $('#genre_filtering').hide();
@@ -118,7 +119,8 @@
         } else {
           $('.metadata-source-edition').hide();
           $('#genre_filtering').show();
-          nodes_to_sort = $('.manifestation-node');
+          // de-dup: in the flat list a work appears once, without its role/collection context
+          nodes_to_sort = dedupByMid($('.manifestation-node'));
           var sortval;
           var sort_asc = true;
           switch(this.value) {
@@ -200,6 +202,14 @@
         $('#browse_mainlist').html('<div class="by-card-v02"><div class="by-card-content-v02" id="sorted_card"></div></div>');
         $('#sorted_card').html(nodes_to_sort.detach());
       }
+      // Show the filters pane (in place of the navbar) for the flat-list sorts;
+      // restore the navbar and clear filters for the grouped views (colls/colls_abc).
+      showFilterPane(flat);
+      if(flat && window.TocFilters) {
+        window.TocFilters.activate();
+      } else if(window.TocFilters) {
+        window.TocFilters.reset();
+      }
       // Reapply genre filters after sorting
       if(typeof window.applyGenreFilters === 'function') {
         window.applyGenreFilters();
@@ -207,6 +217,292 @@
     });
     prune_collections();
     var orig_mainlist = $('#browse_mainlist').html();
+
+    // ---- Flat-list filters pane (bead ln5) ----
+    function isFlatSort(v) { return v !== 'colls' && v !== 'colls_abc'; }
+
+    // Keep only the first node per manifestation id (data-mid).
+    function dedupByMid($nodes) {
+      var seen = {};
+      return $nodes.filter(function() {
+        var mid = $(this).find('.sorting-metadata').attr('data-mid');
+        if (!mid) { return true; }
+        if (seen[mid]) { return false; }
+        seen[mid] = true;
+        return true;
+      });
+    }
+
+    function showFilterPane(show) {
+      var $navs = $('.author-side-nav-col .book-nav-full, .author-side-nav-col .book-nav-thin');
+      if (show) {
+        $navs.hide();
+        $('#toc_filters_pane').show();
+      } else {
+        $('#toc_filters_pane').hide();
+        // Clear inline display so breakpoint CSS controls which navbar is visible
+        $navs.css('display', '');
+      }
+    }
+
+    window.TocFilters = (function() {
+      var NAME_DEBOUNCE = 400;
+      var debounceTimer = null;
+      var dateField = 'pubyear';      // 'pubyear' | 'creation-year' | 'upload-year'
+      var minYear = null, maxYear = null, fromYear = null, toYear = null;
+      var dateActive = false;
+
+      function $nodes() { return $('#sorted_card .manifestation-node'); }
+
+      function nodeData(node) {
+        var $m = $(node).find('.sorting-metadata');
+        return {
+          mid: $m.attr('data-mid'),
+          title: ($(node).find('.mtitle').text() || '').toLowerCase(),
+          genre: $m.attr('data-genre'),
+          lang: $m.attr('data-orig-lang'),
+          translated: $m.attr('data-translated') === '1',
+          featured: $m.attr('data-featured') === '1',
+          recommended: $m.attr('data-recommended') === '1',
+          aboutness: $m.attr('data-aboutness') === '1',
+          'pubyear': parseInt($m.attr('data-pubyear'), 10),
+          'creation-year': parseInt($m.attr('data-creation-year'), 10),
+          'upload-year': parseInt($m.attr('data-upload-year'), 10)
+        };
+      }
+
+      function readState() {
+        return {
+          name: ($('#toc-filter-name').val() || '').trim().toLowerCase(),
+          genres: $('.toc-filter-genre:checked').map(function() { return this.value; }).get(),
+          langs: $('.toc-filter-lang:checked').map(function() { return this.value; }).get(),
+          translatedAny: $('#toc-filter-translated').is(':checked'),
+          chars: $('.toc-filter-char:checked').map(function() { return this.value; }).get(),
+          dateField: dateField,
+          fromYear: dateActive ? fromYear : null,
+          toYear: dateActive ? toYear : null
+        };
+      }
+
+      function hasProps(d) { return d.featured || d.recommended || d.aboutness; }
+
+      // Does a node match every active filter section, optionally excluding one section.
+      function matches(d, s, exclude) {
+        if (exclude !== 'name' && s.name && d.title.indexOf(s.name) === -1) { return false; }
+        if (exclude !== 'genre' && s.genres.length && s.genres.indexOf(d.genre) === -1) { return false; }
+        if (exclude !== 'lang') {
+          if (s.langs.length || s.translatedAny) {
+            var langOk = s.langs.indexOf(d.lang) !== -1 || (s.translatedAny && d.translated);
+            if (!langOk) { return false; }
+          }
+        }
+        if (exclude !== 'char' && s.chars.length) {
+          var charOk = false;
+          for (var i = 0; i < s.chars.length; i++) {
+            if (s.chars[i] === 'curatorial' && hasProps(d)) { charOk = true; }
+            if (s.chars[i] === 'recommended' && d.recommended) { charOk = true; }
+            if (s.chars[i] === 'noprops' && !hasProps(d)) { charOk = true; }
+          }
+          if (!charOk) { return false; }
+        }
+        if (exclude !== 'date' && (s.fromYear != null || s.toYear != null)) {
+          var y = d[s.dateField];
+          if (isNaN(y)) { return false; }
+          if (s.fromYear != null && y < s.fromYear) { return false; }
+          if (s.toYear != null && y > s.toYear) { return false; }
+        }
+        return true;
+      }
+
+      // Whether a node matches a specific facet option (used for counts).
+      function optionMatches(section, value, d) {
+        switch (section) {
+          case 'genre': return d.genre === value;
+          case 'lang':
+            return value === 'translated' ? d.translated : d.lang === value;
+          case 'char':
+            if (value === 'curatorial') { return hasProps(d); }
+            if (value === 'recommended') { return d.recommended; }
+            if (value === 'noprops') { return !hasProps(d); }
+        }
+        return true;
+      }
+
+      // Faceted counts: for each option, count distinct works passing all OTHER sections.
+      function updateCounts(state, all) {
+        $('.toc-facet-count').each(function() {
+          var section = $(this).attr('data-section');
+          var value = $(this).attr('data-value');
+          var seen = {}, count = 0;
+          for (var i = 0; i < all.length; i++) {
+            var d = all[i];
+            if (!matches(d, state, section)) { continue; }
+            if (!optionMatches(section, value, d)) { continue; }
+            if (d.mid) { if (seen[d.mid]) { continue; } seen[d.mid] = true; }
+            count++;
+          }
+          $(this).text(' (' + count + ')');
+        });
+      }
+
+      function apply() {
+        var state = readState();
+        var all = [];
+        $nodes().each(function() {
+          var d = nodeData(this);
+          all.push(d);
+          $(this).toggle(matches(d, state, null));
+        });
+        updateCounts(state, all);
+      }
+
+      // ---- date histogram + range slider ----
+      function positionSlider() {
+        if (minYear == null || maxYear == null || maxYear === minYear) {
+          $('#toc-date-range-inside').css({ left: '0%', width: '100%' });
+          return;
+        }
+        var span = maxYear - minYear;
+        var lp = ((fromYear - minYear) / span) * 100;
+        var rp = ((toYear - minYear) / span) * 100;
+        $('#toc-date-range-inside').css({ left: lp + '%', width: (rp - lp) + '%' });
+      }
+
+      function renderHistogram(state) {
+        var $area = $('#toc-date-histogram').empty();
+        if (minYear == null || maxYear == null) { return; }
+        var buckets = {}, maxCount = 0;
+        $nodes().each(function() {
+          var d = nodeData(this);
+          // histogram reflects the set filtered by everything EXCEPT the date range
+          if (!matches(d, state, 'date')) { return; }
+          var y = d[dateField];
+          if (isNaN(y)) { return; }
+          buckets[y] = (buckets[y] || 0) + 1;
+          if (buckets[y] > maxCount) { maxCount = buckets[y]; }
+        });
+        for (var y = minYear; y <= maxYear; y++) {
+          var c = buckets[y] || 0;
+          var h = maxCount > 0 ? Math.round((c / maxCount) * 100) : 0;
+          $('<div class="toc-hist-bar"></div>')
+            .css('height', h + '%')
+            .attr('title', y + ': ' + c)
+            .appendTo($area);
+        }
+      }
+
+      function computeRange() {
+        minYear = null; maxYear = null;
+        $nodes().each(function() {
+          var y = nodeData(this)[dateField];
+          if (isNaN(y)) { return; }
+          if (minYear == null || y < minYear) { minYear = y; }
+          if (maxYear == null || y > maxYear) { maxYear = y; }
+        });
+        fromYear = minYear;
+        toYear = maxYear;
+        dateActive = false;
+        $('#toc-date-from').val('');
+        $('#toc-date-to').val('');
+      }
+
+      function refreshDateWidget() {
+        computeRange();
+        positionSlider();
+        renderHistogram(readState());
+      }
+
+      function setRange(from, to) {
+        if (minYear == null) { return; }
+        fromYear = Math.max(minYear, Math.min(from, to));
+        toYear = Math.min(maxYear, Math.max(from, to));
+        dateActive = (fromYear > minYear) || (toYear < maxYear);
+        $('#toc-date-from').val(fromYear);
+        $('#toc-date-to').val(toYear);
+        positionSlider();
+        apply();
+      }
+
+      function yearFromEvent(e, $track) {
+        var left = $track.offset().left;
+        var width = $track.width();
+        var px = e.pageX != null ? e.pageX : e.originalEvent.touches[0].pageX;
+        var ratio = Math.max(0, Math.min(1, (px - left) / width));
+        return Math.round(minYear + ratio * (maxYear - minYear));
+      }
+
+      function bindSlider() {
+        var $track = $('#toc-date-range');
+        var dragging = null;
+        function onMove(e) {
+          if (!dragging || minYear == null || maxYear === minYear) { return; }
+          var y = yearFromEvent(e, $track);
+          if (dragging === 'left') { setRange(y, toYear); }
+          else { setRange(fromYear, y); }
+          e.preventDefault();
+        }
+        $('#toc-date-handle-left').on('mousedown touchstart', function(e) { dragging = 'left'; e.preventDefault(); });
+        $('#toc-date-handle-right').on('mousedown touchstart', function(e) { dragging = 'right'; e.preventDefault(); });
+        $(document).on('mousemove touchmove', onMove);
+        $(document).on('mouseup touchend', function() { dragging = null; });
+
+        $('#toc-date-from, #toc-date-to').on('change', function() {
+          var f = parseInt($('#toc-date-from').val(), 10);
+          var t = parseInt($('#toc-date-to').val(), 10);
+          if (isNaN(f)) { f = minYear; }
+          if (isNaN(t)) { t = maxYear; }
+          setRange(f, t);
+        });
+
+        $('.toc-date-type').on('click', function() {
+          $('.toc-date-type').removeClass('active');
+          $(this).addClass('active');
+          dateField = $(this).attr('data-datefield');
+          refreshDateWidget();
+          apply();
+        });
+      }
+
+      function bindInputs() {
+        $('#toc-filter-name').on('input', function() {
+          if (debounceTimer) { window.clearTimeout(debounceTimer); }
+          debounceTimer = window.setTimeout(apply, NAME_DEBOUNCE);
+        });
+        $('#toc-filter-name-clear').on('click', function(e) {
+          e.preventDefault();
+          $('#toc-filter-name').val('');
+          apply();
+        });
+        $('#toc_filters_pane').on('change', 'input[type=checkbox]', apply);
+        $('#toc-filter-reset').on('click', function(e) { e.preventDefault(); reset(); });
+      }
+
+      function clearInputs() {
+        $('#toc_filters_pane input[type=checkbox]').prop('checked', false);
+        $('#toc-filter-name').val('');
+        dateField = 'pubyear';
+        $('.toc-date-type').removeClass('active');
+        $('.toc-date-type[data-datefield="pubyear"]').addClass('active');
+      }
+
+      function reset() {
+        clearInputs();
+        refreshDateWidget();
+        apply();
+      }
+
+      function activate() {
+        refreshDateWidget();
+        apply();
+      }
+
+      return {
+        init: function() { bindInputs(); bindSlider(); },
+        activate: activate,
+        reset: reset
+      };
+    })();
+    window.TocFilters.init();
 
     $(document).on('show.bs.collapse', '[id^="paratext_collapse_"]', function() {
       $('[aria-controls="' + this.id + '"]').text(#{I18n.t(:show_less).to_json});
