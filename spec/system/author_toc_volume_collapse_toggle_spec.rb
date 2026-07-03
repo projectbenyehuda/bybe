@@ -67,8 +67,12 @@ describe 'Author TOC per-volume collapse toggle', :js do
 
     find('#max_collapse').click
     expect(page).to have_css('#browse_mainlist .volume-collapse-toggle.collapsed')
+    # every toggle must be collapsed, not just some
+    expect(page).to have_no_css('#browse_mainlist .volume-collapse-toggle:not(.collapsed)')
 
     find('#expand-all').click
     expect(page).to have_css('#browse_mainlist .volume-collapse-toggle:not(.collapsed)')
+    # every toggle must be expanded, not just some
+    expect(page).to have_no_css('#browse_mainlist .volume-collapse-toggle.collapsed')
   end
 end

@@ -373,7 +373,8 @@
       $('#max_collapse').click(function(e) {
         e.preventDefault();
         $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideUp();
-        $('#browse_mainlist .by-card-v02[role="treeitem"]').attr('aria-expanded', 'false');
+        // only expandable cards (those with a .toclist) carry aria-expanded
+        $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'false');
         $('#browse_mainlist .volume-collapse-toggle').addClass('collapsed');
       });
 
@@ -381,7 +382,8 @@
       $('#expand-all').click(function(e) {
         e.preventDefault();
         $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideDown();
-        $('#browse_mainlist .by-card-v02[role="treeitem"]').attr('aria-expanded', 'true');
+        // only expandable cards (those with a .toclist) carry aria-expanded
+        $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'true');
         $('#browse_mainlist .volume-collapse-toggle').removeClass('collapsed');
       });
 
