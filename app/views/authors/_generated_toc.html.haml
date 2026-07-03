@@ -234,13 +234,14 @@
     }
 
     function showFilterPane(show) {
+      var $navs = $('.author-side-nav-col .book-nav-full, .author-side-nav-col .book-nav-thin');
       if (show) {
-        $('.author-side-nav-col .book-nav-full, .author-side-nav-col .book-nav-thin').hide();
+        $navs.hide();
         $('#toc_filters_pane').show();
       } else {
         $('#toc_filters_pane').hide();
-        $('.author-side-nav-col .book-nav-full').show();
-        $('.author-side-nav-col .book-nav-thin').show();
+        // Clear inline display so breakpoint CSS controls which navbar is visible
+        $navs.css('display', '');
       }
     }
 
