@@ -79,6 +79,13 @@
 	margin-bottom: 5px;
 }
 	
+	select {
+		width: 240px;
+}
+	.author-works-details{
+		margin-right: 0;
+	}
+	
 }
 
 
