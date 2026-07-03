@@ -3198,6 +3198,7 @@ en:
   total_collections_including_author: Total collections involving author
   collapse_all_sections: Collapse all sections
   expand_all_sections: Expand all sections
+  toggle_collapse_volume: Collapse or expand this volume
   legacy_urls:
     index:
       title: Legacy URL Mappings
