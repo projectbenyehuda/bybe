@@ -20,9 +20,16 @@ describe 'Collection show page - original language of translated works' do
     end
   end
 
+  # collection_type must be pinned: the factory otherwise samples it randomly
+  # from %w[volume periodical series other], and a 'periodical' collection uses
+  # a different issue/volume layout that does NOT render the .by-card-v02
+  # manifestation cards this spec asserts on. Leaving it unpinned made the spec
+  # flaky in full-suite runs (the sampled value depends on PRNG state polluted
+  # by earlier specs). A 'volume' matches the intent: an anthology of works.
   let!(:collection) do
     Chewy.strategy(:atomic) do
-      create(:collection, title: 'Test Collection', manifestations: [translated_manifestation, original_manifestation])
+      create(:collection, title: 'Test Collection', collection_type: :volume,
+                          manifestations: [translated_manifestation, original_manifestation])
     end
   end
 
