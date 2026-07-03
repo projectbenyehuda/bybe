@@ -60,6 +60,38 @@ describe 'Author TOC per-volume collapse toggle', :js do
     expect(card['aria-expanded']).to eq('true')
   end
 
+  it 'drops the toggle for a single-work volume pruned into a single link' do
+    # prune_collections() collapses a volume into a single link when it holds exactly one
+    # manifestation whose title matches the collection title. Such a volume has nothing left
+    # to collapse, so it must NOT carry a per-volume toggle.
+    solo_title = 'Solo Volume'
+    solo_volume = create(:collection, title: solo_title, collection_type: :volume)
+    solo_work = Chewy.strategy(:atomic) do
+      create(:manifestation, title: solo_title, status: :published, author: author)
+    end
+    create(:collection_item, collection: solo_volume, item: solo_work)
+    create(:involved_authority, authority: author, item: solo_volume, role: 'editor')
+
+    visit authority_path(author)
+    expect(page).to have_css('#browse_mainlist')
+
+    # NOTE: a volume can render in both the collection-level and work-level sections, so its
+    # cwrapper id is not unique; assert via CSS existence (matches every copy) rather than find.
+
+    # The mismatched-title volume from the shared fixtures keeps its toggle...
+    expect(page).to have_css("#cwrapper_#{volume.id} .volume-collapse-toggle")
+
+    # ...but every copy of the pruned single-work volume must have had its toggle removed
+    # (have_no_css waits for prune_collections to run on page load)...
+    expect(page).to have_no_css("#cwrapper_#{solo_volume.id} .volume-collapse-toggle")
+
+    # ...and none of its cards may still advertise an expandable state.
+    all("#cwrapper_#{solo_volume.id}").each do |cw|
+      card = cw.find(:xpath, "./ancestor::li[contains(@class, 'by-card-v02')][1]")
+      expect(card['aria-expanded']).to be_nil
+    end
+  end
+
   it 'keeps individual toggles in sync with the collapse-all / expand-all buttons' do
     visit authority_path(author)
 
