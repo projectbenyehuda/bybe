@@ -64,7 +64,7 @@ module ManifestationHelper
   # Builds the path for a sibling next/prev navigation link in Manifestation#read, optionally
   # carrying forward the current parent collection (so the target page shows the same parent when the
   # work belongs to several collections) and the count of skipped placeholder items.
-  def read_sibling_path(item, skipped: 0, parent_collection_id: nil)
+  def read_sibling_path(item, parent_collection_id = nil, skipped: 0)
     query = {}
     query[:skipped] = skipped if skipped.to_i.positive?
     query[:parent_collection_id] = parent_collection_id if parent_collection_id.present?

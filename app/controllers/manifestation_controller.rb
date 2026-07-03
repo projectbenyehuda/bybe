@@ -1328,8 +1328,13 @@ class ManifestationController < ApplicationController
       RefreshUncollectedWorksCollectionJob.perform_async(uncollected_collection_ids)
       @containments.reject! { |ci| ci.collection.uncollected? }
     end
-    @single_text_volume = @containments.size == 1 && @containments.first.collection.collection_type == 'volume' && !@containments.first.collection.has_multiple_manifestations?
     select_parent_containment
+    # Computed after select_parent_containment so it reflects the finally-chosen containment. A work
+    # with several parents is never treated as a single-text volume: we still want to show the chosen
+    # parent's "inside X" line and navigation alongside the other-parents sidebar.
+    @single_text_volume = !@multiple_parents && @containments.size == 1 &&
+                          @containments.first.collection.collection_type == 'volume' &&
+                          !@containments.first.collection.has_multiple_manifestations?
   end
 
   private
