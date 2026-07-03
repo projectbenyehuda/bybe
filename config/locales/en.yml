@@ -1,5 +1,13 @@
 ---
 en:
+  author_toc_filters:
+    free_text_placeholder: Free text
+    source_language: Source language
+    characteristics: Properties
+    curatorial_content: Curatorial content
+    reader_recommendations: Reader recommendations
+    no_properties: No properties
+    edition: Edition
   edit_metadata: Edit metadata
   originating_task: Originating task
   find_originating_task: Find originating task
