@@ -75,8 +75,9 @@
                   = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
                 - if collection.volume? && renders_toclist
                   - toggle_label = t(:toggle_collapse_volume)
+                  -# aria-expanded on the toggle itself: focus lands here, not on the treeitem li
                   %span.volume-collapse-toggle{ role: 'button', tabindex: 0, title: toggle_label,
-                                                aria: { label: toggle_label } } )
+                                                aria: { label: toggle_label, expanded: 'true' } } )
               - ias = collection.involved_authorities
               - authorities = {}
               - ias.each do |ia|

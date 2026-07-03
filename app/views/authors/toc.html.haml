@@ -375,7 +375,8 @@
         $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideUp();
         // only expandable cards (those with a .toclist) carry aria-expanded
         $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'false');
-        $('#browse_mainlist .volume-collapse-toggle').addClass('collapsed');
+        // keep the focusable toggles' own aria-expanded in sync with their state
+        $('#browse_mainlist .volume-collapse-toggle').addClass('collapsed').attr('aria-expanded', 'false');
       });
 
       // Expand all sections
@@ -384,7 +385,8 @@
         $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideDown();
         // only expandable cards (those with a .toclist) carry aria-expanded
         $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'true');
-        $('#browse_mainlist .volume-collapse-toggle').removeClass('collapsed');
+        // keep the focusable toggles' own aria-expanded in sync with their state
+        $('#browse_mainlist .volume-collapse-toggle').removeClass('collapsed').attr('aria-expanded', 'true');
       });
 
       // Toggle a single volume's children list (delegated: nodes are server-rendered)
@@ -396,12 +398,13 @@
         var expanded = $card.attr('aria-expanded') !== 'false';
         if (expanded) {
           $list.slideUp();
+          // keep both the treeitem card and the focusable toggle's aria-expanded in sync
           $card.attr('aria-expanded', 'false');
-          $toggle.addClass('collapsed');
+          $toggle.addClass('collapsed').attr('aria-expanded', 'false');
         } else {
           $list.slideDown();
           $card.attr('aria-expanded', 'true');
-          $toggle.removeClass('collapsed');
+          $toggle.removeClass('collapsed').attr('aria-expanded', 'true');
         }
       }
       $('#browse_mainlist').on('click', '.volume-collapse-toggle', function(e) {

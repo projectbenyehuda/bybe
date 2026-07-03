@@ -46,18 +46,21 @@ describe 'Author TOC per-volume collapse toggle', :js do
     expect(card['aria-expanded']).to eq('true')
     expect(cwrapper).to have_css('ul.toclist', visible: :visible)
     expect(toggle[:class]).not_to include('collapsed')
+    expect(toggle['aria-expanded']).to eq('true')
 
     # Collapse this volume (Capybara waits for the slide animation to finish)
     toggle.click
     expect(cwrapper).to have_css('ul.toclist', visible: :hidden)
     expect(toggle[:class]).to include('collapsed')
     expect(card['aria-expanded']).to eq('false')
+    expect(toggle['aria-expanded']).to eq('false')
 
     # Expand it again
     toggle.click
     expect(cwrapper).to have_css('ul.toclist', visible: :visible)
     expect(toggle[:class]).not_to include('collapsed')
     expect(card['aria-expanded']).to eq('true')
+    expect(toggle['aria-expanded']).to eq('true')
   end
 
   it 'drops the toggle for a single-work volume pruned into a single link' do
@@ -99,12 +102,14 @@ describe 'Author TOC per-volume collapse toggle', :js do
 
     find('#max_collapse').click
     expect(page).to have_css('#browse_mainlist .volume-collapse-toggle.collapsed')
-    # every toggle must be collapsed, not just some
+    # every toggle must be collapsed, not just some (class and its own aria-expanded)
     expect(page).to have_no_css('#browse_mainlist .volume-collapse-toggle:not(.collapsed)')
+    expect(page).to have_no_css('#browse_mainlist .volume-collapse-toggle[aria-expanded="true"]')
 
     find('#expand-all').click
     expect(page).to have_css('#browse_mainlist .volume-collapse-toggle:not(.collapsed)')
-    # every toggle must be expanded, not just some
+    # every toggle must be expanded, not just some (class and its own aria-expanded)
     expect(page).to have_no_css('#browse_mainlist .volume-collapse-toggle.collapsed')
+    expect(page).to have_no_css('#browse_mainlist .volume-collapse-toggle[aria-expanded="false"]')
   end
 end
