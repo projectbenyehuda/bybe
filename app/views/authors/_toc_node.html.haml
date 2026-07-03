@@ -6,7 +6,11 @@
     - e = m.expression
     - w = e.work
     - genre = w.genre
-    %span.sorting-metadata{ 'data-impressions': m.impressions_count, 'data-title': m.sort_title, 'data-pubdate': e.normalized_pub_date.present? ? e.normalized_pub_date.to_date.jd : nil, 'data-creation-date': w.normalized_creation_date.present? ? w.normalized_creation_date.to_date.jd : nil, 'data-upload-date': m.publication_date.to_date.jd }
+    - fd = @toc_filter_data
+    - pub_date = e.normalized_pub_date.presence&.to_date
+    - creation_date = w.normalized_creation_date.presence&.to_date
+    - upload_date = m.publication_date.presence&.to_date
+    %span.sorting-metadata{ 'data-impressions': m.impressions_count, 'data-title': m.sort_title, 'data-pubdate': pub_date&.jd, 'data-creation-date': creation_date&.jd, 'data-upload-date': upload_date&.jd, 'data-mid': m.id, 'data-genre': genre, 'data-orig-lang': w.orig_lang, 'data-translated': e.translation ? '1' : '0', 'data-pubyear': pub_date&.year, 'data-creation-year': creation_date&.year, 'data-upload-year': upload_date&.year, 'data-featured': fd && fd[:featured_ids].include?(m.id) ? '1' : '0', 'data-recommended': fd && fd[:recommended_ids].include?(m.id) ? '1' : '0', 'data-aboutness': fd && fd[:aboutness_ids].include?(m.id) ? '1' : '0' }
     %span.by-icon-v02{ title: textify_genre(genre) }>= glyph_for_genre(genre)
     &nbsp;&rlm;
     - if m.published?

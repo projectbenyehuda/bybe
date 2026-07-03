@@ -484,6 +484,17 @@ class AuthorsController < ApplicationController
         # Pre-calculate TOC tree and counts for efficiency (used in both navbar and TOC body)
         @toc_tree = GenerateTocTree.call(@author)
         @toc_counts = calculate_toc_counts(@toc_tree, @author.id)
+        # Data for the flat-list filters pane (bead ln5). Relatively expensive, so
+        # cache per author for non-editors (mirrors the _generated_toc fragment cache);
+        # editors get fresh data so recent featuring/recommendation changes show up.
+        @toc_filter_data =
+          if current_user&.editor?
+            AuthorTocFilterData.call(@author)
+          else
+            Rails.cache.fetch("author_toc_filter_data/#{@author.id}", expires_in: 12.hours) do
+              AuthorTocFilterData.call(@author)
+            end
+          end
       end
       if @author.lex_person.present? && @author.lex_person.entry.status_published?
         @lexicon_entry = @author.lex_person.entry
