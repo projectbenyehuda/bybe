@@ -16,9 +16,7 @@ class GenerateKwicConcordanceJob < ApplicationJob
     # Using any? for efficient early termination
     queue = Sidekiq::Queue.new
     queued = queue.any? do |job|
-      job.klass == 'GenerateKwicConcordanceJob' &&
-        job.args[0] == entity_type &&
-        job.args[1] == entity_id
+      sidekiq_job_matches?(job, entity_type, entity_id)
     end
 
     return true if queued
@@ -29,10 +27,7 @@ class GenerateKwicConcordanceJob < ApplicationJob
       # Guard against race condition where work may be a String instead of Hash
       next unless work.is_a?(Hash)
 
-      # Use dig to safely access nested hash values
-      work.dig('payload', 'class') == 'GenerateKwicConcordanceJob' &&
-        work.dig('payload', 'args', 0) == entity_type &&
-        work.dig('payload', 'args', 1) == entity_id
+      sidekiq_payload_matches?(work['payload'], entity_type, entity_id)
     end
   end
 
@@ -88,4 +83,23 @@ class GenerateKwicConcordanceJob < ApplicationJob
     austr = authority.name
     MakeFreshDownloadable.call('kwic', filename, '', authority, austr, kwic_text: kwic_text)
   end
+
+  def self.sidekiq_job_matches?(job, entity_type, entity_id)
+    if job.klass == name
+      return job.args[0] == entity_type && job.args[1] == entity_id
+    end
+
+    return false unless job.klass == 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper'
+
+    sidekiq_payload_matches?(job.args.first, entity_type, entity_id)
+  end
+
+  def self.sidekiq_payload_matches?(payload, entity_type, entity_id)
+    return false unless payload.is_a?(Hash)
+    return false unless payload['wrapped'] == name || payload['class'] == name
+
+    args = payload['class'] == name ? payload['args'] : payload.dig('args', 0, 'arguments')
+    args == [entity_type, entity_id]
+  end
+  private_class_method :sidekiq_job_matches?, :sidekiq_payload_matches?
 end
