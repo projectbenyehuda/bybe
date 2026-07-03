@@ -1329,9 +1329,77 @@ class ManifestationController < ApplicationController
       @containments.reject! { |ci| ci.collection.uncollected? }
     end
     @single_text_volume = @containments.size == 1 && @containments.first.collection.collection_type == 'volume' && !@containments.first.collection.has_multiple_manifestations?
+    select_parent_containment
   end
 
   private
+
+  # When a manifestation belongs to more than one collection, navigating within one collection can
+  # inadvertently land the user on a work that is also in a second collection, whose next/prev
+  # controls would then lead them astray. To prevent this we surface only a single parent collection
+  # -- both in the "inside X" volume list (@volumes) and in the in-collection navigation
+  # (@containments) -- choosing it from (in order of preference):
+  #   1. an explicit parent_collection_id param (carried by sibling next/prev links), or
+  #   2. the Collection#show page the user arrived from (via the referer header), or
+  #   3. the parent with the earliest publication year (fallback for direct/external arrivals).
+  # The remaining parent collections are exposed via @other_parent_collections for a sidebar pane.
+  def select_parent_containment
+    @other_parent_collections = []
+    return if @containments.size <= 1
+
+    @multiple_parents = true
+    chosen = containment_for_hint(parent_collection_hint) ||
+             @containments.min_by { |ci| parent_pub_year(ci) }
+    chosen_volume = parent_volume_for(chosen)
+    @other_parent_collections = (@containments - [chosen])
+                                .map { |ci| parent_volume_for(ci) || ci.collection }
+                                .uniq
+                                .reject { |c| c == chosen_volume }
+                                .sort_by { |c| [c.normalized_pub_year || Float::INFINITY, c.id] }
+    @containments = [chosen]
+    @volumes = [chosen_volume].compact
+  end
+
+  # Returns the containment matching the given collection id, either directly or via its
+  # volume/issue-level ancestor (a Collection#show referer points at the volume, not the sub-series).
+  def containment_for_hint(collection_id)
+    return nil if collection_id.nil?
+
+    @containments.find { |ci| ci.collection_id == collection_id || parent_volume_for(ci)&.id == collection_id }
+  end
+
+  # The volume/issue-level collection a containment ultimately belongs to (itself if it is one, its
+  # volume/issue ancestor otherwise, or nil for collections with no such ancestor). Mirrors the
+  # per-collection logic in Manifestation#volumes so @volumes stays consistent with the chosen parent.
+  def parent_volume_for(containment)
+    collection = containment.collection
+    return collection if collection.volume? || collection.periodical_issue?
+
+    collection.parent_volume_or_isssue
+  end
+
+  # Publication year used to pick the default parent: the volume/issue's year (falling back to the
+  # containing collection's own), with unknowns sorting last.
+  def parent_pub_year(containment)
+    (parent_volume_for(containment) || containment.collection).normalized_pub_year || Float::INFINITY
+  end
+
+  # Extracts a hint about the "current" parent collection from the request: an explicit
+  # parent_collection_id param takes precedence, otherwise a referer pointing at a Collection#show
+  # page (/collections/:id) is used. Returns an Integer id or nil.
+  def parent_collection_hint
+    id = params[:parent_collection_id].presence
+    return id.to_i if id
+
+    ref = request.referer
+    return nil if ref.blank?
+
+    path = URI(ref).path
+    match = path.match(%r{\A/collections/(\d+)})
+    match && match[1].to_i
+  rescue URI::InvalidURIError
+    nil
+  end
 
   def set_manifestation
     @m = Manifestation.find(params[:id])
