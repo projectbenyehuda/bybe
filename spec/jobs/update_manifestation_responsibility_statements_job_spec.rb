@@ -22,11 +22,20 @@ describe UpdateManifestationResponsibilityStatementsJob do
     expect(manifestation2.responsibility_statement).to eq(manifestation2.author_string!)
   end
 
-  it 'handles errors gracefully for individual manifestations' do
-    allow_any_instance_of(Manifestation).to receive(:recalc_responsibility_statement!).and_raise(StandardError.new('Test error'))
-    expect(Rails.logger).to receive(:error).at_least(:once)
+  context 'when error occurs' do
+    before do
+      allow(Rails.logger).to receive(:error)
+      # rubocop:disable RSpec/AnyInstance
+      allow_any_instance_of(Manifestation).to receive(:recalc_responsibility_statement!)
+        .and_raise(StandardError.new('Test error'))
+      # rubocop:enable RSpec/AnyInstance
+    end
 
-    expect { described_class.perform_now([manifestation1.id]) }.not_to raise_error
+    it 'handles errors gracefully for individual manifestations' do
+      expect { described_class.perform_now([manifestation1.id]) }.not_to raise_error
+      expect(Rails.logger).to have_received(:error).once
+        .with("Failed to recalculate responsibility_statement for Manifestation #{manifestation1.id}: Test error")
+    end
   end
 
   it 'does nothing when manifestation_ids is empty' do

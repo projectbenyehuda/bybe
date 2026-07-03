@@ -93,7 +93,7 @@ describe InvolvedAuthority do
             work.involved_authorities.create!(role: :author, authority: new_author)
           end
           manifestation.reload
-        end.to(change { manifestation.responsibility_statement })
+        end.to(change(manifestation, :responsibility_statement))
       end
 
       it 'updates the manifestation responsibility_statement when creating expression authority' do
@@ -102,7 +102,7 @@ describe InvolvedAuthority do
             expression.involved_authorities.create!(role: :translator, authority: new_translator)
           end
           manifestation.reload
-        end.to(change { manifestation.responsibility_statement })
+        end.to(change(manifestation, :responsibility_statement))
       end
 
       it 'updates the manifestation responsibility_statement when destroying an involved authority' do
@@ -112,7 +112,7 @@ describe InvolvedAuthority do
             involved_auth.destroy!
           end
           manifestation.reload
-        end.to(change { manifestation.responsibility_statement })
+        end.to(change(manifestation, :responsibility_statement))
       end
     end
   end
