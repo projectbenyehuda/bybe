@@ -38,17 +38,21 @@
                 show_nav = prev.present? || nextsib.present? || show_collection_link ||
                            siblings.more_before? || siblings.more_after? ||
                            cross_prev.present? || cross_next.present?
+                parent_hint = @multiple_parents ? ci.collection_id : nil
+                prev_path = prev && read_sibling_path(prev[:item], parent_hint, skipped: prev[:skipped])
+                next_path = nextsib && read_sibling_path(nextsib[:item], parent_hint, skipped: nextsib[:skipped])
+                cross_prev_path = cross_prev && read_sibling_path(cross_prev, parent_hint)
+                cross_next_path = cross_next && read_sibling_path(cross_next, parent_hint)
               - next unless show_nav
               .author-works-nav
                 .topNavEntry
                   .link-nav
                     - if prev.present?
-                      - extra = prev[:skipped] > 0 ? "?skipped=#{prev[:skipped]}" : ''
-                      = link_to "#{default_link_by_class(prev[:item].class, prev[:item].id)}#{extra}" do
+                      = link_to prev_path do
                         %span.right-arrow= '2'
                         = t(:to_previous_item)
                     - elsif cross_prev.present?
-                      = link_to default_link_by_class(cross_prev.class, cross_prev.id) do
+                      = link_to cross_prev_path do
                         %span.right-arrow= '2'
                         = t(:to_previous_item)
                     - elsif siblings.more_before?
@@ -63,12 +67,11 @@
                 .topNavEntry
                   .link-nav
                     - if nextsib.present?
-                      - extra = nextsib[:skipped] > 0 ? "?skipped=#{nextsib[:skipped]}" : ''
-                      = link_to "#{default_link_by_class(nextsib[:item].class, nextsib[:item].id)}#{extra}" do
+                      = link_to next_path do
                         = t(:to_next_item)
                         %span.left-arrow= '1'
                     - elsif cross_next.present?
-                      = link_to default_link_by_class(cross_next.class, cross_next.id) do
+                      = link_to cross_next_path do
                         = t(:to_next_item)
                         %span.left-arrow= '1'
                     - elsif siblings.more_after?
@@ -92,6 +95,17 @@
       .col
         = render partial: 'shared/about_pby'
         = render partial: 'shared/donation_box_negative'
+        -#
+          Other collections in the corpus that also contain this work (shown when it has several
+          parent collections, so only one is used for the in-collection navigation above)
+        - if @other_parent_collections.present?
+          .by-card-v02.left-side-card-v02
+            .by-card-header-left-v02
+              %span.headline-1-v02= t(:other_containing_collections)
+            .by-card-content-v02
+              %ul
+                - @other_parent_collections.each do |coll|
+                  %li= link_to coll.title, collection_up_link_path(coll)
         -# Works about this work
         - if @works_about.count > 0
           = render partial: 'public_aboutnesses', locals: {edit: false, add: false}
