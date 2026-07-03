@@ -1062,6 +1062,7 @@ en:
     tagging suggestion: "%{explanation}"'
   additional_translations: Additional Translations of the Work
   additional_versions: Additional Versions of this Work
+  other_containing_collections: Other collections in the corpus containing this work
   link_to_another_text: Link to Another Text/Translation
   enter_manifestation_id: Manifestation ID to Link
   show_details: Show Details
