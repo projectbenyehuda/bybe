@@ -41,7 +41,7 @@
     - children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
     - children.reject! { |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.deprecated? }
     - if !uncollected || children.present?
-      %li.by-card-v02{"aria-expanede" => "false", :role => "treeitem"}
+      %li.by-card-v02{"aria-expanded" => "true", :role => "treeitem"}
         .by-card-content-v02{:style => "padding-top: 12px;"}
           .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
             %div{style:'font-size:120%;'}
@@ -70,6 +70,8 @@
                     = " (#{type_prefix})"
                   != '&nbsp;&nbsp;&nbsp;'
                   = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
+                - if collection.volume? && children.present?
+                  %span.volume-collapse-toggle{ role: 'button', tabindex: 0, title: t(:toggle_collapse_volume), 'aria-label' => t(:toggle_collapse_volume) } )
               - ias = collection.involved_authorities
               - authorities = {}
               - ias.each do |ia|
