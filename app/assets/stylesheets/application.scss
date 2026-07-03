@@ -1398,6 +1398,12 @@ p.by-genre-name-v02.headline-2-v02 {
 
 /* Mobile navbar expansion styles (max-width: 991px) */
 @media only screen and (max-width: 991px) {
+  /* On mobile only the thin navbar shows; the full navbar stays hidden until
+     the user expands it (which adds the .mobile-expanded class handled below). */
+  .author-side-nav-col .book-nav-full:not(.mobile-expanded) {
+    display: none;
+  }
+
   .book-nav-full.mobile-expanded {
     display: block;
     position: fixed;
