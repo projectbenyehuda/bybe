@@ -1,0 +1,78 @@
+-# Filters pane for the Authority TOC flat list (bead ln5). Hidden by default; shown in place of the navbar when the sort order changes away from the default. Sections use the same collapsible-block accordion as /works filtering. Option lists and counts are driven by authors/_generated_toc.
+- fd = @toc_filter_data
+- if fd.present?
+  - translated_langs = fd[:orig_langs].reject { |l| l == 'he' }.sort_by { |l| textify_lang(l) }
+  - has_hebrew = fd[:orig_langs].include?('he')
+  .by-card-v02.author-side-sort#toc_filters_pane{ style: 'display:none;' }
+    .by-card-content-v02
+      .headline-2-v02= t(:filter_by)
+      %a.reset#toc-filter-reset{ href: '#' }= t(:reset_filter)
+      = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfname', title: t(:work_title) } do
+        %div{ style: 'position:relative' }
+          %input.field-v02.field-without-label#toc-filter-name{ type: 'text', placeholder: t('author_toc_filters.free_text_placeholder') }
+          %a.search-icon-in-field#toc-filter-name-clear{ href: '#' } X
+      - if fd[:genres].present?
+        = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfgenre', title: t(:genre), content_class: 'nested-list' } do
+          %ul
+            - fd[:genres].each do |genre|
+              %li
+                %input.toc-filter-genre{ type: 'checkbox', value: genre, id: "toc-filter-genre-#{genre}", name: 'toc_filter_genre' }
+                %label{ for: "toc-filter-genre-#{genre}" }
+                  %span.by-icon-v02>= glyph_for_genre(genre)
+                  = textify_genre(genre)
+                  %span.toc-facet-count{ 'data-section': 'genre', 'data-value': genre }
+      - if has_hebrew || translated_langs.present?
+        = render layout: 'shared/collapsible_block', locals: { container_name: 'tocflang', title: t('author_toc_filters.source_language') } do
+          %ul
+            - if has_hebrew
+              %li
+                %input.toc-filter-lang#toc-filter-lang-he{ type: 'checkbox', value: 'he', name: 'toc_filter_lang' }
+                %label{ for: 'toc-filter-lang-he' }
+                  = textify_lang('he')
+                  %span.toc-facet-count{ 'data-section': 'lang', 'data-value': 'he' }
+            - if translated_langs.present?
+              %li
+                %input#toc-filter-translated{ type: 'checkbox', name: 'toc_filter_translated' }
+                %label{ for: 'toc-filter-translated' }
+                  = t(:translation)
+                  %span.toc-facet-count{ 'data-section': 'lang', 'data-value': 'translated' }
+                .languanges-filters
+                  %ul.nested-list
+                    - translated_langs.each do |lang|
+                      %li
+                        %input.toc-filter-lang{ type: 'checkbox', value: lang, id: "toc-filter-lang-#{lang}", name: 'toc_filter_lang' }
+                        %label{ for: "toc-filter-lang-#{lang}" }
+                          = textify_lang(lang)
+                          %span.toc-facet-count{ 'data-section': 'lang', 'data-value': lang }
+      = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfchar', title: t('author_toc_filters.characteristics'), content_class: 'nested-list' } do
+        %ul
+          %li
+            %input.toc-filter-char#toc-filter-curatorial{ type: 'checkbox', value: 'curatorial', name: 'toc_filter_char' }
+            %label{ for: 'toc-filter-curatorial' }
+              = t('author_toc_filters.curatorial_content')
+              %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'curatorial' }
+          %li
+            %input.toc-filter-char#toc-filter-recommended{ type: 'checkbox', value: 'recommended', name: 'toc_filter_char' }
+            %label{ for: 'toc-filter-recommended' }
+              = t('author_toc_filters.reader_recommendations')
+              %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'recommended' }
+          %li
+            %input.toc-filter-char#toc-filter-noprops{ type: 'checkbox', value: 'noprops', name: 'toc_filter_char' }
+            %label{ for: 'toc-filter-noprops' }
+              = t('author_toc_filters.no_properties')
+              %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'noprops' }
+      = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfdate', title: t(:thedate) } do
+        .search-mobile-switch
+          %button.search-mobile-option.active.toc-date-type{ type: 'button', 'data-datefield': 'pubyear' }= t('author_toc_filters.edition')
+          %button.search-mobile-option.toc-date-type{ type: 'button', 'data-datefield': 'creation-year' }= t(:creation)
+          %button.search-mobile-option.toc-date-type{ type: 'button', 'data-datefield': 'upload-year' }= t(:upload)
+        %break
+        .dates-range
+          .dates-graph-area#toc-date-histogram
+          .range-outside#toc-date-range
+            .range-inside#toc-date-range-inside
+              .range-handle-right#toc-date-handle-right
+              .range-handle-left#toc-date-handle-left
+          %input.field-v02.field-without-label.range-date-field#toc-date-from{ type: 'text', placeholder: t(:year) }
+          .date-range-to= t(:until)
+          %input.field-v02.field-without-label.range-date-field#toc-date-to{ type: 'text', placeholder: t(:year), style: 'float: left' }
