@@ -1181,6 +1181,30 @@ p.by-genre-name-v02.headline-2-v02 {
   width: 26px;
 }
 
+/* Vertically align the elements in the author page top card's second line.
+   The by-icon-v02 glyphs have an 18px line-height inside a 26px CLS box, so
+   they render top-aligned and sit a few pixels above the neighbouring text and
+   toggle (which are centered), making the row look wobbly. Center the glyph in
+   its box and use consistent center alignment for the icon group. */
+.author-page-top-info-card {
+  .by-icon-v02 {
+    line-height: 26px;
+  }
+
+  .top-left-icons-group {
+    align-items: center;
+  }
+
+  /* Tie the intellectual-property glyph to its label and separate it from the
+     life years. This is an RTL row, so the life years sit to the glyph's right
+     and its label to its left: add space on the right (away from the years),
+     and drop the left margin so the glyph hugs its label. */
+  .copyright-icon {
+    margin-right: 8px;
+    margin-left: 0;
+  }
+}
+
 .share-name {
   font-family: Alef;
 }
