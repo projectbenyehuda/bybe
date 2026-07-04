@@ -1335,6 +1335,8 @@ class ManifestationController < ApplicationController
     @single_text_volume = !@multiple_parents && @containments.size == 1 &&
                           @containments.first.collection.collection_type == 'volume' &&
                           !@containments.first.collection.has_multiple_manifestations?
+    # Ancestor collection chain (root-first) for the breadcrumbs of the chosen containment.
+    @breadcrumb_collections = breadcrumb_collection_chain(@containments.first)
   end
 
   private
@@ -1363,6 +1365,40 @@ class ManifestationController < ApplicationController
                                 .sort_by { |c| [c.normalized_pub_year || Float::INFINITY, c.id] }
     @containments = [chosen]
     @volumes = [chosen_volume].compact
+  end
+
+  # Builds the ancestor collection chain (root-first) for a chosen containment, used by the
+  # Manifestation breadcrumbs. Starting from the immediate parent collection, it walks up to
+  # the outermost root, so a text in series A in series B in volume C yields [C, B, A]. The
+  # system 'uncollected' collection is not a real container and yields no breadcrumbs. When a
+  # collection has several parents we follow the lowest-id one (a deterministic pick for the
+  # rare multi-parent case); a visited set guards against cycles.
+  def breadcrumb_collection_chain(containment)
+    return [] if containment.nil?
+
+    collection = containment.collection
+    return [] if collection.nil? || collection.uncollected?
+
+    chain = []
+    visited = Set.new
+    current = collection
+    while current && visited.exclude?(current.id)
+      visited.add(current.id)
+      chain << current
+      current = first_parent_collection(current)
+    end
+    chain.reverse
+  end
+
+  # Deterministically returns a single parent collection of the given collection (or nil), the
+  # one with the lowest parent collection_id, eager-loading it to avoid an N+1 while walking the
+  # breadcrumb chain. Ordering directly on parent_collection_items (which is otherwise unordered)
+  # keeps the chosen ancestor stable across DB/query plans.
+  def first_parent_collection(collection)
+    collection.parent_collection_items
+              .includes(:collection)
+              .order(:collection_id)
+              .first&.collection
   end
 
   # Returns the containment matching the given collection id, either directly or via its
