@@ -1476,6 +1476,24 @@ p.by-genre-name-v02.headline-2-v02 {
 }
 
 // Authority TOC flat-list filters pane (bead ln5)
+// Mirror the /works filters (.side-sort) treatment: make the "filter by"
+// headline inline so the floated .reset link shares its line and is cleared
+// by the collapsible blocks below. Without this the block-level headline
+// pushes the float onto its own line, and the first filter section's label
+// wraps around it and the work-title input overlaps the label.
+.author-side-sort .by-card-content-v02 .headline-2-v02 {
+  display: inline;
+}
+
+// The facet checkbox lists inherit .by-card-content-v02 ul's 22px right
+// padding (meant for bulleted lists), which indents each checkbox well away
+// from the card edge and cramps the labels so longer ones (e.g. "מאמרים
+// ומסות") wrap. Trim it to give the labels more room. (0,0,2,1) beats the
+// 22px rule's (0,0,1,1).
+.author-side-sort .by-card-content-v02 ul {
+  padding-right: 8px;
+}
+
 // JS-controlled date range slider positioning + histogram bars.
 // (BY_*.css supplies the base look; these only enable dynamic control.)
 #toc-date-range {

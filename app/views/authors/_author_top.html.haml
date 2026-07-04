@@ -12,11 +12,13 @@
           = render partial: 'shared/intellectual_property',
                    locals: { intellectual_property: @author.intellectual_property }
         .author-sort-area
-          .author-page-top-sort-desktop.notyet
+          -# Legacy-TOC authors have no flat-list filters pane, so keep .notyet there; wire only for the new-method TOC.
+          .author-page-top-sort-desktop{ class: ('notyet' if @author.toc.present?) }
             = t(:sort_and_filter)
             = link_to '[?]', '#', 'class' => 'help', 'tabindex' => 0, 'data-toggle' => 'popover', 'data-trigger' => 'focus', title: t(:about_sort_and_filter), 'data-content' => t(:sort_and_filter_popover)
-            .toggle-background-no{title: t(:toggle_filters_tt)}
+            .toggle-background-no#toc-filter-toggle{title: t(:toggle_filters_tt)}
               .toggle-button-no
+              .toggle-button-yes{ style: 'display:none' }
           .author-page-top-sort-mobile
             %button.btn-small-outline-v02.btn-text-v02.notyet= t(:sort_and_filter)
         .author-page-top-icons-desktop
@@ -72,4 +74,26 @@
     $('.printbutton').click(function() {
       window.open("#{@print_url}",'_blank');
     });
+
+    // Sort/filter toggle (desktop): flip the flat-list sort to alphabetical,
+    // which reveals the filters pane via the #sort_by change handler, and back
+    // to the default grouped view. No-ops when there is no sort dropdown
+    // (legacy-TOC authors have no flat-list filters pane).
+    function syncSortToggle() {
+      var $sort = $('#sort_by');
+      if (!$sort.length) { return; }
+      var val = $sort.val();
+      var flat = val !== 'colls' && val !== 'colls_abc';
+      $('.author-page-top-sort-desktop .toggle-button-no').toggle(!flat);
+      $('.author-page-top-sort-desktop .toggle-button-yes').toggle(flat);
+    }
+    $('#toc-filter-toggle').click(function() {
+      var $sort = $('#sort_by');
+      if (!$sort.length) { return; }
+      var val = $sort.val();
+      var flat = val !== 'colls' && val !== 'colls_abc';
+      $sort.val(flat ? 'colls' : 'title').trigger('change');
+    });
+    $('#sort_by').on('change', syncSortToggle);
+    syncSortToggle();
   });
