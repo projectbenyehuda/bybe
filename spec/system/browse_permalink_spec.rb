@@ -63,6 +63,24 @@ describe 'Browse permalink button' do
       # For now, just verify the permalink button is present after page load
       expect(page).to have_css('a.permalink-btn')
     end
+
+    it 'renders the permalink in regular weight, floated to the left edge', :js do
+      visit '/authors'
+
+      expect(page).to have_css('a.permalink-btn')
+
+      # De-emphasized: regular weight (400), not the container's bold (700)
+      weight = page.evaluate_script(
+        "getComputedStyle(document.querySelector('a.permalink-btn')).fontWeight"
+      )
+      expect(weight).to eq('400')
+
+      # Pushed to the left edge of its container via float
+      float = page.evaluate_script(
+        "getComputedStyle(document.querySelector('a.permalink-btn')).float"
+      )
+      expect(float).to eq('left')
+    end
   end
 
   describe 'works browse page' do
@@ -111,6 +129,36 @@ describe 'Browse permalink button' do
       # Verify the href attribute is accessible for right-click copy
       expect(permalink_btn[:href]).to be_present
       expect(permalink_btn[:href]).to include('/works')
+    end
+  end
+
+  describe 'collections browse page' do
+    let!(:volume) { create(:collection, title: 'Test Volume', collection_type: :volume, sort_title: 'test volume') }
+
+    before do
+      CollectionsIndex.import([volume])
+    end
+
+    it 'displays permalink button with correct URL' do
+      visit '/collections'
+
+      expect(page).to have_css('a.permalink-btn')
+      permalink_btn = find('a.permalink-btn')
+
+      expect(permalink_btn.text).to match(/Permanent link|קישורית קבועה/)
+      expect(permalink_btn[:href]).to include('/collections')
+    end
+
+    it 'copies URL to clipboard when clicked and shows feedback', :js do
+      visit '/collections'
+
+      permalink_btn = find('a.permalink-btn')
+      original_text = permalink_btn.text
+
+      permalink_btn.click
+
+      expect(page).to have_text(/Link copied to clipboard!|הקישורית הועתקה ללוח!/)
+      expect(page).to have_selector('a.permalink-btn', text: original_text, wait: 3)
     end
   end
 end
