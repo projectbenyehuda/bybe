@@ -8,7 +8,8 @@
 # Exposes #series (the containing volume_series Collection, or nil), #prev_volume, #next_volume.
 class FindSeriesVolumeSiblings < ApplicationService
   def call(collection)
-    @series = collection.parent_collections.find(&:volume_series?)
+    parents = collection.parent_collection_items.includes(:collection).map(&:collection)
+    @series = parents.find(&:volume_series?)
     if @series
       @volumes = sibling_volumes(@series)
       @index = @volumes.find_index { |c| c.id == collection.id }
