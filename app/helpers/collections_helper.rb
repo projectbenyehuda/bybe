@@ -73,7 +73,7 @@ module CollectionsHelper
   end
 
   def browse_collection_popularity(collection)
-    return " (#{collection.impressions_count} #{t(:views)})"
+    return " (#{collection.impressions_count} #{t(:num_views)})"
   end
 
   def browse_collection_type(collection)
