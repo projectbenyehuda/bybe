@@ -95,6 +95,44 @@ describe 'Author TOC per-volume collapse toggle', :js do
     end
   end
 
+  it 'expands nested toggle-less sub-collections when re-expanding a volume after collapse-all' do
+    # A series sub-collection has NO toggle of its own, so after collapse-all it
+    # can only be re-opened by cascading through its parent volume's toggle.
+    # Give the nested work a different author so it renders only inside the
+    # series (avoids a duplicate copy in this author's work-level section).
+    other_author = create(:authority, name: 'Other Author')
+    inner_work = Chewy.strategy(:atomic) do
+      create(:manifestation, title: 'Nested Series Work', status: :published, author: other_author)
+    end
+    series = create(:collection, title: 'Inner Series', collection_type: :series)
+    create(:collection_item, collection: series, item: inner_work)
+
+    outer_volume = create(:collection, title: 'Outer Volume', collection_type: :volume)
+    create(:collection_item, collection: outer_volume, item: series)
+    create(:involved_authority, authority: author, item: outer_volume, role: 'editor')
+
+    visit authority_path(author)
+    expect(page).to have_css('#browse_mainlist')
+
+    # The nested series has no toggle of its own; the outer volume does.
+    expect(page).to have_no_css("#cwrapper_#{series.id} .volume-collapse-toggle")
+    expect(page).to have_css("#cwrapper_#{outer_volume.id} .volume-collapse-toggle")
+
+    # Initially the deeply nested work is visible.
+    expect(page).to have_link('Nested Series Work', visible: :visible)
+
+    # Collapse everything, then re-expand ONLY the outer volume via its toggle.
+    find('#max_collapse').click
+    expect(page).to have_link('Nested Series Work', visible: :hidden)
+
+    outer_toggle = find("#cwrapper_#{outer_volume.id} .volume-collapse-toggle", match: :first)
+    outer_toggle.click
+
+    # The fix cascades expansion into the toggle-less series, so its work must
+    # become visible again — not just the series header.
+    expect(page).to have_link('Nested Series Work', visible: :visible)
+  end
+
   it 'keeps individual toggles in sync with the collapse-all / expand-all buttons' do
     visit authority_path(author)
 
