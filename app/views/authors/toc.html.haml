@@ -397,12 +397,16 @@
       // toggle are left untouched so they keep their own collapsed/expanded state.
       function cascadeExpand($card) {
         var $wrapper = $card.children('.by-card-content-v02').children('.cwrapper');
-        $wrapper.children('ul.toclist').slideDown();
+        var $list = $wrapper.children('ul.toclist');
+        // Only cards that actually have a children list are expandable and, per
+        // this view's convention, carry aria-expanded — leave others untouched.
+        if ($list.length === 0) { return; }
+        $list.slideDown();
         $card.attr('aria-expanded', 'true');
         // Direct sub-collection cards inside this card's own list. The card
         // li is a direct child of ul.toclist (the browser auto-closes the
         // empty wrapper li that HTML forbids nesting an li inside).
-        $wrapper.children('ul.toclist').children('.by-card-v02[role="treeitem"]').each(function() {
+        $list.children('.by-card-v02[role="treeitem"]').each(function() {
             var $sub = $(this);
             var $subwrapper = $sub.children('.by-card-content-v02').children('.cwrapper');
             var hasOwnToggle = $subwrapper.children('div').children('.volume-collapse-toggle').length > 0;
