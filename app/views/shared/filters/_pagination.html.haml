@@ -2,15 +2,15 @@
   .row
     .col-sm-8
       .sort-buttons-area
-        - if @search_after_for_next.present?
-          %button.by-button-v02.browse_paging{ data: { search_after: @search_after_for_next } }
-            = t('.next_page')
-        - if @search_after_for_previous.present?
-          %button.by-button-v02.btn-secondary-v02.browse_paging{ data: { search_after: @search_after_for_previous } }
-            = t('.previous_page')
         - if @page > 1
           %button.by-button-v02.btn-secondary-v02.browse_paging
             = t('.first_page')
+        - if @search_after_for_previous.present?
+          %button.by-button-v02.btn-secondary-v02.browse_paging{ data: { search_after: @search_after_for_previous } }
+            = t('.previous_page')
+        - if @search_after_for_next.present?
+          %button.by-button-v02.browse_paging{ data: { search_after: @search_after_for_next } }
+            = t('.next_page')
     .col-sm-4
       = t('.page_x_of_total', page: @page, total: @total_pages)
   %br
