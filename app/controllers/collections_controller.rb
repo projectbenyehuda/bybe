@@ -45,6 +45,8 @@ class CollectionsController < ApplicationController
     @pagetype = :collection
     @taggings = @collection.taggings
     @lex_citations = @collection.lex_citations
+    # Prev/next volume navigation when this volume sits inside a volume_series
+    @volume_series_nav = FindSeriesVolumeSiblings.call(@collection) if @collection.volume?
 
     @included_recs = @collection.included_recommendations.count
     @total_recs = @collection.recommendations.count + @included_recs
