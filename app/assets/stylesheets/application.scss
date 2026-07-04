@@ -1524,3 +1524,11 @@ p.by-genre-name-v02.headline-2-v02 {
 .toc-facet-count {
   color: #907989;
 }
+
+// In list-view result headers (.headline-2-v02), push the permalink to the
+// left edge of its container (away from the result count) and de-emphasize it
+// by overriding the container's bold with a regular weight.
+.by-card-header-v02 .headline-2-v02 .permalink-btn {
+  float: left;
+  font-weight: normal;
+}
