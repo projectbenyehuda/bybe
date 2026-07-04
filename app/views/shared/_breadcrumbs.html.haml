@@ -13,15 +13,13 @@
         = link_to authority.name, authority_path(id: authority.id)
       - else
         = '?'
-    .breadcrumbs-arrow= 1
-    - genre = textify_genre(w.genre)
-    - unless authority.nil?
+    - Array(@breadcrumb_collections).each do |coll|
+      .breadcrumbs-arrow= 1
       .breadcrumbs-text
-        = link_to e.translation ? "#{t(:translation)} #{genre}" : genre,
-                  controller: :authors, action: :toc, id: authority.id, genre: w.genre
-      -#.breadcrumbs-arrow= 1
-      -#.breadcrumbs-text
-      -#  %b= @entity.title
+        - if coll.series?
+          = coll.title
+        - else
+          = link_to coll.title, collection_path(coll)
   - elsif @pagetype == :author
     .breadcrumbs-text= link_to t(:authors), authors_path
     -#.breadcrumbs-arrow= 1
