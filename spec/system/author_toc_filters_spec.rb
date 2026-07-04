@@ -59,6 +59,28 @@ describe 'Author TOC flat-list filters', :js do
     expect(page).to have_css('.book-nav-full', visible: :visible)
   end
 
+  it 'activates alphabetical filtering mode via the desktop sort/filter toggle' do
+    visit authority_path(author)
+    expect(page).to have_css('#browse_mainlist')
+
+    # off state: filters hidden, toggle showing the "no" knob, default sort
+    expect(page).to have_css('#toc_filters_pane', visible: :hidden)
+    expect(page).to have_css('.author-page-top-sort-desktop .toggle-button-yes', visible: :hidden)
+
+    find('#toc-filter-toggle').click
+    expect(page).to have_css('#toc_filters_pane', visible: :visible)
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
+    expect(page).to have_css('.author-page-top-sort-desktop .toggle-button-yes', visible: :visible)
+    expect(page).to have_css('.author-page-top-sort-desktop .toggle-button-no', visible: :hidden)
+    expect(find('#sort_by').value).to eq('title')
+
+    # clicking again returns to the default grouped view
+    find('#toc-filter-toggle').click
+    expect(page).to have_css('#toc_filters_pane', visible: :hidden)
+    expect(page).to have_css('.author-page-top-sort-desktop .toggle-button-yes', visible: :hidden)
+    expect(find('#sort_by').value).to eq('colls')
+  end
+
   it 'filters the flat list by free-text name (debounced)' do
     visit authority_path(author)
     choose_sort('title')
