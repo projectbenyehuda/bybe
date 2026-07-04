@@ -1335,6 +1335,8 @@ class ManifestationController < ApplicationController
     @single_text_volume = !@multiple_parents && @containments.size == 1 &&
                           @containments.first.collection.collection_type == 'volume' &&
                           !@containments.first.collection.has_multiple_manifestations?
+    # Ancestor collection chain (root-first) for the breadcrumbs of the chosen containment.
+    @breadcrumb_collections = breadcrumb_collection_chain(@containments.first)
   end
 
   private
@@ -1363,6 +1365,29 @@ class ManifestationController < ApplicationController
                                 .sort_by { |c| [c.normalized_pub_year || Float::INFINITY, c.id] }
     @containments = [chosen]
     @volumes = [chosen_volume].compact
+  end
+
+  # Builds the ancestor collection chain (root-first) for a chosen containment, used by the
+  # Manifestation breadcrumbs. Starting from the immediate parent collection, it walks up
+  # parent_collections to the outermost root, so a text in series A in series B in volume C
+  # yields [C, B, A]. The system 'uncollected' collection is not a real container and yields
+  # no breadcrumbs. When a collection has several parents we follow the first (the common case
+  # is a single linear chain); a visited set guards against cycles.
+  def breadcrumb_collection_chain(containment)
+    return [] if containment.nil?
+
+    collection = containment.collection
+    return [] if collection.nil? || collection.uncollected?
+
+    chain = []
+    visited = Set.new
+    current = collection
+    while current && visited.exclude?(current.id)
+      visited.add(current.id)
+      chain << current
+      current = current.parent_collections.first
+    end
+    chain.reverse
   end
 
   # Returns the containment matching the given collection id, either directly or via its
