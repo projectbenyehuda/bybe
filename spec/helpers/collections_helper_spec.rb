@@ -29,6 +29,23 @@ RSpec.describe CollectionsHelper, type: :helper do
     end
   end
 
+  describe '#browse_collection_popularity' do
+    # Regression: t(:views) used to collide with the reserved will_paginate
+    # `views` I18n namespace, leaking the pagination hash into the label
+    # (e.g. "(12155 {:pagination=>{...}})"). It must render a plain unit label.
+    it 'renders the impressions count with a plain views label, not a hash' do
+      collection = create(:collection)
+      allow(collection).to receive(:impressions_count).and_return(12_155)
+
+      result = helper.browse_collection_popularity(collection)
+
+      expect(result).to include('12155')
+      expect(result).to include(I18n.t(:num_views))
+      expect(result).not_to include('pagination')
+      expect(result).not_to include('=>')
+    end
+  end
+
   describe '#collection_search_result_path' do
     let(:query) { 'search term' }
 
