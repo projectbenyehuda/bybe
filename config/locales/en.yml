@@ -61,6 +61,7 @@ en:
   alefbet: Alphabetical
   alefbet_asc: 'Alphabetical: A-Z'
   alefbet_desc: 'Alphabetical: Z-A'
+  num_views: views
   popularity_group: Poplularity
   popularity_desc: 'Popularity: descending'
   popularity_asc: 'Popularity: ascending'
