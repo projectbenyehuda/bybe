@@ -130,6 +130,31 @@
                 -#  %span{style: "font-weight:bold"} המלצות:
                 -#  %a{href: "#"} 3 המלצות קוראים
 
+          -# Prev/next volume navigation within a containing volume_series (mirrors Manifestation#read nav)
+          - if @volume_series_nav&.series.present?
+            - prev_vol = @volume_series_nav.prev_volume
+            - next_vol = @volume_series_nav.next_volume
+            - if prev_vol.present? || next_vol.present?
+              .author-works-nav
+                .topNavEntry
+                  .link-nav
+                    - if prev_vol.present?
+                      = link_to collection_path(prev_vol) do
+                        %span.right-arrow= '2'
+                        = t(:to_previous_volume)
+                .topNavEntry
+                  .link-nav{style: 'margin-left:20px; margin-right:20px;'}
+                    = link_to collection_path(@volume_series_nav.series) do
+                      %span.right-arrow= '🢁'
+                      = textify_collection_up_link(@volume_series_nav.series)
+                      %span.left-arrow= '🢁'
+                .topNavEntry
+                  .link-nav
+                    - if next_vol.present?
+                      = link_to collection_path(next_vol) do
+                        = t(:to_next_volume)
+                        %span.left-arrow= '1'
+
           - if @collection.cover_image.attached?
             .by-card-v02.collection-cover-image-card
               .by-card-content-v02
