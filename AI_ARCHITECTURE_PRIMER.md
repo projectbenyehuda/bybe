@@ -64,6 +64,7 @@ Work (abstract work, e.g., "Torah")
     - Collection (type: `periodical`) → contains multiple Collections (type: `periodical_issue`)
     - Each periodical_issue → contains Manifestations (articles/texts) and/or Collections (type: `series`)
     - Series can further contain Manifestations
+    - a 'volume_series' Collection contains sub-collections of type 'volume'.
   - Example: "Ha'aretz Newspaper" (periodical) → "Issue Jan 1950" (periodical_issue) → Articles (manifestations) + "Poetry Series" (series) → Poems (manifestations)
 
 - **CollectionItem** (`collection_item.rb`): Polymorphic join (ordered)
