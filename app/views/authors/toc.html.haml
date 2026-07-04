@@ -389,6 +389,29 @@
         $('#browse_mainlist .volume-collapse-toggle').removeClass('collapsed').attr('aria-expanded', 'true');
       });
 
+      // Expand a treeitem card's own children list, then cascade into any
+      // nested sub-collections that have NO toggle of their own (series /
+      // sub-volumes). Those have no independent control, so their collapsed
+      // state (e.g. after collapse-all) would otherwise be unreachable — they
+      // must follow their parent volume. Nested volumes that DO have their own
+      // toggle are left untouched so they keep their own collapsed/expanded state.
+      function cascadeExpand($card) {
+        var $wrapper = $card.children('.by-card-content-v02').children('.cwrapper');
+        $wrapper.children('ul.toclist').slideDown();
+        $card.attr('aria-expanded', 'true');
+        // Direct sub-collection cards inside this card's own list. The card
+        // li is a direct child of ul.toclist (the browser auto-closes the
+        // empty wrapper li that HTML forbids nesting an li inside).
+        $wrapper.children('ul.toclist').children('.by-card-v02[role="treeitem"]').each(function() {
+            var $sub = $(this);
+            var $subwrapper = $sub.children('.by-card-content-v02').children('.cwrapper');
+            var hasOwnToggle = $subwrapper.children('div').children('.volume-collapse-toggle').length > 0;
+            if (!hasOwnToggle) {
+              cascadeExpand($sub);
+            }
+          });
+      }
+
       // Toggle a single volume's children list (delegated: nodes are server-rendered)
       function toggleVolume($toggle) {
         var $card = $toggle.closest('.by-card-v02[role="treeitem"]');
@@ -402,8 +425,9 @@
           $card.attr('aria-expanded', 'false');
           $toggle.addClass('collapsed').attr('aria-expanded', 'false');
         } else {
-          $list.slideDown();
-          $card.attr('aria-expanded', 'true');
+          // Expand this volume all the way down through any toggle-less
+          // sub-collections, which cannot be re-opened on their own.
+          cascadeExpand($card);
           $toggle.removeClass('collapsed').attr('aria-expanded', 'true');
         }
       }
