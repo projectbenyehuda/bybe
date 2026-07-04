@@ -1,10 +1,3 @@
-#genre_filtering{style: 'display: none;'}
-  %h3= t(:show_genres)
-  -# show a checkbox for each present genre to show/hide items of that genre
-  - get_genres.each do |genre|
-    %span.hidden{id: "genre_#{genre}"}
-      = check_box_tag "genre_#{genre}", 1, true, class: 'genre_checkbox'
-      = label_tag "genre_#{genre}", textify_genre(genre)
 .mainlist#browse_mainlist
   = cache_unless current_user&.editor?, @author, expires_in: 12.hours do
     :ruby
@@ -58,20 +51,6 @@
         != @credits
 :javascript
   $(document).ready(function() {
-    var genres = { #{get_genres.map { |g| "'#{g}': '#{textify_genre(g)}'" }.join(', ') } };
-    for(var genre in genres) {
-      if($('.by-icon-v02[title="' + genres[genre] + '"]').length > 0)
-        $('#genre_'+genre).show();
-    }
-    $('.genre_checkbox').on('change', function(e){
-      genre = this.id.replace('genre_', '');
-      if(this.checked) {
-        $('.by-icon-v02[title="' + genres[genre] + '"]').closest('.manifestation-node').show();
-      } else {
-        $('.by-icon-v02[title="' + genres[genre] + '"]').closest('.manifestation-node').hide();
-      }
-    });
-
     function prune_collections() {
       $('.cwrapper').each(function() {
         if($(this).hasClass('uncollected') == false) {
@@ -95,7 +74,6 @@
       var flat = isFlatSort(this.value);
       if(this.value == 'colls') {
         $('#browse_mainlist').html(orig_mainlist);
-        $('#genre_filtering').hide();
         // Reapply genre filters after restoring original sort
         if(typeof window.applyGenreFilters === 'function') {
           window.applyGenreFilters();
@@ -107,7 +85,6 @@
         $('.metadata-upload-date').hide();
         if (this.value == 'colls_abc') {
           $('#browse_mainlist').html(orig_mainlist);
-          $('#genre_filtering').hide();
           nodes_to_sort = $('.cwrapper').filter(function() {
             return $(this).parents('.cwrapper').length === 0;
           });
@@ -118,7 +95,6 @@
           });
         } else {
           $('.metadata-source-edition').hide();
-          $('#genre_filtering').show();
           // de-dup: in the flat list a work appears once, without its role/collection context
           nodes_to_sort = dedupByMid($('.manifestation-node'));
           var sortval;
