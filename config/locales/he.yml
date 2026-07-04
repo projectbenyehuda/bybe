@@ -780,6 +780,7 @@ he:
   alefbet: אלפבית
   alefbet_asc: 'אלפבית: א–ת'
   alefbet_desc: 'אלפבית: ת–א'
+  num_views: 'צפיות'
   popularity_group: 'מספר צפיות'
   popularity_desc: 'מספר צפיות באתר: יורד'
   popularity_asc: 'מספר צפיות באתר: עולה'
