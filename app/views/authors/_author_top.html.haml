@@ -16,7 +16,7 @@
           .author-page-top-sort-desktop{ class: ('notyet' if @author.toc.present?) }
             = t(:sort_and_filter)
             = link_to '[?]', '#', 'class' => 'help', 'tabindex' => 0, 'data-toggle' => 'popover', 'data-trigger' => 'focus', title: t(:about_sort_and_filter), 'data-content' => t(:sort_and_filter_popover)
-            .toggle-background-no#toc-filter-toggle{title: t(:toggle_filters_tt)}
+            %button.toggle-background-no#toc-filter-toggle{ type: 'button', title: t(:toggle_filters_tt), 'aria-label': t(:toggle_filters_tt) }
               .toggle-button-no
               .toggle-button-yes{ style: 'display:none' }
           .author-page-top-sort-mobile
