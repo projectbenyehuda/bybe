@@ -73,10 +73,10 @@ Users can manage their email preferences by:
 
 Run the test suite:
 ```bash
-docker compose run --rm test-app rspec spec/services/notification_service_spec.rb
-docker compose run --rm test-app rspec spec/models/pending_notification_spec.rb
-docker compose run --rm test-app rspec spec/controllers/user_preferences_controller_spec.rb
-docker compose run --rm test-app rspec spec/sidekiq/notification_digest_job_spec.rb
+rspec spec/services/notification_service_spec.rb
+rspec spec/models/pending_notification_spec.rb
+rspec spec/controllers/user_preferences_controller_spec.rb
+rspec spec/jobs/notification_digest_job_spec.rb
 ```
 
 Note: The NotificationDigestJob is placed in `app/jobs/`.
