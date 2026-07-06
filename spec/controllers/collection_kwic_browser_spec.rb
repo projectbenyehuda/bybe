@@ -168,27 +168,21 @@ describe CollectionsController do
 
       before do
         create(:collection_item, collection: collection, item: manifestation)
-        clear_enqueued_jobs
+        allow(GenerateKwicConcordanceJob).to receive(:in_progress?)
+          .with('Collection', collection.id)
+          .exactly(3).times
+          .and_return(false, true, true)
       end
 
       it 'only queues one job even with multiple requests' do
-        collection_jobs_count = lambda do
-          enqueued_jobs.count do |job|
-            job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Collection', collection.id]
-          end
-        end
-
         # First request should queue a job
-        get :kwic, params: { collection_id: collection.id }
-        expect(collection_jobs_count.call).to eq(1)
+        expect { get :kwic, params: { collection_id: collection.id } }.to have_enqueued_job(GenerateKwicConcordanceJob)
 
         # Second request should not queue another job
-        get :kwic, params: { collection_id: collection.id }
-        expect(collection_jobs_count.call).to eq(1)
+        expect { get :kwic, params: { collection_id: collection.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
 
         # Third request should also not queue another job
-        get :kwic, params: { collection_id: collection.id }
-        expect(collection_jobs_count.call).to eq(1)
+        expect { get :kwic, params: { collection_id: collection.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
       end
     end
 

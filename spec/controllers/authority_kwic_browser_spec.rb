@@ -114,27 +114,22 @@ describe AuthorsController do
       before do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         manifestation1
-        clear_enqueued_jobs
+
+        allow(GenerateKwicConcordanceJob).to receive(:in_progress?)
+          .with('Authority', authority.id)
+          .exactly(3).times
+          .and_return(false, true, true)
       end
 
       it 'only queues one job even with multiple requests' do
-        authority_jobs_count = lambda do
-          enqueued_jobs.count do |job|
-            job[:job] == GenerateKwicConcordanceJob && job[:args] == ['Authority', authority.id]
-          end
-        end
-
         # First request should queue a job
-        get :kwic, params: { id: authority.id }
-        expect(authority_jobs_count.call).to eq(1)
+        expect { get :kwic, params: { id: authority.id } }.to have_enqueued_job(GenerateKwicConcordanceJob)
 
         # Second request should not queue another job
-        get :kwic, params: { id: authority.id }
-        expect(authority_jobs_count.call).to eq(1)
+        expect { get :kwic, params: { id: authority.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
 
         # Third request should also not queue another job
-        get :kwic, params: { id: authority.id }
-        expect(authority_jobs_count.call).to eq(1)
+        expect { get :kwic, params: { id: authority.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
       end
     end
 
