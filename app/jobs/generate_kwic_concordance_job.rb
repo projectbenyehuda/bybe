@@ -2,10 +2,9 @@
 
 require 'sidekiq/api'
 
-# Sidekiq job to generate KWIC concordance asynchronously for Authority and Collection entities
+# ActiveJob to generate KWIC concordance asynchronously for Authority and Collection entities
 # This is used for larger entities where concordance generation may take a long time
-class GenerateKwicConcordanceJob
-  include Sidekiq::Job
+class GenerateKwicConcordanceJob < ApplicationJob
   include BybeUtils
 
   # Check if a job for this entity is already queued or running
@@ -13,36 +12,21 @@ class GenerateKwicConcordanceJob
   # @param entity_id [Integer] The ID of the entity
   # @return [Boolean] true if a job is already in progress, false otherwise
   def self.in_progress?(entity_type, entity_id)
-    # In test mode with fake jobs, check the jobs array
-    # Note: inline mode executes jobs immediately, so there's no queueing issue
-    # We need to check if Sidekiq::Testing is defined because it's only loaded in test environment
-    if defined?(Sidekiq::Testing) && Sidekiq::Testing.fake?
-      return jobs.any? do |job|
-        job['args'][0] == entity_type && job['args'][1] == entity_id
-      end
+    # TODO: I really don't like this code, as it uses low-level Sidekiq API
+    #   Initial version was AI-generated and I've rewritten it to work with ActiveJob-wrapped Sidekiq jobs, and it
+    #   seems to work, but their API is a subject of changes and debugging it is pretty complex.
+    #   So I'd propose to get rid of it and use different approach
+
+    # Checking currently running jobs
+    running = Sidekiq::Workers.new.any? do |_process_id, _thread_id, work|
+      job = work.job
+      job['wrapped'] == 'GenerateKwicConcordanceJob' && job['args'][0]['arguments'] == [entity_type, entity_id]
     end
+    return true if running
 
-    # Check queued jobs (not yet started)
-    # Using any? for efficient early termination
-    queue = Sidekiq::Queue.new
-    queued = queue.any? do |job|
-      job.klass == 'GenerateKwicConcordanceJob' &&
-        job.args[0] == entity_type &&
-        job.args[1] == entity_id
-    end
-
-    return true if queued
-
-    # Check currently running jobs
-    workers = Sidekiq::Workers.new
-    workers.any? do |_process_id, _thread_id, work|
-      # Guard against race condition where work may be a String instead of Hash
-      next unless work.is_a?(Hash)
-
-      # Use dig to safely access nested hash values
-      work.dig('payload', 'class') == 'GenerateKwicConcordanceJob' &&
-        work.dig('payload', 'args', 0) == entity_type &&
-        work.dig('payload', 'args', 1) == entity_id
+    # Checking default queue
+    Sidekiq::Queue.new('default').any? do |job|
+      job['wrapped'] == 'GenerateKwicConcordanceJob' && job.args[0]['arguments'] == [entity_type, entity_id]
     end
   end
 
@@ -50,7 +34,6 @@ class GenerateKwicConcordanceJob
   # @param entity_id [Integer] The ID of the entity
   def perform(entity_type, entity_id)
     entity = entity_type.constantize.find(entity_id)
-
     case entity_type
     when 'Collection'
       generate_collection_concordance(entity)

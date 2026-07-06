@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-# Sidekiq job to update responsibility statements for manifestations in bulk
-class UpdateManifestationResponsibilityStatementsJob
-  include Sidekiq::Job
-
+# Updates responsibility statements for manifestations in bulk.
+class UpdateManifestationResponsibilityStatementsJob < ApplicationJob
   def perform(manifestation_ids)
     return if manifestation_ids.blank?
 

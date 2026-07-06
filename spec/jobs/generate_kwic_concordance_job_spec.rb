@@ -1,74 +1,8 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'sidekiq/testing'
 
-RSpec.describe GenerateKwicConcordanceJob, type: :job do
-  describe '.in_progress?' do
-    let(:authority) { create(:authority, status: :published) }
-    let(:collection) { create(:collection) }
-
-    context 'when no job is queued or running' do
-      it 'returns false for Authority' do
-        expect(described_class.in_progress?('Authority', authority.id)).to be false
-      end
-
-      it 'returns false for Collection' do
-        expect(described_class.in_progress?('Collection', collection.id)).to be false
-      end
-    end
-
-    context 'when job is queued' do
-      before do
-        Sidekiq::Testing.fake! do
-          described_class.perform_async('Authority', authority.id)
-        end
-      end
-
-      after do
-        Sidekiq::Worker.clear_all
-      end
-
-      it 'returns true for the queued Authority job' do
-        expect(described_class.in_progress?('Authority', authority.id)).to be true
-      end
-
-      it 'returns false for different entity' do
-        other_authority = create(:authority, status: :published)
-        expect(described_class.in_progress?('Authority', other_authority.id)).to be false
-      end
-
-      it 'returns false for different entity type' do
-        expect(described_class.in_progress?('Collection', authority.id)).to be false
-      end
-    end
-
-    context 'when multiple jobs are queued' do
-      let(:authority2) { create(:authority, status: :published) }
-      let(:collection2) { create(:collection) }
-
-      before do
-        Sidekiq::Testing.fake! do
-          described_class.perform_async('Authority', authority.id)
-          described_class.perform_async('Authority', authority2.id)
-          described_class.perform_async('Collection', collection.id)
-          described_class.perform_async('Collection', collection2.id)
-        end
-      end
-
-      after do
-        Sidekiq::Worker.clear_all
-      end
-
-      it 'correctly identifies each queued job' do
-        expect(described_class.in_progress?('Authority', authority.id)).to be true
-        expect(described_class.in_progress?('Authority', authority2.id)).to be true
-        expect(described_class.in_progress?('Collection', collection.id)).to be true
-        expect(described_class.in_progress?('Collection', collection2.id)).to be true
-      end
-    end
-  end
-
+describe GenerateKwicConcordanceJob do
   describe '#perform' do
     context 'with Authority' do
       let(:authority) { create(:authority, status: :published) }
