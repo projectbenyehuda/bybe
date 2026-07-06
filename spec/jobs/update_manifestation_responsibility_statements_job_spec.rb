@@ -33,7 +33,8 @@ describe UpdateManifestationResponsibilityStatementsJob do
 
     it 'handles errors gracefully for individual manifestations' do
       expect { described_class.perform_now([manifestation1.id]) }.not_to raise_error
-      expect(Rails.logger).to have_received(:error).once
+      expect(Rails.logger).to have_received(:error)
+        .once
         .with("Failed to recalculate responsibility_statement for Manifestation #{manifestation1.id}: Test error")
     end
   end

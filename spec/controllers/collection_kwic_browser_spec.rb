@@ -158,6 +158,9 @@ describe CollectionsController do
 
     context 'when concordance does not exist yet and multiple requests are made' do
       let(:collection) { create(:collection, title: 'Test Collection') }
+
+      let(:params) { { collection_id: collection.id } }
+
       let(:manifestation) do
         create(
           :manifestation,
@@ -173,8 +176,6 @@ describe CollectionsController do
           .exactly(3).times
           .and_return(false, true, true)
       end
-
-      let(:params) { { collection_id: collection.id } }
 
       it 'only queues one job even with multiple requests' do
         # First request should queue a job
