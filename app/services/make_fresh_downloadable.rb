@@ -1,6 +1,7 @@
 # Creates or overwrites downloadable from given Html file using provided file format
 class MakeFreshDownloadable < ApplicationService
   # @return created Downloadable object
+  # rubocop:disable Metrics/MethodLength
   def call(format, filename, html, download_entity, author_string, kwic_text: nil)
     # Convert images to absolute URLs for formats that need them (PDF, DOCX, etc.)
     # EPUBs handle images internally by embedding them
@@ -75,8 +76,11 @@ class MakeFreshDownloadable < ApplicationService
         begin
           # TODO: figure out how not to go through epub
           epubname = make_epub_from_single_html(html, download_entity, author_string)
-          mobiname = epubname[epubname.rindex('/') + 1..-6] + '.mobi'
-          unless system('kindlegen', epubname, '-c1', '-o', mobiname)
+          mobiname = epubname[(epubname.rindex('/') + 1)..-6] + '.mobi'
+
+          # kindlegen returns status 1 if there were warnings and 2 if there were critical errors
+          _stdout, _stderr, status = Open3.capture3('kindlegen', epubname, '-c1', '-o', mobiname)
+          if status.exitstatus > 1
             raise "Kindlegen conversion failed for EPUB #{epubname}"
           end
           mobiname = epubname[0..-6] + '.mobi'
@@ -164,4 +168,5 @@ class MakeFreshDownloadable < ApplicationService
       "<img#{before_src}src=#{quote}#{new_src}#{quote}#{after_src}"
     end
   end
+  # rubocop:enable Metrics/MethodLength
 end
