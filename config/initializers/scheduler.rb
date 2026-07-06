@@ -24,12 +24,12 @@ end
 # Email digest notifications
 scheduler.every '24h' do
   puts "sending daily notification digests"
-  NotificationDigestJob.perform_async('daily')
+  NotificationDigestJob.perform_later('daily')
 end
 
 scheduler.every '7d' do
   puts "sending weekly notification digests"
-  NotificationDigestJob.perform_async('weekly')
+  NotificationDigestJob.perform_later('weekly')
 end
 
 scheduler.every '7d' do

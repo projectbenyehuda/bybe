@@ -1,6 +1,7 @@
-class TagSimilarityJob
-  include Sidekiq::Job
+# frozen_string_literal: true
 
+# Finds similar tag names and records similarity suggestions.
+class TagSimilarityJob < ApplicationJob
   def perform(tag_id)
     begin
       tag = Tag.find(tag_id)
