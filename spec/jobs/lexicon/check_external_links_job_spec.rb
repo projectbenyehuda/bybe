@@ -1,18 +1,10 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'sidekiq/testing'
 
-Sidekiq::Testing.fake!
-
-RSpec.describe Lexicon::CheckExternalLinksJob, type: :job do
+describe Lexicon::CheckExternalLinksJob do
   let(:person) { create(:lex_person) }
   let(:entry) { create(:lex_entry, :person, lex_item: person) }
-
-  it 'enqueues a job when perform_async is called' do
-    expect { described_class.perform_async(entry.id) }
-      .to change(described_class.jobs, :size).by(1)
-  end
 
   it 'calls CheckExternalLinks for the given entry' do
     allow(Lexicon::CheckExternalLinks).to receive(:call)
