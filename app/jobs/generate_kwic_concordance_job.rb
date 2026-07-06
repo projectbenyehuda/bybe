@@ -12,22 +12,21 @@ class GenerateKwicConcordanceJob < ApplicationJob
   # @param entity_id [Integer] The ID of the entity
   # @return [Boolean] true if a job is already in progress, false otherwise
   def self.in_progress?(entity_type, entity_id)
-    # Check queued jobs (not yet started)
-    # Using any? for efficient early termination
-    queue = Sidekiq::Queue.new
-    queued = queue.any? do |job|
-      sidekiq_job_matches?(job, entity_type, entity_id)
+    # TODO: I really don't like this code, as it uses low-level Sidekiq API
+    #   Initial version was AI-generated and I've rewritten it to work with ActiveJob-wrapped Sidekiq jobs, and it
+    #   seems to work, but their API is a subject of changes and debugging it is pretty complex.
+    #   So I'd propose to get rid of it and use different approach
+
+    # Checking currently running jobs
+    running = Sidekiq::Workers.new.any? do |_process_id, _thread_id, work|
+      job = work.job
+      job['wrapped'] == 'GenerateKwicConcordanceJob' && job['args'][0]['arguments'] == [entity_type, entity_id]
     end
+    return true if running
 
-    return true if queued
-
-    # Check currently running jobs
-    workers = Sidekiq::Workers.new
-    workers.any? do |_process_id, _thread_id, work|
-      # Guard against race condition where work may be a String instead of Hash
-      next unless work.is_a?(Hash)
-
-      sidekiq_payload_matches?(work['payload'], entity_type, entity_id)
+    # Checking default queue
+    Sidekiq::Queue.new('default').any? do |job|
+      job['wrapped'] == 'GenerateKwicConcordanceJob' && job.args[0]['arguments'] == [entity_type, entity_id]
     end
   end
 
@@ -35,7 +34,6 @@ class GenerateKwicConcordanceJob < ApplicationJob
   # @param entity_id [Integer] The ID of the entity
   def perform(entity_type, entity_id)
     entity = entity_type.constantize.find(entity_id)
-
     case entity_type
     when 'Collection'
       generate_collection_concordance(entity)
@@ -83,23 +81,4 @@ class GenerateKwicConcordanceJob < ApplicationJob
     austr = authority.name
     MakeFreshDownloadable.call('kwic', filename, '', authority, austr, kwic_text: kwic_text)
   end
-
-  def self.sidekiq_job_matches?(job, entity_type, entity_id)
-    if job.klass == name
-      return job.args[0] == entity_type && job.args[1] == entity_id
-    end
-
-    return false unless job.klass == 'ActiveJob::QueueAdapters::SidekiqAdapter::JobWrapper'
-
-    sidekiq_payload_matches?(job.args.first, entity_type, entity_id)
-  end
-
-  def self.sidekiq_payload_matches?(payload, entity_type, entity_id)
-    return false unless payload.is_a?(Hash)
-    return false unless payload['wrapped'] == name || payload['class'] == name
-
-    args = payload['class'] == name ? payload['args'] : payload.dig('args', 0, 'arguments')
-    args == [entity_type, entity_id]
-  end
-  private_class_method :sidekiq_job_matches?, :sidekiq_payload_matches?
 end

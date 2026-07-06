@@ -174,15 +174,17 @@ describe CollectionsController do
           .and_return(false, true, true)
       end
 
+      let(:params) { { collection_id: collection.id } }
+
       it 'only queues one job even with multiple requests' do
         # First request should queue a job
-        expect { get :kwic, params: { collection_id: collection.id } }.to have_enqueued_job(GenerateKwicConcordanceJob)
+        expect { get :kwic, params: params }.to have_enqueued_job(GenerateKwicConcordanceJob)
 
         # Second request should not queue another job
-        expect { get :kwic, params: { collection_id: collection.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
+        expect { get :kwic, params: params }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
 
         # Third request should also not queue another job
-        expect { get :kwic, params: { collection_id: collection.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
+        expect { get :kwic, params: params }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
       end
     end
 
