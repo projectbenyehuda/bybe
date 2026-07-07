@@ -40,3 +40,9 @@ scheduler.every '7d' do
   end
   Rails.logger.info "purged #{count} expired saved selections"
 end
+
+scheduler.cron '0 2 * * 3 Asia/Jerusalem' do
+  Rails.logger.info 'Trimming db sessions'
+  # NOTE: this will also trim BaseUsers table and cleanup Ahoy Events
+  system('bin/rake db:sessions:trim')
+end
