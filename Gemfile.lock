@@ -120,7 +120,7 @@ GEM
     bcrypt_pbkdf (1.1.1)
     benchmark-ips (2.14.0)
     better_sjr (1.0.0)
-    bigdecimal (4.1.1)
+    bigdecimal (4.1.2)
     bindex (0.8.1)
     blazer (3.3.0)
       activerecord (>= 7.1)
@@ -167,9 +167,9 @@ GEM
     cgi (0.5.0)
     character_set (1.8.0)
     chartkick (5.2.1)
-    chewy (7.6.0)
-      activesupport (>= 5.2)
-      elasticsearch (>= 7.14.0, < 8)
+    chewy (8.4.1)
+      activesupport (>= 7.2)
+      elasticsearch (>= 8.14, < 9.0)
       elasticsearch-dsl
     choice (0.2.0)
     client_side_validations (22.3.1)
@@ -235,16 +235,16 @@ GEM
       dry-logic (~> 1.4)
       zeitwerk (~> 2.6)
     ed25519 (1.4.0)
-    elasticsearch (7.17.11)
-      elasticsearch-api (= 7.17.11)
-      elasticsearch-transport (= 7.17.11)
-    elasticsearch-api (7.17.11)
+    elastic-transport (8.5.3)
+      faraday (< 3)
+      multi_json
+    elasticsearch (8.19.3)
+      elastic-transport (~> 8.3)
+      elasticsearch-api (= 8.19.3)
+      ostruct
+    elasticsearch-api (8.19.3)
       multi_json
     elasticsearch-dsl (0.1.10)
-    elasticsearch-transport (7.17.11)
-      base64
-      faraday (>= 1, < 3)
-      multi_json
     erb (6.0.4)
     erubi (1.13.1)
     et-orbi (1.4.0)
@@ -331,7 +331,7 @@ GEM
       multi_xml (>= 0.5.2)
     human_enum_name (0.1.0)
       activesupport (>= 4.2.0)
-    i18n (1.14.8)
+    i18n (1.15.2)
       concurrent-ruby (~> 1.0)
     image_processing (1.14.0)
       mini_magick (>= 4.9.5, < 6)
@@ -412,7 +412,7 @@ GEM
     mini_portile2 (2.8.9)
     mini_racer (0.19.1)
       libv8-node (~> 24.1.0.0)
-    minitest (6.0.3)
+    minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
     moment-timezone-rails (1.1.0)
@@ -420,7 +420,7 @@ GEM
     momentjs-rails (2.29.4.1)
       railties (>= 3.1)
     msgpack (1.8.0)
-    multi_json (1.18.0)
+    multi_json (1.21.1)
     multi_xml (0.8.0)
       bigdecimal (>= 3.1, < 5)
     mustermann (3.0.4)
@@ -848,7 +848,7 @@ DEPENDENCIES
   capistrano-rvm
   capistrano3-puma
   capybara
-  chewy
+  chewy (~> 8.4.0)
   client_side_validations
   concurrent-ruby
   dalli

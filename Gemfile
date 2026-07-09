@@ -19,7 +19,7 @@ gem 'rails-ujs'
 gem 'rufus-scheduler' # scheduler
 
 gem 'active_data' # for *Search classes in Chewy
-gem 'chewy' # for ElasticSearch 7.x
+gem 'chewy', '~> 8.4.0' # for ElasticSearch 7.x
 gem 'image_processing'
 gem 'jquery-slick-rails' # for carousel slider
 gem 'property_sets', '>= 3.7.1' # for key/value properties per model; version 3.7.1 supports Ruby 3.0 per https://github.com/zendesk/property_sets/issues/85
