@@ -44,7 +44,7 @@
                         %label{ for: "toc-filter-lang-#{lang}" }
                           = textify_lang(lang)
                           %span.toc-facet-count{ 'data-section': 'lang', 'data-value': lang }
-      = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfchar', title: t('author_toc_filters.characteristics'), content_class: 'nested-list' } do
+      = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfchar', title: t('author_toc_filters.extra_content'), content_class: 'nested-list' } do
         %ul
           %li
             %input.toc-filter-char#toc-filter-curatorial{ type: 'checkbox', value: 'curatorial', name: 'toc_filter_char' }
