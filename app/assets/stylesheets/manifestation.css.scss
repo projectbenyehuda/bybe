@@ -10,6 +10,12 @@ h2 {
   font-size:1.3em;
   padding-bottom:0.2em;
 }
+
+// Keep the bold label flush with the FIRST line of the data when the value
+// wraps across multiple lines (overrides .metadata's align-items: center).
+.metadata.metadata-top-aligned {
+  align-items: flex-start;
+}
 .maintext-prose-body img {
   max-width: 100%;
   height: auto !important;

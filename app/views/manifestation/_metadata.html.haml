@@ -73,7 +73,7 @@
       %span{:style => "font-weight:bold"}= t(:orig_lang)+': '
       = link_to textify_lang(@e.work.orig_lang), works_path + '?ckb_languages[]=' + @e.work.orig_lang
   - unless @e.source_edition.nil? || @e.source_edition.empty?
-    .metadata
+    .metadata.metadata-top-aligned
       %span{:style => "font-weight:bold"}= t(:source_edition)+': '
       - edition = @e.source_edition.strip
       - unless @e.date.nil? || @e.date.empty?
