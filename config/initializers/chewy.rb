@@ -10,5 +10,6 @@ prefix = case Rails.env
          end
 Chewy.settings = {
   host: ENV.fetch('ELASTICSEARCH_HOST'),
-  prefix: prefix
+  prefix: prefix,
+  delete_all_enabled: Rails.env.test? # to use Chewy.massacre in tests
 }
