@@ -59,7 +59,7 @@
           %li
             %input.toc-filter-char#toc-filter-noprops{ type: 'checkbox', value: 'noprops', name: 'toc_filter_char' }
             %label{ for: 'toc-filter-noprops' }
-              = t('author_toc_filters.no_properties')
+              = t('author_toc_filters.no_extra_content')
               %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'noprops' }
       = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfdate', title: t(:thedate) } do
         .search-mobile-switch
