@@ -293,6 +293,12 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
   height: 2px;
 }
 #chapternav{ width: min-content;}
+// Keep the side TOC navbar within its .side-nav-col (155px). Without this cap,
+// `width: min-content` grows the nav to fit the longest un-truncated item, which
+// defeats the ellipsis truncation on .nav-chapter-name and lets long titles
+// (e.g. periodical article titles in Collection#show) overflow the column and
+// overlap the content card. Capping to 100% lets the existing ellipsis engage.
+.side-nav-col #chapternav { max-width: 100%; }
 #chapter-nav{
   max-height: 400px;
   max-height: clamp(0px, calc(100dvh - 200px), 400px);
