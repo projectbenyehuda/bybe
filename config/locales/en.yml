@@ -3,10 +3,10 @@ en:
   author_toc_filters:
     free_text_placeholder: Free text
     source_language: Source language
-    characteristics: Properties
+    extra_content: Extra content
     curatorial_content: Curatorial content
     reader_recommendations: Reader recommendations
-    no_properties: No properties
+    no_extra_content: No extra content
     edition: Edition
   edit_metadata: Edit metadata
   originating_task: Originating task

@@ -865,10 +865,10 @@ he:
   author_toc_filters:
     free_text_placeholder: טקסט חופשי
     source_language: שפת מקור
-    characteristics: מאפיינים
+    extra_content: תוכן נלווה
     curatorial_content: תוכן אוצרותי
     reader_recommendations: המלצות קוראים
-    no_properties: ללא מאפיינים
+    no_extra_content: ללא תוכן נלווה
     edition: הוצאה
   about_sort_and_filter: מה זה סינון?
   sort_and_filter_popover: סינון יצירות בדף לפי סוגה, שפת מקור, ועוד
