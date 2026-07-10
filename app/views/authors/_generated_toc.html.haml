@@ -332,6 +332,20 @@
         updateCounts(state, all);
       }
 
+      // After a filter interaction shrinks the flat list, the (few) remaining
+      // results can sit above the current scroll position, leaving the viewport
+      // apparently empty. Bring the top of the list back into view (mirrors the
+      // /works browse scroll-to-top). Only scrolls up, never down.
+      function scrollListIntoView() {
+        var list = document.getElementById('browse_mainlist');
+        if (!list) { return; }
+        var top = list.getBoundingClientRect().top + window.pageYOffset;
+        if (window.pageYOffset > top) { window.scrollTo(0, top); }
+      }
+
+      // apply() triggered by a user filter interaction: re-filter, then reveal results.
+      function applyFromUser() { apply(); scrollListIntoView(); }
+
       // ---- date histogram + range slider ----
       function positionSlider() {
         if (minYear == null || maxYear == null || maxYear === minYear) {
@@ -428,6 +442,7 @@
           if (isNaN(f)) { f = minYear; }
           if (isNaN(t)) { t = maxYear; }
           setRange(f, t);
+          scrollListIntoView();
         });
 
         $('.toc-date-type').on('click', function() {
@@ -435,22 +450,22 @@
           $(this).addClass('active');
           dateField = $(this).attr('data-datefield');
           refreshDateWidget();
-          apply();
+          applyFromUser();
         });
       }
 
       function bindInputs() {
         $('#toc-filter-name').on('input', function() {
           if (debounceTimer) { window.clearTimeout(debounceTimer); }
-          debounceTimer = window.setTimeout(apply, NAME_DEBOUNCE);
+          debounceTimer = window.setTimeout(applyFromUser, NAME_DEBOUNCE);
         });
         $('#toc-filter-name-clear').on('click', function(e) {
           e.preventDefault();
           $('#toc-filter-name').val('');
-          apply();
+          applyFromUser();
         });
-        $('#toc_filters_pane').on('change', 'input[type=checkbox]', apply);
-        $('#toc-filter-reset').on('click', function(e) { e.preventDefault(); reset(); });
+        $('#toc_filters_pane').on('change', 'input[type=checkbox]', applyFromUser);
+        $('#toc-filter-reset').on('click', function(e) { e.preventDefault(); reset(); scrollListIntoView(); });
       }
 
       function clearInputs() {

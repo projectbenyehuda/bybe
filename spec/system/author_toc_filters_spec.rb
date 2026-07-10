@@ -138,6 +138,32 @@ describe 'Author TOC flat-list filters', :js do
     end
   end
 
+  it 'scrolls the shrunk list back into view after filtering while scrolled down' do
+    # enough works to make the flat list taller than the viewport
+    Chewy.strategy(:atomic) do
+      create_list(:manifestation, 15, status: :published, author: author,
+                                      genre: 'poetry', orig_lang: 'he', language: 'he')
+    end
+
+    visit authority_path(author)
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 15)
+
+    # scroll to the bottom so the results sit above the viewport
+    page.execute_script('window.scrollTo(0, document.body.scrollHeight)')
+    expect(page.evaluate_script('window.pageYOffset')).to be > 0
+
+    # filter down to the single translated work; the list shrinks dramatically
+    check 'toc-filter-translated'
+    within('#sorted_card') { expect(page).to have_content('Beta Story') }
+
+    # the top of the list is now at or above the viewport top (no empty space)
+    list_top = page.evaluate_script(
+      "Math.round(document.getElementById('browse_mainlist').getBoundingClientRect().top + window.pageYOffset)"
+    )
+    expect(page.evaluate_script('Math.round(window.pageYOffset)')).to be <= list_top
+  end
+
   it 'clears all filters via the reset link' do
     visit authority_path(author)
     choose_sort('title')
