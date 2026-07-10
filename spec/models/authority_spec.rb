@@ -18,6 +18,11 @@ describe Authority do
       expect(a).to be_valid
     end
 
+    it 'strips leading/trailing whitespace from name on save' do
+      a = create(:authority, name: '  ביאליק  ', person: create(:person))
+      expect(a.reload.name).to eq('ביאליק')
+    end
+
     describe 'uncollected works collection type validation' do
       let(:authority) { build(:authority, uncollected_works_collection: uncollected_works_collection) }
 
