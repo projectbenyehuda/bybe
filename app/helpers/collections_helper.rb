@@ -87,6 +87,8 @@ module CollectionsHelper
       content_tag(:span, '📚', class: 'collection-type-icon', title: textify_collection_type(:volume))
     when 'periodical'
       content_tag(:span, '📰', class: 'collection-type-icon', title: textify_collection_type(:periodical))
+    when 'volume_series'
+      content_tag(:span, '📖', class: 'collection-type-icon', title: textify_collection_type(:volume_series))
     when 'series'
       content_tag(:span, '📑', class: 'collection-type-icon', title: textify_collection_type(:series))
     when 'other'
