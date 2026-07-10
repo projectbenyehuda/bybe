@@ -970,6 +970,12 @@ small p{
   line-height: 1.2;
 }
 
+.collection_toc ul {
+  list-style: none;
+  padding-right: 0;
+  padding-left: 0;
+}
+
 .collection_toc ul ul {
   padding-right: 20px;
   padding-left: 0;

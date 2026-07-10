@@ -1027,8 +1027,20 @@ expect(html).to include("by-icon-v02\" title=\"#{expected_genre_title}\">t</span
         doc = Nokogiri::HTML.fragment(html)
 
         section_li = doc.at_css('li')
-        expect(section_li.at_css("> a[href=\"/collections/#{section.id}\"]")).to be_present
         expect(section_li.at_css('ul')).to be_present
+      end
+
+      it 'renders a series sub-collection row as bold plain text rather than a link' do
+        html = volume.toc_html(url_builder: url_builder)
+        doc = Nokogiri::HTML.fragment(html)
+
+        section_li = doc.at_css('li')
+        # series groupings are not standalone pages, so the row itself must not be a link...
+        expect(section_li.at_css("> a[href=\"/collections/#{section.id}\"]")).to be_nil
+        # ...it is emphasised in bold instead...
+        expect(section_li.at_css('> strong').text).to include(section.title)
+        # ...but the nested manifestation below it remains linked
+        expect(section_li.at_css("ul a[href=\"/manifestations/#{manifestation.id}\"]")).to be_present
       end
 
       it 'renders the leaf manifestation as a clickable link within the nested list' do
