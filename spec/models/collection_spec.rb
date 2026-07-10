@@ -9,6 +9,11 @@ describe Collection do
     expect { build(:collection, collection_type: 'made_up') }.to raise_error(ArgumentError)
   end
 
+  it 'strips leading/trailing whitespace from a manually-set sort_title on save' do
+    collection = create(:collection, title: 'כותרת', sort_title: '  זבל  ')
+    expect(collection.reload.sort_title).to eq('זבל')
+  end
+
   it 'validates suppress_download_and_print field' do
     collection = build(:collection, suppress_download_and_print: true)
     expect(collection).to be_valid

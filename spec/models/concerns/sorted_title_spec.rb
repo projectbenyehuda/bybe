@@ -76,6 +76,47 @@ describe SortedTitle do
     end
   end
 
+  describe '.normalize_whitespace' do
+    it 'strips leading and trailing ASCII whitespace' do
+      expect(described_class.normalize_whitespace('  שלום  ')).to eq('שלום')
+    end
+
+    it 'strips leading and trailing non-breaking spaces' do
+      expect(described_class.normalize_whitespace("\u00A0\u05E9\u05DC\u05D5\u05DD\u00A0")).to eq('שלום')
+    end
+
+    it 'preserves internal whitespace' do
+      expect(described_class.normalize_whitespace(' שלום עולם ')).to eq('שלום עולם')
+    end
+
+    it 'returns nil unchanged' do
+      expect(described_class.normalize_whitespace(nil)).to be_nil
+    end
+  end
+
+  describe '.strip_whitespaces_from_sort_title!' do
+    let(:title) { 'unused' }
+
+    before do
+      model.sort_title = sort_title_value
+      model.strip_whitespaces_from_sort_title!
+    end
+
+    context 'when sort_title has leading and trailing whitespace' do
+      let(:sort_title_value) { '  זבל  ' }
+
+      it { expect(model.sort_title).to eq('זבל') }
+    end
+
+    context 'when sort_title is blank' do
+      let(:sort_title_value) { '   ' }
+
+      it 'leaves it untouched (blank is handled by regeneration path)' do
+        expect(model.sort_title).to eq('   ')
+      end
+    end
+  end
+
   describe 'before validation hook' do
     let(:title) { ' 1. Some Title  ' }
 
@@ -113,12 +154,12 @@ describe SortedTitle do
         model.sort_title = ' New Sort Title '
       end
 
-      it 'does not generates new sort_title value' do
+      it 'keeps the manually provided sort_title but strips its surrounding whitespace' do
         model.valid?
         expect(model).to have_received(:strip_whitespaces_from_title!).once
         expect(model).not_to have_received(:update_sort_title!)
         expect(model.title).to eq('New Value')
-        expect(model.sort_title).to eq(' New Sort Title ')
+        expect(model.sort_title).to eq('New Sort Title')
       end
     end
 

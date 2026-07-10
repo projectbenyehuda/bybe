@@ -11,7 +11,8 @@ class CollectionsIndex < Chewy::Index
                         .preload(involved_authorities: :authority)
   field :id, type: :integer
   field :title
-  field :sort_title, type: :keyword # for sorting
+  # for sorting; normalize whitespace so incidental leading/trailing spaces don't corrupt alphabetical order
+  field :sort_title, type: :keyword, value: ->(c) { SortedTitle.normalize_whitespace(c.sort_title) }
   field :alternate_titles
   field :subtitle
   field :collection_type, type: :keyword # for filtering
@@ -26,7 +27,8 @@ class CollectionsIndex < Chewy::Index
   # }
   field :tags, type: :integer, value: ->(c) { c.tags.pluck(:id) }
   field :first_letter, type: :keyword, value: lambda { |c|
-    c.sort_title.present? ? c.sort_title[0].downcase : 'א'
+    st = SortedTitle.normalize_whitespace(c.sort_title)
+    st.present? ? st[0].downcase : 'א'
   }
   field :items_count, type: :integer, value: ->(c) { c.collection_items.count }
   field :inception_year, type: :integer
