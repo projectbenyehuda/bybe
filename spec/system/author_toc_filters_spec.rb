@@ -6,17 +6,19 @@ require 'rails_helper'
 # away from the default swaps the navbar for a filters pane and filters the flat
 # manifestation list in-browser.
 describe 'Author TOC flat-list filters', :js do
-  let!(:author) { create(:authority, name: 'Filter Author') }
-  let!(:volume) { create(:collection, title: 'A Volume', collection_type: :volume) }
+  # Lazy `let` (not `let!`) so the WebDriver skip in the before hook can
+  # short-circuit without running the DB + Chewy setup when Chrome is unavailable.
+  let(:author) { create(:authority, name: 'Filter Author') }
+  let(:volume) { create(:collection, title: 'A Volume', collection_type: :volume) }
 
-  let!(:poem) do
+  let(:poem) do
     Chewy.strategy(:atomic) do
       create(:manifestation, title: 'Alpha Poem', status: :published, author: author,
                              genre: 'poetry', orig_lang: 'he', language: 'he',
                              publication_date: '2010-01-01')
     end
   end
-  let!(:story) do
+  let(:story) do
     Chewy.strategy(:atomic) do
       create(:manifestation, title: 'Beta Story', status: :published, author: author,
                              genre: 'prose', orig_lang: 'ru', language: 'he',

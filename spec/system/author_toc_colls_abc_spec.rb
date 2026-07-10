@@ -8,13 +8,15 @@ require 'rails_helper'
 # containing everything) and only reorder the collection cards by title.
 # Uncollected works keep their own trailing section (they must not jump to the top).
 describe 'Author TOC alphabetical Collections sort', :js do
-  let!(:author) { create(:authority, name: 'ABC Sort Author') }
+  # Lazy `let` (not `let!`) so the WebDriver skip in the before hook can
+  # short-circuit without doing any DB/Chewy work when Chrome is unavailable.
+  let(:author) { create(:authority, name: 'ABC Sort Author') }
 
   # Two work-level collections whose alphabetical order (Apple, Zebra) is the
   # reverse of their chronological order (Zebra is created first, so it has the
   # lower id and sorts first by sort_term = [normalized_pub_year || created_at.year, id]).
-  let!(:zebra) { create(:collection, title: 'Zebra Collection', collection_type: :volume) }
-  let!(:apple) { create(:collection, title: 'Apple Collection', collection_type: :volume) }
+  let(:zebra) { create(:collection, title: 'Zebra Collection', collection_type: :volume) }
+  let(:apple) { create(:collection, title: 'Apple Collection', collection_type: :volume) }
 
   let(:apple_sel) { "#browse_mainlist .cwrapper[data-collection-id='#{apple.id}']" }
   let(:zebra_sel) { "#browse_mainlist .cwrapper[data-collection-id='#{zebra.id}']" }
