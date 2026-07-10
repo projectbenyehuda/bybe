@@ -70,110 +70,135 @@
         }
       });
     }
+    // Alphabetical Collections sort ('colls_abc'): keep the chronological
+    // one-card-per-collection layout and only reorder the top-level collection
+    // cards within each section list (ul.toclist[role=tree]) by title.
+    // Each collection is emitted as a trio [empty wrapper <li>, card <li>, <br>];
+    // the trio is moved together so per-card spacing/margins are preserved.
+    // Uncollected works have an empty .ctitle_only and always sort to the end
+    // (in practice they sit alone in their own trailing section).
+    function sortCollectionsAbc() {
+      $('#browse_mainlist ul.toclist[role="tree"]').each(function() {
+        var $list = $(this);
+        var $cards = $list.children('li.by-card-v02');
+        if($cards.length < 2) { return; }
+        var units = $cards.map(function() {
+          var $card = $(this);
+          var $unit = $card;
+          var $prev = $card.prev();
+          if($prev.is('li') && !$prev.hasClass('by-card-v02')) { $unit = $prev.add($unit); }
+          var $next = $card.next();
+          if($next.is('br')) { $unit = $unit.add($next); }
+          return { key: $card.find('.ctitle_only').first().text().trim(), nodes: $unit };
+        }).get();
+        units.sort(function(a, b) {
+          if(!a.key && !b.key) { return 0; }
+          if(!a.key) { return 1; }  // uncollected / untitled last
+          if(!b.key) { return -1; }
+          return a.key.localeCompare(b.key);
+        });
+        units.forEach(function(u) { $list.append(u.nodes); });
+      });
+    }
     $('#sort_by').change(function(){
       var flat = isFlatSort(this.value);
+      // The flat sorts render a single #sorted_card; its presence tells us the
+      // PREVIOUS sort was also a flat one, so we can preserve the active pane
+      // filters across a flat->flat re-sort instead of resetting them.
+      var wasFlat = $('#sorted_card').length > 0;
       if(this.value == 'colls') {
         $('#browse_mainlist').html(orig_mainlist);
-        // Reapply genre filters after restoring original sort
-        if(typeof window.applyGenreFilters === 'function') {
-          window.applyGenreFilters();
-        }
+      } else if(this.value == 'colls_abc') {
+        // Alphabetical Collections sort: restore the chronological
+        // one-card-per-collection layout (role + section headers), then reorder
+        // the collection cards within each section list by title. Uncollected
+        // works keep their own trailing section (sorted last).
+        $('#browse_mainlist').html(orig_mainlist);
+        sortCollectionsAbc();
       } else {
         $('.sorting_caveat').hide();
         $('.metadata-creation-date').hide();
         $('.metadata-pubdate').hide();
         $('.metadata-upload-date').hide();
-        if (this.value == 'colls_abc') {
-          $('#browse_mainlist').html(orig_mainlist);
-          nodes_to_sort = $('.cwrapper').filter(function() {
-            return $(this).parents('.cwrapper').length === 0;
-          });
+        $('.metadata-source-edition').hide();
+        // de-dup: in the flat list a work appears once, without its role/collection context
+        nodes_to_sort = dedupByMid($('.manifestation-node'));
+        var sortval;
+        var sort_asc = true;
+        switch(this.value) {
+          case 'title':
+            sortval = 'data-title';
+            break;
+          case 'popularity_desc':
+            sort_asc = false;
+          case 'popularity_asc':
+            sortval = 'data-impressions';
+            break;
+          case 'pubdate_desc':
+            sort_asc = false;
+          case 'pubdate_asc':
+            sortval = 'data-pubdate';
+            $('.sorting_caveat').show();
+            $('.metadata-pubdate').show();
+            break;
+          case 'creation_date_desc':
+            sort_asc = false;
+          case 'creation_date_asc':
+            sortval = 'data-creation-date';
+            $('.sorting_caveat').show();
+            $('.metadata-creation-date').show();
+            break;
+          case 'upload_date_desc':
+            sort_asc = false;
+          case 'upload_date_asc':
+            sortval = 'data-upload-date';
+            $('.metadata-upload-date').show();
+            break;
+        }
+        if(sort_asc) {
           nodes_to_sort.sort(function(a, b) {
-            x = $(a).find('.ctitle_only').first().text();
-            y = $(b).find('.ctitle_only').first().text();
-            return x.localeCompare(y);
+            x = $(a).find('.sorting-metadata').attr(sortval);
+            y = $(b).find('.sorting-metadata').attr(sortval);
+            if(sortval == 'data-impressions') {
+              x = parseInt(x);
+              y = parseInt(y);
+            }
+            if (x == null) {
+              x = '';
+            }
+            if (y == null) {
+              y = '';
+            }
+            if(x > y) {
+              return 1;
+            } else if(x < y) {
+              return -1;
+            } else {
+              return 0;
+            }
           });
         } else {
-          $('.metadata-source-edition').hide();
-          // de-dup: in the flat list a work appears once, without its role/collection context
-          nodes_to_sort = dedupByMid($('.manifestation-node'));
-          var sortval;
-          var sort_asc = true;
-          switch(this.value) {
-            case 'title':
-              sortval = 'data-title';
-              break;
-            case 'popularity_desc':
-              sort_asc = false;
-            case 'popularity_asc':
-              sortval = 'data-impressions';
-              break;
-            case 'pubdate_desc':
-              sort_asc = false;
-            case 'pubdate_asc':
-              sortval = 'data-pubdate';
-              $('.sorting_caveat').show();
-              $('.metadata-pubdate').show();
-              break;
-            case 'creation_date_desc':
-              sort_asc = false;
-            case 'creation_date_asc':
-              sortval = 'data-creation-date';
-              $('.sorting_caveat').show();
-              $('.metadata-creation-date').show();
-              break;
-            case 'upload_date_desc':
-              sort_asc = false;
-            case 'upload_date_asc':
-              sortval = 'data-upload-date';
-              $('.metadata-upload-date').show();
-              break;
-          }
-          if(sort_asc) {
-            nodes_to_sort.sort(function(a, b) {
-              x = $(a).find('.sorting-metadata').attr(sortval);
-              y = $(b).find('.sorting-metadata').attr(sortval);
-              if(sortval == 'data-impressions') {
-                x = parseInt(x);
-                y = parseInt(y);
-              }
-              if (x == null) {
-                x = '';
-              }
-              if (y == null) {
-                y = '';
-              }
-              if(x > y) {
-                return 1;
-              } else if(x < y) {
-                return -1;
-              } else {
-                return 0;
-              }
-            });
-          } else {
-            nodes_to_sort.sort(function(a, b) {
-              x = $(a).find('.sorting-metadata').attr(sortval);
-              y = $(b).find('.sorting-metadata').attr(sortval);
-              if(sortval == 'data-impressions') {
-                x = parseInt(x);
-                y = parseInt(y);
-              }
-              if (x == null) {
-                x = '';
-              }
-              if (y == null) {
-                y = '';
-              }
-              if(x < y) {
-                return 1;
-              } else if(x > y) {
-                return -1;
-              } else {
-                return 0;
-              }
-            });
-          }
+          nodes_to_sort.sort(function(a, b) {
+            x = $(a).find('.sorting-metadata').attr(sortval);
+            y = $(b).find('.sorting-metadata').attr(sortval);
+            if(sortval == 'data-impressions') {
+              x = parseInt(x);
+              y = parseInt(y);
+            }
+            if (x == null) {
+              x = '';
+            }
+            if (y == null) {
+              y = '';
+            }
+            if(x < y) {
+              return 1;
+            } else if(x > y) {
+              return -1;
+            } else {
+              return 0;
+            }
+          });
         }
         $('#browse_mainlist').html('<div class="by-card-v02"><div class="by-card-content-v02" id="sorted_card"></div></div>');
         $('#sorted_card').html(nodes_to_sort.detach());
@@ -182,13 +207,19 @@
       // restore the navbar and clear filters for the grouped views (colls/colls_abc).
       showFilterPane(flat);
       if(flat && window.TocFilters) {
-        window.TocFilters.activate();
+        // Re-sorting within flat mode keeps the currently active filters (genre,
+        // name, language, character, date range) and just reapplies them to the
+        // freshly sorted nodes; only a fresh entry into flat mode (from a grouped
+        // view) recomputes the date range and clears the filters.
+        if(wasFlat) {
+          window.TocFilters.reapply();
+        } else {
+          window.TocFilters.activate();
+        }
       } else if(window.TocFilters) {
+        // Grouped views (colls / colls_abc) always show every genre; clear any
+        // active pane filters (which also re-syncs the genre chips via apply()).
         window.TocFilters.reset();
-      }
-      // Reapply genre filters after sorting
-      if(typeof window.applyGenreFilters === 'function') {
-        window.applyGenreFilters();
       }
     });
     prune_collections();
@@ -331,6 +362,8 @@
           $(this).toggle(matches(d, state, null));
         });
         updateCounts(state, all);
+        // Keep the author-card genre chips in sync with the pane's genre facet.
+        if (window.syncGenreChips) { window.syncGenreChips(); }
       }
 
       // After a filter interaction shrinks the flat list, the (few) remaining
@@ -488,9 +521,17 @@
         apply();
       }
 
+      // Reapply the CURRENT filter state (including the date range) to a freshly
+      // re-sorted node set, without recomputing/resetting the date widget. Used
+      // when re-sorting while already in flat mode, to preserve active filters.
+      function reapply() {
+        apply();
+      }
+
       return {
         init: function() { bindInputs(); bindSlider(); },
         activate: activate,
+        reapply: reapply,
         reset: reset
       };
     })();
