@@ -711,7 +711,11 @@ describe CollectionsController do
     let(:volume_1) { create(:collection, title: 'Alpha Volume', collection_type: :volume, sort_title: 'alpha volume') }
     let(:volume_2) { create(:collection, title: 'Beta Volume', collection_type: :volume, sort_title: 'beta volume') }
     let(:periodical) { create(:collection, title: 'Gamma Periodical', collection_type: :periodical, sort_title: 'gamma periodical') }
-    let(:series) { create(:collection, title: 'Delta Series', collection_type: :series, sort_title: 'delta series') }
+    let(:volume_series) do
+      create(:collection, title: 'Delta Volume Series', collection_type: :volume_series, sort_title: 'delta series')
+    end
+    # A non-browsable type: it is indexed but must never appear in the /collections browse listing.
+    let(:series) { create(:collection, title: 'Omega Series', collection_type: :series, sort_title: 'omega series') }
 
     before do
       Chewy.massacre
@@ -719,6 +723,7 @@ describe CollectionsController do
         volume_1
         volume_2
         periodical
+        volume_series
         series
       end
     end
@@ -732,7 +737,9 @@ describe CollectionsController do
         get :browse
         expect(response).to be_successful
         expect(response).to render_template(:browse)
+        # Four browsable collections are indexed; the `series` collection is excluded from the browse listing.
         expect(assigns(:collections).count).to eq(4)
+        expect(assigns(:collections).map(&:id)).not_to include(series.id)
         expect(assigns(:collections_list_title)).to be_present
       end
     end
@@ -767,9 +774,9 @@ describe CollectionsController do
       end
 
       it 'filters by multiple collection types' do
-        get :browse, params: { ckb_collection_types: ['volume', 'series'] }
+        get :browse, params: { ckb_collection_types: %w(volume volume_series) }
         expect(response).to be_successful
-        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id, series.id)
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id, volume_series.id)
       end
     end
 
@@ -777,20 +784,20 @@ describe CollectionsController do
       it 'sorts alphabetically by default' do
         get :browse
         expect(assigns(:sort_by)).to eq('alphabetical')
-        expect(assigns(:collections).map(&:id)).to eq([volume_1.id, volume_2.id, series.id, periodical.id])
+        expect(assigns(:collections).map(&:id)).to eq([volume_1.id, volume_2.id, volume_series.id, periodical.id])
       end
 
       it 'sorts by popularity when requested' do
         Chewy.strategy(:atomic) do
           volume_1.update!(impressions_count: 100)
-          series.update!(impressions_count: 50)
+          volume_series.update!(impressions_count: 50)
           periodical.update!(impressions_count: 75)
           volume_2.update!(impressions_count: 25)
         end
 
         get :browse, params: { sort_by: 'popularity_desc' }
         expect(assigns(:sort_by)).to eq('popularity')
-        expect(assigns(:collections).map(&:id)).to eq([volume_1.id, periodical.id, series.id, volume_2.id])
+        expect(assigns(:collections).map(&:id)).to eq([volume_1.id, periodical.id, volume_series.id, volume_2.id])
       end
 
       it 'sorts by publication date when requested' do
@@ -798,12 +805,12 @@ describe CollectionsController do
           volume_1.update!(normalized_pub_year: 2000)
           volume_2.update!(normalized_pub_year: 1990)
           periodical.update!(normalized_pub_year: 1980)
-          series.update!(normalized_pub_year: 2010)
+          volume_series.update!(normalized_pub_year: 2010)
         end
 
         get :browse, params: { sort_by: 'publication_date_asc' }
         expect(assigns(:sort_by)).to eq('publication_date')
-        expect(assigns(:collections).map(&:id)).to eq([periodical.id, volume_2.id, volume_1.id, series.id])
+        expect(assigns(:collections).map(&:id)).to eq([periodical.id, volume_2.id, volume_1.id, volume_series.id])
       end
     end
 

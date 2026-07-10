@@ -8,10 +8,17 @@ RSpec.describe 'Collections Browse', type: :request do
   end
 
   let!(:volume) { create(:collection, title: 'Test Volume', collection_type: :volume, sort_title: 'test volume') }
+  let!(:periodical) do
+    create(:collection, title: 'Test Periodical', collection_type: :periodical, sort_title: 'test periodical')
+  end
+  let!(:volume_series) do
+    create(:collection, title: 'Test Volume Series', collection_type: :volume_series, sort_title: 'test volume series')
+  end
   let!(:series) { create(:collection, title: 'Test Series', collection_type: :series, sort_title: 'test series') }
+  let!(:other) { create(:collection, title: 'Test Other', collection_type: :other, sort_title: 'test other') }
 
   before do
-    CollectionsIndex.import([volume, series])
+    CollectionsIndex.import([volume, periodical, volume_series, series, other])
   end
 
   describe 'GET /collections' do
@@ -35,10 +42,17 @@ RSpec.describe 'Collections Browse', type: :request do
         expect(response.body).to include('submit_filters') # JavaScript from browse.html.haml
       end
 
-      it 'displays collection results' do
+      it 'displays browsable collection types (volume, periodical, volume_series)' do
         get collections_browse_path
         expect(response.body).to include('Test Volume')
-        expect(response.body).to include('Test Series')
+        expect(response.body).to include('Test Periodical')
+        expect(response.body).to include('Test Volume Series')
+      end
+
+      it 'hides non-browsable collection types (series, other)' do
+        get collections_browse_path
+        expect(response.body).not_to include('Test Series')
+        expect(response.body).not_to include('Test Other')
       end
 
       it 'includes filter form elements' do
@@ -83,6 +97,12 @@ RSpec.describe 'Collections Browse', type: :request do
         get collections_browse_path, params: { ckb_collection_types: ['volume'] }
         expect(response).to have_http_status(:success)
         expect(response.body).to include('Test Volume')
+      end
+
+      it 'never surfaces a non-browsable type even when explicitly requested via a stale checkbox param' do
+        get collections_browse_path, params: { ckb_collection_types: ['series'] }
+        expect(response).to have_http_status(:success)
+        expect(response.body).not_to include('Test Series')
       end
 
       it 'searches by title' do
