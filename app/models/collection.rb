@@ -192,7 +192,9 @@ class Collection < ApplicationRecord
       label = ERB::Util.html_escape(coll_item.title_and_authors)
       return nil if label.blank?
 
-      if url_builder
+      # series sub-collections are groupings (not standalone browsable pages), so render their
+      # row as plain text rather than a link; their nested items below remain linked as usual
+      if url_builder && !coll_item.item.series?
         url = ERB::Util.html_escape(url_builder.call(coll_item.item))
         label = "<a href=\"#{url}\">#{label}</a>"
       end
