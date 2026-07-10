@@ -93,7 +93,7 @@ class MakeFreshDownloadable < ApplicationService
 
         formatted_text = kwic_text.gsub("\n", "\r\n") # windows linebreaks
         begin
-          temp_file = Tempfile.new('tmp_kwic_' + download_entity.id.to_s, 'tmp/')
+          temp_file = Tempfile.new('tmp_kwic_' + download_entity.id.to_s)
           temp_file.puts(formatted_text)
           temp_file.rewind
           temp_file.chmod(0o644) # Set file permissions after writing and rewinding
