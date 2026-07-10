@@ -50,9 +50,9 @@ RSpec.describe 'Periodical Collection#show TOC display', :js, type: :system do
 
     expect(page).to have_css('.collection_toc', wait: 10)
 
-    # The series grouping title appears, but not as a link...
+    # The series grouping title appears in bold, but not as a link...
     within('.collection_toc') do
-      expect(page).to have_text('A poem cycle')
+      expect(page).to have_css('strong', text: 'A poem cycle')
       expect(page).not_to have_link('A poem cycle')
       # ...while the nested manifestations remain clickable.
       expect(page).to have_link(text: /First poem in series/)

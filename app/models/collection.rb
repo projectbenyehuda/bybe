@@ -193,10 +193,12 @@ class Collection < ApplicationRecord
       return nil if label.blank?
 
       # series sub-collections are groupings (not standalone browsable pages), so render their
-      # row as plain text rather than a link; their nested items below remain linked as usual
+      # row as bold plain text rather than a link; their nested items below remain linked as usual
       if url_builder && !coll_item.item.series?
         url = ERB::Util.html_escape(url_builder.call(coll_item.item))
         label = "<a href=\"#{url}\">#{label}</a>"
+      else
+        label = "<strong>#{label}</strong>"
       end
       "<li>#{label}#{coll_item.item.toc_html_list(url_builder)}</li>"
     else
