@@ -30,6 +30,16 @@ describe ManifestationController do
       it { is_expected.to be_successful }
     end
 
+    # Regression: when filters/search are applied via AJAX and the (few) results
+    # render above the current scroll position, the page looked empty. The AJAX
+    # JS response must instruct the browser to scroll back to the top.
+    context 'when responding to an AJAX (JS) request' do
+      it 'instructs the page to scroll back to the top' do
+        get :browse, params: browse_params, format: :js, xhr: true
+        expect(response.body).to include('window.scrollTo(0, 0)')
+      end
+    end
+
     describe 'passing params to SearchManifestation service' do
       let(:browse_params) do
         {
