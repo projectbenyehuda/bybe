@@ -241,6 +241,7 @@
           featured: $m.attr('data-featured') === '1',
           recommended: $m.attr('data-recommended') === '1',
           aboutness: $m.attr('data-aboutness') === '1',
+          tagging: $m.attr('data-tagging') === '1',
           'pubyear': parseInt($m.attr('data-pubyear'), 10),
           'creation-year': parseInt($m.attr('data-creation-year'), 10),
           'upload-year': parseInt($m.attr('data-upload-year'), 10)
@@ -260,7 +261,7 @@
         };
       }
 
-      function hasProps(d) { return d.featured || d.recommended || d.aboutness; }
+      function hasProps(d) { return d.featured || d.recommended || d.aboutness || d.tagging; }
 
       // Does a node match every active filter section, optionally excluding one section.
       function matches(d, s, exclude) {
