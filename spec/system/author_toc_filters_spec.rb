@@ -6,10 +6,6 @@ require 'rails_helper'
 # away from the default swaps the navbar for a filters pane and filters the flat
 # manifestation list in-browser.
 describe 'Author TOC flat-list filters', :js do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
   let!(:author) { create(:authority, name: 'Filter Author') }
   let!(:volume) { create(:collection, title: 'A Volume', collection_type: :volume) }
 
@@ -29,6 +25,8 @@ describe 'Author TOC flat-list filters', :js do
   end
 
   before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+
     create(:collection_item, collection: volume, item: poem)
     create(:collection_item, collection: volume, item: story)
     create(:involved_authority, authority: author, item: volume, role: 'editor')
@@ -91,6 +89,54 @@ describe 'Author TOC flat-list filters', :js do
       expect(page).to have_content('Alpha Poem')
       expect(page).to have_no_content('Beta Story')
     end
+  end
+
+  it 'uses the author-card genre chips as shortcuts into the filters pane' do
+    visit authority_path(author)
+    expect(page).to have_css('#browse_mainlist')
+
+    # In the default grouped view the pane is hidden and nothing is checked.
+    expect(page).to have_css('#toc_filters_pane', visible: :hidden)
+    expect(page).to have_no_css('.toc-filter-genre:checked')
+
+    # Clicking a genre chip switches into filter mode and checks that genre.
+    find('.genre-toggle[data-genre="poetry"]').click
+    expect(page).to have_css('#toc_filters_pane', visible: :visible)
+    expect(page).to have_css('#toc-filter-genre-poetry:checked', visible: :all)
+    expect(find('#sort_by').value).to eq('title')
+    within '#sorted_card' do
+      expect(page).to have_content('Alpha Poem')
+      expect(page).to have_no_content('Beta Story')
+    end
+
+    # Clicking the same chip again unchecks the genre (toggle) and shows all.
+    find('.genre-toggle[data-genre="poetry"]').click
+    expect(page).to have_no_css('.toc-filter-genre:checked')
+    within '#sorted_card' do
+      expect(page).to have_content('Alpha Poem')
+      expect(page).to have_content('Beta Story')
+    end
+  end
+
+  it 'preserves active filters when switching between flat-list sort orders' do
+    visit authority_path(author)
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
+
+    # Filter down to the single poetry work.
+    check 'toc-filter-genre-poetry'
+    within '#sorted_card' do
+      expect(page).to have_content('Alpha Poem')
+      expect(page).to have_no_content('Beta Story')
+    end
+
+    # Changing to another flat sort must NOT undo the filter.
+    choose_sort('popularity_desc')
+    within '#sorted_card' do
+      expect(page).to have_content('Alpha Poem')
+      expect(page).to have_no_content('Beta Story')
+    end
+    expect(page).to have_css('.toc-filter-genre:checked')
   end
 
   it 'filters by genre and updates the faceted counts' do

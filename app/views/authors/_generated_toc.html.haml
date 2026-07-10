@@ -102,12 +102,12 @@
     }
     $('#sort_by').change(function(){
       var flat = isFlatSort(this.value);
+      // The flat sorts render a single #sorted_card; its presence tells us the
+      // PREVIOUS sort was also a flat one, so we can preserve the active pane
+      // filters across a flat->flat re-sort instead of resetting them.
+      var wasFlat = $('#sorted_card').length > 0;
       if(this.value == 'colls') {
         $('#browse_mainlist').html(orig_mainlist);
-        // Reapply genre filters after restoring original sort
-        if(typeof window.applyGenreFilters === 'function') {
-          window.applyGenreFilters();
-        }
       } else if(this.value == 'colls_abc') {
         // Alphabetical Collections sort: restore the chronological
         // one-card-per-collection layout (role + section headers), then reorder
@@ -115,10 +115,6 @@
         // works keep their own trailing section (sorted last).
         $('#browse_mainlist').html(orig_mainlist);
         sortCollectionsAbc();
-        // Reapply genre filters after reordering the collection cards
-        if(typeof window.applyGenreFilters === 'function') {
-          window.applyGenreFilters();
-        }
       } else {
         $('.sorting_caveat').hide();
         $('.metadata-creation-date').hide();
@@ -211,13 +207,19 @@
       // restore the navbar and clear filters for the grouped views (colls/colls_abc).
       showFilterPane(flat);
       if(flat && window.TocFilters) {
-        window.TocFilters.activate();
+        // Re-sorting within flat mode keeps the currently active filters (genre,
+        // name, language, character, date range) and just reapplies them to the
+        // freshly sorted nodes; only a fresh entry into flat mode (from a grouped
+        // view) recomputes the date range and clears the filters.
+        if(wasFlat) {
+          window.TocFilters.reapply();
+        } else {
+          window.TocFilters.activate();
+        }
       } else if(window.TocFilters) {
+        // Grouped views (colls / colls_abc) always show every genre; clear any
+        // active pane filters (which also re-syncs the genre chips via apply()).
         window.TocFilters.reset();
-      }
-      // Reapply genre filters after sorting
-      if(typeof window.applyGenreFilters === 'function') {
-        window.applyGenreFilters();
       }
     });
     prune_collections();
@@ -360,6 +362,8 @@
           $(this).toggle(matches(d, state, null));
         });
         updateCounts(state, all);
+        // Keep the author-card genre chips in sync with the pane's genre facet.
+        if (window.syncGenreChips) { window.syncGenreChips(); }
       }
 
       // After a filter interaction shrinks the flat list, the (few) remaining
@@ -517,9 +521,17 @@
         apply();
       }
 
+      // Reapply the CURRENT filter state (including the date range) to a freshly
+      // re-sorted node set, without recomputing/resetting the date widget. Used
+      // when re-sorting while already in flat mode, to preserve active filters.
+      function reapply() {
+        apply();
+      }
+
       return {
         init: function() { bindInputs(); bindSlider(); },
         activate: activate,
+        reapply: reapply,
         reset: reset
       };
     })();
