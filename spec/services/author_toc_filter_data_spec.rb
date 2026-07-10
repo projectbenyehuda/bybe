@@ -63,6 +63,18 @@ RSpec.describe AuthorTocFilterData do
     expect(data[:tagging_ids]).to contain_exactly(prose_ru.id)
   end
 
+  it 'counts a Tagging on a nested sub-collection the author is not directly involved in' do
+    # author is involved only in the outer collection; the tagging is on the inner
+    # sub-collection, which appears on the author's page only via nesting.
+    inner = create(:collection, manifestations: [prose_ru])
+    create(:collection, authors: [author], included_collections: [inner])
+    create(:tagging, taggable: inner, status: :approved)
+
+    data = described_class.call(author)
+
+    expect(data[:tagging_ids]).to contain_exactly(prose_ru.id)
+  end
+
   it 'ignores a pending Tagging on a collection' do
     collection = create(:collection, authors: [author], manifestations: [prose_ru])
     create(:tagging, taggable: collection, status: :pending)

@@ -51,19 +51,41 @@ class AuthorTocFilterData < ApplicationService
     direct.merge(collection_tagged_manifestation_ids(ids, authority))
   end
 
-  # Manifestation ids reachable from an approved-tagged collection, cascading
-  # through nested sub-collections (flatten_items), restricted to the author's
-  # own manifestations (ids).
+  # Manifestation ids reachable from an approved-tagged collection, restricted to
+  # the author's own manifestations (ids). A collection counts as "on the author's
+  # page" if the author is directly involved in it OR it is nested (any depth)
+  # under such a collection; a tagging on either cascades to the manifestations it
+  # contains (also any depth).
   def collection_tagged_manifestation_ids(ids, authority)
+    page_collection_ids = page_collection_ids(authority)
+    return Set.new if page_collection_ids.empty?
+
     tagged_collection_ids = Tagging.approved
-                                   .where(taggable_type: 'Collection', taggable_id: authority.collections.select(:id))
+                                   .where(taggable_type: 'Collection', taggable_id: page_collection_ids)
                                    .distinct.pluck(:taggable_id)
     return Set.new if tagged_collection_ids.empty?
 
-    reachable = Collection.where(id: tagged_collection_ids).flat_map do |collection|
-      collection.flatten_items.filter_map { |ci| ci.item_id if ci.item_type == 'Manifestation' }
+    id_set = ids.to_set
+    Collection.where(id: tagged_collection_ids).each_with_object(Set.new) do |collection, acc|
+      collection.flatten_items.each do |ci|
+        acc << ci.item_id if ci.item_type == 'Manifestation' && id_set.include?(ci.item_id)
+      end
     end
-    reachable.to_set & ids.to_set
+  end
+
+  # Ids of every collection appearing on the author's page: those the author is
+  # directly involved in, plus all sub-collections nested under them (any depth).
+  def page_collection_ids(authority)
+    roots = authority.collections.pluck(:id)
+    return roots if roots.empty?
+
+    ids = roots.to_set
+    Collection.where(id: roots).find_each do |collection|
+      collection.flatten_items.each do |ci|
+        ids << ci.item_id if ci.item_type == 'Collection'
+      end
+    end
+    ids.to_a
   end
 
   # genres present, ordered by the canonical genre presentation order
