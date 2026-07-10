@@ -515,11 +515,17 @@ class CollectionsController < ApplicationController
     ret = {}
     @filters = []
 
-    # collection types
-    @collection_types = params['ckb_collection_types'] unless @collection_types.present?
+    # collection types -- the browse view only ever surfaces the "browsable" types (see
+    # Collection::BROWSABLE_COLLECTION_TYPES); series/other/uncollected are never shown here. Drop any
+    # disallowed values from the user's selection up front so the ES filter, the active-filter chips, and the
+    # checkbox state all agree; when nothing browsable remains we default to the whole allowed set.
+    @collection_types = params['ckb_collection_types'] if @collection_types.blank?
+    @collection_types &= Collection::BROWSABLE_COLLECTION_TYPES if @collection_types.present?
     if @collection_types.present?
       ret['collection_types'] = @collection_types
       @filters += @collection_types.map { |x| [textify_collection_type(x), "collection_type_#{x}", :checkbox] }
+    else
+      ret['collection_types'] = Collection::BROWSABLE_COLLECTION_TYPES
     end
 
     # tags by tag_id

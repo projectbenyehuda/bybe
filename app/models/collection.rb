@@ -67,6 +67,12 @@ class Collection < ApplicationRecord
   }
   enum :toc_strategy, { default: 0, custom_markdown: 1 } # placeholder for future custom ToC-generation strategies
 
+  # Collection types surfaced in the public /collections browse listing. `series` and `other` are deliberately
+  # excluded (they are not meaningful as standalone browsable collections), as are `uncollected` collections.
+  # `periodical_issue` is listed for completeness, but note it is also excluded from CollectionsIndex, so it never
+  # actually appears in the browse list (issues are shown nested under their parent periodical).
+  BROWSABLE_COLLECTION_TYPES = %w(volume periodical periodical_issue volume_series).freeze
+
   # scope :published, -> { where(status: Collection.statuses[:published]) }
   scope :by_type, ->(thetype) { where(collection_type: thetype) }
   scope :by_tag, ->(tag_id) { joins(:taggings).where(taggings: { tag_id: tag_id }) }
