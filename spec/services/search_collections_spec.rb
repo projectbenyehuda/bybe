@@ -246,6 +246,26 @@ describe SearchCollections do
           expect(result_ids).to eq [coll_c.id, coll_b.id, coll_a.id]
         end
       end
+
+      context 'when a legacy record has leading whitespace in sort_title' do
+        let(:sort_dir) { 'asc' }
+        let(:coll_alef) { create(:collection, title: 'אלף', sort_title: 'אלף') }
+        let(:coll_tav) { create(:collection, title: 'תיו', sort_title: 'תיו') }
+
+        before do
+          # Simulate legacy data written straight to the DB (bypassing SortedTitle normalization):
+          # a leading space would otherwise sort this record before every letter, corrupting the order.
+          coll_tav.update_column(:sort_title, ' תיו')
+          Chewy.strategy(:atomic) do
+            CollectionsIndex.import([coll_alef, coll_tav])
+          end
+        end
+
+        it 'sorts by the whitespace-trimmed sort_title, not the leading space' do
+          result_ids = described_class.call(sorting, sort_dir, {}).map(&:id)
+          expect(result_ids.index(coll_alef.id)).to be < result_ids.index(coll_tav.id)
+        end
+      end
     end
 
     describe 'popularity' do

@@ -14,7 +14,8 @@ class ManifestationsIndex < Chewy::Index
   field :title
   field :primary, type: 'boolean', value: ->(manifestation) { manifestation.expression.work.primary }
   field :alternate_titles
-  field :sort_title, type: 'keyword' # for sorting
+  # for sorting; normalize whitespace so incidental leading/trailing spaces don't corrupt alphabetical order
+  field :sort_title, type: 'keyword', value: ->(m) { SortedTitle.normalize_whitespace(m.sort_title) }
   field :first_letter, value: ->(manifestation) { manifestation.first_hebrew_letter }
   field :fulltext, value: ->(manifestation) { manifestation.to_plaintext }
   field :genre, value: ->(manifestation) { manifestation.expression.work.genre }, type: 'keyword'
