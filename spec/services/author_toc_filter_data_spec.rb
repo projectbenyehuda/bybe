@@ -35,10 +35,60 @@ RSpec.describe AuthorTocFilterData do
     expect(data[:aboutness_ids]).to contain_exactly(poem_he.id)
   end
 
+  it 'collects manifestation ids bearing an approved direct Tagging' do
+    create(:tagging, taggable: poem_he, status: :approved)
+    create(:tagging, taggable: prose_ru, status: :pending) # excluded: not approved
+
+    data = described_class.call(author)
+
+    expect(data[:tagging_ids]).to contain_exactly(poem_he.id)
+  end
+
+  it 'counts an approved Tagging on a collection towards its member manifestations' do
+    collection = create(:collection, authors: [author], manifestations: [prose_ru])
+    create(:tagging, taggable: collection, status: :approved)
+
+    data = described_class.call(author)
+
+    expect(data[:tagging_ids]).to contain_exactly(prose_ru.id)
+  end
+
+  it 'cascades an approved collection Tagging into nested sub-collections' do
+    inner = create(:collection, manifestations: [prose_ru])
+    outer = create(:collection, authors: [author], included_collections: [inner])
+    create(:tagging, taggable: outer, status: :approved)
+
+    data = described_class.call(author)
+
+    expect(data[:tagging_ids]).to contain_exactly(prose_ru.id)
+  end
+
+  it 'counts a Tagging on a nested sub-collection the author is not directly involved in' do
+    # author is involved only in the outer collection; the tagging is on the inner
+    # sub-collection, which appears on the author's page only via nesting.
+    inner = create(:collection, manifestations: [prose_ru])
+    create(:collection, authors: [author], included_collections: [inner])
+    create(:tagging, taggable: inner, status: :approved)
+
+    data = described_class.call(author)
+
+    expect(data[:tagging_ids]).to contain_exactly(prose_ru.id)
+  end
+
+  it 'ignores a pending Tagging on a collection' do
+    collection = create(:collection, authors: [author], manifestations: [prose_ru])
+    create(:tagging, taggable: collection, status: :pending)
+
+    data = described_class.call(author)
+
+    expect(data[:tagging_ids]).to be_empty
+  end
+
   it 'returns empty sets when the author has no curatorial content' do
     data = described_class.call(author)
     expect(data[:featured_ids]).to be_empty
     expect(data[:recommended_ids]).to be_empty
     expect(data[:aboutness_ids]).to be_empty
+    expect(data[:tagging_ids]).to be_empty
   end
 end
