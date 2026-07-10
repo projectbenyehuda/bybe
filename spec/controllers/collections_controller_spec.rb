@@ -743,6 +743,14 @@ describe CollectionsController do
         expect(response).to be_successful
         expect(response.content_type).to include('text/javascript')
       end
+
+      # Regression: when filters/search shrink the list, the (few) results can render
+      # above the current scroll position, leaving the viewport empty. The AJAX JS
+      # response must instruct the browser to scroll back to the top.
+      it 'instructs the page to scroll back to the top' do
+        get :browse, format: :js, xhr: true
+        expect(response.body).to include('window.scrollTo(0, 0)')
+      end
     end
 
     context 'with filters' do
