@@ -33,7 +33,7 @@ class TaggingsController < ApplicationController
       end
       if tag.nil? # user submitted a nonexistent tag name
         tag = Tag.create!(name: params[:tag], creator: current_user, status: :pending)
-        TagSimilarityJob.perform_async(tag.id) # schedule a job to find similar tags
+        TagSimilarityJob.perform_later(tag.id) # schedule a job to find similar tags
       end
       # TODO: handle case where tag exists but has already been rejected, and DO NOT create a tagging
     elsif params[:suggested_tag_id].present?

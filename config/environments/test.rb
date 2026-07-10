@@ -59,4 +59,5 @@ Rails.application.configure do
 
   routes.default_url_options[:host] = 'localhost:3000'
   config.active_storage.service = :test
+  config.active_job.queue_adapter = :test
 end

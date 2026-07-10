@@ -118,7 +118,7 @@ class Authority < ApplicationRecord
                          .pluck(:id)
 
     # Enqueue background job to update responsibility statements in bulk
-    UpdateManifestationResponsibilityStatementsJob.perform_async(manifestation_ids) unless manifestation_ids.empty?
+    UpdateManifestationResponsibilityStatementsJob.perform_later(manifestation_ids) unless manifestation_ids.empty?
   end
 
   def update_other_designation
