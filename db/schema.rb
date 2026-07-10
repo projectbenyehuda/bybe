@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_26_134055) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_10_155303) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -1198,8 +1198,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_26_134055) do
     t.index ["item_type", "item_id"], name: "index_year_totals_on_item_type_and_item_id"
   end
 
-  add_foreign_key "aboutnesses", "users"
-  add_foreign_key "aboutnesses", "works"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "anthologies", "users"
   add_foreign_key "anthology_texts", "anthologies"

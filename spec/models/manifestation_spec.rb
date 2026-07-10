@@ -4,6 +4,11 @@ require 'rails_helper'
 require 'hebrew'
 
 describe Manifestation do
+  it 'strips leading/trailing whitespace from a manually-set sort_title on save' do
+    manifestation = create(:manifestation, title: 'כותרת', sort_title: '  זבל  ')
+    expect(manifestation.reload.sort_title).to eq('זבל')
+  end
+
   describe '.safe_filename' do
     let(:manifestation) { create(:manifestation) }
     let(:subject) { manifestation.safe_filename }
