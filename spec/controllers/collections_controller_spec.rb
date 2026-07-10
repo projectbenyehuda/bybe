@@ -778,6 +778,16 @@ describe CollectionsController do
         expect(response).to be_successful
         expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id, volume_series.id)
       end
+
+      it 'drops disallowed types from the active-filter chips and applied filter' do
+        get :browse, params: { ckb_collection_types: %w(volume series) }
+        expect(response).to be_successful
+        chip_ids = assigns(:filters).map { |_label, id, _which| id }
+        expect(chip_ids).to include('collection_type_volume')
+        expect(chip_ids).not_to include('collection_type_series')
+        # only the browsable 'volume' results come back; the disallowed 'series' is ignored
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id)
+      end
     end
 
     context 'with sorting' do

@@ -69,6 +69,16 @@ RSpec.describe 'Collections Browse', type: :request do
         get collections_browse_path
         expect(response.body).to include('sort_by_dd') # sort dropdown
       end
+
+      it 'offers volume, periodical and volume_series as filterable collection types' do
+        get collections_browse_path
+        expect(response.body).to include('id="collection_type_volume"')
+        expect(response.body).to include('id="collection_type_periodical"')
+        expect(response.body).to include('id="collection_type_volume_series"')
+        # non-browsable types are not offered as filters
+        expect(response.body).not_to include('id="collection_type_series"')
+        expect(response.body).not_to include('id="collection_type_other"')
+      end
     end
 
     context 'JS/AJAX request' do
