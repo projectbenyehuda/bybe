@@ -55,7 +55,7 @@
                   - genre = pair[0]
                   - count = pair[1]
                   .author-works-type.genre-toggle.genre-active{
-                    data: {genre: genre, genre_name: textify_genre(genre)},
+                    data: {genre: genre},
                     tabindex: 0,
                     role: 'button',
                     onkeydown: "if (event.key === 'Enter' || event.key === ' ' || event.keyCode === 13 || event.keyCode === 32) { event.preventDefault(); this.click(); }"
@@ -216,58 +216,39 @@
   = render partial: 'manifestation/tag_policy', locals: { taggable: @author }
 
 :javascript
-  // Global function to apply genre filters based on toggle states
-  // Optimized to cache manifestations per genre to avoid repeated DOM queries
+  // The genre chips in the author card are shortcuts into the flat-list filters
+  // pane: clicking one switches the TOC into filter (flat) mode and toggles the
+  // matching genre checkbox. There is no separate grouped-view genre filter.
   $(document).ready(function() {
-    window.applyGenreFilters = (function() {
-      var genreManifestationCache = null;
+    // Mirror the pane's genre facet on the chips: with no genre selected every
+    // chip looks active (nothing is filtered out); once some genres are selected
+    // only those chips stay active and the rest are struck through.
+    window.syncGenreChips = function() {
+      var anyChecked = $('.toc-filter-genre:checked').length > 0;
+      $('.genre-toggle').each(function() {
+        var checked = $('#toc-filter-genre-' + $(this).data('genre')).prop('checked');
+        $(this).toggleClass('genre-active', !anyChecked || !!checked);
+      });
+    };
 
-      function buildCache() {
-        var cache = {};
-
-        $('.by-icon-v02').each(function() {
-          var genreName = $(this).attr('title');
-          if (!genreName) { return; }
-
-          var $manifestation = $(this).closest('.manifestation-node');
-          if ($manifestation.length === 0) { return; }
-
-          if (!cache[genreName]) {
-            cache[genreName] = [];
-          }
-          cache[genreName].push($manifestation);
-        });
-
-        return cache;
-      }
-
-      return function() {
-        if (!genreManifestationCache) {
-          genreManifestationCache = buildCache();
-        }
-
-        $('.genre-toggle').each(function() {
-          var genreName = $(this).data('genre-name');
-          var isActive = $(this).hasClass('genre-active');
-          var manifestations = genreManifestationCache[genreName] || [];
-
-          for (var i = 0; i < manifestations.length; i++) {
-            if (isActive) {
-              manifestations[i].show();
-            } else {
-              manifestations[i].hide();
-            }
-          }
-        });
-      };
-    })();
-
-    // Genre toggle click handler
+    // Genre chip click: enter filter mode (if needed), then toggle the matching
+    // pane checkbox, which performs the actual filtering via the filters pane.
     $('.genre-toggle').click(function(e) {
       e.preventDefault();
-      $(this).toggleClass('genre-active');
-      window.applyGenreFilters();
+      var $cb = $('#toc-filter-genre-' + $(this).data('genre'));
+      if (!$cb.length) { return; } // no matching facet (e.g. legacy-TOC authors)
+
+      var $sort = $('#sort_by');
+      var flat = $sort.length && $sort.val() !== 'colls' && $sort.val() !== 'colls_abc';
+      // Switching to a flat sort reveals the pane and resets its filters, so it
+      // must happen BEFORE we toggle the genre box below.
+      if (!flat && $sort.length) {
+        $sort.val('title').trigger('change');
+      }
+      $cb.prop('checked', !$cb.prop('checked')).trigger('change');
     });
+
+    window.syncGenreChips();
 
       $('.all_links_btn').click(function(e){
         e.preventDefault();
