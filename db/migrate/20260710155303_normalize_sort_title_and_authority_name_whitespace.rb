@@ -15,9 +15,11 @@ class NormalizeSortTitleAndAuthorityNameWhitespace < ActiveRecord::Migration[8.0
 
   def up
     NORMALIZED_COLUMNS.each do |klass, column|
-      klass.where.not(column => nil).pluck(:id, column).each do |id, value|
-        normalized = SortedTitle.normalize_whitespace(value)
-        klass.where(id: id).update_all(column => normalized) if normalized != value
+      klass.where.not(column => nil).in_batches(of: 1_000) do |relation|
+        relation.pluck(:id, column).each do |id, value|
+          normalized = SortedTitle.normalize_whitespace(value)
+          klass.where(id: id).update_all(column => normalized) if normalized != value
+        end
       end
     end
   end

@@ -38,7 +38,7 @@ module SortedTitle
 
   def strip_whitespaces_from_title!
     # strip is insufficient as it doesn't remove nbsps, which are sometimes coming from bibliographic data
-    self.title = title.strip.gsub(/\p{Space}*$/, '') if title.present?
+    self.title = SortedTitle.normalize_whitespace(title) if title.present?
   end
 
   def strip_whitespaces_from_sort_title!
