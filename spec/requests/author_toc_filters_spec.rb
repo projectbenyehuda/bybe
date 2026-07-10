@@ -50,6 +50,24 @@ RSpec.describe 'Author TOC filters (server-rendered)', type: :request do
     expect(node[:'data-recommended']).to eq('1')
   end
 
+  it 'sets data-tagging for a directly-tagged manifestation' do
+    create(:tagging, taggable: story, status: :approved)
+    get authority_path(author)
+
+    node = rendered.first("[data-mid='#{story.id}']", visible: :all)
+    expect(node[:'data-tagging']).to eq('1')
+  end
+
+  it 'sets data-tagging on members of a tagged collection' do
+    create(:tagging, taggable: volume, status: :approved)
+    get authority_path(author)
+
+    poem_node = rendered.first("[data-mid='#{poem.id}']", visible: :all)
+    story_node = rendered.first("[data-mid='#{story.id}']", visible: :all)
+    expect(poem_node[:'data-tagging']).to eq('1')
+    expect(story_node[:'data-tagging']).to eq('1')
+  end
+
   it 'uses the /works-style collapsible block for filter sections' do
     get authority_path(author)
     # same accordion mechanism as /works filtering: .vertical-expand.fcoll toggling a .collapse block
