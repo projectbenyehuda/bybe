@@ -18,6 +18,16 @@ describe AuthorsController do
 
     it { is_expected.to be_successful }
 
+    # Regression: when filters/search shrink the list, the (few) results can render
+    # above the current scroll position, leaving the viewport empty. The AJAX JS
+    # response must instruct the browser to scroll back to the top.
+    context 'when responding to an AJAX (JS) request' do
+      it 'instructs the page to scroll back to the top' do
+        get :browse, params: { sort_by: sort_by }.compact, format: :js, xhr: true
+        expect(response.body).to include('window.scrollTo(0, 0)')
+      end
+    end
+
     context 'when displaying work counts' do
       render_views
 
