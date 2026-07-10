@@ -83,6 +83,9 @@ class Authority < ApplicationRecord
   validates_attachment_content_type :profile_image, content_type: %r{\Aimage/.*\z}
 
   before_validation do
+    # Strip incidental leading/trailing whitespace so it doesn't corrupt alphabetical sorting/display
+    self.name = SortedTitle.normalize_whitespace(name) if name.present?
+
     if wikidata_uri.blank?
       self.wikidata_uri = nil
     else

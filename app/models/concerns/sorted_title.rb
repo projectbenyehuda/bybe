@@ -8,6 +8,14 @@
 module SortedTitle
   extend ActiveSupport::Concern
 
+  # Removes leading and trailing Unicode whitespace, including nbsp and other spaces that
+  # sometimes arrive with bibliographic data. Internal whitespace is preserved.
+  def self.normalize_whitespace(str)
+    return str if str.nil?
+
+    str.gsub(/\A\p{Space}+/, '').gsub(/\p{Space}+\z/, '')
+  end
+
   included do
     before_validation do
       strip_whitespaces_from_title!
@@ -19,12 +27,22 @@ module SortedTitle
       if sort_title.blank? || (title_changed? && !sort_title_changed?)
         update_sort_title!
       end
+
+      # Always normalize incidental leading/trailing whitespace, including on manually-set
+      # sort_titles that skip regeneration above. Leading whitespace is especially harmful:
+      # a leading space sorts before every letter and digit, pushing records to the top of
+      # alphabetical browse listings (see /collections).
+      strip_whitespaces_from_sort_title!
     end
   end
 
   def strip_whitespaces_from_title!
     # strip is insufficient as it doesn't remove nbsps, which are sometimes coming from bibliographic data
-    self.title = title.strip.gsub(/\p{Space}*$/, '') if title.present?
+    self.title = SortedTitle.normalize_whitespace(title) if title.present?
+  end
+
+  def strip_whitespaces_from_sort_title!
+    self.sort_title = SortedTitle.normalize_whitespace(sort_title) if sort_title.present?
   end
 
   def update_sort_title!
