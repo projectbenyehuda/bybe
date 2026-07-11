@@ -25,7 +25,7 @@
                   = "(#{tag.approved_taggings_count})"
                 - if is_editor
                   = link_to t(:edit), edit_tag_path(tag), class: 'by-button-secondary-v02 pad10rl', style: 'margin-right: 10px; font-size: 75%;'
-        .pagination-container{style: 'margin-top: 20px;'}
+        .pagination-container{ style: 'margin-top: 20px;' }
           != paginate @tags
 
 :javascript
