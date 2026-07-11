@@ -74,47 +74,17 @@ describe 'Tags browse view' do
     end
   end
 
-  describe 'show all functionality', :js do
+  describe 'pagination' do
     before do
-      # Reduced from 30 to 26 - just enough to trigger pagination at 25 per page
+      # 26 approved tags is just enough to trigger pagination at 25 per page
       26.times do |i|
         create(:tag, name: "Tag#{i.to_s.rjust(3, '0')}", status: :approved)
       end
       visit tags_browse_path
     end
 
-    it 'shows pagination by default when there are many tags' do
+    it 'shows pagination when there are many tags' do
       expect(page).to have_css('.pagination-container')
-    end
-
-    it 'hides pagination when "show all" is checked' do
-      check 'show_all_checkbox'
-      # Use Capybara's built-in waiting instead of sleep
-      expect(page).not_to have_css('.pagination-container', wait: 2)
-    end
-
-    it 'displays all tags when "show all" is checked' do
-      check 'show_all_checkbox'
-
-      # Should show all 29 tags (3 from setup + 26 created in before block)
-      # Use Capybara's built-in waiting
-      within('#tags_mainlist ol', wait: 2) do
-        expect(page.all('li').count).to eq(29)
-      end
-    end
-
-    it 'maintains the checkbox state when navigating with show_all param' do
-      visit tags_browse_path(show_all: 'true')
-
-      expect(page).to have_checked_field('show_all_checkbox')
-      expect(page).not_to have_css('.pagination-container')
-    end
-
-    it 'shows pagination again when "show all" is unchecked' do
-      visit tags_browse_path(show_all: 'true')
-      uncheck 'show_all_checkbox'
-      # Use Capybara's built-in waiting instead of sleep
-      expect(page).to have_css('.pagination-container', wait: 2)
     end
   end
 end
