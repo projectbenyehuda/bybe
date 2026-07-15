@@ -99,31 +99,19 @@ describe AuthorsController do
 
     context 'when concordance does not exist yet and multiple requests are made' do
       let(:authority) { create(:authority, status: :published) }
-      let(:expression1) { create(:expression, work: work1) }
-      let(:work1) { create(:work) }
-      let(:manifestation1) do
+      let!(:manifestation1) do
         create(
           :manifestation,
-          title: 'First Work',
-          markdown: 'The quick brown fox.',
-          expression: expression1,
-          status: :published
+          status: :published,
+          author: authority
         )
-      end
-
-      before do
-        create(:involved_authority, authority: authority, item: work1, role: :author)
-        manifestation1
-
-        allow(GenerateKwicConcordanceJob).to receive(:in_progress?)
-          .with('Authority', authority.id)
-          .exactly(3).times
-          .and_return(false, true, true)
       end
 
       it 'only queues one job even with multiple requests' do
         # First request should queue a job
         expect { get :kwic, params: { id: authority.id } }.to have_enqueued_job(GenerateKwicConcordanceJob)
+          .with('Authority', authority.id)
+        expect(authority.reload.kwic_generation_started_at).to be_within(2.seconds).of(Time.zone.now)
 
         # Second request should not queue another job
         expect { get :kwic, params: { id: authority.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)

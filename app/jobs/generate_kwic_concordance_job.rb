@@ -7,29 +7,6 @@ require 'sidekiq/api'
 class GenerateKwicConcordanceJob < ApplicationJob
   include BybeUtils
 
-  # Check if a job for this entity is already queued or running
-  # @param entity_type [String] The entity type: 'Authority' or 'Collection'
-  # @param entity_id [Integer] The ID of the entity
-  # @return [Boolean] true if a job is already in progress, false otherwise
-  def self.in_progress?(entity_type, entity_id)
-    # TODO: I really don't like this code, as it uses low-level Sidekiq API
-    #   Initial version was AI-generated and I've rewritten it to work with ActiveJob-wrapped Sidekiq jobs, and it
-    #   seems to work, but their API is a subject of changes and debugging it is pretty complex.
-    #   So I'd propose to get rid of it and use different approach
-
-    # Checking currently running jobs
-    running = Sidekiq::Workers.new.any? do |_process_id, _thread_id, work|
-      job = work.job
-      job['wrapped'] == 'GenerateKwicConcordanceJob' && job['args'][0]['arguments'] == [entity_type, entity_id]
-    end
-    return true if running
-
-    # Checking default queue
-    Sidekiq::Queue.new('default').any? do |job|
-      job['wrapped'] == 'GenerateKwicConcordanceJob' && job.args[0]['arguments'] == [entity_type, entity_id]
-    end
-  end
-
   # @param entity_type [String] The entity type: 'Authority' or 'Collection'
   # @param entity_id [Integer] The ID of the entity
   def perform(entity_type, entity_id)
@@ -44,12 +21,15 @@ class GenerateKwicConcordanceJob < ApplicationJob
     end
   rescue ActiveRecord::RecordNotFound => e
     Rails.logger.error("GenerateKwicConcordanceJob: #{entity_type} with id #{entity_id} not found: #{e.message}")
-  rescue StandardError => e
-    Rails.logger.error("GenerateKwicConcordanceJob failed for #{entity_type} #{entity_id}: #{e.message}")
-    raise e
+  ensure
+    entity&.update_column(:kwic_generation_started_at, nil)
   end
 
   private
+  def get_entity(entity_type, entity_id)
+
+
+  end
 
   def generate_collection_concordance(collection)
     labelled_texts = []

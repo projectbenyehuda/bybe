@@ -171,15 +171,12 @@ describe CollectionsController do
 
       before do
         create(:collection_item, collection: collection, item: manifestation)
-        allow(GenerateKwicConcordanceJob).to receive(:in_progress?)
-          .with('Collection', collection.id)
-          .exactly(3).times
-          .and_return(false, true, true)
       end
 
       it 'only queues one job even with multiple requests' do
         # First request should queue a job
         expect { get :kwic, params: params }.to have_enqueued_job(GenerateKwicConcordanceJob)
+        expect(collection.reload.kwic_generation_started_at).to be_within(2.seconds).of(Time.zone.now)
 
         # Second request should not queue another job
         expect { get :kwic, params: params }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
