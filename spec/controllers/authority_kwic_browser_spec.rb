@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'sidekiq/testing'
 
 describe AuthorsController do
   describe '#kwic' do
@@ -115,23 +114,22 @@ describe AuthorsController do
       before do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         manifestation1
-        GenerateKwicConcordanceJob.jobs.clear
+
+        allow(GenerateKwicConcordanceJob).to receive(:in_progress?)
+          .with('Authority', authority.id)
+          .exactly(3).times
+          .and_return(false, true, true)
       end
 
       it 'only queues one job even with multiple requests' do
-        Sidekiq::Testing.fake! do
-          # First request should queue a job
-          get :kwic, params: { id: authority.id }
-          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+        # First request should queue a job
+        expect { get :kwic, params: { id: authority.id } }.to have_enqueued_job(GenerateKwicConcordanceJob)
 
-          # Second request should not queue another job
-          get :kwic, params: { id: authority.id }
-          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
+        # Second request should not queue another job
+        expect { get :kwic, params: { id: authority.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
 
-          # Third request should also not queue another job
-          get :kwic, params: { id: authority.id }
-          expect(GenerateKwicConcordanceJob.jobs.size).to eq(1)
-        end
+        # Third request should also not queue another job
+        expect { get :kwic, params: { id: authority.id } }.not_to have_enqueued_job(GenerateKwicConcordanceJob)
       end
     end
 
