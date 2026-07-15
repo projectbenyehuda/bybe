@@ -99,7 +99,7 @@ class MakeFreshDownloadable < ApplicationService
           temp_file.chmod(0o644) # Set file permissions after writing and rewinding
           dl.stored_file.attach(io: temp_file, filename: filename)
         ensure
-          temp_file.close if temp_file.present?
+          temp_file&.close
         end
       else
         # Raise a specific error for unrecognized formats (I18n message for user display)

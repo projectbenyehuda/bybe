@@ -16,7 +16,7 @@ describe GenerateKwicConcordanceJob do
       end
 
       it 'creates a downloadable for the authority' do
-        expect { call }.to change{ authority.downloadables.count }.by(1)
+        expect { call }.to change { authority.downloadables.count }.by(1)
         downloadable = authority.downloadables.find_by(doctype: 'kwic')
         expect(downloadable).to be_present
         expect(authority.reload.kwic_generation_started_at).to be_nil

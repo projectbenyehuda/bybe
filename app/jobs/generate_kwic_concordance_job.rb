@@ -26,10 +26,6 @@ class GenerateKwicConcordanceJob < ApplicationJob
   end
 
   private
-  def get_entity(entity_type, entity_id)
-
-
-  end
 
   def generate_collection_concordance(collection)
     labelled_texts = []
