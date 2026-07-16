@@ -44,6 +44,7 @@ describe CollectionsController do
           create(:collection_item, collection: collection, item: manifestation2)
 
           # Execute the job synchronously
+          collection.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
           downloadable = collection.downloadables.find_by(doctype: 'kwic')
@@ -56,6 +57,7 @@ describe CollectionsController do
           create(:collection_item, collection: collection, item: manifestation2)
 
           # Execute the job synchronously
+          collection.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
           downloadable = collection.downloadables.find_by(doctype: 'kwic')
@@ -78,6 +80,7 @@ describe CollectionsController do
           manifestation2.update_column(:updated_at, 10.minutes.ago)
 
           # Pre-generate the downloadable (this will be newer than everything else)
+          collection.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
           collection.reload
@@ -122,6 +125,7 @@ describe CollectionsController do
 
         it 'creates a downloadable with only header after job runs' do
           # Execute the job synchronously
+          empty_collection.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Collection', empty_collection.id)
 
           downloadable = empty_collection.downloadables.find_by(doctype: 'kwic')
