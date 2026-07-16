@@ -11,6 +11,12 @@ class GenerateKwicConcordanceJob < ApplicationJob
   # @param entity_id [Integer] The ID of the entity
   def perform(entity_type, entity_id)
     entity = entity_type.constantize.find(entity_id)
+    if entity.kwic_generation_started_at.nil?
+      # KWIC generation was scheduled twice for same entity (should be rare race-condition case)
+      Rails.logger.warn("Looks like KWIC was already generated for #{entity_type}:#{entity.id}")
+      return
+    end
+
     case entity_type
     when 'Collection'
       generate_collection_concordance(entity)

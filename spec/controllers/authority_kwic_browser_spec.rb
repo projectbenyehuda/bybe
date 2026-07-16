@@ -9,6 +9,7 @@ describe AuthorsController do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         create(:involved_authority, authority: authority, item: work2, role: :author)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id }
       end
@@ -125,6 +126,7 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id, per_page: 50, page: 2 }
       end
@@ -154,6 +156,7 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id, filter: 'quick' }
       end
@@ -198,6 +201,7 @@ describe AuthorsController do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         create(:involved_authority, authority: authority, item: expression2, role: :translator)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id }
       end
@@ -247,6 +251,7 @@ describe AuthorsController do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         create(:involved_authority, authority: authority, item: work2, role: :author)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id }
       end
@@ -282,6 +287,7 @@ describe AuthorsController do
         subject do
           create(:involved_authority, authority: authority, item: work, role: :author)
           # Pre-generate the concordance
+          authority.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
           get :kwic, params: { id: authority.id, sort: 'alphabetical' }
         end
@@ -312,6 +318,7 @@ describe AuthorsController do
         subject do
           create(:involved_authority, authority: authority, item: work, role: :author)
           # Pre-generate the concordance
+          authority.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
           get :kwic, params: { id: authority.id, sort: 'frequency' }
         end
@@ -349,6 +356,7 @@ describe AuthorsController do
         subject do
           create(:involved_authority, authority: authority, item: work, role: :author)
           # Pre-generate the concordance
+          authority.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
           get :kwic, params: { id: authority.id }
         end
@@ -375,6 +383,7 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic, params: { id: authority.id, filter: 'ow', sort: 'frequency' }
       end
@@ -415,6 +424,7 @@ describe AuthorsController do
         create(:involved_authority, authority: authority, item: work1, role: :author)
         create(:involved_authority, authority: authority, item: work2, role: :author)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic_download, params: { id: authority.id }
       end
@@ -485,6 +495,7 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic_download, params: { id: authority.id, filter: 'brown' }
       end
@@ -515,6 +526,7 @@ describe AuthorsController do
       subject do
         create(:involved_authority, authority: authority, item: work, role: :author)
         # Pre-generate the concordance
+        authority.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Authority', authority.id)
         get :kwic_download, params: { id: authority.id }
       end

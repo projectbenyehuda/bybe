@@ -34,6 +34,7 @@ describe CollectionsController do
         manifestation2.update_column(:updated_at, 10.minutes.ago)
 
         # Pre-generate the concordance (this will be newer than everything else)
+        collection.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
         collection.reload
       end
@@ -81,6 +82,7 @@ describe CollectionsController do
         end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
 
         # Pre-generate the concordance (this will be newer than everything else)
+        collection.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
         collection.reload
       end
@@ -121,7 +123,7 @@ describe CollectionsController do
         end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
 
         # Pre-generate the concordance (this will be newer than everything else)
-
+        collection.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
         collection.reload
@@ -212,6 +214,7 @@ describe CollectionsController do
         sub_collection.collection_items.each { |ci| ci.update_column(:updated_at, 10.minutes.ago) }
 
         # Pre-generate the concordance (this will be newer than everything else)
+        collection.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
         collection.reload
       end
@@ -245,7 +248,7 @@ describe CollectionsController do
         end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
 
         # Pre-generate the concordance (this will be newer than everything else)
-
+        collection.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
         collection.reload
@@ -286,7 +289,7 @@ describe CollectionsController do
           end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
 
           # Pre-generate the concordance (this will be newer than everything else)
-
+          collection.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
           collection.reload
@@ -328,7 +331,7 @@ describe CollectionsController do
           end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
 
           # Pre-generate the concordance (this will be newer than everything else)
-
+          collection.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
           collection.reload
@@ -377,7 +380,7 @@ describe CollectionsController do
           end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
 
           # Pre-generate the concordance (this will be newer than everything else)
-
+          collection.update(kwic_generation_started_at: Time.zone.now)
           GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
           collection.reload
@@ -414,7 +417,7 @@ describe CollectionsController do
         end.each { |ci| ci.item.update_column(:updated_at, 10.minutes.ago) }
 
         # Pre-generate the concordance (this will be newer than everything else)
-
+        collection.update(kwic_generation_started_at: Time.zone.now)
         GenerateKwicConcordanceJob.new.perform('Collection', collection.id)
 
         collection.reload
