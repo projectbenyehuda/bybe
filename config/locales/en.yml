@@ -784,6 +784,7 @@ en:
     current_file: Ingestible Current File
     remove_docx: Remove attached file
     docx_conversion_error: 'Error converting the DOCX file: %{error}. You can remove the broken file and upload a valid one.'
+    volume_no_longer_exists: The volume previously associated with this ingestible no longer exists. Please choose another volume or tick "no volume", then save.
     defaults: Ingestible Defaults
     end_upload_block: Ingestible End Upload Block
     included_in_upload: Ingestible Included In Upload

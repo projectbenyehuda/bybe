@@ -631,4 +631,53 @@ describe Ingestible do
       end
     end
   end
+
+  describe '#clear_dangling_volume' do
+    context 'when prospective_volume_id points at a Collection that no longer exists' do
+      let(:ingestible) do
+        collection = create(:collection)
+        ing = create(:ingestible, no_volume: false, prospective_volume_id: collection.id.to_s)
+        collection.destroy
+        ing
+      end
+
+      it 'nulls the prospective_volume_id and reports it cleared something' do
+        expect(ingestible.clear_dangling_volume).to be true
+        expect(ingestible.prospective_volume_id).to be_nil
+      end
+
+      it 'leaves the ingestible invalid until a volume decision is made' do
+        ingestible.clear_dangling_volume
+        expect(ingestible).not_to be_valid
+        expect(ingestible.errors[:volume_id]).to be_present
+      end
+
+      it 'makes the ingestible valid again once no_volume is checked' do
+        ingestible.clear_dangling_volume
+        ingestible.no_volume = true
+        expect(ingestible).to be_valid
+      end
+    end
+
+    context 'when the associated Collection still exists' do
+      let(:collection) { create(:collection) }
+      let(:ingestible) { create(:ingestible, no_volume: false, prospective_volume_id: collection.id.to_s) }
+
+      it 'does not clear anything' do
+        expect(ingestible.clear_dangling_volume).to be false
+        expect(ingestible.prospective_volume_id).to eq(collection.id.to_s)
+      end
+    end
+
+    context "when prospective_volume_id references a Publication ('P<id>')" do
+      let(:ingestible) do
+        create(:ingestible, no_volume: false, prospective_volume_id: 'P999999')
+      end
+
+      it 'leaves the Publication reference untouched' do
+        expect(ingestible.clear_dangling_volume).to be false
+        expect(ingestible.prospective_volume_id).to eq('P999999')
+      end
+    end
+  end
 end
