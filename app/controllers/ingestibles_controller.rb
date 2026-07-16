@@ -154,6 +154,9 @@ end
   # GET /ingestibles/1/edit
   def edit
     @ingestible.update_parsing # refresh markdown or text buffers if necessary
+    if @ingestible.clear_dangling_volume
+      flash.now[:alert] = t('ingestible.volume_no_longer_exists')
+    end
     if @ingestible.docx_conversion_error
       flash.now[:alert] = t('ingestible.docx_conversion_error', error: @ingestible.docx_conversion_error)
     end

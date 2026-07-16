@@ -5,12 +5,16 @@ module IngestibleHelper
     return ptitle if ptitle.present?
     return nil if prospective_volume_id.nil?
 
-    unless prospective_volume_id[0] == 'P'
-      c = Collection.find(prospective_volume_id)
+    # Use find_by (not find) so a since-deleted Collection/Publication yields nil
+    # instead of raising RecordNotFound and crashing the edit page.
+    if prospective_volume_id[0] == 'P'
+      pub = Publication.find_by(id: prospective_volume_id[1..])
+      return "#{pub.authority.name} – #{pub.title} (#{t(:new)}!)" if pub.present?
+    else
+      c = Collection.find_by(id: prospective_volume_id)
       return c.title_and_authors if c.present?
     end
-    pub = Publication.find(prospective_volume_id[1..])
-    return "#{pub.authority.name} – #{pub.title} (#{t(:new)}!)"
+    nil
   end
 
   def cell_style(found_in_markdown, included)
