@@ -155,10 +155,10 @@ end
   def edit
     @ingestible.update_parsing # refresh markdown or text buffers if necessary
     if @ingestible.clear_dangling_volume
-      flash.now[:alert] = t('ingestible.volume_no_longer_exists')
+      flash.now[:alert] = [flash.now[:alert], t('ingestible.volume_no_longer_exists')].compact.join(' ')
     end
     if @ingestible.docx_conversion_error
-      flash.now[:alert] = t('ingestible.docx_conversion_error', error: @ingestible.docx_conversion_error)
+      flash.now[:alert] = [flash.now[:alert], t('ingestible.docx_conversion_error', error: @ingestible.docx_conversion_error)].compact.join(' ')
     end
     prep(true) # rendering of HTML needed for editing screen
     @tab = params[:tab]
