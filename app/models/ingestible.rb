@@ -52,6 +52,21 @@ class Ingestible < ApplicationRecord
                'must be present if no_volume is false')
   end
 
+  # If prospective_volume_id points at a Collection that has since been deleted, null
+  # that (in-memory) reference. This renders the volume section cleanly and leaves the
+  # record invalid (see #volume_decision) until the user picks another volume or ticks
+  # "no volume". A 'P<id>' prospective_volume_id references a Publication (a "new
+  # volume" to be created), not an existing Collection, so it is left untouched here.
+  # (volume_id cannot dangle: it is protected by a foreign-key constraint.)
+  # Returns true if a dangling reference was cleared.
+  def clear_dangling_volume # rubocop:disable Naming/PredicateMethod -- command that reports whether it acted, like #save
+    return false if prospective_volume_id.blank? || prospective_volume_id[0] == 'P'
+    return false if Collection.exists?(id: prospective_volume_id)
+
+    self.prospective_volume_id = nil
+    true
+  end
+
   def creating_new_volume?
     return false if no_volume
     return false if volume_id.present? # Using existing volume

@@ -93,13 +93,13 @@ class MakeFreshDownloadable < ApplicationService
 
         formatted_text = kwic_text.gsub("\n", "\r\n") # windows linebreaks
         begin
-          temp_file = Tempfile.new('tmp_kwic_' + download_entity.id.to_s, 'tmp/')
+          temp_file = Tempfile.new('tmp_kwic_' + download_entity.id.to_s)
           temp_file.puts(formatted_text)
           temp_file.rewind
           temp_file.chmod(0o644) # Set file permissions after writing and rewinding
           dl.stored_file.attach(io: temp_file, filename: filename)
         ensure
-          temp_file.close
+          temp_file&.close
         end
       else
         # Raise a specific error for unrecognized formats (I18n message for user display)

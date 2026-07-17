@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_15_091952) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -146,6 +146,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
     t.boolean "do_not_feature", default: false, null: false
     t.integer "impressions_count"
     t.integer "intellectual_property", null: false
+    t.timestamp "kwic_generation_started_at"
     t.text "legacy_credits"
     t.integer "legacy_toc_id"
     t.string "name"
@@ -301,6 +302,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_12_000000) do
     t.string "inception"
     t.integer "inception_year"
     t.string "issn"
+    t.timestamp "kwic_generation_started_at"
     t.integer "manifestations_count", default: 0, null: false
     t.integer "normalized_pub_year"
     t.string "pub_year"
