@@ -52,8 +52,13 @@ module KwicConcordanceConcern
     # Generate and save the downloadable
     case entity
     when Collection, Authority
+      # We expect models we generate KWIC asynchronously to have kwic_generation_started_at column
+      # If job is marked as started more than 1 hour ago we assume it is failed by some reason
+      running = entity.kwic_generation_started_at.present? && entity.kwic_generation_started_at > 1.hour.ago
+
       # Check if a job is already in progress for this entity
-      unless GenerateKwicConcordanceJob.in_progress?(entity.class.name, entity.id)
+      unless running
+        entity.update_column(:kwic_generation_started_at, Time.zone.now)
         # Trigger async job for large entities
         GenerateKwicConcordanceJob.perform_later(entity.class.name, entity.id)
       end
