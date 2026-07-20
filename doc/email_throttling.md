@@ -90,7 +90,7 @@ To enable this feature in a deployed environment:
    rails db:migrate
    ```
 
-2. Restart the application and Sidekiq workers to pick up the new scheduler configuration
+2. Restart the application and solid_queue workers to pick up the new scheduler configuration
    
    The application uses rufus-scheduler (see `config/initializers/scheduler.rb`) to schedule recurring jobs. The digest jobs are configured to run:
    - Daily: Every 24 hours starting at 9:00 AM
