@@ -44,10 +44,6 @@ class CrowdController < ApplicationController
     redirect_to crowd_index_path
   end
 
-  def self.expire_assigned_tasks
-    ListItem.where(listkey: LISTKEY_POPULATE_EDITION).where('updated_at < ?', 2.hours.ago).destroy_all
-  end
-
   protected
 
   def source_edition_html(mid)

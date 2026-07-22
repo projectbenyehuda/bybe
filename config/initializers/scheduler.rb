@@ -10,9 +10,9 @@ scheduler = Rufus::Scheduler::singleton
   # Person.recalc_recommendation_counts
 # end
 scheduler.every '2h' do
-  puts "expiring assigned crowdsourcing tasks"
-  CrowdController.expire_assigned_tasks
+  ExpireCrowdsourcingTasksJob.perform_later
 end
+
 # slow maintenance reports
 scheduler.every '7d' do
   puts "generating list of works with suspected typos"
