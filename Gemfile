@@ -16,7 +16,6 @@ gem 'damerau-levenshtein' # string distance
 gem 'mysql2'
 gem 'omniauth-google-oauth2'
 gem 'rails-ujs'
-gem 'rufus-scheduler' # scheduler
 
 gem 'active_data' # for *Search classes in Chewy
 gem 'chewy', '~> 8.4.0' # for ElasticSearch 7.x

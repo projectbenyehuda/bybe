@@ -724,8 +724,6 @@ GEM
       zeitwerk (~> 2)
     ruby_llm-schema (0.3.0)
     rubyzip (2.3.2)
-    rufus-scheduler (3.9.2)
-      fugit (~> 1.1, >= 1.11.1)
     rugged (1.9.0)
     rvm1-capistrano3 (1.4.1)
       capistrano (~> 3.0)
@@ -948,7 +946,6 @@ DEPENDENCIES
   ruby-lsp-rspec
   ruby-prof
   ruby_llm (~> 1.9)
-  rufus-scheduler
   rvm1-capistrano3
   sass-rails (~> 6.0.0)
   selenium-webdriver
