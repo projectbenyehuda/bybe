@@ -8,6 +8,7 @@ AllCops:
     - config/environments/*
     - db/migrate/*
     - db/schema.rb
+    - db/queue_schema.rb
 
 plugins:
   - rubocop-rails

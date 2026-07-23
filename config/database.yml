@@ -8,10 +8,19 @@ default: &default
   adapter: mysql2
 
 development:
-  <<: *default
+  primary:
+    <<: *default
+  queue:
+    <<: *default
+    migrations_paths: db/queue_migrate
 
 test:
-  <<: *default
+  primary:
+    <<: *default
 
 production:
-  <<: *default
+  primary:
+    <<: *default
+  queue:
+    <<: *default
+    migrations_paths: db/queue_migrate
