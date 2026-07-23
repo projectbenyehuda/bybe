@@ -3,6 +3,7 @@
 app_dir = File.expand_path('..', __dir__)
 shared_dir = "#{app_dir}"
 rackup(File.expand_path('../config.ru', __dir__))
+
 if ENV['RACK_ENV'] == 'production'
   environment 'production'
   workers Integer(ENV['WEB_CONCURRENCY'] || 8)

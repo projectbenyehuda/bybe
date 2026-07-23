@@ -40,8 +40,3 @@ services:
     restart: unless-stopped
     ports:
       - 21211:11211
-  redis:
-    image: redis:7.2.3
-    restart: unless-stopped
-    ports:
-      - 16379:6379
