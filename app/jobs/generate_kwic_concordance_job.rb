@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'sidekiq/api'
-
 # ActiveJob to generate KWIC concordance asynchronously for Authority and Collection entities
 # This is used for larger entities where concordance generation may take a long time
 class GenerateKwicConcordanceJob < ApplicationJob

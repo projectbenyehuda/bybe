@@ -1,0 +1,41 @@
+production:
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+  trim_db_sessions:
+    # This also cleans up BaseUsers table (see lib/tasks/cleanup_base_users.rake)
+    command: "system('bin/rake db:sessions:trim')"
+    # Every Wednesday at 2:00AM
+    schedule: '0 2 * * 3 Asia/Jerusalem'
+  cleanup_simple_ahoy_events:
+    command: 'CleanUpSimpleAhoyEvents.call'
+    # Every Wednesday at 2:10AM
+    schedule: '10 2 * * 3 Asia/Jerusalem'
+  purge_expired_saved_selections:
+    class: PurgeExpiredSavedSelections
+    # Every Sunday at 2:00AM
+    schedule: '0 2 * * 0 Asia/Jerusalem'
+  send_weekly_digest:
+    class: NotificationDigestJob
+    args: ['weekly']
+    # Every Monday at 9:00AM
+    schedule: '0 9 * * 1 Asia/Jerusalem'
+  send_daily_digest:
+    class: NotificationDigestJob
+    args: ['daily']
+    # Every day at 9:00AM
+    schedule: '0 9 * * * Asia/Jerusalem'
+  update_publications_that_may_be_done:
+    command: 'Publication.update_publications_that_may_be_done_list'
+    # Every Sunday at 2:00AM
+    schedule: '0 2 * * 0 Asia/Jerusalem'
+  # Uncomment when method will be implemented
+  #update_suspected_typos_in_manifestations:
+    #command: 'Manifestation.update_suspected_typos_list'
+    # Every Sunday at 2:00AM
+    #schedule: '0 2 * * 0 Asia/Jerusalem'
+
+development:
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
