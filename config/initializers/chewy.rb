@@ -17,7 +17,7 @@ unless DeploymentHelpers.assets_compilation?
   }
 end
 
-# Use :bypass as the root strategy so that Sidekiq jobs which don't
+# Use :bypass as the root strategy so that ActiveJobs which don't
 # explicitly set a Chewy strategy (e.g. ActiveStorage::AnalyzeJob) silently
 # skip Elasticsearch indexing instead of raising UndefinedUpdateStrategy.
 # Jobs that DO need indexing (e.g. Lexicon::IngestFile) wrap their work in

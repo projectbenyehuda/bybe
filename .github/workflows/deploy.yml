@@ -65,4 +65,4 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
-          script: ./update_services.sh bybe-staging web sidekiq
+          script: ./update_services.sh bybe-staging web

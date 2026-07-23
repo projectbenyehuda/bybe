@@ -11,7 +11,7 @@ This codebase runs https://benyehuda.org -- the Project Ben-Yehuda digital libra
 - **Database**: MySQL (mysql2 gem)
 - **Testing Framework**: RSpec with FactoryBot
 - **Search**: ElasticSearch 7.x with Chewy gem
-- **Background Jobs**: Sidekiq with Redis backend
+- **Background Jobs**: solid_queue
 - **Caching**: Memcached
 - **File Storage**: AWS S3 with Active Storage
 - **PDF Generation**: wkhtmltopdf
@@ -46,7 +46,7 @@ bundle exec pronto run -c origin/<TARGET_BRANCH>
   `rails db:prepare` commands.
 - If you encounter problems while running rspec like missing db or wrong settings, don't try to resolve them. Simply
   stop and report encountered problems.
-- Test files are organized by type: controllers, models, services, requests, api, mailers, sidekiq
+- Test files are organized by type: controllers, models, services, requests, api, mailers, jobs
 - We don't create spec for views and routing
 - Use FactoryBot for test data generation
 
@@ -75,8 +75,8 @@ bundle exec pronto run -c origin/<TARGET_BRANCH>
 - Many models have complex relationships - check existing associations before adding new ones
 
 ### Background Jobs
-- Use Sidekiq for scheduled and asynchronous tasks
-- Job classes should be placed in `app/jobs/` or `app/sidekiq/`
+- Use ActiveJobs with solid_queue backend for scheduled and asynchronous tasks
+- Job classes should be placed in `app/jobs/`
 
 ### File Processing
 - Pandoc is used for document conversion to Markdown and ebook formats
