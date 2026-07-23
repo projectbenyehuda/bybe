@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Lexicon
-  # Sidekiq job that checks all external links for a given LexEntry.
+  # Active Job that checks all external links for a given LexEntry.
   # Runs asynchronously after ingestion so that the ingestion job itself
   # is not delayed by per-link network round-trips.
   class CheckExternalLinksJob < ApplicationJob
