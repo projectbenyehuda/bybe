@@ -19,19 +19,36 @@ class FilesController < ApplicationController
       return
     end
 
-    record = record_class.find_by(id: record_id)
-    if record.nil?
-      render plain: "Record not found: #{record_id}", status: :not_found
-      return
-    end
+    record_urls = redirect_urls(record_class, record_id)
 
-    blob = record.blob_by_filename(filename)
-    unless blob
+    redirect_url = record_urls[filename]
+    if redirect_url.nil?
       render plain: "File not found: #{filename}", status: :not_found
       return
     end
 
-    disposition = blob.image? ? 'inline' : 'attachment'
-    redirect_to rails_blob_url(blob, disposition: disposition)
+    redirect_to redirect_url
+  end
+
+  private
+
+  def redirect_urls_key(record_class, record_id)
+    "redirect_urls_#{record_class}:#{record_id}"
+  end
+
+  def redirect_urls(record_class, record_id)
+    Rails.cache.fetch(
+      redirect_urls_key(record_class, record_id), expires_in: 2.hours, race_condition_ttl: 10.seconds
+    ) do
+      record = record_class.find_by(id: record_id)
+
+      result = {}
+      record&.downloadable_attachments&.each do |attachment|
+        blob = attachment.blob
+        disposition = blob.image? ? 'inline' : 'attachment'
+        result[attachment.filename.to_s] = rails_blob_url(blob, disposition: disposition)
+      end
+      result
+    end
   end
 end
