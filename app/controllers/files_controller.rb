@@ -5,6 +5,9 @@
 # Manifestations and StaticPages as well.
 # One limitation of this is that we assume all attachments attached to a given model are unique by filename.
 class FilesController < ApplicationController
+  skip_before_action :set_paper_trail_whodunnit
+  skip_before_action :set_base_user # Skip user initialization as it is a public URL
+
   # URL format: /files/:record_type/:record_id/:filename
   def download
     record_type = params.fetch(:record_type)
@@ -19,7 +22,7 @@ class FilesController < ApplicationController
       return
     end
 
-    record_urls = redirect_urls(record_class, record_id)
+    record_urls = cached_redirect_urls(record_class, record_id)
 
     redirect_url = record_urls[filename]
     if redirect_url.nil?
@@ -32,14 +35,9 @@ class FilesController < ApplicationController
 
   private
 
-  def redirect_urls_key(record_class, record_id)
-    "redirect_urls_#{record_class}:#{record_id}"
-  end
-
-  def redirect_urls(record_class, record_id)
-    Rails.cache.fetch(
-      redirect_urls_key(record_class, record_id), expires_in: 2.hours, race_condition_ttl: 10.seconds
-    ) do
+  def cached_redirect_urls(record_class, record_id)
+    cache_key = DownloadLink.redirect_urls_cache_key(record_class, record_id)
+    Rails.cache.fetch(cache_key, expires_in: 2.hours, race_condition_ttl: 10.seconds) do
       record = record_class.find_by(id: record_id)
 
       result = {}

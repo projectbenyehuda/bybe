@@ -49,4 +49,15 @@ module DownloadLink
     class_name = RECORD_TYPES.detect { |_class_name, data| data[:record_type] == record_type }&.first
     class_name&.constantize
   end
+
+  # Key used to cache redirect URLs specified for given model instance
+  def self.redirect_urls_cache_key(record_class, record_id)
+    "redirect_urls_#{record_class}:#{record_id}"
+  end
+
+  # Method to clear cached redirect URLs for given model instance
+  # Should be called every time we modify files attached to model
+  def clear_redirect_urls_cache
+    Rails.cache.delete(DownloadLink.redirect_urls_cache_key(self.class, id))
+  end
 end

@@ -602,6 +602,7 @@ class ManifestationController < ApplicationController
     attachment = @m.images.find_by(id: params[:image_id])
     unless attachment.nil?
       attachment.purge
+      @m.clear_redirect_urls_cache
       @img_id = params[:image_id]
       respond_to do |format|
         format.js
@@ -754,6 +755,7 @@ class ManifestationController < ApplicationController
     @m = Manifestation.find(params[:id])
     prev_count = @m.images.count
     @m.images.attach(params.permit(images: [])[:images])
+    @m.clear_redirect_urls_cache
     new_count = @m.images.count
     flash[:notice] = I18n.t(:uploaded_images, images_added: new_count - prev_count, total: new_count)
     redirect_to action: :show, id: @m.id
