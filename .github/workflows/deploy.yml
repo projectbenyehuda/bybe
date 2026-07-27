@@ -58,11 +58,17 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      - name: Update server with new Docker image
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: 22
-          script: ./update_services.sh bybe-staging web
+  deploy-beta:
+    needs: build-and-push-image
+    if: github.ref_name == 'beta'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+     - name: Update server with new Docker image
+       uses: appleboy/ssh-action@v1.2.5
+       with:
+         host: ${{ secrets.BETA_SERVER_HOST }}
+         username: ${{ secrets.BETA_SSH_USER }}
+         password: ${{ secrets.BETA_SSH_PASSWORD }}
+         port: 22
+         script: ./update_services.sh bybe-staging web
