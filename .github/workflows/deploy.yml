@@ -62,7 +62,6 @@ jobs:
     needs: build-and-push-image
     if: github.ref_name == 'beta'
     runs-on: ubuntu-latest
-    environment: staging
     steps:
      - name: Update server with new Docker image
        uses: appleboy/ssh-action@v1.2.5
