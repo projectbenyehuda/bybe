@@ -1169,6 +1169,82 @@ p.by-genre-name-v02.headline-2-v02 {
   min-width: 122px;
 }
 
+/* Tag-proposal popup: the mode toggle (suggest / pick from full list) and the
+   tag-suggestion heuristic strip. Both are jQuery UI tab navs; the layout that
+   used to be set inline on the <ul> lives here so mobile can override it. */
+.tag-mode-tabs {
+  display: flex;
+}
+
+.tag-heuristic-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 80%;
+}
+
+/* .by-card-content-v02 ul sets list-style: disc, which leaks into the strips
+   wherever the jQuery UI tab stylesheet loses the cascade */
+.tag-mode-tabs > li,
+.tag-heuristic-tabs > li {
+  list-style: none;
+}
+
+@media screen and (max-width: 767px) {
+  /* mode toggle becomes a full-width, two-up segmented control */
+  .ui-tabs .tag-mode-tabs {
+    width: 100%;
+    margin: 0 0 12px;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .ui-tabs .tag-mode-tabs > li {
+    float: none;
+    flex: 1 1 50%;
+    min-width: 0;
+    margin: 0;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .ui-tabs .tag-mode-tabs > li .ui-tabs-anchor {
+    float: none;
+    display: block;
+    padding: 10px 6px;
+    white-space: normal;
+  }
+
+  /* heuristics become wrapping chips, so all of them stay visible */
+  .ui-tabs .tag-heuristic-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+    margin: 0 0 12px;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .ui-tabs .tag-heuristic-tabs > li {
+    float: none;
+    flex: 0 0 auto;
+    margin: 0;
+    border-radius: 14px;
+    white-space: normal;
+  }
+
+  .ui-tabs .tag-heuristic-tabs > li .ui-tabs-anchor {
+    float: none;
+    display: block;
+    padding: 6px 12px;
+  }
+
+  #add_tagging_tabs .ui-tabs-panel {
+    padding: 0;
+  }
+}
+
 .author-card-v02.periodical-with-cover {
   overflow: hidden;
   border-radius: 3px;
