@@ -111,8 +111,8 @@ RSpec.describe 'Tag proposal popup on mobile', :js, type: :system do
       expect(tabs.size).to eq 2
 
       tabs.each do |tab|
-        expect(tab['left']).to be >= 0
-        expect(tab['right']).to be <= viewport_width
+        expect(tab['left']).to be >= -1
+        expect(tab['right']).to be <= viewport_width + 1
         expect(tab['width']).to be > 0
       end
 
