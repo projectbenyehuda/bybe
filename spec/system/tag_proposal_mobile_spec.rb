@@ -235,6 +235,19 @@ RSpec.describe 'Tag proposal popup on mobile', :js, type: :system do
       end
     end
 
+    # the list used to fire only 'change', while the popup enables the submit
+    # button on 'input', so the button kept looking unavailable after a pick
+    it 'enables the submit button once a tag is picked' do
+      expect(page).to have_css('#submit_tagging.disabled', visible: :all)
+
+      expect(page).to have_css('#tag_list .full-tags-list .list-group-item', minimum: 3, wait: 5)
+      within('#tag_list .full-tags-list') do
+        find('.list-group-item', text: 'פילוסופיה של הלשון').click
+      end
+
+      expect(page).to have_css('#submit_tagging:not(.disabled)', visible: :all)
+    end
+
     it 'proposes a tag selected from the full list' do
       expect(page).to have_css('#tag_list .full-tags-list .list-group-item', minimum: 3, wait: 5)
       within('#tag_list .full-tags-list') do
