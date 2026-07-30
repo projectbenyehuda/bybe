@@ -11,7 +11,9 @@
       e.preventDefault();
       $('#tag_id').val($(this).attr('id'));
       $('#tag').val($(this).text().replace(/\s*\(\d*\)/,''));
-      $('#tag').change();
+      // this partial is shared: the tag-proposal popup listens on 'input',
+      // the admin merge-tag dialog listens on 'change'
+      $('#tag').trigger('input').change();
       if($('#with_tag').length > 0) {
         $('#with_tag').val($(this).attr('id'));
       }
