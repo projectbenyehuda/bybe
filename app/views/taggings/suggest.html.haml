@@ -1,5 +1,5 @@
 %div#suggestion_heuristics
-  %ul{style: 'display: flex; flex-wrap: wrap;font-size:80%'}
+  %ul.tag-heuristic-tabs
     - @tag_suggestions.keys.each do |key|
       %li
         %a{href: '#'+key.to_s}
