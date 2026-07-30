@@ -933,5 +933,65 @@ describe ManifestationController do
 
       it { is_expected.to redirect_to manifestation_path(manifestation) }
     end
+
+    describe '#remove_image' do
+      subject(:call) { post :remove_image, params: { id: manifestation_id, image_id: image_id }, xhr: true }
+
+      let(:manifestation_id) { manifestation.id }
+      let(:image_id) { image.id }
+
+      let!(:image) do
+        manifestation.images.attach(
+          io: Rails.root.join('spec/fixtures/files/test_image.jpg').open,
+          filename: 'test_image.jpg',
+          content_type: 'image/jpeg'
+        ).first
+      end
+
+      it 'removes the image' do
+        expect { call }.to change { manifestation.images.count }.by(-1)
+        expect(call).to be_successful
+        expect(response.content_type).to eq 'text/javascript; charset=utf-8'
+      end
+
+      context 'when wrong image_id is provided' do
+        let(:image_id) { -1 }
+
+        it 'does not remove any image and returns head OK' do
+          expect { call }.not_to(change { manifestation.images.count })
+          expect(call).to be_successful
+          expect(response.body).to be_empty
+        end
+      end
+
+      context 'when image belongs to different manifestation' do
+        let(:manifestation_id) { create(:manifestation).id }
+
+        it 'does not remove image and returns OK status' do
+          expect { call }.not_to(change { manifestation.images.count })
+          expect(call).to be_successful
+          expect(response.body).to be_empty
+        end
+      end
+
+      context 'when image has variants' do
+        before do
+          image.variant(resize_to_fill: [100, nil]).processed
+          image.variant(resize_to_fill: [150, nil]).processed
+        end
+
+        it 'removes the image and all variants' do
+          expect do
+            # Variants are purged by ActiveStorage::PurgeJob so we need to wait until it finishes
+            perform_enqueued_jobs { call }
+          end.to change { manifestation.images.count }.by(-1)
+             .and change(ActiveStorage::VariantRecord, :count).by(-2)
+             .and change(ActiveStorage::Blob, :count).by(-3)
+
+          expect(call).to be_successful
+          expect(response.content_type).to eq 'text/javascript; charset=utf-8'
+        end
+      end
+    end
   end
 end
