@@ -4,21 +4,20 @@
       .modal-header
         .popup-top
           .row{style: "padding:15px;margin: 0"}
-            .col-4{style: "padding: 0;"}
+            .col-auto{style: "padding: 0;"}
               %button.btn-small-outline-v02{'data-dismiss'=>'modal'}
                 .btn-text-v02
                   %span.right-arrow 2
                   %span= t(:back)
-            .col-4{style: "padding: 0;"}
+            .col{style: "padding: 0 8px;"}
               .headline-2-v02{:style => "text-align: center;margin: 0; padding-top: 3px;"}= t(:add_tag)
-            .col-4
       .modal-body
         .by-popup-v02.narrow-popup
           .by-card-header-v02.desktop-only
             %span.headline-1-v02.desktop-only= t(:add_tag)
             %a.popup-x-v02{'data-dismiss'=>'modal'} -
           %div#add_tagging_tabs
-            %ul{style: 'display: flex;'}
+            %ul.tag-mode-tabs
               %li
                 %a{href: "#add-tag-form"}= t(:i_want_to_suggest_a_tag)
               %li
