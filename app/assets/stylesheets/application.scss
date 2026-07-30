@@ -1155,6 +1155,15 @@ p.by-genre-name-v02.headline-2-v02 {
   font-family: Alef;
 }
 
+/* The share popup's links stack an icon above a .share-name label, so they must
+   size to their content rather than to the fixed icon box set by .by-icon-v02
+   above and by .share-icon. Without this the labels overflow the box, overlap
+   each other, and spill out of a card collapsed to icon height. */
+.share-options-group a.share-icon {
+  width: auto;
+  height: auto;
+}
+
 /* 120 was wrapping after by-icon-v02 CLS optimization */
 .donation-btn-v02 {
   min-width: 122px;
