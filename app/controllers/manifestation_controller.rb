@@ -598,15 +598,10 @@ class ManifestationController < ApplicationController
 
   def remove_image
     @m = Manifestation.find(params[:id])
-    did_something = false
-    if @m.images.attached?
-      rec = @m.images.where(id: params[:image_id])
-      unless rec.empty?
-        rec[0].purge
-        did_something = true
-      end
-    end
-    if did_something
+
+    attachment = @m.images.find_by(id: params[:image_id])
+    unless attachment.nil?
+      attachment.purge
       @img_id = params[:image_id]
       respond_to do |format|
         format.js
