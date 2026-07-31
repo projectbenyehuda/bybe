@@ -936,9 +936,14 @@ describe ManifestationController do
 
     describe '#remove_image' do
       subject(:call) { post :remove_image, params: { id: manifestation_id, image_id: image_id }, xhr: true }
+      let(:user) { create(:user, :edit_catalog) }
 
       let(:manifestation_id) { manifestation.id }
       let(:image_id) { image.id }
+
+      before do
+        session[:user_id] = user.id
+      end
 
       let!(:image) do
         manifestation.images.attach(
