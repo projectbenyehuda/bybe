@@ -104,7 +104,7 @@ describe '/files' do
 
         it 'fails with Not Found status' do
           expect(call).to eq(404)
-          expect(response.body).to eq("Record not found: #{record_id}")
+          expect(response.body).to eq("File not found: #{filename}")
         end
       end
 

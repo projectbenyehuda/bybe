@@ -20,14 +20,17 @@ module DownloadLink
     URI::DEFAULT_PARSER.unescape(path)
   end
 
-  def blob_by_filename(filename)
+  def downloadable_attachments
     class_name = self.class.name
     type_data = RECORD_TYPES[class_name]
     raise "Unsupported class: #{class_name}" if type_data.nil?
 
     attachments_field = type_data[:attachments_field]
-    attachments = send(attachments_field).attachments.includes(:blob)
-    attachment = attachments.detect { |att| att.filename.to_s == filename }
+    send(attachments_field).attachments.includes(:blob)
+  end
+
+  def blob_by_filename(filename)
+    attachment = downloadable_attachments.detect { |att| att.filename.to_s == filename }
     attachment&.blob
   end
 
@@ -45,5 +48,16 @@ module DownloadLink
   def self.record_class(record_type)
     class_name = RECORD_TYPES.detect { |_class_name, data| data[:record_type] == record_type }&.first
     class_name&.constantize
+  end
+
+  # Key used to cache redirect URLs specified for given model instance
+  def self.redirect_urls_cache_key(record_class, record_id)
+    "redirect_urls_#{record_class}:#{record_id}"
+  end
+
+  # Method to clear cached redirect URLs for given model instance
+  # Should be called every time we modify files attached to model
+  def clear_redirect_urls_cache
+    Rails.cache.delete(DownloadLink.redirect_urls_cache_key(self.class, id))
   end
 end

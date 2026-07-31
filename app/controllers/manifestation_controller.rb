@@ -10,7 +10,7 @@ class ManifestationController < ApplicationController
   include PaperTrailHelpers
 
   before_action only: %i(list show remove_link edit_metadata add_aboutnesses versions version_diff
-                         restore_version preview_link_expression link_expression) do |c|
+                         restore_version preview_link_expression link_expression add_images remove_image) do |c|
     c.require_editor('edit_catalog')
   end
   before_action only: %i(edit update) do |c|
@@ -18,7 +18,8 @@ class ManifestationController < ApplicationController
   end
   before_action only: %i(all genre period by_tag), &:refuse_unreasonable_page
   before_action :set_manifestation,
-                only: %i(print read readmode dict dict_print dict_entry_print fetch_originating_task)
+                only: %i(print read readmode dict dict_print dict_entry_print fetch_originating_task
+                         add_images remove_image)
   before_action only: %i(fetch_originating_task) do |c|
     c.require_editor('edit_catalog')
   end
@@ -597,11 +598,10 @@ class ManifestationController < ApplicationController
   # editor actions
 
   def remove_image
-    @m = Manifestation.find(params[:id])
-
     attachment = @m.images.find_by(id: params[:image_id])
     unless attachment.nil?
       attachment.purge
+      @m.clear_redirect_urls_cache
       @img_id = params[:image_id]
       respond_to do |format|
         format.js
@@ -751,9 +751,9 @@ class ManifestationController < ApplicationController
   end
 
   def add_images
-    @m = Manifestation.find(params[:id])
     prev_count = @m.images.count
     @m.images.attach(params.permit(images: [])[:images])
+    @m.clear_redirect_urls_cache
     new_count = @m.images.count
     flash[:notice] = I18n.t(:uploaded_images, images_added: new_count - prev_count, total: new_count)
     redirect_to action: :show, id: @m.id

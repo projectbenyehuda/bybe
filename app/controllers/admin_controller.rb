@@ -777,7 +777,10 @@ class AdminController < ApplicationController
       flash[:error] = I18n.t(:no_such_item)
       redirect_to url_for(action: :index)
     elsif @vp.update(sp_params)
-      @vp.images.attach(params[:static_page][:images]) if params[:static_page][:images].present?
+      if params[:static_page][:images].present?
+        @vp.images.attach(params[:static_page][:images])
+        @vp.clear_redirect_urls_cache
+      end
       flash[:notice] = I18n.t(:updated_successfully)
       redirect_to action: :static_page_show, id: @vp.id
     else
