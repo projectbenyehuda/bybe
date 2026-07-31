@@ -40,6 +40,12 @@ describe 'Author TOC flat-list filters', :js do
     find("#sort_by option[value='#{value}']").select_option
   end
 
+  # Any filter/sort refresh must return the reader to the top of the page, or a
+  # shrunken list leaves them facing an empty main area.
+  def scroll_offset
+    page.evaluate_script('Math.round(window.pageYOffset)')
+  end
+
   it 'swaps the navbar for the filters pane when sorting away from the default, and back' do
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist')
@@ -186,7 +192,7 @@ describe 'Author TOC flat-list filters', :js do
     end
   end
 
-  it 'scrolls the shrunk list back into view after filtering while scrolled down' do
+  it 'scrolls back to the top of the page after filtering while scrolled down' do
     # enough works to make the flat list taller than the viewport
     Chewy.strategy(:atomic) do
       create_list(:manifestation, 15, status: :published, author: author,
@@ -199,17 +205,65 @@ describe 'Author TOC flat-list filters', :js do
 
     # scroll to the bottom so the results sit above the viewport
     page.execute_script('window.scrollTo(0, document.body.scrollHeight)')
-    expect(page.evaluate_script('window.pageYOffset')).to be > 0
+    expect(scroll_offset).to be > 0
 
     # filter down to the single translated work; the list shrinks dramatically
     check 'toc-filter-translated'
     within('#sorted_card') { expect(page).to have_content('Beta Story') }
 
-    # the top of the list is now at or above the viewport top (no empty space)
-    list_top = page.evaluate_script(
-      "Math.round(document.getElementById('browse_mainlist').getBoundingClientRect().top + window.pageYOffset)"
-    )
-    expect(page.evaluate_script('Math.round(window.pageYOffset)')).to be <= list_top
+    expect(scroll_offset).to eq 0
+  end
+
+  it 'scrolls back to the top of the page when activating filter mode while scrolled down' do
+    # enough works to make the list taller than the viewport
+    Chewy.strategy(:atomic) do
+      create_list(:manifestation, 15, status: :published, author: author,
+                                      genre: 'poetry', orig_lang: 'he', language: 'he')
+    end
+
+    visit authority_path(author)
+    expect(page).to have_css('#browse_mainlist .manifestation-node', minimum: 15)
+
+    page.execute_script('window.scrollTo(0, document.body.scrollHeight)')
+    expect(scroll_offset).to be > 0
+
+    # the sort/filter toggle stays reachable in the sticky header while scrolled
+    find('#toc-filter-toggle').click
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 15)
+
+    expect(scroll_offset).to eq 0
+  end
+
+  it 'scrolls back to the top of the page after dragging the date-range slider' do
+    # uploaded well before the other two works, so narrowing the range from the
+    # left drops all of them at once and the list shrinks dramatically
+    Chewy.strategy(:atomic) do
+      create_list(:manifestation, 15, status: :published, author: author,
+                                      genre: 'poetry', orig_lang: 'he', language: 'he',
+                                      publication_date: '2000-01-01')
+    end
+
+    visit authority_path(author)
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 15)
+
+    # upload-year is the field that actually spans a range in this fixture
+    btn = find(".toc-date-type[data-datefield='upload-year']")
+    scroll_to(btn)
+    btn.click
+    expect(page).to have_css('#toc-date-histogram .toc-hist-bar', minimum: 2)
+
+    # The filters pane is sticky with its own overflow; scroll the date slider
+    # into the pane's visible area, then scroll the window down to the bottom.
+    page.execute_script("document.getElementById('toc-date-handle-left').scrollIntoView({block: 'nearest'})")
+    page.execute_script('window.scrollTo(0, document.body.scrollHeight)')
+    expect(scroll_offset).to be > 0
+
+    # drag the left handle to the middle of the track, narrowing the range
+    find('#toc-date-handle-left').drag_to(find('#toc-date-range'), delay: 0.05)
+    expect(page).to have_css('#sorted_card .manifestation-node', maximum: 5, visible: :visible)
+
+    expect(scroll_offset).to eq 0
   end
 
   it 'clears all filters via the reset link' do
