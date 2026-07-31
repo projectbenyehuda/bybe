@@ -14,7 +14,7 @@ class Rack::Attack
     BAD_IPS.include?(req.ip)
   end
 
-  ASSET_PATH_PREFIXES = ['/assets', '/rails/active_storage'].freeze
+  ASSET_PATH_PREFIXES = %w[/assets /rails/active_storage /files/].freeze
 
   def self.asset_request?(req)
     ASSET_PATH_PREFIXES.any? { |prefix| req.path.start_with?(prefix) }
