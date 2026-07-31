@@ -31,7 +31,9 @@
     = render layout: 'shared/collapsible_block', locals: { container_name: 'collfauthorities', title: t(:by_involved_authorities) } do
       .multi-name-sort.desktop-only.pointer
         %span.linkcolor.pointer{ data: { toggle: :modal, target: '#authoritiesDlg' } }= t(:multiselect)
-      = hidden_field_tag(:authorities, @authorities, id: 'authority_ids')
+      -# join: the controller parses this param with split(','), and hidden_field_tag would otherwise
+         space-join the @authorities array into "1 2 3", losing all but the first id on the next submit
+      = hidden_field_tag(:authorities, @authorities&.join(','), id: 'authority_ids')
       = hidden_field_tag(:authorities_names, @authorities_names, id: 'authorities_names')
 
     = render layout: 'shared/collapsible_block', locals: { container_name: 'collftags', title: t(:tags) } do

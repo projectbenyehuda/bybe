@@ -25,7 +25,9 @@
       = hidden_field_tag :author_id, @author_id
       .multi-name-sort.desktop-only.pointer
         %span.linkcolor.pointer{ data: { toggle: :modal, target: '#authorsDlg' } }= t(:multiselect)
-      = hidden_field_tag(:authors, @authors, id: 'author_ids')
+      -# join: the controller parses this param with split(','), and hidden_field_tag would otherwise
+         space-join the @authors array into "1 2 3", losing all but the first id on the next submit
+      = hidden_field_tag(:authors, @authors&.join(','), id: 'author_ids')
       = hidden_field_tag(:authors_names, @authors_names, id: 'authors_names')
 
       = hidden_field_tag(:search_type, id: 'search_type')

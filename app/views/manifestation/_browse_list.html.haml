@@ -137,7 +137,7 @@
       } else if ($(this).attr('data-which') == 'authorlist') {
         $('#works_filters #author_ids').val('');
         $('#works_filters #authors_names').val('');
-        $('#works_filters input[name="ckb_authors[]"]').prop('checked', false);
+        $('input[name="ckb_authors[]"]').prop('checked', false); // checkboxes live in #authorsDlg, not the form
       } else if (field.startsWith('tag_')) {
         // Handle tag filters - remove the specific tag ID from the comma-separated list
         const tagId = field.replace('tag_', '');
