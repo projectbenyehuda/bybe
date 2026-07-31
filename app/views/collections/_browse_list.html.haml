@@ -87,7 +87,7 @@
       } else if ($(this).attr('data-which') == 'authoritylist') {
         $('#collections_filters #authority_ids').val('');
         $('#collections_filters #authorities_names').val('');
-        $('#collections_filters input[name="ckb_authorities[]"]').prop('checked', false);
+        $('input[name="ckb_authorities[]"]').prop('checked', false); // checkboxes live in #authoritiesDlg, not the form
       } else if (field.startsWith('tag_')) {
         // Handle tag filters - remove the specific tag ID from the comma-separated list
         const tagId = field.replace('tag_', '');
