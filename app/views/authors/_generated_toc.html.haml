@@ -221,6 +221,9 @@
         // active pane filters (which also re-syncs the genre chips via apply()).
         window.TocFilters.reset();
       }
+      // The list was just rebuilt (and entering flat mode shrinks it a lot), so
+      // return the reader to the top of the page as the filters do.
+      if(window.TocFilters) { window.TocFilters.scrollToTop(); }
     });
     prune_collections();
     var orig_mainlist = $('#browse_mainlist').html();
@@ -366,19 +369,16 @@
         if (window.syncGenreChips) { window.syncGenreChips(); }
       }
 
-      // After a filter interaction shrinks the flat list, the (few) remaining
-      // results can sit above the current scroll position, leaving the viewport
-      // apparently empty. Bring the top of the list back into view (mirrors the
-      // /works browse scroll-to-top). Only scrolls up, never down.
-      function scrollListIntoView() {
-        var list = document.getElementById('browse_mainlist');
-        if (!list) { return; }
-        var top = list.getBoundingClientRect().top + window.pageYOffset;
-        if (window.pageYOffset > top) { window.scrollTo(0, top); }
+      // A filter interaction can shrink the flat list dramatically, leaving a
+      // reader who had scrolled down facing an apparently empty main area (the
+      // long side column keeps the page tall). Go back to the top of the page
+      // so the remaining results are what the reader sees.
+      function scrollToTop() {
+        window.scrollTo(0, 0);
       }
 
       // apply() triggered by a user filter interaction: re-filter, then reveal results.
-      function applyFromUser() { apply(); scrollListIntoView(); }
+      function applyFromUser() { apply(); scrollToTop(); }
 
       // ---- date histogram + range slider ----
       function positionSlider() {
@@ -468,7 +468,12 @@
         $('#toc-date-handle-left').on('mousedown touchstart', function(e) { dragging = 'left'; e.preventDefault(); });
         $('#toc-date-handle-right').on('mousedown touchstart', function(e) { dragging = 'right'; e.preventDefault(); });
         $(document).on('mousemove touchmove', onMove);
-        $(document).on('mouseup touchend', function() { dragging = null; });
+        $(document).on('mouseup touchend', function() {
+          if (!dragging) { return; }
+          dragging = null;
+          // Only once the drag ends, so the list doesn't jump while dragging.
+          scrollToTop();
+        });
 
         $('#toc-date-from, #toc-date-to').on('change', function() {
           var f = parseInt($('#toc-date-from').val(), 10);
@@ -476,7 +481,7 @@
           if (isNaN(f)) { f = minYear; }
           if (isNaN(t)) { t = maxYear; }
           setRange(f, t);
-          scrollListIntoView();
+          scrollToTop();
         });
 
         $('.toc-date-type').on('click', function() {
@@ -499,7 +504,7 @@
           applyFromUser();
         });
         $('#toc_filters_pane').on('change', 'input[type=checkbox]', applyFromUser);
-        $('#toc-filter-reset').on('click', function(e) { e.preventDefault(); reset(); scrollListIntoView(); });
+        $('#toc-filter-reset').on('click', function(e) { e.preventDefault(); reset(); scrollToTop(); });
       }
 
       function clearInputs() {
@@ -532,7 +537,8 @@
         init: function() { bindInputs(); bindSlider(); },
         activate: activate,
         reapply: reapply,
-        reset: reset
+        reset: reset,
+        scrollToTop: scrollToTop
       };
     })();
     window.TocFilters.init();
