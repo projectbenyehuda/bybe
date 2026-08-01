@@ -623,7 +623,7 @@ describe 'Lexicon Verification Workbench' do
 
       within("#citation-#{citation_with_backup.id}") do
         within('.citation-attachment') do
-          expect(page).to have_content(I18n.t('lexicon.verification.sections.attachment_used_in_citation'))
+          expect(page).to have_content(I18n.t('lexicon.verification.sections.citation_attachment'))
           expect(page).to have_link(backup_filename, href: rails_blob_path(cited, disposition: 'attachment'))
           expect(page).to have_no_button
         end
@@ -636,11 +636,30 @@ describe 'Lexicon Verification Workbench' do
       end
     end
 
-    it 'shows backup_url as a link in the citation card' do
-      within('#section-citations') do
-        within("#citation-#{citation_with_backup.id}") do
+    it 'does not also show a backup_url that points at one of the entry files' do
+      within("#citation-#{citation_with_backup.id}") do
+        expect(page).to have_no_content(I18n.t('lexicon.verification.sections.citation_backup_file'))
+        expect(page).to have_no_link(backup_filename, href: backup_path)
+      end
+    end
+
+    context 'when the backup_url points outside the entry' do
+      let!(:citation_with_external_backup) do
+        create(:lex_citation,
+               person: person,
+               title: 'Citation With External Backup',
+               backup_url: 'https://example.com/elsewhere.pdf',
+               link: nil)
+      end
+
+      # this citation is created after the outer before block's visit, so re-render the page
+      before { visit "/lex/verification/#{entry.id}" }
+
+      it 'still shows it as a backup link' do
+        within("#citation-#{citation_with_external_backup.id}") do
           expect(page).to have_content(I18n.t('lexicon.verification.sections.citation_backup_file'))
-          expect(page).to have_link(backup_filename, href: backup_path)
+          expect(page).to have_link('elsewhere.pdf', href: 'https://example.com/elsewhere.pdf')
+          expect(page).to have_no_css('.citation-attachment')
         end
       end
     end

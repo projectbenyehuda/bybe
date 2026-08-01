@@ -242,7 +242,8 @@
                     %span.broken-link-badge= broken_link_badge(citation.link_http_status)
                     = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{citation.link}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
-                - if citation.backup_url.present?
+                -# a backup_url pointing at one of the entry's own files is shown as a file below instead
+                - if citation.backup_url.present? && !backup_url_shown_as_file?(entry, citation)
                   %br
                   %span.text-muted
                     = t('lexicon.verification.sections.citation_backup_file')
@@ -250,7 +251,7 @@
                 -# informational only: these files are listed here instead of in the attachments section
                 - citation_attachments(entry, citation).each do |attachment|
                   %small.d-block.text-muted.citation-attachment
-                    = t('lexicon.verification.sections.attachment_used_in_citation')
+                    = t('lexicon.verification.sections.citation_attachment')
                     = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank', rel: 'noopener'
                     = "(#{number_to_human_size(attachment.byte_size)})"
               .citation-actions.mt-2
