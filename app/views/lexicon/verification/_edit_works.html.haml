@@ -31,6 +31,34 @@
             onclick: 'confirmWorkMatch(this)'
           }= t('lexicon.verification.edit.confirm_match')
 
+  -# Publications known in BYP but absent from the entry — reportable, not part of the checklist
+  - if @unmatched_publications.present?
+    %hr
+    %h5= t('lexicon.verification.sections.unmatched_publications_heading')
+    %p.text-muted= t('lexicon.verification.sections.unmatched_publications_intro')
+    - @unmatched_publications.each do |publication|
+      .match-row.unmatched-publication.border-bottom.py-2.d-flex.justify-content-between.align-items-start{
+        id: "unmatched-publication-#{publication.id}"
+      }
+        .match-info{ dir: text_dir(publication.title.to_s) }
+          %strong= publication.title
+          - pub_details = [publication.publisher_line, publication.pub_year].compact_blank.join(', ')
+          - if pub_details.present?
+            %span.text-muted.ms-2= pub_details
+        .match-actions.ms-3
+          - if publication.reported_missing_from_lexicon?
+            %span.text-muted.reported-missing-label= t('lexicon.verification.monday.missing_work_reported')
+          - else
+            %button.btn.btn-sm.btn-outline-warning.monday-missing-work-btn{
+              type: 'button',
+              data: {
+                'publication-id': publication.id,
+                'report-url': lexicon_report_to_monday_verification_path(@entry),
+                'reported-label': t('lexicon.verification.monday.missing_work_reported')
+              }
+            }
+              = t('lexicon.verification.monday.missing_work_button')
+
   .text-end.mt-3
     %button.btn.btn-secondary{ type: 'button', onclick: "$('#generalDlg').modal('hide')" }
       = t('lexicon.verification.sections.close')
