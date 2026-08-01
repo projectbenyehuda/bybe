@@ -205,6 +205,10 @@ he:
         escalate_confirm: הערך יועבר לבדיקה נוספת. ניתן להוסיף הערות המסבירות את הסיבה להעברה.
         progress: התקדמות
         hide_verified: הסתר פריטים בדוקים
+        release_lock: שחרר נעילה
+      unlock:
+        success: הנעילה שוחררה בהצלחה!
+        not_locked_by_you: הרשומה אינה נעולה על ידך!
       checklist:
         title: רשימת בדיקה
         overall_notes: הערות כלליות

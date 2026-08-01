@@ -204,6 +204,10 @@ en:
         escalate_confirm: This entry will be escalated for further review. You can provide notes explaining the reason for escalation.
         progress: Progress
         hide_verified: Hide Verified Items
+        release_lock: Release Lock
+      unlock:
+        success: Lock released successfully!
+        not_locked_by_you: This entry is not locked by you!
       checklist:
         title: Verification Checklist
         overall_notes: Overall Notes
