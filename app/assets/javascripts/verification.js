@@ -299,6 +299,32 @@ function initVerification() {
         });
     });
 
+    // Header shortcuts: hide the ones whose section is not rendered for this item type,
+    // and scroll the migrated pane to the section on click.
+    $('.migrated-shortcut').each(function() {
+        if (document.getElementById($(this).data('section-target')) === null) {
+            $(this).hide();
+        }
+    });
+
+    // Nothing left to jump to: drop the whole nav, otherwise a lone "Jump to:" label
+    // would sit in the header. Only reachable for an item type the migrated pane does
+    // not know how to render (it shows the "unsupported type" alert and no sections);
+    // both LexPerson and LexPublication always render at least the links section.
+    $('.migrated-shortcuts').each(function() {
+        if ($(this).find('.migrated-shortcut:visible').length === 0) {
+            $(this).hide();
+        }
+    });
+
+    $('.migrated-shortcut').on('click', function(e) {
+        e.preventDefault();
+        const section = document.getElementById($(this).data('section-target'));
+        if (section) {
+            scrollMigratedPaneTo(section);
+        }
+    });
+
     // Handle checklist label clicks - close the checklist modal then scroll to section
     $('.checklist-items label').on('click', function(e) {
         // Only scroll if clicked on label text, not checkbox
@@ -432,6 +458,20 @@ function updateChecklistItem(url, path, verified, sectionId, callback) {
             showToast((container.data('error-updating-checklist-text') || 'Error updating checklist') + statusInfo);
         }
     });
+}
+
+// Scroll the migrated pane so that `el` is at its top. The window itself does not scroll
+// in this layout, so .migrated-content must be scrolled directly.
+function scrollMigratedPaneTo(el) {
+    const scrollParent = el.closest('.migrated-content');
+    if (!scrollParent) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+    }
+    const offset = el.getBoundingClientRect().top
+                 - scrollParent.getBoundingClientRect().top
+                 + scrollParent.scrollTop;
+    scrollParent.scrollTo({ top: Math.max(0, offset - 8), behavior: 'smooth' });
 }
 
 function updateProgressBar(percentage) {
