@@ -218,9 +218,11 @@ RSpec.describe LexiconHelper, type: :helper do
     let(:pdf_path) { Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem.pdf') }
     let!(:plain_attachment) { attach('plain.pdf') }
 
-    def attach(filename)
-      entry.attachments.attach(io: File.open(pdf_path, 'rb'), filename: filename, content_type: 'application/pdf')
-      entry.attachments.reload.detect { |a| a.filename.to_s == filename }
+    def attach(filename, lex_entry = entry)
+      File.open(pdf_path, 'rb') do |io|
+        lex_entry.attachments.attach(io: io, filename: filename, content_type: 'application/pdf')
+      end
+      lex_entry.attachments.reload.detect { |a| a.filename.to_s == filename }
     end
 
     describe '#citation_attachments' do
@@ -249,6 +251,31 @@ RSpec.describe LexiconHelper, type: :helper do
       it 'returns an empty array for a citation with no file of its own' do
         citation = create(:lex_citation, person: person, link: nil, backup_url: nil)
         expect(helper.citation_attachments(entry, citation)).to be_empty
+      end
+
+      it 'returns a file claimed by both link and backup_url only once' do
+        cited = attach('twice.pdf')
+        path = entry.download_path('twice.pdf')
+        citation = create(:lex_citation, person: person, link: path, backup_url: path)
+
+        expect(helper.citation_attachments(entry, citation).map(&:id)).to eq([cited.id])
+      end
+
+      it 'ignores a backup_file blob that is not one of the entry files' do
+        other_entry = create(:lex_entry, lex_item: create(:lex_person))
+        attach('foreign.pdf', other_entry)
+        citation = create(:lex_citation, person: person, link: nil, backup_url: nil)
+        citation.backup_file.attach(other_entry.blob_by_filename('foreign.pdf'))
+
+        expect(helper.citation_attachments(entry, citation)).to be_empty
+      end
+
+      it 'accepts a prebuilt attachment index' do
+        cited = attach('indexed.pdf')
+        citation = create(:lex_citation, person: person, link: entry.download_path('indexed.pdf'))
+        index = helper.attachment_index(entry)
+
+        expect(helper.citation_attachments(entry, citation, index).map(&:id)).to eq([cited.id])
       end
     end
 
@@ -286,6 +313,18 @@ RSpec.describe LexiconHelper, type: :helper do
       it 'returns an empty array when every attachment belongs to a citation' do
         create(:lex_citation, person: person, link: entry.download_path('plain.pdf'))
         expect(helper.non_citation_attachments(entry, person)).to be_empty
+      end
+
+      # guards the cost of the matching: it must stay linear in attachments, not
+      # attachments x citations, since download_path is route generation + unescaping
+      it 'derives each download_path once, whatever the number of citations' do
+        3.times { |i| attach("extra_#{i}.pdf") }
+        5.times { create(:lex_citation, person: person, link: nil, backup_url: nil) }
+        allow(entry).to receive(:download_path).and_call_original
+
+        helper.non_citation_attachments(entry, person)
+
+        expect(entry).to have_received(:download_path).exactly(4).times # one per attachment
       end
     end
   end
