@@ -829,5 +829,47 @@ RSpec.describe 'Lexicon::Verification', type: :request do
 
       expect(response.body).to include('1/2')
     end
+
+    it 'places the verified-count badge alongside the section title, not beside the auto-match button' do
+      get "/lex/verification/#{entry.id}"
+
+      header = Nokogiri::HTML(response.body).at_css('#section-works .section-header')
+      title_group = header.element_children.first
+
+      expect(title_group.at_css('h5')).to be_present
+      expect(title_group.at_css('.verification-badge')).to be_present
+      # The auto-match button stays at the opposite end of the header
+      expect(header.element_children.last.name).to eq('button')
+    end
+
+    context 'when the person has both original and translated works' do
+      let!(:translated_work) do
+        create(:lex_person_work, person: person, title: 'A Translation', work_type: 'translated', seqno: 1)
+      end
+
+      before { entry.add_work_to_checklist!(translated_work.id) }
+
+      it 'separates the two kinds under their own headings' do
+        get "/lex/verification/#{entry.id}"
+
+        doc = Nokogiri::HTML(response.body)
+        headings = doc.css('#section-works .work-type-heading').map { |h| h.text.strip }
+
+        expect(headings).to eq([LexPersonWork.human_enum_name(:work_type, 'original'),
+                                LexPersonWork.human_enum_name(:work_type, 'translated')])
+      end
+
+      it 'renders the translated work under the translations heading' do
+        get "/lex/verification/#{entry.id}"
+
+        doc = Nokogiri::HTML(response.body)
+        nodes = doc.css('#section-works .work-type-heading, #section-works .work-card')
+        translated_heading = LexPersonWork.human_enum_name(:work_type, 'translated')
+        translated_heading_index = nodes.index { |n| n.text.strip == translated_heading }
+        translated_card_index = nodes.index { |n| n['id'] == "work-#{translated_work.id}" }
+
+        expect(translated_card_index).to be > translated_heading_index
+      end
+    end
   end
 end

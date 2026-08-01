@@ -139,14 +139,16 @@
 -# Section 3: Works — one card per work, like citations
 .section.verification-section{id: 'section-works', class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
-    %h5= t('lexicon.verification.sections.works_section')
-    .d-flex.align-items-center.gap-2
+    -# The verified/total tally sits next to the section title, not beside the auto-match button,
+    -# so it reads as a property of the section rather than of the button.
+    .section-title-group
+      %h5= t('lexicon.verification.sections.works_section')
       .verification-badge{ class: checklist['works']&.dig('verified') ? 'verified' : 'not-verified' }
         - verified_count = checklist['works']&.dig('items')&.count { |_k, v| v['verified'] } || 0
         - total_count = checklist['works']&.dig('items')&.size || 0
         = total_count > 0 ? "#{verified_count}/#{total_count} #{t('lexicon.verification.migrated.verified')}" : t('lexicon.verification.migrated.verified')
-      %button.btn.btn-sm.btn-outline-secondary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', function() { reloadScrollingToSection('section-works'); })" }
-        = t('lexicon.verification.sections.auto_match_works_btn')
+    %button.btn.btn-sm.btn-outline-secondary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', function() { reloadScrollingToSection('section-works'); })" }
+      = t('lexicon.verification.sections.auto_match_works_btn')
   .section-content
     - all_works = item.works.includes(:publication, :collection)
     - works_size = all_works.size
@@ -313,6 +315,7 @@
             %button.btn.btn-sm{class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "links.items.#{link.id}"}}
               ✓
               = t('lexicon.verification.migrated.mark_verified')
+            = link_to t('lexicon.verification.migrated.delete_link'), lexicon_link_path(link), remote: true, method: :delete, class: 'btn btn-sm btn-outline-danger delete-link', data: { confirm: t('lexicon.verification.migrated.delete_link_confirm') }
     - else
       %p.text-muted= t('lexicon.verification.sections.no_links')
   .section-actions

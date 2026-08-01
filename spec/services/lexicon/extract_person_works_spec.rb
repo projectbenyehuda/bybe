@@ -96,6 +96,75 @@ describe Lexicon::ExtractPersonWorks do
     end
   end
 
+  context 'when the translations section is headed תרגומים: (plural)' do
+    # Mirrors 00156.php, where the plural header was not recognized and all works
+    # were classified as original, so the pane showed no original/translation split.
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <span dir="rtl">
+          <ul>
+            <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+          </ul>
+          <p><font size="4" color="#0000FF">תרגומים:</font></p>
+          <ul>
+            <li>חמור הזהב / לוקיוס אפוליאוס (תל־אביב : ישראל, 1954)</li>
+            <li>מבחר הסיפור הסיני / לין יו־טאנג (תל־אביב : הדר, 1954)</li>
+          </ul>
+        </span>
+      HTML
+    end
+
+    it 'classifies the works under it as translated' do
+      expect(lex_person.works.select(&:work_type_original?).size).to eq(1)
+      expect(lex_person.works.select(&:work_type_translated?).map(&:title))
+        .to contain_exactly('חמור הזהב / לוקיוס אפוליאוס', 'מבחר הסיפור הסיני / לין יו־טאנג')
+    end
+  end
+
+  context 'when the translations section is headed תרגומיו:' do
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <span dir="rtl">
+          <ul>
+            <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+          </ul>
+          <p><font>תרגומיו:</font></p>
+          <ul>
+            <li>ספר מתורגם (תל אביב : הוצאה, 2010)</li>
+          </ul>
+        </span>
+      HTML
+    end
+
+    it 'classifies the works under it as translated' do
+      expect(lex_person.works.select(&:work_type_translated?).size).to eq(1)
+    end
+  end
+
+  context 'when a section lists translations of the person’s works into foreign languages' do
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <span dir="rtl">
+          <ul>
+            <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+          </ul>
+          <p><font>תרגומים לשפות זרות:</font></p>
+          <ul>
+            <li>His book / translated by Someone (London : Publisher, 1995)</li>
+          </ul>
+        </span>
+      HTML
+    end
+
+    it 'keeps them as original works, since the person did not translate them' do
+      expect(lex_person.works.select(&:work_type_translated?)).to be_empty
+      expect(lex_person.works.select(&:work_type_original?).size).to eq(2)
+    end
+  end
+
   context 'when works list includes a festschrift section' do
     let(:html) do
       <<~HTML

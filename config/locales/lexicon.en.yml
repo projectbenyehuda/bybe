@@ -240,6 +240,8 @@ en:
         edit: Edit
         add_citation: Add Citation
         add_link: Add Link
+        delete_link: Delete Link
+        delete_link_confirm: Permanently delete this link?
         upload_file: Upload File
         remove_attachment: Remove
         profile_image_badge: Profile Image

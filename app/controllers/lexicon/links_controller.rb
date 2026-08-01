@@ -47,7 +47,9 @@ module Lexicon
     end
 
     def destroy
+      link_id = @link.id
       @link.destroy!
+      @item.entry&.remove_link_from_checklist!(link_id)
     end
 
     private

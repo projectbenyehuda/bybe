@@ -133,6 +133,7 @@
             %button.btn.btn-sm{class: checklist['links']&.dig('items', link.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "links.items.#{link.id}"}}
               ✓
               = t('lexicon.verification.migrated.mark_verified')
+            = link_to t('lexicon.verification.migrated.delete_link'), lexicon_link_path(link), remote: true, method: :delete, class: 'btn btn-sm btn-outline-danger delete-link', data: { confirm: t('lexicon.verification.migrated.delete_link_confirm') }
     - else
       %p.text-muted= t('lexicon.verification.sections.no_links')
   .section-actions
