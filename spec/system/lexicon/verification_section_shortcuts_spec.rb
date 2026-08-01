@@ -127,11 +127,9 @@ RSpec.describe 'Verification migrated pane section shortcuts', :js, type: :syste
   end
 
   context 'with a publication entry' do
-    # az_navbar is a boolean column but the publication verification view feeds it to
-    # MarkdownToHtml, which raises on a non-String; pin it to false to avoid that path.
     let!(:entry) do
       create(:lex_entry, title: 'Test Publication', status: :draft,
-                         lex_item: build(:lex_publication, az_navbar: false))
+                         lex_item: build(:lex_publication, az_navbar: true))
     end
 
     let!(:lex_file) do

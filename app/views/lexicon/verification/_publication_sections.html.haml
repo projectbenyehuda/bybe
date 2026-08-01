@@ -64,8 +64,10 @@
     .verification-badge{class: checklist['az_navbar']&.dig('verified') ? 'verified' : 'not-verified'}
       = checklist['az_navbar']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
-    - if item.az_navbar.present?
-      .az-navbar-content!= MarkdownToHtml.call(item.az_navbar)
+    -# az_navbar is a boolean flag ("show an A-Z navigation bar for this publication?"),
+      not markdown content.
+    - if item.az_navbar?
+      %p.az-navbar-content= t('lexicon.verification.sections.has_az_navbar')
     - else
       %p.text-muted= t('lexicon.verification.sections.no_az_navbar')
   .section-actions
