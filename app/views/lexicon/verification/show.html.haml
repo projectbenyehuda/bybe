@@ -55,6 +55,12 @@
             = t('lexicon.verification.show.mark_verified')
         %button.btn#escalate-btn{ type: 'button', style: 'background-color: #f8d7da; border-color: #f5c6cb;' }
           = t('lexicon.verification.show.escalate')
+        = button_to t('lexicon.verification.show.release_lock'),
+                    lexicon_unlock_verification_path(@entry),
+                    method: :patch,
+                    class: 'btn btn-warning',
+                    id: 'release-lock-btn',
+                    data: { confirm: t('lexicon.entries.index.unlock_confirm') }
         - monday_report_url = lexicon_report_to_monday_verification_path(@entry)
         %button.btn.btn-outline-info#monday-report-btn{ type: 'button', data: { 'report-url': monday_report_url } }
           = t('lexicon.verification.monday.report_button')

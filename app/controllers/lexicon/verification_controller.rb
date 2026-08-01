@@ -8,7 +8,7 @@ module Lexicon
     EXTERNAL_IDENTIFIER_KEYS = LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys.freeze
 
     before_action :set_entry, except: %i(index)
-    before_action :try_to_lock_record, except: %i(index)
+    before_action :try_to_lock_record, except: %i(index unlock)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
@@ -68,6 +68,18 @@ module Lexicon
         elsif @item.authority.present?
           @item.update!(copyrighted: authority_copyrighted?(@item.authority.intellectual_property))
         end
+      end
+    end
+
+    # PATCH /lex/verification/:id/unlock
+    # Lets an editor deliberately release the lock they hold on the entry they are verifying.
+    # Always returns to the queue: redirecting back to the workbench would immediately re-lock.
+    def unlock
+      if @entry.locked_by_user == current_user
+        @entry.release_lock!
+        redirect_to lexicon_verification_queue_path, notice: t('.success')
+      else
+        redirect_to lexicon_verification_queue_path, alert: t('.not_locked_by_you')
       end
     end
 
