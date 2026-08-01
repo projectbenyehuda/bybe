@@ -241,6 +241,8 @@ he:
         edit: ערוך
         add_citation: הוסף מראה מקום
         add_link: הוסף קישור
+        delete_link: מחק קישור
+        delete_link_confirm: למחוק את הקישורית לצמיתות?
         upload_file: העלה קובץ
         remove_attachment: הסר קובץ
         profile_image_badge: תמונת פרופיל

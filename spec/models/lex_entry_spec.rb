@@ -140,6 +140,52 @@ RSpec.describe LexEntry, type: :model do
       end
     end
 
+    describe '#remove_link_from_checklist!' do
+      let!(:link1) { create(:lex_link, item: person) }
+      let!(:link2) { create(:lex_link, item: person) }
+
+      before do
+        person.reload
+        entry.start_verification!('test@example.com')
+      end
+
+      it 'removes the link ID from checklist items' do
+        link1.destroy!
+        entry.remove_link_from_checklist!(link1.id)
+
+        items = entry.reload.verification_progress.dig('checklist', 'links', 'items')
+        expect(items[link1.id.to_s]).to be_nil
+        expect(items[link2.id.to_s]).to be_present
+      end
+
+      it 'does nothing when the link ID is not in the checklist' do
+        expect { entry.remove_link_from_checklist!(999_999) }.not_to raise_error
+      end
+
+      it 'auto-verifies the section when all remaining links are verified' do
+        entry.update_checklist_item("links.items.#{link2.id}", true)
+
+        link1.destroy!
+        entry.remove_link_from_checklist!(link1.id)
+
+        expect(entry.reload.verification_progress.dig('checklist', 'links', 'verified')).to be true
+      end
+
+      it 'keeps the links section verified when the last verified link goes' do
+        entry.update_checklist_item("links.items.#{link1.id}", true)
+        entry.update_checklist_item("links.items.#{link2.id}", true)
+
+        [link1, link2].each do |link|
+          link.destroy!
+          entry.remove_link_from_checklist!(link.id)
+        end
+
+        progress = entry.reload.verification_progress
+        expect(progress.dig('checklist', 'links', 'items')).to be_empty
+        expect(progress.dig('checklist', 'links', 'verified')).to be true
+      end
+    end
+
     describe '#verification_percentage' do
       let!(:work1) { create(:lex_person_work, person: person, title: 'Work 1') }
       let!(:work2) { create(:lex_person_work, person: person, title: 'Work 2') }

@@ -7,7 +7,10 @@ module Lexicon
 
     WORK_TYPE_HEADERS = {
       'edited' => ['כתיבה, עריכה ושכתוב:', 'עריכה:', 'עריכה: (מבחר)'],
-      'translated' => ['תרגום:'],
+      # 'תרגומים לשפות זרות:' and its kin are deliberately absent — those sections list
+      # translations *of* the person's works, which stay 'original'.
+      'translated' => ['תרגום:', 'תרגומים:', 'תרגומיו:', 'תרגומיה:',
+                       'ספרים בתרגומו:', 'ספרים בתרגומה:'],
       'festschrift' => ['ספר זכרון:', 'ספרי יובל', 'ספרי יובל:',
                         'ספרי יובל וזכרון', 'ספרי יובל וזכרון:', 'ספרי יובל וזיכרון:']
     }.freeze
