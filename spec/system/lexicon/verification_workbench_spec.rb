@@ -584,7 +584,7 @@ describe 'Lexicon Verification Workbench' do
     end
   end
 
-  describe 'Attachment section hides files belonging to citations', :js do
+  describe 'Files belonging to citations are shown under their citation', :js do
     let!(:backup_filename) { 'backup_doc.pdf' }
     let!(:other_filename) { 'standalone_doc.pdf' }
     let!(:backup_path) { entry.download_path(backup_filename) }
@@ -615,6 +615,24 @@ describe 'Lexicon Verification Workbench' do
       within('#section-attachments') do
         expect(page).to have_css("#attachment-#{standalone.id}")
         expect(page).to have_no_css("#attachment-#{cited.id}")
+      end
+    end
+
+    it 'lists the file under its citation, with no editing controls' do
+      cited = entry.attachments.reload.find { |a| a.filename.to_s == backup_filename }
+
+      within("#citation-#{citation_with_backup.id}") do
+        within('.citation-attachment') do
+          expect(page).to have_content(I18n.t('lexicon.verification.sections.attachment_used_in_citation'))
+          expect(page).to have_link(backup_filename, href: rails_blob_path(cited, disposition: 'attachment'))
+          expect(page).to have_no_button
+        end
+      end
+    end
+
+    it 'does not list a file under an unrelated citation' do
+      within("#citation-#{citation.id}") do
+        expect(page).to have_no_css('.citation-attachment')
       end
     end
 

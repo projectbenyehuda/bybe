@@ -212,7 +212,7 @@ RSpec.describe LexiconHelper, type: :helper do
     end
   end
 
-  describe '#non_citation_attachments' do
+  describe 'attachment/citation association' do
     let(:person) { create(:lex_person) }
     let(:entry) { create(:lex_entry, lex_item: person) }
     let(:pdf_path) { Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem.pdf') }
@@ -223,39 +223,70 @@ RSpec.describe LexiconHelper, type: :helper do
       entry.attachments.reload.detect { |a| a.filename.to_s == filename }
     end
 
-    it 'returns attachments not associated with any citation' do
-      create(:lex_citation, person: person, link: nil, backup_url: nil)
-      expect(helper.non_citation_attachments(entry, person).map(&:id)).to eq([plain_attachment.id])
+    describe '#citation_attachments' do
+      it 'returns the file referenced by the citation backup_url' do
+        cited = attach('cited.pdf')
+        citation = create(:lex_citation, person: person, link: nil, backup_url: entry.download_path('cited.pdf'))
+
+        expect(helper.citation_attachments(entry, citation).map(&:id)).to eq([cited.id])
+      end
+
+      it 'returns the file referenced by the citation link, even with an anchor' do
+        cited = attach('linked.pdf')
+        citation = create(:lex_citation, person: person, link: "#{entry.download_path('linked.pdf')}#page=3")
+
+        expect(helper.citation_attachments(entry, citation).map(&:id)).to eq([cited.id])
+      end
+
+      it 'returns the file whose blob is attached as the citation backup_file' do
+        backed_up = attach('backup.pdf')
+        citation = create(:lex_citation, person: person, link: nil)
+        citation.backup_file.attach(entry.blob_by_filename('backup.pdf'))
+
+        expect(helper.citation_attachments(entry, citation).map(&:id)).to eq([backed_up.id])
+      end
+
+      it 'returns an empty array for a citation with no file of its own' do
+        citation = create(:lex_citation, person: person, link: nil, backup_url: nil)
+        expect(helper.citation_attachments(entry, citation)).to be_empty
+      end
     end
 
-    it 'excludes attachments referenced by a citation backup_url' do
-      cited = attach('cited.pdf')
-      create(:lex_citation, person: person, link: nil, backup_url: entry.download_path('cited.pdf'))
+    describe '#non_citation_attachments' do
+      it 'returns attachments not associated with any citation' do
+        create(:lex_citation, person: person, link: nil, backup_url: nil)
+        expect(helper.non_citation_attachments(entry, person).map(&:id)).to eq([plain_attachment.id])
+      end
 
-      result = helper.non_citation_attachments(entry, person).map(&:id)
-      expect(result).to eq([plain_attachment.id])
-      expect(result).not_to include(cited.id)
-    end
+      it 'excludes attachments referenced by a citation backup_url' do
+        cited = attach('cited.pdf')
+        create(:lex_citation, person: person, link: nil, backup_url: entry.download_path('cited.pdf'))
 
-    it 'excludes attachments referenced by a citation link, even with an anchor' do
-      cited = attach('linked.pdf')
-      create(:lex_citation, person: person, link: "#{entry.download_path('linked.pdf')}#page=3")
+        result = helper.non_citation_attachments(entry, person).map(&:id)
+        expect(result).to eq([plain_attachment.id])
+        expect(result).not_to include(cited.id)
+      end
 
-      expect(helper.non_citation_attachments(entry, person).map(&:id)).not_to include(cited.id)
-    end
+      it 'excludes attachments referenced by a citation link, even with an anchor' do
+        cited = attach('linked.pdf')
+        create(:lex_citation, person: person, link: "#{entry.download_path('linked.pdf')}#page=3")
 
-    it 'excludes attachments whose blob is attached as a citation backup_file' do
-      backed_up = attach('backup.pdf')
-      citation = create(:lex_citation, person: person, link: nil)
-      citation.backup_file.attach(entry.blob_by_filename('backup.pdf'))
+        expect(helper.non_citation_attachments(entry, person).map(&:id)).not_to include(cited.id)
+      end
 
-      expect(helper.non_citation_attachments(entry, person).map(&:id)).to eq([plain_attachment.id])
-      expect(backed_up.reload).to be_present # the attachment itself is untouched, merely filtered out
-    end
+      it 'excludes attachments whose blob is attached as a citation backup_file' do
+        backed_up = attach('backup.pdf')
+        citation = create(:lex_citation, person: person, link: nil)
+        citation.backup_file.attach(entry.blob_by_filename('backup.pdf'))
 
-    it 'returns an empty array when every attachment belongs to a citation' do
-      create(:lex_citation, person: person, link: entry.download_path('plain.pdf'))
-      expect(helper.non_citation_attachments(entry, person)).to be_empty
+        expect(helper.non_citation_attachments(entry, person).map(&:id)).to eq([plain_attachment.id])
+        expect(backed_up.reload).to be_present # the attachment itself is untouched, merely filtered out
+      end
+
+      it 'returns an empty array when every attachment belongs to a citation' do
+        create(:lex_citation, person: person, link: entry.download_path('plain.pdf'))
+        expect(helper.non_citation_attachments(entry, person)).to be_empty
+      end
     end
   end
 end

@@ -203,7 +203,7 @@
       - total_count = checklist['citations']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
-    - all_citations = item.citations.includes(authors: :entry)
+    - all_citations = item.citations.includes(authors: :entry).preload(backup_file_attachment: :blob)
     - cit_size = all_citations.size
     - if php_counts[:citations] && php_counts[:citations] != cit_size
       .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
@@ -247,6 +247,12 @@
                   %span.text-muted
                     = t('lexicon.verification.sections.citation_backup_file')
                     = link_to File.basename(citation.backup_url), citation.backup_url, target: '_blank', rel: 'noopener'
+                -# informational only: these files are listed here instead of in the attachments section
+                - citation_attachments(entry, citation).each do |attachment|
+                  %small.d-block.text-muted.citation-attachment
+                    = t('lexicon.verification.sections.attachment_used_in_citation')
+                    = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank', rel: 'noopener'
+                    = "(#{number_to_human_size(attachment.byte_size)})"
               .citation-actions.mt-2
                 %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{edit_lexicon_citation_path(citation)}', function() { reloadPage(); })" }
                   ✏️
