@@ -269,6 +269,7 @@ he:
         no_external_identifiers: "(אין מזהים חיצוניים)"
         citation_from_publication: "ממקור:"
         citation_pages: "עמ׳:"
+        citation_link: "קישורית:"
         citation_backup_file: "גיבוי:"
         attachment_used_in_citation: "בשימוש במ״מ:"
         count_mismatch: "אי-התאמה בספירה: %{php_count} פריט/ים בקובץ המקור, אך %{migrated_count} פריטים מועברים. ייתכן שאי-ההתאמה מוצדקת ואינה מונעת את אישור הערך."
