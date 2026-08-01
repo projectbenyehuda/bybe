@@ -1,0 +1,44 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+describe 'Reporting a publication missing from the lexicon entry', :js do
+  let!(:authority) { create(:authority, name: 'Test Author') }
+  let!(:person) { create(:lex_person, authority: authority, birthdate: '1900', deathdate: '1980', gender: :male) }
+  let!(:entry) { create(:lex_entry, title: 'Test Author', lex_item: person, status: :draft) }
+  let!(:publication) { create(:publication, authority: authority, title: 'Unmatched Publication') }
+
+  let!(:lex_file) do
+    file_path = Rails.root.join('tmp/test_author_missing_publication.php')
+    File.write(file_path, '<html><body><h1>Test Author</h1></body></html>')
+    create(:lex_file,
+           lex_entry: entry,
+           fname: 'test_author_missing_publication.php',
+           full_path: file_path.to_s,
+           status: :ingested,
+           entrytype: :person)
+  end
+
+  before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+    allow(Lexicon::MondayReport).to receive(:call).and_return({ success: true })
+    login_as_lexicon_editor
+    visit "/lex/verification/#{entry.id}"
+  end
+
+  after { FileUtils.rm_f(lex_file.full_path) }
+
+  it 'lists the unmatched publication and removes its report button once reported' do
+    expect(page).to have_content(I18n.t('lexicon.verification.sections.unmatched_publications_heading'))
+    expect(page).to have_css("#unmatched-publication-#{publication.id} .monday-missing-work-btn")
+
+    find("#unmatched-publication-#{publication.id} .monday-missing-work-btn").click
+
+    expect(page).to have_no_css("#unmatched-publication-#{publication.id} .monday-missing-work-btn", wait: 5)
+    # The publication itself stays listed, only the button goes away
+    expect(page).to have_css("#unmatched-publication-#{publication.id}")
+    expect(Lexicon::MondayReport).to have_received(:call).with(
+      hash_including(report_type: :missing_work, publication: publication)
+    )
+  end
+end

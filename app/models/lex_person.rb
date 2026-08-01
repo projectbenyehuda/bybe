@@ -16,6 +16,15 @@ class LexPerson < ApplicationRecord
     citations.where(lex_person_work_id: nil, subject: nil).includes(:authors, :manifestation)
   end
 
+  # Publications of the associated Authority that are not linked to any of this person's works,
+  # i.e. works we know of in BYP that are missing from the legacy lexicon entry.
+  def unmatched_publications
+    return Publication.none if authority.nil?
+
+    matched_ids = works.where.not(publication_id: nil).select(:publication_id)
+    authority.publications.where.not(id: matched_ids).order(:title)
+  end
+
   # Returns the intellectual_property string for display purposes.
   # Maps the boolean copyrighted field: true => 'copyrighted', false => 'public_domain', nil => nil
   def intellectual_property

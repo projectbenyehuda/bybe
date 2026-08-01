@@ -28,10 +28,12 @@ RSpec.describe 'POST /lex/verification/:id/report_to_monday', type: :request do
     end
 
     it 'delegates to the MondayReport service for a missing_work report' do
-      post url, params: { type: 'missing_work', work_title: 'שיר ערש' }, as: :json
+      publication = create(:publication, title: 'שיר ערש')
+
+      post url, params: { type: 'missing_work', publication_id: publication.id }, as: :json
 
       expect(Lexicon::MondayReport).to have_received(:call).with(
-        hash_including(report_type: :missing_work, work_title: 'שיר ערש')
+        hash_including(report_type: :missing_work, publication: publication)
       )
     end
 

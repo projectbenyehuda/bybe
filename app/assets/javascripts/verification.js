@@ -246,11 +246,11 @@ function initVerification() {
         });
     });
 
-    // Handle per-work "missing work" report buttons
+    // Handle per-publication "missing work" report buttons
     $(document).on('click', '.monday-missing-work-btn', function() {
         var btn = $(this);
         var reportUrl = btn.data('report-url');
-        var workTitle = btn.data('work-title');
+        var publicationId = btn.data('publication-id');
 
         btn.prop('disabled', true);
         $.ajax({
@@ -258,9 +258,10 @@ function initVerification() {
             type: 'POST',
             dataType: 'json',
             headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
-            data: { type: 'missing_work', work_title: workTitle },
+            data: { type: 'missing_work', publication_id: publicationId },
             success: function(data) {
                 showToast(data.message);
+                btn.remove();
             },
             error: function(xhr) {
                 var err = (xhr.responseJSON && xhr.responseJSON.error) || 'Error sending report';

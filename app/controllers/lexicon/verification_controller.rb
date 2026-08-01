@@ -298,14 +298,14 @@ module Lexicon
     def report_to_monday
       report_type = params[:type] == 'missing_work' ? :missing_work : :general
       description = params[:description].presence
-      work_title = params[:work_title].presence
+      publication = Publication.find_by(id: params[:publication_id]) if params[:publication_id].present?
 
       result = Lexicon::MondayReport.call(
         entry: @entry,
         report_type: report_type,
         current_url: lexicon_verification_url(@entry),
         description: description,
-        work_title: work_title
+        publication: publication
       )
 
       if result[:success]

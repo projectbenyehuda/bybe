@@ -3,6 +3,36 @@
 require 'rails_helper'
 
 describe LexPerson do
+  describe '#unmatched_publications' do
+    let(:authority) { create(:authority) }
+    let(:person) { create(:lex_person, authority: authority) }
+
+    it 'returns an empty relation when the person has no authority' do
+      person = create(:lex_person, authority: nil)
+      create(:publication)
+
+      expect(person.unmatched_publications).to be_empty
+    end
+
+    it "excludes publications linked to one of the person's works" do
+      matched = create(:publication, authority: authority)
+      unmatched = create(:publication, authority: authority)
+      create(:lex_person_work, person: person, publication: matched)
+      create(:lex_person_work, person: person, publication: nil)
+
+      expect(person.unmatched_publications).to contain_exactly(unmatched)
+    end
+
+    it 'ignores publications of other authorities and works of other people' do
+      unmatched = create(:publication, authority: authority)
+      other_authority_pub = create(:publication)
+      create(:lex_person_work, person: create(:lex_person), publication: unmatched)
+
+      expect(person.unmatched_publications).to contain_exactly(unmatched)
+      expect(person.unmatched_publications).not_to include(other_authority_pub)
+    end
+  end
+
   describe '.works_by_type' do
     let(:person) { create(:lex_person) }
     let!(:original_works) { create_list(:lex_person_work, 2, person: person, work_type: :original) }
