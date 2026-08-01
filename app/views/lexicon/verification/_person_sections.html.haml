@@ -204,7 +204,7 @@
                   %strong= publication.title
                   - pub_details = [publication.publisher_line, publication.pub_year].compact_blank.join(', ')
                   - if pub_details.present?
-                    %span.text-muted= pub_details
+                    %span.text-muted= " #{pub_details}"
                 %button.btn.btn-sm.btn-outline-warning.monday-missing-work-btn.ms-2{ type: 'button', data: { 'publication-id': publication.id, 'report-url': lexicon_report_to_monday_verification_path(entry) } }
                   = t('lexicon.verification.monday.missing_work_button')
 
