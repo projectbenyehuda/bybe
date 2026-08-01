@@ -330,12 +330,10 @@
     .verification-badge{class: checklist['attachments']&.dig('verified') ? 'verified' : 'not-verified'}
       = checklist['attachments']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
   .section-content
-    - if entry.attachments.any?
-      - citations_by_file = Hash.new { |h, k| h[k] = [] }
-      - item.citations.each do |c|
-        - citations_by_file[c.link.split('#').first] << c if c.link.present?
-        - citations_by_file[c.backup_url.split('#').first] << c if c.backup_url.present?
-      - entry.attachments.each do |attachment|
+    -# files belonging to a citation are verified in the citations section, so they are not listed here
+    - attachments = non_citation_attachments(entry, item)
+    - if attachments.any?
+      - attachments.each do |attachment|
         .attachment-item{id: "attachment-#{attachment.id}", class: entry.profile_image_id == attachment.id ? 'profile-image-selected' : ''}
           - if attachment.variable?
             .attachment-thumbnail
@@ -345,9 +343,6 @@
             %span.text-muted= "(#{number_to_human_size(attachment.byte_size)})"
             - if entry.profile_image_id == attachment.id
               %span.badge.profile-image-badge.bg-primary.ms-2= t('lexicon.verification.migrated.profile_image_badge')
-            - download_path = entry.download_path(attachment.filename.to_s)
-            - citations_by_file[download_path].each do |citation|
-              %small.d-block.text-muted #{t('lexicon.verification.sections.attachment_used_in_citation')} #{citation.title}
           .attachment-actions.mt-2
             - if attachment.content_type.to_s.start_with?('image/')
               %button.btn.btn-sm{ class: entry.profile_image_id == attachment.id ? 'btn-primary' : 'btn-outline-primary', data: { action: 'click->verification#setProfileImage', 'attachment-id': attachment.id } }

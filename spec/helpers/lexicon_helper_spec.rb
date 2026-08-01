@@ -211,4 +211,51 @@ RSpec.describe LexiconHelper, type: :helper do
       end
     end
   end
+
+  describe '#non_citation_attachments' do
+    let(:person) { create(:lex_person) }
+    let(:entry) { create(:lex_entry, lex_item: person) }
+    let(:pdf_path) { Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem.pdf') }
+    let!(:plain_attachment) { attach('plain.pdf') }
+
+    def attach(filename)
+      entry.attachments.attach(io: File.open(pdf_path, 'rb'), filename: filename, content_type: 'application/pdf')
+      entry.attachments.reload.detect { |a| a.filename.to_s == filename }
+    end
+
+    it 'returns attachments not associated with any citation' do
+      create(:lex_citation, person: person, link: nil, backup_url: nil)
+      expect(helper.non_citation_attachments(entry, person).map(&:id)).to eq([plain_attachment.id])
+    end
+
+    it 'excludes attachments referenced by a citation backup_url' do
+      cited = attach('cited.pdf')
+      create(:lex_citation, person: person, link: nil, backup_url: entry.download_path('cited.pdf'))
+
+      result = helper.non_citation_attachments(entry, person).map(&:id)
+      expect(result).to eq([plain_attachment.id])
+      expect(result).not_to include(cited.id)
+    end
+
+    it 'excludes attachments referenced by a citation link, even with an anchor' do
+      cited = attach('linked.pdf')
+      create(:lex_citation, person: person, link: "#{entry.download_path('linked.pdf')}#page=3")
+
+      expect(helper.non_citation_attachments(entry, person).map(&:id)).not_to include(cited.id)
+    end
+
+    it 'excludes attachments whose blob is attached as a citation backup_file' do
+      backed_up = attach('backup.pdf')
+      citation = create(:lex_citation, person: person, link: nil)
+      citation.backup_file.attach(entry.blob_by_filename('backup.pdf'))
+
+      expect(helper.non_citation_attachments(entry, person).map(&:id)).to eq([plain_attachment.id])
+      expect(backed_up.reload).to be_present # the attachment itself is untouched, merely filtered out
+    end
+
+    it 'returns an empty array when every attachment belongs to a citation' do
+      create(:lex_citation, person: person, link: entry.download_path('plain.pdf'))
+      expect(helper.non_citation_attachments(entry, person)).to be_empty
+    end
+  end
 end

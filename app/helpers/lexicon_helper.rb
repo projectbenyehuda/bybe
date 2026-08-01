@@ -165,6 +165,22 @@ module LexiconHelper
     bio_text.gsub(%r{<img\b[^>]*src=["'][^"']*#{Regexp.escape(filename)}[^"']*["'][^>]*/?>}i, '')
   end
 
+  # Returns the entry's attachments that are NOT already accounted for by one of the person's
+  # citations, i.e. excluding files that are attached as a citation's backup_file, and files a
+  # citation's link/backup_url points at. The verification workbench lists only these, since
+  # citation-owned files are verified in the citations section instead.
+  def non_citation_attachments(lex_entry, lex_person)
+    citations = lex_person.citations.preload(backup_file_attachment: :blob)
+    backup_blob_ids = citations.filter_map { |c| c.backup_file.attached? ? c.backup_file.blob.id : nil }
+    # links may carry an anchor (e.g. /files/lex/1/foo.pdf#page=3), which download_path never has
+    cited_paths = citations.flat_map { |c| [c.link, c.backup_url] }.compact_blank.map { |url| url.split('#').first }
+
+    lex_entry.attachments.reject do |attachment|
+      backup_blob_ids.include?(attachment.blob_id) ||
+        cited_paths.include?(lex_entry.download_path(attachment.filename.to_s))
+    end
+  end
+
   def grouped_and_ordered_citations(lex_person)
     person_works = lex_person.works.index_by(&:title)
     # we preload data required for citations rendering
