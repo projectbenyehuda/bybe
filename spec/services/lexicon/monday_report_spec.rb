@@ -119,7 +119,9 @@ RSpec.describe Lexicon::MondayReport do
     end
 
     context 'with a missing_work report' do
-      let(:work_title) { 'שיר ערש' }
+      let(:publication) do
+        create(:publication, title: 'שיר ערש', publisher_line: 'הוצאת דביר', pub_year: '1948')
+      end
 
       it 'returns success when Monday API succeeds' do
         stub_monday_success
@@ -127,33 +129,48 @@ RSpec.describe Lexicon::MondayReport do
           entry: entry,
           report_type: :missing_work,
           current_url: current_url,
-          work_title: work_title
+          publication: publication
         )
 
         expect(result[:success]).to be true
       end
 
-      it 'includes the work title in the missing_work_name text' do
+      it 'includes the publication title in the missing_work_name text' do
         captured_body = nil
         stub_monday_success { |req| captured_body = req.body }
-        expected = I18n.t('lexicon.verification.monday.missing_work_name', title: work_title)
+        expected = I18n.t('lexicon.verification.monday.missing_work_name', title: publication.title)
 
         described_class.call(
-          entry: entry, report_type: :missing_work, current_url: current_url, work_title: work_title
+          entry: entry, report_type: :missing_work, current_url: current_url, publication: publication
         )
 
         expect(captured_body).to include(expected)
       end
 
-      it 'omits long_text column' do
+      it 'includes the publisher and year in the long_text column' do
         captured_body = nil
         stub_monday_success { |req| captured_body = req.body }
 
         described_class.call(
-          entry: entry, report_type: :missing_work, current_url: current_url, work_title: work_title
+          entry: entry, report_type: :missing_work, current_url: current_url, publication: publication
         )
 
-        expect(captured_body).not_to include('long_text_mm2tzz8q')
+        expect(captured_body).to include('long_text_mm2tzz8q')
+        expect(JSON.parse(captured_body)['query']).to include('הוצאת דביר').and include('1948')
+      end
+
+      it 'falls back to the unknown label when publisher and year are blank' do
+        publication.update!(publisher_line: nil, pub_year: nil)
+        captured_body = nil
+        stub_monday_success { |req| captured_body = req.body }
+
+        described_class.call(
+          entry: entry, report_type: :missing_work, current_url: current_url, publication: publication
+        )
+
+        expected = I18n.t('lexicon.verification.monday.missing_work_details',
+                          publisher: I18n.t('unknown'), year: I18n.t('unknown'))
+        expect(JSON.parse(captured_body)['query']).to include(expected)
       end
     end
 

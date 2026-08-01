@@ -165,6 +165,9 @@
               - if pub_detail
                 %br
                 %span.text-muted= pub_detail
+              - if work.comment.present?
+                %br
+                %span.text-muted!= render_person_work_comment(work.comment, work.comment_links)
               - if work.publication.present?
                 %br
                 %span.text-muted
@@ -178,9 +181,6 @@
               - work.linked_people.sort_by(&:sort_value).each do |linked_person|
                 %br
                 %span.text-muted!= render_linked_person(linked_person)
-              - if work.comment.present?
-                %br
-                %span.text-muted!= render_person_work_comment(work.comment, work.comment_links)
             .work-actions.mt-2
               %button.btn.btn-sm.btn-outline-primary{ onclick: "openWorkEditPanel('#{edit_lexicon_work_path(work)}', function() { reloadScrollingToSection('section-works'); })" }
                 ✏️
@@ -188,9 +188,6 @@
               %button.btn.btn-sm{ class: checklist['works']&.dig('items', work.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: "works.items.#{work.id}" } }
                 ✓
                 = t('lexicon.verification.migrated.mark_verified')
-              - if work.publication.present?
-                %button.btn.btn-sm.btn-outline-warning.monday-missing-work-btn{ type: 'button', data: { 'work-title': work.title, 'report-url': lexicon_report_to_monday_verification_path(entry) } }
-                  = t('lexicon.verification.monday.missing_work_button')
     - else
       %p.text-muted= t('lexicon.verification.sections.no_works')
 

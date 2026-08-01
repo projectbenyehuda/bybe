@@ -298,17 +298,19 @@ module Lexicon
     def report_to_monday
       report_type = params[:type] == 'missing_work' ? :missing_work : :general
       description = params[:description].presence
-      work_title = params[:work_title].presence
+      publication = Publication.find_by(id: params[:publication_id]) if params[:publication_id].present?
 
       result = Lexicon::MondayReport.call(
         entry: @entry,
         report_type: report_type,
         current_url: lexicon_verification_url(@entry),
         description: description,
-        work_title: work_title
+        publication: publication
       )
 
       if result[:success]
+        # Remember the report so the publication is not offered for reporting again
+        publication&.mark_reported_missing_from_lexicon!(current_user) if report_type == :missing_work
         render json: { success: true, message: I18n.t('lexicon.verification.monday.report_sent') }
       else
         render json: { success: false, error: result[:error] }, status: :unprocessable_content
@@ -325,6 +327,7 @@ module Lexicon
       # Auto-match works to publications if editing works section and authority exists
       if @section == 'works' && @item.is_a?(LexPerson) && @item.authority.present?
         @work_matches = auto_match_works_to_publications(@item)
+        @unmatched_publications = publications_absent_from_entry(@item, @work_matches)
       end
 
       render partial: "lexicon/verification/edit_#{@section}"
@@ -538,65 +541,32 @@ module Lexicon
       matches
     end
 
+    # Publications of the person's authority that neither belong to an existing work nor appear
+    # among the proposed matches: works we have in BYP that are missing from the lexicon entry.
+    def publications_absent_from_entry(person, work_matches)
+      person.unmatched_publications.where.not(id: work_matches.values.pluck(:publication_id))
+    end
+
     # Find the best publication match for a work
     # Returns { publication: Publication, similarity: Integer } or nil
     def find_best_publication_match(work, publications, authority_name)
-      work_title = work.title.to_s.strip
-      return nil if work_title.blank?
+      return nil if work.title.blank?
 
       best_match = nil
       best_similarity = 0
 
       publications.each do |pub|
-        pub_title = normalize_publication_title(pub.title, authority_name)
-        next if pub_title.blank?
+        next if pub.title.blank?
 
-        # Try exact match first
-        if work_title == pub_title
-          return { publication: pub, similarity: 100 }
-        end
-
-        # Try fuzzy match using DamerauLevenshtein
-        similarity = calculate_similarity(work_title, pub_title)
-
-        # Only consider matches with 70% or higher similarity
-        next unless similarity >= 70
-
-        next unless similarity > best_similarity
+        similarity = Lexicon::TitleSimilarity.call(work.title, pub.title, ignoring: authority_name)
+        return { publication: pub, similarity: similarity } if similarity == 100
+        next unless similarity >= Lexicon::TitleSimilarity::MATCH_THRESHOLD && similarity > best_similarity
 
         best_similarity = similarity
         best_match = pub
       end
 
       best_match ? { publication: best_match, similarity: best_similarity } : nil
-    end
-
-    # Normalize publication title by removing authority name and slashes
-    def normalize_publication_title(title, authority_name)
-      return '' if title.blank?
-
-      normalized = title.dup
-
-      # Remove authority name (case-insensitive)
-      if authority_name.present?
-        normalized = normalized.gsub(/#{Regexp.escape(authority_name)}/i, '')
-      end
-
-      # Remove forward slashes
-      normalized = normalized.gsub('/', '')
-
-      # Clean up whitespace
-      normalized.strip
-    end
-
-    # Calculate similarity percentage between two strings using DamerauLevenshtein
-    # Caps denominator at 20 to reduce false positives on long names
-    def calculate_similarity(str1, str2)
-      d = DamerauLevenshtein.distance(str1, str2)
-      l = [str1.length, str2.length].max.clamp(0, 20).to_f
-      return 0 if l.zero?
-
-      ((1 - (d / l)) * 100).round
     end
   end
 end

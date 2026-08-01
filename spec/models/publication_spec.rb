@@ -3,6 +3,38 @@
 require 'rails_helper'
 
 RSpec.describe Publication, type: :model do
+  describe 'reporting a publication as missing from its lexicon entry' do
+    let(:publication) { create(:publication) }
+
+    it 'is not reported by default' do
+      expect(publication).not_to be_reported_missing_from_lexicon
+    end
+
+    it 'is reported once flagged, and records the reporting user' do
+      user = create(:user)
+
+      publication.mark_reported_missing_from_lexicon!(user)
+
+      expect(publication.reload).to be_reported_missing_from_lexicon
+      expect(ListItem.find_by(listkey: described_class::LEX_REPORTED_MISSING_LISTKEY, item: publication).user)
+        .to eq(user)
+    end
+
+    it 'is idempotent' do
+      publication.mark_reported_missing_from_lexicon!
+      publication.mark_reported_missing_from_lexicon!
+
+      expect(ListItem.where(listkey: described_class::LEX_REPORTED_MISSING_LISTKEY, item: publication).count).to eq(1)
+    end
+
+    it 'does not flag other publications' do
+      other = create(:publication)
+      publication.mark_reported_missing_from_lexicon!
+
+      expect(other.reload).not_to be_reported_missing_from_lexicon
+    end
+  end
+
   describe '.update_publications_that_may_be_done_list' do
     subject(:run) { described_class.update_publications_that_may_be_done_list }
 
