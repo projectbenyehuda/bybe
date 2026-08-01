@@ -109,6 +109,61 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     end
   end
 
+  # az_navbar is a boolean column ("show an A-Z navigation bar?"). The verification view
+  # used to render it as markdown, which raised TypeError for every publication ingested
+  # with the default az_navbar = true, and offered a free-text edit form for it.
+  describe 'az_navbar, a boolean publication flag' do
+    let(:entry) do
+      e = create(:lex_entry, status: :verifying, lex_item: build(:lex_publication, az_navbar: true))
+      e.start_verification!('editor@example.com')
+      e
+    end
+
+    it 'renders the verification page for a publication with az_navbar set' do
+      get "/lex/verification/#{entry.id}"
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include(I18n.t('lexicon.verification.sections.has_az_navbar'))
+    end
+
+    it 'renders the verification page for a publication without az_navbar' do
+      entry.lex_item.update!(az_navbar: false)
+
+      get "/lex/verification/#{entry.id}"
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include(I18n.t('lexicon.verification.sections.no_az_navbar'))
+    end
+
+    it 'offers a checkbox rather than a free-text field in the edit form' do
+      get "/lex/verification/#{entry.id}/edit_section", params: { section: 'az_navbar' }, xhr: true
+
+      expect(response).to have_http_status(:success)
+      expect(response.body).to include('type="checkbox"')
+      expect(response.body).not_to include('<textarea')
+    end
+
+    it 'turns the flag off when the checkbox is submitted unchecked' do
+      patch "/lex/verification/#{entry.id}/update_section",
+            params: { section: 'az_navbar', lex_publication: { az_navbar: '0' } },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(entry.lex_item.reload.az_navbar).to be false
+    end
+
+    it 'turns the flag on when the checkbox is submitted checked' do
+      entry.lex_item.update!(az_navbar: false)
+
+      patch "/lex/verification/#{entry.id}/update_section",
+            params: { section: 'az_navbar', lex_publication: { az_navbar: '1' } },
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(entry.lex_item.reload.az_navbar).to be true
+    end
+  end
+
   describe 'PATCH /lex/verification/:id/update_checklist' do
     context 'when verifying the title section for a LexPerson' do
       let(:entry) do
