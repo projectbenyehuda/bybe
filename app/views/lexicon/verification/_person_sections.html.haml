@@ -165,6 +165,9 @@
               - if pub_detail
                 %br
                 %span.text-muted= pub_detail
+              - if work.comment.present?
+                %br
+                %span.text-muted!= render_person_work_comment(work.comment, work.comment_links)
               - if work.publication.present?
                 %br
                 %span.text-muted
@@ -178,9 +181,6 @@
               - work.linked_people.sort_by(&:sort_value).each do |linked_person|
                 %br
                 %span.text-muted!= render_linked_person(linked_person)
-              - if work.comment.present?
-                %br
-                %span.text-muted!= render_person_work_comment(work.comment, work.comment_links)
             .work-actions.mt-2
               %button.btn.btn-sm.btn-outline-primary{ onclick: "openWorkEditPanel('#{edit_lexicon_work_path(work)}', function() { reloadScrollingToSection('section-works'); })" }
                 ✏️
