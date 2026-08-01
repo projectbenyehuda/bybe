@@ -252,30 +252,6 @@ RSpec.describe LexiconHelper, type: :helper do
       end
     end
 
-    describe '#backup_url_shown_as_file?' do
-      it 'is true when backup_url points at a file of the entry' do
-        attach('cited.pdf')
-        citation = create(:lex_citation, person: person, backup_url: entry.download_path('cited.pdf'))
-
-        expect(helper.backup_url_shown_as_file?(entry, citation)).to be true
-      end
-
-      it 'is false for a backup_url pointing elsewhere' do
-        citation = create(:lex_citation, person: person, backup_url: 'https://example.com/elsewhere.pdf')
-        expect(helper.backup_url_shown_as_file?(entry, citation)).to be false
-      end
-
-      it 'is false when the entry has no such file' do
-        citation = create(:lex_citation, person: person, backup_url: entry.download_path('never_attached.pdf'))
-        expect(helper.backup_url_shown_as_file?(entry, citation)).to be false
-      end
-
-      it 'is false when backup_url is blank' do
-        citation = create(:lex_citation, person: person, backup_url: nil)
-        expect(helper.backup_url_shown_as_file?(entry, citation)).to be false
-      end
-    end
-
     describe '#non_citation_attachments' do
       it 'returns attachments not associated with any citation' do
         create(:lex_citation, person: person, link: nil, backup_url: nil)

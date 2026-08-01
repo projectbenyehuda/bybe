@@ -179,20 +179,10 @@ module LexiconHelper
     end
   end
 
-  # True when the citation's backup_url points at a file of this entry, which citation_attachments
-  # therefore already lists as a file of the citation. The verification view relies on this to show
-  # such a URL once, as a file, rather than also as a backup link. A backup_url pointing at another
-  # entry's file or at an external site is not covered here and stays a backup link.
-  def backup_url_shown_as_file?(lex_entry, citation)
-    return false if citation.backup_url.blank?
-
-    path = citation.backup_url.split('#').first
-    lex_entry.attachments.any? { |attachment| lex_entry.download_path(attachment.filename.to_s) == path }
-  end
-
   # Returns the entry's attachments that are NOT already accounted for by one of the person's
-  # citations. The verification workbench lists only these in its attachments section, since
-  # citation-owned files are shown under their citation instead.
+  # citations. The verification workbench lists only these in its attachments section, since a
+  # citation-owned file is already visible in the citations section as that citation's
+  # link or backup_url.
   def non_citation_attachments(lex_entry, lex_person)
     cited_ids = lex_person.citations.preload(backup_file_attachment: :blob)
                           .flat_map { |citation| citation_attachments(lex_entry, citation) }

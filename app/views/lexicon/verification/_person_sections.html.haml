@@ -203,7 +203,7 @@
       - total_count = checklist['citations']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
-    - all_citations = item.citations.includes(authors: :entry).preload(backup_file_attachment: :blob)
+    - all_citations = item.citations.includes(authors: :entry)
     - cit_size = all_citations.size
     - if php_counts[:citations] && php_counts[:citations] != cit_size
       .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
@@ -241,19 +241,13 @@
                   - if citation.link_broken?
                     %span.broken-link-badge= broken_link_badge(citation.link_http_status)
                     = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{citation.link}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
+                  %span.text-muted= t('lexicon.verification.sections.citation_link')
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
-                -# a backup_url pointing at one of the entry's own files is shown as a file below instead
-                - if citation.backup_url.present? && !backup_url_shown_as_file?(entry, citation)
+                - if citation.backup_url.present?
                   %br
                   %span.text-muted
                     = t('lexicon.verification.sections.citation_backup_file')
                     = link_to File.basename(citation.backup_url), citation.backup_url, target: '_blank', rel: 'noopener'
-                -# informational only: these files are listed here instead of in the attachments section
-                - citation_attachments(entry, citation).each do |attachment|
-                  %small.d-block.text-muted.citation-attachment
-                    = t('lexicon.verification.sections.citation_attachment')
-                    = link_to attachment.filename.to_s, rails_blob_path(attachment, disposition: 'attachment'), target: '_blank', rel: 'noopener'
-                    = "(#{number_to_human_size(attachment.byte_size)})"
               .citation-actions.mt-2
                 %button.btn.btn-sm.btn-outline-primary{ onclick: "openModal('#{edit_lexicon_citation_path(citation)}', function() { reloadPage(); })" }
                   ✏️

@@ -584,7 +584,7 @@ describe 'Lexicon Verification Workbench' do
     end
   end
 
-  describe 'Files belonging to citations are shown under their citation', :js do
+  describe 'Attachment section hides files belonging to citations', :js do
     let!(:backup_filename) { 'backup_doc.pdf' }
     let!(:other_filename) { 'standalone_doc.pdf' }
     let!(:backup_path) { entry.download_path(backup_filename) }
@@ -618,49 +618,36 @@ describe 'Lexicon Verification Workbench' do
       end
     end
 
-    it 'lists the file under its citation, with no editing controls' do
-      cited = entry.attachments.reload.find { |a| a.filename.to_s == backup_filename }
-
-      within("#citation-#{citation_with_backup.id}") do
-        within('.citation-attachment') do
-          expect(page).to have_content(I18n.t('lexicon.verification.sections.citation_attachment'))
-          expect(page).to have_link(backup_filename, href: rails_blob_path(cited, disposition: 'attachment'))
-          expect(page).to have_no_button
-        end
-      end
-    end
-
-    it 'does not list a file under an unrelated citation' do
-      within("#citation-#{citation.id}") do
-        expect(page).to have_no_css('.citation-attachment')
-      end
-    end
-
-    it 'does not also show a backup_url that points at one of the entry files' do
-      within("#citation-#{citation_with_backup.id}") do
-        expect(page).to have_no_content(I18n.t('lexicon.verification.sections.citation_backup_file'))
-        expect(page).to have_no_link(backup_filename, href: backup_path)
-      end
-    end
-
-    context 'when the backup_url points outside the entry' do
-      let!(:citation_with_external_backup) do
-        create(:lex_citation,
-               person: person,
-               title: 'Citation With External Backup',
-               backup_url: 'https://example.com/elsewhere.pdf',
-               link: nil)
-      end
-
-      # this citation is created after the outer before block's visit, so re-render the page
-      before { visit "/lex/verification/#{entry.id}" }
-
-      it 'still shows it as a backup link' do
-        within("#citation-#{citation_with_external_backup.id}") do
+    it 'shows backup_url as a link in the citation card' do
+      within('#section-citations') do
+        within("#citation-#{citation_with_backup.id}") do
           expect(page).to have_content(I18n.t('lexicon.verification.sections.citation_backup_file'))
-          expect(page).to have_link('elsewhere.pdf', href: 'https://example.com/elsewhere.pdf')
-          expect(page).to have_no_css('.citation-attachment')
+          expect(page).to have_link(backup_filename, href: backup_path)
         end
+      end
+    end
+  end
+
+  describe 'Citation link labelling', :js do
+    before do
+      skip 'WebDriver not available or misconfigured' unless webdriver_available?
+
+      visit "/lex/verification/#{entry.id}"
+    end
+
+    it 'labels the citation link' do
+      within("#citation-#{citation.id}") do
+        expect(page).to have_content(I18n.t('lexicon.verification.sections.citation_link'))
+        expect(page).to have_link(citation.link, href: citation.link)
+      end
+    end
+
+    it 'omits the label for a citation with no link' do
+      linkless = create(:lex_citation, person: person, title: 'Linkless Citation', link: nil)
+      visit "/lex/verification/#{entry.id}"
+
+      within("#citation-#{linkless.id}") do
+        expect(page).to have_no_content(I18n.t('lexicon.verification.sections.citation_link'))
       end
     end
   end
