@@ -16,13 +16,13 @@ module Lexicon
     # @param report_type [Symbol] :general or :missing_work
     # @param current_url [String] full URL of the verification page
     # @param description [String, nil] free-text (only for :general reports)
-    # @param work_title [String, nil] title of the specific work (only for :missing_work)
-    def initialize(entry:, report_type:, current_url:, description: nil, work_title: nil)
+    # @param publication [Publication, nil] the publication missing from the lexicon (only for :missing_work)
+    def initialize(entry:, report_type:, current_url:, description: nil, publication: nil)
       @entry = entry
       @report_type = report_type
       @current_url = current_url
       @description = description
-      @work_title = work_title
+      @publication = publication
     end
 
     def call
@@ -50,13 +50,23 @@ module Lexicon
         'text_mm2tn5yc' => @entry.title,
         'link_mm2t7e9n' => { 'url' => @current_url, 'text' => I18n.t('lexicon.verification.monday.link_text') }
       }
-      values['long_text_mm2tzz8q'] = @description if @report_type == :general && @description.present?
+      long_text = @report_type == :missing_work ? publication_details : @description
+      values['long_text_mm2tzz8q'] = long_text if long_text.present?
       values
+    end
+
+    # Publisher and year of the reported publication, for the Monday item's description column.
+    def publication_details
+      return nil if @publication.nil?
+
+      I18n.t('lexicon.verification.monday.missing_work_details',
+             publisher: @publication.publisher_line.presence || I18n.t('unknown'),
+             year: @publication.pub_year.presence || I18n.t('unknown'))
     end
 
     def item_name_column
       if @report_type == :missing_work
-        I18n.t('lexicon.verification.monday.missing_work_name', title: @work_title || @entry.title)
+        I18n.t('lexicon.verification.monday.missing_work_name', title: @publication&.title || @entry.title)
       else
         I18n.t('lexicon.verification.monday.general_name')
       end

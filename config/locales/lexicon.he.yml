@@ -288,6 +288,8 @@ he:
         close: "סגור"
         work_from_publication: "משויך לביבליוגרפיה:"
         work_from_collection: "משויך לכותר:"
+        unmatched_publications_heading: "פרסומים שאינם בערך הלקסיקון"
+        unmatched_publications_intro: "הפרסומים הבאים משויכים לרשומת הסמכות אך אינם מותאמים לאף יצירה בערך הלקסיקון:"
       bio_comparison:
         title: "השוואת ביוגרפיה"
         note: "שני הטקסטים מוצגים ללא תגי HTML וללא סימני פיסוק, ולכן אינם ניתנים לעריכה כאן. מילים שונות מודגשות בצבע. לתיקון אי-התאמה, סגרו חלון זה ולחצו על ״עריכה״ בלוח הביוגרפיה."
@@ -341,7 +343,7 @@ he:
           other: "%{count} יצירות הותאמו אוטומטית לפרסומים בהתבסס על דמיון בכותרת"
         confirm_match: אשר התאמה
         reject_match: דחה התאמה
-        proposed_collection: "(הצעה: %{title})"
+        proposed_collection: "(כותר: %{title})"
         date_of_manual_update:
           instructions: "הכנס את תאריך העדכון הידני האחרון כפי שמופיע בקובץ המקור. ניתן לתקן אם נקלט בצורה שגויה."
         external_identifiers:
@@ -363,3 +365,5 @@ he:
         link_text: קישורית לערך המוסב
         general_name: ראה תיאור נרחב
         missing_work_name: "החיבור %{title} ידוע בביבליוגרפיה אך לא מופיע בערך הלקסיקון."
+        missing_work_details: "מו״ל: %{publisher}. שנת הוצאה: %{year}."
+        missing_work_reported: "דווח בעבר"
