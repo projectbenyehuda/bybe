@@ -287,6 +287,76 @@ describe Lexicon::ParseCitations do
     end
   end
 
+  # Regression: legacy pages nest a sub-list of citations inside the <li> of the work
+  # they are about (e.g. 00156.php). The outer <li> used to swallow the nested
+  # citation's asterisk link, so the backup file was attributed both to the work and
+  # to the first nested citation carrying an inline link — and never to its real owner.
+  context 'when an asterisk link sits in a <li> nested inside another <li>' do
+    let(:html) do
+      <<~HTML
+        <ul>
+          <li><b>גרץ, נורית.</b> <b>על דעת עצמו</b> : ארבעה פרקי חיים של עמוס קינן (תל־אביב : עם עובד, 2008)
+            <font color="#FF0000">על הספר:</font>
+            <ul>
+              <li><b>גלסנר, אריק.</b> <a href="http://www.nrg.co.il/online/5/ART1/807/536.html">עד הקצה.</a>
+                מעריב, 2008, עמ' 28.</li>
+              <li><b>Keydar, Renana.</b> כותרת ייחודית ארוכה של המאמר. Jewish social studies, 2012, pp. 212-224.
+                <a href="/files/lex/5181/00156200.pdf">*</a></li>
+            </ul>
+          </li>
+        </ul>
+      HTML
+    end
+
+    let(:works) do
+      [
+        { title: 'על דעת עצמו', authors: [{ name: 'גרץ, נורית', link: nil }],
+          from_publication: 'עם עובד, 2008', pages: nil, link: nil, backup_url: nil, notes: nil },
+        { title: 'עד הקצה', authors: [{ name: 'גלסנר, אריק', link: nil }],
+          from_publication: 'מעריב, 2008', pages: '28',
+          link: 'http://www.nrg.co.il/online/5/ART1/807/536.html', backup_url: nil, notes: nil },
+        { title: 'כותרת ייחודית ארוכה של המאמר', authors: [{ name: 'Keydar, Renana', link: nil }],
+          from_publication: 'Jewish social studies, 2012', pages: '212-224',
+          link: nil, backup_url: nil, notes: nil }
+      ]
+    end
+
+    # `sent` collects the HTML actually handed to the LLM, so specs can assert on it.
+    def stub_llm_capturing(works, sent = [])
+      chat_double = instance_double(RubyLLM::Chat)
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+      allow(chat_double).to receive(:ask) do |html_arg|
+        sent << html_arg
+        instance_double(RubyLLM::Message, content: { result: [{ subject: nil, works: works }] }.to_json)
+      end
+    end
+
+    it 'assigns backup_url only to the nested citation the asterisk belongs to' do
+      stub_llm_capturing(works)
+
+      result = described_class.call(html)
+
+      expect(result.map(&:backup_url)).to eq([nil, nil, '/files/lex/5181/00156200.pdf'])
+    end
+
+    it 'marks data-file-link on the nested <li> only, not on the containing work' do
+      sent = []
+      stub_llm_capturing(works, sent)
+
+      described_class.call(html)
+
+      doc = Nokogiri::HTML::DocumentFragment.parse(sent.first)
+      tagged = doc.css('li[data-file-link]')
+      expect(tagged.size).to eq(1)
+      # The outer <li> contains the nested one, so identify the tagged <li> by what it
+      # does NOT contain: the containing work, and any nested citation of its own.
+      expect(tagged.first.css('li')).to be_empty
+      expect(tagged.first.text).to include('Keydar, Renana')
+      expect(tagged.first.text).not_to include('גרץ, נורית')
+    end
+  end
+
   context 'when the LLM returns citations with blank titles' do
     let(:html) { '<ul><li>some html</li></ul>' }
 
