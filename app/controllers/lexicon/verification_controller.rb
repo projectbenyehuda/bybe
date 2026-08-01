@@ -71,7 +71,7 @@ module Lexicon
       end
     end
 
-    # PATCH /lexicon/verification/:id/unlock
+    # PATCH /lex/verification/:id/unlock
     # Lets an editor deliberately release the lock they hold on the entry they are verifying.
     # Always returns to the queue: redirecting back to the workbench would immediately re-lock.
     def unlock
