@@ -12,8 +12,13 @@ module Lexicon
   # every proposal is confirmed by a human before anything is persisted.
   class TitleSimilarity < ApplicationService
     # Bibliographic separators carry no meaning for matching: the two databases punctuate
-    # the very same book differently (": " vs "; ", parentheses, dashes, quotes).
-    SEPARATORS = %r{[-–—/\\:;,.()\[\]"'״׳]+}
+    # the very same book differently (": " vs "; ", parentheses, dashes, quotes). The maqaf
+    # belongs here rather than with the points below, since it stands between two words.
+    SEPARATORS = %r{[-–—־/\\:;,.()\[\]"'״׳]+}
+
+    # Hebrew points and cantillation marks are a typographical choice, not part of the title:
+    # "הֵלֵּבָּן" and "הלבן" are the same book. The maqaf (05BE) is excluded -- it is a separator.
+    POINTS = /[\u0591-\u05BD\u05BF-\u05C7]/
 
     # In catalogue records " / " introduces the statement of responsibility -- the author,
     # translator and editor credits, which are not part of the title and which the two
@@ -42,13 +47,14 @@ module Lexicon
 
     private
 
-    # Drops the credits, the given name and all bibliographic punctuation, and lowercases what
-    # is left, so that only the words of the title itself take part in the comparison.
+    # Drops the points, the credits, the given name and all bibliographic punctuation, and
+    # lowercases what is left, so that only the words of the title take part in the comparison.
     def normalize(title, ignoring = nil)
-      normalized = title.to_s
+      normalized = title.to_s.gsub(POINTS, '')
       # The name goes first: the lexicon writes "name / title" where the bibliography writes
       # "title / name", so dropping it settles which side of the slash the title is on.
-      normalized = normalized.gsub(/#{Regexp.escape(ignoring)}/i, '') if ignoring.present?
+      name = ignoring.to_s.gsub(POINTS, '')
+      normalized = normalized.gsub(/#{Regexp.escape(name)}/i, '') if name.present?
       # Keep the credits when they are all that is left, rather than comparing against nothing
       without_credits = normalized.sub(STATEMENT_OF_RESPONSIBILITY, '')
       normalized = without_credits if without_credits.present?

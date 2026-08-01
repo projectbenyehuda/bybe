@@ -33,6 +33,14 @@ RSpec.describe Lexicon::TitleSimilarity do
       .to eq(100)
   end
 
+  it 'ignores Hebrew points' do
+    expect(similarity('הלבן', 'הֵלֵּבָּן')).to eq(100)
+  end
+
+  it 'reads the maqaf as separating two words rather than as a point' do
+    expect(similarity('לין יו־טאנג', 'לין יו-טאנג')).to eq(100)
+  end
+
   it 'ignores word order' do
     expect(similarity('מכתבים אל אמא', 'אל אמא : מכתבים')).to eq(100)
   end
