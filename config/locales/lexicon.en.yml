@@ -232,6 +232,7 @@ en:
         file_not_found: "⚠️ Source file not found"
       migrated:
         header: Migrated Entry
+        jump_to: "Jump to:"
         edit: Edit
         add_citation: Add Citation
         add_link: Add Link
@@ -263,7 +264,8 @@ en:
         no_date_of_manual_update: "(No manual update date)"
         no_description: "(No description)"
         no_toc: "(No table of contents)"
-        no_az_navbar: "(No A-Z navigation)"
+        has_az_navbar: "A-Z navigation bar: enabled"
+        no_az_navbar: "A-Z navigation bar: disabled"
         external_identifiers_section: Authority Control Identifiers
         no_external_identifiers: "(No authority control identifiers)"
         citation_from_publication: "From:"
