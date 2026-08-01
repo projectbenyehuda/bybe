@@ -11,6 +11,8 @@ RSpec.describe 'Verification migrated pane section shortcuts', :js, type: :syste
   end
 
   # Poll until .migrated-content scrollTop stops changing (smooth scrolling has settled).
+  # scrollTop can be fractional and jitter by well under a pixel, so "unchanged" is an
+  # epsilon comparison rather than strict equality.
   def settled_migrated_scroll_top_js
     <<~JS
       var done = arguments[0];
@@ -20,7 +22,8 @@ RSpec.describe 'Verification migrated pane section shortcuts', :js, type: :syste
       var deadline = Date.now() + 5000;
       function check() {
         var top = el ? el.scrollTop : 0;
-        if (top === last) { stable++; } else { stable = 0; last = top; }
+        if (Math.abs(top - last) < 0.5) { stable++; } else { stable = 0; }
+        last = top;
         if (stable >= 3 || Date.now() > deadline) { done(top); }
         else { setTimeout(check, 100); }
       }
@@ -158,6 +161,10 @@ RSpec.describe 'Verification migrated pane section shortcuts', :js, type: :syste
 
     it 'keeps the links shortcut, which publications do have' do
       expect(page).to have_css('.migrated-shortcut[data-section-target="section-links"]', visible: :visible)
+    end
+
+    it 'keeps the shortcuts nav itself visible' do
+      expect(page).to have_css('.migrated-shortcuts', visible: :visible)
     end
   end
 end

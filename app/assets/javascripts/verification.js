@@ -307,6 +307,16 @@ function initVerification() {
         }
     });
 
+    // Nothing left to jump to: drop the whole nav, otherwise a lone "Jump to:" label
+    // would sit in the header. Only reachable for an item type the migrated pane does
+    // not know how to render (it shows the "unsupported type" alert and no sections);
+    // both LexPerson and LexPublication always render at least the links section.
+    $('.migrated-shortcuts').each(function() {
+        if ($(this).find('.migrated-shortcut:visible').length === 0) {
+            $(this).hide();
+        }
+    });
+
     $('.migrated-shortcut').on('click', function(e) {
         e.preventDefault();
         const section = document.getElementById($(this).data('section-target'));
