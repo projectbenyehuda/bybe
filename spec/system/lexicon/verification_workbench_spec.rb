@@ -584,8 +584,9 @@ describe 'Lexicon Verification Workbench' do
     end
   end
 
-  describe 'Attachment section shows backup citations', :js do
+  describe 'Attachment section hides files belonging to citations', :js do
     let!(:backup_filename) { 'backup_doc.pdf' }
+    let!(:other_filename) { 'standalone_doc.pdf' }
     let!(:backup_path) { entry.download_path(backup_filename) }
     let!(:citation_with_backup) do
       create(:lex_citation,
@@ -598,19 +599,22 @@ describe 'Lexicon Verification Workbench' do
     before do
       skip 'WebDriver not available or misconfigured' unless webdriver_available?
 
-      File.open(Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem.pdf').to_s, 'rb') do |io|
-        entry.attachments.attach(io: io, filename: backup_filename, content_type: 'application/pdf')
+      [backup_filename, other_filename].each do |filename|
+        File.open(Rails.root.join('spec/fixtures/files/lexicon/attachments/lorem.pdf').to_s, 'rb') do |io|
+          entry.attachments.attach(io: io, filename: filename, content_type: 'application/pdf')
+        end
       end
       visit "/lex/verification/#{entry.id}"
     end
 
-    it 'shows "used in citation" label for attachments linked via backup_url' do
+    it 'omits attachments linked from a citation, while listing the rest' do
+      attachments = entry.attachments.reload
+      cited = attachments.find { |a| a.filename.to_s == backup_filename }
+      standalone = attachments.find { |a| a.filename.to_s == other_filename }
+
       within('#section-attachments') do
-        attachment = entry.attachments.find { |a| a.filename.to_s == backup_filename }
-        within("#attachment-#{attachment.id}") do
-          expect(page).to have_content(I18n.t('lexicon.verification.sections.attachment_used_in_citation'))
-          expect(page).to have_content(citation_with_backup.title)
-        end
+        expect(page).to have_css("#attachment-#{standalone.id}")
+        expect(page).to have_no_css("#attachment-#{cited.id}")
       end
     end
 
@@ -620,6 +624,30 @@ describe 'Lexicon Verification Workbench' do
           expect(page).to have_content(I18n.t('lexicon.verification.sections.citation_backup_file'))
           expect(page).to have_link(backup_filename, href: backup_path)
         end
+      end
+    end
+  end
+
+  describe 'Citation link labelling', :js do
+    before do
+      skip 'WebDriver not available or misconfigured' unless webdriver_available?
+
+      visit "/lex/verification/#{entry.id}"
+    end
+
+    it 'labels the citation link' do
+      within("#citation-#{citation.id}") do
+        expect(page).to have_content(I18n.t('lexicon.verification.sections.citation_link'))
+        expect(page).to have_link(citation.link, href: citation.link)
+      end
+    end
+
+    it 'omits the label for a citation with no link' do
+      linkless = create(:lex_citation, person: person, title: 'Linkless Citation', link: nil)
+      visit "/lex/verification/#{entry.id}"
+
+      within("#citation-#{linkless.id}") do
+        expect(page).to have_no_content(I18n.t('lexicon.verification.sections.citation_link'))
       end
     end
   end
