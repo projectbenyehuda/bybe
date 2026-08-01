@@ -261,7 +261,10 @@ function initVerification() {
             data: { type: 'missing_work', publication_id: publicationId },
             success: function(data) {
                 showToast(data.message);
-                btn.remove();
+                // The report is persisted server-side, so replace the button with a static label
+                var label = $('<span class="text-muted ms-2 reported-missing-label"></span>')
+                    .text(btn.data('reported-label') || '');
+                btn.replaceWith(label);
             },
             error: function(xhr) {
                 var err = (xhr.responseJSON && xhr.responseJSON.error) || 'Error sending report';

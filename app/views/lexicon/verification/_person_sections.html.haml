@@ -205,8 +205,11 @@
                   - pub_details = [publication.publisher_line, publication.pub_year].compact_blank.join(', ')
                   - if pub_details.present?
                     %span.text-muted= " #{pub_details}"
-                %button.btn.btn-sm.btn-outline-warning.monday-missing-work-btn.ms-2{ type: 'button', data: { 'publication-id': publication.id, 'report-url': lexicon_report_to_monday_verification_path(entry) } }
-                  = t('lexicon.verification.monday.missing_work_button')
+                - if publication.reported_missing_from_lexicon?
+                  %span.text-muted.ms-2.reported-missing-label= t('lexicon.verification.monday.missing_work_reported')
+                - else
+                  %button.btn.btn-sm.btn-outline-warning.monday-missing-work-btn.ms-2{ type: 'button', data: { 'publication-id': publication.id, 'report-url': lexicon_report_to_monday_verification_path(entry), 'reported-label': t('lexicon.verification.monday.missing_work_reported') } }
+                    = t('lexicon.verification.monday.missing_work_button')
 
 -# Section 4: Citations (מראי מקום)
 .section.verification-section{id: 'section-citations', class: checklist['citations']&.dig('verified') ? 'verified' : 'not-verified'}

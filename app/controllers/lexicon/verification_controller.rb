@@ -309,6 +309,8 @@ module Lexicon
       )
 
       if result[:success]
+        # Remember the report so the publication is not offered for reporting again
+        publication&.mark_reported_missing_from_lexicon!(current_user) if report_type == :missing_work
         render json: { success: true, message: I18n.t('lexicon.verification.monday.report_sent') }
       else
         render json: { success: false, error: result[:error] }, status: :unprocessable_content

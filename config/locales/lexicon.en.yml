@@ -365,3 +365,4 @@ en:
         general_name: See extended description
         missing_work_name: "The work %{title} is known in the bibliography but does not appear in the lexicon entry."
         missing_work_details: "Publisher: %{publisher}. Year: %{year}."
+        missing_work_reported: "Already reported"

@@ -43,6 +43,16 @@ RSpec.describe 'Lexicon::Verification unmatched publications card', type: :reque
       expect(response.body.scan('monday-missing-work-btn').size).to eq(1)
     end
 
+    it 'shows a label instead of the report button once the publication was reported' do
+      unmatched.mark_reported_missing_from_lexicon!
+
+      get "/lex/verification/#{entry.id}"
+
+      expect(response.body).to include('ספר לא מותאם')
+      expect(response.body).to include(I18n.t('lexicon.verification.monday.missing_work_reported'))
+      expect(response.body).not_to include('monday-missing-work-btn')
+    end
+
     it 'does not count the unmatched publication in the works checklist' do
       get "/lex/verification/#{entry.id}"
 

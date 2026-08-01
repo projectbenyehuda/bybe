@@ -28,17 +28,28 @@ describe 'Reporting a publication missing from the lexicon entry', :js do
 
   after { FileUtils.rm_f(lex_file.full_path) }
 
-  it 'lists the unmatched publication and removes its report button once reported' do
+  it 'lists the unmatched publication and replaces its report button with a label once reported' do
     expect(page).to have_content(I18n.t('lexicon.verification.sections.unmatched_publications_heading'))
     expect(page).to have_css("#unmatched-publication-#{publication.id} .monday-missing-work-btn")
 
     find("#unmatched-publication-#{publication.id} .monday-missing-work-btn").click
 
     expect(page).to have_no_css("#unmatched-publication-#{publication.id} .monday-missing-work-btn", wait: 5)
-    # The publication itself stays listed, only the button goes away
-    expect(page).to have_css("#unmatched-publication-#{publication.id}")
+    # The publication itself stays listed, with a label in place of the button
+    expect(page).to have_css("#unmatched-publication-#{publication.id} .reported-missing-label",
+                             text: I18n.t('lexicon.verification.monday.missing_work_reported'))
     expect(Lexicon::MondayReport).to have_received(:call).with(
       hash_including(report_type: :missing_work, publication: publication)
     )
+  end
+
+  it 'does not offer the button again after a reload' do
+    find("#unmatched-publication-#{publication.id} .monday-missing-work-btn").click
+    expect(page).to have_css("#unmatched-publication-#{publication.id} .reported-missing-label", wait: 5)
+
+    visit "/lex/verification/#{entry.id}"
+
+    expect(page).to have_css("#unmatched-publication-#{publication.id} .reported-missing-label")
+    expect(page).to have_no_css('.monday-missing-work-btn')
   end
 end

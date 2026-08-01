@@ -366,3 +366,4 @@ he:
         general_name: ראה תיאור נרחב
         missing_work_name: "החיבור %{title} ידוע בביבליוגרפיה אך לא מופיע בערך הלקסיקון."
         missing_work_details: "מו״ל: %{publisher}. שנת הוצאה: %{year}."
+        missing_work_reported: "דווח בעבר"
