@@ -3279,7 +3279,7 @@ en:
         add_link: Add Title Link
         text_in_title: Text in title
         text_placeholder: Text that becomes a link
-        target_person: Target person
+        target: Target URL
         person_placeholder: Search person entry...
         entry_not_found: Entry not found
       comment_links:
@@ -3287,7 +3287,7 @@ en:
         add_link: Add Comment Link
         text_in_comment: Text in comment
         text_placeholder: Text that becomes a link
-        target_person: Target person
+        target: Target URL
         person_placeholder: Search person entry...
         entry_not_found: Entry not found
     citations:

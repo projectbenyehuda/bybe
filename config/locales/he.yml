@@ -2530,7 +2530,7 @@ he:
         add_link: הוספת קישור בכותרת
         text_in_title: טקסט בכותרת
         text_placeholder: טקסט שיהפוך לקישור
-        target_person: אדם ביעד
+        target: כתובת היעד (URL)
         person_placeholder: חפש ערך אדם...
         entry_not_found: ערך לא נמצא
       comment_links:
@@ -2538,7 +2538,7 @@ he:
         add_link: הוספת קישור בהערה
         text_in_comment: טקסט בהערה
         text_placeholder: טקסט שיהפוך לקישור
-        target_person: אדם ביעד
+        target: כתובת היעד (URL)
         person_placeholder: חפש ערך אדם...
         entry_not_found: ערך לא נמצא
     citations:
