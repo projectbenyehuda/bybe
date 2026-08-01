@@ -153,5 +153,28 @@ describe '/lexicon/links' do
       expect { call }.to change { person.links.count }.by(-1)
       expect(call).to eq(200)
     end
+
+    it 'reloads the whole page when not in the entry-edit view' do
+      call
+      expect(response.body).to include('reloadPage()')
+    end
+
+    context 'when the entry is under verification' do
+      before { entry.start_verification!('editor@example.com') }
+
+      it 'drops the deleted link from the verification checklist' do
+        expect { call }
+          .to change { entry.reload.verification_progress.dig('checklist', 'links', 'items').keys }
+          .from(match_array(links.map { |l| l.id.to_s }))
+          .to(match_array(links.drop(1).map { |l| l.id.to_s }))
+      end
+
+      it 'verifies the links section once only verified links remain' do
+        links.drop(1).each { |l| entry.update_checklist_item("links.items.#{l.id}", true) }
+        expect { call }
+          .to change { entry.reload.verification_progress.dig('checklist', 'links', 'verified') }
+          .from(false).to(true)
+      end
+    end
   end
 end

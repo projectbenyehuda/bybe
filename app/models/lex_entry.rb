@@ -270,6 +270,25 @@ class LexEntry < ApplicationRecord
     end
   end
 
+  # Remove a single link from the verification checklist (called synchronously when a link is destroyed),
+  # so the deleted link stops counting towards the section's verified/total tally.
+  def remove_link_from_checklist!(link_id)
+    with_lock do
+      return if verification_progress.blank?
+
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist&.dig('links', 'items')&.key?(link_id.to_s)
+
+      checklist['links']['items'].delete(link_id.to_s)
+      # When the last link is deleted, keep whatever verified state the section had:
+      # a zero-link section can legitimately be marked verified by hand.
+      auto_verify_collections!(checklist) if checklist['links']['items'].any?
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
+
   # Mark all works as verified (called when marking entire works section as verified)
   def mark_all_works_verified!(notes = '')
     return unless lex_item_type == 'LexPerson'

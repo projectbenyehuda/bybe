@@ -298,6 +298,14 @@ body:has(.verification-container) {
       font-weight: 600;
     }
 
+    // Title plus its verified/total tally, kept together at the start of the header
+    // (Bootstrap 4 has no gap-* utilities, hence the explicit gap here).
+    .section-title-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
     .verification-badge {
       font-size: 0.85rem;
       padding: 0.25rem 0.75rem;
