@@ -233,6 +233,7 @@ he:
         file_not_found: "⚠️ קובץ מקור לא נמצא"
       migrated:
         header: הערך המוסב
+        jump_to: "קפיצה אל:"
         edit: ערוך
         add_citation: הוסף מראה מקום
         add_link: הוסף קישור
@@ -264,7 +265,8 @@ he:
         no_date_of_manual_update: "(אין תאריך עדכון ידני)"
         no_description: "(אין תיאור)"
         no_toc: "(אין תוכן עניינים)"
-        no_az_navbar: "(אין ניווט א-ב)"
+        has_az_navbar: "סרגל ניווט א-ב: מסומן"
+        no_az_navbar: "סרגל ניווט א-ב: לא מסומן"
         external_identifiers_section: מזהים חיצוניים
         no_external_identifiers: "(אין מזהים חיצוניים)"
         citation_from_publication: "ממקור:"

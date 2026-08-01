@@ -217,11 +217,39 @@ body:has(.verification-container) {
     padding: 1rem;
     background: #f8f9fa;
     border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
 
     .migrated-title {
       margin: 0;
       font-size: 1rem;
       font-weight: 600;
+    }
+
+    .migrated-shortcuts {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+
+      .shortcuts-label {
+        color: #6c757d;
+      }
+
+      .migrated-shortcut {
+        cursor: pointer;
+        text-decoration: none;
+        border-bottom: 1px dotted currentColor;
+
+        &:hover,
+        &:focus {
+          text-decoration: none;
+          border-bottom-style: solid;
+        }
+      }
     }
   }
 
