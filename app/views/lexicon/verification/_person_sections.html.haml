@@ -190,26 +190,6 @@
                 = t('lexicon.verification.migrated.mark_verified')
     - else
       %p.text-muted= t('lexicon.verification.sections.no_works')
-    -# Publications known in BYP but absent from the lexicon entry — reportable, not part of the checklist
-    - unmatched_publications = item.unmatched_publications
-    - if unmatched_publications.any?
-      %h5.mt-3.mb-1.work-type-heading= t('lexicon.verification.sections.unmatched_publications_heading')
-      .work-card#unmatched-publications-card
-        .work-content
-          %p.text-muted= t('lexicon.verification.sections.unmatched_publications_intro')
-          %ul.list-unstyled.mb-0
-            - unmatched_publications.each do |publication|
-              %li.unmatched-publication.mb-2{ id: "unmatched-publication-#{publication.id}" }
-                %span{ dir: text_dir(publication.title.to_s) }
-                  %strong= publication.title
-                  - pub_details = [publication.publisher_line, publication.pub_year].compact_blank.join(', ')
-                  - if pub_details.present?
-                    %span.text-muted= " #{pub_details}"
-                - if publication.reported_missing_from_lexicon?
-                  %span.text-muted.ms-2.reported-missing-label= t('lexicon.verification.monday.missing_work_reported')
-                - else
-                  %button.btn.btn-sm.btn-outline-warning.monday-missing-work-btn.ms-2{ type: 'button', data: { 'publication-id': publication.id, 'report-url': lexicon_report_to_monday_verification_path(entry), 'reported-label': t('lexicon.verification.monday.missing_work_reported') } }
-                    = t('lexicon.verification.monday.missing_work_button')
 
 -# Section 4: Citations (מראי מקום)
 .section.verification-section{id: 'section-citations', class: checklist['citations']&.dig('verified') ? 'verified' : 'not-verified'}

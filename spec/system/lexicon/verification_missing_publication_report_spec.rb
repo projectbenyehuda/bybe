@@ -19,6 +19,8 @@ describe 'Reporting a publication missing from the lexicon entry', :js do
            entrytype: :person)
   end
 
+  let(:row_selector) { "#generalDlgBody #unmatched-publication-#{publication.id}" }
+
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
     allow(Lexicon::MondayReport).to receive(:call).and_return({ success: true })
@@ -28,15 +30,22 @@ describe 'Reporting a publication missing from the lexicon entry', :js do
 
   after { FileUtils.rm_f(lex_file.full_path) }
 
+  # The list lives at the bottom of the works auto-match popup
+  def open_works_popup
+    click_button I18n.t('lexicon.verification.sections.auto_match_works_btn')
+    expect(page).to have_css('#generalDlgBody',
+                             text: I18n.t('lexicon.verification.sections.unmatched_publications_heading'))
+  end
+
   it 'lists the unmatched publication and replaces its report button with a label once reported' do
-    expect(page).to have_content(I18n.t('lexicon.verification.sections.unmatched_publications_heading'))
-    expect(page).to have_css("#unmatched-publication-#{publication.id} .monday-missing-work-btn")
+    open_works_popup
+    expect(page).to have_css("#{row_selector} .monday-missing-work-btn", visible: :visible)
 
-    find("#unmatched-publication-#{publication.id} .monday-missing-work-btn").click
+    find("#{row_selector} .monday-missing-work-btn").click
 
-    expect(page).to have_no_css("#unmatched-publication-#{publication.id} .monday-missing-work-btn", wait: 5)
+    expect(page).to have_no_css("#{row_selector} .monday-missing-work-btn", wait: 5)
     # The publication itself stays listed, with a label in place of the button
-    expect(page).to have_css("#unmatched-publication-#{publication.id} .reported-missing-label",
+    expect(page).to have_css("#{row_selector} .reported-missing-label",
                              text: I18n.t('lexicon.verification.monday.missing_work_reported'))
     expect(Lexicon::MondayReport).to have_received(:call).with(
       hash_including(report_type: :missing_work, publication: publication)
@@ -44,12 +53,14 @@ describe 'Reporting a publication missing from the lexicon entry', :js do
   end
 
   it 'does not offer the button again after a reload' do
-    find("#unmatched-publication-#{publication.id} .monday-missing-work-btn").click
-    expect(page).to have_css("#unmatched-publication-#{publication.id} .reported-missing-label", wait: 5)
+    open_works_popup
+    find("#{row_selector} .monday-missing-work-btn").click
+    expect(page).to have_css("#{row_selector} .reported-missing-label", wait: 5)
 
     visit "/lex/verification/#{entry.id}"
+    open_works_popup
 
-    expect(page).to have_css("#unmatched-publication-#{publication.id} .reported-missing-label")
+    expect(page).to have_css("#{row_selector} .reported-missing-label")
     expect(page).to have_no_css('.monday-missing-work-btn')
   end
 end

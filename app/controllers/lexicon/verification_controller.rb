@@ -327,6 +327,7 @@ module Lexicon
       # Auto-match works to publications if editing works section and authority exists
       if @section == 'works' && @item.is_a?(LexPerson) && @item.authority.present?
         @work_matches = auto_match_works_to_publications(@item)
+        @unmatched_publications = publications_absent_from_entry(@item, @work_matches)
       end
 
       render partial: "lexicon/verification/edit_#{@section}"
@@ -538,6 +539,12 @@ module Lexicon
       end
 
       matches
+    end
+
+    # Publications of the person's authority that neither belong to an existing work nor appear
+    # among the proposed matches: works we have in BYP that are missing from the lexicon entry.
+    def publications_absent_from_entry(person, work_matches)
+      person.unmatched_publications.where.not(id: work_matches.values.pluck(:publication_id))
     end
 
     # Find the best publication match for a work
