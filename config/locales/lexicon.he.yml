@@ -343,7 +343,7 @@ he:
           other: "%{count} יצירות הותאמו אוטומטית לפרסומים בהתבסס על דמיון בכותרת"
         confirm_match: אשר התאמה
         reject_match: דחה התאמה
-        proposed_collection: "(הצעה: %{title})"
+        proposed_collection: "(כותר: %{title})"
         date_of_manual_update:
           instructions: "הכנס את תאריך העדכון הידני האחרון כפי שמופיע בקובץ המקור. ניתן לתקן אם נקלט בצורה שגויה."
         external_identifiers:
