@@ -108,6 +108,7 @@ Bybeconv::Application.routes.draw do
     scope :verification do
       get ':id', to: 'verification#show', as: :verification
       get ':id/source', to: 'verification#source', as: :verification_source
+      patch ':id/unlock', to: 'verification#unlock', as: :unlock_verification
       patch ':id/update_checklist', to: 'verification#update_checklist', as: :update_checklist_verification
       patch ':id/save_progress', to: 'verification#save_progress', as: :save_progress_verification
       patch ':id/set_profile_image', to: 'verification#set_profile_image', as: :set_profile_image_verification
