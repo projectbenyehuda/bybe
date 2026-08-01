@@ -165,6 +165,44 @@ module LexiconHelper
     bio_text.gsub(%r{<img\b[^>]*src=["'][^"']*#{Regexp.escape(filename)}[^"']*["'][^>]*/?>}i, '')
   end
 
+  # Indexes the entry's attachments by the two keys a citation can claim a file by: its
+  # download_path, and its blob id. Building this once lets a citation be matched with hash
+  # lookups; it also keeps download_path — route generation plus URI unescaping — to one call per
+  # attachment rather than one per (attachment, citation) pair.
+  def attachment_index(lex_entry)
+    attachments = lex_entry.attachments.to_a
+    {
+      by_path: attachments.group_by { |attachment| lex_entry.download_path(attachment.filename.to_s) },
+      by_blob: attachments.index_by(&:blob_id)
+    }
+  end
+
+  # Returns the entry's attachments identified as belonging to the given citation: the file
+  # attached as its backup_file, plus any file its link or backup_url points at. Callers matching
+  # many citations against one entry should build `index` once and pass it in, and should preload
+  # `backup_file_attachment: :blob`.
+  def citation_attachments(lex_entry, citation, index = attachment_index(lex_entry))
+    # links may carry an anchor (e.g. /files/lex/1/foo.pdf#page=3), which download_path never has
+    cited_paths = [citation.link, citation.backup_url].compact_blank.map { |url| url.split('#').first }
+
+    matches = cited_paths.flat_map { |path| index[:by_path][path] || [] }
+    matches << index[:by_blob][citation.backup_file.blob.id] if citation.backup_file.attached?
+    matches.compact.uniq
+  end
+
+  # Returns the entry's attachments that are NOT already accounted for by one of the person's
+  # citations. The verification workbench lists only these in its attachments section, since a
+  # citation-owned file is already visible in the citations section as that citation's
+  # link or backup_url.
+  def non_citation_attachments(lex_entry, lex_person)
+    index = attachment_index(lex_entry)
+    cited_ids = lex_person.citations.preload(backup_file_attachment: :blob)
+                          .flat_map { |citation| citation_attachments(lex_entry, citation, index) }
+                          .to_set(&:id)
+
+    lex_entry.attachments.reject { |attachment| cited_ids.include?(attachment.id) }
+  end
+
   def grouped_and_ordered_citations(lex_person)
     person_works = lex_person.works.index_by(&:title)
     # we preload data required for citations rendering
