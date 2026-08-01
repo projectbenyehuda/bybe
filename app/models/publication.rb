@@ -1,4 +1,7 @@
 class Publication < ApplicationRecord
+  # ListItem listkey marking a publication already reported to Monday as missing from its lexicon entry
+  LEX_REPORTED_MISSING_LISTKEY = 'lex_reported_missing'.freeze
+
   belongs_to :authority, inverse_of: :publications
   belongs_to :bib_source
   has_many :holdings, dependent: :destroy
@@ -21,6 +24,18 @@ class Publication < ApplicationRecord
   scope :has_volume, -> { joins(:volume) }
 
   after_save :check_lists
+
+  # Has this publication already been reported as missing from its lexicon entry?
+  def reported_missing_from_lexicon?
+    list_items.exists?(listkey: LEX_REPORTED_MISSING_LISTKEY)
+  end
+
+  # Flag this publication as reported, so the report button is not offered again. Idempotent.
+  def mark_reported_missing_from_lexicon!(user = nil)
+    list_items.find_or_create_by!(listkey: LEX_REPORTED_MISSING_LISTKEY) do |li|
+      li.user = user
+    end
+  end
 
   def self.update_publications_that_may_be_done_list
     coll = Publication.not_uploaded.not_maybe_done.not_false_positive_maybe_done.order(:authority_id)

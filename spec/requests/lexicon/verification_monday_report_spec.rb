@@ -28,11 +28,26 @@ RSpec.describe 'POST /lex/verification/:id/report_to_monday', type: :request do
     end
 
     it 'delegates to the MondayReport service for a missing_work report' do
-      post url, params: { type: 'missing_work', work_title: 'שיר ערש' }, as: :json
+      publication = create(:publication, title: 'שיר ערש')
+
+      post url, params: { type: 'missing_work', publication_id: publication.id }, as: :json
 
       expect(Lexicon::MondayReport).to have_received(:call).with(
-        hash_including(report_type: :missing_work, work_title: 'שיר ערש')
+        hash_including(report_type: :missing_work, publication: publication)
       )
+    end
+
+    it 'flags the publication as reported so it is not offered again' do
+      publication = create(:publication)
+
+      post url, params: { type: 'missing_work', publication_id: publication.id }, as: :json
+
+      expect(publication.reload).to be_reported_missing_from_lexicon
+    end
+
+    it 'does not flag anything for a general report' do
+      expect { post url, params: { type: 'general', description: 'notes' }, as: :json }
+        .not_to(change { ListItem.where(listkey: Publication::LEX_REPORTED_MISSING_LISTKEY).count })
     end
 
     it 'returns 200 with success message on success' do
@@ -62,6 +77,14 @@ RSpec.describe 'POST /lex/verification/:id/report_to_monday', type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(response.parsed_body['error']).to eq('API error')
+    end
+
+    it 'does not flag the publication as reported' do
+      publication = create(:publication)
+
+      post url, params: { type: 'missing_work', publication_id: publication.id }, as: :json
+
+      expect(publication.reload).not_to be_reported_missing_from_lexicon
     end
   end
 end
