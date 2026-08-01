@@ -233,6 +233,7 @@ he:
         file_not_found: "⚠️ קובץ מקור לא נמצא"
       migrated:
         header: הערך המוסב
+        jump_to: "קפיצה אל:"
         edit: ערוך
         add_citation: הוסף מראה מקום
         add_link: הוסף קישור

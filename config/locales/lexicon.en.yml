@@ -232,6 +232,7 @@ en:
         file_not_found: "⚠️ Source file not found"
       migrated:
         header: Migrated Entry
+        jump_to: "Jump to:"
         edit: Edit
         add_citation: Add Citation
         add_link: Add Link
