@@ -135,7 +135,8 @@ PROMPT
       doc = Nokogiri::HTML::DocumentFragment.parse(html)
       modified = false
       doc.css('li').each do |li|
-        asterisk_links = li.css('a').select { |a| a.text =~ /\A[[:space:]]*\*[[:space:]]*\z/ }
+        anchors = own_anchors(li)
+        asterisk_links = anchors.select { |a| a.text =~ /\A[[:space:]]*\*[[:space:]]*\z/ }
         next if asterisk_links.empty?
 
         modified = true
@@ -147,17 +148,34 @@ PROMPT
         # the strongest join key back to the LLM-parsed citation.
         if href.present?
           li['data-file-link'] = href
-          inline_hrefs = (li.css('a').to_a - asterisk_links).filter_map { |a| a['href'].presence }
+          inline_hrefs = (anchors - asterisk_links).filter_map { |a| a['href'].presence }
           @asterisk_backups << {
             backup_href: href,
             inline_hrefs: inline_hrefs.reject { |h| h.end_with?('.php') || h.start_with?('#') },
-            text: normalize_text(li.text)
+            text: own_text(li)
           }
         end
 
         asterisk_links.each(&:remove)
       end
       modified ? doc.to_html : html
+    end
+
+    # Anchors belonging to this <li> itself, excluding those of any nested <li>.
+    # Legacy pages nest a sub-list of citations inside the <li> of the work they
+    # are about, so a plain descendant selector would credit an inner citation's
+    # asterisk link (and its inline links) to the outer <li> — and, since the
+    # anchor is then removed, the inner <li> would never be recorded at all.
+    def own_anchors(list_item)
+      list_item.css('a').select { |a| a.ancestors('li').first == list_item }
+    end
+
+    # Text of this <li> without the text of any nested <li>, so that match_by_text
+    # cannot match a nested citation's title against its containing work's <li>.
+    def own_text(list_item)
+      copy = list_item.dup
+      copy.css('li').each(&:remove)
+      normalize_text(copy.text)
     end
 
     # Deterministically assign backup_url to the citation each asterisk link came
