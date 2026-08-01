@@ -19,7 +19,7 @@
     = label_tag :comment_link_text, t('lexicon.person_works.comment_links.text_in_comment'), class: 'form-label form-label-sm'
     = text_field_tag :comment_link_text, nil, class: 'form-control form-control-sm', id: 'comment_link_text', placeholder: t('lexicon.person_works.comment_links.text_placeholder')
   .col-sm-5
-    = label_tag :comment_link_entry_autocomplete, t('lexicon.person_works.comment_links.target_person'), class: 'form-label form-label-sm'
+    = label_tag :comment_link_entry_autocomplete, t('lexicon.person_works.comment_links.target'), class: 'form-label form-label-sm'
     = hidden_field_tag :comment_link_entry_id, nil, id: 'comment_link_entry_id'
     = autocomplete_field_tag :comment_link_entry_autocomplete,
                              nil,

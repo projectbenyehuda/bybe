@@ -138,6 +138,8 @@ he:
         notes: הקשר והערות
         pages: עמודים
         person_work: חיבור
+        subject: נושא
+        link: קישורית
       lex_file:
         error_message: הודעות שגיאה
         entrytype: סוג הערך
