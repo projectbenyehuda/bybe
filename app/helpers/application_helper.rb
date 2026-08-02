@@ -7,6 +7,25 @@ module ApplicationHelper
     (ENV['cache_nonce'] || ENV['CACHE_NONCE']) == 'staging'
   end
 
+  # Best-effort description of the running deployment, for the staging indicator:
+  # deployment timestamp plus the deployed git SHA, when available. Capistrano names
+  # release directories YYYYMMDDHHMMSS (UTC) and writes a REVISION file (holding the
+  # deployed SHA) into them; in development/test neither exists.
+  def deployment_version
+    dir = Rails.root.basename.to_s
+    revision_file = Rails.root.join('REVISION')
+    revision = revision_file.exist? ? revision_file.read.strip : nil
+    time =
+      if dir.match?(/\A\d{14}\z/)
+        Time.find_zone('UTC').strptime(dir, '%Y%m%d%H%M%S')
+      elsif revision.present?
+        revision_file.mtime
+      end
+
+    label = time.nil? ? t(:version_unknown) : time.in_time_zone.strftime('%Y-%m-%d %H:%M')
+    revision.blank? ? label : "#{label} (#{revision[0, 8]})"
+  end
+
   def u8(s)
     return s if s.nil?
 
