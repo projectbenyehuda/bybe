@@ -1,0 +1,10 @@
+= render 'lexicon/shared/text_links_editor',
+         links: @citation.text_links,
+         record_id: @citation.id,
+         prefix: 'text_link',
+         list_class: 'text-links-list',
+         text_label: t('lexicon.citations.text_links.text_label'),
+         add_label: t('lexicon.citations.text_links.add_link'),
+         add_fn: 'addCitationTextLink',
+         remove_fn: 'removeCitationTextLink',
+         source_text: @citation.linkable_text

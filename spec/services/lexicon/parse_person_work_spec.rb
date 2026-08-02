@@ -249,4 +249,51 @@ describe Lexicon::ParsePersonWork do
       expect(result.title_links).to be_nil
     end
   end
+
+  context 'when the title links to a non-person LexEntry' do
+    let!(:publication_entry) { create(:lex_file, :publication, title: 'כתמי אור').lex_entry }
+    let(:line) do
+      "<a href=\"/lex/entries/#{publication_entry.id}\">כתמי אור</a> : חמישים שנות ביקורת " \
+        '(תל אביב : הקיבוץ המאוחד, 2010)'
+    end
+
+    it 'stores the title link to that entry' do
+      expect(result.title_links).to eq([{ 'text' => 'כתמי אור', 'entry_id' => publication_entry.id }])
+    end
+  end
+
+  context 'when the title links to an external URL' do
+    let(:line) { '<a href="http://example.com/node/111">מדיאה</a> (תל אביב : שוקן, 2010)' }
+
+    it 'stores the title link as a url pair' do
+      expect(result.title_links).to eq([{ 'text' => 'מדיאה', 'url' => 'http://example.com/node/111' }])
+    end
+  end
+
+  context 'when a plain comment links to an external URL' do
+    let(:line) do
+      'מעיל קטון (אור יהודה : זמורה-ביתן, 2008) <font size="2">&lt;כולל אחרית דבר מאת ' \
+        '<a href="http://example.com/afterword">דני קרמן</a>&gt;</font>'
+    end
+
+    it 'stores the comment link as a url pair' do
+      expect(result.comment_links).to eq([{ 'text' => 'דני קרמן', 'url' => 'http://example.com/afterword' }])
+    end
+  end
+
+  context 'when a link points at an unmigrated legacy page' do
+    let(:line) { '<a href="01122001.php">שדות ומזוודות</a> (תל אביב : רסלינג, 2014)' }
+
+    it 'drops the link rather than storing an unresolvable relative url' do
+      expect(result.title_links).to be_nil
+    end
+  end
+
+  context 'when a link points at a LexEntry that no longer exists' do
+    let(:line) { '<a href="/lex/entries/999999">שדות ומזוודות</a> (תל אביב : רסלינג, 2014)' }
+
+    it 'drops the link' do
+      expect(result.title_links).to be_nil
+    end
+  end
 end

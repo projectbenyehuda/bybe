@@ -312,8 +312,61 @@ describe '/lexicon/person_works' do
 
       let!(:publication_entry) { create(:lex_file, :publication, title: 'ספר כלשהו').lex_entry }
 
+      it 'accepts it: a title may link to a lexicon entry of any type' do
+        expect(call).to eq(200)
+        expect(work.reload.title_links).to eq([{ 'text' => 'ספר כלשהו', 'entry_id' => publication_entry.id }])
+      end
+    end
+
+    context 'when a url is given instead of an entry' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_title_link",
+             params: { text: 'אפרת דנון', url: 'http://example.com/page' },
+             xhr: true
+      end
+
+      it 'adds a url link pair' do
+        expect(call).to eq(200)
+        expect(work.reload.title_links).to eq([{ 'text' => 'אפרת דנון', 'url' => 'http://example.com/page' }])
+      end
+    end
+
+    context 'when neither an entry nor a url is given' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_title_link", params: { text: 'אפרת דנון' }, xhr: true
+      end
+
       it 'returns 422' do
         expect(call).to eq(422)
+        expect(work.reload.title_links).to be_nil
+      end
+    end
+
+    # The url is rendered straight into an href, so only known-inert schemes are accepted.
+    ['javascript:alert(1)', 'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==',
+     'vbscript:msgbox(1)', 'JaVaScRiPt:alert(1)', 'ftp://example.com/x'].each do |bad_url|
+      context "when the url is #{bad_url.truncate(30)}" do
+        subject(:call) do
+          post "/lex/works/#{work.id}/add_title_link", params: { text: 'אפרת דנון', url: bad_url }, xhr: true
+        end
+
+        it 'returns 422 and stores nothing' do
+          expect(call).to eq(422)
+          expect(work.reload.title_links).to be_nil
+        end
+      end
+    end
+
+    context 'when the url is a path on this site' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_title_link",
+             params: { text: 'אפרת דנון', url: '/files/lex/5181/00156200.pdf' },
+             xhr: true
+      end
+
+      it 'accepts it' do
+        expect(call).to eq(200)
+        expect(work.reload.title_links).to eq([{ 'text' => 'אפרת דנון', 'url' => '/files/lex/5181/00156200.pdf' }])
       end
     end
   end
@@ -399,8 +452,22 @@ describe '/lexicon/person_works' do
 
       let!(:publication_entry) { create(:lex_file, :publication, title: 'ספר כלשהו').lex_entry }
 
-      it 'returns 422' do
-        expect(call).to eq(422)
+      it 'accepts it: a comment may link to a lexicon entry of any type' do
+        expect(call).to eq(200)
+        expect(work.reload.comment_links).to eq([{ 'text' => 'ספר כלשהו', 'entry_id' => publication_entry.id }])
+      end
+    end
+
+    context 'when a url is given instead of an entry' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_comment_link",
+             params: { text: 'יגאל שוורץ', url: 'http://example.com/page' },
+             xhr: true
+      end
+
+      it 'adds a url link pair' do
+        expect(call).to eq(200)
+        expect(work.reload.comment_links).to eq([{ 'text' => 'יגאל שוורץ', 'url' => 'http://example.com/page' }])
       end
     end
   end

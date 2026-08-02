@@ -70,12 +70,13 @@
     function addTitleLink(workId) {
       var text = $('#title_link_text').val();
       var entryId = $('#title_link_entry_id').val();
-      if (!text || !entryId) { return; }
+      var url = $('#title_link_url').val();
+      if (!text || (!entryId && !url)) { return; }
       $.ajax({
         url: '/lex/works/' + workId + '/add_title_link',
         method: 'POST',
         headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
-        data: { text: text, entry_id: entryId },
+        data: { text: text, entry_id: entryId, url: url },
         success: reloadTitleLinks
       });
     }
@@ -94,12 +95,13 @@
     function addCommentLink(workId) {
       var text = $('#comment_link_text').val();
       var entryId = $('#comment_link_entry_id').val();
-      if (!text || !entryId) { return; }
+      var url = $('#comment_link_url').val();
+      if (!text || (!entryId && !url)) { return; }
       $.ajax({
         url: '/lex/works/' + workId + '/add_comment_link',
         method: 'POST',
         headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
-        data: { text: text, entry_id: entryId },
+        data: { text: text, entry_id: entryId, url: url },
         success: reloadCommentLinks
       });
     }

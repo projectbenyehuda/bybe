@@ -38,6 +38,13 @@ class LexCitation < ApplicationRecord
     return person_work&.title || subject
   end
 
+  # The displayed prose that text_links pairs are matched against (see
+  # LexiconHelper#apply_text_links). Used to tell an editor when a pair's text
+  # no longer occurs anywhere in the citation.
+  def linkable_text
+    [title, from_publication, notes].compact_blank.join(' ')
+  end
+
   # Returns true if the citation link was checked and is inaccessible: either it
   # returned a 4xx/5xx status, or the host was unreachable (nil status after a
   # check). link_checked_at distinguishes "checked and dead" from "never checked".
