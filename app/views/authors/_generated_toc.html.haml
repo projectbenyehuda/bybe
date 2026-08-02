@@ -20,7 +20,8 @@
       .by-card-v02
         #lexicon-bio
         .by-card-content-v02
-          %p#lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
+          -# a div, not a p: see lexicon/entries/_show_person
+          #lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
       #lexicon-works
         = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
           - LexPersonWork.work_types.each_key do |work_type|
