@@ -40,6 +40,7 @@ body.staging::before {
 // SASS imports for lexicon backend
 @import 'fonts';
 @import 'jquery-ui';
+@import 'lexicon'; // shared lexicon rules; the workbench needs the biography image floats
 @import 'verification';
 
 // We need this to make rails-autocomplete working in Bootstrap modals
