@@ -68,7 +68,7 @@ RSpec.describe 'Biography image float', :js, type: :system do
 
     it 'floats the image so the biography text wraps around it' do
       expect(page).to have_css('#section-bio .bio-content img[data-align="left"]')
-
+      expect(page).to have_css('#section-bio .bio-content p', count: 2)
       float = page.evaluate_script(
         "window.getComputedStyle(document.querySelector('#section-bio .bio-content img[data-align]')).float"
       )
