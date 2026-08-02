@@ -1619,6 +1619,7 @@ en:
   image_filename: Image File Name
   images: Images
   import: Import
+  impressions_count: views
   in_anthology: 'In Anthology:'
   in_bookshelf: 'In Reading List:'
   in_collection: In collection %{coll}

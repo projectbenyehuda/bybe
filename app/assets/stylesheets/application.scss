@@ -1273,3 +1273,12 @@ p.by-genre-name-v02.headline-2-v02 {
     }
   }
 }
+
+// editor-only view counter shown next to the editor action links in the metadata area
+.impressions-count {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: #fff;
+}
