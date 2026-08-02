@@ -68,6 +68,8 @@
                   != '&nbsp;&nbsp;&nbsp;'
                   %span.static-btn
                     %b= link_to t(:edit_metadata), authors_edit_path(id: @author.id)
+                  != '&nbsp;&nbsp;&nbsp;'
+                  %span.impressions-count #{number_with_delimiter(@author.impressions_count, delimiter: ',')} #{t(:impressions_count)}
             .select-all-with-buttons{style:'display:none;margin-right:100px;'}
               .number-of-selected-texts{style: 'display:none'}
                 = t(:number_of_selected_texts)
