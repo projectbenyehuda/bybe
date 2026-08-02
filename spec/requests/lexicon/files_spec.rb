@@ -29,6 +29,31 @@ describe '/lexicon/files' do
       end
     end
 
+    context 'with the file size column' do
+      let(:params) { {} }
+      let(:full_path) { Rails.root.join('tmp', "lex_files_index_spec_#{SecureRandom.hex(4)}.php").to_s }
+
+      let!(:sized_file) do
+        create(:lex_file, :person, status: :classified, entry_status: :raw, full_path: full_path)
+      end
+
+      let!(:pathless_file) do
+        create(:lex_file, :person, status: :classified, entry_status: :raw, full_path: nil)
+      end
+
+      before { File.write(full_path, 'x' * 3072) }
+
+      after { FileUtils.rm_f(full_path) }
+
+      it 'shows the size in KB, and a dash when the file is unavailable' do
+        call
+        expect(response.body).to include(I18n.t('lexicon.files.index.file_size'))
+        expect(response.body).to include('3.0')
+        expect(response.body).to include('—')
+        expect(pathless_file.file_size_kb).to be_nil
+      end
+    end
+
     context 'when entry has verifying status but no lex_item (stuck after NFS error)' do
       let(:params) { { entry_statuses: ['verifying'] } }
 
