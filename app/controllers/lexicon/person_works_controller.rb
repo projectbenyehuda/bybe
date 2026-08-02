@@ -4,6 +4,7 @@ module Lexicon
   # Controller to work with Lexicon Person Works
   class PersonWorksController < ApplicationController
     include LockLexEntryConcern
+    include TextLinksConcern
 
     before_action do
       require_editor('edit_lexicon')
@@ -62,76 +63,24 @@ module Lexicon
       @person.entry&.remove_work_from_checklist!(work_id)
     end
 
-    def title_links
-      entry_ids = Array(@work.title_links).filter_map { |l| l['entry_id'] }
-      @title_link_entries = LexEntry.where(id: entry_ids).index_by(&:id)
-    end
-
-    def person_entry_for_title_link?(entry)
-      entry&.lex_file&.entrytype_person? || entry&.lex_item_type == 'LexPerson'
-    end
+    def title_links; end
 
     def add_title_link
-      text = params[:text].to_s.strip
-      entry_id = params[:entry_id].to_i
-      entry = LexEntry.find_by(id: entry_id)
-
-      if text.blank? || entry.nil? || !person_entry_for_title_link?(entry)
-        head :unprocessable_content
-        return
-      end
-
-      links = Array(@work.title_links)
-      unless links.any? { |l| l['text'] == text }
-        links << { 'text' => text, 'entry_id' => entry_id }
-        @work.update!(title_links: links)
-      end
-
-      head :ok
+      add_text_link_to(@work, :title_links)
     end
 
     def remove_title_link
-      index = link_index_param
-      return head :unprocessable_content if index.nil?
-
-      links = Array(@work.title_links)
-      links.delete_at(index) if index >= 0 && index < links.size
-      @work.update!(title_links: links.presence)
-      head :ok
+      remove_text_link_from(@work, :title_links)
     end
 
-    def comment_links
-      entry_ids = Array(@work.comment_links).filter_map { |l| l['entry_id'] }
-      @comment_link_entries = LexEntry.where(id: entry_ids).index_by(&:id)
-    end
+    def comment_links; end
 
     def add_comment_link
-      text = params[:text].to_s.strip
-      entry_id = params[:entry_id].to_i
-      entry = LexEntry.find_by(id: entry_id)
-
-      if text.blank? || entry.nil? || !person_entry_for_title_link?(entry)
-        head :unprocessable_content
-        return
-      end
-
-      links = Array(@work.comment_links)
-      unless links.any? { |l| l['text'] == text }
-        links << { 'text' => text, 'entry_id' => entry_id }
-        @work.update!(comment_links: links)
-      end
-
-      head :ok
+      add_text_link_to(@work, :comment_links)
     end
 
     def remove_comment_link
-      index = link_index_param
-      return head :unprocessable_content if index.nil?
-
-      links = Array(@work.comment_links)
-      links.delete_at(index) if index >= 0 && index < links.size
-      @work.update!(comment_links: links.presence)
-      head :ok
+      remove_text_link_from(@work, :comment_links)
     end
 
     def reorder
@@ -168,12 +117,6 @@ module Lexicon
     end
 
     private
-
-    # Parses the :index param as an integer, returning nil when it is missing or not a valid
-    # integer, so a non-numeric value (e.g. 'abc'.to_i == 0) can't silently delete the first link.
-    def link_index_param
-      Integer(params[:index], exception: false)
-    end
 
     def set_person
       @person = LexPerson.find(params[:person_id])

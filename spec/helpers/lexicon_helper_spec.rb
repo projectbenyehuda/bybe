@@ -212,6 +212,67 @@ RSpec.describe LexiconHelper, type: :helper do
     end
   end
 
+  describe '#apply_text_links' do
+    let!(:target_entry) { create(:lex_entry, :publication, title: 'שדות ומזוודות') }
+
+    it 'links text to a lexicon entry of any type' do
+      result = helper.apply_text_links('בספרו: שדות ומזוודות : תזות',
+                                       [{ 'text' => 'שדות ומזוודות', 'entry_id' => target_entry.id }])
+      expect(result).to include(lexicon_entry_path(target_entry))
+      expect(result).to include('בספרו:')
+    end
+
+    it 'links text to an arbitrary URL, opening it in a new tab' do
+      result = helper.apply_text_links('תרגם שמעון בוזגלו', [{ 'text' => 'שמעון בוזגלו',
+                                                               'url' => 'http://example.com/x' }])
+      expect(result).to include('href="http://example.com/x"')
+      expect(result).to include('target="_blank"')
+      expect(result).to include('rel="noopener noreferrer"')
+    end
+
+    it 'leaves text alone when the pair does not occur in it' do
+      result = helper.apply_text_links('a text', [{ 'text' => 'absent', 'url' => 'http://example.com' }])
+      expect(result).to eq('a text')
+    end
+
+    it 'ignores a pair with a blank target' do
+      result = helper.apply_text_links('some text', [{ 'text' => 'some', 'url' => '' }])
+      expect(result).to eq('some text')
+    end
+
+    it 'escapes the text it is given' do
+      expect(helper.apply_text_links('a < b & c', nil)).to eq('a &lt; b &amp; c')
+    end
+  end
+
+  describe '#render_citation with text_links' do
+    let(:person) { create(:lex_person) }
+    let!(:target_entry) { create(:lex_entry, :publication, title: 'שדות ומזוודות') }
+    let(:citation) do
+      create(:lex_citation,
+             person: person,
+             title: 'כל העסק מתפרק בכלל',
+             from_publication: 'בספרו: שדות ומזוודות : תזות על הדרמה העברית',
+             link: nil,
+             authors_count: 0,
+             text_links: [{ 'text' => 'שדות ומזוודות', 'entry_id' => target_entry.id }])
+    end
+
+    it 'hyperlinks the matched text inside from_publication' do
+      expect(helper.render_citation(citation)).to include(lexicon_entry_path(target_entry))
+    end
+
+    context 'when the citation has its own link' do
+      before { citation.update!(link: 'http://example.com/article') }
+
+      it 'still links the whole title and does not nest anchors in it' do
+        result = helper.render_citation(citation)
+        expect(result).to include('href="http://example.com/article"')
+        expect(result.scan('<a ').size).to eq(2) # the title link and the from_publication link
+      end
+    end
+  end
+
   describe 'attachment/citation association' do
     let(:person) { create(:lex_person) }
     let(:entry) { create(:lex_entry, lex_item: person) }

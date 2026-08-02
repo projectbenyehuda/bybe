@@ -2543,19 +2543,11 @@ he:
       title_links:
         section_heading: קישורים בכותרת
         add_link: הוספת קישור בכותרת
-        text_in_title: טקסט בכותרת
-        text_placeholder: טקסט שיהפוך לקישור
-        target: כתובת היעד (URL)
-        person_placeholder: חפש ערך אדם...
-        entry_not_found: ערך לא נמצא
+        text_label: טקסט בכותרת
       comment_links:
         section_heading: קישורים בהערה
         add_link: הוספת קישור בהערה
-        text_in_comment: טקסט בהערה
-        text_placeholder: טקסט שיהפוך לקישור
-        target: כתובת היעד (URL)
-        person_placeholder: חפש ערך אדם...
-        entry_not_found: ערך לא נמצא
+        text_label: טקסט בהערה
     citations:
       index:
         add_citation: הוספת מראה מקום
@@ -2564,9 +2556,22 @@ he:
         no_subject: כללי
       edit:
         title: עריכת מראה מקום
+      text_links:
+        section_heading: קישורים בטקסט
+        add_link: הוספת קישור בטקסט
+        text_label: טקסט במראה המקום
     links:
       edit:
         title: עריכת קישור
+    text_links:
+      text_placeholder: טקסט שיהפוך לקישור
+      target_entry: ערך במילון
+      target_url: כתובת יעד (URL)
+      entry_placeholder: חיפוש ערך במילון...
+      url_placeholder: "https://example.com/page.html"
+      target_hint: יש למלא יעד אחד בלבד – ערך במילון או כתובת URL.
+      entry_not_found: ערך לא נמצא
+      text_not_found: הטקסט אינו מופיע כאן
   lex_issues:
     index:
       title: גיליונות
