@@ -8,9 +8,13 @@ RSpec.describe 'Staging version indicator', type: :request do
   around do |example|
     original_upper = ENV.fetch('CACHE_NONCE', nil)
     original_lower = ENV.fetch('cache_nonce', nil)
-    example.run
-    ENV['CACHE_NONCE'] = original_upper
-    ENV['cache_nonce'] = original_lower
+
+    begin
+      example.run
+    ensure
+      ENV['CACHE_NONCE'] = original_upper
+      ENV['cache_nonce'] = original_lower
+    end
   end
 
   it 'shows the version indicator when running on staging' do
