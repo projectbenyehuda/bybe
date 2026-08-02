@@ -31,6 +31,42 @@ describe LexFile do
     end
   end
 
+  describe '#file_size_kb' do
+    subject { file.file_size_kb }
+
+    let(:file) { create(:lex_file, full_path: full_path) }
+
+    context 'when the file exists on disk' do
+      let(:full_path) { Rails.root.join('tmp', "lex_file_size_spec_#{SecureRandom.hex(4)}.php").to_s }
+
+      before { File.write(full_path, 'x' * 2048) }
+
+      after { FileUtils.rm_f(full_path) }
+
+      it { is_expected.to eq(2.0) }
+    end
+
+    context 'when no path is recorded' do
+      let(:full_path) { nil }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when the recorded path does not exist' do
+      let(:full_path) { '/nonexistent/lexicon/00001.php' }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when the file cannot be read' do
+      let(:full_path) { '/lexicon/00001.php' }
+
+      before { allow(File).to receive(:size).with(full_path).and_raise(Errno::EACCES) }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '.log_error' do
     subject { file.error_message }
 
