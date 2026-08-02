@@ -7,6 +7,22 @@ module ApplicationHelper
     (ENV['cache_nonce'] || ENV['CACHE_NONCE']) == 'staging'
   end
 
+  # Best-effort timestamp of the running deployment, for the staging indicator.
+  # Capistrano names release directories YYYYMMDDHHMMSS (UTC) and writes a REVISION
+  # file into them; in development/test neither exists, hence the unknown fallback.
+  def deployment_version
+    dir = Rails.root.basename.to_s
+    revision_file = Rails.root.join('REVISION')
+    time =
+      if dir.match?(/\A\d{14}\z/)
+        Time.find_zone('UTC').strptime(dir, '%Y%m%d%H%M%S')
+      elsif revision_file.exist?
+        revision_file.mtime
+      end
+
+    time.nil? ? t(:version_unknown) : time.in_time_zone.strftime('%Y-%m-%d %H:%M')
+  end
+
   def u8(s)
     return s if s.nil?
 

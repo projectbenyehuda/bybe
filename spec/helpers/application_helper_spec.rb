@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'tmpdir'
 
 RSpec.describe ApplicationHelper, type: :helper do
   describe '#staging?' do
@@ -34,6 +35,32 @@ RSpec.describe ApplicationHelper, type: :helper do
       ENV['CACHE_NONCE'] = 'production'
       ENV['cache_nonce'] = nil
       expect(helper.staging?).to be false
+    end
+  end
+
+  describe '#deployment_version' do
+    it 'derives the timestamp from a Capistrano release directory name' do
+      allow(Rails).to receive(:root).and_return(Pathname.new('/home/bybe/releases/20260731131500'))
+      expected = Time.find_zone('UTC').local(2026, 7, 31, 13, 15).in_time_zone.strftime('%Y-%m-%d %H:%M')
+      expect(helper.deployment_version).to eq expected
+    end
+
+    it 'falls back to the mtime of the REVISION file' do
+      Dir.mktmpdir do |dir|
+        revision = File.join(dir, 'REVISION')
+        File.write(revision, "deadbeef\n")
+        mtime = Time.zone.local(2026, 6, 1, 9, 30)
+        File.utime(mtime.to_time, mtime.to_time, revision)
+        allow(Rails).to receive(:root).and_return(Pathname.new(dir))
+        expect(helper.deployment_version).to eq mtime.strftime('%Y-%m-%d %H:%M')
+      end
+    end
+
+    it 'reports an unknown version when there is nothing to derive it from' do
+      Dir.mktmpdir do |dir|
+        allow(Rails).to receive(:root).and_return(Pathname.new(dir))
+        expect(helper.deployment_version).to eq I18n.t(:version_unknown)
+      end
     end
   end
 
