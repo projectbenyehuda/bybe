@@ -12,13 +12,13 @@ body.staging::before {
   height: 100%;
   pointer-events: none;
   z-index: 9999;
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(255, 165, 0, 0.06) 0px,
-    rgba(255, 165, 0, 0.06) 10px,
-    transparent 10px,
-    transparent 30px
-  );
+  //background: repeating-linear-gradient(
+  //  -45deg,
+  //  rgba(255, 165, 0, 0.06) 0px,
+  //  rgba(255, 165, 0, 0.06) 10px,
+  //  transparent 10px,
+  //  transparent 30px
+  //);
 }
 
 // SASS imports for lexicon backend
