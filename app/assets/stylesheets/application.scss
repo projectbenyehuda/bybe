@@ -213,6 +213,15 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
 .modal-backdrop { z-index: 2500 !important; }
 // Popovers (e.g. footnotes) must appear above the sticky header (z-index: 2000)
 .popover { z-index: 2100 !important; }
+// The IsraelGives donation modal (third-party IGmodal.css) ships z-index 1050/1040,
+// which puts it *below* our sticky header, clipping the top of the popup.
+.ig-modal {
+  z-index: 3000 !important;
+  // IGModal.js never sets the .ig-modal-open body class its CSS relies on for
+  // scrolling, so without this a popup taller than the viewport is unreachable.
+  overflow-y: auto !important;
+}
+.ig-modal-backdrop { z-index: 2500 !important; }
 .by-dropdown-content-v02 p {
   padding: 6px 15px;
   margin: 0;
