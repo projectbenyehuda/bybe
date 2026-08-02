@@ -3281,19 +3281,11 @@ en:
       title_links:
         section_heading: Title Links
         add_link: Add Title Link
-        text_in_title: Text in title
-        text_placeholder: Text that becomes a link
-        target: Target URL
-        person_placeholder: Search person entry...
-        entry_not_found: Entry not found
+        text_label: Text in title
       comment_links:
         section_heading: Comment Links
         add_link: Add Comment Link
-        text_in_comment: Text in comment
-        text_placeholder: Text that becomes a link
-        target: Target URL
-        person_placeholder: Search person entry...
-        entry_not_found: Entry not found
+        text_label: Text in comment
     citations:
       index:
         add_citation: Add Citation
@@ -3302,9 +3294,22 @@ en:
         no_subject: General
       edit:
         title: Edit Citation
+      text_links:
+        section_heading: Text Links
+        add_link: Add Text Link
+        text_label: Text in citation
     links:
       edit:
         title: Edit Link
+    text_links:
+      text_placeholder: Text that becomes a link
+      target_entry: Lexicon entry
+      target_url: Target URL
+      entry_placeholder: Search lexicon entry...
+      url_placeholder: "https://example.com/page.html"
+      target_hint: Fill in exactly one target – a lexicon entry or a URL.
+      entry_not_found: Entry not found
+      text_not_found: Text does not occur here
   lex_issues:
     index:
       title: Lex Issues

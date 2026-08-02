@@ -357,6 +357,66 @@ describe Lexicon::ParseCitations do
     end
   end
 
+  # The LLM reports at most one link per citation, so a link sitting elsewhere in the record
+  # (typically on the publication the citation appeared in) used to be dropped entirely.
+  context 'when a citation carries an inline link the LLM did not report' do
+    def stub_llm(works)
+      chat_double = instance_double(RubyLLM::Chat)
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+      allow(chat_double).to receive(:ask).and_return(
+        instance_double(RubyLLM::Message, content: { result: [{ subject: nil, works: works }] }.to_json)
+      )
+    end
+
+    let!(:publication_entry) { create(:lex_file, :publication, title: 'שדות ומזוודות').lex_entry }
+    let!(:author_entry) { create(:lex_file, :person, title: 'אברהם עוז').lex_entry }
+
+    let(:html) do
+      <<~HTML
+        <ul>
+          <li><b><a href="/lex/entries/#{author_entry.id}">עוז, אברהם.</a></b> כל העסק מתפרק בכלל :
+            הרומן האבוד של עמוס קינן והתיאטרון. בספרו:
+            <b><a href="/lex/entries/#{publication_entry.id}">שדות ומזוודות</a></b> : תזות על הדרמה
+            (תל־אביב : רסלינג, 2014), עמ' 173–185.</li>
+        </ul>
+      HTML
+    end
+
+    let(:works) do
+      [
+        { title: 'כל העסק מתפרק בכלל : הרומן האבוד של עמוס קינן והתיאטרון',
+          authors: [{ name: 'עוז, אברהם', link: "/lex/entries/#{author_entry.id}" }],
+          from_publication: 'בספרו: שדות ומזוודות : תזות על הדרמה (תל־אביב : רסלינג, 2014)',
+          pages: '173–185', link: nil, backup_url: nil, notes: nil }
+      ]
+    end
+
+    it 'stores it as a text link on the citation it came from' do
+      stub_llm(works)
+
+      result = described_class.call(html)
+
+      expect(result.first.text_links).to eq([{ 'text' => 'שדות ומזוודות', 'entry_id' => publication_entry.id }])
+    end
+
+    it 'does not duplicate an author link as a text link' do
+      stub_llm(works)
+
+      result = described_class.call(html)
+
+      expect(result.first.text_links.pluck('text')).not_to include('עוז, אברהם.')
+    end
+
+    it 'does not duplicate the citation own link as a text link' do
+      stub_llm([works.first.merge(link: "/lex/entries/#{publication_entry.id}")])
+
+      result = described_class.call(html)
+
+      expect(result.first.text_links).to be_nil
+    end
+  end
+
   context 'when the LLM returns citations with blank titles' do
     let(:html) { '<ul><li>some html</li></ul>' }
 

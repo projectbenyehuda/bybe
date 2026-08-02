@@ -6,14 +6,17 @@ module LexiconHelper
     author_bit = lex_citation.authors.sort_by(&:display_name)
                              .map { |author| render_citation_author(author) }.join(', ')
 
+    links = lex_citation.text_links
     title_bit = if lex_citation.link.blank?
-                  lex_citation.title
+                  # text_links are not applied when the whole title is already a link (no nested anchors)
+                  apply_text_links(lex_citation.title, links)
                 else
                   link_to(lex_citation.title, lex_citation.link, target: '_blank', rel: 'noopener noreferrer')
                 end
+    publication_bit = apply_text_links(lex_citation.from_publication, links)
 
     raw "#{author_bit}, #{title_bit}, " \
-        "<u>#{lex_citation.from_publication}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
+        "<u>#{publication_bit}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
   end
 
   def render_citation_author(author)
@@ -45,16 +48,7 @@ module LexiconHelper
       entry = work.lex_publication.entry
       link_to(entry.title, lexicon_entry_path(entry))
     elsif work.title_links.is_a?(Array) && work.title_links.present?
-      html = ERB::Util.html_escape(work.title)
-      work.title_links.each do |tl|
-        entry = LexEntry.find_by(id: tl['entry_id'])
-        next unless entry
-
-        escaped_text = ERB::Util.html_escape(tl['text'])
-        # Block form of sub avoids interpreting & or \1 in the replacement string
-        html = html.sub(escaped_text) { link_to(tl['text'], lexicon_entry_path(entry)) }
-      end
-      html.html_safe
+      apply_text_links(work.title, work.title_links)
     else
       work.title
     end
@@ -77,25 +71,53 @@ module LexiconHelper
     raw result
   end
 
-  # Renders a work comment, hyperlinking any names listed in comment_links to their LexEntry.
-  # comment_links mirror title_links ([{ 'text' => ..., 'entry_id' => ... }]). Returns an
-  # HTML-safe String with the comment text escaped and matched names replaced by links.
+  # Renders a work comment, hyperlinking any text listed in comment_links.
   def render_person_work_comment(comment, comment_links)
-    links = Array(comment_links)
-    html = ERB::Util.html_escape(comment)
+    apply_text_links(comment, comment_links)
+  end
+
+  # Hyperlinks occurrences of each link pair's text within the given plain text.
+  # A link pair is either { 'text' => ..., 'entry_id' => ... } (a lexicon entry) or
+  # { 'text' => ..., 'url' => ... } (an arbitrary URL). Pairs whose text does not occur in
+  # the given text are simply ignored, which is what lets one set of pairs be applied to
+  # several fields of the same record (e.g. a citation's title and from_publication).
+  # Returns an HTML-safe String with the text escaped and matched occurrences replaced by links.
+  def apply_text_links(text, links)
+    links = Array(links)
+    html = ERB::Util.html_escape(text.to_s)
     return html.html_safe if links.empty?
 
-    # Preload all referenced entries in a single query to avoid an N+1 over the links
-    entries = LexEntry.where(id: links.filter_map { |cl| cl['entry_id'] }).index_by(&:id)
-    links.each do |cl|
-      entry = entries[cl['entry_id']]
-      next unless entry
+    entries = text_link_entries(links)
+    links.each do |link|
+      link_text = link['text']
+      next if link_text.blank?
 
-      escaped_text = ERB::Util.html_escape(cl['text'])
+      anchor = text_link_anchor(link, entries)
+      next if anchor.nil?
+
+      escaped_text = ERB::Util.html_escape(link_text)
       # Block form of sub avoids interpreting & or \1 in the replacement string
-      html = html.sub(escaped_text) { link_to(cl['text'], lexicon_entry_path(entry)) }
+      html = html.sub(escaped_text) { anchor }
     end
     html.html_safe
+  end
+
+  # Loads the LexEntries referenced by a set of link pairs in one query, so that a list of pairs
+  # can be rendered without an N+1 over their entry_ids.
+  def text_link_entries(links)
+    LexEntry.where(id: Array(links).filter_map { |link| link['entry_id'] }).index_by(&:id)
+  end
+
+  # Builds the anchor for a single link pair, or nil when it points nowhere (blank url, or an
+  # entry_id whose LexEntry has since been deleted). Callers rendering several pairs should build
+  # `entries` once with text_link_entries and pass it in.
+  def text_link_anchor(link, entries = nil)
+    if link['entry_id'].present?
+      entry = entries ? entries[link['entry_id']] : LexEntry.find_by(id: link['entry_id'])
+      entry && link_to(link['text'], lexicon_entry_path(entry))
+    elsif link['url'].present?
+      link_to(link['text'], link['url'], target: '_blank', rel: 'noopener noreferrer')
+    end
   end
 
   def format_publication_details(work)
