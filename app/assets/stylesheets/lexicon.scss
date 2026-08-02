@@ -2,6 +2,46 @@ ul.lex {
   list-style-type:disc;
 }
 
+/* Biography images (entry show page and the migration verification workbench).
+   Entries migrated from the old PHP lexicon carry the legacy HTML `align` and
+   `hspace` attributes as data-align/data-hspace. Without a float such an image
+   occupies a line of its own, leaving a tall empty band beside it; floating it
+   lets the biography text wrap around. Images with no data-align are the inline
+   source logos (NLI, Heksherim...) and are deliberately left in the text flow. */
+#lexicon-biography,
+.bio-content {
+  display: flow-root; /* contain the floats, so they can't spill into the next section */
+
+  img[data-align] {
+    max-width: 40%;
+    height: auto;
+    margin-bottom: 0.5em;
+  }
+
+  img[data-align='left'] {
+    float: left;
+    margin-right: 1em;
+  }
+
+  img[data-align='right'] {
+    float: right;
+    margin-left: 1em;
+  }
+}
+
+/* Too narrow to wrap text alongside an image: back to full-width, in-flow. */
+@media (max-width: 479px) {
+  #lexicon-biography,
+  .bio-content {
+    img[data-align] {
+      float: none;
+      max-width: 100%;
+      margin-right: 0;
+      margin-left: 0;
+    }
+  }
+}
+
 /* Editor-only badge marking entries not yet migrated from the old PHP lexicon */
 .lex-php-badge {
   display: inline-block;
