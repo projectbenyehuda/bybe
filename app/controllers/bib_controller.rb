@@ -140,12 +140,15 @@ class BibController < ApplicationController
 
   def pubs_maybe_done
     @pubs = []
-    ListItem.includes(:item).where(listkey: 'pubs_maybe_done').each do |pub|
-      item = pub.item
-      mm = item.authority.all_works_including_unpublished
+    works_by_authority = {}
+    ListItem.includes(:item).where(listkey: 'pubs_maybe_done').find_each do |list_item|
+      pub = list_item.item
+      # the same authority typically appears in many list items; load their corpus at most once
+      works = (works_by_authority[pub.authority_id] ||= works_for_title_comparison(pub.authority))
+      pub_title = pub_title_for_comparison(pub.title)
       # add all works by this authority whose title matches the pub's title when compared via pub_title_for_comparison
-      to_add = mm.find_all { |work| pub_title_for_comparison(work.title) == pub_title_for_comparison(item.title) }
-      @pubs << [item, to_add] if to_add.any?
+      to_add = works.find_all { |work| pub_title_for_comparison(work.title) == pub_title }
+      @pubs << [pub, to_add] if to_add.any?
     end
   end
 
@@ -235,6 +238,16 @@ class BibController < ApplicationController
   end
 
   private
+
+  # All works by an authority, carrying only the columns #pubs_maybe_done and its view need.
+  # Loading whole Manifestation records here is what made the report exhaust the worker's
+  # memory: manifestations.markdown and .comment are MEDIUMTEXT and are never used by the report.
+  def works_for_title_comparison(authority)
+    authority.manifestations(:author, :translator)
+             .select(:id, :title, :sort_title, :expression_id)
+             .order(:sort_title)
+             .to_a
+  end
 
   def prepare_pubs
     @select_options = BibSource.enabled.map { |tn| [tn.title, tn.id] }.unshift([I18n.t(:all_sources), :all])
