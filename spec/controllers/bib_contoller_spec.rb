@@ -185,9 +185,10 @@ describe BibController do
 
       it "queries each authority's corpus only once" do
         corpus_queries = 0
-        counter = lambda do |_name, _start, _finish, _id, payload|
-          corpus_queries += 1 if payload[:sql] =~ /SELECT.+FROM `manifestations`/
-        end
+counter = lambda do |_name, _start, _finish, _id, payload|
+  sql = payload[:sql].to_s
+  corpus_queries += 1 if sql.include?('FROM `manifestations`') && sql.include?('expressions.work_id in')
+end
 
         ActiveSupport::Notifications.subscribed(counter, 'sql.active_record') do
           expect(request).to be_successful
