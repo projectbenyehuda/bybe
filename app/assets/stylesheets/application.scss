@@ -50,6 +50,22 @@ body.staging::before {
   //);
 }
 
+// Staging environment indicator: running version, always visible at bottom left
+.staging-version-indicator {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 10000; // above the body.staging::before overlay
+  padding: 2px 6px;
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #000;
+  font-size: 11px;
+  line-height: 1.3;
+  direction: ltr;
+  pointer-events: none;
+}
+
 /*body{font-size:14px;} /* default */
 /* temporary fix */
 .credits{
