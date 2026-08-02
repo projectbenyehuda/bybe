@@ -47,7 +47,7 @@ module TextLinksConcern
     end
 
     url = params[:url].to_s.strip
-    return nil if url.blank? || url.match?(/\Ajavascript:/i)
+    return nil if url.blank? || url.match?(/\Ajavascript:/i) || !url.match?(%r{\A(/|https?://|mailto:)}i)
 
     { 'text' => text, 'url' => url }
   end
