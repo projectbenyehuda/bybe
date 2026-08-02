@@ -162,5 +162,42 @@ describe BibController do
         expect(pub_items).not_to include(unmatched_pub)
       end
     end
+
+    # Regression: loading whole Manifestation records here pulled the MEDIUMTEXT markdown of an
+    # authority's entire corpus into memory, killing the Puma worker (nginx 502) on large lists.
+    it 'loads candidate works without their text bodies' do
+      expect(request).to be_successful
+      works = assigns(:pubs).flat_map(&:last)
+      expect(works).to be_present
+      works.each do |work|
+        expect(work.title).to be_present
+        expect { work.markdown }.to raise_error(ActiveModel::MissingAttributeError)
+        expect { work.comment }.to raise_error(ActiveModel::MissingAttributeError)
+      end
+    end
+
+    context 'when several publications in the list share an authority' do
+      let(:shared_authority) { create(:authority) }
+      let!(:sibling_pubs) do
+        create_list(:publication, 3, :pubs_maybe_done, authority: shared_authority, title: 'shared title')
+      end
+      let!(:shared_manifestation) { create(:manifestation, title: 'shared title work', author: shared_authority) }
+
+      it "queries each authority's corpus only once" do
+        corpus_queries = 0
+counter = lambda do |_name, _start, _finish, _id, payload|
+  sql = payload[:sql].to_s
+  corpus_queries += 1 if sql.include?('FROM `manifestations`') && sql.include?('expressions.work_id in')
+end
+
+        ActiveSupport::Notifications.subscribed(counter, 'sql.active_record') do
+          expect(request).to be_successful
+        end
+
+        # 3 list items share one authority; the other two listed pubs have one authority each
+        expect(assigns(:pubs).count).to eq 5
+        expect(corpus_queries).to eq 3
+      end
+    end
   end
 end
