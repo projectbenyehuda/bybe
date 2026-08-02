@@ -312,8 +312,46 @@ describe '/lexicon/person_works' do
 
       let!(:publication_entry) { create(:lex_file, :publication, title: 'ספר כלשהו').lex_entry }
 
+      it 'accepts it: a title may link to a lexicon entry of any type' do
+        expect(call).to eq(200)
+        expect(work.reload.title_links).to eq([{ 'text' => 'ספר כלשהו', 'entry_id' => publication_entry.id }])
+      end
+    end
+
+    context 'when a url is given instead of an entry' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_title_link",
+             params: { text: 'אפרת דנון', url: 'http://example.com/page' },
+             xhr: true
+      end
+
+      it 'adds a url link pair' do
+        expect(call).to eq(200)
+        expect(work.reload.title_links).to eq([{ 'text' => 'אפרת דנון', 'url' => 'http://example.com/page' }])
+      end
+    end
+
+    context 'when neither an entry nor a url is given' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_title_link", params: { text: 'אפרת דנון' }, xhr: true
+      end
+
       it 'returns 422' do
         expect(call).to eq(422)
+        expect(work.reload.title_links).to be_nil
+      end
+    end
+
+    context 'when the url is a javascript: pseudo-url' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_title_link",
+             params: { text: 'אפרת דנון', url: 'javascript:alert(1)' },
+             xhr: true
+      end
+
+      it 'returns 422' do
+        expect(call).to eq(422)
+        expect(work.reload.title_links).to be_nil
       end
     end
   end
@@ -399,8 +437,22 @@ describe '/lexicon/person_works' do
 
       let!(:publication_entry) { create(:lex_file, :publication, title: 'ספר כלשהו').lex_entry }
 
-      it 'returns 422' do
-        expect(call).to eq(422)
+      it 'accepts it: a comment may link to a lexicon entry of any type' do
+        expect(call).to eq(200)
+        expect(work.reload.comment_links).to eq([{ 'text' => 'ספר כלשהו', 'entry_id' => publication_entry.id }])
+      end
+    end
+
+    context 'when a url is given instead of an entry' do
+      subject(:call) do
+        post "/lex/works/#{work.id}/add_comment_link",
+             params: { text: 'יגאל שוורץ', url: 'http://example.com/page' },
+             xhr: true
+      end
+
+      it 'adds a url link pair' do
+        expect(call).to eq(200)
+        expect(work.reload.comment_links).to eq([{ 'text' => 'יגאל שוורץ', 'url' => 'http://example.com/page' }])
       end
     end
   end

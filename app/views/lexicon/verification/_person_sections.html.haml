@@ -216,7 +216,7 @@
             .citation-card{ id: "citation-#{citation.id}", class: citation_card_css(citation, checklist) }
               .citation-content{dir: text_dir(citation.title.to_s)}
                 - if citation.title.present?
-                  %strong= citation.title
+                  %strong!= apply_text_links(citation.title, citation.text_links)
                 - if citation.authors.any?
                   %br
                   %span.text-muted
@@ -226,7 +226,7 @@
                   %br
                   %span.text-muted
                     = t('lexicon.verification.sections.citation_from_publication')
-                    = citation.from_publication
+                    != apply_text_links(citation.from_publication, citation.text_links)
                 - if citation.pages.present?
                   %br
                   %span.text-muted
@@ -234,7 +234,7 @@
                     = citation.pages
                 - if citation.notes.present?
                   %br
-                  %span.text-muted= citation.notes
+                  %span.text-muted!= apply_text_links(citation.notes, citation.text_links)
                 - if citation.link.present?
                   %br
                   - if citation.link_broken?
