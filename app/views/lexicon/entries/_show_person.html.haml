@@ -22,7 +22,10 @@
                 .metadata
                   = render partial: 'shared/intellectual_property',
                            locals: { intellectual_property: lex_person.intellectual_property }
-          %p#lexicon-biography!= MarkdownToHtml.call(bio_for_display(lex_person.bio, @lex_entry))
+          -#
+            a div, not a p: the bio is multi-paragraph HTML, and a <p> wrapper would be
+            auto-closed by the parser, leaving the paragraphs outside #lexicon-biography
+          #lexicon-biography!= MarkdownToHtml.call(bio_for_display(lex_person.bio, @lex_entry))
         #lexicon-works
           = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
             - LexPersonWork.work_types.each_key do |work_type|
