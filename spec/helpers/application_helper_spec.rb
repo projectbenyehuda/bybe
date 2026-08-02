@@ -45,14 +45,25 @@ RSpec.describe ApplicationHelper, type: :helper do
       expect(helper.deployment_version).to eq expected
     end
 
+    it 'appends the short git SHA from the REVISION file' do
+      Dir.mktmpdir do |dir|
+        release = File.join(dir, '20260731131500')
+        Dir.mkdir(release)
+        File.write(File.join(release, 'REVISION'), "deadbeefcafe\n")
+        allow(Rails).to receive(:root).and_return(Pathname.new(release))
+        expected = Time.find_zone('UTC').local(2026, 7, 31, 13, 15).in_time_zone.strftime('%Y-%m-%d %H:%M')
+        expect(helper.deployment_version).to eq "#{expected} (deadbeef)"
+      end
+    end
+
     it 'falls back to the mtime of the REVISION file' do
       Dir.mktmpdir do |dir|
         revision = File.join(dir, 'REVISION')
-        File.write(revision, "deadbeef\n")
+        File.write(revision, "deadbeefcafe\n")
         mtime = Time.zone.local(2026, 6, 1, 9, 30)
         File.utime(mtime.to_time, mtime.to_time, revision)
         allow(Rails).to receive(:root).and_return(Pathname.new(dir))
-        expect(helper.deployment_version).to eq mtime.strftime('%Y-%m-%d %H:%M')
+        expect(helper.deployment_version).to eq "#{mtime.strftime('%Y-%m-%d %H:%M')} (deadbeef)"
       end
     end
 
