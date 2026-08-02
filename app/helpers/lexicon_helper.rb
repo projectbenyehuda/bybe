@@ -87,8 +87,7 @@ module LexiconHelper
     html = ERB::Util.html_escape(text.to_s)
     return html.html_safe if links.empty?
 
-    # Preload all referenced entries in a single query to avoid an N+1 over the links
-    entries = LexEntry.where(id: links.filter_map { |link| link['entry_id'] }).index_by(&:id)
+    entries = text_link_entries(links)
     links.each do |link|
       link_text = link['text']
       next if link_text.blank?
@@ -103,8 +102,15 @@ module LexiconHelper
     html.html_safe
   end
 
+  # Loads the LexEntries referenced by a set of link pairs in one query, so that a list of pairs
+  # can be rendered without an N+1 over their entry_ids.
+  def text_link_entries(links)
+    LexEntry.where(id: Array(links).filter_map { |link| link['entry_id'] }).index_by(&:id)
+  end
+
   # Builds the anchor for a single link pair, or nil when it points nowhere (blank url, or an
-  # entry_id whose LexEntry has since been deleted).
+  # entry_id whose LexEntry has since been deleted). Callers rendering several pairs should build
+  # `entries` once with text_link_entries and pass it in.
   def text_link_anchor(link, entries = nil)
     if link['entry_id'].present?
       entry = entries ? entries[link['entry_id']] : LexEntry.find_by(id: link['entry_id'])

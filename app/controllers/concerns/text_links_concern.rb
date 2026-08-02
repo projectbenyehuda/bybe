@@ -47,7 +47,10 @@ module TextLinksConcern
     end
 
     url = params[:url].to_s.strip
-    return nil if url.blank? || url.match?(/\Ajavascript:/i) || !url.match?(%r{\A(/|https?://|mailto:)}i)
+    # Same allowlist the ingestion path applies, rather than a denylist of script-bearing
+    # schemes: the url ends up in an href, so anything not known-inert is refused.
+    # (This subsumes the explicit javascript: check of the Copilot autofix it replaces.)
+    return nil unless url.match?(Lexicon::TextLinkExtraction::ALLOWED_URL_PATTERN)
 
     { 'text' => text, 'url' => url }
   end

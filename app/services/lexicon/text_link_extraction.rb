@@ -5,6 +5,11 @@ module Lexicon
   # (see LexiconHelper#apply_text_links), used when the surrounding text is stored as plain
   # text and the anchor would otherwise be lost.
   module TextLinkExtraction
+    # A link pair's url is rendered straight into an href, so only schemes that cannot execute
+    # script are accepted: an absolute http(s) URL, a mailto:, or a path on this site. Anything
+    # else (javascript:, data:, vbscript:, ...) is refused rather than sanitized.
+    ALLOWED_URL_PATTERN = %r{\A(/|https?://|mailto:)}i
+
     # Builds a { 'text' =>, 'entry_id' | 'url' => } pair, or nil when the anchor cannot be used
     # (blank text, blank/local-anchor href, or a link to a LexEntry that no longer exists).
     def build_text_link(text, href)
@@ -26,7 +31,7 @@ module Lexicon
       return { 'entry_id' => entry_id } if entry_id.present? && LexEntry.exists?(id: entry_id)
       return nil if entry_id.present?
 
-      href.match?(%r{\A(/|https?://|mailto:)}i) ? { 'url' => href } : nil
+      href.match?(ALLOWED_URL_PATTERN) ? { 'url' => href } : nil
     end
 
     # The LexEntry id an href points at, or nil when it does not point at a lexicon entry.

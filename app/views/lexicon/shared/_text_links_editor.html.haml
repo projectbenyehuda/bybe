@@ -12,12 +12,13 @@
     add_fn      - name of the JS function adding a link
     remove_fn   - name of the JS function removing a link
     source_text - (optional) the text the links are applied to, used to warn about pairs that do not match it
+- link_entries = text_link_entries(links)
 %ul.list-unstyled.mb-2{ class: list_class }
   - Array(links).each_with_index do |link, idx|
     %li.d-flex.align-items-center.gap-2.mb-1
       %span.badge.bg-light.text-dark.border= link['text']
       %span →
-      - anchor = text_link_anchor(link)
+      - anchor = text_link_anchor(link, link_entries)
       - if anchor
         = anchor
       - else

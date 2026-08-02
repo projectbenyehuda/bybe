@@ -342,16 +342,31 @@ describe '/lexicon/person_works' do
       end
     end
 
-    context 'when the url is a javascript: pseudo-url' do
+    # The url is rendered straight into an href, so only known-inert schemes are accepted.
+    ['javascript:alert(1)', 'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==',
+     'vbscript:msgbox(1)', 'JaVaScRiPt:alert(1)', 'ftp://example.com/x'].each do |bad_url|
+      context "when the url is #{bad_url.truncate(30)}" do
+        subject(:call) do
+          post "/lex/works/#{work.id}/add_title_link", params: { text: 'אפרת דנון', url: bad_url }, xhr: true
+        end
+
+        it 'returns 422 and stores nothing' do
+          expect(call).to eq(422)
+          expect(work.reload.title_links).to be_nil
+        end
+      end
+    end
+
+    context 'when the url is a path on this site' do
       subject(:call) do
         post "/lex/works/#{work.id}/add_title_link",
-             params: { text: 'אפרת דנון', url: 'javascript:alert(1)' },
+             params: { text: 'אפרת דנון', url: '/files/lex/5181/00156200.pdf' },
              xhr: true
       end
 
-      it 'returns 422' do
-        expect(call).to eq(422)
-        expect(work.reload.title_links).to be_nil
+      it 'accepts it' do
+        expect(call).to eq(200)
+        expect(work.reload.title_links).to eq([{ 'text' => 'אפרת דנון', 'url' => '/files/lex/5181/00156200.pdf' }])
       end
     end
   end
