@@ -1343,6 +1343,8 @@ he:
   responsibility_statement: שורת אחריות
   editors: בעריכת
   default_page_title: פרויקט בן־יהודה
+  staging_version: 'גרסה: %{version}'
+  version_unknown: לא ידועה
   font_size: גודל גופן
   path: נתיב
   'yes': כן

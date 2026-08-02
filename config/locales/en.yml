@@ -2208,6 +2208,7 @@ en:
   spanish: Spanish
   split: Split
   split_works: Split Works
+  staging_version: 'version: %{version}'
   start: Start
   start_date: Start Date
   start_page: Start Page
@@ -2397,6 +2398,7 @@ en:
   values: Values
   version: Version
   versions: Versions
+  version_unknown: unknown
   via: Via
   viaf: VIAF
   viaf_link: VIAF Link

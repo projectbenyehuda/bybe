@@ -48,6 +48,7 @@
         %p
     #generalDlg.modal{"aria-hidden" => "true", role: "dialog"}
       "&gt;
+    = render 'shared/staging_version_indicator'
 :javascript
   $(document).ready(function() {
     var header = $("header");
