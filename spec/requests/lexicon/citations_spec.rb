@@ -118,6 +118,15 @@ describe '/lexicon/citations' do
       end
     end
 
+    context 'when editing notes' do
+      let(:citation_params) { { notes: 'ראיון עם הסופרת לרגל צאת ספרה' } }
+
+      it 'persists the notes' do
+        expect(call).to eq(200)
+        expect(citation.reload.notes).to eq('ראיון עם הסופרת לרגל צאת ספרה')
+      end
+    end
+
     context 'when invalid params' do
       let(:citation_params) { attributes_for(:lex_citation, title: '') }
 
@@ -251,6 +260,77 @@ describe '/lexicon/citations' do
     it 'removes record' do
       expect { call }.to change { person.citations.count }.by(-1)
       expect(call).to eq(200)
+    end
+  end
+
+  describe 'GET /lex/citations/:id/text_links' do
+    it 'returns 200' do
+      expect(get("/lex/citations/#{citation.id}/text_links", xhr: true)).to eq(200)
+    end
+  end
+
+  describe 'POST /lex/citations/:id/add_text_link' do
+    subject(:call) do
+      post "/lex/citations/#{citation.id}/add_text_link",
+           params: { text: 'שדות ומזוודות', entry_id: target_entry.id },
+           xhr: true
+    end
+
+    let!(:target_entry) { create(:lex_file, :publication, title: 'שדות ומזוודות').lex_entry }
+
+    it 'adds the text link and returns 200' do
+      expect(call).to eq(200)
+      expect(citation.reload.text_links).to eq([{ 'text' => 'שדות ומזוודות', 'entry_id' => target_entry.id }])
+    end
+
+    it 'does not duplicate an existing link with the same text' do
+      citation.update!(text_links: [{ 'text' => 'שדות ומזוודות', 'entry_id' => target_entry.id }])
+      expect { call }.not_to(change { citation.reload.text_links.size })
+    end
+
+    context 'when a url is given instead of an entry' do
+      subject(:call) do
+        post "/lex/citations/#{citation.id}/add_text_link",
+             params: { text: 'שדות ומזוודות', url: 'http://example.com/page' },
+             xhr: true
+      end
+
+      it 'adds a url link pair' do
+        expect(call).to eq(200)
+        expect(citation.reload.text_links).to eq([{ 'text' => 'שדות ומזוודות', 'url' => 'http://example.com/page' }])
+      end
+    end
+
+    context 'when text is blank' do
+      subject(:call) do
+        post "/lex/citations/#{citation.id}/add_text_link",
+             params: { text: '', entry_id: target_entry.id },
+             xhr: true
+      end
+
+      it 'returns 422' do
+        expect(call).to eq(422)
+      end
+    end
+  end
+
+  describe 'DELETE /lex/citations/:id/remove_text_link' do
+    subject(:call) { delete "/lex/citations/#{citation.id}/remove_text_link", params: { index: 0 }, xhr: true }
+
+    before do
+      citation.update!(text_links: [{ 'text' => 'שדות ומזוודות', 'entry_id' => 1 },
+                                    { 'text' => 'לספר את הקיבוץ', 'url' => 'http://example.com' }])
+    end
+
+    it 'removes the link at the given index and returns 200' do
+      expect(call).to eq(200)
+      expect(citation.reload.text_links).to eq([{ 'text' => 'לספר את הקיבוץ', 'url' => 'http://example.com' }])
+    end
+
+    it 'returns 422 and removes nothing when the index is not an integer' do
+      delete "/lex/citations/#{citation.id}/remove_text_link", params: { index: 'abc' }, xhr: true
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(citation.reload.text_links.size).to eq(2)
     end
   end
 

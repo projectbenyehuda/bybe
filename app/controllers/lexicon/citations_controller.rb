@@ -5,12 +5,13 @@ module Lexicon
   class CitationsController < ApplicationController
     include LockLexEntryConcern
     include LinkCheckingConcern
+    include TextLinksConcern
 
     before_action do
       require_editor('edit_lexicon')
     end
 
-    before_action :set_citation, only: %i(edit update destroy reorder)
+    before_action :set_citation, only: %i(edit update destroy reorder text_links add_text_link remove_text_link)
     before_action :set_person, only: %i(new create index)
     before_action :try_to_lock_record
 
@@ -59,6 +60,16 @@ module Lexicon
 
     def destroy
       @citation.destroy!
+    end
+
+    def text_links; end
+
+    def add_text_link
+      add_text_link_to(@citation, :text_links)
+    end
+
+    def remove_text_link
+      remove_text_link_from(@citation, :text_links)
     end
 
     def reorder
@@ -114,7 +125,7 @@ module Lexicon
     # Only allow a list of trusted parameters through.
     def lex_citation_params
       params.expect(lex_citation: %i(title from_publication pages link backup_url manifestation_id subject
-                                     lex_person_work_id))
+                                     lex_person_work_id notes))
     end
   end
 end
