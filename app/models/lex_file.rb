@@ -28,8 +28,10 @@ class LexFile < ApplicationRecord
 
   validates :entrytype, :status, presence: true
 
-  # Size of the source file on disk, in KB, or nil when the file is unavailable
-  # (no recorded path, missing/unresolvable path, or file not accessible on this host).
+  # Size of the source file on disk, in KB. Returns nil when there is no recorded
+  # path, or when the file cannot be stat'd at all — missing, unreadable, or on an
+  # unmounted share — since none of those should break rendering of the files list.
+  def file_size_kb
     return nil if full_path.blank?
 
     (File.size(full_path) / 1024.0).round(1)

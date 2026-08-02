@@ -57,6 +57,14 @@ describe LexFile do
 
       it { is_expected.to be_nil }
     end
+
+    context 'when the file cannot be read' do
+      let(:full_path) { '/lexicon/00001.php' }
+
+      before { allow(File).to receive(:size).with(full_path).and_raise(Errno::EACCES) }
+
+      it { is_expected.to be_nil }
+    end
   end
 
   describe '.log_error' do
