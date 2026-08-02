@@ -61,7 +61,9 @@ RSpec.describe 'IsraelGives donation popup stacking', :js, type: :system do
   def topmost_element_id_over_header
     page.evaluate_script(<<~JS)
       (function () {
-        var rect = document.getElementById('header').getBoundingClientRect();
+        var header = document.getElementById('header');
+        if (!header) { return null; }
+        var rect = header.getBoundingClientRect();
         var el = document.elementFromPoint(rect.left + rect.width / 2,
                                            rect.top + rect.height / 2);
         return el ? el.id : null;
