@@ -2541,11 +2541,11 @@ he:
         select_collection: בחר אוסף...
         associated_people: אנשים קשורים
       title_links:
-        section_heading: קישורים בכותרת
+        section_heading: קישוריות בכותרת
         add_link: הוספת קישור בכותרת
         text_label: טקסט בכותרת
       comment_links:
-        section_heading: קישורים בהערה
+        section_heading: קישוריות בהערה
         add_link: הוספת קישור בהערה
         text_label: טקסט בהערה
     citations:
@@ -2557,7 +2557,7 @@ he:
       edit:
         title: עריכת מראה מקום
       text_links:
-        section_heading: קישורים בטקסט
+        section_heading: קישוריות בטקסט
         add_link: הוספת קישור בטקסט
         text_label: טקסט במראה המקום
     links:
