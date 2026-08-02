@@ -3,6 +3,7 @@
 %tr{ id: "lex-file-#{lf.id}" }
   %td!= lf.error_message&.split("\n")&.join('<br/>')
   %td= lf.fname.sub('.php', '').sub('/', '')
+  %td.lex-file-size= lf.file_size_kb || '—'
   %td= lf.lex_entry.title
   %td #{t(lf.status)} / #{LexEntry.human_enum_name(:status, lf.lex_entry&.status)}
   %td= LexFile.human_enum_name(:entrytype, lf.entrytype)

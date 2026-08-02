@@ -28,6 +28,16 @@ class LexFile < ApplicationRecord
 
   validates :entrytype, :status, presence: true
 
+  # Size of the source file on disk, in KB, or nil when the file is unavailable
+  # (no recorded path, or the path no longer resolves on this host).
+  def file_size_kb
+    return nil if full_path.blank?
+
+    (File.size(full_path) / 1024.0).round(1)
+  rescue SystemCallError
+    nil
+  end
+
   def log_error(message)
     self.error_message ||= ''
     self.error_message += "\n" if self.error_message.present?
