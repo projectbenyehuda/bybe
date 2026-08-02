@@ -145,6 +145,7 @@ en:
         locked_by_others_title: Files locked by other editors
         other_title: Other files
         migration_item_count: Items
+        file_size: Size (KB)
       migrate:
         success: Migration queued
         title: Analyze

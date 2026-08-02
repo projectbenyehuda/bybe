@@ -146,6 +146,7 @@ he:
         locked_by_others_title: קבצים נעולים על ידי עורכים אחרים
         other_title: קבצים אחרים
         migration_item_count: פריטים
+        file_size: גודל (ק״ב)
       migrate:
         success: ההסבה החלה
         title: התחל הסבה
