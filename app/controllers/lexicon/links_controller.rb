@@ -34,11 +34,16 @@ module Lexicon
     def edit; end
 
     def update
+      # Captured before the update: broken? must be evaluated against the stored URL
+      link_was_broken = @link.broken?
+      old_url = @link.url
+
       if @link.update(lex_link_params)
         # Re-check the link only when its URL actually changed, so a previously-broken
         # link (e.g. HTTP 403) is re-evaluated instead of keeping its stale status.
         if @link.saved_change_to_url?
           check_link_synchronously(@link, @link.url, status_column: :http_status, checked_at_column: :checked_at)
+          report_broken_link_fix(@link, @item.entry, old_url) if link_was_broken
         end
         return
       end
