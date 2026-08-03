@@ -30,6 +30,14 @@ function initVerification() {
         showToast(linkCheckToastMessage, linkCheckToastType);
     }
 
+    // Show a failure toast when a broken-link correction could not be reported to Monday.
+    // Always an error, so only the message is carried across the reload.
+    const mondayToastMessage = sessionStorage.getItem('monday-report-toast-message');
+    if (mondayToastMessage) {
+        sessionStorage.removeItem('monday-report-toast-message');
+        showToast(mondayToastMessage, 'error');
+    }
+
     // Remove legacy key left by older code versions (no-op if already absent).
     sessionStorage.removeItem('source_scroll_top');
 
