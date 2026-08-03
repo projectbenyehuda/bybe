@@ -195,6 +195,115 @@ describe '/lexicon/citations' do
       end
     end
 
+    context 'when a broken link is replaced' do
+      let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: 200) }
+      let(:entry) { create(:lex_entry, :person, status: :verifying) }
+      let(:person) { entry.lex_item }
+      let(:old_link) { 'https://dead.example.com/page' }
+      let(:citation) do
+        create(:lex_citation, person: person, title: 'על מוישה זוכמיר', link: old_link,
+                              link_http_status: 404, link_checked_at: 1.day.ago)
+      end
+      let(:citation_params) { { link: 'https://alive.example.com/page' } }
+
+      before do
+        allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+        allow(Lexicon::MondayReport).to receive(:call).and_return({ success: true })
+      end
+
+      it 'reports the citation, the old link and the new link to Monday' do
+        call
+
+        expect(Lexicon::MondayReport).to have_received(:call).with(
+          hash_including(entry: entry, report_type: :fixed_broken_link, record: citation, old_link: old_link)
+        )
+      end
+
+      it 'reports the link that was stored before the edit, not the new one' do
+        call
+
+        expect(Lexicon::MondayReport).to have_received(:call) do |args|
+          expect(args[:old_link]).to eq(old_link)
+          expect(args[:record].link).to eq('https://alive.example.com/page')
+        end
+      end
+
+      it 'still saves the citation and raises no toast when the report succeeds' do
+        expect(call).to eq(200)
+        expect(citation.reload.link).to eq('https://alive.example.com/page')
+        expect(response.body).not_to include('monday-report-toast-message')
+      end
+
+      context 'when the replacement link is also broken' do
+        let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: 404) }
+
+        it 'still reports the change' do
+          call
+
+          expect(Lexicon::MondayReport).to have_received(:call).with(
+            hash_including(report_type: :fixed_broken_link)
+          )
+        end
+      end
+
+      context 'when the broken link is cleared rather than replaced' do
+        let(:citation_params) { { link: '' } }
+
+        it 'reports the removal' do
+          call
+
+          expect(Lexicon::MondayReport).to have_received(:call).with(
+            hash_including(report_type: :fixed_broken_link, old_link: old_link)
+          )
+        end
+      end
+
+      context 'when the entry is no longer in verification' do
+        let(:entry) { create(:lex_entry, :person, status: :published) }
+
+        it 'does not report' do
+          call
+
+          expect(Lexicon::MondayReport).not_to have_received(:call)
+        end
+      end
+
+      context 'when the previous link was never flagged as broken' do
+        let(:citation) do
+          create(:lex_citation, person: person, link: old_link, link_http_status: 200, link_checked_at: 1.day.ago)
+        end
+
+        it 'does not report' do
+          call
+
+          expect(Lexicon::MondayReport).not_to have_received(:call)
+        end
+      end
+
+      context 'when the link is not changed' do
+        let(:citation_params) { { title: 'New Title', link: old_link } }
+
+        it 'does not report' do
+          call
+
+          expect(Lexicon::MondayReport).not_to have_received(:call)
+        end
+      end
+
+      context 'when the Monday report fails' do
+        before do
+          allow(Lexicon::MondayReport).to receive(:call).and_return({ success: false, error: 'Invalid token' })
+        end
+
+        it 'saves the citation anyway and raises a failure toast' do
+          expect(call).to eq(200)
+          expect(citation.reload.link).to eq('https://alive.example.com/page')
+          expect(response.body).to include('monday-report-toast-message')
+          expect(response.body).to include(I18n.t('lexicon.verification.monday.report_error'))
+        end
+      end
+    end
+
     context 'when link is cleared' do
       let(:citation) { create(:lex_citation, person: person, link: 'https://old.example.com/', link_http_status: 404) }
       let(:citation_params) { { link: '' } }

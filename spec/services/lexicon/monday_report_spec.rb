@@ -174,6 +174,101 @@ RSpec.describe Lexicon::MondayReport do
       end
     end
 
+    context 'with a fixed_broken_link report' do
+      let(:person) { entry.lex_item }
+      let(:old_link) { 'https://dead.example.com/page' }
+      let(:new_link) { 'https://alive.example.com/page' }
+
+      def report(record)
+        described_class.call(
+          entry: entry, report_type: :fixed_broken_link, current_url: current_url,
+          record: record, old_link: old_link
+        )
+      end
+
+      shared_examples 'a broken-link correction report' do
+        it 'returns success when Monday API succeeds' do
+          stub_monday_success
+
+          expect(report(record)[:success]).to be true
+        end
+
+        it 'names the corrected record in the item name' do
+          captured_body = nil
+          stub_monday_success { |req| captured_body = req.body }
+
+          report(record)
+
+          expect(JSON.parse(captured_body)['query']).to include(expected_name)
+        end
+
+        it 'includes the old and new link values in the long_text column' do
+          captured_body = nil
+          stub_monday_success { |req| captured_body = req.body }
+
+          report(record)
+
+          query = JSON.parse(captured_body)['query']
+          expect(query).to include('long_text_mm2tzz8q')
+          expect(query).to include(old_link).and include(new_link)
+        end
+
+        it 'links back to the verification page' do
+          captured_body = nil
+          stub_monday_success { |req| captured_body = req.body }
+
+          report(record)
+
+          expect(JSON.parse(captured_body)['query']).to include(current_url)
+        end
+      end
+
+      context 'when the corrected record is a citation' do
+        let(:record) { create(:lex_citation, person: person, title: 'על מוישה זוכמיר', link: new_link) }
+        let(:expected_name) do
+          I18n.t('lexicon.verification.monday.fixed_broken_link_name',
+                 subject: I18n.t('lexicon.verification.monday.fixed_broken_link_subject.citation',
+                                 title: 'על מוישה זוכמיר'))
+        end
+
+        it_behaves_like 'a broken-link correction report'
+
+        it 'reports a cleared link with the link_removed label rather than an empty value' do
+          record.update!(link: nil)
+          captured_body = nil
+          stub_monday_success { |req| captured_body = req.body }
+          expected = I18n.t('lexicon.verification.monday.fixed_broken_link_details',
+                            old_link: old_link, new_link: I18n.t('lexicon.verification.monday.link_removed'))
+
+          report(record)
+
+          expect(JSON.parse(captured_body)['query']).to include(expected)
+        end
+      end
+
+      context 'when the corrected record is a link' do
+        let(:record) { create(:lex_link, item: person, description: 'אתר הזיכרון', url: new_link) }
+        let(:expected_name) do
+          I18n.t('lexicon.verification.monday.fixed_broken_link_name',
+                 subject: I18n.t('lexicon.verification.monday.fixed_broken_link_subject.link',
+                                 title: 'אתר הזיכרון'))
+        end
+
+        it_behaves_like 'a broken-link correction report'
+
+        it 'falls back to the URL when the link has no description' do
+          record.update!(description: nil)
+          captured_body = nil
+          stub_monday_success { |req| captured_body = req.body }
+          expected = I18n.t('lexicon.verification.monday.fixed_broken_link_subject.link', title: new_link)
+
+          report(record)
+
+          expect(JSON.parse(captured_body)['query']).to include(expected)
+        end
+      end
+    end
+
     context 'when Monday API returns an error response' do
       before { stub_monday_error('Invalid auth token') }
 

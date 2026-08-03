@@ -38,6 +38,9 @@ module Lexicon
 
     def update
       old_subject_title = @citation.subject_title
+      # Captured before assign_attributes: link_broken? must be evaluated against the stored link
+      link_was_broken = @citation.link_broken?
+      old_link = @citation.link
       @citation.assign_attributes(lex_citation_params)
       new_subject_title = @citation.subject_title
 
@@ -51,6 +54,7 @@ module Lexicon
         if @citation.saved_change_to_link?
           check_link_synchronously(@citation, @citation.link,
                                    status_column: :link_http_status, checked_at_column: :link_checked_at)
+          report_broken_link_fix(@citation, @person.entry, old_link) if link_was_broken
         end
         return
       end

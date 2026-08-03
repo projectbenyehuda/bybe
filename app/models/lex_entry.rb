@@ -37,8 +37,11 @@ class LexEntry < ApplicationRecord
 
   validates :title, :sort_title, :status, presence: true
 
+  # Statuses in which an entry is still part of the migration verification workflow
+  VERIFICATION_STATUSES = %i(draft verifying error escalated).freeze
+
   # Scopes for verification queue
-  scope :needs_verification, -> { where(status: %i(draft verifying error escalated)) }
+  scope :needs_verification, -> { where(status: VERIFICATION_STATUSES) }
   scope :in_verification, -> { where(status: :verifying) }
 
   # Main entries are shown in /lex; secondary entries (main: false) are only
@@ -57,6 +60,12 @@ class LexEntry < ApplicationRecord
     elsif lex_item.is_a?(LexPublication) || lex_file&.entrytype_text?
       :publication
     end
+  end
+
+  # Instance-level counterpart of the needs_verification scope: is this entry still
+  # going through migration verification (as opposed to published/deprecated)?
+  def needs_verification?
+    VERIFICATION_STATUSES.include?(status.to_sym)
   end
 
   # returns link to page representing this entry in old lexicon system
