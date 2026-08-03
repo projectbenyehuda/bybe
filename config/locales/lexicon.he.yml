@@ -370,3 +370,9 @@ he:
         missing_work_name: "החיבור %{title} ידוע בביבליוגרפיה אך לא מופיע בערך הלקסיקון."
         missing_work_details: "מו״ל: %{publisher}. שנת הוצאה: %{year}."
         missing_work_reported: "דווח בעבר"
+        fixed_broken_link_name: "קישור שבור הוחלף ב%{subject}."
+        fixed_broken_link_subject:
+          citation: "מראה המקום %{title}"
+          link: "קישור %{title}"
+        fixed_broken_link_details: "הקישור הקודם: %{old_link}. הקישור החדש: %{new_link}."
+        link_removed: "(ללא קישור)"

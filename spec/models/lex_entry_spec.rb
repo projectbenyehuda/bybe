@@ -386,6 +386,20 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '#needs_verification?' do
+    it 'is true for the same statuses matched by the needs_verification scope' do
+      LexEntry::VERIFICATION_STATUSES.each do |status|
+        expect(create(:lex_entry, status: status).needs_verification?).to be(true)
+      end
+    end
+
+    it 'is false once the entry has left the verification workflow' do
+      %i(published deprecated verified).each do |status|
+        expect(create(:lex_entry, status: status).needs_verification?).to be(false)
+      end
+    end
+  end
+
   describe '#redo_migration_eligible?' do
     it 'is true for draft, verifying, and escalated entries that have a lex_file' do
       %i(draft verifying escalated).each do |status|
