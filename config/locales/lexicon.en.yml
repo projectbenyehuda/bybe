@@ -375,3 +375,4 @@ en:
           link: "the link %{title}"
         fixed_broken_link_details: "Previous link: %{old_link}. New link: %{new_link}."
         link_removed: "(no link)"
+        migration_report_failed: "The entry was marked as verified, but sending the report to Monday failed: %{error}"

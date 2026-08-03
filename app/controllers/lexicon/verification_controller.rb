@@ -247,6 +247,7 @@ module Lexicon
     # POST /lexicon/verification/:id/mark_verified
     def mark_verified
       @entry.mark_verified!
+      report_verification_to_monday
       redirect_to lexicon_entry_path(@entry),
                   notice: I18n.t('lexicon.verification.messages.entry_verified_public')
     rescue StandardError => e
@@ -405,6 +406,22 @@ module Lexicon
 
     def set_entry
       @entry = LexEntry.includes(:lex_item, :lex_file).find(params[:id])
+    end
+
+    # Announce the completed verification on the migrated-entries Monday board.
+    # Best-effort: the entry is already verified by this point, so a Monday
+    # failure is surfaced as a warning rather than being allowed to undo it.
+    def report_verification_to_monday
+      result = Lexicon::MondayMigrationReport.call(
+        entry: @entry,
+        verifier: current_user,
+        entry_url: lexicon_verification_url(@entry)
+      )
+      return if result[:success]
+
+      # flash, not flash.now: the only caller (mark_verified) redirects afterwards.
+      flash[:alert] = # rubocop:disable Rails/ActionControllerFlashBeforeRender
+        I18n.t('lexicon.verification.monday.migration_report_failed', error: result[:error])
     end
 
     def record_to_lock
