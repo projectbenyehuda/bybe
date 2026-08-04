@@ -1274,9 +1274,12 @@ p.by-genre-name-v02.headline-2-v02 {
   height: auto;
 }
 
-/* 120 was wrapping after by-icon-v02 CLS optimization */
+/* 120 was wrapping after by-icon-v02 CLS optimization.
+   Safari measures the label slightly wider than Chrome/Firefox and wrapped even
+   at 122px, so keep the label on one line and let the button grow to fit it. */
 .donation-btn-v02 {
   min-width: 122px;
+  white-space: nowrap;
 }
 
 /* Tag-proposal popup: the mode toggle (suggest / pick from full list) and the
