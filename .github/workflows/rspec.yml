@@ -19,7 +19,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       elasticsearch:
-        image: elasticsearch:7.17.8
+        image: elasticsearch:8.19.19
         env:
           discovery.type: single-node
           xpack.security.enabled: false
