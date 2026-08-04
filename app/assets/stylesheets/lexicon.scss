@@ -126,3 +126,55 @@ ul.lex {
   background-color: #efbfb7;
   color: #5E1228;
 }
+
+/* A card inside a lexicon entry whose content comes from the main Ben-Yehuda
+   database (the latest-works and works-about-this-author panes on the entry
+   sidebar) rather than from the lexicon. Such cards keep the main site's
+   palette, so these rules undo the `.peach2-lexicon` overrides for them. The
+   values are the main-site defaults from BY_styles_General.css; the selectors
+   are deliberately one class more specific than the peach rules they
+   countermand. */
+.peach2-lexicon .by-card-v02.main-palette-card {
+  background-color: #d9cdd5;
+
+  /* authors/_aboutnesses renders its own card, nested inside this one */
+  .by-card-v02,
+  .left-side-card-v02 {
+    background-color: #d9cdd5;
+  }
+
+  .by-card-header-left-v02 {
+    border-bottom: solid 2px #CBB3C3;
+  }
+
+  #author-whats-new-bg {
+    background-image: image-url('bullhorn.svg');
+  }
+
+  .new-card-v02 {
+    background-color: #eeeced;
+  }
+
+  .new-card-right-v02 {
+    background-color: #2b0d22;
+  }
+
+  .new-card-type-v02 {
+    background-image: image-url('new_bg1.png');
+  }
+
+  a {
+    color: #660248;
+
+    &:hover {
+      color: #2b0d22;
+      background-color: #d9cdd5;
+    }
+  }
+
+  /* the latest-works headline is a plain span, not a link, so on the main site it
+     gets no hover highlight at all (the base rule is scoped to `a .new-headline-v02`) */
+  .new-headline-v02:hover {
+    background-color: transparent;
+  }
+}
