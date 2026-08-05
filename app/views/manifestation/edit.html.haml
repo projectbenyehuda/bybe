@@ -6,38 +6,30 @@
   .container-fluid#manifestation_edit_markdown
     .row
       .col-md-9
-        %h3
+        %h3.zero-margin-bottom
           = t(:existing_title)+': '
           = @m.title
           - unless @legacy_url.nil?
             != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
             = link_to t(:legacy_url), @legacy_url, target: '_blank'
-          != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-          %span.btn#vised{style: 'float:none;font-size:150%;height:auto'}= t(:launch_visual_editor)
-          != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-          = link_to t(:to_the_work_in_the_site), manifestation_path(@m), target: '_blank'
-        %h3
           = t(:by)+': '
           - @m.authors.each do |au|
             = link_to au.name, authority_path(au.id)
-      .col-md-3
-        %h3
-          = t(:new_title_only)
-          = text_field_tag :newtitle, @newtitle
+          != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+          = link_to t(:to_the_work_in_the_site), manifestation_path(@m), target: '_blank'
     %hr
     .markdown_container.row
       .col-sm-3
         #legacy_markdown_link
         %h2= t(:markdown)
-        %b= t(:make_corrections_below)
-        %br
         = render partial: 'shared/markdown_actions'
 
         - if @m.images.attached?
-          %button.btn-small-outline-v02#add_image
-            %b.static-btn= t(:add_image)
-          %button.btn-small-outline-v02#add_all_images
-            %b.static-btn= t(:add_all_images)
+          .flex-row{style: 'gap: 10px;'}
+            %button.btn-small-outline-v02#add_image
+              %b.static-btn= t(:add_image)
+            %button.btn-small-outline-v02#add_all_images
+              %b.static-btn= t(:add_all_images)
           = select_tag :images, raw(options_from_images(@m))
           %br
           = t(:in_current_cursor)
