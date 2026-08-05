@@ -7,23 +7,34 @@
     if(element_id == '')
       element_id = '#markdown';
     var container_selector = '##{container_id}';
-    // Insert txtToAdd at the caret, preserving focus and scroll position.
-    function insert_at_caret(txtToAdd) {
+    // Replace [start, end) of the textarea with txtToAdd, preserving focus and scroll position.
+    function replace_range(start, end, txtToAdd) {
       var $txt = jQuery(element_id);
       var scrollLeft = $txt[0].scrollLeft;
       var scrollTop  = $txt[0].scrollTop;
-      var caretPos = $txt[0].selectionStart;
       var textAreaTxt = $txt.val();
-      $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
+      $txt.val(textAreaTxt.substring(0, start) + txtToAdd + textAreaTxt.substring(end) );
       $txt.focus();
-      $txt.caretTo(caretPos+txtToAdd.length);
+      $txt.caretTo(start+txtToAdd.length);
       $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
+    }
+    function insert_at_caret(txtToAdd) {
+      var caretPos = jQuery(element_id)[0].selectionStart;
+      replace_range(caretPos, caretPos, txtToAdd);
+    }
+    // Bounds of the line the caret sits on, as [start, end).
+    function caret_line_range() {
+      var buf = jQuery(element_id).val();
+      var caretPos = jQuery(element_id)[0].selectionStart;
+      var start = caretPos > 0 ? buf.lastIndexOf("\n", caretPos - 1) + 1 : 0;
+      var end = buf.indexOf("\n", caretPos);
+      return [start, end < 0 ? buf.length : end];
     }
     // Keyed by the option values in ApplicationHelper#markdown_action_options.
     var markdown_actions = {
       minuses_to_makafim: function() {
         var buf = $(element_id).val();
-        replaced = 0;
+        var replaced = 0;
         buf = buf.replace(/\S(-|‑)\S/g, function(occurrence){
           var latin = occurrence[0].match(/[A-Za-z]/i) || occurrence[2].match(/[A-Za-z]/i);
           var digits = occurrence[0].match(/[0-9]/) && occurrence[2].match(/[0-9]/);
@@ -65,9 +76,22 @@
       add_indent: function() {
         insert_at_caret("&emsp;");
       },
+      center_text: function() {
+        var selected = $(element_id).selection();
+        if(selected != '') {
+          $(element_id).selection('replace', {text: '<center>' + selected + '</center>'});
+        }
+        else
+        {
+          // nothing selected: center the line the caret sits on
+          var range = caret_line_range();
+          var line = $(element_id).val().substring(range[0], range[1]);
+          replace_range(range[0], range[1], '<center>' + line + '</center>');
+        }
+      },
       tidy_footnote_dirs: function() {
         var buf = $(element_id).val();
-        replaced = 0;
+        var replaced = 0;
         buf = buf.replace(/(\[.*?]: )(.*)/g, function(occurrence, p1, p2){
           if(occurrence.match(/[\u0590-\u05FF]/)) {
             return occurrence;

@@ -18,6 +18,7 @@ module ApplicationHelper
       [t(:remove_angled_brackets), 'remove_angled_brackets'],
       [t(:minuses_to_makafim), 'minuses_to_makafim'],
       [t(:indent), 'add_indent'],
+      [t(:center_text), 'center_text'],
       [t(:tidy_footnote_dirs), 'tidy_footnote_dirs']
     ]
   end

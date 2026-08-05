@@ -1006,6 +1006,7 @@ en:
   add_recommendation: Add Recommendation
   add_stanza_break: Add Stanza Break
   markdown_action: Markdown Editing Action
+  center_text: Center
   apply_markdown_action: Apply Action
   indent: Indent
   add_tag: Add Tag
