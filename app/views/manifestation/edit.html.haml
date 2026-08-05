@@ -31,16 +31,7 @@
         %h2= t(:markdown)
         %b= t(:make_corrections_below)
         %br
-        %button.btn-small-outline-v02#add_stanza_break
-          %b.static-btn= t(:add_stanza_break)
-        %button.btn-small-outline-v02#add_angled_brackets{style:'display:unset; color:unset;'}
-          %b.static-btn= t(:add_angled_brackets)
-        %button.btn-small-outline-v02#remove_angled_brackets{style:'display:unset; color:unset;'}
-          %b.static-btn= t(:remove_angled_brackets)
-        %button.btn-small-outline-v02#minuses_to_makafim
-          %b.static-btn= t(:minuses_to_makafim)
-        %button.btn-small-outline-v02#add_indent
-          %b.static-btn= t(:indent)
+        = render partial: 'shared/markdown_actions'
 
         - if @m.images.attached?
           %button.btn-small-outline-v02#add_image
