@@ -6,70 +6,89 @@
     var element_id = "##{element_id}";
     if(element_id == '')
       element_id = '#markdown';
-    $('##{container_id} #minuses_to_makafim').click(function(e) {
-      e.preventDefault();
-      var buf = $(element_id).val();
-      replaced = 0;
-      buf = buf.replace(/\S(-|‑)\S/g, function(occurrence){
-        if((occurrence[0].match(/[A-Za-z]/i)) || (occurrence[2].match(/[A-Za-z]/i)) || occurrence[0] == '-' || occurrence[2] == '-' || (occurrence[0].match(/[0-9]/) && occurrence[2].match(/[0-9]/))) {
-          return occurrence;
-        } else {
-          replaced += 1;
-          return occurrence.replace('-','־').replace('‑','־');
-        }
-      });
-      $(element_id).val(buf);
-      alert('בוצעו '+replaced.toString()+' החלפות.');
-    });
-    $('##{container_id} #add_angled_brackets').click(function(e) {
-      e.preventDefault();
-      if($(element_id).selection() == '') {
-        alert("#{t(:select_text_to_add_to)}");
-      }
-      else
-      {
-        var buf = $(element_id).selection();
-        buf = buf.replace(/\n([^#])/g, "\n> $1");
-        $(element_id).selection('replace', {text: buf});
-      }
-    });
-    $('##{container_id} #remove_angled_brackets').click(function(e) {
-      e.preventDefault();
-      if($(element_id).selection() == '') {
-        alert("#{t(:select_text_to_remove_from)}");
-      }
-      else
-      {
-        var buf = $(element_id).selection();
-        buf = buf.split(/\n> */).join("\n");
-        $(element_id).selection('replace', {text: buf});
-      }
-    });
-    $('##{container_id} #add_stanza_break').click(function(e) {
-      e.preventDefault();
+    var container_selector = '##{container_id}';
+    // Insert txtToAdd at the caret, preserving focus and scroll position.
+    function insert_at_caret(txtToAdd) {
       var $txt = jQuery(element_id);
       var scrollLeft = $txt[0].scrollLeft;
       var scrollTop  = $txt[0].scrollTop;
       var caretPos = $txt[0].selectionStart;
       var textAreaTxt = $txt.val();
-      var txtToAdd = "\n>\n<br />\n>\n";
       $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) );
       $txt.focus();
       $txt.caretTo(caretPos+txtToAdd.length);
       $txt[0].scrollTo(scrollLeft, scrollTop); // restore scroll position
-    });
-    $('##{container_id} #add_indent').click(function(e) {
+    }
+    // Keyed by the option values in ApplicationHelper#markdown_action_options.
+    var markdown_actions = {
+      minuses_to_makafim: function() {
+        var buf = $(element_id).val();
+        replaced = 0;
+        buf = buf.replace(/\S(-|‑)\S/g, function(occurrence){
+          var latin = occurrence[0].match(/[A-Za-z]/i) || occurrence[2].match(/[A-Za-z]/i);
+          var digits = occurrence[0].match(/[0-9]/) && occurrence[2].match(/[0-9]/);
+          if(latin || occurrence[0] == '-' || occurrence[2] == '-' || digits) {
+            return occurrence;
+          } else {
+            replaced += 1;
+            return occurrence.replace('-','־').replace('‑','־');
+          }
+        });
+        $(element_id).val(buf);
+        alert('בוצעו '+replaced.toString()+' החלפות.');
+      },
+      add_angled_brackets: function() {
+        if($(element_id).selection() == '') {
+          alert("#{t(:select_text_to_add_to)}");
+        }
+        else
+        {
+          var buf = $(element_id).selection();
+          buf = buf.replace(/\n([^#])/g, "\n> $1");
+          $(element_id).selection('replace', {text: buf});
+        }
+      },
+      remove_angled_brackets: function() {
+        if($(element_id).selection() == '') {
+          alert("#{t(:select_text_to_remove_from)}");
+        }
+        else
+        {
+          var buf = $(element_id).selection();
+          buf = buf.split(/\n> */).join("\n");
+          $(element_id).selection('replace', {text: buf});
+        }
+      },
+      add_stanza_break: function() {
+        insert_at_caret("\n>\n<br />\n>\n");
+      },
+      add_indent: function() {
+        insert_at_caret("&emsp;");
+      },
+      tidy_footnote_dirs: function() {
+        var buf = $(element_id).val();
+        replaced = 0;
+        buf = buf.replace(/(\[.*?]: )(.*)/g, function(occurrence, p1, p2){
+          if(occurrence.match(/[\u0590-\u05FF]/)) {
+            return occurrence;
+          } else {
+            if(occurrence.match(/dir="ltr"/)) {
+              return occurrence;
+            }
+            replaced += 1;
+            return p1 + '<div dir="ltr" align="left">' + p2 + '</div>';
+          }
+        });
+        $(element_id).val(buf);
+        alert('בוצעו '+replaced.toString()+' החלפות.');
+      }
+    };
+    // The dropdown keeps its selection, so the action can be repeated by clicking again.
+    $(container_selector).on('click', '.js-markdown-action-apply', function(e) {
       e.preventDefault();
-      var $txt = jQuery(element_id);
-      var scrollLeft = $txt[0].scrollLeft;
-      var scrollTop  = $txt[0].scrollTop;
-      var caretPos = $txt[0].selectionStart;
-      var textAreaTxt = $txt.val();
-      var txtToAdd = "&emsp;";
-      $txt.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos));
-      $txt.focus();
-      $txt.caretTo(caretPos+txtToAdd.length);
-      $txt[0].scrollTo(scrollLeft, scrollTop);
+      var action = markdown_actions[$(container_selector).find('.js-markdown-action').val()];
+      if(action)
+        action();
     });
     // highlight suspicious angled brackets in rendered HTML
     $("#preview p:contains('> ')").each(function(){
@@ -78,23 +97,4 @@
     $("#preview blockquote:contains('> ')").each(function(){
       $(this).html(highlight_in_red($(this).html()));
     });
-    $('##{container_id} #tidy_footnote_dirs').click(function(e) {
-      e.preventDefault();
-      var buf = $(element_id).val();
-      replaced = 0;
-      buf = buf.replace(/(\[.*?]: )(.*)/g, function(occurrence, p1, p2){
-        if(occurrence.match(/[\u0590-\u05FF]/)) {
-          return occurrence;
-        } else {
-          if(occurrence.match(/dir="ltr"/)) {
-            return occurrence;
-          }
-          replaced += 1;
-          return p1 + '<div dir="ltr" align="left">' + p2 + '</div>';
-        }
-      });
-      $(element_id).val(buf);
-      alert('בוצעו '+replaced.toString()+' החלפות.');
-    });
-
   });

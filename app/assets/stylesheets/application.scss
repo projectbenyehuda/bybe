@@ -1291,3 +1291,21 @@ p.by-genre-name-v02.headline-2-v02 {
   border-radius: 3px;
   background-color: #fff;
 }
+
+// markdown-editing action dropdown + apply button (shared/_markdown_actions)
+.markdown-actions {
+  display: flex;
+  flex-wrap: wrap; // the widget sits in columns as narrow as col-sm-2
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+
+  .js-markdown-action {
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+
+  .js-markdown-action-apply {
+    flex: 0 0 auto;
+  }
+}

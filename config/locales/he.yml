@@ -81,6 +81,8 @@ he:
   must_set_author: חובה לשייך יוצר!
   docx_too_large: אין די זכרון להסב את הקובץ. יש לפצלו או להסב ידנית.
   add_stanza_break: הוספת מעבר בית
+  markdown_action: פעולת עריכה
+  apply_markdown_action: ביצוע הפעולה
   indent: הזחה
   minuses_to_makafim: תיקון למקפים עבריים גאים
   tidy_footnote_dirs: סידור כיוון הערות
