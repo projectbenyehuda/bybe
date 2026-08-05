@@ -9,6 +9,20 @@ module ApplicationHelper
     s.force_encoding('UTF-8')
   end
 
+  # Options for the markdown-editing action dropdown (see shared/_markdown_actions).
+  # Each value is the action key dispatched by the JS in shared/_markdown_utils.
+  def markdown_action_options
+    [
+      [t(:add_stanza_break), 'add_stanza_break'],
+      [t(:add_angled_brackets), 'add_angled_brackets'],
+      [t(:remove_angled_brackets), 'remove_angled_brackets'],
+      [t(:minuses_to_makafim), 'minuses_to_makafim'],
+      [t(:indent), 'add_indent'],
+      [t(:center_text), 'center_text'],
+      [t(:tidy_footnote_dirs), 'tidy_footnote_dirs']
+    ]
+  end
+
   def get_intro(markdown)
     lines = markdown[0..2000].lines[1..-2]
     if lines.empty?

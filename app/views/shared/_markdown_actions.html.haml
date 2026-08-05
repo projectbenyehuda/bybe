@@ -1,0 +1,9 @@
+-#
+  Dropdown of markdown-editing actions plus a button applying the selected one.
+  The handlers live in shared/_markdown_utils, scoped to the same container_id.
+  Hooks are classes rather than ids because several markdown editors can share a page.
+.markdown-actions
+  %select.form-control.js-markdown-action{ 'aria-label': t(:markdown_action) }
+    = options_for_select(markdown_action_options)
+  %button.btn-small-outline-v02.js-markdown-action-apply{ type: 'button' }
+    %b.btn-text-v02= t(:apply_markdown_action)

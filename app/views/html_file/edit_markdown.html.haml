@@ -41,16 +41,7 @@
             .col-sm-3
               #legacy_markdown_link
               %h2= t(:markdown)
-              %button.btn-small-outline-v02#add_stanza_break{style:'display:unset'}
-                %b.btn-text-v02= t(:add_stanza_break)
-              %button.btn-small-outline-v02#add_angled_brackets{style:'display:unset'}
-                %b.btn-text-v02= t(:add_angled_brackets)
-              %button.btn-small-outline-v02#remove_angled_brackets{style:'display:unset'}
-                %b.btn-text-v02= t(:remove_angled_brackets)
-              %button.btn-small-outline-v02#minuses_to_makafim{style:'display:unset'}
-                %b.btn-text-v02= t(:minuses_to_makafim)
-              %button.btn-small-outline-v02#tidy_footnote_dirs{style:'display:unset'}
-                %b.btn-text-v02= t(:tidy_footnote_dirs)
+              = render partial: 'shared/markdown_actions'
               .markdown= text_area_tag(:markdown, raw(@markdown), class: 'textarea100')
             .col-sm-9
               %h2= t(:display_text)
