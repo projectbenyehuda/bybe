@@ -1296,15 +1296,20 @@ p.by-genre-name-v02.headline-2-v02 {
 	overflow-y: auto;
 }
 
-/* Sticky navbar for lexicon entries */
+/* Sticky navbar for lexicon entries.
+ * --lexicon-sticky-top is measured from the fixed #header at runtime (see
+ * lexicon/entries/_navbar), because the header's height varies: the entry
+ * header adds a breadcrumbs/actions row that stays visible when scrolled, and
+ * editors get an extra "edit" button plus the dashboard link in the top bar.
+ * The literals below are only the pre-JS fallback. */
 .peach2-lexicon .side-menu-area {
 	position: sticky;
-  top: 80px;
+  top: var(--lexicon-sticky-top, 80px);
 	align-self: flex-start;
 }
 
 .peach2-lexicon .side-menu-area .book-nav-full {
-	max-height: calc(100vh - 100px);
+	max-height: calc(100vh - var(--lexicon-sticky-top, 80px) - 20px);
 	overflow-y: auto;
 }
 
@@ -1329,12 +1334,12 @@ p.by-genre-name-v02.headline-2-v02 {
 
   .peach2-lexicon .side-menu-area {
     position: sticky;
-    top: 60px;
+    top: var(--lexicon-sticky-top, 60px);
     align-self: flex-start;
   }
 
   .peach2-lexicon .side-menu-area .book-nav-full {
-    max-height: calc(100vh - 80px);
+    max-height: calc(100vh - var(--lexicon-sticky-top, 60px) - 20px);
     overflow-y: auto;
   }
 }
