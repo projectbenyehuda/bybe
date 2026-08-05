@@ -47,6 +47,34 @@
 
 :javascript
   $(document).ready(function() {
+    // The site header is position:fixed, and its height is not constant: the lexicon
+    // entry header adds a breadcrumbs/actions row (which keeps its buttons visible
+    // when scrolled, and holds an extra "edit" button for editors), and the whole
+    // header shrinks once the layout adds .scrolled. So measure it instead of
+    // hardcoding an offset, and publish it for the sticky sidebar CSS to consume.
+    var HEADER_GAP = 8;
+    var lastStickyTop = null;
+    var pendingFrame = false;
+
+    function stickyTop() {
+      return Math.ceil($('#header').outerHeight() || 0) + HEADER_GAP;
+    }
+
+    function applyStickyTop() {
+      pendingFrame = false;
+      var top = stickyTop();
+      if (top === lastStickyTop) return;
+      lastStickyTop = top;
+      document.documentElement.style.setProperty('--lexicon-sticky-top', top + 'px');
+    }
+
+    applyStickyTop();
+    $(window).on('scroll resize', function() {
+      if (pendingFrame) return;
+      pendingFrame = true;
+      window.requestAnimationFrame(applyStickyTop);
+    });
+
     // Handle clicks on navbar items (scoped to #genre-nav to avoid affecting other navbars)
     $('#genre-nav .nav-item[data-scroll-target]').click(function(e) {
       var scrollTarget = $(this).data('scroll-target');
@@ -55,7 +83,7 @@
       $('#genre-nav .nav-link').removeClass('active').attr('aria-selected', 'false');
       $(this).find('.nav-link').addClass('active').attr('aria-selected', 'true');
       if (scrollTarget && $(scrollTarget).length > 0) {
-        var offset = $(scrollTarget).offset().top - 120;
+        var offset = $(scrollTarget).offset().top - stickyTop();
         $('html, body').animate({
           scrollTop: offset
         }, 500);
