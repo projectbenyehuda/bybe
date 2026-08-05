@@ -57,7 +57,7 @@
     var pendingFrame = false;
 
     function stickyTop() {
-      return Math.round($('#header').outerHeight() || 0) + HEADER_GAP;
+      return Math.ceil($('#header').outerHeight() || 0) + HEADER_GAP;
     }
 
     function applyStickyTop() {
