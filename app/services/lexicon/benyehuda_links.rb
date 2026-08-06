@@ -7,25 +7,28 @@ module Lexicon
   # - numeric ID: https://benyehuda.org/author/1234
   # - slug:       https://benyehuda.org/shats (looked up via HtmlDir)
   module BenyehudaLinks
-    HOST_PATTERN = %r{\Ahttps?://(?:www\.)?benyehuda\.org}i
+    HOSTS = ['benyehuda.org', 'www.benyehuda.org'].freeze
+    SCHEMES = %w(http https).freeze
 
     module_function
 
     # Returns the Authority the given URL points at, or nil if the URL is not a
     # benyehuda.org author link, or no matching Authority exists.
     def authority_for(url)
-      url = url.to_s
-      return nil unless url.match?(HOST_PATTERN)
-
       begin
-        path = URI.parse(url).path
+        uri = URI.parse(url.to_s)
       rescue URI::InvalidURIError
         return nil
       end
 
-      return nil if path.blank?
+      # Compare the parsed host rather than matching a prefix of the URL: a prefix match
+      # would also accept lookalike hosts such as benyehuda.org.il, or benyehuda.org
+      # appearing as userinfo (https://benyehuda.org@example.com/author/1).
+      return nil unless SCHEMES.include?(uri.scheme&.downcase)
+      return nil unless HOSTS.include?(uri.host&.downcase)
+      return nil if uri.path.blank?
 
-      authority_from_path(path)
+      authority_from_path(uri.path)
     end
 
     def authority_from_path(path)

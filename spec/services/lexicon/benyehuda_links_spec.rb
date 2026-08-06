@@ -46,6 +46,36 @@ describe Lexicon::BenyehudaLinks do
       it { is_expected.to be_nil }
     end
 
+    context 'when the host merely starts with benyehuda.org' do
+      let(:url) { "https://benyehuda.org.il/author/#{expected_authority.id}" }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when the host is a lookalike subdomain of another domain' do
+      let(:url) { "https://benyehuda.org.example.com/author/#{expected_authority.id}" }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when benyehuda.org appears as userinfo rather than the host' do
+      let(:url) { "https://benyehuda.org@example.com/author/#{expected_authority.id}" }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when benyehuda.org appears only in the path of another host' do
+      let(:url) { "https://example.com/benyehuda.org/author/#{expected_authority.id}" }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when the scheme is not http(s)' do
+      let(:url) { "ftp://benyehuda.org/author/#{expected_authority.id}" }
+
+      it { is_expected.to be_nil }
+    end
+
     context 'when the URL has no path' do
       let(:url) { 'https://benyehuda.org' }
 
