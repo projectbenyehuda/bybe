@@ -90,6 +90,7 @@ he:
         profile_image_badge: תמונת פרופיל
         unpublished_warning: "אזהרה: סטטוס הערך הוא '%{status}', ולכן אינו גלוי לציבור."
         last_updated: "עודכן לאחרונה ב: %{date}"
+        back_to_migration_list: חזרה לרשימת ההסבה
       show_person:
         pages: p.
         authority_identifiers: מזהים חיצוניים
