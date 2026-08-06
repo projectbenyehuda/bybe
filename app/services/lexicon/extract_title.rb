@@ -8,7 +8,7 @@ module Lexicon
     LIFE_YEARS_PATTERN = /\s*\(\d{4}(?:[-–־]\d{4})?\)\s*\z/
 
     def call(fname)
-      html_doc = File.open(fname) { |f| Nokogiri::HTML(f) }
+      html_doc = HtmlUtils.parse_file(fname)
 
       title_table_node = html_doc.at_css('table#table5')
       if title_table_node.present?

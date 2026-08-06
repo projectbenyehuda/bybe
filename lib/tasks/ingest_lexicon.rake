@@ -147,11 +147,14 @@ def process_legacy_lexicon_entry(fname)
     lf.update!(entrytype: entrytype, status: status)
     lex_entry = lf.lex_entry
     lex_entry.update!(main: is_main) if lex_entry.main != is_main
+    # Refresh the title whenever the source file changed. This must not be tied to the
+    # presence of a lex_item: entries still awaiting migration have no lex_item, and used
+    # to keep their originally ingested title forever.
+    lex_entry.update!(title: title) if lex_entry.title != title
     lex_item = lex_entry.lex_item
     # destroying item to be recreated during ingestion
     if lex_item.present?
       lex_entry.lex_item = nil
-      lex_entry.title = title
       lex_entry.status_raw!
       lex_item.destroy!
     end
@@ -166,6 +169,46 @@ def process_legacy_lexicon_entry(fname)
     @people << title
   end
   print entrytype[0]
+end
+
+# UTF-8 Hebrew decoded as ISO-8859-1 leaves U+00D7 (×) followed by a Latin-1 supplement or
+# C1 character. No genuine lexicon title looks like that.
+MOJIBAKE_TITLE_PATTERN = /\u00D7[\u0080-\u00FF]/
+
+desc 'repair Lexicon entry titles mangled by the ISO-8859-1 parsing fallback'
+task fix_lexicon_titles: :environment do
+  found = 0
+  fixed = 0
+  missing = []
+  still_mangled = []
+
+  Chewy.strategy(:atomic) do
+    # `LIKE` is only a cheap pre-filter here; the regex below decides.
+    LexEntry.includes(:lex_file).where('title LIKE ?', '%×%').find_each do |entry|
+      next unless entry.title.match?(MOJIBAKE_TITLE_PATTERN)
+
+      found += 1
+      path = entry.lex_file&.full_path
+      if path.blank? || !File.exist?(path)
+        missing << entry.id
+        next
+      end
+
+      title = Lexicon::ExtractTitle.call(path)
+      if title.blank? || title.match?(MOJIBAKE_TITLE_PATTERN)
+        still_mangled << entry.id
+        next
+      end
+
+      puts "#{entry.id}: #{entry.title.inspect} -> #{title}"
+      entry.update!(title: title)
+      fixed += 1
+    end
+  end
+
+  puts "#{found} mangled titles found; #{fixed} repaired"
+  puts "No readable source file for entry ids: #{missing.join(', ')}" if missing.any?
+  puts "Source file still yields a mangled title for entry ids: #{still_mangled.join(', ')}" if still_mangled.any?
 end
 
 task reset_lexicon_ingestion: :environment do
