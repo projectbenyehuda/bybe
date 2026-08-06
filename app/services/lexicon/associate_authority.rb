@@ -12,7 +12,6 @@ module Lexicon
   #
   # Sets lex_person.authority and saves if an authority is found.
   class AssociateAuthority < ApplicationService
-    BENYEHUDA_HOST_PATTERN = %r{\Ahttps?://(?:www\.)?benyehuda\.org}i
     WIKIDATA_ENTITY_PATTERN = %r{wikidata\.org/(?:wiki|entity)/(Q\d+)}i
     WIKIDATA_API_BASE = 'https://www.wikidata.org'
     # P7507 = Project Ben-Yehuda author ID property on Wikidata
@@ -34,39 +33,11 @@ module Lexicon
 
     def find_by_benyehuda_link(html_doc)
       html_doc.css('a[href]').each do |link|
-        href = link['href'].to_s
-        next unless href.match?(BENYEHUDA_HOST_PATTERN)
-
-        begin
-          path = URI.parse(href).path
-        rescue URI::InvalidURIError
-          next
-        end
-
-        next if path.blank?
-
-        authority = authority_from_benyehuda_path(path)
+        authority = BenyehudaLinks.authority_for(link['href'])
         return authority if authority
       end
 
       nil
-    end
-
-    # Emulates what HtmlFileController#render_by_legacy_url does to resolve a path to an Authority.
-    def authority_from_benyehuda_path(path)
-      # Numeric ID: /author/1234 or /author/1234/
-      if (match = path.match(%r{\A/author/(\d+)/?\z}))
-        return Authority.find_by(id: match[1].to_i)
-      end
-
-      # Non-numeric slug: /shats or /shats/index
-      # Extract first non-numeric path segment and look up in HtmlDir.
-      # HtmlDir belongs_to :person (Person model), which has_one :authority.
-      segment = path.split('/').compact_blank.first
-      return nil if segment.blank?
-      return nil if segment.match?(/\A\d+\z/)
-
-      HtmlDir.find_by(path: segment)&.person&.authority
     end
 
     def find_by_wikidata(html_doc)
