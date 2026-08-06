@@ -11,6 +11,8 @@
       = link_to t(:back_to_list), lexicon_entries_list_path, class: 'btn-small-outline-v02 btn-text-v02'
       - if current_user&.editor? && current_user.has_bit?('edit_lexicon')
         = link_to t(:edit), edit_lexicon_entry_path(@lex_entry), class: 'btn-small-outline-v02 btn-text-v02'
+        = link_to t('lexicon.entries.show.back_to_migration_list'), lexicon_files_path,
+                  class: 'btn-small-outline-v02 btn-text-v02'
   - unless @lex_entry.status_published?
     .alert.alert-warning
       = t('lexicon.entries.show.unpublished_warning', status: LexEntry.human_enum_name(:status, @lex_entry.status))
