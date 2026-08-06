@@ -6,7 +6,7 @@ module Lexicon
     def call(lex_file)
       @lex_entry = lex_file.lex_entry
 
-      html_doc = File.open(lex_file.full_path) { |f| Nokogiri::HTML(f) }
+      html_doc = HtmlUtils.parse_file(lex_file.full_path)
       Lexicon::AttachImages.call(html_doc, @lex_entry)
       Lexicon::ProcessLinks.call(html_doc, @lex_entry)
 
