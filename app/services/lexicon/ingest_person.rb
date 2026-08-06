@@ -91,9 +91,6 @@ module Lexicon
         Lexicon::ExtractPersonWorks.call(next_elem, lex_person)
       end
 
-      buf = html_doc.to_html
-      parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
-
       lex_person.gender = @female ? :female : :male
 
       # We need to save the person and its citations and works before linking citations to works
@@ -105,6 +102,13 @@ module Lexicon
       # has not been committed yet (lex_entry.lex_item= is set after create_lex_item returns), so
       # lex_person.entry would return nil inside AssociateAuthority.
       AssociateAuthority.call(lex_person, html_doc, entry_title: @lex_entry&.title) if lex_person.authority.nil?
+
+      # Links are parsed only after the authority is known, so that links pointing at this entry's
+      # own authority page on benyehuda.org can be skipped (see #redundant_authority_link?).
+      buf = html_doc.to_html
+      parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
+      lex_person.save!
+
       link_citations_to_works(lex_person)
       attach_backup_files(lex_person)
       lex_person
@@ -158,13 +162,25 @@ module Lexicon
       end.map do |linkstring|
         next unless linkstring =~ %r{(.*?)<a .*?href="(.*?)".*?>(.*?)</a>(.*)}m
 
+        url = ::Regexp.last_match(2)
+        before, label, after = ::Regexp.last_match.values_at(1, 3, 4)
+
+        next if redundant_authority_link?(url, person)
+
         person.links.build(
-          url: ::Regexp.last_match(2),
-          description: "#{html2txt(img_to_text(::Regexp.last_match(1)))} " \
-                       "#{html2txt(img_to_text(::Regexp.last_match(3)))} " \
-                       "#{html2txt(img_to_text(::Regexp.last_match(4)))}"
+          url: url,
+          description: "#{html2txt(img_to_text(before))} " \
+                       "#{html2txt(img_to_text(label))} " \
+                       "#{html2txt(img_to_text(after))}"
         )
       end
+    end
+
+    # Links pointing at the entry's own Authority page on benyehuda.org are not migrated:
+    # the entry is already associated with that Authority, so the link is redundant. Links to
+    # other benyehuda.org authorities (or to non-author pages) are migrated as usual.
+    def redundant_authority_link?(url, person)
+      person.authority.present? && BenyehudaLinks.authority_for(url) == person.authority
     end
 
     def img_to_text(html)
