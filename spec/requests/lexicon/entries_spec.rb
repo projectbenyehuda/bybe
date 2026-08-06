@@ -144,6 +144,27 @@ describe '/lexicon/entries' do
 
       it { is_expected.to eq(200) }
     end
+
+    describe 'last updated line' do
+      context 'when the legacy PHP file carried a manual update date' do
+        let(:entry) { create(:lex_entry, :person, status: :published, date_of_manual_update: '12 ביולי 2023') }
+
+        it 'shows the ingested date' do
+          expect(call).to eq(200)
+          expect(response.body).to include('lexicon-last-updated')
+          expect(response.body).to include('12 ביולי 2023')
+        end
+      end
+
+      context 'when the legacy PHP file carried no manual update date' do
+        let(:entry) { create(:lex_entry, :person, status: :published, date_of_manual_update: nil) }
+
+        it 'omits the line rather than presenting the migration date as a manual update' do
+          expect(call).to eq(200)
+          expect(response.body).not_to include('lexicon-last-updated')
+        end
+      end
+    end
   end
 
   describe 'DELETE /destroy' do
