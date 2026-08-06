@@ -396,6 +396,59 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when the links section contains links to benyehuda.org authority pages' do
+    let(:own_authority) { create(:authority) }
+    let(:other_authority) { create(:authority) }
+    let(:own_authority_id) { own_authority.id }
+    let(:other_authority_id) { other_authority.id }
+    let(:tmpdir) { Dir.mktmpdir }
+    let(:php_path) do
+      template = Rails.root.join('spec/fixtures/files/lexicon/benyehuda_links.php').read
+      path = File.join(tmpdir, 'benyehuda_links.php')
+      File.write(path, template.gsub('OWN_AUTHORITY_ID', own_authority_id.to_s)
+                               .gsub('OTHER_AUTHORITY_ID', other_authority_id.to_s))
+      path
+    end
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'ישראלי, ישראל',
+          fname: 'benyehuda_links.php',
+          full_path: php_path
+        }
+      )
+    end
+
+    after { FileUtils.remove_entry(tmpdir) }
+
+    it 'omits the link to the entry own authority but keeps other benyehuda.org and external links' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.authority).to eq(own_authority)
+      expect(person.links.map(&:url)).to contain_exactly(
+        "https://www.benyehuda.org/author/#{other_authority.id}",
+        'http://example.com/article'
+      )
+    end
+
+    context 'when no authority could be associated with the entry' do
+      let(:own_authority_id) { 999_998 }
+      let(:other_authority_id) { 999_999 }
+
+      it 'keeps every link' do
+        call
+
+        person = file.lex_entry.lex_item
+        expect(person.authority).to be_nil
+        expect(person.links.count).to eq(3)
+      end
+    end
+  end
+
   context 'when the date of manual update is wrapped in square brackets' do
     let!(:file) do
       create(
