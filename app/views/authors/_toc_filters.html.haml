@@ -17,7 +17,8 @@
             - fd[:genres].each do |genre|
               %li
                 .filter-checkbox
-                  %input.toc-filter-genre{ type: 'checkbox', value: genre, id: "toc-filter-genre-#{genre}", name: 'toc_filter_genre' }
+                  %input.toc-filter-genre{ type: 'checkbox', value: genre, name: 'toc_filter_genre',
+                                           id: "toc-filter-genre-#{genre}" }
                   %label{ for: "toc-filter-genre-#{genre}" }
                     %span.by-icon-v02>= glyph_for_genre(genre)
                     = textify_genre(genre)
@@ -44,7 +45,8 @@
                     - translated_langs.each do |lang|
                       %li
                         .filter-checkbox
-                          %input.toc-filter-lang{ type: 'checkbox', value: lang, id: "toc-filter-lang-#{lang}", name: 'toc_filter_lang' }
+                          %input.toc-filter-lang{ type: 'checkbox', value: lang, name: 'toc_filter_lang',
+                                                  id: "toc-filter-lang-#{lang}" }
                           %label{ for: "toc-filter-lang-#{lang}" }
                             = textify_lang(lang)
                             %span.toc-facet-count{ 'data-section': 'lang', 'data-value': lang }
@@ -52,13 +54,15 @@
         %ul
           %li
             .filter-checkbox
-              %input.toc-filter-char#toc-filter-curatorial{ type: 'checkbox', value: 'curatorial', name: 'toc_filter_char' }
+              %input.toc-filter-char#toc-filter-curatorial{ type: 'checkbox', value: 'curatorial',
+                                                            name: 'toc_filter_char' }
               %label{ for: 'toc-filter-curatorial' }
                 = t('author_toc_filters.curatorial_content')
                 %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'curatorial' }
           %li
             .filter-checkbox
-              %input.toc-filter-char#toc-filter-recommended{ type: 'checkbox', value: 'recommended', name: 'toc_filter_char' }
+              %input.toc-filter-char#toc-filter-recommended{ type: 'checkbox', value: 'recommended',
+                                                             name: 'toc_filter_char' }
               %label{ for: 'toc-filter-recommended' }
                 = t('author_toc_filters.reader_recommendations')
                 %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'recommended' }

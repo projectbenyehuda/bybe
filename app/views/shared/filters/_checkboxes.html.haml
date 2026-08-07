@@ -4,11 +4,13 @@
   atomic box: in the narrow CSS columns of .nested-list a label too wide for the
   rest of its line drops whole to the next line, stranding its checkbox alone.
 - all_values.each do |value|
-  - checked = selected_values.present? && selected_values.include?(value)
-  - icon = icons[value]
+  :ruby
+    checked = selected_values.present? && selected_values.include?(value)
+    icon = icons[value]
+    checkbox_id = "#{group_name}_#{value}"
   .filter-checkbox
-    %input{ name: "#{field_name}[]", id: "#{group_name}_#{value}", type: :checkbox, value: value, checked: checked }
-    %label
+    %input{ name: "#{field_name}[]", id: checkbox_id, type: :checkbox, value: value, checked: checked }
+    %label{ for: checkbox_id }
       - if icon.present?
         %span.by-icon-v02>= icon
       = labels[value]
