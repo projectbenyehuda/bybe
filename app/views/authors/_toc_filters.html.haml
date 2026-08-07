@@ -16,51 +16,62 @@
           %ul
             - fd[:genres].each do |genre|
               %li
-                %input.toc-filter-genre{ type: 'checkbox', value: genre, id: "toc-filter-genre-#{genre}", name: 'toc_filter_genre' }
-                %label{ for: "toc-filter-genre-#{genre}" }
-                  %span.by-icon-v02>= glyph_for_genre(genre)
-                  = textify_genre(genre)
-                  %span.toc-facet-count{ 'data-section': 'genre', 'data-value': genre }
+                .filter-checkbox
+                  %input.toc-filter-genre{ type: 'checkbox', value: genre, name: 'toc_filter_genre',
+                                           id: "toc-filter-genre-#{genre}" }
+                  %label{ for: "toc-filter-genre-#{genre}" }
+                    %span.by-icon-v02>= glyph_for_genre(genre)
+                    = textify_genre(genre)
+                    %span.toc-facet-count{ 'data-section': 'genre', 'data-value': genre }
       - if has_hebrew || translated_langs.present?
         = render layout: 'shared/collapsible_block', locals: { container_name: 'tocflang', title: t('author_toc_filters.source_language') } do
           %ul
             - if has_hebrew
               %li
-                %input.toc-filter-lang#toc-filter-lang-he{ type: 'checkbox', value: 'he', name: 'toc_filter_lang' }
-                %label{ for: 'toc-filter-lang-he' }
-                  = textify_lang('he')
-                  %span.toc-facet-count{ 'data-section': 'lang', 'data-value': 'he' }
+                .filter-checkbox
+                  %input.toc-filter-lang#toc-filter-lang-he{ type: 'checkbox', value: 'he', name: 'toc_filter_lang' }
+                  %label{ for: 'toc-filter-lang-he' }
+                    = textify_lang('he')
+                    %span.toc-facet-count{ 'data-section': 'lang', 'data-value': 'he' }
             - if translated_langs.present?
               %li
-                %input#toc-filter-translated{ type: 'checkbox', name: 'toc_filter_translated' }
-                %label{ for: 'toc-filter-translated' }
-                  = t(:translation)
-                  %span.toc-facet-count{ 'data-section': 'lang', 'data-value': 'translated' }
+                .filter-checkbox
+                  %input#toc-filter-translated{ type: 'checkbox', name: 'toc_filter_translated' }
+                  %label{ for: 'toc-filter-translated' }
+                    = t(:translation)
+                    %span.toc-facet-count{ 'data-section': 'lang', 'data-value': 'translated' }
                 .languanges-filters
                   %ul.nested-list
                     - translated_langs.each do |lang|
                       %li
-                        %input.toc-filter-lang{ type: 'checkbox', value: lang, id: "toc-filter-lang-#{lang}", name: 'toc_filter_lang' }
-                        %label{ for: "toc-filter-lang-#{lang}" }
-                          = textify_lang(lang)
-                          %span.toc-facet-count{ 'data-section': 'lang', 'data-value': lang }
+                        .filter-checkbox
+                          %input.toc-filter-lang{ type: 'checkbox', value: lang, name: 'toc_filter_lang',
+                                                  id: "toc-filter-lang-#{lang}" }
+                          %label{ for: "toc-filter-lang-#{lang}" }
+                            = textify_lang(lang)
+                            %span.toc-facet-count{ 'data-section': 'lang', 'data-value': lang }
       = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfchar', title: t('author_toc_filters.extra_content'), content_class: 'nested-list' } do
         %ul
           %li
-            %input.toc-filter-char#toc-filter-curatorial{ type: 'checkbox', value: 'curatorial', name: 'toc_filter_char' }
-            %label{ for: 'toc-filter-curatorial' }
-              = t('author_toc_filters.curatorial_content')
-              %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'curatorial' }
+            .filter-checkbox
+              %input.toc-filter-char#toc-filter-curatorial{ type: 'checkbox', value: 'curatorial',
+                                                            name: 'toc_filter_char' }
+              %label{ for: 'toc-filter-curatorial' }
+                = t('author_toc_filters.curatorial_content')
+                %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'curatorial' }
           %li
-            %input.toc-filter-char#toc-filter-recommended{ type: 'checkbox', value: 'recommended', name: 'toc_filter_char' }
-            %label{ for: 'toc-filter-recommended' }
-              = t('author_toc_filters.reader_recommendations')
-              %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'recommended' }
+            .filter-checkbox
+              %input.toc-filter-char#toc-filter-recommended{ type: 'checkbox', value: 'recommended',
+                                                             name: 'toc_filter_char' }
+              %label{ for: 'toc-filter-recommended' }
+                = t('author_toc_filters.reader_recommendations')
+                %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'recommended' }
           %li
-            %input.toc-filter-char#toc-filter-noprops{ type: 'checkbox', value: 'noprops', name: 'toc_filter_char' }
-            %label{ for: 'toc-filter-noprops' }
-              = t('author_toc_filters.no_extra_content')
-              %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'noprops' }
+            .filter-checkbox
+              %input.toc-filter-char#toc-filter-noprops{ type: 'checkbox', value: 'noprops', name: 'toc_filter_char' }
+              %label{ for: 'toc-filter-noprops' }
+                = t('author_toc_filters.no_extra_content')
+                %span.toc-facet-count{ 'data-section': 'char', 'data-value': 'noprops' }
       = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfdate', title: t(:thedate) } do
         .search-mobile-switch
           %button.search-mobile-option.active.toc-date-type{ type: 'button', 'data-datefield': 'pubyear' }= t('author_toc_filters.edition')
