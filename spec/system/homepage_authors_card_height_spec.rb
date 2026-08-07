@@ -44,7 +44,7 @@ RSpec.describe 'Homepage authors card height', :js, type: :system do
     page.driver.browser.manage.window.resize_to(375, 812)
     visit root_path
     expect(page).to have_css('#works-in-project', wait: 5)
-
+    expect(page).to have_css('#welcome-authors .link-to-all-v02 a', wait: 5)
     expect(gap_below_authors_content).to be < 60
   end
 
