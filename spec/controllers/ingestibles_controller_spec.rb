@@ -165,6 +165,10 @@ describe IngestiblesController do
 
       it { is_expected.to be_successful }
 
+      it 'renders the markdown action dropdown' do
+        expect(call.body).to include('js-markdown-action')
+      end
+
       context 'when ingestible has works with footnotes' do
         let(:ingestible) { create(:ingestible, :with_footnotes) }
 

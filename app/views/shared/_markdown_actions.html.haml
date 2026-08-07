@@ -2,8 +2,20 @@
   Dropdown of markdown-editing actions plus a button applying the selected one.
   The handlers live in shared/_markdown_utils, scoped to the same container_id.
   Hooks are classes rather than ids because several markdown editors can share a page.
+:ruby
+  # Label => the action key dispatched by the JS in shared/_markdown_utils.
+  # Kept here rather than in a helper so the partial is self-contained.
+  markdown_actions = [
+    [t(:add_stanza_break), 'add_stanza_break'],
+    [t(:add_angled_brackets), 'add_angled_brackets'],
+    [t(:remove_angled_brackets), 'remove_angled_brackets'],
+    [t(:minuses_to_makafim), 'minuses_to_makafim'],
+    [t(:indent), 'add_indent'],
+    [t(:center_text), 'center_text'],
+    [t(:tidy_footnote_dirs), 'tidy_footnote_dirs']
+  ]
 .markdown-actions
   %select.form-control.js-markdown-action{ 'aria-label': t(:markdown_action) }
-    = options_for_select(markdown_action_options)
+    = options_for_select(markdown_actions)
   %button.btn-small-outline-v02.js-markdown-action-apply{ type: 'button' }
     %b.btn-text-v02= t(:apply_markdown_action)
