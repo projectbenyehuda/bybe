@@ -1296,6 +1296,27 @@ p.by-genre-name-v02.headline-2-v02 {
 	overflow-y: auto;
 }
 
+/* The collapse/expand/sort bar lives inside the (narrow) TOC column. It is a
+ * non-wrapping flexbox, so on narrow viewports the two buttons plus the sort
+ * dropdown could not fit on one line and spilled out of the page. That made the
+ * document wider than the viewport, which widened the layout viewport, which in
+ * turn stretched the fixed #header (width: 100%) past the screen and pushed the
+ * sticky nav column off its 50px gutter and on top of the author metadata.
+ * Letting the bar wrap keeps the page within the viewport. */
+.sticky-fold {
+	flex-wrap: wrap;
+
+	/* The sort label + <select> share a <p>; both need to be shrinkable, or the
+	 * select's widest option sets an un-shrinkable min-content width. */
+	p {
+		min-width: 0;
+	}
+
+	select {
+		max-width: 100%;
+	}
+}
+
 /* Sticky navbar for lexicon entries.
  * --lexicon-sticky-top is measured from the fixed #header at runtime (see
  * lexicon/entries/_navbar), because the header's height varies: the entry
@@ -1324,11 +1345,14 @@ p.by-genre-name-v02.headline-2-v02 {
 
   // Same fix as desktop (min-width: 992px block below): prevent the content col
   // from wrapping past the spacer and overlapping the sticky nav column.
-  .author-page-content .col-12.col-lg-8 > .row {
+  // Unlike desktop this must cover BOTH columns: below 992px the col-lg-4
+  // sidebar column stacks full-width under the col-lg-8 one, so the thin nav
+  // column floats over it too and it needs to keep its own spacer on the line.
+  .author-page-content .col-12 > .row {
     flex-wrap: nowrap;
   }
 
-  .author-page-content .col-12.col-lg-8 > .row > .col:not(.author-side-menu-area) {
+  .author-page-content .col-12 > .row > .col:not(.author-side-menu-area) {
     min-width: 0;
   }
 
