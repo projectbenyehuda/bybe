@@ -14,7 +14,12 @@
   font-size: 1.2rem;
 }
 
-// Specifying min-height for welcome page blocks to reduce Cumulative Layout Shift (CLS)
-.by-card-content-v02#welcome-authors {
-  min-height: 720px;
+// Specifying min-height for welcome page blocks to reduce Cumulative Layout Shift (CLS).
+// Only on wide viewports: there the card has a fixed height of 775px anyway, so 720px matches
+// the natural content height. Below 992px the card is height:auto and the carousels are much
+// shorter, so this min-height would leave hundreds of pixels of blank space under them.
+@media (min-width: 992px) {
+  .by-card-content-v02#welcome-authors {
+    min-height: 720px;
+  }
 }
