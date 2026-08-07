@@ -1561,6 +1561,33 @@ p.by-genre-name-v02.headline-2-v02 {
   color: #907989;
 }
 
+// Filter panes (/works, /authors, /collections, lexicon list) lay their option
+// lists out in CSS columns (.nested-list, column-count: 2), so each option gets
+// only about half the (already narrow) pane. Labels are display: inline-block
+// site-wide, which makes them unbreakable atomic boxes: as soon as a label is
+// wider than what is left of the line beside its 18px checkbox, the whole label
+// drops to the next line and the checkbox is stranded alone on its own line —
+// looking, at a glance, like a checkbox belonging to the label above it. Laying
+// the row out as a flex line instead lets the label wrap its own text while
+// staying beside its checkbox, at any zoom level or label length.
+.filter-checkbox {
+  display: flex;
+  align-items: flex-start;
+
+  // Also keep the row whole when the CSS-column breaker picks a break point.
+  -webkit-column-break-inside: avoid; // Safari, older Chrome
+  page-break-inside: avoid; // Firefox
+  break-inside: avoid;
+
+  > input[type='checkbox'] {
+    flex: none; // never let the checkbox itself be squeezed
+  }
+
+  > label {
+    min-width: 0; // allow the label to shrink below its max-content width
+  }
+}
+
 // In list-view result headers (.headline-2-v02), push the permalink to the
 // left edge of its container (away from the result count) and de-emphasize it
 // by overriding the container's bold with a regular weight.
