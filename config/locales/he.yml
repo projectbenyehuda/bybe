@@ -824,7 +824,7 @@ he:
   entries: ערכים
   logo_alt: "פרויקט בן־יהודה: שימור, הנגשת, וחשיפת יצירות עבריות לציבור הרחב"
   linking_entries: ערכים קשורים
-  apply_mobile_filters: יישום סינון נבחר
+  apply_mobile_filters: יישום סינון
   sort: מיון
   actions: פעולות
   author: יוצר
@@ -863,6 +863,7 @@ he:
   total_x_works: סך הכל %{count} יצירות
   total_x_records: סך הכל %{count} רשומות
   sort_and_filter: סינון
+  hide_sort_and_filter: הסתרת סינון
   sort_by: "מיון לפי: "
   filter_by: "סינון לפי: "
   reset_filter: איפוס סינון

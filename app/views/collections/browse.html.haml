@@ -2,7 +2,7 @@
 .container-fluid#content
   .row.list-all-texts
     .col-sm-12.col-md-4
-      .by-card-v02.text-sorting#sort_filter_panel
+      .by-card-v02.text-sorting.mobile-collapsible-filters#sort_filter_panel
         = render partial: 'browse_filters'
     .col-sm-12.col-md-8
       .by-card-v02#thelist
@@ -12,13 +12,6 @@
   = render partial: 'authorities_select', locals: { authorities: @authorities, list: @authorities_list }
 
 :javascript
-  $(function() {
-    $('#mobile_filter_btn').click(function() {
-      $('#sort_filter_panel').show();
-      $('#thelist').hide();
-    });
-  });
-
   function submit_filters() {
     window.history.pushState($('#collections_filters').serialize(), null, '/collections');
     startModal('spinnerdiv');

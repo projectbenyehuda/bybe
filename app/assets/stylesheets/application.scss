@@ -1764,3 +1764,55 @@ p.by-genre-name-v02.headline-2-v02 {
     }
   }
 }
+
+// Browse lists (/works, /authors, /collections): below the Bootstrap `md`
+// breakpoint the filter column and the list column stack, and the filter panel
+// comes first in source order -- which pushed the list off the first screenful
+// on mobile. Collapse the panel there and let #mobile_filter_btn (rendered in
+// the page header, above the list) toggle it open.
+@media only screen and (max-width: 767px) {
+  #sort_filter_panel.mobile-collapsible-filters {
+    display: none;
+  }
+
+  body.mobile-filters-open #sort_filter_panel.mobile-collapsible-filters {
+    display: block;
+  }
+
+  // Toggle and "apply" share one row. The row is inside the fixed #header, so
+  // both stay on screen while the user scrolls a long filter panel -- which is
+  // the whole point of hoisting "apply" out of the foot of that panel.
+  .mobile-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    // .by-button-v02 is a fixed 32px tall box, so a label that wraps to a
+    // second line spills out of it. As flex items these buttons would happily
+    // be squeezed narrow enough to wrap.
+    button {
+      flex: none;
+      white-space: nowrap;
+    }
+  }
+
+  // "Apply" only means something while the panel is open.
+  #apply_mobile_filters {
+    display: none;
+  }
+
+  body.mobile-filters-open #apply_mobile_filters {
+    display: block;
+  }
+}
+
+// This row lives in .author-page-top-sort-mobile, which BY_styles_Max991.css
+// reveals at 991px -- but between 768px and 991px the two columns are still
+// side by side and the panel is permanently visible, so neither button has a
+// job to do. Hide the whole wrapper, not just the buttons: it is a flex item
+// in the authors header and an empty one would still take its margins.
+@media only screen and (min-width: 768px) {
+  .author-page-top-sort-mobile.mobile-filter-toggle {
+    display: none;
+  }
+}

@@ -1156,7 +1156,7 @@ en:
     key_created_to_editor:
       subject: New API Key Created
   apply_filters: Apply This Filter!
-  apply_mobile_filters: Apply Selected Filter
+  apply_mobile_filters: Apply Filters
   approve: Approve
   approve_and_next: Approve and Move to Next Item
   approve_and_review_taggings: Approve and Review Taggings
@@ -2932,6 +2932,7 @@ en:
   some: Some
   some_authors_to_work_on: Some Authors To Work On
   sort_and_filter: Sort And Filter
+  hide_sort_and_filter: Hide Filters
   sort_and_filter_popover: Filter the works on this page by genre, source language, and more
   sort_title: Sort Title
   sorting_caveat: Sorting Caveat
