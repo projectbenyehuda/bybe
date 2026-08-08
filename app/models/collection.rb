@@ -417,6 +417,47 @@ class Collection < ApplicationRecord
     return false
   end
 
+  # Bulk equivalent of #any_published_manifestations? for a set of collections: returns the ids of those
+  # whose item tree contains, at any depth, at least one Manifestation in status 'published'.
+  # Traverses the trees one level at a time, so the whole set costs a couple of queries per level of
+  # nesting rather than a query per item. Each (collection, ancestor) pair is visited at most once, so a
+  # sub-collection shared by several ancestors is still attributed to each of them, without rework.
+  def self.ids_with_published_manifestations(collection_ids)
+    roots = collection_ids.to_a.uniq
+    return [] if roots.empty?
+
+    found = Set.new
+    ancestors_by_collection = roots.index_with { |id| Set[id] } # collection being visited => roots it belongs to
+    seen = roots.index_with { |id| Set[id] } # (collection, root) pairs already queued, to avoid rework/cycles
+
+    until ancestors_by_collection.empty? || found.size == roots.size
+      items = CollectionItem.where(collection_id: ancestors_by_collection.keys)
+                            .pluck(:collection_id, :item_type, :item_id)
+      published = Manifestation.all_published
+                               .where(id: items.filter_map { |_, type, item_id| item_id if type == 'Manifestation' })
+                               .pluck(:id)
+                               .to_set
+      next_level = {}
+      items.each do |parent_id, item_type, item_id|
+        ancestors = ancestors_by_collection[parent_id] - found # roots still looking for a published work
+        next if ancestors.empty?
+
+        if item_type == 'Manifestation'
+          found.merge(ancestors) if published.include?(item_id)
+        elsif item_type == 'Collection'
+          fresh = ancestors - (seen[item_id] ||= Set.new)
+          next if fresh.empty?
+
+          seen[item_id].merge(fresh)
+          (next_level[item_id] ||= Set.new).merge(fresh)
+        end
+      end
+      ancestors_by_collection = next_level
+    end
+
+    found.to_a
+  end
+
   def like_count
     return 0
     # TODO: enable after implementing the likings table
