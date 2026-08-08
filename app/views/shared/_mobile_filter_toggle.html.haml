@@ -1,0 +1,11 @@
+-#
+  Mobile-only toggle for the sort/filter panel of the browse lists.
+  On narrow screens the panel (#sort_filter_panel) is collapsed by default so
+  that the list itself is in the first screenful; this button reveals it.
+- toggle_data = { show_label: t(:sort_and_filter), hide_label: t(:hide_sort_and_filter) }
+.author-page-top-sort-mobile
+  %button.btn-small-outline-v02.btn-text-v02#mobile_filter_btn{ type: 'button',
+                                                                'aria-controls' => 'sort_filter_panel',
+                                                                'aria-expanded' => 'false',
+                                                                data: toggle_data }
+    = t(:sort_and_filter)

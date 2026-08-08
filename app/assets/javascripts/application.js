@@ -28,6 +28,22 @@ var mobileWidth = 767;
 function isMobile() {
   return window.innerWidth < mobileWidth;
 }
+// Browse lists (/works, /authors, /collections): on narrow screens the
+// sort/filter panel is collapsed by CSS so the list starts in the first
+// screenful, and #mobile_filter_btn is the single control that reveals it.
+function closeMobileFilters() {
+  $('#sort_filter_panel').removeClass('mobile-filters-open');
+  var btn = $('#mobile_filter_btn');
+  btn.attr('aria-expanded', 'false').text(btn.data('show-label'));
+}
+
+// Delegated, so the handler survives the AJAX re-render of the filter panel.
+$(document).on('click', '#mobile_filter_btn', function() {
+  var isOpen = $('#sort_filter_panel').toggleClass('mobile-filters-open').hasClass('mobile-filters-open');
+  $(this).attr('aria-expanded', isOpen ? 'true' : 'false')
+         .text(isOpen ? $(this).data('hide-label') : $(this).data('show-label'));
+});
+
 function startModal(id) {
     $("body").prepend("<div id='PopupMask' style='position:fixed;width:100%;height:100%;z-index:10;background-color:gray;'></div>");
     $("#PopupMask").css('opacity', 0.5);

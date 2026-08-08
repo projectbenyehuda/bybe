@@ -144,8 +144,7 @@
 
     $('#apply_mobile_filters').click(function() {
       resetPagination();
-      $('#sort_filter_panel').hide();
-      $('#thelist').show();
+      closeMobileFilters();
       $('html').scrollTop($('#thelist').offset().top);
     });
   });

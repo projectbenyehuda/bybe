@@ -5,6 +5,7 @@
   .texts-list-top
     .texts-list-top-info-card
       .headline-1-v02= @works_list_title
+      = render partial: 'shared/mobile_filter_toggle'
       .number-of-selected-texts{style: 'display:none'}
         = t(:number_of_selected_texts)
         %span#selected_counter{style: 'font-weight: bold'}= '0'
