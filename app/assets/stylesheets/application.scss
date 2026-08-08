@@ -1803,3 +1803,19 @@ p.by-genre-name-v02.headline-2-v02 {
   float: left;
   font-weight: normal;
 }
+
+// The header statistics box only has room for a single stat below 992px, so
+// BY_styles_Max991.css keeps `:first-child` and hides the rest. That picked the
+// works count by accident of source order; once the box was reordered the lone
+// mobile stat silently became the volumes count. Select the stat we actually
+// want to keep by marker class instead -- source order also differs between the
+// Hebrew and the LTR variants of the box.
+@media only screen and (max-width: 991px) {
+  .statistics-box-v02 > .statistics-v02 {
+    display: none;
+
+    &.mobile-stat {
+      display: block;
+    }
+  }
+}
