@@ -19,11 +19,11 @@
     %br
   .headline-2-v02
     - unless @m.authors.nil? # shouldn't happen, but eh
-      != @m.authors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+      != @m.authors.map { |t| authority_link(t) }.join(', ')
       - if @e.translation && @e.translators.size > 0
         %br
         = "#{t(:translation)}: "
-        != @translators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+        != @translators.map { |t| authority_link(t) }.join(', ')
         - linktext = orig_lang_label(@e.work.orig_lang)
         != " (#{linktext})"
   - if @e.translation 
@@ -36,27 +36,27 @@
   - if @illustrators.present?
     .headline-3-v02
       = "#{t('involved_authority.abstract_roles.illustrator')}: "
-      != @illustrators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+      != @illustrators.map { |t| authority_link(t) }.join(', ')
   - if @photographers.present?
     .headline-3-v02
       = "#{t('involved_authority.abstract_roles.photographer')}: "
-      != @photographers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+      != @photographers.map { |t| authority_link(t) }.join(', ')
   - if @designers.present?
     .headline-3-v02
       = "#{t('involved_authority.abstract_roles.designer')}: "
-      != @designers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+      != @designers.map { |t| authority_link(t) }.join(', ')
   - if @editors.present?
     .headline-3-v02
       = "#{t('involved_authority.abstract_roles.editor')}: "
-      != @editors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+      != @editors.map { |t| authority_link(t) }.join(', ')
   - if @contributors.present?
     .headline-3-v02
       = "#{t('involved_authority.abstract_roles.contributor')}: "
-      != @contributors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+      != @contributors.map { |t| authority_link(t) }.join(', ')
   - if @others.present?
     .headline-3-v02
       = "#{t('involved_authority.abstract_roles.other')}: "
-      != @others.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+      != @others.map { |t| authority_link(t) }.join(', ')
   - if @volumes.present? && !@single_text_volume
     - @volumes.each do |v|
       = link_to "#{t(:inside)} #{v.title}#{v.subtitle.present? ? ': '+v.subtitle : ''}", collection_path(v)

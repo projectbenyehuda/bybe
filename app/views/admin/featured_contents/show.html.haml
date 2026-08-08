@@ -22,7 +22,7 @@
     = @fc.manifestation.nil? ? t(:none) : link_to("#{@fc.manifestation.title} - #{@fc.manifestation.author_string}", manifestation_path(id: @fc.manifestation.id))
   %p
     %b #{FeaturedContent.human_attribute_name(:authority)}:
-    = @fc.authority.nil? ? t(:none) : link_to(@fc.authority.name, authority_path(@fc.authority))
+    = @fc.authority.nil? ? t(:none) : authority_link(@fc.authority)
 
   %h3= t(:feature_on)
   %table

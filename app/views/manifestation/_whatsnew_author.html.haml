@@ -1,7 +1,7 @@
 .by-card-v02.mb-3
   .by-card-header-v02
     %p.headline-3-v02
-      = link_to author.name, authority_path(author)
+      = authority_link(author)
   .by-card-content-v02
     - if author.other_designation.present?
       %p= author.other_designation

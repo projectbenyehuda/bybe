@@ -119,12 +119,12 @@
           %span{ style: 'color:red' }= link_to t(:no), bib_authority_path({ authority_id: @author.id })
         %br
         %b= t(:works)
-        = link_to "#{@published_works} #{t(:original_works)}", authority_path(id: @author.id)
+        = authority_link(@author, "#{@published_works} #{t(:original_works)}")
         - if @total_orig_works != @published_works
           = " #{t(:published)} + #{@total_orig_works - @published_works} #{t(:unpublished)}"
         %br
         %b= t(:translations_by)
-        = link_to "#{@published_xlats} #{t(:translations)}", authority_path(id: @author.id)
+        = authority_link(@author, "#{@published_xlats} #{t(:translations)}")
         - if @total_xlats != @published_xlats
           = " #{t(:published)} + #{@total_xlats - @published_xlats} #{t(:unpublished)}"
         %br

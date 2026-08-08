@@ -13,35 +13,35 @@
           .rm-control-info
             .headline-2-v02.work-name-top{style:'margin-right:0px'}= @m.title
             .headline-3-v02
-              != @m.authors.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+              != @m.authors.map { |t| authority_link(t) }.join(', ')
             - if @e.translation && @e.translators.size > 0
               .headline-3-v02
                 = "#{t('involved_authority.abstract_roles.translator')}: "
-                != @translators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                != @translators.map { |t| authority_link(t) }.join(', ')
             - if @illustrators.present?
               .headline-3-v02
                 = "#{t('involved_authority.abstract_roles.illustrator')}: "
-                != @illustrators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                != @illustrators.map { |t| authority_link(t) }.join(', ')
             - if @photographers.present?
               .headline-3-v02
                 = "#{t('involved_authority.abstract_roles.photographer')}: "
-                != @photographers.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                != @photographers.map { |t| authority_link(t) }.join(', ')
             - if @designers.present?
               .headline-3-v02
                 = "#{t('involved_authority.abstract_roles.designer')}: "
-                != @designers.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                != @designers.map { |t| authority_link(t) }.join(', ')
             - if @editors.present?
               .headline-3-v02
                 = "#{t('involved_authority.abstract_roles.editor')}: "
-                != @editors.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                != @editors.map { |t| authority_link(t) }.join(', ')
             - if @contributors.present?
               .headline-3-v02
                 = "#{t('involved_authority.abstract_roles.contributor')}: "
-                != @contributors.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                != @contributors.map { |t| authority_link(t) }.join(', ')
             - if @others.present?
               .headline-3-v02
                 = "#{t('involved_authority.abstract_roles.other')}: "
-                != @others.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                != @others.map { |t| authority_link(t) }.join(', ')
             .rm-field-label &#x5E4;&#x5E8;&#x5E7;:
             %button.plainbutton.chapterbutton#prev_chapter= '('
             %select#chapters{name: 'chapters'}

@@ -19,7 +19,7 @@
         %h3
           = t(:by)+': '
           - @m.authors.each do |au|
-            = link_to au.name, authority_path(au.id)
+            = authority_link(au)
       .col-md-3
         %h3
           = t(:new_title_only)

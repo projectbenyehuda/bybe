@@ -19,5 +19,5 @@
       - @records.each do |record|
         %tr
           %td= record.created_at.strftime('%Y-%m-%d')
-          %td= link_to record.name, authority_path(record.id)
+          %td= authority_link(record)
           %td= link_to t(:edit_metadata), authors_edit_path(id: record.id)

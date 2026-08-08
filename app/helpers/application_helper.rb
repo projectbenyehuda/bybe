@@ -3,6 +3,33 @@ require 'addressable/uri'
 module ApplicationHelper
   include BybeUtils
 
+  # Renders a link to an authority's TOC page -- except for 'pageless' authorities (e.g. 'anonymous',
+  # 'various authors'), whose name is rendered as plain text, because a TOC page for them would falsely
+  # suggest hundreds of works by a single author.
+  #
+  # @param authority [Authority, Integer] an Authority or its id
+  # @param text [String, nil] the link text; defaults to the authority's name
+  # @return [String] html_safe anchor, or the escaped name for pageless authorities
+  def authority_link(authority, text = nil, **html_options)
+    id = authority.is_a?(Authority) ? authority.id : authority.to_i
+    text ||= authority.is_a?(Authority) ? authority.name : Authority.find(id).name
+    return ERB::Util.html_escape(text) if Authority.pageless_id?(id)
+
+    link_to(text, authority_path(id), **html_options)
+  end
+
+  # Block form of {#authority_link}, for the cases (author cards, popups) where the link wraps markup
+  # rather than a plain name. Emits a span instead of an anchor for pageless authorities, so the
+  # surrounding layout is preserved but nothing is clickable.
+  #
+  # @param authority [Authority, Integer] an Authority or its id
+  def link_to_authority(authority, html_options = {}, &)
+    id = authority.is_a?(Authority) ? authority.id : authority.to_i
+    return link_to(authority_path(id), html_options, &) unless Authority.pageless_id?(id)
+
+    content_tag(:span, html_options.except(:target, :rel), &)
+  end
+
   def staging?
     (ENV['cache_nonce'] || ENV['CACHE_NONCE']) == 'staging'
   end
@@ -200,22 +227,18 @@ module ApplicationHelper
     i = 0
     people.each do |p|
       ret += ', ' if i > 0
-      ret += link_to p.name, authority_path(id: p.id)
+      ret += authority_link(p)
       i += 1
     end
     return ret
   end
 
   def authors_linked_string(m)
-    return m.expression.work.authors.map do |x|
-             "<a href=\"#{url_for(controller: :authors, action: :toc, id: x.id)}\">#{x.name}</a>"
-           end.join(', ')
+    m.expression.work.authors.map { |x| authority_link(x) }.join(', ')
   end
 
   def translators_linked_string(m)
-    return m.expression.translators.map do |x|
-             "<a href=\"#{url_for(controller: :authors, action: :toc, id: x.id)}\">#{x.name}</a>"
-           end.join(', ')
+    m.expression.translators.map { |x| authority_link(x) }.join(', ')
   end
 
   def intellectual_property_glyph(intellectual_property)
