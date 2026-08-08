@@ -19,8 +19,14 @@
             %button.toggle-background-no#toc-filter-toggle{ type: 'button', title: t(:toggle_filters_tt), 'aria-label': t(:toggle_filters_tt) }
               .toggle-button-no
               .toggle-button-yes{ style: 'display:none' }
-          .author-page-top-sort-mobile
-            %button.btn-small-outline-v02.btn-text-v02.notyet= t(:sort_and_filter)
+          -# Same story on mobile: legacy-TOC authors keep the inert placeholder,
+          -# new-method ones get the toggle + "apply" row used by the browse lists.
+          - if @author.toc.present?
+            .author-page-top-sort-mobile
+              %button.btn-small-outline-v02.btn-text-v02.notyet= t(:sort_and_filter)
+          - else
+            = render partial: 'shared/mobile_filter_toggle',
+                     locals: { wrapper_class: 'toc-mobile-filter-toggle', panel_id: 'toc_filters_pane' }
         .author-page-top-icons-desktop
           .top-left-icons-group
             .linkcolor.pointer.by-icon-v02.notyet{title: t(:author_liked_tt)}= '5'
@@ -96,4 +102,43 @@
     });
     $('#sort_by').on('change', syncSortToggle);
     syncSortToggle();
+
+    // Sort/filter toggle (mobile): the pane itself is revealed by the shared
+    // #mobile_filter_btn handler in application.js; all this adds is the other
+    // half of what the desktop toggle does, putting the list into flat
+    // ("filter") mode, which is the mode the pane filters. Unlike the desktop
+    // toggle, closing the sheet leaves the filtered list in place -- the sort
+    // dropdown is the way back to the grouped view, as it is on the browse
+    // lists. This handler is bound directly, so it runs before the delegated
+    // one and still sees the pre-click open state.
+    $('#mobile_filter_btn').click(function() {
+      var $sort = $('#sort_by');
+      if (!$sort.length) { return; }
+      var opening = !$('body').hasClass('mobile-filters-open');
+      var val = $sort.val();
+      var flat = val !== 'colls' && val !== 'colls_abc';
+      if (opening && !flat) {
+        $sort.val('title').trigger('change');
+      }
+    });
+
+    // The mobile sheet is fixed below the page header, whose height varies with
+    // the breadcrumbs/author rows and shrinks again once the page is scrolled,
+    // so feed the measurement to the stylesheet. Delegated, so it runs after
+    // application.js's own delegated toggle has updated the open state.
+    function positionMobileFilterSheet() {
+      if (!$('body').hasClass('mobile-filters-open')) { return; }
+      document.documentElement.style.setProperty('--toc-sheet-top', ($('#header').outerHeight() || 0) + 'px');
+    }
+    $(document).on('click', '#mobile_filter_btn', positionMobileFilterSheet);
+    $(window).on('scroll resize', positionMobileFilterSheet);
+
+    // "Apply" collapses the sheet (shared handler) over the freshly filtered
+    // list: bring that list into view rather than the top of the author card,
+    // clearing the fixed page header.
+    $('#apply_mobile_filters').click(function() {
+      var $list = $('#browse_mainlist');
+      if (!$list.length) { return; }
+      $('html, body').scrollTop($list.offset().top - ($('#header').outerHeight() || 0));
+    });
   });
