@@ -125,9 +125,6 @@
     = hidden_field_tag(:page, '1')
     = hidden_field_tag(:reverse, 'false')
     = hidden_field_tag(:to_letter, @to_letter)
-    .mobile-only
-      .bottom-button-area
-        %button.by-button-v02#apply_mobile_filters{ type: :submit }= t(:apply_mobile_filters)
 
 :javascript
   function toggleSearchType(type) {
@@ -252,12 +249,5 @@
       event.preventDefault();
       $('#search_type').val('authorname');
       submit_filters();
-    });
-
-    $('#apply_mobile_filters').click(function() {
-      resetPagination();
-      $('#sort_filter_panel').hide();
-      $('#thelist').show();
-      $('html').scrollTop($('#thelist').offset().top);
     });
   });
