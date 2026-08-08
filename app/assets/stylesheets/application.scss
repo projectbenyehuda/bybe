@@ -29,6 +29,12 @@
   &.collapsed {
     transform: rotate(0deg); // collapsed state: chevron points down
   }
+
+  // In the uncollected-works card the toggle trails a deliberately small explanation line;
+  // pin its size so it matches the chevrons on the volume cards above it.
+  .cwrapper.uncollected & {
+    font-size: 0.85rem;
+  }
 }
 
 // Staging environment indicator: diagonal stripe overlay
