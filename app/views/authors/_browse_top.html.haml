@@ -5,7 +5,7 @@
     .texts-list-top-info-card
       .flex-container
         .headline-1-v02= @authors_list_title
-        = render partial: 'shared/mobile_filter_toggle'
+        = render partial: 'shared/mobile_filter_toggle', locals: { form_id: 'authors_filters' }
         .author-page-top-icons-desktop
           .top-left-icons-group
             %a.by-icon-v02.notyet{:href => "#"} 9

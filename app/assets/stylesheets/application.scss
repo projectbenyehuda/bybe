@@ -1650,18 +1650,38 @@ p.by-genre-name-v02.headline-2-v02 {
 @media only screen and (max-width: 767px) {
   #sort_filter_panel.mobile-collapsible-filters {
     display: none;
+  }
 
-    &.mobile-filters-open {
-      display: block;
-    }
+  body.mobile-filters-open #sort_filter_panel.mobile-collapsible-filters {
+    display: block;
+  }
+
+  // Toggle and "apply" share one row. The row is inside the fixed #header, so
+  // both stay on screen while the user scrolls a long filter panel -- which is
+  // the whole point of hoisting "apply" out of the foot of that panel.
+  .mobile-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  // "Apply" only means something while the panel is open.
+  #apply_mobile_filters {
+    display: none;
+  }
+
+  body.mobile-filters-open #apply_mobile_filters {
+    display: block;
   }
 }
 
-// The button lives in .author-page-top-sort-mobile, which BY_styles_Max991.css
+// This row lives in .author-page-top-sort-mobile, which BY_styles_Max991.css
 // reveals at 991px -- but between 768px and 991px the two columns are still
-// side by side and the panel is permanently visible, so the toggle is moot.
+// side by side and the panel is permanently visible, so neither button has a
+// job to do. Hide the whole wrapper, not just the buttons: it is a flex item
+// in the authors header and an empty one would still take its margins.
 @media only screen and (min-width: 768px) {
-  #mobile_filter_btn {
+  .author-page-top-sort-mobile.mobile-filter-toggle {
     display: none;
   }
 }

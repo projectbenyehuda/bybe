@@ -31,17 +31,32 @@ function isMobile() {
 // Browse lists (/works, /authors, /collections): on narrow screens the
 // sort/filter panel is collapsed by CSS so the list starts in the first
 // screenful, and #mobile_filter_btn is the single control that reveals it.
-function closeMobileFilters() {
-  $('#sort_filter_panel').removeClass('mobile-filters-open');
+// The open state lives on <body> because the panel and the buttons that drive
+// it sit in different subtrees (the buttons are in the fixed page header).
+function setMobileFiltersOpen(isOpen) {
+  $('body').toggleClass('mobile-filters-open', isOpen);
   var btn = $('#mobile_filter_btn');
-  btn.attr('aria-expanded', 'false').text(btn.data('show-label'));
+  btn.attr('aria-expanded', isOpen ? 'true' : 'false')
+     .text(isOpen ? btn.data('hide-label') : btn.data('show-label'));
 }
 
-// Delegated, so the handler survives the AJAX re-render of the filter panel.
+function closeMobileFilters() {
+  setMobileFiltersOpen(false);
+}
+
+// Delegated, so the handlers survive the AJAX re-render of the filter panel.
 $(document).on('click', '#mobile_filter_btn', function() {
-  var isOpen = $('#sort_filter_panel').toggleClass('mobile-filters-open').hasClass('mobile-filters-open');
-  $(this).attr('aria-expanded', isOpen ? 'true' : 'false')
-         .text(isOpen ? $(this).data('hide-label') : $(this).data('show-label'));
+  setMobileFiltersOpen(!$('body').hasClass('mobile-filters-open'));
+});
+
+// #apply_mobile_filters submits the filter form (via its `form` attribute) and
+// collapses the panel again, putting the freshly filtered list back on screen.
+$(document).on('click', '#apply_mobile_filters', function() {
+  if (typeof resetPagination === 'function') {
+    resetPagination();
+  }
+  closeMobileFilters();
+  $('html').scrollTop($('#thelist').offset().top);
 });
 
 function startModal(id) {
