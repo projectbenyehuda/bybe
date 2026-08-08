@@ -3,7 +3,11 @@
 - if fd.present?
   - translated_langs = fd[:orig_langs].reject { |l| l == 'he' }.sort_by { |l| textify_lang(l) }
   - has_hebrew = fd[:orig_langs].include?('he')
-  .by-card-v02.author-side-sort#toc_filters_pane{ style: 'display:none;' }
+  -#
+    Hidden until a flat sort adds .pane-visible (see showFilterPane in
+    authors/_generated_toc); display is CSS-driven, not an inline style, so the
+    mobile rules can present it as a sheet instead.
+  .by-card-v02.author-side-sort#toc_filters_pane
     .by-card-content-v02
       .headline-2-v02= t(:filter_by)
       %a.reset#toc-filter-reset{ href: '#' }= t(:reset_filter)
