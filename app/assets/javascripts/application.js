@@ -28,11 +28,12 @@ var mobileWidth = 767;
 function isMobile() {
   return window.innerWidth < mobileWidth;
 }
-// Browse lists (/works, /authors, /collections): on narrow screens the
-// sort/filter panel is collapsed by CSS so the list starts in the first
-// screenful, and #mobile_filter_btn is the single control that reveals it.
-// The open state lives on <body> because the panel and the buttons that drive
-// it sit in different subtrees (the buttons are in the fixed page header).
+// Browse lists (/works, /authors, /collections) and the authority TOC: on
+// narrow screens the sort/filter panel is collapsed by CSS so the list starts
+// in the first screenful, and #mobile_filter_btn is the single control that
+// reveals it. The open state lives on <body> because the panel and the buttons
+// that drive it sit in different subtrees (the buttons are in the fixed page
+// header).
 function setMobileFiltersOpen(isOpen) {
   $('body').toggleClass('mobile-filters-open', isOpen);
   var btn = $('#mobile_filter_btn');
@@ -51,12 +52,17 @@ $(document).on('click', '#mobile_filter_btn', function() {
 
 // #apply_mobile_filters submits the filter form (via its `form` attribute) and
 // collapses the panel again, putting the freshly filtered list back on screen.
+// Pages that filter live and have no #thelist card (the authority TOC) scroll
+// to their own list in their own handler.
 $(document).on('click', '#apply_mobile_filters', function() {
   if (typeof resetPagination === 'function') {
     resetPagination();
   }
   closeMobileFilters();
-  $('html').scrollTop($('#thelist').offset().top);
+  var list = $('#thelist');
+  if (list.length) {
+    $('html').scrollTop(list.offset().top);
+  }
 });
 
 function startModal(id) {
