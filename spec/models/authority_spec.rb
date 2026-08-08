@@ -884,6 +884,31 @@ describe Authority do
     end
   end
 
+  # This number is shown to readers as 'N authors in the project' and labels a link to the
+  # authorities list, so it must count exactly what that list shows.
+  describe '.cached_count' do
+    let!(:published_authority) { create(:authority, status: :published) }
+
+    it 'counts published authorities' do
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes unpublished authorities' do
+      create(:authority, status: :unpublished)
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes awaiting_first authorities' do
+      create(:authority, status: :awaiting_first)
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes pageless authorities' do
+      create(:authority, status: :published, pageless: true)
+      expect(described_class.cached_count).to eq 1
+    end
+  end
+
   describe 'pageless authorities' do
     let!(:pageless_authority) { create(:authority, pageless: true) }
     let!(:regular_authority) { create(:authority) }

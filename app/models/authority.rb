@@ -366,9 +366,13 @@ class Authority < ApplicationRecord
     dl
   end
 
+  # The count of authorities we advertise to readers ('N authors in the project'), and which labels a
+  # link to the authorities list -- so it must count exactly what that list shows.
+  # NOTE: cache key deliberately renamed from 'au_total_count', so deployments pick up the corrected
+  # figure immediately instead of serving the old, inflated one until the TTL expires.
   def self.cached_count
-    Rails.cache.fetch('au_total_count', expires_in: 12.hours) do
-      count
+    Rails.cache.fetch('au_published_count', expires_in: 12.hours) do
+      published.not_pageless.count
     end
   end
 
