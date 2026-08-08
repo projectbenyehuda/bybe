@@ -43,6 +43,7 @@ RSpec.describe 'Author TOC mobile layout', :js, type: :system do
     )
 
     expect(overflow).to be <= 1, "page overflows its viewport by #{overflow}px"
+  end
 
   it 'keeps the sort/collapse bar within its card' do
     visit_toc_at_mobile_width
