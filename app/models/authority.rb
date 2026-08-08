@@ -376,12 +376,6 @@ class Authority < ApplicationRecord
     end
   end
 
-  def self.cached_toc_count
-    Rails.cache.fetch('au_toc_count', expires_in: 12.hours) do
-      has_toc.count
-    end
-  end
-
   def all_works_title_sorted
     (original_works + translations).uniq.sort_by(&:sort_title)
   end
