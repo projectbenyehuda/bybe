@@ -53,7 +53,13 @@
           .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
             %div{style:'font-size:120%;'}
               - if uncollected
-                %p{style: 'font-size: 0.8rem; color: #222222;'}= t(:uncollected_works_collection_explanation)
+                %p{style: 'font-size: 0.8rem; color: #222222;'}
+                  = t(:uncollected_works_collection_explanation)
+                  -# same chevron toggle the volumes carry, trailing the card's only text line
+                  - if renders_toclist
+                    - toggle_label = t(:toggle_collapse_uncollected)
+                    %span.volume-collapse-toggle{ role: 'button', tabindex: 0, title: toggle_label,
+                                                  aria: { label: toggle_label, expanded: 'true' } } )
               - else
                 %span.ctitle_only{ style: 'display:none;' }= collection.title
                 %span.ctitle
