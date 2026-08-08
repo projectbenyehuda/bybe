@@ -131,4 +131,68 @@ RSpec.describe ApplicationHelper, type: :helper do
       expect(result).to include('lang=he')
     end
   end
+
+  # 'Pageless' authorities (e.g. 'anonymous', 'various authors') aren't real creators; a TOC page for
+  # them would falsely suggest hundreds of works by one author, so they must never be linked to.
+  describe '#authority_link' do
+    let(:regular_authority) { create(:authority, name: 'Haim Nahman Bialik') }
+    let(:pageless_authority) { create(:authority, name: 'anonymous', pageless: true) }
+
+    it 'links to the TOC page of a regular authority' do
+      result = helper.authority_link(regular_authority)
+      expect(result).to have_css("a[href='#{authority_path(regular_authority.id)}']", text: 'Haim Nahman Bialik')
+    end
+
+    it 'renders the name of a pageless authority as plain text' do
+      result = helper.authority_link(pageless_authority)
+      expect(result).to eq 'anonymous'
+      expect(result).not_to have_css('a')
+    end
+
+    it 'accepts an explicit link text for a regular authority' do
+      result = helper.authority_link(regular_authority, '5 works')
+      expect(result).to have_css('a', text: '5 works')
+    end
+
+    it 'renders the explicit text without a link for a pageless authority' do
+      expect(helper.authority_link(pageless_authority, '5 works')).to eq '5 works'
+    end
+
+    it 'accepts a bare id' do
+      expect(helper.authority_link(pageless_authority.id, 'anonymous')).to eq 'anonymous'
+      expect(helper.authority_link(regular_authority.id, 'Bialik')).to have_css('a')
+    end
+
+    it 'passes html options through for a regular authority' do
+      result = helper.authority_link(regular_authority, nil, target: '_blank')
+      expect(result).to have_css("a[target='_blank']")
+    end
+
+    it 'escapes the name of a pageless authority' do
+      evil = create(:authority, name: '<script>x</script>', pageless: true)
+      expect(helper.authority_link(evil)).to eq '&lt;script&gt;x&lt;/script&gt;'
+    end
+  end
+
+  describe '#link_to_authority' do
+    let(:regular_authority) { create(:authority) }
+    let(:pageless_authority) { create(:authority, pageless: true) }
+
+    it 'wraps the block in a link for a regular authority' do
+      result = helper.link_to_authority(regular_authority) { '<b>card</b>'.html_safe }
+      expect(result).to have_css("a[href='#{authority_path(regular_authority.id)}'] b", text: 'card')
+    end
+
+    it 'wraps the block in a span for a pageless authority, preserving the markup' do
+      result = helper.link_to_authority(pageless_authority) { '<b>card</b>'.html_safe }
+      expect(result).to have_css('span b', text: 'card')
+      expect(result).not_to have_css('a')
+    end
+
+    it 'keeps css classes but drops target on the span for a pageless authority' do
+      result = helper.link_to_authority(pageless_authority, class: 'slide', target: '_blank') { 'x' }
+      expect(result).to have_css('span.slide')
+      expect(result).not_to have_css("[target='_blank']")
+    end
+  end
 end

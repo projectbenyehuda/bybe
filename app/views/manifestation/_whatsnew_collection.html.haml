@@ -9,7 +9,7 @@
       .whatsnew-authorities
         %p
           - collection.involved_authorities.each_with_index do |ia, index|
-            = link_to ia.authority.name, authority_path(id: ia.authority.id)
+            = authority_link(ia.authority)
             = "(#{textify_authority_role(ia.role)})"
             - if index < collection.involved_authorities.length - 1
               = ', '

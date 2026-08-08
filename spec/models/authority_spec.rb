@@ -863,6 +863,104 @@ describe Authority do
       it 'excludes authorities with do_not_feature true' do
         expect(described_class.featurable).not_to include(non_featurable_authority)
       end
+
+      it 'excludes pageless authorities' do
+        pageless = create(:authority, do_not_feature: false, pageless: true)
+        expect(described_class.featurable).not_to include(pageless)
+      end
+    end
+
+    describe '.not_pageless' do
+      let!(:regular_authority) { create(:authority) }
+      let!(:pageless_authority) { create(:authority, pageless: true) }
+
+      it 'includes authorities without the pageless flag' do
+        expect(described_class.not_pageless).to include(regular_authority)
+      end
+
+      it 'excludes pageless authorities' do
+        expect(described_class.not_pageless).not_to include(pageless_authority)
+      end
+    end
+  end
+
+  # This number is shown to readers as 'N authors in the project' and labels a link to the
+  # authorities list, so it must count exactly what that list shows.
+  describe '.cached_count' do
+    let!(:published_authority) { create(:authority, status: :published) }
+
+    it 'counts published authorities' do
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes unpublished authorities' do
+      create(:authority, status: :unpublished)
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes awaiting_first authorities' do
+      create(:authority, status: :awaiting_first)
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes pageless authorities' do
+      create(:authority, status: :published, pageless: true)
+      expect(described_class.cached_count).to eq 1
+    end
+  end
+
+  describe 'pageless authorities' do
+    let!(:pageless_authority) { create(:authority, pageless: true) }
+    let!(:regular_authority) { create(:authority) }
+
+    describe '.pageless_ids' do
+      it 'lists the ids of pageless authorities only' do
+        expect(described_class.pageless_ids).to include(pageless_authority.id)
+        expect(described_class.pageless_ids).not_to include(regular_authority.id)
+      end
+    end
+
+    describe '.pageless_id?' do
+      it 'is true for a pageless authority' do
+        expect(described_class.pageless_id?(pageless_authority.id)).to be true
+      end
+
+      it 'is false for a regular authority' do
+        expect(described_class.pageless_id?(regular_authority.id)).to be false
+      end
+
+      it 'accepts a string id' do
+        expect(described_class.pageless_id?(pageless_authority.id.to_s)).to be true
+      end
+    end
+
+    # The id list is cached, so toggling the flag must invalidate that cache -- otherwise an authority
+    # would stay (un)linked for up to 12 hours after an editor changed it.
+    describe 'cache invalidation' do
+      around do |example|
+        original = Rails.cache
+        Rails.cache = ActiveSupport::Cache::MemoryStore.new
+        example.run
+        Rails.cache = original
+      end
+
+      it 'picks up an authority that has become pageless' do
+        expect(described_class.pageless_id?(regular_authority.id)).to be false
+        regular_authority.update!(pageless: true)
+        expect(described_class.pageless_id?(regular_authority.id)).to be true
+      end
+
+      it 'picks up an authority that has stopped being pageless' do
+        expect(described_class.pageless_id?(pageless_authority.id)).to be true
+        pageless_authority.update!(pageless: false)
+        expect(described_class.pageless_id?(pageless_authority.id)).to be false
+      end
+
+      it 'picks up a destroyed pageless authority' do
+        expect(described_class.pageless_id?(pageless_authority.id)).to be true
+        pageless_authority.destroy!
+        expect(described_class.pageless_ids).not_to include(pageless_authority.id)
+      end
     end
   end
 

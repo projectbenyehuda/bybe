@@ -16,6 +16,8 @@ class AuthorsController < ApplicationController
                 only: %i(show edit update destroy toc edit_toc print all_links delete_photo
                          whatsnew_popup latest_popup publish to_manual_toc volumes
                          kwic kwic_download kwic_context)
+  # must come after set_author, which it depends on
+  before_action :restrict_to_viewable_authority, only: %i(print)
   layout 'backend', only: %i(manage_toc)
 
   def publish
@@ -452,7 +454,7 @@ class AuthorsController < ApplicationController
   end
 
   def toc
-    if @author.published? || (current_user.present? && current_user.editor?)
+    if authority_viewable?(@author)
       # Note that we are accessing an unpublished author, if that's the case
       @unpublished = true unless @author.published?
 
@@ -703,6 +705,21 @@ class AuthorsController < ApplicationController
     @author = Authority.find(params[:id])
   end
 
+  # An authority's public pages (TOC, print) are visible when it is published and has a page of its
+  # own. Pageless authorities ('anonymous', 'various authors' and the like) aggregate the works of
+  # many different people, so a page for them would falsely suggest a single prolific author.
+  # Editors see either kind regardless, since they may need to manage the record.
+  def authority_viewable?(author)
+    (author.published? && !author.pageless?) || current_user&.editor? || false
+  end
+
+  def restrict_to_viewable_authority
+    return if authority_viewable?(@author)
+
+    flash[:error] = t(:author_not_available)
+    redirect_to '/'
+  end
+
   def authority_params
     params.require(:authority).permit(
       :comment,
@@ -720,6 +737,7 @@ class AuthorsController < ApplicationController
       :profile_image,
       :bib_done,
       :do_not_feature,
+      :pageless,
       :sort_name,
       :status,
       :legacy_credits,

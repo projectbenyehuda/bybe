@@ -13,7 +13,7 @@
         .by-popup-v02
           %a.linkcolor.pointer.popup-x-v02{'data-dismiss'=>'modal'} -
           %img.surprise-author-card-bookmark-fold-v02{:alt => "", :height => "6", :src => "/assets/creator-bookmark-back2.png", :width => "168"}
-          %a{ href: authority_path(@author) }
+          = link_to_authority(@author) do
             .surprise-author-card-v02
               %img.surprise-author-pic-v02{:alt => @author.name, src: @author.profile_image.url(:thumb), height: "686", width: "475"}
               .author-name-area
