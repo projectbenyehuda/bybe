@@ -7,9 +7,10 @@ module V1
       expose :id, documentation: { type: :Integer }
       expose :url, documentation: {
         desc: 'Canonical URL of the person at Project Ben-Yehuda (useful for giving credit and allowing' \
-              'users to click through)'
+              'users to click through). Null for authorities that have no page of their own, such as ' \
+              "'anonymous' or 'various authors'."
       } do |au|
-        Rails.application.routes.url_helpers.authority_url(au)
+        au.pageless? ? nil : Rails.application.routes.url_helpers.authority_url(au)
       end
       expose :metadata do
         expose :name

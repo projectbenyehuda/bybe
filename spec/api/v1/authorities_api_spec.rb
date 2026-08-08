@@ -43,6 +43,20 @@ describe V1::AuthoritiesApi do
         end
       end
 
+      # 'anonymous' and 'various authors' have no page of their own, so there is no URL for API
+      # consumers to link through to.
+      context 'when the authority is pageless' do
+        let(:authority) { create(:authority, pageless: true) }
+        let(:path) { "/api/v1/authorities/#{authority_id}?key=#{key}" }
+
+        it 'returns a null url but the rest of the metadata as usual' do
+          expect(call).to eq 200
+          expect(json_response).to have_key('url')
+          expect(json_response['url']).to be_nil
+          expect(json_response['metadata']['name']).to eq authority.name
+        end
+      end
+
       context 'when metadata details requested' do
         let(:detail) { 'metadata' }
 

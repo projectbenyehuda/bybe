@@ -16,6 +16,6 @@
               - if @fa_rest != ''
                 = ' ...'
             .button-to-full-v02
-              %a{ href: authority_path(@featured_author.person.authority) }
+              = link_to_authority(@featured_author.person.authority) do
                 %button.by-button-v02= to_the_author_page(@featured_author.person)
               %button.by-button-v02.popup_btn.pointer{style:'font-weight: bold;display:none;', 'data-popup-id' => 'featured_content_dlg','data-popuppath' => featured_author_popup_path(id: @featured_author.id)}= t(:to_the_full_feature)

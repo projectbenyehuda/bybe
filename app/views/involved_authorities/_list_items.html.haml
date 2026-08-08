@@ -1,6 +1,6 @@
 - item.involved_authorities.each do |ia|
   %li{ id: "ia#{ia.id}" }
-    = link_to ia.authority.name, authority_path(id: ia.authority.id)
+    = authority_link(ia.authority)
     = "(#{textify_authority_role(ia.role)})"
     - if edit
       = link_to t(:destroy), involved_authority_path(ia),

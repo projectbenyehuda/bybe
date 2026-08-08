@@ -8,11 +8,11 @@
       .headline-3-v02
         = t(:by)+':'
         - unless @m.authors.nil?
-          != @m.authors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+          != @m.authors.map { |t| authority_link(t) }.join(', ')
           - if @e.translation && @e.translators.size > 0
             .headline-3-v02
               = "#{t(:translation)}: "
-              != @e.translators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+              != @e.translators.map { |t| authority_link(t) }.join(', ')
               = " (#{orig_lang_label(@e.work.orig_lang)})"
         - else
           = '?'

@@ -16,7 +16,7 @@ class Newsfeed < ApplicationService
         person,
         TextifyNewPubs.call(manifestations),
         pubs,
-        authority_path(person.id),
+        person.pageless? ? nil : authority_path(person.id), # pageless authorities have no page to link to
         person.profile_image.url(:thumb)
       )
     end

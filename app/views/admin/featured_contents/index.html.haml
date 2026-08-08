@@ -27,7 +27,7 @@
               = t(:none)
             - else
               = link_to(fc.manifestation.title_and_authors, manifestation_path(id: fc.manifestation.id))
-          %td= fc.authority.nil? ? t(:none) : link_to(fc.authority.name, authority_path(fc.authority))
+          %td= fc.authority.nil? ? t(:none) : authority_link(fc.authority)
           %td
             = link_to t(:edit), admin_featured_content_path(fc)
             = link_to t(:destroy),

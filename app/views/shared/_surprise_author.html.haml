@@ -1,13 +1,13 @@
 .by-card-v02#authors-surprise-replaced
   %img.surprise-author-card-bookmark-fold-v02{src: '/assets/creator-bookmark-back2.png', width: 168, height: 6}
-  %a{ href: authority_path(author) }
+  = link_to_authority(author) do
     .surprise-author-card-v02
       %img.surprise-author-pic-v02{src: author.profile_image.url(:thumb), alt: author.name}
       .author-name-area
         .surprise-author-name-v02= to_the_author_page(author.person)
   .by-card-header-v02
     %span.headline-1-v02
-      %a{ href: authority_path(author.id) }= author.name
+      = authority_link(author)
     - if author.person.present?
       %span.date-range!= "(#{author.person.life_years})"
   .by-card-content-v02.surprise-author-card-content-v02
@@ -33,7 +33,7 @@
         -#    = "#{author.recommendations_count} #{t(:recommendations_for_work)}"
         .metadata
           %b= t(:works_in_the_project)+': '
-          = link_to "#{author.cached_works_count} #{t(:works)}", authority_path(author)
+          = authority_link(author, "#{author.cached_works_count} #{t(:works)}")
         .text-height-author-2
           %p{style:'font-weight:bold; margin-bottom: 3px'}= t(:their_most_read_works, gender_letter: author.gender_letter)
           %ol

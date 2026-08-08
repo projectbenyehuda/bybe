@@ -14,7 +14,7 @@
             = link_to t(:legacy_url), @legacy_url, target: '_blank'
           = t(:by)+': '
           - @m.authors.each do |au|
-            = link_to au.name, authority_path(au.id)
+            = authority_link(au)
           != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
           = link_to t(:to_the_work_in_the_site), manifestation_path(@m), target: '_blank'
     %hr
