@@ -433,10 +433,12 @@ class Collection < ApplicationRecord
     until ancestors_by_collection.empty? || found.size == roots.size
       items = CollectionItem.where(collection_id: ancestors_by_collection.keys)
                             .pluck(:collection_id, :item_type, :item_id)
-      published = Manifestation.all_published
-                               .where(id: items.filter_map { |_, type, item_id| item_id if type == 'Manifestation' })
-                               .pluck(:id)
-                               .to_set
+      manifestation_ids = items.filter_map { |_, type, item_id| item_id if type == 'Manifestation' }.uniq
+      published = if manifestation_ids.empty?
+                    Set.new
+                  else
+                    Manifestation.all_published.where(id: manifestation_ids).pluck(:id).to_set
+                  end
       next_level = {}
       items.each do |parent_id, item_type, item_id|
         ancestors = ancestors_by_collection[parent_id] - found # roots still looking for a published work
