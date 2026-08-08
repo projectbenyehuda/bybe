@@ -1110,4 +1110,43 @@ expect(html).to include("by-icon-v02\" title=\"#{expected_genre_title}\">t</span
       end
     end
   end
+
+  describe '.ids_with_published_manifestations' do
+    let(:empty) { create(:collection, collection_type: :periodical) }
+    let(:unpublished_only) { create(:collection, collection_type: :periodical) }
+    let(:direct) { create(:collection, collection_type: :periodical) }
+    let(:nested) { create(:collection, collection_type: :periodical) }
+    let(:issue) { create(:collection, collection_type: :periodical_issue) }
+    let(:all_ids) { [empty.id, unpublished_only.id, direct.id, nested.id] }
+
+    before do
+      create(:collection_item, collection: unpublished_only, item: create(:manifestation, status: :unpublished))
+      create(:collection_item, collection: direct, item: create(:manifestation, status: :published))
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: nested, item: issue)
+      create(:collection_item, collection: issue, item: series)
+      create(:collection_item, collection: series, item: create(:manifestation, status: :published))
+    end
+
+    it 'returns only the ids of collections holding a published manifestation at any depth' do
+      expect(Collection.ids_with_published_manifestations(all_ids)).to contain_exactly(direct.id, nested.id)
+    end
+
+    it 'returns an empty array for an empty input' do
+      expect(Collection.ids_with_published_manifestations([])).to eq([])
+    end
+
+    it 'attributes a shared sub-collection to every ancestor that reaches it' do
+      create(:collection_item, collection: empty, item: issue)
+      expect(Collection.ids_with_published_manifestations([empty.id, nested.id]))
+        .to contain_exactly(empty.id, nested.id)
+    end
+
+    it 'agrees with #any_published_manifestations? for each collection' do
+      [empty, unpublished_only, direct, nested].each do |collection|
+        expect(Collection.ids_with_published_manifestations([collection.id]).any?)
+          .to eq(collection.any_published_manifestations?)
+      end
+    end
+  end
 end
