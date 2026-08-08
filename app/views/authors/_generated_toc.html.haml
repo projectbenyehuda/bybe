@@ -244,15 +244,18 @@
       });
     }
 
+    // The pane's visibility is a class, not an inline display, so that the
+    // mobile rules can keep it collapsed until #mobile_filter_btn opens it.
     function showFilterPane(show) {
       var $navs = $('.author-side-nav-col .book-nav-full, .author-side-nav-col .book-nav-thin');
+      $('#toc_filters_pane').toggleClass('pane-visible', show);
       if (show) {
         $navs.hide();
-        $('#toc_filters_pane').show();
       } else {
-        $('#toc_filters_pane').hide();
         // Clear inline display so breakpoint CSS controls which navbar is visible
         $navs.css('display', '');
+        // Leaving filter mode: the mobile sheet has nothing left to show.
+        if (typeof closeMobileFilters === 'function') { closeMobileFilters(); }
       }
     }
 
