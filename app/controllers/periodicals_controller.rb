@@ -3,11 +3,15 @@
 class PeriodicalsController < ApplicationController
   def index
     issue_ids = Collection.where(collection_type: 'periodical_issue').select(:id)
-    @periodicals = Collection.includes(:collection_items)
-                             .where(collection_type: 'periodical')
-                             .where(id: CollectionItem.where(item_type: 'Collection', item_id: issue_ids).select(:collection_id))
-                             .order(:title)
-                             .to_a
+    with_issue_ids = CollectionItem.where(item_type: 'Collection', item_id: issue_ids).select(:collection_id)
+    periodicals = Collection.includes(:collection_items)
+                            .where(collection_type: 'periodical')
+                            .where(id: with_issue_ids)
+                            .order(:title)
+                            .to_a
+    # a periodical whose issues hold nothing publicly accessible would only lead readers to empty pages
+    with_public_works = Collection.ids_with_published_manifestations(periodicals.map(&:id)).to_set
+    @periodicals = periodicals.select { |p| with_public_works.include?(p.id) }
     @periodicals_count = @periodicals.size
     @popular_works = ManifestationsIndex.query(match: { in_periodical: true })
                                         .filter(range: { impressions_count: { gte: 1 } })
