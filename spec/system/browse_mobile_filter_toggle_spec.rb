@@ -40,6 +40,16 @@ describe 'Browse lists mobile filter toggle', :js do
     expect(list_top).to be < viewport_height
   end
 
+  # True when the element's content fits inside its own box (no spill).
+  def content_fits?(selector)
+    page.evaluate_script(<<~JS)
+      (function() {
+        var el = document.getElementById('#{selector}');
+        return el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight;
+      })()
+    JS
+  end
+
   # True when the element is wholly inside the viewport right now.
   def fully_on_screen?(selector)
     page.evaluate_script(<<~JS)
@@ -90,6 +100,18 @@ describe 'Browse lists mobile filter toggle', :js do
 
         expect(fully_on_screen?('mobile_filter_btn')).to be true
         expect(fully_on_screen?('apply_mobile_filters')).to be true
+      end
+
+      it 'fits both button labels on one line' do
+        visit path
+        expect(page).to have_css('#mobile_filter_btn', visible: :visible, wait: 5)
+
+        find('#mobile_filter_btn').click
+        expect(page).to have_css('#apply_mobile_filters', visible: :visible, wait: 5)
+
+        # .by-button-v02 is a fixed-height box: a wrapped label spills out of it.
+        expect(content_fits?('apply_mobile_filters')).to be true
+        expect(content_fits?('mobile_filter_btn')).to be true
       end
 
       it 'submits the filters and collapses the panel when apply is clicked' do

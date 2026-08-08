@@ -1153,7 +1153,7 @@ en:
     key_created_to_editor:
       subject: New API Key Created
   apply_filters: Apply This Filter!
-  apply_mobile_filters: Apply Selected Filter
+  apply_mobile_filters: Apply Filters
   approve: Approve
   approve_and_next: Approve and Move to Next Item
   approve_and_review_taggings: Approve and Review Taggings

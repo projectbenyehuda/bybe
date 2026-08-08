@@ -1663,6 +1663,14 @@ p.by-genre-name-v02.headline-2-v02 {
     display: flex;
     align-items: center;
     gap: 6px;
+
+    // .by-button-v02 is a fixed 32px tall box, so a label that wraps to a
+    // second line spills out of it. As flex items these buttons would happily
+    // be squeezed narrow enough to wrap.
+    button {
+      flex: none;
+      white-space: nowrap;
+    }
   }
 
   // "Apply" only means something while the panel is open.
