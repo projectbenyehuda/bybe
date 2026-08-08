@@ -1765,6 +1765,25 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
+// The mobile filter toggle and its "apply" companion (shared/_mobile_filter_toggle)
+// share one row. That row is inside the fixed page header, so both stay on
+// screen while the user scrolls a long filter panel -- which is the whole point
+// of hoisting "apply" out of the foot of that panel. Both pages that render the
+// partial want this layout, but at different breakpoints, hence a mixin.
+@mixin mobile-filter-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  // .by-button-v02 is a fixed 32px tall box, so a label that wraps to a
+  // second line spills out of it. As flex items these buttons would happily
+  // be squeezed narrow enough to wrap.
+  button {
+    flex: none;
+    white-space: nowrap;
+  }
+}
+
 // Browse lists (/works, /authors, /collections): below the Bootstrap `md`
 // breakpoint the filter column and the list column stack, and the filter panel
 // comes first in source order -- which pushed the list off the first screenful
@@ -1779,21 +1798,8 @@ p.by-genre-name-v02.headline-2-v02 {
     display: block;
   }
 
-  // Toggle and "apply" share one row. The row is inside the fixed #header, so
-  // both stay on screen while the user scrolls a long filter panel -- which is
-  // the whole point of hoisting "apply" out of the foot of that panel.
   .mobile-filter-toggle {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    // .by-button-v02 is a fixed 32px tall box, so a label that wraps to a
-    // second line spills out of it. As flex items these buttons would happily
-    // be squeezed narrow enough to wrap.
-    button {
-      flex: none;
-      white-space: nowrap;
-    }
+    @include mobile-filter-toggle-row;
   }
 
   // "Apply" only means something while the panel is open.
@@ -1814,5 +1820,64 @@ p.by-genre-name-v02.headline-2-v02 {
 @media only screen and (min-width: 768px) {
   .author-page-top-sort-mobile.mobile-filter-toggle {
     display: none;
+  }
+}
+
+// Authority TOC (/authors/:id) filters pane. Hidden until one of the flat sort
+// orders puts the list into filter mode and adds .pane-visible (showFilterPane
+// in authors/_generated_toc). A class rather than an inline display, so the
+// mobile rules below can override it.
+#toc_filters_pane {
+  display: none;
+}
+
+#toc_filters_pane.pane-visible {
+  display: block;
+}
+
+// The TOC's "mobile" band is everything below 992px: that is where BY CSS
+// swaps .author-page-top-sort-desktop for .author-page-top-sort-mobile and
+// shrinks .author-side-nav-col -- the column holding the pane -- to a 34px
+// rail. (The browse lists' band is below 768px, where their columns stack.)
+@media only screen and (max-width: 991px) {
+  .toc-mobile-filter-toggle {
+    @include mobile-filter-toggle-row;
+  }
+
+  // "Apply" only means something while the pane is open.
+  .toc-mobile-filter-toggle #apply_mobile_filters {
+    display: none;
+  }
+
+  body.mobile-filters-open .toc-mobile-filter-toggle #apply_mobile_filters {
+    display: block;
+  }
+
+  // The pane cannot be shown in place inside that 34px rail, so entering filter
+  // mode is not enough here: reveal it as a fixed full-width sheet below the
+  // page header -- the treatment this page already gives its in-page navbar
+  // when expanded (.book-nav-full.mobile-expanded) -- and only while
+  // #mobile_filter_btn reports it open.
+  //
+  // --toc-sheet-top is measured from the fixed #header at runtime (see
+  // authors/_author_top), because this page's header is both taller than the
+  // literal below and variable: it carries a breadcrumbs and an author row, and
+  // shrinks again once the page is scrolled. The literal is only the pre-JS
+  // fallback. Without it the sheet's own header -- "filter by" and the reset
+  // link -- hides behind the page header.
+  #toc_filters_pane.pane-visible {
+    display: none;
+  }
+
+  body.mobile-filters-open #toc_filters_pane.pane-visible {
+    display: block;
+    position: fixed;
+    top: var(--toc-sheet-top, 120px);
+    right: 0;
+    left: 0;
+    max-height: calc(100vh - var(--toc-sheet-top, 120px));
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 }

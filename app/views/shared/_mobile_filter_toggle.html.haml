@@ -1,17 +1,23 @@
 -#
-  Mobile-only controls for the sort/filter panel of the browse lists.
-  On narrow screens the panel (#sort_filter_panel) is collapsed by default so
-  that the list itself is in the first screenful; #mobile_filter_btn reveals it.
+  Mobile-only controls for the sort/filter panel of the browse lists and of the
+  authority TOC. On narrow screens the panel is collapsed by default so that the
+  list itself is in the first screenful; #mobile_filter_btn reveals it.
   The "apply" button sits here, beside the toggle, rather than at the foot of
-  the panel: this row is inside the fixed #header, so it stays put while the
+  the panel: this row is inside the fixed page header, so it stays put while the
   user scrolls through a long filter panel. `form:` keeps it submitting the
-  filters form it is no longer nested in.
-- toggle_data = { show_label: t(:sort_and_filter), hide_label: t(:hide_sort_and_filter) }
-.author-page-top-sort-mobile.mobile-filter-toggle
+  filters form it is no longer nested in; pages whose filters apply live (the
+  authority TOC) pass no form_id, and there "apply" only collapses the panel
+  back over the results.
+:ruby
+  form_id = local_assigns[:form_id]
+  panel_id = local_assigns.fetch(:panel_id, 'sort_filter_panel')
+  wrapper_class = local_assigns.fetch(:wrapper_class, 'mobile-filter-toggle')
+  toggle_data = { show_label: t(:sort_and_filter), hide_label: t(:hide_sort_and_filter) }
+%div{ class: "author-page-top-sort-mobile #{wrapper_class}" }
   %button.btn-small-outline-v02.btn-text-v02#mobile_filter_btn{ type: 'button',
-                                                                'aria-controls' => 'sort_filter_panel',
+                                                                'aria-controls' => panel_id,
                                                                 'aria-expanded' => 'false',
                                                                 data: toggle_data }
     = t(:sort_and_filter)
-  %button.by-button-v02#apply_mobile_filters{ type: 'submit', form: form_id }
+  %button.by-button-v02#apply_mobile_filters{ type: form_id.present? ? 'submit' : 'button', form: form_id }
     = t(:apply_mobile_filters)
