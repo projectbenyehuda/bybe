@@ -35,48 +35,48 @@
                     %span.by-button-v02.pointer{style: 'width: min-content;'}= t(:edit)
                 .headline-2-v02
                   - if @collection.authors.present?
-                    != @collection.authors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != @collection.authors.map { |t| authority_link(t) }.join(', ')
                   - translators = @collection.translators
                   - if translators.present?
                     %br
                     = "#{t('involved_authority.abstract_roles.translator')}: "
-                    != translators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != translators.map { |t| authority_link(t) }.join(', ')
 
                 - illustrators = @collection.involved_authorities_by_role(:illustrator)
                 - if illustrators.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.illustrator')}: "
-                    != illustrators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != illustrators.map { |t| authority_link(t) }.join(', ')
 
                 - photographers = @collection.involved_authorities_by_role(:photographer)
                 - if photographers.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.photographer')}: "
-                    != photographers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != photographers.map { |t| authority_link(t) }.join(', ')
 
                 - designers = @collection.involved_authorities_by_role(:designer)
                 - if designers.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.designer')}: "
-                    != designers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != designers.map { |t| authority_link(t) }.join(', ')
 
                 - editors = @collection.editors(true)
                 - if editors.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.editor')}: "
-                    != editors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != editors.map { |t| authority_link(t) }.join(', ')
 
                 - contributors = @collection.involved_authorities_by_role(:contributor)
                 - if contributors.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.contributor')}: "
-                    != contributors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != contributors.map { |t| authority_link(t) }.join(', ')
 
                 - others = @collection.involved_authorities_by_role(:other)
                 - if others.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.other')}: "
-                    != others.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != others.map { |t| authority_link(t) }.join(', ')
 
                 -# %button.by-button-v02{href: "#"} יוצרים שונים
                 - if @collection.parent_collections.present?
@@ -231,17 +231,17 @@
                   - if authors.present?
                     %p
                       = t(:by)
-                      != authors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                      != authors.map { |a| authority_link(a) }.join(', ')
                   - editors = ias.select{|ia| ia.role == 'editor'}.map(&:authority)
                   - if editors.present?
                     %p
                       = t(:edited_by)
-                      != editors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                      != editors.map { |a| authority_link(a) }.join(', ')
                   - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority)
                   - if translators.present?
                     %p
                       = t(:translated_by)
-                      != translators.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                      != translators.map { |a| authority_link(a) }.join(', ')
             - else
               -# This is a manifestation or other content item
               .by-card-v02.proofable{ card_attrs }

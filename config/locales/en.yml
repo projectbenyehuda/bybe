@@ -1174,6 +1174,7 @@ en:
   author_name: Author Name
   author_names: Author Name(s)
   author_not_available: Author page is not available at this time.
+  pageless_hint: "Check for authorities that are not real creators (e.g. 'anonymous', 'various authors'): they will not be listed nor linked to, and will have no page of their own."
   author_or_translator_gender: Author or Translator Gender
   author_print_tt: Print the author's works list
   author_table_of_contents: Author Page

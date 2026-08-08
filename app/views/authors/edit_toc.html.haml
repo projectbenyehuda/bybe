@@ -8,7 +8,7 @@
       = t(:update_toc)
       != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
       %span{style:'font-size:70%'}
-        = link_to t(:show_toc), authority_path(@author.id)
+        = authority_link(@author, t(:show_toc))
       %span{style:'font-size:50%'}= t(:remember_to_save)
     .right
       = t(:toc_order_reminder)

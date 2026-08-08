@@ -77,7 +77,7 @@
           - elsif result.instance_of?(AuthoritiesIndex)
             %b= t(:author)
             %br
-            %b= link_to attrs['name'], authority_path(attrs['id'])
+            %b= authority_link(attrs['id'], attrs['name'])
             - unless result.tags.empty?
               %br
               %b= t(:tags)+':'

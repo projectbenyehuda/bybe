@@ -65,7 +65,8 @@ class Authority < ApplicationRecord
                         joins(:taggings).where(taggings: { tag_id: tag_id, status: Tagging.statuses[:approved] })
                                         .distinct
                       }
-  scope :featurable, -> { where(do_not_feature: false) }
+  scope :not_pageless, -> { where(pageless: false) }
+  scope :featurable, -> { where(do_not_feature: false, pageless: false) }
 
   # features
   has_paper_trail ignore: %i(impressions_count created_at updated_at)
@@ -110,6 +111,28 @@ class Authority < ApplicationRecord
   before_save :normalize_sort_name
 
   after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
+  # covers create, update and destroy of a pageless authority, as well as the flag being turned off
+  after_commit :bust_pageless_ids_cache, if: -> { pageless? || saved_change_to_pageless? }
+
+  PAGELESS_IDS_CACHE_KEY = 'authority_pageless_ids'
+
+  # IDs of authorities which have no meaningful page of their own (e.g. 'anonymous', 'various authors').
+  # The list is tiny and changes very rarely, so it is cached and consulted in memory rather than
+  # hitting the DB for every authority mentioned on a page.
+  def self.pageless_ids
+    Rails.cache.fetch(PAGELESS_IDS_CACHE_KEY, expires_in: 12.hours) do
+      where(pageless: true).pluck(:id).to_set
+    end
+  end
+
+  # @param id [Integer, String] authority id
+  def self.pageless_id?(id)
+    pageless_ids.include?(id.to_i)
+  end
+
+  def bust_pageless_ids_cache
+    Rails.cache.delete(PAGELESS_IDS_CACHE_KEY)
+  end
 
   def update_manifestation_responsibility_statements
     # Find all manifestations related to this authority through involved_authorities

@@ -452,7 +452,9 @@ class AuthorsController < ApplicationController
   end
 
   def toc
-    if @author.published? || (current_user.present? && current_user.editor?)
+    # Pageless authorities ('anonymous', 'various authors' and the like) have no meaningful TOC of their
+    # own, so only editors -- who may need to manage the record -- get to see one.
+    if (@author.published? && !@author.pageless?) || (current_user.present? && current_user.editor?)
       # Note that we are accessing an unpublished author, if that's the case
       @unpublished = true unless @author.published?
 
@@ -720,6 +722,7 @@ class AuthorsController < ApplicationController
       :profile_image,
       :bib_done,
       :do_not_feature,
+      :pageless,
       :sort_name,
       :status,
       :legacy_credits,

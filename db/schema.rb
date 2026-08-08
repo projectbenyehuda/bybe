@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_02_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_08_120000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -152,6 +152,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_000001) do
     t.string "name"
     t.string "nli_id"
     t.string "other_designation", limit: 1024
+    t.boolean "pageless", default: false, null: false
     t.integer "person_id"
     t.string "profile_image_content_type"
     t.string "profile_image_file_name"
