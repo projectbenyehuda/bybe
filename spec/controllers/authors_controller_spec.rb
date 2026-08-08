@@ -40,6 +40,30 @@ describe AuthorsController do
       end
     end
 
+    # 'Pageless' authorities ('anonymous', 'various authors') are useful for crediting a text, but
+    # have no page of their own, so they must not show up in the list of all authorities.
+    context 'when a pageless authority exists' do
+      render_views
+
+      let!(:pageless_authority) do
+        # sort_name is what the browse list actually renders
+        create(:authority, name: 'anonymous_creator', sort_name: 'anonymous_creator', pageless: true)
+      end
+
+      before do
+        Chewy.strategy(:atomic) do
+          create(:manifestation, author: pageless_authority)
+        end
+        AuthoritiesIndex.import!
+      end
+
+      it 'omits it from the authorities list' do
+        call
+        expect(response.body).not_to include('anonymous_creator')
+        expect(response.body).not_to have_css("a[href='#{authority_path(pageless_authority.id)}']")
+      end
+    end
+
     describe 'sorting' do
       AuthorsController::SORTING_PROPERTIES.each_key do |sort|
         %w(asc desc).each do |dir|
@@ -132,6 +156,26 @@ describe AuthorsController do
 
         it 'renders successfully' do
           expect(request).to be_successful
+        end
+      end
+
+      # 'Pageless' authorities ('anonymous', 'various authors') aggregate works by many different
+      # people, so a TOC for them would falsely suggest one prolific author. Only editors, who may
+      # need to manage the record, may see it.
+      context 'when the authority is pageless' do
+        let!(:author) { create(:authority, pageless: true) }
+
+        it 'refuses to show the TOC to an anonymous visitor' do
+          expect(request).to redirect_to '/'
+          expect(flash[:error]).to eq I18n.t(:author_not_available)
+        end
+
+        context 'when editor logged in' do
+          include_context 'when editor logged in', :edit_people
+
+          it 'still shows the TOC' do
+            expect(request).to be_successful
+          end
         end
       end
 
@@ -269,7 +313,7 @@ describe AuthorsController do
     end
 
     describe '#print' do
-      subject { get :print, params: { id: author.id } }
+      subject(:request) { get :print, params: { id: author.id } }
 
       before do
         create(:manifestation, author: author)
@@ -277,6 +321,42 @@ describe AuthorsController do
       end
 
       it { is_expected.to be_successful }
+
+      # The printable TOC must carry the same access gate as the TOC itself, otherwise it is a
+      # back door to the very page we refuse to render.
+      context 'when the authority is pageless' do
+        let!(:author) { create(:authority, pageless: true) }
+
+        it 'refuses to print for an anonymous visitor' do
+          expect(request).to redirect_to '/'
+          expect(flash[:error]).to eq I18n.t(:author_not_available)
+        end
+
+        context 'when editor logged in' do
+          include_context 'when editor logged in', :edit_people
+
+          it 'still prints' do
+            expect(request).to be_successful
+          end
+        end
+      end
+
+      context 'when the authority is unpublished' do
+        let!(:author) { create(:authority, status: :unpublished) }
+
+        it 'refuses to print for an anonymous visitor' do
+          expect(request).to redirect_to '/'
+          expect(flash[:error]).to eq I18n.t(:author_not_available)
+        end
+
+        context 'when editor logged in' do
+          include_context 'when editor logged in', :edit_people
+
+          it 'still prints' do
+            expect(request).to be_successful
+          end
+        end
+      end
     end
   end
 

@@ -389,6 +389,25 @@ describe ManifestationController do
         it { is_expected.to be_successful }
       end
 
+      # A text credited to a pageless authority ('anonymous', 'various authors') must still name that
+      # authority -- the reader needs the credit -- but must not link to a page that doesn't exist.
+      context 'when the author is a pageless authority' do
+        render_views
+
+        let(:pageless_author) { create(:authority, name: 'anonymous_creator', pageless: true) }
+        let!(:manifestation) { create(:manifestation, title: title, author: pageless_author) }
+
+        before { call }
+
+        it 'still names the author' do
+          expect(response.body).to include('anonymous_creator')
+        end
+
+        it 'does not link to the authority page' do
+          expect(response.body).not_to have_css("a[href='#{authority_path(pageless_author.id)}']")
+        end
+      end
+
       context 'when there is a title footnote at the beginning of the markdown' do
         let(:manifestation) do
           create(:manifestation, markdown: "[^1]\r\nSome body text\r\n\r\n[^1]: This is the footnote.")

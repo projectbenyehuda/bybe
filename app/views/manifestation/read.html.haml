@@ -185,7 +185,7 @@
                   - if @e.translation?
                     %span= ' '+t(:translation)+': '
                     %span
-                      != tr.translators.map { |t| link_to(t.name, authority_path(id: t.id)) }.join(', ')
+                      != tr.translators.map { |t| authority_link(t) }.join(', ')
                   - else
                     - tr_volumes = tr.manifestations[0].volumes
                     - if tr_volumes.any?

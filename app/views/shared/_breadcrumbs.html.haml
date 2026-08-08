@@ -10,7 +10,7 @@
       authority = e.translators.count > 0 ? e.translators[0] : w.authors[0] # TODO: handle multiple authors
     .breadcrumbs-text
       - unless authority.nil?
-        = link_to authority.name, authority_path(id: authority.id)
+        = authority_link(authority)
       - else
         = '?'
     - Array(@breadcrumb_collections).each do |coll|

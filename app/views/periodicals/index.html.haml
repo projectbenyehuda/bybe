@@ -97,7 +97,7 @@
                       %img.new-card-pic-v02{alt: author.name, src: author.profile_image.url(:tiny)}
                     .new-card-left-v02
                       %p.headline-2-v02
-                        = link_to author.name, authority_path(author)
+                        = authority_link(author)
                       - works.each do |genre|
                         - next if genre[0] == :latest
                         %p.text-height-new
@@ -138,7 +138,7 @@
                       .by-card-v02
                         .by-card-header-v02
                           %p.headline-3-v02
-                            = link_to author.name, authority_path(author)
+                            = authority_link(author)
                         .by-card-content-v02
                           - works.each do |genre|
                             - next if genre[0] == :latest

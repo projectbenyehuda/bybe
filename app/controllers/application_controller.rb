@@ -121,25 +121,6 @@ class ApplicationController < ActionController::Base
     @popular_authors = Authority.popular_authors
   end
 
-  def randomize_authors(exclude_list, genre = nil)
-    list = []
-    ceiling = [Person.cached_toc_count - exclude_list.count - 1, 10].min
-    return list if ceiling <= 0
-
-    i = 0
-    begin
-      if genre.nil?
-        candidates = Person.has_toc.order('RAND()').limit(ceiling - list.size) # fetch as many as are still needed
-      else
-        candidates = Person.has_toc.joins(:expressions).where(expressions: { genre: genre }).order('RAND()').limit(ceiling - list.size) # fetch as many as are still needed
-      end
-
-      candidates.each { |author| list << author unless (exclude_list.include? author) or (list.include? author) }
-      i += 1
-    end until list.size >= ceiling or i > 10 # TODO: fix bug where only one author is retrieved by above block
-    return list
-  end
-
   def randomize_works_by_genre(genre, how_many)
     return Manifestation.where(id: Manifestation.published.joins(expression: :work).where({ works: { genre: genre } }).pluck(:id).sample(how_many))
   end
