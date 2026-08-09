@@ -601,7 +601,7 @@ he:
   no_works_for_author: אין יצירות לסופר זה
   translation_must_have_translator: שפת המקור אינה עברית אך לא צוין מתרגם
   translation_must_have_original_language: צוין מתרגם אך לא צוינה שפת מקור
-  reading_mode: טקסט בלבד
+  reading_mode: מסך מלא
   mode: סוג תצוגה
   body: גוף הטקסט
   bookmark: סימניה
@@ -1103,9 +1103,9 @@ he:
   cite_tt: יצירת ציטוט אקדמי של מהדורה זו
   work_print_tt: הדפסת היצירה
   work_download_tt: הורדת היצירה כספר אלקטרוני או קובץ אחר
-  leave_readmode_tt: יציאה ממצב טקסט בלבד
+  leave_readmode_tt: יציאה ממצב מסך מלא
   readmode_search_tt: חיפוש ביצירה זו
-  readmode_settings_tt: הגדרות מצב טקסט בלבד
+  readmode_settings_tt: הגדרות מצב מסך מלא
   worklist_print_tt: הדפסת רשימת היצירות
   worklist_download_tt: הורדת רשימת היצירות כקובץ
   worklist_first_page_tt: מעבר לעמוד הראשון
@@ -1115,6 +1115,7 @@ he:
   worklist_pagination_handle_tt: ידית גרירה לבחירת עמוד
   worklist_multi_tt: הפעלת / כיבוי בחירה מרובה
   worklist_sort_tt: אפשרויות מיון - שינוי יאפס את הדפדוף ברשימה הקיימת
+  reading_mode_tt: מעבר למצב מסך מלא
   anth_fold_tt: מזעור חלון המקראה
   anth_show_tt: הצגת המקראה במלואה
   anth_download_tt: הורדת המקראה כספר אלקטרוני או קובץ אחר
