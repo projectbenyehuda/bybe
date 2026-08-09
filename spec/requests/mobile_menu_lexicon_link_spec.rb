@@ -32,7 +32,9 @@ RSpec.describe 'Mobile menu Lexicon link', type: :request do
   end
 
   it 'lets an anonymous visitor reach the linked page' do
-    href = mobile_menu.css('a').find { |a| a.text.include?(I18n.t(:lexicon_name)) }['href']
+    link = mobile_menu.css('a').find { |a| a.text.include?(I18n.t(:lexicon_name)) }
+    expect(link).not_to be_nil, 'no link to the lexicon in the mobile menu'
+    href = link['href']
 
     get href
     expect(response).to have_http_status(:ok)
