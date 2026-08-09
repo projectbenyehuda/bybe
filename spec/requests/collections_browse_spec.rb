@@ -81,6 +81,27 @@ RSpec.describe 'Collections Browse', type: :request do
       end
     end
 
+    context 'when rendering list items' do
+      let!(:author) { create(:authority, name: 'Test Author') }
+
+      before do
+        volume.involved_authorities.create!(authority: author, role: :author)
+        CollectionsIndex.import([volume])
+      end
+
+      it 'shows the authors but not the collection type under each item' do
+        get collections_browse_path
+
+        item = Nokogiri::HTML(response.body).css('#browse_mainlist li').find do |li|
+          li.at_css('a')&.text == 'Test Volume'
+        end
+
+        expect(item).to be_present
+        expect(item.text).to include('Test Author')
+        expect(item.text).not_to include(ApplicationController.helpers.textify_collection_type('volume'))
+      end
+    end
+
     context 'JS/AJAX request' do
       it 'renders successfully' do
         get collections_browse_path, xhr: true, as: :js
