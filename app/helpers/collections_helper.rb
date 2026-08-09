@@ -63,7 +63,7 @@ module CollectionsHelper
     when /popular/
       method(:browse_collection_popularity)
     else
-      method(:browse_collection_type)
+      ->(_collection) { '' }
     end
   end
 
@@ -74,10 +74,6 @@ module CollectionsHelper
 
   def browse_collection_popularity(collection)
     return " (#{collection.impressions_count} #{t(:num_views)})"
-  end
-
-  def browse_collection_type(collection)
-    return " • #{textify_collection_type(collection.collection_type)}"
   end
 
   # Returns icon/badge for collection type
