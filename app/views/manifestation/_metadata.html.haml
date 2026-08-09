@@ -90,7 +90,7 @@
   - if tags_etc
     - publisher_link = @m.publisher_link
     - if publisher_link.present?
-      .metadata
+      .metadata.metadata-top-aligned
         -# simple case: default title, link to url with description as link text
         - if publisher_link.description.index('&&&').nil?
           %span{style: 'font-weight: bold'}= t(:made_available_by)
