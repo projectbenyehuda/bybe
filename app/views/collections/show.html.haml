@@ -96,13 +96,16 @@
                     %span{:style => "font-weight:bold"}= t(:source_edition)+': '
                     = edition
                 .metadata{style: "gap: 20px"}
+                  -# wrap each statement, so the flex gap separates statements, not a glyph from its label
                   - ips = @collection.intellectual_property_statuses
                   - if ips.size > 1
-                    = render partial: 'shared/intellectual_property', locals: { intellectual_property: 'mixed' }
+                    .ip-statement
+                      = render partial: 'shared/intellectual_property', locals: { intellectual_property: 'mixed' }
                   - else
                     - ips.each do |intellectual_property|
                       - ip_locals = { intellectual_property: intellectual_property }
-                      = render partial: 'shared/intellectual_property', locals: ip_locals
+                      .ip-statement
+                        = render partial: 'shared/intellectual_property', locals: ip_locals
                 .metadata{style: "gap: 20px"}
                   - @collection.included_genres.each do |genre|
                     %div
@@ -266,8 +269,9 @@
                             = " (#{orig_lang_label(ci.item.expression.work.orig_lang)})"
                     - if ci.item_type == 'Manifestation' && ci.item.present?
                       - item_ip = ci.item.expression.intellectual_property
-                      .metadata{ style: 'gap: 10px; padding-top: 4px;' }
-                        = render partial: 'shared/intellectual_property', locals: { intellectual_property: item_ip }
+                      .metadata{ style: 'padding-top: 4px;' }
+                        .ip-statement
+                          = render partial: 'shared/intellectual_property', locals: { intellectual_property: item_ip }
                 .by-card-content-v02.textcard#actualtext
                   != convert_internal_links_to_relative(request.base_url, html, request.path)
           - credit_lines = @collection.fetch_credits.lines
