@@ -1881,3 +1881,19 @@ p.by-genre-name-v02.headline-2-v02 {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 }
+
+/* Collection#show: the genre glyph preceding a work title floats above the
+   text, because .by-icon-v02 is an 18px box aligned with vertical-align:
+   text-top inside a 16pt/18pt headline. Center it on the title's line box
+   instead. */
+.proofable .by-card-header-v02 .headline-1-v02 .by-icon-v02 {
+  vertical-align: middle;
+}
+
+/* An intellectual-property statement wrapped as one unit inside a .metadata
+   flex row: the glyph is inline (so it isn't stretched to the 26px CLS box
+   reserved for flex items) and hugs its label with the same single space the
+   genre glyph has before a work title. */
+.ip-statement .copyright-icon {
+  margin-left: 0;
+}
