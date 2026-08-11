@@ -76,3 +76,16 @@ jobs:
          password: ${{ secrets.BETA_SSH_PASSWORD }}
          port: 22
          script: ./update_services.sh bybe-staging web
+  deploy-production:
+    needs: build-and-push-image
+    if: github.ref_name == 'production'
+    runs-on: ubuntu-latest
+    steps:
+     - name: Update server with new Docker image
+       uses: appleboy/ssh-action@v1.2.5
+       with:
+         host: ${{ secrets.PRODUCTION_SERVER_HOST }}
+         username: ${{ secrets.PRODUCTION_SSH_USER }}
+         password: ${{ secrets.PRODUCTION_SSH_PASSWORD }}
+         port: 22
+         script: ./update_services.sh bybe-production web
