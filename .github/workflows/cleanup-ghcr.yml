@@ -15,5 +15,5 @@ jobs:
         with:
           package-name: 'bybe'
           package-type: 'container'
-          ignore-versions: '^production-.+|.+-latest$'
+          ignore-versions: '-latest$'
           min-versions-to-keep: 10 # Keep 10 versions
