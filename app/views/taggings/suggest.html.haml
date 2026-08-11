@@ -1,5 +1,5 @@
 #suggestion_heuristics
-  %ul.nav.nav-tabs{ role: 'tablist', style: 'flex-wrap: wrap;font-size:80%' }
+  %ul.nav.nav-tabs.tag-heuristic-tabs{ role: 'tablist' }
     - @tag_suggestions.keys.each_with_index do |key, index|
       %li.nav-item
         %a.nav-link{ class: (index == 0 ? 'active' : ''), 'data-toggle': 'tab', href: '#' + key.to_s, role: 'tab' }

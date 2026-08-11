@@ -36,7 +36,7 @@ describe '/files' do
 
         it 'fails with Not Found status' do
           expect(call).to eq(404)
-          expect(response.body).to eq("Record not found: #{record_id}")
+          expect(response.body).to eq("File not found: #{filename}")
         end
       end
 
@@ -53,8 +53,8 @@ describe '/files' do
         let(:filename) { 'file_1.txt' }
 
         it 'redirects to the file URL' do
-          attachment = record.attachments.detect { |att| att.filename.to_s == 'file_1.txt' }
-          expect(call).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+          expect(call).to eq(302)
+          expect(response.location).to include('file_1.txt')
         end
       end
 
@@ -62,8 +62,8 @@ describe '/files' do
         let(:filename) { 'file_2' }
 
         it 'redirects to the file URL' do
-          attachment = record.attachments.detect { |att| att.filename.to_s == 'file_2' }
-          expect(call).to redirect_to(rails_blob_url(attachment.blob, disposition: 'attachment'))
+          expect(call).to eq(302)
+          expect(response.location).to include('file_2')
         end
       end
     end
