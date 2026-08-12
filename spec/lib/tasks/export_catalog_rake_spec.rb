@@ -35,7 +35,7 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
   context 'with a qualifying volume collection' do
     let!(:author) { create(:authority) }
     let!(:manifestation) do
-      create(:manifestation, author: author, status: :published, orig_lang: 'en')
+      create(:manifestation, author: author, status: :published, orig_lang: 'en', language: 'he', genre: 'poetry')
     end
     let!(:collection) do
       create(:collection,
@@ -43,6 +43,8 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
              title: 'Test Volume',
              subtitle: 'A subtitle',
              publisher_line: 'Publisher Co.',
+             inception: '1935',
+             pub_year: '1937',
              alternate_titles: 'Alt Title One; Alt Title Two',
              manifestations: [manifestation])
     end
@@ -67,6 +69,21 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
       expect(c['publisher_line']).to eq('Publisher Co.')
     end
 
+    it 'includes inception and pub_year when present' do
+      task.invoke
+      c = parsed_output['collections'].first
+      expect(c['inception']).to eq('1935')
+      expect(c['pub_year']).to eq('1937')
+    end
+
+    it 'omits inception and pub_year when blank' do
+      collection.update!(inception: nil, pub_year: nil)
+      task.invoke
+      c = parsed_output['collections'].first
+      expect(c).not_to have_key('inception')
+      expect(c).not_to have_key('pub_year')
+    end
+
     it 'splits alternate_titles on semicolon regardless of spacing' do
       collection.update!(alternate_titles: 'One;Two ; Three')
       task.invoke
@@ -87,11 +104,28 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
       expect(m['original_language']).to eq('אנגלית')
     end
 
-    it 'omits original_language for Hebrew works' do
+    it 'includes original_language for Hebrew works too' do
       manifestation.expression.work.update!(orig_lang: 'he')
       task.invoke
       m = parsed_output['collections'].first['contents'].first
-      expect(m).not_to have_key('original_language')
+      expect(m['original_language']).to eq('עברית')
+    end
+
+    it 'includes genre and language as Hebrew text' do
+      task.invoke
+      m = parsed_output['collections'].first['contents'].first
+      expect(m['genre']).to eq('שירה')
+      expect(m['language']).to eq('עברית')
+    end
+
+    it 'omits genre and language when blank' do
+      # genre has an inclusion validation, so bypass it to simulate legacy records with no genre
+      manifestation.expression.work.update_column(:genre, nil)
+      manifestation.expression.update!(language: nil)
+      task.invoke
+      m = parsed_output['collections'].first['contents'].first
+      expect(m).not_to have_key('genre')
+      expect(m).not_to have_key('language')
     end
   end
 
@@ -274,15 +308,23 @@ RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeCla
       expect(m['date']).to eq('1920')
     end
 
-    it 'does not include source_edition and date for collected manifestations' do
+    it 'includes source_edition and date for collected manifestations as well' do
       m_in_vol = create(:manifestation, status: :published)
       m_in_vol.expression.update!(source_edition: 'First Ed.', date: '1920')
       create(:collection, collection_type: :volume, manifestations: [m_in_vol])
       task.invoke
       collected = parsed_output['collections'].flat_map { |c| c['contents'] }
                                               .find { |x| x['id'] == m_in_vol.id }
-      expect(collected).not_to have_key('source_edition')
-      expect(collected).not_to have_key('date')
+      expect(collected['source_edition']).to eq('First Ed.')
+      expect(collected['date']).to eq('1920')
+    end
+
+    it 'omits source_edition and date when blank' do
+      published_m.expression.update!(source_edition: nil, date: nil)
+      task.invoke
+      m = parsed_output['uncollected_texts'].find { |x| x['id'] == published_m.id }
+      expect(m).not_to have_key('source_edition')
+      expect(m).not_to have_key('date')
     end
 
     it 'does not include the uncollected collection itself in collections' do

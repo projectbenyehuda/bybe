@@ -27,8 +27,13 @@ module ExportCatalogHelpers
     raw.split(';').map(&:strip).compact_blank
   end
 
-  def serialize_manifestation(manifestation, url_helpers, edition_details: false)
-    lang = manifestation.expression.work.orig_lang
+  def textify_genre(genre)
+    I18n.t("genre_values.#{genre}")
+  end
+
+  def serialize_manifestation(manifestation, url_helpers)
+    expr = manifestation.expression
+    work = expr.work
     entry = {
       type: 'manifestation',
       id: manifestation.id,
@@ -39,12 +44,11 @@ module ExportCatalogHelpers
     }
     alts = split_alternate_titles(manifestation.alternate_titles)
     entry[:alternate_titles] = alts unless alts.empty?
-    entry[:original_language] = textify_lang(lang) unless lang.blank? || lang == 'he'
-    if edition_details
-      expr = manifestation.expression
-      entry[:source_edition] = expr.source_edition if expr.source_edition.present?
-      entry[:date] = expr.date if expr.date.present?
-    end
+    entry[:genre] = textify_genre(work.genre) if work.genre.present?
+    entry[:language] = textify_lang(expr.language) if expr.language.present?
+    entry[:original_language] = textify_lang(work.orig_lang) if work.orig_lang.present?
+    entry[:source_edition] = expr.source_edition if expr.source_edition.present?
+    entry[:date] = expr.date if expr.date.present?
     entry
   end
 
@@ -62,6 +66,8 @@ module ExportCatalogHelpers
     alts = split_alternate_titles(collection.alternate_titles)
     entry[:alternate_titles] = alts unless alts.empty?
     entry[:publisher_line] = collection.publisher_line if collection.publisher_line.present?
+    entry[:inception] = collection.inception if collection.inception.present?
+    entry[:pub_year] = collection.pub_year if collection.pub_year.present?
     entry
   end
 
@@ -142,7 +148,7 @@ task export_catalog: :environment do
       .preload(expression: [{ involved_authorities: :authority }, { work: { involved_authorities: :authority } }],
                taggings: :tag)
       .find_each do |manifestation|
-        serialized = serialize_manifestation(manifestation, url_helpers, edition_details: true)
+        serialized = serialize_manifestation(manifestation, url_helpers)
         f.write(",\n") unless ufirst
         ufirst = false
         f.write(JSON.pretty_generate(serialized).split("\n").map { |l| "    #{l}" }.join("\n"))
