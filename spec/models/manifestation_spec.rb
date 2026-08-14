@@ -131,7 +131,7 @@ describe Manifestation do
     end
   end
 
-  describe '.snippet_html' do
+  describe '#snippet_html' do
     subject(:snippet) { manifestation.snippet_html(10) }
 
     let(:manifestation) { create(:manifestation, markdown: markdown) }
