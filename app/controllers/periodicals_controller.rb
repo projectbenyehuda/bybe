@@ -13,11 +13,14 @@ class PeriodicalsController < ApplicationController
     with_public_works = Collection.ids_with_published_manifestations(periodicals.map(&:id)).to_set
     @periodicals = periodicals.select { |p| with_public_works.include?(p.id) }
     @periodicals_count = @periodicals.size
+    # non-primary works (e.g. an issue's editorial column) are parts of a larger text, not standalone works
     @popular_works = ManifestationsIndex.query(match: { in_periodical: true })
+                                        .filter(term: { primary: true })
                                         .filter(range: { impressions_count: { gte: 1 } })
                                         .order(impressions_count: :desc)
                                         .limit(10)
     @newest_works = ManifestationsIndex.query(match: { in_periodical: true })
+                                       .filter(term: { primary: true })
                                        .order(pby_publication_date: :desc)
                                        .limit(10)
     @periodicals_text_count = Rails.cache.fetch('periodicals_text_count', expires_in: 15.minutes) do

@@ -43,6 +43,13 @@ describe PeriodicalsWhatsNewSince do
       works
     end
 
+    let!(:non_primary_periodical_work) do
+      # e.g. an issue's editorial column: part of a larger text, not a standalone work
+      create(:manifestation, author: author, orig_lang: 'he', primary: false, created_at: 2.weeks.ago).tap do |work|
+        create(:collection_item, collection: periodical_issue, item: work)
+      end
+    end
+
     let!(:non_periodical_works) do
       # Create works not in periodicals (should not be included)
       create_list(
@@ -73,6 +80,13 @@ describe PeriodicalsWhatsNewSince do
           author_works.except(:latest).values.flatten
         end
         expect(all_returned_manifestations).not_to include(*non_periodical_works)
+      end
+
+      it 'does not include works flagged non-primary' do
+        all_returned_manifestations = result.values.flat_map do |author_works|
+          author_works.except(:latest).values.flatten
+        end
+        expect(all_returned_manifestations).not_to include(non_primary_periodical_work)
       end
     end
 

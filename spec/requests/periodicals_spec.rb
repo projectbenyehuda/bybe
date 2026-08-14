@@ -82,6 +82,36 @@ RSpec.describe 'Periodicals', type: :request do
     end
   end
 
+  # Regression: works flagged non-primary (e.g. an issue's editorial column) are parts of a larger
+  # text, not standalone works, and must not surface in the periodicals landing page's work lists.
+  describe 'suppression of non-primary works in the newest/popular lists' do
+    let!(:periodical_issue) { create(:collection, collection_type: 'periodical_issue') }
+    let!(:primary_work) do
+      create(:manifestation, title: 'Primary Periodical Work', impressions_count: 5, collections: [periodical_issue])
+    end
+    let!(:non_primary_work) do
+      create(:manifestation, title: 'Editorial Column', primary: false, impressions_count: 99,
+                             collections: [periodical_issue])
+    end
+
+    before do
+      import_and_await(ManifestationsIndex, [primary_work, non_primary_work])
+      get '/periodicals'
+    end
+
+    after do
+      Chewy.massacre
+    end
+
+    it 'excludes non-primary works from @newest_works' do
+      expect(assigns(:newest_works).map { |w| w.id.to_i }).to contain_exactly(primary_work.id)
+    end
+
+    it 'excludes non-primary works from @popular_works' do
+      expect(assigns(:popular_works).map { |w| w.id.to_i }).to contain_exactly(primary_work.id)
+    end
+  end
+
   describe 'GET /show' do
     it 'returns http success' do
       get '/periodicals/show'
