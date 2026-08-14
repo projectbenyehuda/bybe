@@ -131,6 +131,32 @@ describe Manifestation do
     end
   end
 
+  describe '#snippet_html' do
+    subject(:snippet) { manifestation.snippet_html(10) }
+
+    let(:manifestation) { create(:manifestation, markdown: markdown) }
+
+    context 'when the text opens with a title and a chapter heading' do
+      let(:markdown) { "\n\n## The Title\n\n### א\n\nThe first real line.\n\nThe second one.\n" }
+
+      it 'skips the headings and starts at the text itself' do
+        expect(snippet).to include('The first real line.')
+        expect(snippet).to include('The second one.')
+        expect(snippet).not_to include('The Title')
+        expect(snippet).not_to include('<h')
+      end
+    end
+
+    context 'when the text runs longer than the requested number of lines' do
+      let(:markdown) { (1..40).map { |i| "Line #{i}." }.join("\n\n") }
+
+      it 'stops after them' do
+        expect(snippet).to include('Line 1.')
+        expect(snippet).not_to include('Line 40.')
+      end
+    end
+  end
+
   describe '.manual_delete' do
     subject(:manual_delete) { manifestation.manual_delete }
 

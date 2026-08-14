@@ -31,6 +31,13 @@ class ManifestationController < ApplicationController
   DATE_FIELD = { 'uploaded' => 'manifestations.created_at', 'created' => 'works.normalized_creation_date',
                  'published' => 'expressions.normalized_pub_date' }.freeze
 
+  # #snippets serves one screenful of the flat list at a time; the cap keeps a
+  # hand-crafted request from asking for an author's entire corpus at once.
+  SNIPPET_BATCH_LIMIT = 30
+  # Lines of text per snippet: the card clamps to 3 rendered lines, so this is
+  # merely enough to fill it for any reasonable line length.
+  SNIPPET_LINES = 10
+
   #############################################
   # public actions
   #############################################
@@ -141,6 +148,22 @@ class ManifestationController < ApplicationController
     @tabclass = set_tab('periods')
     @page_title = t(:periods) + ' - ' + t(:project_ben_yehuda)
     @pagetype = :periods
+  end
+
+  # Text snippets for a batch of works, as JSON keyed by manifestation id.
+  # The author page's flat-list summaries view fetches these lazily as the
+  # reader scrolls, because an author can have hundreds of works and rendering
+  # every snippet with the page would be prohibitively slow.
+  def snippets
+    ids = params[:ids].to_s.split(',').map(&:to_i).reject(&:zero?).first(SNIPPET_BATCH_LIMIT)
+    scope = Manifestation.where(id: ids)
+    scope = scope.all_published unless current_user&.editor?
+    result = scope.each_with_object({}) do |m, acc|
+      acc[m.id] = Rails.cache.fetch("m_snippet_#{m.id}_#{m.updated_at.to_i}", expires_in: 24.hours) do
+        m.snippet_html(SNIPPET_LINES)
+      end
+    end
+    render json: result
   end
 
   # This code was used for 'secondary portal', but not used anymore. We may need to reimplement it at some point
