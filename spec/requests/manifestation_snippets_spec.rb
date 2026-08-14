@@ -8,6 +8,13 @@ RSpec.describe 'Manifestation snippets', type: :request do
   let!(:poem) { create(:manifestation, title: 'Alpha Poem', markdown: 'The opening line of the Alpha poem.') }
   let!(:story) { create(:manifestation, title: 'Beta Story', markdown: 'The opening line of the Beta story.') }
 
+  def count_queries(&)
+    count = 0
+    counter = ->(*, payload) { count += 1 unless payload[:cached] || payload[:name] == 'SCHEMA' }
+    ActiveSupport::Notifications.subscribed(counter, 'sql.active_record', &)
+    count
+  end
+
   it 'returns the rendered card of every requested work, keyed by id' do
     get manifestation_snippets_path, params: { ids: [poem.id, story.id].join(',') }
 
@@ -54,6 +61,33 @@ RSpec.describe 'Manifestation snippets', type: :request do
 
     expect(response).to have_http_status(:ok)
     expect(response.parsed_body).to eq({})
+  end
+
+  # A batch is up to SNIPPET_BATCH_LIMIT works, and the cards name things -- authorities, their
+  # gender, the containing volume -- that each live an association or two away, so anything the
+  # card reads but the endpoint does not eager-load costs a query per work in the batch.
+  it 'costs the same number of queries however many works the batch holds' do
+    author = create(:authority)
+    volume = create(:collection, collection_type: :volume, title: 'A Volume')
+
+    build_batch = lambda do |size|
+      (1..size).map do |i|
+        series = create(:collection, collection_type: :series, title: "Series #{i}")
+        volume.collection_items.create!(item: series, seqno: volume.collection_items.count + 1)
+        create(:manifestation, author: author, translator: create(:authority), orig_lang: 'ru',
+                               collections: [series], markdown: 'Some text.').id
+      end
+    end
+    small = build_batch.call(2)
+    large = build_batch.call(8)
+
+    fetch = lambda do |ids|
+      Rails.cache.clear # the point is the cost of rendering a card, not of serving a cached one
+      count_queries { get manifestation_snippets_path, params: { ids: ids.join(','), authority_id: author.id } }
+    end
+    fetch.call(small) # warm up whatever loads lazily on the first request of the process
+
+    expect(fetch.call(large)).to eq(fetch.call(small))
   end
 
   describe 'the card metadata line' do

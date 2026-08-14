@@ -37,6 +37,17 @@ class ManifestationController < ApplicationController
   # Lines of text per snippet: the card clamps to 3 rendered lines, so this is
   # merely enough to fill it for any reasonable line length.
   SNIPPET_LINES = 10
+  # Everything the snippet card touches, so that a batch of them costs a fixed number of queries
+  # rather than a handful per work: the work (genre, original language), the authorities it names
+  # along with their gender (which lives on the Person behind the Authority), and the collections
+  # containing it. The containment goes one level up, which covers a work sitting in a series
+  # inside a volume; deeper nestings still cost Collection#parent_volume_or_isssue a query per
+  # level, its walk up the tree being of no fixed depth.
+  SNIPPET_INCLUDES = [
+    { collection_items: { collection: { parent_collection_items: :collection } } },
+    { expression: [{ involved_authorities: { authority: :person } },
+                   { work: { involved_authorities: { authority: :person } } }] }
+  ].freeze
 
   #############################################
   # public actions
@@ -162,7 +173,7 @@ class ManifestationController < ApplicationController
   def snippets
     ids = params[:ids].to_s.split(',').map(&:to_i).reject(&:zero?).first(SNIPPET_BATCH_LIMIT)
     authority_id = params[:authority_id].to_i
-    scope = Manifestation.where(id: ids).includes(expression: :work)
+    scope = Manifestation.where(id: ids).includes(SNIPPET_INCLUDES)
     scope = scope.all_published unless current_user&.editor?
     result = scope.each_with_object({}) do |m, acc|
       key = "m_snippet_card_#{m.id}_#{authority_id}_#{m.updated_at.to_i}"
