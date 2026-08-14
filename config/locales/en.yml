@@ -3229,7 +3229,7 @@ en:
   total_collections_including_author: Total collections involving author
   collapse_all_sections: Collapse all sections
   expand_all_sections: Expand all sections
-  toggle_collapse_volume: Collapse or expand this volume
+  toggle_collapse_collection: "Collapse or expand: %{title}"
   toggle_collapse_uncollected: Collapse or expand the uncollected works
   legacy_urls:
     index:
