@@ -83,6 +83,24 @@ describe Tracking do
           expect(manifestation_index.impressions_count).to eq(impression_count)
         end
       end
+
+      # A view is not a change to the record, and caches downstream are keyed on
+      # updated_at (e.g. the works-list snippets), so counting one must not
+      # invalidate them.
+      context 'with any of the record types it is called for' do
+        let(:impression_count) { 1 }
+
+        it 'leaves updated_at alone' do
+          records = Chewy.strategy(:atomic) do
+            [manifestation, create(:authority, impressions_count: 1), create(:collection, impressions_count: 1)]
+          end
+
+          records.each do |record|
+            record.update_columns(updated_at: 3.days.ago)
+            expect { controller.track_view(record) }.not_to(change { record.reload.updated_at })
+          end
+        end
+      end
     end
 
     context 'when user agent is known spider' do

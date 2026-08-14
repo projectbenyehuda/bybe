@@ -225,6 +225,18 @@
       // The list was just rebuilt (and entering flat mode shrinks it a lot), so
       // return the reader to the top of the page as the filters do.
       if(window.TocFilters) { window.TocFilters.scrollToTop(); }
+      // Swap the action bar: collapse/expand belong to the grouped views, the
+      // list/summaries switch to the flat list.
+      if(window.setTocBarMode) { window.setTocBarMode(flat); }
+      if(flat) {
+        // A flat->flat re-sort keeps the summaries view; the nodes (and the
+        // snippets already inside them) were only reordered.
+        TocSnippets.refresh();
+      } else {
+        // Leaving flat mode rebuilds the list from scratch, so the summaries
+        // view has nothing left to show: fall back to the plain list.
+        setTocDisplayMode(false);
+      }
       // The rebuilt list is fully expanded again (and the flat sorts have no
       // collapsible cards at all), so re-evaluate the collapse/expand buttons.
       if(window.syncCollapseButtons) { window.syncCollapseButtons(); }
@@ -549,6 +561,126 @@
       };
     })();
     window.TocFilters.init();
+
+    // ---- Summaries view of the flat list (bead r81) ----
+    // In the flat list each work can also show an excerpt of its text, in the
+    // same card the dictionary list uses for entry summaries. An author can
+    // have hundreds of works, so the excerpts are fetched from the server in
+    // batches, and only for the rows that actually scroll into view.
+    var TocSnippets = (function() {
+      var BATCH_SIZE = 25;      // must not exceed the server's per-request cap
+      var BATCH_DEBOUNCE = 60;  // ms to collect ids scrolled into view
+      var enabled = false;
+      var observer = null;
+      var pending = [];
+      var timer = null;
+
+      function $rows() { return $('#sorted_card .manifestation-node'); }
+      function midOf(node) { return $(node).find('.sorting-metadata').attr('data-mid'); }
+
+      function render(mid, html) {
+        var $row = $rows().filter(function() { return midOf(this) === mid; }).first();
+        if ($row.length === 0 || $row.children('.toc-snippet').length > 0) { return; }
+        var textId = 'toc_snippet_text_' + mid;
+        var $text = $('<div class="summary-text"></div>').attr('id', textId).html(html);
+        var $more = $('<div class="summary-read-more" style="display:none"></div>')
+                      .append($('<span class="linkcolor pointer"></span>').text(#{I18n.t(:read_more).to_json}));
+        $('<div class="value-summary-card-v02 toc-snippet"></div>').append($text).append($more).appendTo($row);
+        // Only offer "read more" when the excerpt is actually cut off.
+        try { if (is_clamped(textId)) { $more.show(); } } catch (e) {}
+      }
+
+      function flush() {
+        timer = null;
+        while (pending.length > 0) {
+          var chunk = pending.splice(0, BATCH_SIZE);
+          $.getJSON("#{manifestation_snippets_path}", { ids: chunk.join(',') }, function(data) {
+            if (!enabled) { return; } // reader switched back to the plain list meanwhile
+            $.each(data, function(mid, html) { render(mid, html); });
+          });
+        }
+      }
+
+      function request(mid) {
+        pending.push(mid);
+        if (timer === null) { timer = window.setTimeout(flush, BATCH_DEBOUNCE); }
+      }
+
+      // Rows already carrying (or awaiting) a snippet are skipped, so this is
+      // safe to re-run after a re-sort or a filter change.
+      function observe() {
+        $rows().each(function() {
+          var mid = midOf(this);
+          if (!mid || $(this).attr('data-snippet-requested') === '1') { return; }
+          if (observer) {
+            observer.observe(this);
+          } else {
+            // No IntersectionObserver: fall back to fetching the visible rows.
+            $(this).attr('data-snippet-requested', '1');
+            request(mid);
+          }
+        });
+      }
+
+      function onIntersect(entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (!entries[i].isIntersecting) { continue; }
+          var row = entries[i].target;
+          observer.unobserve(row);
+          if ($(row).attr('data-snippet-requested') === '1') { continue; }
+          $(row).attr('data-snippet-requested', '1');
+          request(midOf(row));
+        }
+      }
+
+      return {
+        enable: function() {
+          enabled = true;
+          if (observer === null && window.IntersectionObserver) {
+            // A screenful of margin so the next rows are ready before they show.
+            observer = new IntersectionObserver(onIntersect, { rootMargin: '400px 0px' });
+          }
+          observe();
+        },
+        disable: function() {
+          enabled = false;
+          pending = [];
+          if (observer) { observer.disconnect(); }
+          $('#browse_mainlist .toc-snippet').remove();
+          $('#browse_mainlist .manifestation-node').removeAttr('data-snippet-requested');
+        },
+        refresh: function() { if (enabled) { observe(); } }
+      };
+    })();
+
+    function setTocDisplayMode(snippets) {
+      $('#tocmode_snippets').toggleClass('active', snippets);
+      $('#tocmode_list').toggleClass('active', !snippets);
+      if (snippets) { TocSnippets.enable(); } else { TocSnippets.disable(); }
+    }
+
+    $('#tocmode_list').click(function(e) { e.preventDefault(); setTocDisplayMode(false); });
+    $('#tocmode_snippets').click(function(e) { e.preventDefault(); setTocDisplayMode(true); });
+
+    // Expand a clamped excerpt; once it is expanded as far as the card goes,
+    // the link takes the reader to the work itself.
+    $('#browse_mainlist').on('click', '.toc-snippet .summary-read-more', function() {
+      var $card = $(this).closest('.toc-snippet');
+      var $text = $card.children('.summary-text').first();
+      if ($text.length > 0) {
+        $text.removeClass('summary-text').addClass('summary-text-more-lines');
+        try {
+          if (is_clamped($text.attr('id'))) {
+            $(this).find('span').text(#{I18n.t(:to_the_full_work).to_json});
+            return;
+          }
+        } catch (e) {}
+        $(this).hide();
+      } else {
+        var href = $(this).closest('.manifestation-node').find('a[href]').first().attr('href');
+        if (href) { window.location.href = href; }
+      }
+    });
 
     $(document).on('show.bs.collapse', '[id^="paratext_collapse_"]', function() {
       $('[aria-controls="' + this.id + '"]').text(#{I18n.t(:show_less).to_json});

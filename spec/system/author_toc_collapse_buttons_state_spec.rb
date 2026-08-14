@@ -80,7 +80,7 @@ describe 'Author TOC collapse/expand buttons state', :js do
     expect(page).to have_css("#{expand_btn}:not(:disabled):not(.by-button-secondary-v02)")
   end
 
-  it 'disables both buttons in the flat list, which has no collapsible cards' do
+  it 'takes both buttons out of the flat list, which has no collapsible cards' do
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist .volume-collapse-toggle')
 
@@ -88,7 +88,11 @@ describe 'Author TOC collapse/expand buttons state', :js do
     find("#sort_by option[value='title']").select_option
 
     expect(page).to have_no_css('#browse_mainlist .volume-collapse-toggle')
-    expect(page).to have_css("#{collapse_btn}:disabled")
-    expect(page).to have_css("#{expand_btn}:disabled")
+    # The action bar swaps them out for the list/summaries switch entirely, and
+    # they are left disabled underneath.
+    expect(page).to have_no_css(collapse_btn)
+    expect(page).to have_no_css(expand_btn)
+    expect(page).to have_css("#{collapse_btn}:disabled", visible: :hidden)
+    expect(page).to have_css("#{expand_btn}:disabled", visible: :hidden)
   end
 end
