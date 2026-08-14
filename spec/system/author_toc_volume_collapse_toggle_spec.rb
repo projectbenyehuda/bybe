@@ -6,7 +6,7 @@ require 'rails_helper'
 # collection card with children — whatever its collection_type — gets a chevron
 # toggle at the end of its title line that collapses/expands only that
 # collection's own children list.
-describe 'Author TOC per-volume collapse toggle', :js do
+describe 'Author TOC per-collection collapse toggle', :js do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
