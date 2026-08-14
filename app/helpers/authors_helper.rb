@@ -77,6 +77,26 @@ module AuthorsHelper
                  .join(', ')
   end
 
+  # Single-line list of the authorities involved in a work, for the works list's summary cards:
+  # "name (role), name (role)", roles in the usual presentation order.
+  #
+  # A role whose only holder is the authority whose page this is contributes nothing the page
+  # doesn't already say, so it is dropped. That is the same omission #manifestation_label makes in
+  # each of its branches: the sole author on their own page, the sole translator on theirs, and so
+  # on.
+  # @param manifestation
+  # @param authority_id - the authority whose page the list is shown on
+  def compact_authorities_line(manifestation, authority_id)
+    by_role = manifestation.involved_authorities.group_by(&:role)
+    by_named_role = InvolvedAuthority::ROLES_PRESENTATION_ORDER.filter_map do |role|
+      authorities = by_role[role].to_a.map(&:authority).uniq.sort_by(&:name)
+      next if authorities.empty? || authorities.map(&:id) == [authority_id]
+
+      authorities.map { |au| "#{au.name} (#{textify_role(role, au.gender)})" }.join(', ')
+    end
+    by_named_role.join(', ')
+  end
+
   def preloaded_author_aboutnesses(author)
     author.aboutnesses.preload(
       work: {

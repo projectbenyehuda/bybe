@@ -32,6 +32,7 @@ class Manifestation < ApplicationRecord
   before_save :update_alternate_titles, if: :title_changed?
   before_save :recalc_cached_people, if: :expression_id_changed?
   before_save :recalc_responsibility_statement, if: :expression_id_changed?
+  before_save :recalc_word_count, if: :markdown_changed?
 
   enum :status, { published: 0, nonpd: 1, unpublished: 2, deprecated: 3 }
 
@@ -360,9 +361,10 @@ class Manifestation < ApplicationRecord
     return metadata + markdown
   end
 
-  def word_count
-    # roughly okay, despite the markdown artifacts
-    return markdown.split.length
+  # The count is cached in the word_count column, because works lists show it for a whole
+  # screenful of works at a time. Roughly okay, despite the markdown artifacts.
+  def recalc_word_count
+    self.word_count = markdown.to_s.split.length
   end
 
   def recalc_cached_people

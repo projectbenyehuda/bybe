@@ -578,23 +578,24 @@
       function $rows() { return $('#sorted_card .manifestation-node'); }
       function midOf(node) { return $(node).find('.sorting-metadata').attr('data-mid'); }
 
+      // The card's contents (metadata line, excerpt, read-more) come rendered from the server;
+      // all that is left to do here is wrap them and hide the read-more when it is pointless.
       function render(mid, html) {
         var $row = $rows().filter(function() { return midOf(this) === mid; }).first();
         if ($row.length === 0 || $row.children('.toc-snippet').length > 0) { return; }
-        var textId = 'toc_snippet_text_' + mid;
-        var $text = $('<div class="summary-text"></div>').attr('id', textId).html(html);
-        var $more = $('<div class="summary-read-more" style="display:none"></div>')
-                      .append($('<span class="linkcolor pointer"></span>').text(#{I18n.t(:read_more).to_json}));
-        $('<div class="value-summary-card-v02 toc-snippet"></div>').append($text).append($more).appendTo($row);
+        var $card = $('<div class="value-summary-card-v02 toc-snippet"></div>').html(html).appendTo($row);
         // Only offer "read more" when the excerpt is actually cut off.
-        try { if (is_clamped(textId)) { $more.show(); } } catch (e) {}
+        try {
+          if (is_clamped('toc_snippet_text_' + mid)) { $card.children('.summary-read-more').show(); }
+        } catch (e) {}
       }
 
       function flush() {
         timer = null;
         while (pending.length > 0) {
           var chunk = pending.splice(0, BATCH_SIZE);
-          $.getJSON("#{manifestation_snippets_path}", { ids: chunk.join(',') }, function(data) {
+          var params = { ids: chunk.join(','), authority_id: #{@author.id} };
+          $.getJSON("#{manifestation_snippets_path}", params, function(data) {
             if (!enabled) { return; } // reader switched back to the plain list meanwhile
             $.each(data, function(mid, html) { render(mid, html); });
           });
