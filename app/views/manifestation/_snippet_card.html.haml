@@ -1,0 +1,22 @@
+-# Inner HTML of one card of the works list's summaries view (ManifestationController#snippets).
+  Rendered whole on the server so that the metadata line and the excerpt are fetched, and cached,
+  together. The wrapping .value-summary-card-v02 is added by the JS that inserts this.
+:ruby
+  w = m.expression.work
+  volume = m.volumes.first
+  authorities = compact_authorities_line(m, authority_id)
+.toc-snippet-meta.small-text.grey-text
+  %span= textify_genre(w.genre)
+  - if m.expression.translation && w.orig_lang.present?
+    %span #{t(:orig_lang)}: #{textify_lang(w.orig_lang)}
+  %span #{t(:word_count)}: #{number_with_delimiter(m.word_count.to_i)}
+  - if volume.present?
+    %span
+      = t(:out_of)
+      = link_to volume.title, collection_path(volume)
+  - if authorities.present?
+    %span= authorities
+.summary-text{ id: "toc_snippet_text_#{m.id}" }
+  != m.snippet_html(ManifestationController::SNIPPET_LINES)
+.summary-read-more{ style: 'display: none' }
+  %span.linkcolor.pointer= t(:read_more)

@@ -158,4 +158,51 @@ describe AuthorsHelper do
       end
     end
   end
+
+  describe '.compact_authorities_line' do
+    subject(:result) { helper.compact_authorities_line(manifestation, authority.id) }
+
+    let(:authority) { create(:authority) }
+
+    context 'when the authority is the work\'s only author' do
+      let(:manifestation) { create(:manifestation, author: authority, orig_lang: 'he') }
+
+      it 'says nothing, the page itself being the attribution' do
+        expect(result).to eq('')
+      end
+    end
+
+    context 'when the work has another author besides the authority' do
+      let(:manifestation) { create(:manifestation, author: authority, orig_lang: 'he') }
+      let(:other_authority) { create(:authority) }
+
+      before do
+        manifestation.expression.work.involved_authorities.create!(role: :author, authority: other_authority)
+      end
+
+      it 'names both, with their role' do
+        expected = [authority, other_authority].sort_by(&:name)
+                                               .map { |au| "#{au.name} (#{helper.textify_role('author', au.gender)})" }
+        expect(result).to eq(expected.join(', '))
+      end
+    end
+
+    context 'when the work has other roles besides the authority\'s' do
+      let(:translator) { create(:authority) }
+      let(:manifestation) { create(:manifestation, author: authority, translator: translator, orig_lang: 'ru') }
+
+      it 'names them on one line, in the roles presentation order' do
+        expect(result).to eq("#{translator.name} (#{helper.textify_role('translator', translator.gender)})")
+      end
+
+      context 'when the authority is the sole translator of someone else\'s work' do
+        let(:author) { create(:authority) }
+        let(:manifestation) { create(:manifestation, author: author, translator: authority, orig_lang: 'ru') }
+
+        it 'names the author but omits the authority' do
+          expect(result).to eq("#{author.name} (#{helper.textify_role('author', author.gender)})")
+        end
+      end
+    end
+  end
 end

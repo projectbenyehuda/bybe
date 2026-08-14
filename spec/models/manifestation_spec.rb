@@ -157,6 +157,25 @@ describe Manifestation do
     end
   end
 
+  describe '#word_count' do
+    let(:manifestation) { create(:manifestation, markdown: "One two three\nfour\n") }
+
+    it 'is cached on save' do
+      expect(manifestation.word_count).to eq 4
+    end
+
+    it 'is recalculated when the markdown changes' do
+      expect { manifestation.update!(markdown: 'Only two') }
+        .to change { manifestation.reload.word_count }.from(4).to(2)
+    end
+
+    it 'is not recalculated when the markdown is untouched' do
+      # a value the markdown could never yield, so any recalculation would show
+      manifestation.update_columns(word_count: 999)
+      expect { manifestation.update!(title: 'A new title') }.not_to(change { manifestation.reload.word_count })
+    end
+  end
+
   describe '.manual_delete' do
     subject(:manual_delete) { manifestation.manual_delete }
 
