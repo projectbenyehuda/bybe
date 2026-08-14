@@ -99,10 +99,18 @@
                   %input#select-all{type: 'checkbox', style:'display:none'}
               %button.btn-small-outline-v02#multiselect_btn{title: t(:worklist_multi_tt)}
                 .by-icon-v02.purple-v02 \
+          -# The grouped (volumes) view and the flat texts list call for different
+             actions: collapse/expand apply only to volume cards, the list/summaries
+             switch only to the flat list. setTocBarMode() swaps them by toggling
+             .flat-mode on the bar.
           .by-card-v02.sticky-fold
             -# state (primary/disabled) is kept in sync by syncCollapseButtons() below
-            %button.by-button-v02#max_collapse{href: "#"}= t(:collapse_all_sections)
-            %button.by-button-v02.by-button-secondary-v02#expand-all{href: "#"}= t(:expand_all_sections)
+            %button.by-button-v02.toc-grouped-action#max_collapse{href: "#"}= t(:collapse_all_sections)
+            %button.by-button-v02.by-button-secondary-v02.toc-grouped-action#expand-all{href: "#"}
+              = t(:expand_all_sections)
+            .BYD-switch.toc-flat-action
+              %button.search-mobile-option.active#tocmode_list= t(:toc_display_list)
+              %button.search-mobile-option#tocmode_snippets= t(:toc_display_snippets)
             %p
               = t(:sort_by)
               = select_tag :sort_by, options_for_select([[t(:collections_and_pubdates_asc), 'colls'], [t(:collections_abc),'colls_abc'], [t(:alefbet_asc), 'title'], [t(:popularity_desc), 'popularity_desc'], [t(:popularity_asc), 'popularity_asc'], [t(:pubdate_asc), 'pubdate_asc'], [t(:pubdate_desc), 'pubdate_desc'], [t(:creation_date_asc), 'creation_date_asc'], [t(:creation_date_desc), 'creation_date_desc'], [t(:uploaddate_asc), 'upload_date_asc'], [t(:uploaddate_desc), 'upload_date_desc']  ], params[:sort_by])
@@ -351,6 +359,13 @@
           });
         }
       });
+
+      // Swap the action bar between the grouped (volumes) view and the flat
+      // texts list. Called by the sort handler in _generated_toc, which is what
+      // knows whether the chosen sort produces a flat list.
+      window.setTocBarMode = function(flat) {
+        $('.sticky-fold').toggleClass('flat-mode', flat);
+      };
 
       // The Collapse all / Expand all buttons reflect the list's current state:
       // whichever action would still change something is the primary (filled)

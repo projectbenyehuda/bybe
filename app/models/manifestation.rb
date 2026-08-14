@@ -268,6 +268,19 @@ class Manifestation < ApplicationRecord
     # stripping tags -- return ActionController::Base.helpers.strip_tags(MultiMarkdown.new(markdown.lines[0..p_count].join("\n")).to_html.force_encoding('UTF-8').gsub(/<h1.*?<\/h1>/,'').gsub(/<figcaption>.*?<\/figcaption>/,'')) # remove MMD's automatic figcaptions, and the initial title
   end
 
+  # Excerpt of the text for a works list's summaries view: the first `line_count`
+  # lines of actual prose/verse. Headings are dropped rather than merely skipped
+  # over, because a work commonly opens with its title and/or first chapter
+  # heading ("## א"), which on its own makes for a useless snippet.
+  def snippet_html(line_count)
+    lines = markdown.to_s.lines.grep_v(/\A\s*#/).drop_while(&:blank?)
+    MultiMarkdown.new(lines.first(line_count).join)
+                 .to_html
+                 .force_encoding('UTF-8')
+                 .gsub(%r{<h\d[^>]*>.*?</h\d>}m, '') # any heading MMD still inferred (e.g. underlined)
+                 .gsub(%r{<figcaption>.*?</figcaption>}, '') # MMD's automatic figcaptions
+  end
+
   def authors_string
     return I18n.t(:nil) if expression.work.authors.empty?
 

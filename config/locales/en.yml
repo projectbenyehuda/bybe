@@ -3220,6 +3220,9 @@ en:
   expand_all_sections: Expand all sections
   toggle_collapse_collection: "Collapse or expand: %{title}"
   toggle_collapse_uncollected: Collapse or expand the uncollected works
+  toc_display_list: List
+  toc_display_snippets: Summaries
+  to_the_full_work: To the full work
   legacy_urls:
     index:
       title: Legacy URL Mappings

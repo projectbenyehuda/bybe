@@ -416,6 +416,7 @@ Bybeconv::Application.routes.draw do
   get 'kwic/:id/download' => 'manifestation#kwic_download', as: 'manifestation_kwic_download'
   get 'kwic/:id/context/:paragraph' => 'manifestation#kwic_context', as: 'manifestation_kwic_context'
   get 'manifestation/show/:id' => 'manifestation#show', as: 'manifestation_show'
+  get 'manifestation/snippets' => 'manifestation#snippets', as: 'manifestation_snippets'
   get 'manifestation/render_html'
   get 'manifestation/chomp_period/:id' => 'manifestation#chomp_period', as: 'manifestation_chomp_period'
   post 'manifestation/set_bookmark'
