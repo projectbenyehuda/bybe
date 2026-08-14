@@ -14,13 +14,13 @@ describe 'Author TOC action bar', :js do
 
   let(:poem) do
     Chewy.strategy(:atomic) do
-      create(:manifestation, title: 'Alpha Poem', status: :published, author: author,
+      create(:manifestation, title: 'Alpha Poem', status: :published, author: author, orig_lang: 'he',
                              markdown: 'The opening line of the Alpha poem.')
     end
   end
   let(:story) do
     Chewy.strategy(:atomic) do
-      create(:manifestation, title: 'Beta Story', status: :published, author: author,
+      create(:manifestation, title: 'Beta Story', status: :published, author: author, orig_lang: 'he',
                              markdown: 'The opening line of the Beta story.')
     end
   end
@@ -83,6 +83,20 @@ describe 'Author TOC action bar', :js do
     expect(page).to have_no_css('.toc-snippet', visible: :all)
     expect(page).to have_no_content('The opening line of the Alpha poem.')
     expect(page).to have_css('#tocmode_list.active')
+  end
+
+  it 'heads each excerpt with the work\'s metadata' do
+    visit authority_path(author)
+    choose_sort('title')
+    find('#tocmode_snippets').click
+    expect(page).to have_css('.toc-snippet', count: 2)
+
+    within(first('.toc-snippet .toc-snippet-meta')) do
+      expect(page).to have_content("#{I18n.t(:word_count)}: 7")
+      expect(page).to have_link('A Volume')
+      # the work is this authority's own, so naming them here would add nothing
+      expect(page).to have_no_content(author.name)
+    end
   end
 
   it 'keeps the summaries view across a re-sort within the flat list' do

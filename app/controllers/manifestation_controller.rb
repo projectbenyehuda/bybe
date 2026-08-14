@@ -150,17 +150,25 @@ class ManifestationController < ApplicationController
     @pagetype = :periods
   end
 
-  # Text snippets for a batch of works, as JSON keyed by manifestation id.
-  # The author page's flat-list summaries view fetches these lazily as the
-  # reader scrolls, because an author can have hundreds of works and rendering
-  # every snippet with the page would be prohibitively slow.
+  # Summary cards (work metadata plus a text excerpt) for a batch of works, as JSON keyed by
+  # manifestation id. The author page's flat-list summaries view fetches these lazily as the reader
+  # scrolls, because an author can have hundreds of works and rendering every card with the page
+  # would be prohibitively slow.
+  #
+  # authority_id is the authority whose page the cards are shown on: it decides which involved
+  # authorities the card can leave unsaid, so it is part of the cache key. The key does not cover
+  # the work's collections or authorities, which change far more rarely than the text; the 24-hour
+  # expiry is what bounds staleness there.
   def snippets
     ids = params[:ids].to_s.split(',').map(&:to_i).reject(&:zero?).first(SNIPPET_BATCH_LIMIT)
-    scope = Manifestation.where(id: ids)
+    authority_id = params[:authority_id].to_i
+    scope = Manifestation.where(id: ids).includes(expression: :work)
     scope = scope.all_published unless current_user&.editor?
     result = scope.each_with_object({}) do |m, acc|
-      acc[m.id] = Rails.cache.fetch("m_snippet_#{m.id}_#{m.updated_at.to_i}", expires_in: 24.hours) do
-        m.snippet_html(SNIPPET_LINES)
+      key = "m_snippet_card_#{m.id}_#{authority_id}_#{m.updated_at.to_i}"
+      acc[m.id] = Rails.cache.fetch(key, expires_in: 24.hours) do
+        render_to_string(partial: 'manifestation/snippet_card', formats: [:html],
+                         locals: { m: m, authority_id: authority_id })
       end
     end
     render json: result
