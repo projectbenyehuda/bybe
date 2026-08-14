@@ -2475,7 +2475,7 @@ he:
   total_collections_including_author: כותרים במאגר
   collapse_all_sections: צמצם הכל
   expand_all_sections: הרחב הכל
-  toggle_collapse_volume: צמצם או הרחב כרך זה
+  toggle_collapse_collection: "צמצם או הרחב: %{title}"
   toggle_collapse_uncollected: צמצם או הרחב את היצירות שלא כונסו
   by_involved_authorities: לפי אישים מעורבים
   works_and_volumes: כותרים ויצירות

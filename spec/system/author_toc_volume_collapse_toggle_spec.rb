@@ -2,10 +2,11 @@
 
 require 'rails_helper'
 
-# Covers the per-volume collapse toggle added to the Authority TOC: each
-# volume-type collection with children gets a chevron toggle at the end of its
-# title line that collapses/expands only that volume's children list.
-describe 'Author TOC per-volume collapse toggle', :js do
+# Covers the per-collection collapse toggle in the Authority TOC: every
+# collection card with children — whatever its collection_type — gets a chevron
+# toggle at the end of its title line that collapses/expands only that
+# collection's own children list.
+describe 'Author TOC per-collection collapse toggle', :js do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
@@ -95,9 +96,34 @@ describe 'Author TOC per-volume collapse toggle', :js do
     end
   end
 
-  it 'expands nested toggle-less sub-collections when re-expanding a volume after collapse-all' do
-    # A series sub-collection has NO toggle of its own, so after collapse-all it
-    # can only be re-opened by cascading through its parent volume's toggle.
+  it 'gives non-volume collection types their own toggle' do
+    # Toggles are not limited to volumes: any collection card rendering a
+    # children list gets one (here a periodical).
+    periodical_work = Chewy.strategy(:atomic) do
+      create(:manifestation, title: 'Work in Periodical', status: :published, author: author)
+    end
+    periodical = create(:collection, title: 'Test Periodical', collection_type: :periodical)
+    create(:collection_item, collection: periodical, item: periodical_work)
+    create(:involved_authority, authority: author, item: periodical, role: 'editor')
+
+    visit authority_path(author)
+    expect(page).to have_css('#browse_mainlist')
+
+    toggle = find("#cwrapper_#{periodical.id} .volume-collapse-toggle", match: :first)
+    cwrapper = toggle.find(:xpath, "./ancestor::div[contains(@class, 'cwrapper')][1]")
+
+    toggle.click
+    expect(cwrapper).to have_css('ul.toclist', visible: :hidden)
+    expect(toggle[:class]).to include('collapsed')
+
+    toggle.click
+    expect(cwrapper).to have_css('ul.toclist', visible: :visible)
+    expect(toggle[:class]).not_to include('collapsed')
+  end
+
+  it 'cascades expansion into nested sub-collections when re-expanding a volume after collapse-all' do
+    # Expanding a volume reveals its whole subtree, so a nested collection left
+    # collapsed by collapse-all is never stranded out of reach.
     # Give the nested work a different author so it renders only inside the
     # series (avoids a duplicate copy in this author's work-level section).
     other_author = create(:authority, name: 'Other Author')
@@ -114,8 +140,8 @@ describe 'Author TOC per-volume collapse toggle', :js do
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist')
 
-    # The nested series has no toggle of its own; the outer volume does.
-    expect(page).to have_no_css("#cwrapper_#{series.id} .volume-collapse-toggle")
+    # Both the nested series and its parent volume carry their own toggle.
+    expect(page).to have_css("#cwrapper_#{series.id} .volume-collapse-toggle")
     expect(page).to have_css("#cwrapper_#{outer_volume.id} .volume-collapse-toggle")
 
     # Initially the deeply nested work is visible.
@@ -128,9 +154,11 @@ describe 'Author TOC per-volume collapse toggle', :js do
     outer_toggle = find("#cwrapper_#{outer_volume.id} .volume-collapse-toggle", match: :first)
     outer_toggle.click
 
-    # The fix cascades expansion into the toggle-less series, so its work must
-    # become visible again — not just the series header.
+    # The cascade reaches down through the series, so its work must become
+    # visible again — not just the series header — and the series' own toggle
+    # must be back in the expanded state to match.
     expect(page).to have_link('Nested Series Work', visible: :visible)
+    expect(page).to have_no_css("#cwrapper_#{series.id} .volume-collapse-toggle.collapsed")
   end
 
   it 'keeps individual toggles in sync with the collapse-all / expand-all buttons' do
