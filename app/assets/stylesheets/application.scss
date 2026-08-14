@@ -1458,6 +1458,30 @@ p.by-genre-name-v02.headline-2-v02 {
 	select {
 		max-width: 100%;
 	}
+
+	/* Grouped (volumes) view vs. flat texts list: each mode's actions are shown
+	 * only in that mode. .flat-mode is set by setTocBarMode() (authors/toc). */
+	.toc-flat-action {
+		display: none;
+	}
+
+	&.flat-mode {
+		.toc-grouped-action {
+			display: none;
+		}
+
+		.toc-flat-action {
+			display: flex;
+		}
+	}
+}
+
+/* Summaries view of the flat texts list: an excerpt card under each work,
+ * matching the dictionary list's entry summaries. The card is a block inside
+ * the work's <li>, which otherwise lays its title out inline. */
+.toc-snippet {
+	margin-top: 6px;
+	margin-left: 0;
 }
 
 /* Sticky navbar for lexicon entries.

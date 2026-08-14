@@ -2477,6 +2477,9 @@ he:
   expand_all_sections: הרחב הכל
   toggle_collapse_collection: "צמצם או הרחב: %{title}"
   toggle_collapse_uncollected: צמצם או הרחב את היצירות שלא כונסו
+  toc_display_list: רשימה
+  toc_display_snippets: תקצירים
+  to_the_full_work: ליצירה המלאה
   by_involved_authorities: לפי אישים מעורבים
   works_and_volumes: כותרים ויצירות
   list_all_collections: רשימת כל הכותרים
