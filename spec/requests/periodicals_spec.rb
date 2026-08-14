@@ -95,6 +95,7 @@ RSpec.describe 'Periodicals', type: :request do
     end
 
     before do
+      Chewy.massacre
       import_and_await(ManifestationsIndex, [primary_work, non_primary_work])
       get '/periodicals'
     end
