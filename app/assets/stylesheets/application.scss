@@ -1482,6 +1482,15 @@ p.by-genre-name-v02.headline-2-v02 {
 .toc-snippet {
 	margin-top: 6px;
 	margin-left: 0;
+
+	/* The work's metadata, above the excerpt: kept to as few lines as possible, so the items flow
+	 * along one line and wrap only when the card runs out of width. */
+	.toc-snippet-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2px 12px;
+		margin-bottom: 4px;
+	}
 }
 
 /* Sticky navbar for lexicon entries.
