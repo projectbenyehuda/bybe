@@ -15,7 +15,17 @@
  *= require_self
  *= require slick
 */
-// Per-volume collapse toggle in the Authority TOC: uses the ben-yehuda chevron
+// Collapse all / Expand all in the Authority TOC: the button whose action is
+// currently a no-op is disabled, and greys out like .by-button-v02.disabled.
+#max_collapse:disabled,
+#expand-all:disabled {
+  background-color: #bfbfbf;
+  border-color: #bfbfbf;
+  color: #ffffff;
+  cursor: default;
+}
+
+// Per-collection collapse toggle in the Authority TOC: uses the ben-yehuda chevron
 // glyph ")" (same as the navbar .dropdown-arrow). Expanded points up, collapsed points down.
 .volume-collapse-toggle {
   font-family: ben-yehuda;

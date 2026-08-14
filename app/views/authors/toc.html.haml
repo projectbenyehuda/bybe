@@ -100,7 +100,7 @@
               %button.btn-small-outline-v02#multiselect_btn{title: t(:worklist_multi_tt)}
                 .by-icon-v02.purple-v02 \
           .by-card-v02.sticky-fold
-            -# TODO: implement these buttons
+            -# state (primary/disabled) is kept in sync by syncCollapseButtons() below
             %button.by-button-v02#max_collapse{href: "#"}= t(:collapse_all_sections)
             %button.by-button-v02.by-button-secondary-v02#expand-all{href: "#"}= t(:expand_all_sections)
             %p
@@ -352,6 +352,21 @@
         }
       });
 
+      // The Collapse all / Expand all buttons reflect the list's current state:
+      // whichever action would still change something is the primary (filled)
+      // button, and the one that would be a no-op is greyed out and disabled.
+      // In a mixed state both apply, and Collapse all stays the primary one.
+      window.syncCollapseButtons = function() {
+        var $toggles = $('#browse_mainlist .volume-collapse-toggle');
+        var collapsed = $toggles.filter('.collapsed').length;
+        var canCollapse = $toggles.length > collapsed; // something is still open
+        var canExpand = collapsed > 0;                 // something is still closed
+        $('#max_collapse').prop('disabled', !canCollapse)
+                          .toggleClass('by-button-secondary-v02', !canCollapse);
+        $('#expand-all').prop('disabled', !canExpand)
+                        .toggleClass('by-button-secondary-v02', canCollapse || !canExpand);
+      };
+
       // Collapse all sections
       $('#max_collapse').click(function(e) {
         e.preventDefault();
@@ -360,6 +375,7 @@
         $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'false');
         // keep the focusable toggles' own aria-expanded in sync with their state
         $('#browse_mainlist .volume-collapse-toggle').addClass('collapsed').attr('aria-expanded', 'false');
+        window.syncCollapseButtons();
       });
 
       // Expand all sections
@@ -370,14 +386,14 @@
         $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'true');
         // keep the focusable toggles' own aria-expanded in sync with their state
         $('#browse_mainlist .volume-collapse-toggle').removeClass('collapsed').attr('aria-expanded', 'true');
+        window.syncCollapseButtons();
       });
 
-      // Expand a treeitem card's own children list, then cascade into any
-      // nested sub-collections that have NO toggle of their own (series /
-      // sub-volumes). Those have no independent control, so their collapsed
-      // state (e.g. after collapse-all) would otherwise be unreachable — they
-      // must follow their parent volume. Nested volumes that DO have their own
-      // toggle are left untouched so they keep their own collapsed/expanded state.
+      // Expand a treeitem card's own children list, then cascade all the way
+      // down into its nested sub-collections: expanding a volume reveals its
+      // whole subtree, so a collapsed descendant is never left stranded out of
+      // reach (e.g. after collapse-all). Each descendant's own toggle is put
+      // back into the expanded state to match.
       function cascadeExpand($card) {
         var $wrapper = $card.children('.by-card-content-v02').children('.cwrapper');
         var $list = $wrapper.children('ul.toclist');
@@ -386,16 +402,14 @@
         if ($list.length === 0) { return; }
         $list.slideDown();
         $card.attr('aria-expanded', 'true');
+        // This card's own toggle lives in the title div, a sibling of the list.
+        $wrapper.children('div').find('.volume-collapse-toggle')
+                .removeClass('collapsed').attr('aria-expanded', 'true');
         // Direct sub-collection cards inside this card's own list. The card
         // li is a direct child of ul.toclist (the browser auto-closes the
         // empty wrapper li that HTML forbids nesting an li inside).
         $list.children('.by-card-v02[role="treeitem"]').each(function() {
-            var $sub = $(this);
-            var $subwrapper = $sub.children('.by-card-content-v02').children('.cwrapper');
-            var hasOwnToggle = $subwrapper.children('div').children('.volume-collapse-toggle').length > 0;
-            if (!hasOwnToggle) {
-              cascadeExpand($sub);
-            }
+            cascadeExpand($(this));
           });
       }
 
@@ -417,6 +431,7 @@
           cascadeExpand($card);
           $toggle.removeClass('collapsed').attr('aria-expanded', 'true');
         }
+        window.syncCollapseButtons();
       }
       $('#browse_mainlist').on('click', '.volume-collapse-toggle', function(e) {
         e.preventDefault();
@@ -428,4 +443,9 @@
           toggleVolume($(this));
         }
       });
+
+      // Initial button state. This ready() handler runs after the one in
+      // _generated_toc, so prune_collections has already dropped the toggles of
+      // volumes rendered as a single link.
+      window.syncCollapseButtons();
   });

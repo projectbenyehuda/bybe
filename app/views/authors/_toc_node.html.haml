@@ -83,8 +83,10 @@
                     = " (#{type_prefix})"
                   != '&nbsp;&nbsp;&nbsp;'
                   = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
-                - if collection.volume? && renders_toclist
-                  - toggle_label = t(:toggle_collapse_volume)
+                -# Every collapsible collection card (any type, not just volumes) gets its own toggle,
+                   except in the editable (collections-migration) view, which has no collapse JS.
+                - if renders_toclist && !editable
+                  - toggle_label = t(:toggle_collapse_collection, title: collection.title)
                   -# aria-expanded on the toggle itself: focus lands here, not on the treeitem li
                   %span.volume-collapse-toggle{ role: 'button', tabindex: 0, title: toggle_label,
                                                 aria: { label: toggle_label, expanded: 'true' } } )

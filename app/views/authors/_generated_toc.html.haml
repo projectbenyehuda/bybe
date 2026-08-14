@@ -225,6 +225,9 @@
       // The list was just rebuilt (and entering flat mode shrinks it a lot), so
       // return the reader to the top of the page as the filters do.
       if(window.TocFilters) { window.TocFilters.scrollToTop(); }
+      // The rebuilt list is fully expanded again (and the flat sorts have no
+      // collapsible cards at all), so re-evaluate the collapse/expand buttons.
+      if(window.syncCollapseButtons) { window.syncCollapseButtons(); }
     });
     prune_collections();
     var orig_mainlist = $('#browse_mainlist').html();
