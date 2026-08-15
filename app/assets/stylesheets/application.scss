@@ -250,6 +250,17 @@ body {
   margin-top: 93px;
 }
 
+/* Only the outermost .top-element (the layout's #content) needs a top margin to clear the
+   fixed header; several views wrap their body in another .top-element nested inside it.
+   That inner margin is normally invisible because it collapses into the outer one, but any
+   element rendered before it (e.g. the returning-visitor donation banner) breaks the
+   collapse and the duplicate margin turns into a band of blank space above the page's
+   heading. !important is needed because the layout's JS sets margin-top inline on every
+   .top-element. */
+.top-element .top-element {
+  margin-top: 0 !important;
+}
+
 header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's carousel track having a virtual width of 50000) */
 .share {cursor: pointer;}
 .pointer {cursor: pointer;}
