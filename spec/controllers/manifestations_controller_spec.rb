@@ -605,6 +605,21 @@ describe ManifestationController do
           context 'when user has edit_catalog bit' do
             let(:user) { create(:user, :edit_catalog) }
             it { is_expected.to be_successful }
+
+            def role_select_options(item)
+              subject
+              Nokogiri::HTML(response.body)
+                      .css("#new_involved_authority_#{item.class.name}_#{item.id}_role option")
+                      .pluck('value')
+            end
+
+            it 'offers only work-level roles when adding an authority to the work' do
+              expect(role_select_options(work)).to eq(InvolvedAuthority::ROLES_PRESENTATION_ORDER - %w(translator))
+            end
+
+            it 'offers only expression-level roles when adding an authority to the expression' do
+              expect(role_select_options(expression)).to eq(InvolvedAuthority::ROLES_PRESENTATION_ORDER - %w(author))
+            end
           end
         end
       end

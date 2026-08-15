@@ -487,4 +487,14 @@ describe BybeUtils do
       end
     end
   end
+
+  describe '#epub_role_from_ia_role' do
+    it "maps annotator to the MARC 'ann' relator" do
+      expect(instance.epub_role_from_ia_role('annotator')).to eq('ann')
+    end
+
+    it "falls back to 'oth' for unmapped roles" do
+      expect(instance.epub_role_from_ia_role('designer')).to eq('oth')
+    end
+  end
 end
