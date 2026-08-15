@@ -55,6 +55,22 @@ describe RefreshUncollectedWorksCollection do
       end
     end
 
+    context 'when the authority is involved only as an annotator' do
+      let(:uncollected_works) { nil }
+
+      let!(:annotated_work) do
+        create(:manifestation, author: other_authority, orig_lang: :he).tap do |m|
+          m.expression.involved_authorities.create!(role: :annotator, authority: authority)
+        end
+      end
+
+      it 'includes the annotated work in the uncollected works collection' do
+        call
+        collection = authority.reload.uncollected_works_collection
+        expect(collection.collection_items.map(&:item_id)).to include(annotated_work.id)
+      end
+    end
+
     context 'when there is an uncollected works collection and it has items to be removed' do
       let(:uncollected_works) { create(:collection, :uncollected) }
 

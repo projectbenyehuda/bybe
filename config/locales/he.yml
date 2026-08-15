@@ -838,6 +838,8 @@ he:
   apply_mobile_filters: יישום סינון
   sort: מיון
   actions: פעולות
+  annotator: מעיר
+  annotator_f: מעירה
   author: יוצר
   author_f: יוצרת
   render: הצגת יצירה
@@ -2243,7 +2245,9 @@ he:
       designer: מעצב
       contributor: משתתף
       other: אחר
+      annotator: מעיר
     abstract_roles:
+      annotator: הערות
       author: מאת
       editor: בעריכת
       illustrator: איורים
@@ -2337,16 +2341,18 @@ he:
       editor: יצירות בעריכת%{gender_letter}
       illustrator: איורים
       photographer: צילומים
+      annotator: הערות
       designer: עיצובים
       contributor: תרומות נוספות
       other: יצירות שונות
     made_by:
       translator: בתרגום
       editor:  בעריכת
-      illustrator: illustrated by
-      photographer: photographs by
-      designer: design by
-      contributor: contributed to by
+      illustrator: עם איורים מאת
+      photographer: עם צילומים מאת
+      annotator: עם הערות מאת
+      designer: בעיצוב
+      contributor: בהשתתפות
       other: by
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: נחלת הכלל

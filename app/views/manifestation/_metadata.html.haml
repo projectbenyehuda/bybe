@@ -43,6 +43,10 @@
     .headline-3-v02
       = "#{t('involved_authority.abstract_roles.photographer')}: "
       != @photographers.map { |t| authority_link(t) }.join(', ')
+  - if @annotators.present?
+    .headline-3-v02
+      = "#{t('involved_authority.abstract_roles.annotator')}: "
+      != @annotators.map { |t| authority_link(t) }.join(', ')
   - if @designers.present?
     .headline-3-v02
       = "#{t('involved_authority.abstract_roles.designer')}: "

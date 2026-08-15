@@ -3,8 +3,9 @@
 # We want to group all works author was involved into but not belonging to any colleciton into a special
 # 'Uncollected works' collection
 class RefreshUncollectedWorksCollection < ApplicationService
-  # Uncollected works collection should only contain works where authority is involved as author, translator or editor
-  ROLES = %i(author translator editor).freeze
+  # Uncollected works collection should only contain works where authority is involved as author, translator,
+  # editor or annotator
+  ROLES = %i(author translator editor annotator).freeze
 
   # rubocop:disable Style/GuardClause
   def call(authority)

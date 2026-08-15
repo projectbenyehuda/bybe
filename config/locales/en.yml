@@ -740,7 +740,9 @@ en:
       designer: Designer
       contributor: Contributor
       other: Other
+      annotator: Annotator
     abstract_roles:
+      annotator: Annotations
       author: By
       contributor: With
       designer: Design
@@ -841,6 +843,7 @@ en:
       editor: Edited works
       illustrator: Illustrated works
       photographer: Works with photographs by
+      annotator: Annotated works
       designer: Works design was done by
       contributor: Works contributed to
       other: Other works
@@ -849,6 +852,7 @@ en:
       editor: edited by
       illustrator: illustrated by
       photographer: photographs by
+      annotator: annotated by
       designer: design by
       contributor: contributed to by
       other: by
@@ -1167,6 +1171,8 @@ en:
   associate_with_viaf: Link the Folder to This VIAF Record
   associated_persons: Linked Persons
   associated_with_viaf: Linked to Record Number %{viaf} in VIAF Database
+  annotator: Annotator (male)
+  annotator_f: Annotator (female)
   author: Author
   author_details: Author Details
   author_download_tt: Download the author's works list as a file
