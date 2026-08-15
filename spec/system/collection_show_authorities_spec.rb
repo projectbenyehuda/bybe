@@ -8,6 +8,7 @@ describe 'Collection show page - authority display' do
   let!(:translator) { create(:authority, name: 'Translator Name') }
   let!(:illustrator) { create(:authority, name: 'Illustrator Name') }
   let!(:photographer) { create(:authority, name: 'Photographer Name') }
+  let!(:annotator) { create(:authority, name: 'Annotator Name') }
   let!(:designer) { create(:authority, name: 'Designer Name') }
   let!(:editor) { create(:authority, name: 'Editor Name') }
   let!(:contributor) { create(:authority, name: 'Contributor Name') }
@@ -22,6 +23,7 @@ describe 'Collection show page - authority display' do
       create(:involved_authority, item: col, authority: translator, role: 'translator')
       create(:involved_authority, item: col, authority: illustrator, role: 'illustrator')
       create(:involved_authority, item: col, authority: photographer, role: 'photographer')
+      create(:involved_authority, item: col, authority: annotator, role: 'annotator')
       create(:involved_authority, item: col, authority: designer, role: 'designer')
       create(:involved_authority, item: col, authority: editor, role: 'editor')
       create(:involved_authority, item: col, authority: contributor, role: 'contributor')
@@ -60,6 +62,10 @@ describe 'Collection show page - authority display' do
         # Verify photographers are displayed
         expect(page).to have_text(I18n.t('involved_authority.abstract_roles.photographer'))
         expect(page).to have_link('Photographer Name', href: authority_path(photographer))
+
+        # Verify annotators are displayed
+        expect(page).to have_text(I18n.t('involved_authority.abstract_roles.annotator'))
+        expect(page).to have_link('Annotator Name', href: authority_path(annotator))
 
         # Verify designers are displayed
         expect(page).to have_text(I18n.t('involved_authority.abstract_roles.designer'))
@@ -111,6 +117,9 @@ describe 'Collection show page - authority display' do
 
         # Should NOT have photographer label
         expect(page).not_to have_text(I18n.t('involved_authority.abstract_roles.photographer'))
+
+        # Should NOT have annotator label
+        expect(page).not_to have_text(I18n.t('involved_authority.abstract_roles.annotator'))
 
         # Should NOT have designer label
         expect(page).not_to have_text(I18n.t('involved_authority.abstract_roles.designer'))

@@ -102,6 +102,8 @@ module BybeUtils
       return 'ill'
     when 'photographer'
       return 'pht'
+    when 'annotator'
+      return 'ann'
     when 'contributor'
       return 'ctb'
     else

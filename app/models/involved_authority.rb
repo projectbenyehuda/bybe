@@ -14,12 +14,15 @@ class InvolvedAuthority < ApplicationRecord
     photographer: 4,
     designer: 5,
     contributor: 6,
-    other: 7
+    other: 7,
+    annotator: 8
   }, prefix: true
 
   WORK_ROLES = (roles.keys - %w(translator)).freeze
   EXPRESSION_ROLES = (roles.keys - %w(author)).freeze
-  ROLES_PRESENTATION_ORDER = %w(author illustrator photographer translator editor designer contributor other).freeze
+  ROLES_PRESENTATION_ORDER = %w(
+    author illustrator photographer annotator translator editor designer contributor other
+  ).freeze
 
   validates :role, presence: true
   validates :role, inclusion: WORK_ROLES, if: ->(ia) { ia.item.is_a? Work }
