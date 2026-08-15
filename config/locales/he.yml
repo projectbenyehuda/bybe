@@ -2337,11 +2337,11 @@ he:
     made_by:
       translator: בתרגום
       editor:  בעריכת
-      illustrator: illustrated by
-      photographer: photographs by
-      annotator: בהערות
-      designer: design by
-      contributor: contributed to by
+      illustrator: עם איורים מאת
+      photographer: עם צילומים מאת
+      annotator: עם הערות מאת
+      designer: בעיצוב
+      contributor: בהשתתפות
       other: by
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: נחלת הכלל
