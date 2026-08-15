@@ -2,6 +2,43 @@
 
 require 'rails_helper'
 
+# Holds ManifestationController#snippets open at the server, so an example can assert on
+# the loading mask while a request is provably still in the air rather than racing it.
+#
+# The Capybara server runs in this process, so a stub set in an example reaches it -- but
+# on another thread, hence the handshake: the server thread announces itself and parks in
+# #hold, the example thread waits for that announcement with #await, and lets the action
+# through with #release.
+class SnippetsGate
+  def initialize(timeout)
+    @timeout = timeout
+    @arrivals = Queue.new
+    @mutex = Mutex.new
+    @cv = ConditionVariable.new
+    @released = false
+  end
+
+  # Server thread: announce this request and park until the example releases it. Falls
+  # through after `timeout` so a failing example cannot wedge the suite.
+  def hold
+    @arrivals << true
+    @mutex.synchronize { @cv.wait(@mutex, @timeout) unless @released }
+  end
+
+  # Example thread: block until a request has actually reached the held action.
+  def await
+    raise 'no snippets request reached the controller' if @arrivals.pop(timeout: @timeout).nil?
+  end
+
+  # Example thread: let every parked request, and any that follow, complete.
+  def release
+    @mutex.synchronize do
+      @released = true
+      @cv.broadcast
+    end
+  end
+end
+
 # The Authority TOC action bar carries different actions per view (bead r81):
 # the grouped (volumes) view gets Collapse all / Expand all, while the flat texts
 # list gets the list/summaries display switch. The summaries view fetches each
@@ -39,27 +76,14 @@ describe 'Author TOC action bar', :js do
     find("#sort_by option[value='#{value}']").select_option
   end
 
-  # Hold the snippets response back long enough for the loading mask to be
-  # observable (the Capybara server runs in this process, so the stub reaches it).
-  # `status` lets an example exercise the failure path.
-  #
-  # Returns a callable that releases the controller action once the example has
-  # observed the loading mask.
+  # Holds the snippets action open; see SnippetsGate. `status` lets an example
+  # exercise the failure path instead of the real response.
   def delay_snippets(status: nil, timeout: 10)
-    mutex = Mutex.new
-    cv = ConditionVariable.new
-    released = false
-
-    release = lambda do
-      mutex.synchronize do
-        released = true
-        cv.broadcast
-      end
-    end
+    gate = SnippetsGate.new(timeout)
 
     # rubocop:disable RSpec/AnyInstance -- the controller instance is the server's, not ours
     allow_any_instance_of(ManifestationController).to receive(:snippets).and_wrap_original do |orig, *args|
-      mutex.synchronize { cv.wait(mutex, timeout) unless released }
+      gate.hold
 
       if status.nil?
         orig.call(*args)
@@ -69,7 +93,7 @@ describe 'Author TOC action bar', :js do
     end
     # rubocop:enable RSpec/AnyInstance
 
-    release
+    gate
   end
 
   it 'swaps the collapse/expand buttons for the display switch in the flat list, and back' do
@@ -121,17 +145,23 @@ describe 'Author TOC action bar', :js do
   # The flat list is unpaginated, so fetching the excerpts of a prolific author can
   # take a couple of seconds with nothing on screen to show for it (bead 11x).
   it 'masks the page while the excerpts are being fetched, and unmasks once they are in' do
-    release_snippets = delay_snippets
+    snippets = delay_snippets
     visit authority_path(author)
     choose_sort('title')
     expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
 
     find('#tocmode_snippets').click
 
+    # With the request parked at the controller the page cannot move on, so the
+    # state below is what the reader is left looking at, not a moment we caught.
+    snippets.await
+
     expect(page).to have_css('#PopupMask')
     expect(page).to have_css('#spinnerdiv', visible: :visible)
+    # Nothing to read yet: that is precisely what the mask is there to cover.
+    expect(page).to have_no_css('.toc-snippet', visible: :all)
 
-    release_snippets.call
+    snippets.release
 
     expect(page).to have_css('.toc-snippet', count: 2, wait: 10)
     expect(page).to have_no_css('#PopupMask')
@@ -139,15 +169,18 @@ describe 'Author TOC action bar', :js do
   end
 
   it 'takes the mask down even when the excerpt request fails' do
-    release_snippets = delay_snippets(status: :internal_server_error)
+    snippets = delay_snippets(status: :internal_server_error)
     visit authority_path(author)
     choose_sort('title')
     expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
 
     find('#tocmode_snippets').click
-    expect(page).to have_css('#PopupMask')
+    snippets.await
 
-    release_snippets.call
+    expect(page).to have_css('#PopupMask')
+    expect(page).to have_css('#spinnerdiv', visible: :visible)
+
+    snippets.release
 
     # No excerpts to show, but the reader must not be left staring at a masked page.
     expect(page).to have_no_css('#PopupMask', wait: 10)
