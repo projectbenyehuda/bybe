@@ -150,6 +150,8 @@ module ApplicationHelper
       return gender == 'female' ? t(:illustrator_f) : t(:illustrator)
     when 'photographer'
       return gender == 'female' ? t(:photographer_f) : t(:photographer)
+    when 'annotator'
+      return gender == 'female' ? t(:annotator_f) : t(:annotator)
     when 'publisher'
       return t(:mlbhd)
     when 'contributor'

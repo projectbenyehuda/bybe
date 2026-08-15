@@ -1328,6 +1328,7 @@ class ManifestationController < ApplicationController
     @translators = @m.translators
     @illustrators = @m.involved_authorities_by_role(:illustrator)
     @photographers = @m.involved_authorities_by_role(:photographer)
+    @annotators = @m.involved_authorities_by_role(:annotator)
     @designers = @m.involved_authorities_by_role(:designer)
     @editors = @m.involved_authorities_by_role(:editor)
     @contributors = @m.involved_authorities_by_role(:contributor)

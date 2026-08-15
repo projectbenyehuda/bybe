@@ -195,4 +195,14 @@ RSpec.describe ApplicationHelper, type: :helper do
       expect(result).not_to have_css("[target='_blank']")
     end
   end
+
+  describe '#textify_role' do
+    it 'returns the masculine form for a male annotator' do
+      expect(helper.textify_role('annotator', 'male')).to eq(I18n.t(:annotator))
+    end
+
+    it 'returns the feminine form for a female annotator' do
+      expect(helper.textify_role('annotator', 'female')).to eq(I18n.t(:annotator_f))
+    end
+  end
 end

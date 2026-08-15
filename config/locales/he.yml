@@ -827,6 +827,8 @@ he:
   apply_mobile_filters: יישום סינון
   sort: מיון
   actions: פעולות
+  annotator: מעיר
+  annotator_f: מעירה
   author: יוצר
   author_f: יוצרת
   render: הצגת יצירה
@@ -2232,7 +2234,9 @@ he:
       designer: מעצב
       contributor: משתתף
       other: אחר
+      annotator: מעיר
     abstract_roles:
+      annotator: הערות
       author: מאת
       editor: בעריכת
       illustrator: איורים
@@ -2326,6 +2330,7 @@ he:
       editor: יצירות בעריכת%{gender_letter}
       illustrator: איורים
       photographer: צילומים
+      annotator: הערות
       designer: עיצובים
       contributor: תרומות נוספות
       other: יצירות שונות
@@ -2334,6 +2339,7 @@ he:
       editor:  בעריכת
       illustrator: illustrated by
       photographer: photographs by
+      annotator: בהערות
       designer: design by
       contributor: contributed to by
       other: by
