@@ -42,16 +42,37 @@ describe 'Author TOC action bar', :js do
   # Hold the snippets response back long enough for the loading mask to be
   # observable (the Capybara server runs in this process, so the stub reaches it).
   # `status` lets an example exercise the failure path.
-  def delay_snippets(seconds, status: nil)
+  #
+  # Returns a callable that releases the controller action once the example has
+  # observed the loading mask.
+  def delay_snippets(status: nil, timeout: 10)
+    require 'thread'
+
+    mutex = Mutex.new
+    cv = ConditionVariable.new
+    released = false
+
+    release = lambda do
+      mutex.synchronize do
+        released = true
+        cv.broadcast
+      end
+    end
+
     # rubocop:disable RSpec/AnyInstance -- the controller instance is the server's, not ours
     allow_any_instance_of(ManifestationController).to receive(:snippets).and_wrap_original do |orig, *args|
-      sleep seconds
+      mutex.synchronize { cv.wait(mutex, timeout) unless released }
+
       if status.nil?
         orig.call(*args)
       else
         orig.receiver.render(json: {}, status: status)
       end
     end
+    # rubocop:enable RSpec/AnyInstance
+
+    release
+  end
     # rubocop:enable RSpec/AnyInstance
   end
 
