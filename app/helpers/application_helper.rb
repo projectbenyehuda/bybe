@@ -405,7 +405,11 @@ module ApplicationHelper
       ]
   end
 
-  def role_options
-    InvolvedAuthority.roles.keys.map { |role| [textify_authority_role(role), role] }
+  # Options for a role select, always in the usual presentation order.
+  # @param roles - the roles to offer, e.g. InvolvedAuthority::WORK_ROLES; defaults to all of them
+  def role_options(roles = InvolvedAuthority::ROLES_PRESENTATION_ORDER)
+    roles = roles.map(&:to_s)
+    InvolvedAuthority::ROLES_PRESENTATION_ORDER.select { |role| roles.include?(role) }
+                                               .map { |role| [textify_authority_role(role), role] }
   end
 end

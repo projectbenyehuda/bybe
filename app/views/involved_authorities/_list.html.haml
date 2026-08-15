@@ -18,7 +18,7 @@
   = hidden_field_tag "#{prefix}_authority_id"
   = t(:in_role)
   = select_tag "#{prefix}_role",
-              options_for_select(role_options)
+              options_for_select(role_options(roles))
   = button_tag t(:perform_add), id: "#{prefix}_add_button", type: :button
   %br
   :javascript

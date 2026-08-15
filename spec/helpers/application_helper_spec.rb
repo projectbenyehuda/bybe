@@ -196,6 +196,25 @@ RSpec.describe ApplicationHelper, type: :helper do
     end
   end
 
+  describe '#role_options' do
+    it 'offers every role, in presentation order' do
+      expect(helper.role_options.map(&:last)).to eq(InvolvedAuthority::ROLES_PRESENTATION_ORDER)
+    end
+
+    it 'labels each role with its translated name' do
+      expect(helper.role_options).to include([I18n.t('involved_authority.role.annotator'), 'annotator'])
+    end
+
+    it 'offers only the given roles, still in presentation order' do
+      expect(helper.role_options(InvolvedAuthority::WORK_ROLES).map(&:last))
+        .to eq(InvolvedAuthority::ROLES_PRESENTATION_ORDER - %w(translator))
+    end
+
+    it 'accepts symbols' do
+      expect(helper.role_options(%i(translator author)).map(&:last)).to eq(%w(author translator))
+    end
+  end
+
   describe '#textify_role' do
     it 'returns the masculine form for a male annotator' do
       expect(helper.textify_role('annotator', 'male')).to eq(I18n.t(:annotator))
