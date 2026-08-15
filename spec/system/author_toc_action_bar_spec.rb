@@ -46,8 +46,6 @@ describe 'Author TOC action bar', :js do
   # Returns a callable that releases the controller action once the example has
   # observed the loading mask.
   def delay_snippets(status: nil, timeout: 10)
-    require 'thread'
-
     mutex = Mutex.new
     cv = ConditionVariable.new
     released = false
@@ -72,8 +70,6 @@ describe 'Author TOC action bar', :js do
     # rubocop:enable RSpec/AnyInstance
 
     release
-  end
-    # rubocop:enable RSpec/AnyInstance
   end
 
   it 'swaps the collapse/expand buttons for the display switch in the flat list, and back' do
@@ -125,7 +121,7 @@ describe 'Author TOC action bar', :js do
   # The flat list is unpaginated, so fetching the excerpts of a prolific author can
   # take a couple of seconds with nothing on screen to show for it (bead 11x).
   it 'masks the page while the excerpts are being fetched, and unmasks once they are in' do
-    delay_snippets(1.5)
+    release_snippets = delay_snippets
     visit authority_path(author)
     choose_sort('title')
     expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
@@ -135,19 +131,23 @@ describe 'Author TOC action bar', :js do
     expect(page).to have_css('#PopupMask')
     expect(page).to have_css('#spinnerdiv', visible: :visible)
 
+    release_snippets.call
+
     expect(page).to have_css('.toc-snippet', count: 2, wait: 10)
     expect(page).to have_no_css('#PopupMask')
     expect(page).to have_css('#spinnerdiv', visible: :hidden)
   end
 
   it 'takes the mask down even when the excerpt request fails' do
-    delay_snippets(1.5, status: :internal_server_error)
+    release_snippets = delay_snippets(status: :internal_server_error)
     visit authority_path(author)
     choose_sort('title')
     expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
 
     find('#tocmode_snippets').click
     expect(page).to have_css('#PopupMask')
+
+    release_snippets.call
 
     # No excerpts to show, but the reader must not be left staring at a masked page.
     expect(page).to have_no_css('#PopupMask', wait: 10)
