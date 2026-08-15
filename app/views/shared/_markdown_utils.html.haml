@@ -35,6 +35,12 @@
       minuses_to_makafim: function() {
         var buf = $(element_id).val();
         var replaced = 0;
+        // A minus opening a line is a dialogue dash, not a makaf. The lookahead spares
+        // '---' and friends, which are markdown horizontal rules rather than punctuation.
+        buf = buf.replace(/^([ \t]*)(-|‑)(?![-‑])/gm, function(occurrence, leading_ws){
+          replaced += 1;
+          return leading_ws + '–';
+        });
         buf = buf.replace(/\S(-|‑)\S/g, function(occurrence){
           var latin = occurrence[0].match(/[A-Za-z]/i) || occurrence[2].match(/[A-Za-z]/i);
           var digits = occurrence[0].match(/[0-9]/) && occurrence[2].match(/[0-9]/);
