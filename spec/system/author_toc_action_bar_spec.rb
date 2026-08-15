@@ -39,6 +39,43 @@ describe 'Author TOC action bar', :js do
     find("#sort_by option[value='#{value}']").select_option
   end
 
+  # Hold the snippets response back long enough for the loading mask to be
+  # observable (the Capybara server runs in this process, so the stub reaches it).
+  # `status` lets an example exercise the failure path.
+  #
+  # Returns a callable that releases the controller action once the example has
+  # observed the loading mask.
+  def delay_snippets(status: nil, timeout: 10)
+    require 'thread'
+
+    mutex = Mutex.new
+    cv = ConditionVariable.new
+    released = false
+
+    release = lambda do
+      mutex.synchronize do
+        released = true
+        cv.broadcast
+      end
+    end
+
+    # rubocop:disable RSpec/AnyInstance -- the controller instance is the server's, not ours
+    allow_any_instance_of(ManifestationController).to receive(:snippets).and_wrap_original do |orig, *args|
+      mutex.synchronize { cv.wait(mutex, timeout) unless released }
+
+      if status.nil?
+        orig.call(*args)
+      else
+        orig.receiver.render(json: {}, status: status)
+      end
+    end
+    # rubocop:enable RSpec/AnyInstance
+
+    release
+  end
+    # rubocop:enable RSpec/AnyInstance
+  end
+
   it 'swaps the collapse/expand buttons for the display switch in the flat list, and back' do
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist .volume-collapse-toggle')
@@ -83,6 +120,39 @@ describe 'Author TOC action bar', :js do
     expect(page).to have_no_css('.toc-snippet', visible: :all)
     expect(page).to have_no_content('The opening line of the Alpha poem.')
     expect(page).to have_css('#tocmode_list.active')
+  end
+
+  # The flat list is unpaginated, so fetching the excerpts of a prolific author can
+  # take a couple of seconds with nothing on screen to show for it (bead 11x).
+  it 'masks the page while the excerpts are being fetched, and unmasks once they are in' do
+    delay_snippets(1.5)
+    visit authority_path(author)
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
+
+    find('#tocmode_snippets').click
+
+    expect(page).to have_css('#PopupMask')
+    expect(page).to have_css('#spinnerdiv', visible: :visible)
+
+    expect(page).to have_css('.toc-snippet', count: 2, wait: 10)
+    expect(page).to have_no_css('#PopupMask')
+    expect(page).to have_css('#spinnerdiv', visible: :hidden)
+  end
+
+  it 'takes the mask down even when the excerpt request fails' do
+    delay_snippets(1.5, status: :internal_server_error)
+    visit authority_path(author)
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
+
+    find('#tocmode_snippets').click
+    expect(page).to have_css('#PopupMask')
+
+    # No excerpts to show, but the reader must not be left staring at a masked page.
+    expect(page).to have_no_css('#PopupMask', wait: 10)
+    expect(page).to have_css('#spinnerdiv', visible: :hidden)
+    expect(page).to have_no_css('.toc-snippet', visible: :all)
   end
 
   it 'heads each excerpt with the work\'s metadata' do
