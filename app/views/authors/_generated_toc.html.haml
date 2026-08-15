@@ -1,3 +1,14 @@
+-# Kept outside #browse_mainlist: a re-sort replaces that div's entire contents.
+#spinnerdiv{ style: 'display: none; top: 50%; left: 50%;' }
+  #floatingCirclesG
+    .f_circleG#frotateG_01
+    .f_circleG#frotateG_02
+    .f_circleG#frotateG_03
+    .f_circleG#frotateG_04
+    .f_circleG#frotateG_05
+    .f_circleG#frotateG_06
+    .f_circleG#frotateG_07
+    .f_circleG#frotateG_08
 .mainlist#browse_mainlist
   = cache_unless current_user&.editor?, @author, expires_in: 12.hours do
     :ruby
@@ -570,10 +581,14 @@
     var TocSnippets = (function() {
       var BATCH_SIZE = 25;      // must not exceed the server's per-request cap
       var BATCH_DEBOUNCE = 60;  // ms to collect ids scrolled into view
+      var MASK_WATCHDOG = 500;  // ms to wait for the observer to hand us its rows
       var enabled = false;
       var observer = null;
       var pending = [];
       var timer = null;
+      var inflight = 0;         // snippet requests currently in the air
+      var masked = false;       // is the loading mask up?
+      var eager = false;        // are we in a burst the reader is waiting on?
 
       function $rows() { return $('#sorted_card .manifestation-node'); }
       function midOf(node) { return $(node).find('.sorting-metadata').attr('data-mid'); }
@@ -590,20 +605,48 @@
         } catch (e) {}
       }
 
+      // The list is unpaginated, so the first batch of excerpts can keep a reader of
+      // a prolific author waiting a couple of seconds. Mask the page meanwhile, with
+      // the same spinner the /works filters use. Only the bursts the reader asked for
+      // (entering the summaries view, re-sorting in it) raise the mask -- the batches
+      // fetched later, while scrolling, must not block the very scrolling that
+      // triggered them.
+      function maskUp() {
+        if (masked) { return; }
+        masked = true;
+        startModal('spinnerdiv');
+      }
+
+      function maskDown() {
+        if (!masked) { return; }
+        masked = false;
+        stopModal('spinnerdiv');
+      }
+
+      function maskDownIfIdle() {
+        if (inflight === 0 && pending.length === 0 && timer === null) { maskDown(); }
+      }
+
       function flush() {
         timer = null;
         while (pending.length > 0) {
           var chunk = pending.splice(0, BATCH_SIZE);
           var params = { ids: chunk.join(','), authority_id: #{@author.id} };
+          inflight++;
           $.getJSON("#{manifestation_snippets_path}", params, function(data) {
             if (!enabled) { return; } // reader switched back to the plain list meanwhile
             $.each(data, function(mid, html) { render(mid, html); });
+          }).always(function() {
+            // always, not done: a failed batch must not leave the page masked.
+            inflight--;
+            maskDownIfIdle();
           });
         }
       }
 
       function request(mid) {
         pending.push(mid);
+        if (eager) { maskUp(); }
         if (timer === null) { timer = window.setTimeout(flush, BATCH_DEBOUNCE); }
       }
 
@@ -634,6 +677,19 @@
         }
       }
 
+      // Start observing on the reader's behalf: whatever the observer asks for over
+      // the next moment is what the reader is waiting on, so mask the page for it.
+      // The observer hands us its rows asynchronously, hence the window rather than
+      // a straight flag around observe().
+      function observeEagerly() {
+        eager = true;
+        observe();
+        window.setTimeout(function() {
+          eager = false;
+          maskDownIfIdle(); // nothing was queued after all
+        }, MASK_WATCHDOG);
+      }
+
       return {
         enable: function() {
           enabled = true;
@@ -641,16 +697,18 @@
             // A screenful of margin so the next rows are ready before they show.
             observer = new IntersectionObserver(onIntersect, { rootMargin: '400px 0px' });
           }
-          observe();
+          observeEagerly();
         },
         disable: function() {
           enabled = false;
           pending = [];
+          eager = false;
+          maskDown(); // the reader left the summaries view; nothing left to wait for
           if (observer) { observer.disconnect(); }
           $('#browse_mainlist .toc-snippet').remove();
           $('#browse_mainlist .manifestation-node').removeAttr('data-snippet-requested');
         },
-        refresh: function() { if (enabled) { observe(); } }
+        refresh: function() { if (enabled) { observeEagerly(); } }
       };
     })();
 
