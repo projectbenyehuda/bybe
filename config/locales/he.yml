@@ -846,7 +846,7 @@ he:
   show: הצגת פרטים
   thedate: תאריך
   upload: העלאה
-  creation: יצירה
+  creation: חיבור
   publication: כותר
   comments: הערות
   popular_work_tags: תגיות נפוצות ליצירות
@@ -1408,10 +1408,11 @@ he:
   content: תוכן
   birth_year: שנת לידה
   death_year: שנת פטירה
-  creation_date: תאריך יצירה
+  creation_date: תאריך חיבור
   creation_date_explanation: "תאריך החיבור של היצירה, אם ידוע"
   publication_date: תאריך פרסום בדפוס
   publication_date_explanation: "תאריך פרסום בדפוס של מהדורת המקור שממנה הקלדנו"
+  publication_date_brief: מקור מודפס
   first_publication_date: תאריך פרסום ראשון
   first_publication_date_explanation: "תאריך הפרסום הראשון של היצירה, לפי הידוע"
   first_publication: פרסום ראשון
