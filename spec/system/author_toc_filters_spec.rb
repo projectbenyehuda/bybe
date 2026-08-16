@@ -126,6 +126,51 @@ describe 'Author TOC flat-list filters', :js do
     end
   end
 
+  # The chips count the author's whole oeuvre, so they contradict the list once
+  # something other than genre is filtering it.
+  it 'hides the author-card genre chips while a non-genre filter is active' do
+    visit authority_path(author)
+    expect(page).to have_css('#browse_mainlist')
+    expect(page).to have_css('.author-works-by-type', visible: :visible)
+
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
+    # entering filter mode with nothing filtered leaves the chips alone
+    expect(page).to have_css('.author-works-by-type', visible: :visible)
+
+    # a genre-only filter keeps them up, so they remain usable as toggles
+    check 'toc-filter-genre-poetry'
+    within('#sorted_card') { expect(page).to have_no_content('Beta Story') }
+    expect(page).to have_css('.author-works-by-type', visible: :visible)
+
+    # any other section hides them
+    check 'toc-filter-translated'
+    expect(page).to have_css('.author-works-by-type', visible: :hidden)
+
+    # ...and clearing that section brings them back
+    uncheck 'toc-filter-translated'
+    expect(page).to have_css('.author-works-by-type', visible: :visible)
+
+    fill_in 'toc-filter-name', with: 'Alpha'
+    expect(page).to have_css('.author-works-by-type', visible: :hidden)
+
+    find('#toc-filter-reset').click
+    expect(page).to have_css('.author-works-by-type', visible: :visible)
+  end
+
+  it 'restores the genre chips when leaving filter mode for the grouped view' do
+    visit authority_path(author)
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 2)
+
+    check 'toc-filter-translated'
+    expect(page).to have_css('.author-works-by-type', visible: :hidden)
+
+    choose_sort('colls')
+    expect(page).to have_css('#toc_filters_pane', visible: :hidden)
+    expect(page).to have_css('.author-works-by-type', visible: :visible)
+  end
+
   it 'preserves active filters when switching between flat-list sort orders' do
     visit authority_path(author)
     choose_sort('title')

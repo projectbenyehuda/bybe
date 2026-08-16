@@ -233,7 +233,12 @@
     // Mirror the pane's genre facet on the chips: with no genre selected every
     // chip looks active (nothing is filtered out); once some genres are selected
     // only those chips stay active and the rest are struck through.
-    window.syncGenreChips = function() {
+    // The counts on the chips are for the author's whole oeuvre, so once a filter
+    // other than genre is narrowing the list they would contradict what is on
+    // screen: hide the whole list then, and let the pane's genre facet (whose
+    // counts are faceted against the other filters) speak for the genres.
+    window.syncGenreChips = function(otherFiltersActive) {
+      $('.author-works-by-type').toggle(!otherFiltersActive);
       var anyChecked = $('.toc-filter-genre:checked').length > 0;
       $('.genre-toggle').each(function() {
         var checked = $('#toc-filter-genre-' + $(this).data('genre')).prop('checked');
