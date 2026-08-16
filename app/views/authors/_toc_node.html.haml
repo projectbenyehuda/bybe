@@ -1,6 +1,6 @@
 -# rubocop:disable Style/CaseLikeIf
 - nodeclass = case when toc_node.is_a?(TocTree::ManifestationNode) then 'manifestation-node' when toc_node.is_a?(TocTree::PlaceholderNode) then 'ph-node' else '' end
-%li{ class: nodeclass, style: toc_node.is_a?(TocTree::ManifestationNode) ? '' : 'margin-top: 12px; margin-bottom: 10px;' }
+%li{ class: nodeclass}
   - if toc_node.is_a?(TocTree::ManifestationNode)
     - m = toc_node.manifestation
     - e = m.expression
@@ -126,7 +126,6 @@
     -# Placeholder, toc_node should be a String with HTML layout
     - ci = toc_node.collection_item
     - if toc_node.markdown.present?
-      %br
       - if ci.alt_title.present?
         %h4= ci.alt_title
       - full_html = MultiMarkdown.new(ci.markdown).to_html
