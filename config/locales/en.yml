@@ -2024,6 +2024,7 @@ en:
   publication: Publication
   publication_date: Publication Date
   publication_date_explanation: "Print publication date of the source edition we transcribed from"
+  publication_date_brief: Publication
   first_publication_date: First Publication Date
   first_publication_date_explanation: "Date of the work's first known publication"
   first_publication: First Publication
