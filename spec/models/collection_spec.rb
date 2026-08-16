@@ -1054,6 +1054,57 @@ expect(html).to include("by-icon-v02\" title=\"#{expected_genre_title}\">t</span
     end
   end
 
+  describe '#sole_toc_manifestation' do
+    let(:volume) { create(:collection, collection_type: :volume) }
+    let(:manifestation) { create(:manifestation) }
+
+    it 'returns the single text a one-item collection would list' do
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      expect(volume.sole_toc_manifestation).to eq manifestation
+    end
+
+    it 'returns nil when the collection holds more than one text' do
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      create(:collection_item, collection: volume, item: create(:manifestation), seqno: 2)
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+
+    it 'returns nil for an empty collection' do
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+
+    it 'ignores paratexts and empty placeholders, which the ToC skips anyway' do
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      create(:collection_item, collection: volume, item: nil, markdown: 'a note', paratext: true, seqno: 2)
+      create(:collection_item, collection: volume, item: nil, alt_title: nil, markdown: nil, seqno: 3)
+      expect(volume.sole_toc_manifestation).to eq manifestation
+    end
+
+    it 'returns nil when a non-paratext note accompanies the text, since the ToC lists it too' do
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      create(:collection_item, collection: volume, item: nil, markdown: 'see also: something else', seqno: 2)
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+
+    it 'looks through sub-collections that hold nothing but that one text' do
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: volume, item: series, seqno: 1)
+      create(:collection_item, collection: series, item: manifestation, seqno: 1)
+      expect(volume.sole_toc_manifestation).to eq manifestation
+    end
+
+    it 'returns nil when a sub-collection holds several texts' do
+      series = create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+      create(:collection_item, collection: volume, item: series, seqno: 1)
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+
+    it 'returns nil when the single text is not published' do
+      create(:collection_item, collection: volume, item: create(:manifestation, status: :unpublished), seqno: 1)
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+  end
+
   describe '#invalidate_cached_credits!' do
     let(:collection) { create(:collection, collection_type: :volume) }
     let(:authority) { create(:authority) }
