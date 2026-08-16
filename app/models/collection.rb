@@ -228,6 +228,26 @@ class Collection < ApplicationRecord
     end
   end
 
+  # A collection whose entire table of contents is a single text is displayed *collapsed*: the
+  # containing view shows one heading, linking straight to that text, instead of repeating the
+  # very same title as both the collection's heading and its one-item ToC. Returns that lone
+  # Manifestation, or nil when the ToC has anything else to show. Sub-collections holding nothing
+  # but that one text (e.g. volume -> series -> text) are collapsed away as well.
+  def sole_toc_manifestation
+    # mirror the items toc_html_item would actually render: paratexts and empty placeholders are skipped
+    items = collection_items.reject do |ci|
+      ci.paratext || (ci.item.nil? && ci.markdown.blank? && ci.alt_title.blank?)
+    end
+    return nil unless items.one?
+
+    ci = items.first
+    return nil if ci.item.nil? || !ci.public?
+    return ci.item.sole_toc_manifestation if ci.item.is_a?(Collection)
+    return nil unless ci.item_type == 'Manifestation'
+
+    ci.item
+  end
+
   # same genre-glyph markup used elsewhere in Collection#show for non-periodical/volume_series items
   def toc_html_genre_glyph(genre)
     helpers = ApplicationController.helpers

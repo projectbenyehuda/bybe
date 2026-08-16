@@ -219,7 +219,9 @@
             %a{ name: "collitem_text_#{i}" }
             - card_attrs = { data: { item_id: ci.item_id, item_type: ci.item_type } }
             - card_attrs[:style] = "margin-right: #{nesting_level * 10}px;" if nesting_level > 0
-            - if html.nil? && ci.item_type == 'Collection'
+            -# a sub-collection whose whole ToC is a single text is collapsed into it: heading only (#1488)
+            - collapsed_text = @collapsed_texts[ci.id]
+            - if collapsed_text.present? || (html.nil? && ci.item_type == 'Collection')
               -# This is a sub-collection header - render with full detail
               -# Stable anchor (keyed by sub-collection id) so search results and deep links can jump here
               %a{ name: "collection_#{ci.item_id}" }
@@ -227,8 +229,10 @@
                 .by-card-header-v02
                   .by-icon-v02
                   .headline-1-v02
-                    - link = url_for_collection_item(ci)
-                    %span.by-icon-v02{title: textify_genre(genre)}= glyph_for_genre(genre)
+                    -# a collapsed heading takes over the link and genre glyph of the text it stands for
+                    - link = collapsed_text.present? ? url_for(collapsed_text) : url_for_collection_item(ci)
+                    - glyph_genre = collapsed_text.present? ? collapsed_text.genre : genre
+                    %span.by-icon-v02{title: textify_genre(glyph_genre)}= glyph_for_genre(glyph_genre)
                     - if link.present?
                       = link_to '‏' + title, link # RLM character to help with LTR elements in title. Fixes #664
                     - else
