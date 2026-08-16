@@ -673,6 +673,7 @@ class CollectionsController < ApplicationController
 
   def prep_for_show
     @htmls = []
+    @collapsed_texts = {} # collection_item id => the lone Manifestation its ToC would have listed
     counter = { value: 1 } # Use hash to maintain reference across recursive calls
     parent_authorities = @collection.involved_authorities.map { |ia| [ia.authority_id, ia.role] }
 
@@ -697,6 +698,11 @@ class CollectionsController < ApplicationController
         next unless (@collection.periodical? && ci.item.collection_type == 'periodical_issue') ||
                     (@collection.volume_series? && ci.item.collection_type == 'volume')
 
+        # A volume/issue whose whole ToC is a single text would list that text's title -- the very
+        # same title -- right under its own heading, so Collection#show collapses the two into one
+        # heading (see #1488). The ToC itself is still built, for the print and download variants.
+        sole_text = ci.item.sole_toc_manifestation
+        @collapsed_texts[ci.id] = sole_text if sole_text.present?
         html = ci.item.toc_html(url_builder: method(:url_for))
         @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false,
                    ci.genre, counter[:value], ci, 0, [], nil] # nil for footnote (TOC items don't have footnotes)
