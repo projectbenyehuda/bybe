@@ -255,6 +255,34 @@ describe CollectionsController do
         end
       end
     end
+
+    context 'when a volume_series holds volumes of a single text each' do
+      subject! { get :show, params: { id: collection.id } }
+
+      let(:sole_text) { create(:manifestation, title: 'The Only Text') }
+      let(:one_text_volume) do
+        create(:collection, title: 'The Only Text', collection_type: 'volume', manifestations: [sole_text])
+      end
+      let(:multi_text_volume) do
+        create(:collection, title: 'A Fuller Volume', collection_type: 'volume',
+                            manifestations: create_list(:manifestation, 2))
+      end
+      let(:collection) do
+        create(:collection, collection_type: 'volume_series',
+                            included_collections: [one_text_volume, multi_text_volume])
+      end
+
+      it 'collapses the single-text volume, showing its title only once' do
+        card = Capybara.string(response.body).find(".proofable[data-item-id='#{one_text_volume.id}']")
+        expect(card).to have_link('The Only Text', href: manifestation_path(sole_text), count: 1)
+        expect(card).to have_no_css('.collection_toc')
+      end
+
+      it 'still lists the table of contents of a volume holding several texts' do
+        card = Capybara.string(response.body).find(".proofable[data-item-id='#{multi_text_volume.id}']")
+        expect(card).to have_css('.collection_toc li', count: 2)
+      end
+    end
   end
 
   describe '#show with search query parameter' do
