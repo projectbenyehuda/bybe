@@ -109,6 +109,9 @@ class Authority < ApplicationRecord
 
   before_save :update_other_designation, if: :name_changed?
   before_save :normalize_sort_name
+  before_save :sort_legacy_credits, if: :legacy_credits_changed?
+  # editing the manual credits changes the merged list, so the cache must go (cf. Collection)
+  before_save :clear_cached_credits, if: :legacy_credits_changed?
 
   after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
   # covers create, update and destroy of a pageless authority, as well as the flag being turned off
@@ -165,6 +168,18 @@ class Authority < ApplicationRecord
     self.sort_name = sort_name.gsub(/[\u05BE\u002D\u2013\u2014]/, ' ')
   end
 
+  # Keep the manually-maintained credits alphabetically sorted, so they are easier to edit later
+  # (and so they match the order in which credits are displayed).
+  def sort_legacy_credits
+    return if legacy_credits.blank?
+
+    self.legacy_credits = self.class.sorted_credit_lines(legacy_credits.lines).join("\n")
+  end
+
+  def clear_cached_credits
+    self.cached_credits = nil
+  end
+
   # return all collections of type volume that are associated with this authority
   def volumes
     Collection.joins(:involved_authorities).where(collection_type: 'volume', involved_authorities: { authority_id: id })
@@ -200,19 +215,25 @@ class Authority < ApplicationRecord
     )
   end
 
-  def fetch_credits
-    return cached_credits if cached_credits.present?
+  # Clean up a list of raw credit lines: strip them, drop blanks and placeholders,
+  # de-duplicate, and sort alphabetically.
+  def self.sorted_credit_lines(lines)
+    lines.map(&:strip).reject { |line| line.blank? || line == '...' }.uniq.sort
+  end
 
+  def fetch_credits
+    # Sorting (and de-duplicating) on read too, so that credits cached before this behavior was
+    # introduced, or cached by some other code path, are still presented as one clean list.
+    return self.class.sorted_credit_lines(cached_credits.lines).join("\n") if cached_credits.present?
+
+    # manual credits and the ones harvested from the works are merged into a single list, so a
+    # volunteer listed in both appears only once
     credits = []
     credits += legacy_credits.lines if legacy_credits.present?
     published_manifestations.each do |m|
       credits += m.credits.lines if m.credits.present?
     end
-    credits.map!(&:strip)
-    credits.uniq!
-    credits.reject! { |c| c == '...' }
-    credits.sort!
-    self.cached_credits = credits.join("\n")
+    self.cached_credits = self.class.sorted_credit_lines(credits).join("\n")
     save!
     return cached_credits
   end

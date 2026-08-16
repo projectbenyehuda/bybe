@@ -997,4 +997,53 @@ describe Authority do
       expect(result).not_to include(popular_non_featurable)
     end
   end
+
+  describe 'credits' do
+    let(:authority) { create(:authority, legacy_credits: legacy_credits) }
+    let(:legacy_credits) { nil }
+
+    describe '#fetch_credits' do
+      subject(:fetched_credits) { authority.fetch_credits.lines.map(&:strip) }
+
+      let(:legacy_credits) { "רינה רוזן\nגלי סנדיק" }
+
+      before do
+        create(:manifestation, author: authority, credits: "נורית רכס\nגלי סנדיק")
+        create(:manifestation, author: authority, credits: "אביבה שמר\n...\n\nשלומית אפל")
+      end
+
+      # 'גלי סנדיק' appears both in the manual credits and in a work's credits, and 'נורית רכס'
+      # appears in two different works
+      it 'merges manual and harvested credits into a sorted list with no repetitions' do
+        expect(fetched_credits).to eq ['אביבה שמר', 'גלי סנדיק', 'נורית רכס', 'רינה רוזן', 'שלומית אפל']
+      end
+
+      it 'sorts and dedups credits cached in an arbitrary order (e.g. cached by older code)' do
+        authority.update_column(:cached_credits, "נורית רכס\nאביבה שמר\nנורית רכס")
+        expect(fetched_credits).to eq ['אביבה שמר', 'נורית רכס']
+      end
+
+      it 'recomputes the credits when the manual credits are edited' do
+        expect(fetched_credits).to include 'רינה רוזן'
+        authority.update!(legacy_credits: 'גלי סנדיק')
+        expect(authority.fetch_credits.lines.map(&:strip)).not_to include 'רינה רוזן'
+      end
+    end
+
+    describe 'legacy_credits normalization on save' do
+      let(:legacy_credits) { " נורית רכס \nגלי סנדיק\n\nנורית רכס\nאביבה שמר" } # with a repeated name
+
+      it 'stores the manually-maintained credits sorted, stripped and deduplicated' do
+        expect(authority.reload.legacy_credits).to eq "אביבה שמר\nגלי סנדיק\nנורית רכס"
+      end
+
+      context 'when legacy_credits is blank' do
+        let(:legacy_credits) { nil }
+
+        it 'leaves it alone' do
+          expect(authority.reload.legacy_credits).to be_nil
+        end
+      end
+    end
+  end
 end
