@@ -327,6 +327,17 @@
 
       function hasProps(d) { return d.featured || d.recommended || d.aboutness || d.tagging; }
 
+      // Is any section OTHER than genre narrowing the list? The author-card genre
+      // chips show a per-genre count of the author's whole oeuvre, so once another
+      // filter is in effect they no longer describe what the list is showing, and
+      // the card hides them (the pane's own genre facet, with live faceted counts,
+      // takes over). Genre-only filtering leaves the chips up, so they stay usable
+      // as toggles.
+      function otherSectionsActive(s) {
+        return !!(s.name || s.langs.length || s.translatedAny || s.chars.length ||
+                  s.fromYear != null || s.toYear != null);
+      }
+
       // Does a node match every active filter section, optionally excluding one section.
       function matches(d, s, exclude) {
         if (exclude !== 'name' && s.name && d.title.indexOf(s.name) === -1) { return false; }
@@ -396,7 +407,7 @@
         });
         updateCounts(state, all);
         // Keep the author-card genre chips in sync with the pane's genre facet.
-        if (window.syncGenreChips) { window.syncGenreChips(); }
+        if (window.syncGenreChips) { window.syncGenreChips(otherSectionsActive(state)); }
       }
 
       // A filter interaction can shrink the flat list dramatically, leaving a
