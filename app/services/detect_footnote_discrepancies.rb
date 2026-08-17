@@ -25,8 +25,10 @@ class DetectFootnoteDiscrepancies < ApplicationService
 
     sections(markdown.to_s, split_on_sections).each do |section|
       references, bodies = scan(section)
-      body_ids = bodies.map { |entry| entry[:id] }
-      reference_ids = references.map { |entry| entry[:id] }
+      # sets, not arrays: a text can carry hundreds of footnotes, and this runs on every
+      # render of an editing screen
+      body_ids = bodies.to_set { |entry| entry[:id] }
+      reference_ids = references.to_set { |entry| entry[:id] }
       orphan_references.concat(references.reject { |entry| body_ids.include?(entry[:id]) })
       orphan_bodies.concat(bodies.reject { |entry| reference_ids.include?(entry[:id]) })
     end
@@ -74,11 +76,12 @@ class DetectFootnoteDiscrepancies < ApplicationService
   end
 
   # Collapses repeats of the same identifier within a section into one entry listing all
-  # the lines it appears on.
+  # the lines it appears on. Lines are deduped, since the same id can appear twice on one
+  # line (e.g. '[^1][^1]') and reporting it twice would be noise.
   def group(entries)
     entries.group_by { |entry| [entry[:section], entry[:id]] }
            .map do |(section, id), group|
-             { id: id, lines: group.map { |entry| entry[:line] }, section: section }
+             { id: id, lines: group.map { |entry| entry[:line] }.uniq, section: section }
            end
   end
 end

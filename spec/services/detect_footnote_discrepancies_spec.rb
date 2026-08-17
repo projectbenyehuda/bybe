@@ -41,6 +41,14 @@ describe DetectFootnoteDiscrepancies do
     end
   end
 
+  describe 'the same reference twice on one line' do
+    let(:markdown) { "טקסט עם הפניה כפולה[^9][^9]\n" }
+
+    it 'reports that line once' do
+      expect(result[:orphan_references]).to eq([{ id: '9', lines: [1], section: nil }])
+    end
+  end
+
   describe 'a footnote body that itself contains a reference' do
     let(:markdown) { "טקסט[^1]\n\n[^1]: גוף ההערה המפנה להערה אחרת[^2]\n" }
 
