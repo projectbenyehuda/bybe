@@ -1,0 +1,23 @@
+-#
+  Clickable, collapsible report of footnote references and bodies that have no counterpart.
+  `discrepancies` is the hash returned by DetectFootnoteDiscrepancies (nil is tolerated, so
+  callers need not compute it); `dom_id` must be unique per page, since several markdown
+  editors can share one.
+- orphan_references = discrepancies.present? ? discrepancies[:orphan_references] : []
+- orphan_bodies = discrepancies.present? ? discrepancies[:orphan_bodies] : []
+- if orphan_references.present? || orphan_bodies.present?
+  .footnote-discrepancies
+    %a.footnote-discrepancies-toggle{ href: "##{dom_id}", data: { toggle: 'collapse' },
+                                      'aria-expanded': 'false', 'aria-controls': dom_id }
+      = t('footnote_discrepancies.indicator', count: orphan_references.size + orphan_bodies.size)
+    .collapse{ id: dom_id }
+      - if orphan_references.present?
+        %h5= t('footnote_discrepancies.orphan_references')
+        %ul.footnote-discrepancies-list
+          - orphan_references.each do |entry|
+            %li= footnote_discrepancy_label(entry)
+      - if orphan_bodies.present?
+        %h5= t('footnote_discrepancies.orphan_bodies')
+        %ul.footnote-discrepancies-list
+          - orphan_bodies.each do |entry|
+            %li= footnote_discrepancy_label(entry)

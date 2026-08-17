@@ -360,4 +360,17 @@ module ApplicationHelper
   def role_options
     InvolvedAuthority.roles.keys.map { |role| [textify_authority_role(role), role] }
   end
+
+  # One line of the footnote-discrepancy report, e.g. '[^1] (lines 4, 17)' with the
+  # containing '&&&' section appended when the markdown holds several works. The identifier
+  # is wrapped in a bdi so its brackets aren't mirrored by the surrounding RTL page.
+  def footnote_discrepancy_label(entry)
+    label = t('footnote_discrepancies.entry_html',
+              count: entry[:lines].size,
+              id: tag.bdi("[^#{entry[:id]}]", dir: 'ltr'),
+              lines: entry[:lines].join(', '))
+    return label if entry[:section].blank?
+
+    safe_join([label, ' ', t('footnote_discrepancies.in_section', section: entry[:section])])
+  end
 end

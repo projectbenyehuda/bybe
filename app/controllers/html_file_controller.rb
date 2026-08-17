@@ -129,6 +129,8 @@ class HtmlFileController < ApplicationController
       @html = MultiMarkdown.new(@markdown.gsub(/^&&& (.*)/, '<hr style="border-color:#2b0d22;border-width:20px;margin-top:40px"/><h1>\1</h1>')).to_html.force_encoding('UTF-8') # TODO: figure out why to_html defaults to ASCII 8-bit
     end
     @html = highlight_suspicious_markdown(@html)
+    # split works are ingested separately, so each '&&&' part is its own footnote namespace
+    @footnote_discrepancies = DetectFootnoteDiscrepancies.call(@markdown, split_on_sections: true)
   end
 
   def edit

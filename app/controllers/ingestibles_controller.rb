@@ -161,6 +161,9 @@ end
       flash.now[:alert] = [flash.now[:alert], t('ingestible.docx_conversion_error', error: @ingestible.docx_conversion_error)].compact.join(' ')
     end
     prep(true) # rendering of HTML needed for editing screen
+    # the texts tab shows one text at a time; scan the one about to be rendered
+    shown_text = @ingestible.texts[(params[:text_index] || 0).to_i]
+    @text_footnote_discrepancies = shown_text.present? ? DetectFootnoteDiscrepancies.call(shown_text.content) : nil
     @tab = params[:tab]
     @authority_by_name = Authority.all.to_h { |a| [a.name, a.id] }
   end
@@ -418,6 +421,8 @@ end
     @html = ''
     @disable_submit = false
     @markdown_titles = []
+    # each '&&&' section becomes a work of its own on ingestion, so footnotes may not cross one
+    @footnote_discrepancies = DetectFootnoteDiscrepancies.call(@ingestible.markdown, split_on_sections: true)
     return if @ingestible.works_buffer.blank?
 
     sections = JSON.parse(@ingestible.works_buffer)

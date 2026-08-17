@@ -18,6 +18,8 @@
           != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
           = link_to t(:to_the_work_in_the_site), manifestation_path(@m), target: '_blank'
     %hr
+    = render partial: 'shared/footnote_discrepancies',
+             locals: { discrepancies: @footnote_discrepancies, dom_id: 'manifestation_footnote_discrepancies' }
     .markdown_container.row
       .col-sm-3
         #legacy_markdown_link
