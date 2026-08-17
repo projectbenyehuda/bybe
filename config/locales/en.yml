@@ -1559,6 +1559,17 @@ en:
   footnotes: Footnotes
   footnote_popover_jump_link: "To the footnote at the end of the text"
   footnote_popover_close: "Close footnote"
+  footnote_discrepancies:
+    indicator:
+      one: "One footnote problem found – click for details"
+      other: "%{count} footnote problems found – click for details"
+    orphan_references: "Footnote references with no matching body:"
+    orphan_bodies: "Footnote bodies with no matching reference:"
+    entry_html:
+      one: "%{id} (line %{lines})"
+      other: "%{id} (lines %{lines})"
+    in_section: "in section “%{section}”"
+    goto_line: "Place the caret at the start of this line"
   for_pasting: Text for Pasting
   for_publishers_project: For works uploaded as part of the publishers' project only
   for_tag: For tag "%{tag}"

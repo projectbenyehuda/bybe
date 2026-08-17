@@ -187,6 +187,17 @@ he:
   footnotes: הערות שוליים
   footnote_popover_jump_link: "להערת השוליים בסוף הטקסט"
   footnote_popover_close: "סגירת חלונית הערת השוליים"
+  footnote_discrepancies:
+    indicator:
+      one: "נמצאה בעיה אחת בהערות השוליים – לחצו לפרטים"
+      other: "נמצאו %{count} בעיות בהערות השוליים – לחצו לפרטים"
+    orphan_references: "הפניות להערת שוליים שאין להן גוף הערה:"
+    orphan_bodies: "גופי הערות שוליים שאין להם הפניה:"
+    entry_html:
+      one: "%{id} (שורה %{lines})"
+      other: "%{id} (שורות %{lines})"
+    in_section: "בקטע „%{section}”"
+    goto_line: "מיקום הסמן בתחילת השורה"
   images: תמונות
   tables: טבלאות
   some: חלקי

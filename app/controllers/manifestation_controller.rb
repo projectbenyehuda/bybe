@@ -672,6 +672,7 @@ class ManifestationController < ApplicationController
     @html = MultiMarkdown.new(@m.markdown).to_html.force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '') # remove MMD's automatic figcaptions
     @html = highlight_suspicious_markdown(@html) # highlight suspicious markdown in backend
     @markdown = @m.markdown
+    @footnote_discrepancies = DetectFootnoteDiscrepancies.call(@markdown)
     h = @m.legacy_htmlfile
     return if h.nil? || h.url.nil? || h.url.empty?
 
@@ -825,6 +826,7 @@ class ManifestationController < ApplicationController
       @html = MultiMarkdown.new(params[:markdown]).to_html.force_encoding('UTF-8').gsub(%r{<figcaption>.*?</figcaption>}, '') # remove MMD's automatic figcaptions
       @html = highlight_suspicious_markdown(@html) # highlight suspicious markdown in backend
       @markdown = params[:markdown]
+      @footnote_discrepancies = DetectFootnoteDiscrepancies.call(@markdown)
       @newtitle = params[:newtitle]
 
       h = @m.legacy_htmlfile

@@ -42,6 +42,9 @@
         = render partial: 'ingestible_texts/textarea_cache_widget',
                  locals: { cache_versions: cache_versions, current_title: text.title,
                            save_cache_url: save_cache_url, fetch_cache_url: fetch_cache_url }
+    = render partial: 'shared/footnote_discrepancies',
+             locals: { discrepancies: @text_footnote_discrepancies,
+                       dom_id: 'ingestible_text_footnote_discrepancies' }
     .markdown_container.row
       .col-sm-3
         = f.text_area :content, class: 'textarea100 markdown'

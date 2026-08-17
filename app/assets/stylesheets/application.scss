@@ -1312,3 +1312,55 @@ p.by-genre-name-v02.headline-2-v02 {
     flex: 0 0 auto;
   }
 }
+
+// footnote reference/body mismatch report shown above the markdown editors
+// (shared/_footnote_discrepancies)
+.footnote-discrepancies {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+
+  .footnote-discrepancies-toggle {
+    display: block;
+    font-weight: bold;
+    color: #721c24;
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+      color: #721c24;
+      text-decoration: underline;
+    }
+  }
+
+  h5 {
+    margin-top: 10px;
+  }
+
+  .footnote-discrepancies-list {
+    margin-bottom: 0;
+  }
+
+  // the whole reported row is clickable, as is each line number within it
+  li.js-goto-markdown-line {
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: rgba(114, 28, 36, 0.1);
+    }
+  }
+
+  a.js-goto-markdown-line {
+    color: #721c24;
+    text-decoration: underline;
+
+    &:hover,
+    &:focus {
+      color: #491217;
+    }
+  }
+}

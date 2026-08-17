@@ -37,6 +37,8 @@
                        { include_blank: true })
       .row
         .col-md-12
+          = render partial: 'shared/footnote_discrepancies',
+                   locals: { discrepancies: @footnote_discrepancies, dom_id: 'html_file_footnote_discrepancies' }
           .markdown_container.row
             .col-sm-3
               #legacy_markdown_link

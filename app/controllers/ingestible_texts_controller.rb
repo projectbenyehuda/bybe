@@ -14,6 +14,7 @@ class IngestibleTextsController < ApplicationController
     # Generate HTML with unique footnote anchors for this specific text
     texthtml = highlight_suspicious_markdown(MarkdownToHtml.call(@text.content))
     @text_html = footnotes_noncer(texthtml, "txt_#{@text_index}")
+    @text_footnote_discrepancies = DetectFootnoteDiscrepancies.call(@text.content)
   end
 
   def update

@@ -175,6 +175,9 @@
       .container-fluid
         .row
           .col-md-12
+            = render partial: 'shared/footnote_discrepancies',
+                     locals: { discrepancies: @footnote_discrepancies,
+                               dom_id: 'ingestible_footnote_discrepancies' }
             = form_for @ingestible, url: update_markdown_ingestible_path(@ingestible) do |f|
               .markdown_container.row
                 .col-sm-3
