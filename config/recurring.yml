@@ -34,7 +34,10 @@ production:
     #command: 'Manifestation.update_suspected_typos_list'
     # Every Sunday at 2:00AM
     #schedule: '0 2 * * 0 Asia/Jerusalem'
-
+  import_dict:
+    command: "system('bin/rake', 'dict:import[/export/dict.db,24412]')"
+    # Every Tuesday and Friday at 3:00AM
+    schedule: '0 3 * * 2,5 Asia/Jerusalem'
 development:
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
