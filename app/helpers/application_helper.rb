@@ -368,9 +368,21 @@ module ApplicationHelper
     label = t('footnote_discrepancies.entry_html',
               count: entry[:lines].size,
               id: tag.bdi("[^#{entry[:id]}]", dir: 'ltr'),
-              lines: entry[:lines].join(', '))
+              lines: footnote_discrepancy_line_links(entry[:lines]))
     return label if entry[:section].blank?
 
     safe_join([label, ' ', t('footnote_discrepancies.in_section', section: entry[:section])])
+  end
+
+  # Line numbers as links; shared/_markdown_utils turns a click into a caret jump to the
+  # start of that line in the markdown textarea it is scoped to.
+  def footnote_discrepancy_line_links(lines)
+    safe_join(
+      lines.map do |line|
+        link_to(line, '#', class: 'js-goto-markdown-line', data: { line: line },
+                           title: t('footnote_discrepancies.goto_line'))
+      end,
+      ', '
+    )
   end
 end

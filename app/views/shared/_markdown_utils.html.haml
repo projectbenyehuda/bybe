@@ -22,6 +22,17 @@
       var caretPos = jQuery(element_id)[0].selectionStart;
       replace_range(caretPos, caretPos, txtToAdd);
     }
+    // Offset of the first character of the given 1-based line, clamped to the buffer end.
+    function line_start_offset(line) {
+      var buf = jQuery(element_id).val();
+      var offset = 0;
+      for (var i = 1; i < line; i++) {
+        var newline = buf.indexOf("\n", offset);
+        if (newline < 0) return buf.length;
+        offset = newline + 1;
+      }
+      return offset;
+    }
     // Bounds of the line the caret sits on, as [start, end).
     function caret_line_range() {
       var buf = jQuery(element_id).val();
@@ -113,6 +124,16 @@
       var action = markdown_actions[$(container_selector).find('.js-markdown-action').val()];
       if(action)
         action();
+    });
+    // a reported footnote discrepancy, or one of the line numbers within it, jumps the caret
+    // to that line. Stopping propagation lets a line number win over the row containing it.
+    $(container_selector).on('click', '.js-goto-markdown-line', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var el = jQuery(element_id)[0];
+      var offset = line_start_offset(parseInt($(this).data('line'), 10));
+      $.caretTo(el, offset); // focuses the textarea, but does not scroll it
+      scrollTextareaToOffset(el, offset);
     });
     // highlight suspicious angled brackets in rendered HTML
     $("#preview p:contains('> ')").each(function(){

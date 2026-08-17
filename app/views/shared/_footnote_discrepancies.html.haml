@@ -2,9 +2,12 @@
   Clickable, collapsible report of footnote references and bodies that have no counterpart.
   `discrepancies` is the hash returned by DetectFootnoteDiscrepancies (nil is tolerated, so
   callers need not compute it); `dom_id` must be unique per page, since several markdown
-  editors can share one.
-- orphan_references = discrepancies.present? ? discrepancies[:orphan_references] : []
-- orphan_bodies = discrepancies.present? ? discrepancies[:orphan_bodies] : []
+  editors can share one. Each reported row jumps the caret to the first line it names; the
+  line numbers within it are separately clickable. Both are handled by shared/_markdown_utils.
+:ruby
+  orphan_references = discrepancies.present? ? discrepancies[:orphan_references] : []
+  orphan_bodies = discrepancies.present? ? discrepancies[:orphan_bodies] : []
+  goto_title = t('footnote_discrepancies.goto_line')
 - if orphan_references.present? || orphan_bodies.present?
   .footnote-discrepancies
     %a.footnote-discrepancies-toggle{ href: "##{dom_id}", data: { toggle: 'collapse' },
@@ -15,9 +18,11 @@
         %h5= t('footnote_discrepancies.orphan_references')
         %ul.footnote-discrepancies-list
           - orphan_references.each do |entry|
-            %li= footnote_discrepancy_label(entry)
+            %li.js-goto-markdown-line{ data: { line: entry[:lines].first }, title: goto_title }
+              = footnote_discrepancy_label(entry)
       - if orphan_bodies.present?
         %h5= t('footnote_discrepancies.orphan_bodies')
         %ul.footnote-discrepancies-list
           - orphan_bodies.each do |entry|
-            %li= footnote_discrepancy_label(entry)
+            %li.js-goto-markdown-line{ data: { line: entry[:lines].first }, title: goto_title }
+              = footnote_discrepancy_label(entry)

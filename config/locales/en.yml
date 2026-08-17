@@ -1569,6 +1569,7 @@ en:
       one: "%{id} (line %{lines})"
       other: "%{id} (lines %{lines})"
     in_section: "in section “%{section}”"
+    goto_line: "Place the caret at the start of this line"
   for_pasting: Text for Pasting
   for_publishers_project: For works uploaded as part of the publishers' project only
   for_tag: For tag "%{tag}"

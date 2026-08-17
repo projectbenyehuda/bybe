@@ -1342,4 +1342,25 @@ p.by-genre-name-v02.headline-2-v02 {
   .footnote-discrepancies-list {
     margin-bottom: 0;
   }
+
+  // the whole reported row is clickable, as is each line number within it
+  li.js-goto-markdown-line {
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: rgba(114, 28, 36, 0.1);
+    }
+  }
+
+  a.js-goto-markdown-line {
+    color: #721c24;
+    text-decoration: underline;
+
+    &:hover,
+    &:focus {
+      color: #491217;
+    }
+  }
 }

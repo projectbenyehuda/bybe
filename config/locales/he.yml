@@ -197,6 +197,7 @@ he:
       one: "%{id} (שורה %{lines})"
       other: "%{id} (שורות %{lines})"
     in_section: "בקטע „%{section}”"
+    goto_line: "מיקום הסמן בתחילת השורה"
   images: תמונות
   tables: טבלאות
   some: חלקי
