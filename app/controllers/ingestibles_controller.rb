@@ -421,8 +421,9 @@ end
     @html = ''
     @disable_submit = false
     @markdown_titles = []
-    # each '&&&' section becomes a work of its own on ingestion, so footnotes may not cross one
-    @footnote_discrepancies = DetectFootnoteDiscrepancies.call(@ingestible.markdown, split_on_sections: true)
+    # a body may sit in any '&&&' section: relocate_footnotes only moves it to the work it
+    # belongs to when the buffer is split into texts
+    @footnote_discrepancies = DetectFootnoteDiscrepancies.call(@ingestible.markdown)
     return if @ingestible.works_buffer.blank?
 
     sections = JSON.parse(@ingestible.works_buffer)
