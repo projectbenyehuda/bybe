@@ -144,16 +144,12 @@ module ApplicationHelper
     return I18n.t(st)
   end
 
-  def uncached_sitenotice
-    @sns = Sitenotice.enabled.where('fromdate <= ? and todate >= ?', Date.today, Date.today)
-    return '' if @sns.empty?
-
-    return @sns.pluck(:body).join('<br />')
-  end
-
+  # HTML of the notices currently in effect, minus the ones this session has already dismissed.
+  # Memoized because the layouts ask for it twice: once to decide whether to show the banner, once to fill it.
   def sitenotice
-    Rails.cache.fetch('sitenotices', expires_in: 2.hours) do # memoize
-      uncached_sitenotice
+    @sitenotice ||= begin
+      dismissed = session[:dismissed_sitenotices] || []
+      Sitenotice.in_effect_notices.filter_map { |id, body| body unless dismissed.include?(id) }.join('<br />')
     end
   end
 

@@ -44,8 +44,11 @@ class SessionController < ApplicationController
     redirect_to '/'
   end
 
+  # dismiss the notices currently in effect, by id, so that later ones will still be shown
   def dismiss_sitenotice
-    session[:dismissed_sitenotice] = true
+    dismissed = session[:dismissed_sitenotices] || []
+    session[:dismissed_sitenotices] = (dismissed + Sitenotice.in_effect_notices.map { |id, _body| id }).uniq
+    head :ok
   end
 
   protected
