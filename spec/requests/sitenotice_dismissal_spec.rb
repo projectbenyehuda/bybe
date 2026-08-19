@@ -37,6 +37,15 @@ RSpec.describe 'Sitenotice dismissal', type: :request do
     expect(response.body).not_to include('Second notice')
   end
 
+  it 'builds the notice list only once per request, though the layout asks for it twice' do
+    allow(Sitenotice).to receive(:in_effect_notices).and_call_original
+
+    get page_path
+
+    expect(response.body).to include('First notice')
+    expect(Sitenotice).to have_received(:in_effect_notices).once
+  end
+
   it 'ignores notices that are not in effect' do
     create(:sitenotice, body: 'Expired notice', fromdate: 1.month.ago, todate: 1.week.ago)
     create(:sitenotice, body: 'Disabled notice', status: :disabled)

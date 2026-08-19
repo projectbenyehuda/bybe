@@ -144,10 +144,13 @@ module ApplicationHelper
     return I18n.t(st)
   end
 
-  # HTML of the notices currently in effect, minus the ones this session has already dismissed
+  # HTML of the notices currently in effect, minus the ones this session has already dismissed.
+  # Memoized because the layouts ask for it twice: once to decide whether to show the banner, once to fill it.
   def sitenotice
-    dismissed = session[:dismissed_sitenotices] || []
-    Sitenotice.in_effect_notices.filter_map { |id, body| body unless dismissed.include?(id) }.join('<br />')
+    @sitenotice ||= begin
+      dismissed = session[:dismissed_sitenotices] || []
+      Sitenotice.in_effect_notices.filter_map { |id, body| body unless dismissed.include?(id) }.join('<br />')
+    end
   end
 
   def linkify_people(people)
