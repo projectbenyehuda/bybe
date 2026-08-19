@@ -178,3 +178,12 @@ ul.lex {
     background-color: transparent;
   }
 }
+
+/* The latest-works pane title is longer than the entry sidebar is wide, and the base
+   `.headline-2-v02` rule (BY_styles_General.css) truncates it with an ellipsis. In this
+   pane, let it wrap onto as many lines as it needs. */
+.author-whats-new-content p.headline-2-v02 {
+  text-wrap: wrap;
+  overflow: visible;
+  text-overflow: clip;
+}
