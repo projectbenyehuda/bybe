@@ -51,12 +51,10 @@ describe 'footnote discrepancy scanning on the markdown-editing screens' do
     context 'with works separated by &&&' do
       let(:markdown) { "&&& ראשונה\nטקסט[^1]\n\n&&& שנייה\n[^1]: גוף ההערה\n" }
 
-      it 'does not match footnotes across the separator' do
+      # split_parts piles the bodies at the bottom until the file is actually split
+      it 'matches footnotes across the separator' do
         get :edit_markdown, params: { id: html_file.id }
-        expect(assigns(:footnote_discrepancies)).to eq(
-          orphan_references: [{ id: '1', lines: [2], section: 'ראשונה' }],
-          orphan_bodies: [{ id: '1', lines: [5], section: 'שנייה' }]
-        )
+        expect(assigns(:footnote_discrepancies)).to eq(orphan_references: [], orphan_bodies: [])
       end
     end
   end
@@ -64,16 +62,26 @@ describe 'footnote discrepancy scanning on the markdown-editing screens' do
   describe IngestiblesController do
     include_context 'when editor logged in', :edit_catalog
 
-    let!(:ingestible) do
-      create(:ingestible, :with_buffers, markdown: "&&& ראשונה\nטקסט[^1]\n\n&&& שנייה\n[^1]: גוף ההערה\n")
+    let(:markdown) { "&&& ראשונה\nטקסט[^1]\n\n&&& שנייה\n[^1]: גוף ההערה\n" }
+    let!(:ingestible) { create(:ingestible, :with_buffers, markdown: markdown) }
+
+    # the docx conversion leaves every body at the bottom of the buffer, so the full-markdown
+    # pane must accept a body sitting in a later work than its reference
+    it 'accepts a body anywhere in the buffer' do
+      get :edit, params: { id: ingestible.id }
+      expect(assigns(:footnote_discrepancies)).to eq(orphan_references: [], orphan_bodies: [])
     end
 
-    it 'scans the full markdown, per &&& section' do
-      get :edit, params: { id: ingestible.id }
-      expect(assigns(:footnote_discrepancies)).to eq(
-        orphan_references: [{ id: '1', lines: [2], section: 'ראשונה' }],
-        orphan_bodies: [{ id: '1', lines: [5], section: 'שנייה' }]
-      )
+    context 'when a footnote really has no counterpart' do
+      let(:markdown) { "&&& ראשונה\nטקסט[^1]\n\n&&& שנייה\n[^2]: גוף ההערה\n" }
+
+      it 'names the work each orphan sits in' do
+        get :edit, params: { id: ingestible.id }
+        expect(assigns(:footnote_discrepancies)).to eq(
+          orphan_references: [{ id: '1', lines: [2], section: 'ראשונה' }],
+          orphan_bodies: [{ id: '2', lines: [5], section: 'שנייה' }]
+        )
+      end
     end
 
     it 'scans the text shown in the texts tab' do

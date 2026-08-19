@@ -3,9 +3,7 @@
 require 'rails_helper'
 
 describe DetectFootnoteDiscrepancies do
-  subject(:result) { described_class.call(markdown, **options) }
-
-  let(:options) { {} }
+  subject(:result) { described_class.call(markdown) }
 
   describe 'markdown with matching footnotes' do
     let(:markdown) { "טקסט עם הערה[^1] ועוד אחת[^2]\n\n[^1]: גוף ההערה\n[^2]: גוף ההערה השנייה\n" }
@@ -93,15 +91,16 @@ describe DetectFootnoteDiscrepancies do
     end
   end
 
+  # The docx conversion leaves every footnote body at the bottom of the buffer; the bodies
+  # are only moved into the work they belong to when the buffer is split into texts. So a
+  # reference in one '&&&' section is satisfied by a body in another.
   describe 'markdown split into works by &&& separators' do
-    let(:options) { { split_on_sections: true } }
     let(:markdown) do
       "&&& יצירה ראשונה\nטקסט[^1]\n\n&&& יצירה שנייה\nטקסט אחר\n\n[^1]: גוף ההערה\n"
     end
 
-    it 'does not let a reference match a body in another work' do
-      expect(result[:orphan_references]).to eq([{ id: '1', lines: [2], section: 'יצירה ראשונה' }])
-      expect(result[:orphan_bodies]).to eq([{ id: '1', lines: [7], section: 'יצירה שנייה' }])
+    it 'lets a reference match a body in another work' do
+      expect(result).to eq(orphan_references: [], orphan_bodies: [])
     end
 
     context 'when reference and body sit in the same work' do
@@ -112,21 +111,31 @@ describe DetectFootnoteDiscrepancies do
       end
     end
 
-    context 'when the same markdown is scanned as a single document' do
-      let(:options) { { split_on_sections: false } }
+    context 'when a footnote is genuinely missing its counterpart' do
       let(:markdown) do
-        "&&& יצירה ראשונה\nטקסט[^1]\n\n&&& יצירה שנייה\nטקסט אחר\n\n[^1]: גוף ההערה\n"
+        "&&& יצירה ראשונה\nטקסט[^1]\n\n&&& יצירה שנייה\nטקסט אחר\n\n[^2]: גוף ההערה\n"
       end
 
-      it 'matches across the separators' do
-        expect(result).to eq(orphan_references: [], orphan_bodies: [])
+      it 'names the work each orphan sits in' do
+        expect(result[:orphan_references]).to eq([{ id: '1', lines: [2], section: 'יצירה ראשונה' }])
+        expect(result[:orphan_bodies]).to eq([{ id: '2', lines: [7], section: 'יצירה שנייה' }])
+      end
+    end
+
+    context 'when the same identifier is orphaned in two works' do
+      let(:markdown) { "&&& ראשונה\nטקסט[^1]\n\n&&& שנייה\nטקסט אחר[^1]\n" }
+
+      it 'reports it once per work, so each can be located' do
+        expect(result[:orphan_references]).to eq(
+          [{ id: '1', lines: [2], section: 'ראשונה' }, { id: '1', lines: [5], section: 'שנייה' }]
+        )
       end
     end
 
     context 'when text precedes the first separator' do
       let(:markdown) { "פתיח[^1]\n\n&&& יצירה ראשונה\nטקסט\n" }
 
-      it 'scans that leading text as its own untitled section' do
+      it 'leaves that leading text unlabelled' do
         expect(result[:orphan_references]).to eq([{ id: '1', lines: [1], section: nil }])
       end
     end
