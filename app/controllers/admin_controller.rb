@@ -902,7 +902,7 @@ class AdminController < ApplicationController
     @sn.todate = Date.new(params[:todate][:year].to_i, params[:todate][:month].to_i, params[:todate][:day].to_i)
     respond_to do |format|
       if @sn.save
-        Rails.cache.delete('sitenotices') # clear cached sitenotices
+        Sitenotice.clear_cache
         format.html { redirect_to url_for(action: :sitenotice_show, id: @sn.id), notice: t(:updated_successfully) }
         format.json { render json: @sn, status: :created, location: @sn }
       else
@@ -934,7 +934,7 @@ class AdminController < ApplicationController
       flash[:error] = I18n.t(:no_such_item)
       redirect_to url_for(action: :index)
     elsif @sn.save
-      Rails.cache.delete('sitenotices') # clear cached sitenotices
+      Sitenotice.clear_cache
       flash[:notice] = I18n.t(:updated_successfully)
       redirect_to action: :sitenotice_show, id: @sn.id
     else
@@ -947,7 +947,7 @@ class AdminController < ApplicationController
     @sn = Sitenotice.find(params[:id])
     unless @sn.nil?
       @sn.destroy
-      Rails.cache.delete('sitenotices') # clear cached sitenotices
+      Sitenotice.clear_cache
     end
     flash[:notice] = I18n.t(:deleted_successfully)
     redirect_to action: :sitenotice_list

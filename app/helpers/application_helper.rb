@@ -144,17 +144,10 @@ module ApplicationHelper
     return I18n.t(st)
   end
 
-  def uncached_sitenotice
-    @sns = Sitenotice.enabled.where('fromdate <= ? and todate >= ?', Date.today, Date.today)
-    return '' if @sns.empty?
-
-    return @sns.pluck(:body).join('<br />')
-  end
-
+  # HTML of the notices currently in effect, minus the ones this session has already dismissed
   def sitenotice
-    Rails.cache.fetch('sitenotices', expires_in: 2.hours) do # memoize
-      uncached_sitenotice
-    end
+    dismissed = session[:dismissed_sitenotices] || []
+    Sitenotice.in_effect_notices.filter_map { |id, body| body unless dismissed.include?(id) }.join('<br />')
   end
 
   def linkify_people(people)

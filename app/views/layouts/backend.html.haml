@@ -25,7 +25,7 @@
     %header
       #header.container-fluid
         #header-general.container-fluid
-          - unless sitenotice.empty? or session[:dismissed_sitenotice]
+          - unless sitenotice.empty?
             .internal-notification
               .internal-notification-content
                 %div
