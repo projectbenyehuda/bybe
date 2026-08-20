@@ -1504,6 +1504,17 @@ p.by-genre-name-v02.headline-2-v02 {
 	}
 }
 
+/* The latest-works pane (shared/_latest_works_by_author) has a title longer than the
+   sidebar it sits in is wide, and the base `.headline-2-v02` rule (BY_styles_General.css)
+   truncates it with an ellipsis. In this pane -- on the Authority TOC and on public
+   lexicon entries alike -- let it wrap onto as many lines as it needs. */
+#author-whats-new-bg p.headline-2-v02 {
+  text-wrap: wrap; /* overrides the base rule's `text-wrap: nowrap` */
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
 /* Sticky navbar for lexicon entries.
  * --lexicon-sticky-top is measured from the fixed #header at runtime (see
  * lexicon/entries/_navbar), because the header's height varies: the entry
