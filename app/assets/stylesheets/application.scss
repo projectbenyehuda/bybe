@@ -1509,7 +1509,8 @@ p.by-genre-name-v02.headline-2-v02 {
    truncates it with an ellipsis. In this pane -- on the Authority TOC and on public
    lexicon entries alike -- let it wrap onto as many lines as it needs. */
 #author-whats-new-bg p.headline-2-v02 {
-  white-space: normal; /* countermands the base rule's `text-wrap: nowrap` */
+  text-wrap: wrap; /* overrides the base rule's `text-wrap: nowrap` */
+  white-space: normal;
   overflow: visible;
   text-overflow: clip;
 }
