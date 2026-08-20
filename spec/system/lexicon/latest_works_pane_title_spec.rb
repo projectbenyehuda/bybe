@@ -16,11 +16,12 @@ RSpec.describe 'Latest-works pane title', :js, type: :system do
   end
 
   it 'wraps the pane title rather than clipping it' do
-    expect(page).to have_css('.author-whats-new-content p.headline-2-v02')
+    # located through Capybara, so a markup change fails with a clear "expected to find css" error
+    # rather than a null dereference inside the script below
+    title = find('.author-whats-new-content p.headline-2-v02')
 
-    metrics = page.evaluate_script(<<~JS)
-      (function() {
-        var el = document.querySelector('.author-whats-new-content p.headline-2-v02');
+    metrics = page.evaluate_script(<<~JS, title)
+      (function(el) {
         var style = window.getComputedStyle(el);
         return {
           scrollWidth: el.scrollWidth,
@@ -28,7 +29,7 @@ RSpec.describe 'Latest-works pane title', :js, type: :system do
           whiteSpace: style.whiteSpace,
           textOverflow: style.textOverflow
         };
-      })()
+      })(arguments[0])
     JS
 
     expect(metrics['whiteSpace']).not_to eq 'nowrap'
