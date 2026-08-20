@@ -17,12 +17,19 @@ class DetectFootnoteDiscrepancies < ApplicationService
   # legacy path) only distributes them among the works when the buffer is split. So the
   # section is recorded to say where an orphan is, never to decide whether it is one.
   SECTION_SEPARATOR = /\A&&&\s+(.*)/
+  # Markdown reaching us from legacy files and from pastes can carry CRLF or bare-CR line
+  # endings. String#lines only splits on LF, so a bare-CR buffer would look like a single
+  # line: nothing would match the anchored BODY_MARKER and every reference in the text would
+  # be reported as orphaned, even though MultiMarkdown normalizes the endings and renders the
+  # footnotes fine. Normalizing also keeps the reported line numbers in step with the textarea
+  # the report links into, since the browser presents a bare-CR value as LF-separated lines.
+  LINE_ENDING = /\r\n?/
 
   # @param markdown [String] the markdown to scan
   # @return [Hash] :orphan_references and :orphan_bodies, each an array of
   #   { id:, lines: [Integer], section: String or nil }, ordered by first appearance
   def call(markdown)
-    references, bodies = scan(markdown.to_s)
+    references, bodies = scan(normalize_line_endings(markdown.to_s))
     # sets, not arrays: a text can carry hundreds of footnotes, and this runs on every
     # render of an editing screen
     body_ids = bodies.to_set { |entry| entry[:id] }
@@ -33,6 +40,13 @@ class DetectFootnoteDiscrepancies < ApplicationService
   end
 
   private
+
+  # Rewriting the buffer is skipped when there is nothing to rewrite: this runs on every
+  # render of an editing screen, where the buffer is usually LF-only already and large enough
+  # (a few hundred KB) for a needless full-string copy to cost several milliseconds.
+  def normalize_line_endings(markdown)
+    markdown.include?("\r") ? markdown.gsub(LINE_ENDING, "\n") : markdown
+  end
 
   # Collects every reference and every body, tagged with the '&&&' section it falls in (nil
   # for a buffer holding a single work) and its 1-based line number in the whole buffer. A

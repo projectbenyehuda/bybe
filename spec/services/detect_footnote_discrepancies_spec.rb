@@ -83,6 +83,38 @@ describe DetectFootnoteDiscrepancies do
     end
   end
 
+  # Legacy files and pastes reach us with foreign line endings. MultiMarkdown normalizes them
+  # and renders the footnotes fine, and the browser shows the buffer as ordinary lines, so a
+  # scan that only knows about LF would raise an alarm about a text that is perfectly correct.
+  describe 'markdown with CRLF line endings' do
+    let(:markdown) { "טקסט עם הערה[^1] ועוד אחת[^2]\r\n\r\n[^1]: גוף ההערה\r\n" }
+
+    it 'recognises the bodies and numbers the lines as the editor sees them' do
+      expect(result[:orphan_references]).to eq([{ id: '2', lines: [1], section: nil }])
+      expect(result[:orphan_bodies]).to eq([])
+    end
+  end
+
+  describe 'markdown with bare CR line endings' do
+    let(:markdown) { "טקסט עם הערה[^1] ועוד אחת[^2]\r\r[^1]: גוף ההערה\r[^7]: גוף יתום\r" }
+
+    it 'recognises the bodies and numbers the lines as the editor sees them' do
+      expect(result[:orphan_references]).to eq([{ id: '2', lines: [1], section: nil }])
+      expect(result[:orphan_bodies]).to eq([{ id: '7', lines: [4], section: nil }])
+    end
+
+    context 'with &&& separators' do
+      let(:markdown) { "&&& יצירה ראשונה\rטקסט[^1]\r\r&&& יצירה שנייה\rטקסט אחר[^2]\r" }
+
+      it 'still splits the buffer into works' do
+        expect(result[:orphan_references]).to eq(
+          [{ id: '1', lines: [2], section: 'יצירה ראשונה' },
+           { id: '2', lines: [5], section: 'יצירה שנייה' }]
+        )
+      end
+    end
+  end
+
   describe 'blank markdown' do
     let(:markdown) { nil }
 
