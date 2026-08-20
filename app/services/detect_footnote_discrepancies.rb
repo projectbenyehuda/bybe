@@ -29,7 +29,7 @@ class DetectFootnoteDiscrepancies < ApplicationService
   # @return [Hash] :orphan_references and :orphan_bodies, each an array of
   #   { id:, lines: [Integer], section: String or nil }, ordered by first appearance
   def call(markdown)
-    references, bodies = scan(markdown.to_s.gsub(LINE_ENDING, "\n"))
+    references, bodies = scan(normalize_line_endings(markdown.to_s))
     # sets, not arrays: a text can carry hundreds of footnotes, and this runs on every
     # render of an editing screen
     body_ids = bodies.to_set { |entry| entry[:id] }
@@ -40,6 +40,13 @@ class DetectFootnoteDiscrepancies < ApplicationService
   end
 
   private
+
+  # Rewriting the buffer is skipped when there is nothing to rewrite: this runs on every
+  # render of an editing screen, where the buffer is usually LF-only already and large enough
+  # (a few hundred KB) for a needless full-string copy to cost several milliseconds.
+  def normalize_line_endings(markdown)
+    markdown.include?("\r") ? markdown.gsub(LINE_ENDING, "\n") : markdown
+  end
 
   # Collects every reference and every body, tagged with the '&&&' section it falls in (nil
   # for a buffer holding a single work) and its 1-based line number in the whole buffer. A
