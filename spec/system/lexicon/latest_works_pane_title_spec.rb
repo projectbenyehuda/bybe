@@ -18,7 +18,7 @@ RSpec.describe 'Latest-works pane title', :js, type: :system do
   it 'wraps the pane title rather than clipping it' do
     # located through Capybara, so a markup change fails with a clear "expected to find css" error
     # rather than a null dereference inside the script below
-    title = find('.author-whats-new-content p.headline-2-v02')
+    title = find('#author-whats-new-bg p.headline-2-v02')
 
     metrics = page.evaluate_script(<<~JS, title)
       (function(el) {
