@@ -570,6 +570,21 @@ describe ManifestationController do
           end
         end
 
+        # regression test: this date used to raise TypeError while normalizing, resulting in a 500
+        context 'when the work creation date is a Hebrew date range with geresh and gershayim' do
+          let(:params) do
+            { wtitle: 'T', mtitle: 'T', etitle: 'T', genre: 'prose', wlang: 'he',
+              intellectual_property: 'public_domain', wdate: 'ט׳–כ״ג שבט תר״ץ' }
+          end
+
+          it 'stores the date and its normalized form, and redirects to show page' do
+            expect(call).to redirect_to(manifestation_show_path(manifestation))
+            work.reload
+            expect(work.date).to eq 'ט׳–כ״ג שבט תר״ץ'
+            expect(work.normalized_creation_date).to eq '1930-02-07' # stored as a string column
+          end
+        end
+
         context 'when exclude_from_index is not set' do
           before { manifestation.update_column(:exclude_from_index, true) }
           let(:params) do

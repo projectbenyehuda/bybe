@@ -487,4 +487,71 @@ describe BybeUtils do
       end
     end
   end
+
+  describe '#normalize_date' do
+    context 'with Hebrew dates' do
+      it 'parses a day, month and year using ASCII quotes' do
+        expect(instance.normalize_date('כ"ג שבט תר"ץ')).to eq Date.new(1930, 2, 21)
+      end
+
+      it 'parses a day, month and year using Hebrew geresh and gershayim' do
+        expect(instance.normalize_date('כ״ג שבט תר״ץ')).to eq Date.new(1930, 2, 21)
+      end
+
+      # regression test: this used to raise TypeError (nil can't be coerced into Integer), causing a 500
+      it 'parses a range of days, taking the first day of the range' do
+        expect(instance.normalize_date('ט׳–כ״ג שבט תר״ץ')).to eq Date.new(1930, 2, 7)
+      end
+
+      it 'parses a range of days written with ASCII quotes and a hyphen' do
+        expect(instance.normalize_date(%q(ט'-כ"ג שבט תר"ץ))).to eq Date.new(1930, 2, 7)
+      end
+
+      it 'defaults to mid-month when only a month and year are given' do
+        expect(instance.normalize_date('שבט תר"ץ')).to eq Date.new(1930, 2, 13)
+      end
+
+      it 'defaults to mid-year when only a year is given' do
+        expect(instance.normalize_date('תר"ץ')).to eq Date.new(1929, 10, 18)
+      end
+
+      it 'parses a year written with gershayim' do
+        expect(instance.normalize_date('תר״ץ')).to eq Date.new(1929, 10, 18)
+      end
+
+      it 'takes the first year of a range of years' do
+        expect(instance.normalize_date('תר"ץ-תרצ"ה')).to eq Date.new(1929, 10, 18)
+      end
+
+      it 'returns nil for Hebrew text that holds no date' do
+        expect(instance.normalize_date('ללא תאריך')).to be_nil
+      end
+
+      it 'returns nil for punctuation alone' do
+        expect(instance.normalize_date('–')).to be_nil
+      end
+    end
+
+    context 'with Gregorian dates' do
+      it 'parses a numeric date' do
+        expect(instance.normalize_date('5/6/1930')).to eq Date.new(1930, 6, 5)
+      end
+
+      it 'parses a Hebrew-spelled Gregorian month' do
+        expect(instance.normalize_date('5 ביוני 1930')).to eq Date.new(1930, 6, 5)
+      end
+
+      it 'defaults to mid-year when only a year is given' do
+        expect(instance.normalize_date('1930')).to eq Date.new(1930, 7, 1)
+      end
+    end
+
+    it 'returns nil for nil' do
+      expect(instance.normalize_date(nil)).to be_nil
+    end
+
+    it 'returns nil for an empty string' do
+      expect(instance.normalize_date('')).to be_nil
+    end
+  end
 end
