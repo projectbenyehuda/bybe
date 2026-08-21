@@ -21,7 +21,7 @@ set :deploy_to, "/home/bybe/bybeconv_staging"
 # set :pty, true
 
 # Default value for :linked_files is []
-append :linked_files, "config/database.yml", "config/s3.yml", "config/constants.yml", "config/storage.yml", "config/chewy.yml", "config/puma.rb", ".env.production", "config/newrelic.yml"
+append :linked_files, "config/database.yml", "config/s3.yml", "config/constants.yml", "config/storage.yml", "config/chewy.yml", "config/puma.rb", ".env.production", "config/newrelic.yml", "config/master.key"
 append :linked_dirs, '.bundle', 'log', 'tmp/cache', 'public/system', 'tmp/pids', 'tmp/sockets'
 
 append :rvm1_map_bins, :rake, :gem, :bundle, :ruby
@@ -39,6 +39,7 @@ append :rvm1_map_bins, :rake, :gem, :bundle, :ruby
 
 # Uncomment the following to require manually verifying the host key before first deploy.
 # set :ssh_options, verify_host_key: :secure
+set :rvm1_path, '/home/bybe/.rvm'
 
 set :rvm1_ruby_version, "3.3.9"
 before 'deploy', 'rvm1:alias:create'
@@ -52,3 +53,11 @@ namespace :debug do
     end
   end
 end
+
+task :load_remote_environment do
+  on roles(:app) do
+    set :default_environment, Dotenv::Parser.call(capture("cat #{shared_path}/.env.production"))
+  end
+end
+before 'deploy:starting', 'load_remote_environment'
+

@@ -1,0 +1,589 @@
+# frozen_string_literal: true
+
+module Lexicon
+  # Controller for migration verification workbench
+  class VerificationController < ApplicationController
+    include LockLexEntryConcern
+
+    EXTERNAL_IDENTIFIER_KEYS = LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys.freeze
+
+    before_action :set_entry, except: %i(index)
+    before_action :try_to_lock_record, except: %i(index unlock)
+    before_action do |c|
+      c.require_editor('edit_lexicon')
+    end
+    layout 'lexicon_backend'
+
+    QUEUE_SORTABLE_COLUMNS = %w(updated_at migration_item_count).freeze
+    QUEUE_SORT_DIRECTIONS = %w(asc desc).freeze
+
+    # GET /lexicon/verification/queue
+    def index
+      scope = LexEntry.needs_verification.includes(:lex_item, :lex_file)
+
+      scope = scope.where(status: params[:status]) if params[:status].present?
+      scope = scope.where(lex_item_type: params[:type]) if params[:type].present?
+      @max_items = params[:max_items]
+      if @max_items.present? && @max_items.strip.match?(/\A\d+\z/)
+        scope = scope.where(migration_item_count: ..@max_items.to_i)
+      end
+      @sort = params[:sort].presence_in(QUEUE_SORTABLE_COLUMNS) || 'updated_at'
+      @direction = params[:direction].presence_in(QUEUE_SORT_DIRECTIONS) || (@sort == 'updated_at' ? 'desc' : 'asc')
+
+      locked_scope = scope.where('locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
+                          .includes(:locked_by_user)
+      @my_locked_entries = locked_scope.where(locked_by_user_id: current_user.id).order(updated_at: :desc)
+      @locked_by_others_entries = locked_scope.where.not(locked_by_user_id: current_user.id).order(updated_at: :desc)
+
+      @entries = scope.where.not(id: locked_scope.select(:id))
+                      .order(@sort => @direction, id: :asc)
+                      .page(params[:page])
+    end
+
+    # GET /lexicon/verification/:id
+    def show
+      # Initialize verification if not started
+      unless @entry.status_verifying? || @entry.status_verified? || @entry.status_escalated? || @entry.status_published?
+        user_email = current_user&.email || 'anonymous@example.com'
+        @entry.start_verification!(user_email)
+      end
+
+      @source_content = load_source_php
+      @php_counts = count_php_section_bullets(@source_content)
+      @checklist = @entry.verification_progress['checklist']
+      @item = @entry.lex_item # LexPerson or LexPublication
+
+      # Bio word-count comparison against the legacy PHP bio portion (LexPerson only)
+      @bio_comparison = Lexicon::BioComparison.call(@item, @source_content) if @item.is_a?(LexPerson)
+
+      # Auto-calculate copyrighted status when not set during migration.
+      # Death year takes precedence: if known, use the 71-year rule.
+      # Otherwise fall back to copying from the linked Authority.
+      if @item.is_a?(LexPerson) && @item.copyrighted.nil?
+        years_ago = @item.died_years_ago
+        death_year = @item.death_year
+
+        if death_year.present?
+          @item.update!(copyrighted: years_ago < 71)
+        elsif @item.authority.present?
+          @item.update!(copyrighted: authority_copyrighted?(@item.authority.intellectual_property))
+        end
+      end
+    end
+
+    # PATCH /lex/verification/:id/unlock
+    # Lets an editor deliberately release the lock they hold on the entry they are verifying.
+    # Always returns to the queue: redirecting back to the workbench would immediately re-lock.
+    def unlock
+      if @entry.locked_by_user == current_user
+        @entry.release_lock!
+        redirect_to lexicon_verification_queue_path, notice: t('.success')
+      else
+        redirect_to lexicon_verification_queue_path, alert: t('.not_locked_by_you')
+      end
+    end
+
+    # GET /lexicon/verification/:id/source
+    # Serves the raw PHP file content to be rendered in iframe
+    def source
+      content = load_source_php
+
+      if content.present?
+        # Rewrite relative URLs to point to /lexicon/ (legacy PHP server)
+        # This preserves the original look while fixing 404s in iframe context
+        processed_content = content.gsub(%r{(<link[^>]*href=["'])(?!http|/)(.*?\.css["'][^>]*>)}i, '\1/lexicon/\2')
+                                   .gsub(%r{(<script[^>]*src=["'])(?!http|/)(.*?\.js["'][^>]*>)}i, '\1/lexicon/\2')
+                                   .gsub(%r{(<img[^>]*src=["'])(?!http|/)(.*?["'][^>]*>)}i, '\1/lexicon/\2')
+                                   .gsub(%r{(<a[^>]*href=["'])(?!http|/|#)(.*?["'][^>]*>)}i, '\1/lexicon/\2')
+
+        render html: processed_content.html_safe, layout: false
+      else
+        not_found_msg = '<div style="padding: 20px; text-align: center; color: #999;">' \
+                        "#{I18n.t('lexicon.verification.source.file_not_found')}</div>"
+        render html: not_found_msg.html_safe, layout: false
+      end
+    end
+
+    # PATCH /lexicon/verification/:id/update_checklist
+    def update_checklist
+      path = params[:path] # e.g., "title" or "citations.items.123"
+      verified = ['true', true].include?(params[:verified])
+      notes = params[:notes] || ''
+
+      # Special handling: when marking entire works section as verified,
+      # also mark all individual works as verified
+      if path == 'works' && verified && @entry.lex_item_type == 'LexPerson'
+        @entry.mark_all_works_verified!(notes)
+      else
+        @entry.update_checklist_item(path, verified, notes)
+        # For LexPerson, the 'title' section encompasses life years, so keep them in sync
+        if path == 'title' && @entry.lex_item_type == 'LexPerson'
+          @entry.update_checklist_item('life_years', verified, notes)
+        end
+      end
+
+      @entry.reload # Ensure we have the latest data
+
+      render json: {
+        success: true,
+        percentage: @entry.verification_percentage,
+        complete: @entry.verification_complete?
+      }
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+
+    # PATCH /lexicon/verification/:id/save_progress
+    def save_progress
+      notes = params[:overall_notes] || ''
+
+      progress = @entry.verification_progress.deep_dup
+      progress['overall_notes'] = notes
+      progress['last_updated_at'] = Time.current.iso8601
+
+      @entry.update!(verification_progress: progress)
+
+      render json: {
+        success: true,
+        message: I18n.t('lexicon.verification.messages.progress_saved')
+      }
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+
+    # PATCH /lexicon/verification/:id/confirm_work_match
+    # Confirms an auto-matched publication for a work
+    def confirm_work_match
+      work_id = params[:work_id].to_i
+      publication_id = params[:publication_id].to_i
+      collection_id = params[:collection_id].to_i if params[:collection_id].present?
+
+      # Find the work and verify it belongs to this entry's person
+      work = @entry.lex_item.works.find(work_id)
+
+      # Validate that publication belongs to the person's authority
+      person = @entry.lex_item
+      if person.authority.blank?
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.person_no_authority') },
+               status: :unprocessable_content
+        return
+      end
+
+      publication = person.authority.publications.find_by(id: publication_id)
+      unless publication
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.publication_not_in_authority') },
+               status: :unprocessable_content
+        return
+      end
+
+      # Validate collection if provided
+      if collection_id.present?
+        collection = Collection.find_by(id: collection_id, publication_id: publication_id)
+        unless collection
+          render json: { success: false, error: I18n.t('lexicon.verification.messages.collection_not_in_publication') },
+                 status: :unprocessable_content
+          return
+        end
+      end
+
+      # Update the work with the confirmed publication and collection
+      work.update!(
+        publication_id: publication_id,
+        collection_id: collection_id
+      )
+
+      render json: {
+        success: true,
+        message: I18n.t('lexicon.verification.messages.work_match_confirmed')
+      }
+    rescue ActiveRecord::RecordNotFound
+      render json: { success: false, error: I18n.t('lexicon.verification.messages.work_not_found') }, status: :not_found
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+
+    # PATCH /lexicon/verification/:id/set_profile_image
+    def set_profile_image
+      attachment_id = params[:attachment_id].to_i
+
+      # Verify the attachment belongs to this entry using an efficient query
+      unless attachment_id.positive? && @entry.attachments.exists?(id: attachment_id)
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.attachment_not_found') },
+               status: :not_found
+        return
+      end
+
+      @entry.update!(profile_image_id: attachment_id)
+
+      render json: {
+        success: true,
+        profile_image_id: attachment_id
+      }
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+
+    # DELETE /lexicon/verification/:id/remove_attachment
+    def remove_attachment
+      attachment_id = params[:attachment_id].to_i
+      attachment = attachment_id.positive? ? @entry.attachments.find_by(id: attachment_id) : nil
+
+      unless attachment
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.attachment_not_found') },
+               status: :not_found
+        return
+      end
+
+      # If this attachment is the profile image, clear that reference first
+      @entry.update!(profile_image_id: nil) if @entry.profile_image_id == attachment.id
+
+      attachment.purge
+
+      render json: { success: true }
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+
+    # POST /lexicon/verification/:id/mark_verified
+    def mark_verified
+      @entry.mark_verified!
+      report_verification_to_monday
+      redirect_to lexicon_entry_path(@entry),
+                  notice: I18n.t('lexicon.verification.messages.entry_verified_public')
+    rescue StandardError => e
+      redirect_to lexicon_verification_path(@entry),
+                  alert: e.message
+    end
+
+    # GET /lexicon/verification/:id/bio_comparison
+    # Renders the side-by-side bio diff modal (LexPerson only).
+    def bio_comparison
+      @item = @entry.lex_item
+      return head :not_found unless @item.is_a?(LexPerson)
+
+      @comparison = Lexicon::BioComparison.call(@item, load_source_php)
+      render partial: 'lexicon/verification/bio_comparison'
+    end
+
+    # GET /lex/verification/:id/escalate_form
+    def escalate_form
+      @overall_notes = @entry.verification_progress['overall_notes']
+      render partial: 'lexicon/verification/escalate_form'
+    end
+
+    # POST /lexicon/verification/:id/escalate
+    def escalate
+      notes = params[:overall_notes] || ''
+
+      progress = @entry.verification_progress.deep_dup
+      progress['overall_notes'] = notes
+      progress['last_updated_at'] = Time.current.iso8601
+
+      @entry.update!(verification_progress: progress, status: :escalated)
+
+      respond_to do |format|
+        format.json { render json: { success: true, redirect_url: lexicon_verification_queue_path } }
+        format.html do
+          redirect_to lexicon_verification_queue_path,
+                      notice: I18n.t('lexicon.verification.messages.entry_escalated')
+        end
+      end
+    rescue StandardError => e
+      respond_to do |format|
+        format.json { render json: { success: false, error: e.message }, status: :unprocessable_content }
+        format.html { redirect_to lexicon_verification_path(@entry), alert: e.message }
+      end
+    end
+
+    # POST /lexicon/verification/:id/report_to_monday
+    def report_to_monday
+      report_type = params[:type] == 'missing_work' ? :missing_work : :general
+      description = params[:description].presence
+      publication = Publication.find_by(id: params[:publication_id]) if params[:publication_id].present?
+
+      result = Lexicon::MondayReport.call(
+        entry: @entry,
+        report_type: report_type,
+        current_url: lexicon_verification_url(@entry),
+        description: description,
+        publication: publication
+      )
+
+      if result[:success]
+        # Remember the report so the publication is not offered for reporting again
+        publication&.mark_reported_missing_from_lexicon!(current_user) if report_type == :missing_work
+        render json: { success: true, message: I18n.t('lexicon.verification.monday.report_sent') }
+      else
+        render json: { success: false, error: result[:error] }, status: :unprocessable_content
+      end
+    end
+
+    # GET /lexicon/verification/:id/edit_section?section=title
+    def edit_section
+      @section = params[:section]
+      # Reload entry and associations to ensure fresh verification_progress data
+      @entry = LexEntry.includes(lex_item: :works).find(@entry.id)
+      @item = @entry.lex_item
+
+      # Auto-match works to publications if editing works section and authority exists
+      if @section == 'works' && @item.is_a?(LexPerson) && @item.authority.present?
+        @work_matches = auto_match_works_to_publications(@item)
+        @unmatched_publications = publications_absent_from_entry(@item, @work_matches)
+      end
+
+      render partial: "lexicon/verification/edit_#{@section}"
+    end
+
+    # PATCH /lexicon/verification/:id/update_section
+    def update_section
+      section = params[:section]
+      mark_verified = ['1', true].include?(params[:mark_verified])
+      notes = params[:notes] || ''
+
+      success = true
+      errors = []
+
+      # Update entry title and english_title if present
+      entry_updates = {}
+      entry_updates[:title] = params[:entry_title] if params[:entry_title].present?
+      # For english_title we check key presence rather than value presence so that
+      # submitting an empty string will clear the field instead of being ignored.
+      entry_updates[:english_title] = params[:english_title] if params.key?(:english_title)
+      # date_of_manual_update: allow blank so editors can clear the field
+      if params.key?(:entry_date_of_manual_update)
+        entry_updates[:date_of_manual_update] = params[:entry_date_of_manual_update]&.strip.presence
+      end
+
+      # Update external_identifiers if submitted: blank values are removed, nil if all blank
+      if params.key?(:external_identifiers)
+        # rubocop:disable Rails/StrongParametersExpect
+        raw = params.require(:external_identifiers)
+                    .permit(*Lexicon::VerificationController::EXTERNAL_IDENTIFIER_KEYS)
+                    .to_h
+        # rubocop:enable Rails/StrongParametersExpect
+        filtered = raw.compact_blank
+        entry_updates[:external_identifiers] = filtered.presence
+      end
+
+      if entry_updates.present? && !@entry.update(entry_updates)
+        success = false
+        errors += @entry.errors.full_messages
+      end
+
+      # Update the item (LexPerson or LexPublication)
+      if item_params.present? && !@entry.lex_item.update(item_params)
+        success = false
+        errors += @entry.lex_item.errors.full_messages
+      end
+
+      if success
+        # Update verification checklist if requested
+        if mark_verified
+          @entry.update_checklist_item(section, true, notes)
+
+          # For LexPerson, the 'title' section includes life years (birthdate/deathdate)
+          # so we should mark both checklist items as verified
+          if section == 'title' && @entry.lex_item_type == 'LexPerson'
+            @entry.update_checklist_item('life_years', true, notes)
+          end
+        end
+
+        render json: {
+          success: true,
+          message: I18n.t('lexicon.verification.messages.section_updated'),
+          percentage: @entry.verification_percentage,
+          complete: @entry.verification_complete?
+        }
+      else
+        render json: {
+          success: false,
+          errors: errors
+        }, status: :unprocessable_content
+      end
+    end
+
+    private
+
+    def set_entry
+      @entry = LexEntry.includes(:lex_item, :lex_file).find(params[:id])
+    end
+
+    # Announce the completed verification on the migrated-entries Monday board.
+    # Best-effort: the entry is already verified by this point, so a Monday
+    # failure is surfaced as a warning rather than being allowed to undo it.
+    def report_verification_to_monday
+      result = Lexicon::MondayMigrationReport.call(
+        entry: @entry,
+        verifier: current_user,
+        entry_url: lexicon_verification_url(@entry)
+      )
+      return if result[:success]
+
+      # flash, not flash.now: the only caller (mark_verified) redirects afterwards.
+      flash[:alert] = # rubocop:disable Rails/ActionControllerFlashBeforeRender
+        I18n.t('lexicon.verification.monday.migration_report_failed', error: result[:error])
+    end
+
+    def record_to_lock
+      @entry
+    end
+
+    # Maps Authority's intellectual_property to a LexPerson copyrighted boolean.
+    # Only public_domain is not copyrighted; all other statuses default to copyrighted.
+    def authority_copyrighted?(authority_ip)
+      authority_ip != 'public_domain'
+    end
+
+    # Count <li> items in each section of the legacy PHP file.
+    # Sections are delimited by named anchors: Books, Bib., links.
+    # Empty (whitespace-only) list items are excluded to match migration behavior.
+    # Returns a hash with :works, :citations, :links counts (nil if section not found).
+    def count_php_section_bullets(content)
+      return { works: nil, citations: nil, links: nil } if content.blank?
+
+      books_pos = content.index(/name\s*=\s*["']Books["']/i)
+      bib_pos = content.index(/name\s*=\s*["']Bib\.["']/i)
+      links_pos = content.index(/name\s*=\s*["']links["']/i)
+
+      works_count = nil
+      citations_count = nil
+      links_count = nil
+
+      if books_pos
+        works_end = bib_pos || links_pos || content.length
+        works_count = count_nonempty_li(content[books_pos...works_end])
+      end
+
+      if bib_pos
+        citations_end = links_pos || content.length
+        citations_count = count_nonempty_li(content[bib_pos...citations_end])
+      end
+
+      links_count = count_nonempty_li(content[links_pos..]) if links_pos
+
+      { works: works_count, citations: citations_count, links: links_count }
+    end
+
+    def count_nonempty_li(html_fragment)
+      Nokogiri::HTML.fragment(html_fragment).css('li').count { |li| li.text.strip.present? }
+    end
+
+    def load_source_php
+      return nil unless @entry.lex_file&.full_path
+
+      file_path = @entry.lex_file.full_path
+      return nil unless File.exist?(file_path)
+
+      # Cache file content in session to avoid repeated disk reads
+      cache_key = "lex_file_content_#{@entry.lex_file.id}_#{File.mtime(file_path).to_i}"
+      Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+        html_doc = File.open(file_path) { |f| Nokogiri::HTML(f) }
+
+        # libxml2 drops dir="rtl" from <body> when an implicit body is created before
+        # the explicit <body dir="rtl"> tag (e.g. when a <span> precedes the body tag).
+        # Explicitly restore RTL since all lexicon files are Hebrew.
+        html_doc.at('html')&.set_attribute('dir', 'rtl')
+        html_doc.at('body')&.set_attribute('dir', 'rtl')
+
+        html_doc.to_s
+      end
+    rescue StandardError => e
+      Rails.logger.error("Failed to load source PHP: #{e.message}")
+      nil
+    end
+
+    def item_params
+      # Permit params based on item type, but only if the relevant nested params were submitted.
+      # Some edit forms (e.g. external_identifiers) update only LexEntry fields and don't
+      # include lex_person / lex_publication nested params.
+      # rubocop:disable Rails/StrongParametersExpect
+      case @entry.lex_item_type
+      when 'LexPerson'
+        return nil unless params.key?(:lex_person)
+
+        params.require(:lex_person).permit(
+          :birthdate, :deathdate, :bio, :works, :gender, :aliases, :copyrighted, :authority_id
+        )
+      when 'LexPublication'
+        return nil unless params.key?(:lex_publication)
+
+        params.require(:lex_publication).permit(
+          :description, :toc, :az_navbar
+        )
+      end
+      # rubocop:enable Rails/StrongParametersExpect
+    end
+
+    # Auto-match works to publications based on title similarity
+    # Returns proposed matches WITHOUT persisting to database
+    # Format: { work_id => { publication_id:, publication_title:, collection_id:, collection_title:, similarity: } }
+    def auto_match_works_to_publications(person)
+      matches = {}
+      authority = person.authority
+      return matches unless authority
+
+      # Get all publications associated with the authority, with volume (collection) eager loaded
+      authority_publications = authority.publications.includes(:volume).to_a
+      return matches if authority_publications.empty?
+
+      # Build a map of publication_id => collection for efficient lookup
+      publication_collections = {}
+      authority_publications.each do |pub|
+        publication_collections[pub.id] = pub.volume if pub.volume.present?
+      end
+
+      # Get authority name for cleaning publication titles
+      authority_name = authority.name
+
+      # Only match works that don't already have a publication
+      unmatched_works = person.works.where(publication_id: nil)
+
+      unmatched_works.each do |work|
+        best_match = find_best_publication_match(work, authority_publications, authority_name)
+        next unless best_match
+
+        publication = best_match[:publication]
+        # Get collection from our pre-loaded map (no additional query)
+        collection = publication_collections[publication.id]
+
+        matches[work.id] = {
+          publication_id: publication.id,
+          publication_title: publication.title,
+          collection_id: collection&.id,
+          collection_title: collection&.title,
+          similarity: best_match[:similarity]
+        }
+      end
+
+      matches
+    end
+
+    # Publications of the person's authority that neither belong to an existing work nor appear
+    # among the proposed matches: works we have in BYP that are missing from the lexicon entry.
+    def publications_absent_from_entry(person, work_matches)
+      person.unmatched_publications.where.not(id: work_matches.values.pluck(:publication_id))
+    end
+
+    # Find the best publication match for a work
+    # Returns { publication: Publication, similarity: Integer } or nil
+    def find_best_publication_match(work, publications, authority_name)
+      return nil if work.title.blank?
+
+      best_match = nil
+      best_similarity = 0
+
+      publications.each do |pub|
+        next if pub.title.blank?
+
+        similarity = Lexicon::TitleSimilarity.call(work.title, pub.title, ignoring: authority_name)
+        return { publication: pub, similarity: similarity } if similarity == 100
+        next unless similarity >= Lexicon::TitleSimilarity::MATCH_THRESHOLD && similarity > best_similarity
+
+        best_similarity = similarity
+        best_match = pub
+      end
+
+      best_match ? { publication: best_match, similarity: best_similarity } : nil
+    end
+  end
+end

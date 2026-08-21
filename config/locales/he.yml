@@ -30,7 +30,13 @@ he:
   rename_this_anthology: שינוי שם מקראה זו
   merge_rename: אישור התגית בשם אחר
   authors_select_filter: סינון לפי יוצר - בחירה מרובה
+  authorities_select_filter: סינון לפי רשות - בחירה מרובה
   add_authors_to_filter: הוספת היוצרים שנבחרו לסינון
+  add_authorities_to_filter: הוספת הרשויות שנבחרו לסינון
+  collection_title_search: חיפוש לפי שם אוסף
+  x_collections_plain: "%{x} אוספים"
+  collections_sort_tt: מיון אוספים
+  toggle_filters_tt: הצגה/הסתרה של אפשרויות סינון
   back_to_bib_workshop: חזרה לסדנה הביבליוגרפית
   works_already_online: "יצירות שכבר מצויות במאגר בשם דומה:"
   no_source_edition: אין פרטי מהדורה
@@ -44,6 +50,9 @@ he:
   what_to_search_for: מה לחפש...
   author_names: שם(ות) יוצר(ים)
   works_list: רשימת יצירות
+  collections_list: רשימת כותרים
+  welcome_to_collections_browsing: ברוכים הבאים לדפדוף בכותרים
+  collections_browsing_intro_html: כאן תוכלו לחפש ולעיין בכותרים ובכתבי עת שונים
   month_year: חודש/שנה
   year: שנה
   reset_multiselect: איפוס בחירה
@@ -237,6 +246,7 @@ he:
   publishing_person_explanation: להלן רשימת יצירות של %{author}. לחיצה על הלחצן בתחתית הרשימה תהפוך יוצר/ת זה/זו לפומבי/ת!
   work_not_available: יצירה זו אינה זמינה לפי שעה.
   author_not_available: דף היוצר/ת אינו זמין לפי שעה.
+  pageless_hint: "סמנו עבור רשומות שאינן יוצרים ממשיים (למשל \"אלמוני\" או \"מחברים שונים\"): הן לא יופיעו ברשימת היוצרים, לא יהיו קישוריות אליהן, ולא יהיה להן דף משלהן."
   illustrations_by: איורים מאת
   deprecated: מחוּק
   pub_status_explanation: ברירת המחדל אם השדה ריק היא שהיצירה תהא פומבית אם היוצר כבר פומבי, ולא פומבית אם לאו.
@@ -605,7 +615,7 @@ he:
   no_works_for_author: אין יצירות לסופר זה
   translation_must_have_translator: שפת המקור אינה עברית אך לא צוין מתרגם
   translation_must_have_original_language: צוין מתרגם אך לא צוינה שפת מקור
-  reading_mode: טקסט בלבד
+  reading_mode: מסך מלא
   mode: סוג תצוגה
   body: גוף הטקסט
   bookmark: סימניה
@@ -620,6 +630,9 @@ he:
   cancel: ביטול
   loading: טוען...
   close: סגירה
+  close_menu: סגור תפריט
+  expand_menu: הרחב תפריט
+  collapse_section: סגור סעיף
   unauthorized: אין לך הרשאה לבצע פעולה זו
   can_only_cancel_pending_links: ניתן לבטל רק קישוריות בהמתנה לאישור
   by: מאת
@@ -640,6 +653,7 @@ he:
   chapters_list: 'רשימת פרקים:'
   additional_translations: תרגומים נוספים ליצירה
   additional_versions: נוסחים אחרים ליצירה זו
+  other_containing_collections: חיבורים נוספים במאגר המכילים יצירה זו
   link_to_another_text: קישור לנוסח/תרגום אחר
   enter_manifestation_id: מספר מימוש לקישור
   show_details: הצג פרטים
@@ -702,7 +716,9 @@ he:
   total_manifestations: "סה\"כ יצירות: %{total}"
   filtered_manifestations_count: "תוצאות מסוננות: %{count}"
   total_manifestations_count: "סה\"כ במאגר: %{total}"
-  additional_content: 'תוכן נוסף:'
+  additional_content: 'תוכן נוסף'
+  lexicon_content: תוכן מהלקסיקון
+  curated_content: תוכן אוצרותי
   additional_items: פריטים נוספים
   authors_of: יוצרי
   sample_authors_of: מבחר יוצרי
@@ -779,6 +795,7 @@ he:
   alefbet: אלפבית
   alefbet_asc: 'אלפבית: א–ת'
   alefbet_desc: 'אלפבית: ת–א'
+  num_views: 'צפיות'
   popularity_group: 'מספר צפיות'
   popularity_desc: 'מספר צפיות באתר: יורד'
   popularity_asc: 'מספר צפיות באתר: עולה'
@@ -812,21 +829,24 @@ he:
   filter_langs: סנן שפות זרות
   please_note: נא לשים לב
   up_to_10_authors: ניתן לבחור רק עד 10 יוצרים
+  up_to_10_authorities: ניתן לבחור רק עד 10 רשויות
   current_editing_files: עריכות טכניות נוכחיות
   explain_up_to_10: ניתן לסנן את רשימת היצירות לפי מספר יוצרים בו זמנית על-ידי בחירתם מהרשימה. הסינון מוגבל לעד 10 יוצרים בו זמנית.
   entries: ערכים
   logo_alt: "פרויקט בן־יהודה: שימור, הנגשת, וחשיפת יצירות עבריות לציבור הרחב"
   linking_entries: ערכים קשורים
-  apply_mobile_filters: יישום סינון נבחר
+  apply_mobile_filters: יישום סינון
   sort: מיון
   actions: פעולות
+  annotator: מעיר
+  annotator_f: מעירה
   author: יוצר
   author_f: יוצרת
   render: הצגת יצירה
   show: הצגת פרטים
   thedate: תאריך
   upload: העלאה
-  creation: יצירה
+  creation: חיבור
   publication: כותר
   comments: הערות
   popular_work_tags: תגיות נפוצות ליצירות
@@ -856,11 +876,21 @@ he:
   total_x_works: סך הכל %{count} יצירות
   total_x_records: סך הכל %{count} רשומות
   sort_and_filter: סינון
+  hide_sort_and_filter: הסתרת סינון
   sort_by: "מיון לפי: "
   filter_by: "סינון לפי: "
   reset_filter: איפוס סינון
+  author_toc_filters:
+    free_text_placeholder: טקסט חופשי
+    source_language: שפת מקור
+    extra_content: תוכן נלווה
+    curatorial_content: תוכן אוצרותי
+    reader_recommendations: המלצות קוראים
+    no_extra_content: ללא תוכן נלווה
+    edition: הוצאה
   about_sort_and_filter: מה זה סינון?
-  sort_and_filter_popover: תכונה זו טרם מומשה.
+  sort_and_filter_popover: סינון יצירות בדף לפי סוגה, שפת מקור, ועוד
+  period_popover: "אנו מחלקים את היוצרים העבריים באתר לחמש תקופות בחלוקה לא־מדוייקת, רק כדי לספק למשתמשי האתר עוד חיתוך גס של היוצרים והיצירות. התקופות הן: עת עתיקה ופיוט; ימי הביניים והרנסאנס; ההשכלה; התחייה; והספרות העברית החדשה. ברור שלא מעט יוצרים פעלו בתקופת מעבר בין התקופות, ואפשר להתווכח אם לשייך אותם לזו או לזו. החלוקה אצלנו אינה תקפה מדעית, וכאמור נועדה רק כעזר ניווט."
   authors_totals_p1: מאגרנו כולל %{total} יוצרים עבריים, מתוכם %{pd} נחלת הכלל
   authors_totals_p2: ו-%{permission} מוגנים בזכויות יוצרים ומוגשים ברשות בעלי הזכויות.
   works_totals_p1: מאגרנו כולל %{total} יצירות, מתוכן %{pd} נחלת הכלל
@@ -874,7 +904,7 @@ he:
   to_the_author_page: לדף היוצר
   to_the_authoress_page: לדף היוצרת
   jump_to_chapter: מעבר לפרק...
-  jump_to: מעבר אל...
+  jump_to: דלג לפרק...
   genre: סוגה
   published_in_book: פורסם בספר
   edition_details: פרטי מהדורה ומידע נוסף
@@ -882,8 +912,11 @@ he:
   tags: תגיות
   taggings: תיוגים
   tag: תגית
+  lex_citations_about_collection: מראי מקום על כותר זה מלקסיקון הספרות העברית החדשה
+  lex_citations_about_author: מראי מקום על מחבר זה מלקסיקון הספרות העברית החדשה
   moderate_tags: ניטור תיוגים מהציבור
   link_moderation: ניטור קישוריות מהציבור
+  edit_lexicon: עריכת הלקסיקון
   batch_editing: עריכה באצווה
   next_milestone: היעד הבא
   my_activity: הפעילות שלי
@@ -959,7 +992,9 @@ he:
   mobile_totals: "%{authors} יוצרים, %{works} יצירות"
   authors_in_the_project: יוצרים במאגר
   works_in_the_project: יצירות במאגר
+  x_authors_in_the_project_and_y_in_the_lexicon: "%{x} יוצרים במאגר ו־%{y} יוצרים בלקסיקון"
   escalated: הועבר לבדיקה נוספת
+  thanks: תודה
   the_blog: יומן הרשת
   to_the_blog: ליומן הרשת
   to_the_youtube: לערוץ היו-טיוב
@@ -972,7 +1007,7 @@ he:
   works_count: מספר יצירות
   expressions: ביטויים
   manifestations: מימושים
-  collections: אוספים
+  collections: כותרים
   dictionary_entries: ערכים מילוניים
   volumes: כותרים
   x_volumes: "%{x} כותרים"
@@ -1084,9 +1119,9 @@ he:
   cite_tt: יצירת ציטוט אקדמי של מהדורה זו
   work_print_tt: הדפסת היצירה
   work_download_tt: הורדת היצירה כספר אלקטרוני או קובץ אחר
-  leave_readmode_tt: יציאה ממצב טקסט בלבד
+  leave_readmode_tt: יציאה ממצב מסך מלא
   readmode_search_tt: חיפוש ביצירה זו
-  readmode_settings_tt: הגדרות מצב טקסט בלבד
+  readmode_settings_tt: הגדרות מצב מסך מלא
   worklist_print_tt: הדפסת רשימת היצירות
   worklist_download_tt: הורדת רשימת היצירות כקובץ
   worklist_first_page_tt: מעבר לעמוד הראשון
@@ -1096,6 +1131,7 @@ he:
   worklist_pagination_handle_tt: ידית גרירה לבחירת עמוד
   worklist_multi_tt: הפעלת / כיבוי בחירה מרובה
   worklist_sort_tt: אפשרויות מיון - שינוי יאפס את הדפדוף ברשימה הקיימת
+  reading_mode_tt: מעבר למצב מסך מלא
   anth_fold_tt: מזעור חלון המקראה
   anth_show_tt: הצגת המקראה במלואה
   anth_download_tt: הורדת המקראה כספר אלקטרוני או קובץ אחר
@@ -1312,6 +1348,8 @@ he:
   responsibility_statement: שורת אחריות
   editors: בעריכת
   default_page_title: פרויקט בן־יהודה
+  staging_version: 'גרסה: %{version}'
+  version_unknown: לא ידועה
   font_size: גודל גופן
   path: נתיב
   'yes': כן
@@ -1370,10 +1408,11 @@ he:
   content: תוכן
   birth_year: שנת לידה
   death_year: שנת פטירה
-  creation_date: תאריך יצירה
+  creation_date: תאריך חיבור
   creation_date_explanation: "תאריך החיבור של היצירה, אם ידוע"
   publication_date: תאריך פרסום בדפוס
   publication_date_explanation: "תאריך פרסום בדפוס של מהדורת המקור שממנה הקלדנו"
+  publication_date_brief: מקור מודפס
   first_publication_date: תאריך פרסום ראשון
   first_publication_date_explanation: "תאריך הפרסום הראשון של היצירה, לפי הידוע"
   first_publication: פרסום ראשון
@@ -1454,7 +1493,9 @@ he:
   suggested_tag: התגית המוצעת
   quick_actions: פעולות מהירות
   to_next_item: לפריט הבא
+  to_next_volume: לכרך הבא
   to_previous_item: לפריט הקודם
+  to_previous_volume: לכרך הקודם
   next_items_not_yet_uploaded: הפריטים הבאים טרם הועלו
   previous_items_not_yet_uploaded: הפריטים הקודמים טרם הועלו
   time_waiting: זמן המתנה
@@ -1933,8 +1974,12 @@ he:
       columns:
         db_intellectual_property: מצב זכויות יוצרים במערכת
         has_non_public_domain_authority: זכויות הישות טרם פקעו
+  lockable:
+    locked_at_human: "%{minutes_ago} לפני"
+    locked_by_human: "%{name} נעול על ידי"
+  lock_record:
+    record_locked: "%{model_name} נעולה לטיפול %{user}"
   ingestibles:
-    ingestible_locked: ההעלאה נעולה לטיפול מידֵי %{user}
     replace_with_authority: החלף ביישות קיימת!
     clear_defaults: הסרת ברירות מחדל
     # _authorities partial
@@ -1945,6 +1990,8 @@ he:
     create:
       success: ההעלאה נוצרה
       failure: אירעה שגיאה בפתיחת ההעלאה
+      invalid_docx_url: "כתובת ה-DOCX חייבת להשתמש ב-http או https"
+      docx_download_failed: "הורדת קובץ ה-DOCX מהכתובת הנתונה נכשלה"
     edit:
       title: עדכון העלאה
     show:
@@ -2096,6 +2143,7 @@ he:
         permission_for_all: רשות גורפת לכלל היצירות
         permission_for_selected: רשות לכותרים מסוימים בלבד
         unknown: מה פירוש מצב הזכויות אינו ידוע?
+        mixed: מה פירוש מצב זכויות מעורב?
       popover:
         public_domain: חוק זכויות יוצרים מגן מפני שימוש בלתי-מורשה ביצירות למשך תקופת תוקפו (בישראל, שבעים שנה מסוף שנת מות היוצר).  עם פקוע הזכויות, הופכת היצירה 'נחלת הכלל', כלומר רכוש הציבור.  פירוש הדבר שהיצירה שייכת לכולנו, וכולנו רשאים לעשות בה כל שימוש, לרבות שימוש מסחרי, מבלי צורך לבקש רשות מאיש.
         by_permission: על אף שהיצירה עדיין מוגנת בזכויות יוצרים, פרויקט בן־יהודה קיבל *רשות מפורשת לפרסם* את היצירה במאגר היצירה של פרויקט בן־יהודה, לשימוש הקהל הרחב לקריאה ומחקר.  שימושים אחרים (כגון המחזה, הלחנה, או ביצוע מסחרי) עדיין *טעונים אישור מפורש* מאת בעלי הזכויות.
@@ -2104,6 +2152,7 @@ he:
         permission_for_all: על אף שהיצירה עדיין מוגנת בזכויות יוצרים, פרויקט בן־יהודה קיבל *רשות מפורשת לפרסם* את היצירה במאגר היצירה של פרויקט בן־יהודה, לשימוש הקהל הרחב לקריאה ומחקר.  שימושים אחרים (כגון המחזה, הלחנה, או ביצוע מסחרי) עדיין *טעונים אישור מפורש* מאת בעלי הזכויות.
         permission_for_selected: על אף שהיצירה עדיין מוגנת בזכויות יוצרים, פרויקט בן־יהודה קיבל *רשות מפורשת לפרסם* את היצירה במאגר היצירה של פרויקט בן־יהודה, לשימוש הקהל הרחב לקריאה ומחקר.  שימושים אחרים (כגון המחזה, הלחנה, או ביצוע מסחרי) עדיין *טעונים אישור מפורש* מאת בעלי הזכויות.
         unknown: "על אף כל המאמצים, לא ניתן לקבוע מה מצב זכויות היוצרים, בדרך כלל בשל מידע חסר לגבי זהות או מועד פטירת המחבר[ים] או המתרגם[ים]."
+        mixed: האוסף כולל יצירות במצבי זכויות שונים. מצב הזכויות של כל יצירה מוצג בנפרד בכרטיס שלה.
     proof:
       cancel_and_back: ביטול וחזרה
       found_mistake: מצאתי שגיאה
@@ -2181,7 +2230,8 @@ he:
     permission_for_all: כלל היצירה מוגש ברשות
     permission_for_selected: יצירות מסוימות מונגשות ברשות
     unknown: לא ידוע
-  collection_type_in_volume: בכרך
+    mixed: מעורב
+  collection_type_in_volume: בכותר
   collection_type_in_periodical: בכתב עת
   collection_type_uncollected: לא באוסף
   containing_collection_type: סוג אוסף מכיל
@@ -2196,7 +2246,9 @@ he:
       designer: מעצב
       contributor: משתתף
       other: אחר
+      annotator: מעיר
     abstract_roles:
+      annotator: הערות
       author: מאת
       editor: בעריכת
       illustrator: איורים
@@ -2280,6 +2332,29 @@ he:
     select_project: בחירת מיזם
     no_project: ללא מיזם
     project_help: אם ההעלאה משוייכת למיזם, הקישורית לדף ההוצאה המוגדרת במיזם תתווסף אוטומטית לאוסף וליצירות
+  toc_by_role:
+    involved_on_collection_level: בכותרים של%{gender_letter}
+    involved_on_work_level: בכותרים של אחרים
+    uncollected_works: יצירות נוספות שליקטנו
+    headers:
+      author: יצירות מקור
+      translator: תרגום
+      editor: יצירות בעריכת%{gender_letter}
+      illustrator: איורים
+      photographer: צילומים
+      annotator: הערות
+      designer: עיצובים
+      contributor: תרומות נוספות
+      other: יצירות שונות
+    made_by:
+      translator: בתרגום
+      editor:  בעריכת
+      illustrator: עם איורים מאת
+      photographer: עם צילומים מאת
+      annotator: עם הערות מאת
+      designer: בעיצוב
+      contributor: בהשתתפות
+      other: by
   # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: נחלת הכלל
   viaf_id: "מזהה במאגר VIAF‏"
@@ -2414,3 +2489,115 @@ he:
     target_type_hint: "סוג מודל היעד, לדוגמה Manifestation, Authority, FeaturedContent"
     target_id_hint: "מזהה המספרי של רשומת היעד"
     description_hint: "הערה אופציונלית המתארת את המיפוי"
+  to_lexicon_entry_on_x: לערך על אודות %{x} בלקסיקון הספרות העברית החדשה
+  total_collections_including_author: כותרים במאגר
+  collapse_all_sections: צמצם הכל
+  expand_all_sections: הרחב הכל
+  toggle_collapse_collection: "צמצם או הרחב: %{title}"
+  toggle_collapse_uncollected: צמצם או הרחב את היצירות שלא כונסו
+  toc_display_list: רשימה
+  toc_display_snippets: תקצירים
+  to_the_full_work: ליצירה המלאה
+  by_involved_authorities: לפי אישים מעורבים
+  works_and_volumes: כותרים ויצירות
+  list_all_collections: רשימת כל הכותרים
+  x_volumes_and: "%{x} כותרים ו־"
+  navigation_in_page: ניווט בעמוד
+
+  # Lexicon
+  lexicon:
+    entries:
+      list:
+        page_title: רשימת ערכי לקסיקון הספרות העברית החדשה
+        page_header: רשימת הערכים - לקסיקון הספרות העברית החדשה
+        entries_list_breadcrumb: רשימת ערכי הלקסיקון
+        welcome_title: ברוכים הבאים לרשימת ערכי לקסיקון הספרות העברית החדשה
+        intro_html: במאגר של לקסיקון הספרות העברית החדשה ישנם <strong>%{count} ערכים</strong> מפורסמים. הרשימה מציגה את כל הערכים הזמינים לציבור.
+        description: הלקסיקון מכיל מידע ביו-ביבליוגרפי על יוצרים ויוצרות בספרות העברית, וכן פרסומים ועיתונים היסטוריים.
+        entries_count:
+          one: ערך אחד
+          other: "%{count} ערכים"
+        not_migrated_badge: PHP
+        not_migrated_badge_title: טרם הוסב מהלקסיקון הישן (PHP)
+        filters:
+          entry_name: "שם הערך"
+          name_placeholder: "חיפוש לפי שם"
+          name_contains: "שם מכיל: %{name}"
+          gender_title: "מגדר"
+          gender_male: "זכר"
+          gender_female: "נקבה"
+          gender_other: "אחר"
+          gender_unknown: "לא ידוע"
+          birth_years: "שנות לידה"
+          death_years: "שנות פטירה"
+          from_year: "משנת"
+          to_year: "עד שנת"
+          year_placeholder: "שנה"
+          birth_from: "נולד משנת: %{year}"
+          birth_to: "נולד עד שנת: %{year}"
+          death_from: "נפטר משנת: %{year}"
+          death_to: "נפטר עד שנת: %{year}"
+          show_filters: "הצגת סינון"
+          hide_filters: "הסתרת סינון"
+          filter_panel: "פאנל סינון"
+    people:
+      new:
+        title: "ערך %{model} חדש"
+    publications:
+      new:
+        title: "ערך %{model} חדש"
+    person_works:
+      index:
+        add_work: הוספת יצירה
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+      form:
+        no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
+        select_publication: בחר פרסום...
+        select_collection: בחר אוסף...
+        associated_people: אנשים קשורים
+      title_links:
+        section_heading: קישוריות בכותרת
+        add_link: הוספת קישור בכותרת
+        text_label: טקסט בכותרת
+      comment_links:
+        section_heading: קישוריות בהערה
+        add_link: הוספת קישור בהערה
+        text_label: טקסט בהערה
+    citations:
+      index:
+        add_citation: הוספת מראה מקום
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+        no_subject: כללי
+      edit:
+        title: עריכת מראה מקום
+      text_links:
+        section_heading: קישוריות בטקסט
+        add_link: הוספת קישור בטקסט
+        text_label: טקסט במראה המקום
+    links:
+      edit:
+        title: עריכת קישור
+    text_links:
+      text_placeholder: טקסט שיהפוך לקישור
+      target_entry: ערך במילון
+      target_url: כתובת יעד (URL)
+      entry_placeholder: חיפוש ערך במילון...
+      url_placeholder: "https://example.com/page.html"
+      target_hint: יש למלא יעד אחד בלבד – ערך במילון או כתובת URL.
+      entry_not_found: ערך לא נמצא
+      text_not_found: הטקסט אינו מופיע כאן
+  lex_issues:
+    index:
+      title: גיליונות
+      new: גיליון חדש
+    new:
+      title: גיליון חדש
+    edit:
+      title: עריכת גיליון
+    form:
+      errors_header:
+        one: "שגיאה אחת מנעה שמירת גיליון זה"
+        other: "%{count} שגיאות מנעו שמירת גיליון זה"
+  type: סוג

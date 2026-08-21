@@ -2,6 +2,7 @@ he:
   attributes:
     created_at: נוצר בתאריך
     updated_at: עודכן בתאריך
+    description: תיאור
     name: שם
     sort_name: שם לצורך מיון
     status: סטטוס
@@ -17,10 +18,19 @@ he:
       collection_item: פריט באוסף
       corporate_body: גוף/מוסד
       featured_content: תוכן מערכת
+      ingestible: ההעלאה
+      lex_citation: מראה מקום על אדם או חיבור
+      lex_citation_author: מחבר/ת מראה המקום
+      lex_entry: ערך בלקסיקון
+      lex_linked_person: ישות מקושרת
+      lex_person: אדם בלקסיקון
+      lex_person_work: יצירת אדם בלקסיקון
+      lex_publication: כותר בלקסיקון
       person: אדם
     errors:
       messages:
         required: שדה חובה
+        present: חייב להיות ריק
       models:
         involved_authority:
           attributes:
@@ -46,6 +56,22 @@ he:
           attributes:
             manifestation:
               taken: היצירה הנוכחית כבר מופיעה במקראה הזאת.
+        lex_citation:
+          attributes:
+            person_work:
+              belongs_to_different_person: חייב להשתייך לאותו יוצר כמו מראה המקום
+            subject:
+              present: חייב להיות ריק אם הרשומה מקושרת לחיבור
+        lex_citation_author:
+          attributes:
+            link:
+              link_with_entry_error: לא ניתן לציין קישור כאשר קיים ערך לקסיקון עבור המחבר
+            entry:
+              not_a_person: הערך חייב להיות ערך מסוג אדם
+        lex_linked_person:
+          attributes:
+            person_entry:
+              not_a_person: must be a Person entry
     attributes:
       authority:
         other_designation: כינויים אחרים
@@ -54,6 +80,7 @@ he:
         comment: הערה
         bib_done: ביבליוגרפיה הושלמה בסדנה?
         do_not_feature: אל תציג בקרוסלות בדף הבית
+        pageless: רשומה ללא דף משלה
         nli_id: מזהה בספרייה הלאומית
         viaf_id: "מזהה במאגר VIAF‏"
         blog_category_url: קישורית לקטגוריה על היוצר/ת ביומן הרשת
@@ -73,7 +100,6 @@ he:
         external_link: קישורית חיצונית
         manifestation: יצירה מקושרת
         authority: יוצר/ת מקושר/ת
-
       person:
         birthdate: תאריך לידה
         deathdate: תאריך פטירה
@@ -88,6 +114,7 @@ he:
           other: אחר
           uncollected: יצירות לא באוסף
         credits: קרדיטים ידניים
+        collection_type: סוג אוסף
       collection_item:
         item_type: סוג פריט
       ingestible:
@@ -104,6 +131,84 @@ he:
           draft: טיוטה בעבודה
           ingested: נקלטה בקטלוג
           failed: ההעלאה נכשלה
+      lex_citation:
+        authors: מחברים
+        backup_file: קובץ גיבוי
+        backup_url: כתובת גיבוי
+        from_publication: מתוך החיבור
+        notes: הקשר והערות
+        pages: עמודים
+        person_work: חיבור
+        subject: נושא
+        link: קישורית
+      lex_file:
+        error_message: הודעות שגיאה
+        entrytype: סוג הערך
+        fname: שם קובץ
+        entrytypes:
+          unknown: לא ידוע
+          person: אדם
+          text: טקסט
+          bib: ביבליוגרפיה
+          other: אחר
+      lex_entry:
+        title: כותרת
+        english_title: English title
+        other_designation: כינויים אחרים
+        date_of_manual_update: תאריך עדכון ידני אחרון
+        statuses:
+          draft: טיוטה
+          deprecated: מבוטל
+          published: פורסם
+          raw: גולמי
+          migrating: בהסבה
+          error: שגיאה
+          verifying: בבדיקה
+          verified: הסבה אושרה
+          escalated: ממתין לבדיקה נוספת
+      lex_linked_person:
+        person_entry: רשומת לקסיקון לאדם זה
+        link_type: סוג המעורבות
+        link_types:
+          author: "יוצר/ת"
+          illustrator: "איורים"
+          editor: "עריכה"
+          collaborator: "בשיתוף"
+          about: "על"
+      lex_person:
+        birthdate: תאריך לידה
+        deathdate: תאריך פטירה
+        bio: תקציר ביוגרפי
+        works: ספרים
+        about: על המחבר%{gender_suffix} ויצירת%{gender_letter}
+        links: קישוריוֹת
+        aliases: כינויים
+        copyrighted: מוגן זכויות יוצרים
+        gender: מגדר
+        authority: ישות במאגר
+        intellectual_property: מצב זכויות יוצרים
+        genders:
+          male: זכר
+          female: נקבה
+          other: אחר
+          unknown: לא ידוע
+      lex_person_work:
+        title: כותרת
+        work_type: סוג יצירה
+        publisher: הוצאה לאור
+        publication_date: תאריך פרסום
+        publication_place: מקום פרסום
+        comment: הערה
+        collection: כותר במאגר
+        publication: כותר בביבליוגרפיה
+        work_types:
+          original: יצירות מקור
+          translated: תרגומים
+          edited: יצירות שנערכו
+          festschrift: ספרי יובל וספרי זכרון
+      lex_publication:
+        toc: תוכן עניינים
+        az_navbar: להציג סרגל א–ב?
       project:
         one: מיזם
         other: מיזמים

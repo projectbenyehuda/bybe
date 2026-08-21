@@ -1,0 +1,180 @@
+ul.lex {
+  list-style-type:disc;
+}
+
+/* Biography images (entry show page and the migration verification workbench).
+   Entries migrated from the old PHP lexicon carry the legacy HTML `align` and
+   `hspace` attributes as data-align/data-hspace. Without a float such an image
+   occupies a line of its own, leaving a tall empty band beside it; floating it
+   lets the biography text wrap around. Images with no data-align are the inline
+   source logos (NLI, Heksherim...) and are deliberately left in the text flow. */
+#lexicon-biography,
+.bio-content {
+  display: flow-root; /* contain the floats, so they can't spill into the next section */
+
+  img[data-align] {
+    max-width: 40%;
+    height: auto;
+    margin-bottom: 0.5em;
+  }
+
+  img[data-align='left'] {
+    float: left;
+    margin-right: 1em;
+  }
+
+  img[data-align='right'] {
+    float: right;
+    margin-left: 1em;
+  }
+}
+
+/* Too narrow to wrap text alongside an image: back to full-width, in-flow. */
+@media (max-width: 479px) {
+  #lexicon-biography,
+  .bio-content {
+    img[data-align] {
+      float: none;
+      max-width: 100%;
+      margin-right: 0;
+      margin-left: 0;
+    }
+  }
+}
+
+/* Editor-only badge marking entries not yet migrated from the old PHP lexicon */
+.lex-php-badge {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #7B1935;
+  background-color: #f9e6e0;
+  border: solid 1px #efbfb7;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+/* OSU partner logo - displayed alongside the lexicon logo */
+.osu-partner-logo {
+  height: 48px;
+  width: auto;
+}
+
+/* Make the link in the lexicon entry header a flex container so the
+   lexicon brand text and the OSU logo sit side-by-side */
+.lexicon-entry-header > a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Mobile filter toggle button */
+#lex-mobile-filter-toggle {
+  width: 100%;
+  border: solid 1px #efbfb7;
+  color: #7B1935;
+  background-color: #f9e6e0;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+#lex-mobile-filter-toggle:hover {
+  background-color: #efbfb7;
+  color: #5E1228;
+}
+
+/* On mobile, hide the filter card by default (toggled open by JS) */
+@media (max-width: 991px) {
+  #lex-filter-card {
+    display: none;
+  }
+}
+
+/* Entry top header: breadcrumbs + action buttons in one row */
+.breadcrumbs-and-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+
+.entry-top-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+#header-lexicon-entry .entry-top-actions .btn-small-outline-v02 {
+  border-color: #efbfb7;
+  color: #7B1935;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: solid 1px #efbfb7;
+  background-color: #f9e6e0;
+}
+
+#header-lexicon-entry .entry-top-actions .btn-small-outline-v02:hover {
+  background-color: #efbfb7;
+  color: #5E1228;
+}
+
+/* A card inside a lexicon entry whose content comes from the main Ben-Yehuda
+   database (the latest-works and works-about-this-author panes on the entry
+   sidebar) rather than from the lexicon. Such cards keep the main site's
+   palette, so these rules undo the `.peach2-lexicon` overrides for them. The
+   values are the main-site defaults from BY_styles_General.css; the selectors
+   are deliberately one class more specific than the peach rules they
+   countermand. */
+.peach2-lexicon .by-card-v02.main-palette-card {
+  background-color: #d9cdd5;
+
+  /* authors/_aboutnesses renders its own card, nested inside this one */
+  .by-card-v02,
+  .left-side-card-v02 {
+    background-color: #d9cdd5;
+  }
+
+  .by-card-header-left-v02 {
+    border-bottom: solid 2px #CBB3C3;
+  }
+
+  #author-whats-new-bg {
+    background-image: image-url('bullhorn.svg');
+  }
+
+  .new-card-v02 {
+    background-color: #eeeced;
+  }
+
+  .new-card-right-v02 {
+    background-color: #2b0d22;
+  }
+
+  .new-card-type-v02 {
+    background-image: image-url('new_bg1.png');
+  }
+
+  a {
+    color: #660248;
+
+    &:hover {
+      color: #2b0d22;
+      background-color: #d9cdd5;
+    }
+  }
+
+  /* the latest-works headline is a plain span, not a link, so on the main site it
+     gets no hover highlight at all (the base rule is scoped to `a .new-headline-v02`) */
+  .new-headline-v02:hover {
+    background-color: transparent;
+  }
+}

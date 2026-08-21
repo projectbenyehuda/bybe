@@ -20,6 +20,6 @@
       - @authorities.each do |authority, manifestation|
         %tr
           %td= manifestation.created_at.strftime('%Y-%m-%d')
-          %td= link_to authority.name, authority_path(authority.id)
+          %td= authority_link(authority)
           %td= link_to manifestation.title, manifestation_show_path(manifestation.id)
           %td= link_to t(:edit_metadata), authors_edit_path(id: authority.id)

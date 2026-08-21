@@ -1,0 +1,20 @@
+%h1= t('lexicon.verification.show.escalate')
+
+= form_tag lexicon_escalate_verification_path(@entry),
+           method: :post, remote: true, class: 'verification-escalate-form' do
+  %p= t('lexicon.verification.show.escalate_confirm')
+
+  .form-group.mt-3
+    = label_tag :escalate_overall_notes,
+                t('lexicon.verification.checklist.overall_notes'), class: 'form-label'
+    = text_area_tag :overall_notes, @overall_notes,
+                    rows: 6, id: 'escalate_overall_notes',
+                    class: 'form-control',
+                    placeholder: t('lexicon.verification.messages.add_escalation_notes')
+    .form-text.text-muted
+      = t('lexicon.verification.messages.escalation_notes_help')
+
+  .modal-footer
+    %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }
+      = t('cancel')
+    = submit_tag t('lexicon.verification.show.escalate'), class: 'btn btn-danger'

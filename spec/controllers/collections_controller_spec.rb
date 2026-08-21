@@ -30,6 +30,51 @@ describe CollectionsController do
       it { is_expected.to redirect_to manifestation_path(manifestation) }
     end
 
+    context 'when collection is a series with a volume ancestor' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+      let(:collection) do
+        series = create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+        volume.append_item(series)
+        series
+      end
+
+      it { is_expected.to redirect_to collection_path(volume.id) }
+    end
+
+    context 'when collection is a series nested under a series under a volume' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+      let(:collection) do
+        inner = create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+        outer = create(:collection, collection_type: :series)
+        outer.append_item(inner)
+        volume.append_item(outer)
+        inner
+      end
+
+      it 'bubbles up to the nearest volume/issue ancestor' do
+        expect(response).to redirect_to(collection_path(volume.id))
+      end
+    end
+
+    context 'when collection is a series with no volume/issue ancestor' do
+      let(:collection) do
+        create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+      end
+
+      it { is_expected.to be_successful }
+    end
+
+    context 'when collection is an uncollected-works collection' do
+      let(:authority) { create(:authority) }
+      let(:collection) do
+        coll = create(:collection, :uncollected)
+        authority.update!(uncollected_works_collection: coll)
+        coll
+      end
+
+      it { is_expected.to redirect_to authority_path(authority) }
+    end
+
     context 'when collection is not periodical' do
       let(:collection_type) { (Collection.collection_types.keys - %w(periodical volume_series) - Collection::SYSTEM_TYPES).sample }
 
@@ -79,6 +124,82 @@ describe CollectionsController do
             ".proofable[data-item-id='#{nested_manifestation.id}'][data-item-type='Manifestation']"
           )
         end
+      end
+    end
+
+    context 'when a sub-collection is a series (sub-volume)' do
+      let(:series) do
+        create(:collection, title: 'My Sub Series', collection_type: :series,
+                            manifestations: create_list(:manifestation, 2))
+      end
+      let(:collection) do
+        create(:collection, collection_type: :volume, included_collections: [series],
+                            manifestations: [create(:manifestation)])
+      end
+
+      it 'shows the series title in the card header but not as a clickable link' do
+        expect(response.body).to have_css('.by-card-header-v02 .headline-1-v02', text: 'My Sub Series')
+        expect(response.body).not_to have_css('.by-card-header-v02 a', text: 'My Sub Series')
+      end
+
+      it 'renders a stable anchor for the sub-collection so search results can jump to it' do
+        series_item = collection.collection_items.find { |ci| ci.item_type == 'Collection' }
+        expect(response.body).to have_css("a[name='collection_#{series_item.item_id}']", visible: :all)
+      end
+    end
+
+    context 'when a sub-collection is a volume (still clickable)' do
+      let(:inner_volume) do
+        create(:collection, title: 'My Sub Volume', collection_type: :volume,
+                            manifestations: create_list(:manifestation, 2))
+      end
+      let(:collection) do
+        create(:collection, collection_type: :volume_series, included_collections: [inner_volume])
+      end
+
+      it 'shows the volume title as a clickable link' do
+        expect(response.body).to have_css('a', text: 'My Sub Volume')
+      end
+    end
+
+    context 'when collection contains non-published manifestations' do
+      let(:published_manifestation) { create(:manifestation, title: 'Published Work', status: :published) }
+      let(:unpublished_manifestation) { create(:manifestation, title: 'Unpublished Work', status: :unpublished) }
+      let(:nonpd_manifestation) { create(:manifestation, title: 'NonPD Work', status: :nonpd) }
+      let(:deprecated_manifestation) { create(:manifestation, title: 'Deprecated Work', status: :deprecated) }
+
+      let(:collection) do
+        create(:collection, collection_type: 'volume').tap do |coll|
+          coll.collection_items.create!(item: published_manifestation, seqno: 1)
+          coll.collection_items.create!(item: unpublished_manifestation, seqno: 2)
+          coll.collection_items.create!(item: nonpd_manifestation, seqno: 3)
+          coll.collection_items.create!(item: deprecated_manifestation, seqno: 4)
+        end
+      end
+
+      it 'shows published and non-deprecated items as cards (excludes deprecated)' do
+        expect(response.body).to have_css('.by-card-v02.proofable', count: 3)
+      end
+
+      it 'shows the published manifestation as a clickable link' do
+        expect(response.body).to have_css(
+          "a[href='#{manifestation_path(published_manifestation)}']", text: 'Published Work'
+        )
+      end
+
+      it 'shows unpublished and nonpd manifestations as unclickable placeholders' do
+        expect(response.body).to include('Unpublished Work')
+        expect(response.body).to include('NonPD Work')
+        expect(response.body).not_to have_css(
+          "a[href='#{manifestation_path(unpublished_manifestation)}']"
+        )
+        expect(response.body).not_to have_css(
+          "a[href='#{manifestation_path(nonpd_manifestation)}']"
+        )
+      end
+
+      it 'excludes deprecated (soft-deleted) manifestations entirely' do
+        expect(response.body).not_to include('Deprecated Work')
       end
     end
 
@@ -134,6 +255,34 @@ describe CollectionsController do
         end
       end
     end
+
+    context 'when a volume_series holds volumes of a single text each' do
+      subject! { get :show, params: { id: collection.id } }
+
+      let(:sole_text) { create(:manifestation, title: 'The Only Text') }
+      let(:one_text_volume) do
+        create(:collection, title: 'The Only Text', collection_type: 'volume', manifestations: [sole_text])
+      end
+      let(:multi_text_volume) do
+        create(:collection, title: 'A Fuller Volume', collection_type: 'volume',
+                            manifestations: create_list(:manifestation, 2))
+      end
+      let(:collection) do
+        create(:collection, collection_type: 'volume_series',
+                            included_collections: [one_text_volume, multi_text_volume])
+      end
+
+      it 'collapses the single-text volume, showing its title only once' do
+        card = Capybara.string(response.body).find(".proofable[data-item-id='#{one_text_volume.id}']")
+        expect(card).to have_link('The Only Text', href: manifestation_path(sole_text), count: 1)
+        expect(card).to have_no_css('.collection_toc')
+      end
+
+      it 'still lists the table of contents of a volume holding several texts' do
+        card = Capybara.string(response.body).find(".proofable[data-item-id='#{multi_text_volume.id}']")
+        expect(card).to have_css('.collection_toc li', count: 2)
+      end
+    end
   end
 
   describe '#show with search query parameter' do
@@ -166,6 +315,7 @@ describe CollectionsController do
     it 'displays work-specific translators in the TOC' do
       get :show, params: { id: collection.id }
       expect(response).to be_successful
+
       expect(response.body).to include('Translated Work')
       expect(response.body).to include('Work Translator')
     end
@@ -582,6 +732,139 @@ describe CollectionsController do
       }
 
       expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  describe '#browse' do
+    let(:volume_1) { create(:collection, title: 'Alpha Volume', collection_type: :volume, sort_title: 'alpha volume') }
+    let(:volume_2) { create(:collection, title: 'Beta Volume', collection_type: :volume, sort_title: 'beta volume') }
+    let(:periodical) { create(:collection, title: 'Gamma Periodical', collection_type: :periodical, sort_title: 'gamma periodical') }
+    let(:volume_series) do
+      create(:collection, title: 'Delta Volume Series', collection_type: :volume_series, sort_title: 'delta series')
+    end
+    # A non-browsable type: it is indexed but must never appear in the /collections browse listing.
+    let(:series) { create(:collection, title: 'Omega Series', collection_type: :series, sort_title: 'omega series') }
+
+    before do
+      Chewy.massacre
+      Chewy.strategy(:atomic) do
+        volume_1
+        volume_2
+        periodical
+        volume_series
+        series
+      end
+    end
+
+    after do
+      Chewy.massacre
+    end
+
+    context 'when requesting HTML' do
+      it 'renders the browse template' do
+        get :browse
+        expect(response).to be_successful
+        expect(response).to render_template(:browse)
+        # Four browsable collections are indexed; the `series` collection is excluded from the browse listing.
+        expect(assigns(:collections).count).to eq(4)
+        expect(assigns(:collections).map(&:id)).not_to include(series.id)
+        expect(assigns(:collections_list_title)).to be_present
+      end
+    end
+
+    context 'when requesting JS (AJAX)' do
+      it 'renders the JS template' do
+        get :browse, format: :js, xhr: true
+        expect(response).to be_successful
+        expect(response.content_type).to include('text/javascript')
+      end
+
+      # Regression: when filters/search shrink the list, the (few) results can render
+      # above the current scroll position, leaving the viewport empty. The AJAX JS
+      # response must instruct the browser to scroll back to the top.
+      it 'instructs the page to scroll back to the top' do
+        get :browse, format: :js, xhr: true
+        expect(response.body).to include('window.scrollTo(0, 0)')
+      end
+    end
+
+    context 'with filters' do
+      it 'filters by collection type' do
+        get :browse, params: { ckb_collection_types: ['volume'] }
+        expect(response).to be_successful
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id)
+      end
+
+      it 'filters by title search' do
+        get :browse, params: { search_input: 'Alpha' }
+        expect(response).to be_successful
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id)
+      end
+
+      it 'filters by multiple collection types' do
+        get :browse, params: { ckb_collection_types: %w(volume volume_series) }
+        expect(response).to be_successful
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id, volume_series.id)
+      end
+
+      it 'drops disallowed types from the active-filter chips and applied filter' do
+        get :browse, params: { ckb_collection_types: %w(volume series) }
+        expect(response).to be_successful
+        chip_ids = assigns(:filters).map { |_label, id, _which| id }
+        expect(chip_ids).to include('collection_type_volume')
+        expect(chip_ids).not_to include('collection_type_series')
+        # only the browsable 'volume' results come back; the disallowed 'series' is ignored
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id, volume_2.id)
+      end
+    end
+
+    context 'with sorting' do
+      it 'sorts alphabetically by default' do
+        get :browse
+        expect(assigns(:sort_by)).to eq('alphabetical')
+        expect(assigns(:collections).map(&:id)).to eq([volume_1.id, volume_2.id, volume_series.id, periodical.id])
+      end
+
+      it 'sorts by popularity when requested' do
+        Chewy.strategy(:atomic) do
+          volume_1.update!(impressions_count: 100)
+          volume_series.update!(impressions_count: 50)
+          periodical.update!(impressions_count: 75)
+          volume_2.update!(impressions_count: 25)
+        end
+
+        get :browse, params: { sort_by: 'popularity_desc' }
+        expect(assigns(:sort_by)).to eq('popularity')
+        expect(assigns(:collections).map(&:id)).to eq([volume_1.id, periodical.id, volume_series.id, volume_2.id])
+      end
+
+      it 'sorts by publication date when requested' do
+        Chewy.strategy(:atomic) do
+          volume_1.update!(normalized_pub_year: 2000)
+          volume_2.update!(normalized_pub_year: 1990)
+          periodical.update!(normalized_pub_year: 1980)
+          volume_series.update!(normalized_pub_year: 2010)
+        end
+
+        get :browse, params: { sort_by: 'publication_date_asc' }
+        expect(assigns(:sort_by)).to eq('publication_date')
+        expect(assigns(:collections).map(&:id)).to eq([periodical.id, volume_2.id, volume_1.id, volume_series.id])
+      end
+    end
+
+    context 'with invalid query' do
+      it 'returns bad request for invalid to_letter parameter' do
+        get :browse, params: { to_letter: 'invalid' }
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+
+    context 'with combined filters' do
+      it 'applies multiple filters together' do
+        get :browse, params: { ckb_collection_types: ['volume'], search_input: 'Alpha' }
+        expect(response).to be_successful
+        expect(assigns(:collections).map(&:id)).to contain_exactly(volume_1.id)
+      end
     end
   end
 

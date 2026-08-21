@@ -25,7 +25,9 @@
       = hidden_field_tag :author_id, @author_id
       .multi-name-sort.desktop-only.pointer
         %span.linkcolor.pointer{ data: { toggle: :modal, target: '#authorsDlg' } }= t(:multiselect)
-      = hidden_field_tag(:authors, @authors, id: 'author_ids')
+      -# join: the controller parses this param with split(','), and hidden_field_tag would otherwise
+         space-join the @authors array into "1 2 3", losing all but the first id on the next submit
+      = hidden_field_tag(:authors, @authors&.join(','), id: 'author_ids')
       = hidden_field_tag(:authors_names, @authors_names, id: 'authors_names')
 
       = hidden_field_tag(:search_type, id: 'search_type')
@@ -92,7 +94,7 @@
 
     = render layout: 'shared/collapsible_block', locals: { container_name: 'collfdate', title: t(:thedate) } do
       .search-mobile-switch
-        %button.search-mobile-option.datetype#published{ title: t(:publication_date_explanation) }= t(:publication)
+        %button.search-mobile-option.datetype#published{ title: t(:publication_date_explanation) }= t(:publication_date_brief)
         %button.search-mobile-option.datetype#first_published{ title: t(:first_publication_date_explanation) }= t(:first_publication)
         %button.search-mobile-option.datetype#created{ title: t(:creation_date_explanation) }= t(:creation)
         %button.search-mobile-option.datetype#uploaded{ title: t(:upload_date_explanation) }= t(:upload)
@@ -123,9 +125,6 @@
     = hidden_field_tag(:page, '1')
     = hidden_field_tag(:reverse, 'false')
     = hidden_field_tag(:to_letter, @to_letter)
-    .mobile-only
-      .bottom-button-area
-        %button.by-button-v02#apply_mobile_filters{ type: :submit }= t(:apply_mobile_filters)
 
 :javascript
   function toggleSearchType(type) {
@@ -250,12 +249,5 @@
       event.preventDefault();
       $('#search_type').val('authorname');
       submit_filters();
-    });
-
-    $('#apply_mobile_filters').click(function() {
-      resetPagination();
-      $('#sort_filter_panel').hide();
-      $('#thelist').show();
-      $('html').scrollTop($('#thelist').offset().top);
     });
   });

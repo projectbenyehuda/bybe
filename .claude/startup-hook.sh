@@ -92,13 +92,4 @@ bd close by-6b7 --reason "Created PR #123"
 bd sync
 ```
 
-## See AGENTS.md for Full Details
-
-The complete workflow is documented in `/home/asaf/dev/bybe/AGENTS.md`
-Read it if you need clarification on:
-- Testing requirements
-- Branch naming conventions
-- PR creation guidelines
-- Error recovery procedures
-
 EOF

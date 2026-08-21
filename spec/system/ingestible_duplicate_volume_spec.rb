@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe 'Ingestible duplicate volume validation', type: :system do
+describe 'Ingestible duplicate volume validation' do
   let!(:authority) { create(:authority, name: 'אהרן אמיר') }
   let!(:publication) do
     create(:publication, id: 1771, title: 'ביזאנטיון / מאת פיליפ שרארד ועורכי ספריית טיים-לייף ; (מאנגלית לעברית - אהרן אמיר).', authority: authority)

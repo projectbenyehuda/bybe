@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
-# Index representing all published Authorities
+# Index representing all published Authorities.
+# Pageless authorities (e.g. 'anonymous', 'various authors') are excluded: they have no page of their
+# own, so they must not appear in the authorities list nor in site-wide search results.
 class AuthoritiesIndex < Chewy::Index
   settings index: {
     number_of_shards: 1,
     number_of_replicas: 0
   }
 
-  index_scope Authority.published.preload(:person, :corporate_body)
+  index_scope Authority.published.not_pageless.preload(:person, :corporate_body)
   field :id, type: 'integer'
   field :name
   field :sort_name, type: 'keyword'

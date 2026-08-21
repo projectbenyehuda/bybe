@@ -13,7 +13,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql/:delegated
   elasticsearch:
-    image: elasticsearch:7.17.8
+    image: elasticsearch:8.19.19
     restart: unless-stopped
     environment:
       - discovery.type=single-node
@@ -40,8 +40,3 @@ services:
     restart: unless-stopped
     ports:
       - 21211:11211
-  redis:
-    image: redis:7.2.3
-    restart: unless-stopped
-    ports:
-      - 16379:6379

@@ -96,6 +96,21 @@ RSpec.describe 'Markdown editing action dropdown', :js, type: :system do
     expect(selected_action).to eq('minuses_to_makafim')
   end
 
+  describe 'the makafim action' do
+    let(:markdown) { "- דיבור ראשון\n   ‑ דיבור שני\nמילה-מחוברת\n---\n" }
+
+    it 'turns a line-opening minus into an en dash, leaving rules and inner makafim alone' do
+      visit manifestation_edit_path(manifestation)
+      expect(page).to have_css('.js-markdown-action', wait: 5)
+
+      accept_alert do
+        apply_action(I18n.t(:minuses_to_makafim))
+      end
+
+      expect(find('#markdown').value).to eq("– דיבור ראשון\n   – דיבור שני\nמילה־מחוברת\n---\n")
+    end
+  end
+
   describe 'the centering action' do
     it 'wraps the whole caret line when nothing is selected' do
       visit manifestation_edit_path(manifestation)

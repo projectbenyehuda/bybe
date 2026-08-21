@@ -1,0 +1,66 @@
+-#
+  haml-lint:disable LineLength
+  Editor for a list of text→link pairs (see LexiconHelper#apply_text_links).
+  Shared by LexPersonWork title_links / comment_links and LexCitation text_links.
+  Locals:
+    links       - array of { 'text' =>, 'entry_id' | 'url' => } hashes
+    record_id   - id of the record owning the links, passed to the JS callbacks
+    prefix      - id prefix for the add-form fields, e.g. 'title_link'
+    list_class  - css class of the <ul> listing the existing pairs
+    text_label  - label of the "text" field, e.g. "Text in title"
+    add_label   - heading of the add-link form
+    add_fn      - name of the JS function adding a link
+    remove_fn   - name of the JS function removing a link
+    source_text - (optional) the text the links are applied to, used to warn about pairs that do not match it
+- link_entries = text_link_entries(links)
+%ul.list-unstyled.mb-2{ class: list_class }
+  - Array(links).each_with_index do |link, idx|
+    %li.d-flex.align-items-center.gap-2.mb-1
+      %span.badge.bg-light.text-dark.border= link['text']
+      %span →
+      - anchor = text_link_anchor(link, link_entries)
+      - if anchor
+        = anchor
+      - else
+        %span.text-muted= t('lexicon.text_links.entry_not_found')
+      - if defined?(source_text) && source_text.present? && link['text'].present? && source_text.exclude?(link['text'])
+        %span.text-warning.small.text-not-found= t('lexicon.text_links.text_not_found')
+      %button.btn.btn-sm.btn-outline-danger{ onclick: "#{remove_fn}(#{record_id}, #{idx})" }
+        = t(:delete)
+
+%hr.my-2
+%strong= add_label
+.row.g-2.align-items-end.mt-1{ id: "add-#{prefix.dasherize}-form" }
+  .col-sm-6
+    = label_tag "#{prefix}_text", text_label, class: 'form-label form-label-sm'
+    = text_field_tag "#{prefix}_text", nil, class: 'form-control form-control-sm', id: "#{prefix}_text", placeholder: t('lexicon.text_links.text_placeholder')
+  .col-sm-6
+    = label_tag "#{prefix}_entry_autocomplete", t('lexicon.text_links.target_entry'), class: 'form-label form-label-sm'
+    = hidden_field_tag "#{prefix}_entry_id", nil, id: "#{prefix}_entry_id"
+    = autocomplete_field_tag "#{prefix}_entry_autocomplete",
+                             nil,
+                             autocomplete_lexicon_entries_path,
+                             id_element: "##{prefix}_entry_id",
+                             class: 'form-control form-control-sm',
+                             placeholder: t('lexicon.text_links.entry_placeholder')
+  .col-sm-10
+    = label_tag "#{prefix}_url", t('lexicon.text_links.target_url'), class: 'form-label form-label-sm'
+    = text_field_tag "#{prefix}_url", nil, class: 'form-control form-control-sm', id: "#{prefix}_url", placeholder: t('lexicon.text_links.url_placeholder')
+  .col-sm-2
+    %button.btn.btn-sm.btn-primary.w-100{ onclick: "#{add_fn}(#{record_id})" }
+      = t(:add)
+  .col-12
+    %small.text-muted= t('lexicon.text_links.target_hint')
+
+:javascript
+  $.ui.autocomplete.prototype._resizeMenu = function () {
+    const ul = this.menu.element;
+    ul.outerWidth(this.element.outerWidth());
+  };
+  // Picking an entry and typing a URL are mutually exclusive targets: clear the other one.
+  $('##{prefix}_url').on('input', function() {
+    if ($(this).val()) { $('##{prefix}_entry_id').val(''); $('##{prefix}_entry_autocomplete').val(''); }
+  });
+  $('##{prefix}_entry_autocomplete').on('railsAutocomplete.select', function() {
+    $('##{prefix}_url').val('');
+  });

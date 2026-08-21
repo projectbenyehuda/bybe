@@ -1,5 +1,13 @@
 ---
 en:
+  author_toc_filters:
+    free_text_placeholder: Free text
+    source_language: Source language
+    extra_content: Extra content
+    curatorial_content: Curatorial content
+    reader_recommendations: Reader recommendations
+    no_extra_content: No extra content
+    edition: Edition
   edit_metadata: Edit metadata
   originating_task: Originating task
   find_originating_task: Find originating task
@@ -25,6 +33,7 @@ en:
   can_only_cancel_pending_links: You can only cancel pending links
   update: Update
   destroy: Destroy
+  show: Show
   delete: Delete
   delete_selected: Delete Selected
   unpublish: Unpublish
@@ -40,6 +49,8 @@ en:
   confirm_batch_delete: Are you sure you want to delete %<count>s manifestation(s)?
   confirm_batch_unpublish: Are you sure you want to unpublish %<count>s manifestation(s)?
   please_select_manifestation: Please select at least one manifestation
+  upload: Upload
+  link: Link
   created_successfully: Created Successfully
   updated_successfully: Updated Successfully
   deleted_successfully: Deleted Successfully
@@ -50,6 +61,7 @@ en:
   alefbet: Alphabetical
   alefbet_asc: 'Alphabetical: A-Z'
   alefbet_desc: 'Alphabetical: Z-A'
+  num_views: views
   popularity_group: Poplularity
   popularity_desc: 'Popularity: descending'
   popularity_asc: 'Popularity: ascending'
@@ -109,6 +121,9 @@ en:
   dictionary: Dictionary
   collections: Collections
   email: Email
+  title: Title
+  status: Status
+  actions: Actions
   ziburit: What is the last name of the most famous poet? (Security question)
   not_implemented_yet: Not implemented. This function is still in development.
   report_error_tt: To report error select text on the page and then press here
@@ -435,8 +450,12 @@ en:
       enter_manifestation_ids: Please enter *work* IDs (separated by space or newline)
       fetch: Load Works
       title: Batch Operations
+  lockable:
+    locked_at_human: "%{minutes_ago} ago"
+    locked_by_human: "Locked by %{name}"
+  lock_record:
+    record_locked: This %{model_name} is locked by user %{user}
   ingestibles:
-    ingestible_locked: Ingestible locked by user %{user}
     clear_defaults: Clear defaults
     authorities:
       or_new_person: or type a new authority name
@@ -445,6 +464,8 @@ en:
     create:
       success: Ingestible was successfully created
       failure: Failed to create Ingestible
+      invalid_docx_url: "DOCX URL must use http or https"
+      docx_download_failed: "Failed to download DOCX file from the provided URL"
     edit:
       title: Edit Ingestible
     form:
@@ -582,6 +603,7 @@ en:
         permission_for_selected: permission for specific titles only
         public_domain: what does public domain mean?
         unknown: what does unknown rights status mean?
+        mixed: what does mixed copyright status mean?
       popover:
         by_permission: Although the work is still copyrighted, Project Ben-Yehuda
           has received *explicit permission to publish* the work in Project Ben-Yehuda's
@@ -608,6 +630,7 @@ en:
           of anyone.
         unknown: The copyright status of this work is unknown to us. If you have information
           about it, please contact us.
+        mixed: This collection contains works with different copyright statuses. Each work's copyright status is shown individually on its card.
     latest_works_by_author:
       latest_added_works: latest works published in the project
       to_latest_x_works: to latest %{x} works
@@ -702,6 +725,7 @@ en:
     permission_for_selected: certain works accessed with permission
     public_domain: public domain
     unknown: unknown
+    mixed: mixed
   collection_type_in_volume: In a volume
   collection_type_in_periodical: In a periodical
   collection_type_uncollected: Uncollected
@@ -716,7 +740,9 @@ en:
       designer: Designer
       contributor: Contributor
       other: Other
+      annotator: Annotator
     abstract_roles:
+      annotator: Annotations
       author: By
       contributor: With
       designer: Design
@@ -807,6 +833,30 @@ en:
     translator_missing: Ingestible Translator Missing
     volume: Ingestible Volume
     volume_by_author: Ingestible Volume By Author
+  toc_by_role:
+    involved_on_collection_level: Involved on collection level
+    involved_on_work_level: Involved on work level
+    uncollected_works: Uncollected works
+    headers:
+      author: Authored works
+      translator: Translated works
+      editor: Edited works
+      illustrator: Illustrated works
+      photographer: Works with photographs by
+      annotator: Annotated works
+      designer: Works design was done by
+      contributor: Works contributed to
+      other: Other works
+    made_by:
+      translator: translated by
+      editor: edited by
+      illustrator: illustrated by
+      photographer: photographs by
+      annotator: annotated by
+      designer: design by
+      contributor: contributed to by
+      other: by
+  # This block of strings below should be removed when we finish work. Grouped them together to make it easier to find them again
   public_domain: Public Domain
   viaf_id: VIAF ID
   text_n_of_m: Text %{n} of %{m}
@@ -1029,6 +1079,7 @@ en:
     tagging suggestion: "%{explanation}"'
   additional_translations: Additional Translations of the Work
   additional_versions: Additional Versions of this Work
+  other_containing_collections: Other collections in the corpus containing this work
   link_to_another_text: Link to Another Text/Translation
   enter_manifestation_id: Manifestation ID to Link
   show_details: Show Details
@@ -1109,7 +1160,7 @@ en:
     key_created_to_editor:
       subject: New API Key Created
   apply_filters: Apply This Filter!
-  apply_mobile_filters: Apply Selected Filter
+  apply_mobile_filters: Apply Filters
   approve: Approve
   approve_and_next: Approve and Move to Next Item
   approve_and_review_taggings: Approve and Review Taggings
@@ -1120,6 +1171,8 @@ en:
   associate_with_viaf: Link the Folder to This VIAF Record
   associated_persons: Linked Persons
   associated_with_viaf: Linked to Record Number %{viaf} in VIAF Database
+  annotator: Annotator (male)
+  annotator_f: Annotator (female)
   author: Author
   author_details: Author Details
   author_download_tt: Download the author's works list as a file
@@ -1130,6 +1183,7 @@ en:
   author_name: Author Name
   author_names: Author Name(s)
   author_not_available: Author page is not available at this time.
+  pageless_hint: "Check for authorities that are not real creators (e.g. 'anonymous', 'various authors'): they will not be listed nor linked to, and will have no page of their own."
   author_or_translator_gender: Author or Translator Gender
   author_print_tt: Print the author's works list
   author_table_of_contents: Author Page
@@ -1243,6 +1297,9 @@ en:
   close: Close
   close_and_return_to_page: Close and Return to Page
   close_highlights: Cancel Result Highlighting
+  close_menu: Close menu
+  expand_menu: Expand menu
+  collapse_section: Collapse section
   coll_drag_tt: Drag area to reorder items in collection
   collection_circular_reference: Collection linked to itself!
   collection_item_type: Item Type
@@ -1978,6 +2035,7 @@ en:
   publication: Publication
   publication_date: Publication Date
   publication_date_explanation: "Print publication date of the source edition we transcribed from"
+  publication_date_brief: Publication
   first_publication_date: First Publication Date
   first_publication_date_explanation: "Date of the work's first known publication"
   first_publication: First Publication
@@ -2158,6 +2216,7 @@ en:
   spanish: Spanish
   split: Split
   split_works: Split Works
+  staging_version: 'version: %{version}'
   start: Start
   start_date: Start Date
   start_page: Start Page
@@ -2215,6 +2274,8 @@ en:
   taggings_count: Taggings Count
   tags: Tags
   tags_count: Tags Count
+  lex_citations_about_collection: Citations about this collection
+  lex_citations_about_author: Citations about this author
   task: Task
   tasks: Tasks
   template: Template
@@ -2345,6 +2406,7 @@ en:
   values: Values
   version: Version
   versions: Versions
+  version_unknown: unknown
   via: Via
   viaf: VIAF
   viaf_link: VIAF Link
@@ -2507,12 +2569,14 @@ en:
   like: Like
   link_description: Link Description
   link_moderation: Link Moderation
+  edit_lexicon: Edit Lexicon
   batch_editing: Batch Editing
   link_type: Link Type
   linked_author: Linked Author
   linked_taggings: Linked Taggings
   linking_entries: Linking Entries
   list_all_authors: List All Authors
+  list_all_collections: List All Collections
   list_all_works: List All Works
   location: Location
   location_in_work: Location In Work
@@ -2886,7 +2950,8 @@ en:
   some: Some
   some_authors_to_work_on: Some Authors To Work On
   sort_and_filter: Sort And Filter
-  sort_and_filter_popover: Sort And Filter Popover
+  hide_sort_and_filter: Hide Filters
+  sort_and_filter_popover: Filter the works on this page by genre, source language, and more
   sort_title: Sort Title
   sorting_caveat: Sorting Caveat
   sorting_caveat_title: Sorting Caveat Title
@@ -2978,9 +3043,11 @@ en:
   to_full_tagging_policy: To Full Tagging Policy
   to_manage_people: To Manage People
   to_next_item: To Next Item
+  to_next_volume: To Next Volume
   to_other_translations_of_author: To Other Translations Of Author
   to_periodical: To Periodical
   to_previous_item: To Previous Item
+  to_previous_volume: To Previous Volume
   next_items_not_yet_uploaded: The next items have not been uploaded yet
   previous_items_not_yet_uploaded: The previous items have not been uploaded yet
   to_tagging_instructions: To Tagging Instructions
@@ -3165,8 +3232,15 @@ en:
   no_diff_available: No diff available
   back_to_work: Back to Work
   version_restore_failed: Failed to restore version
-  work: Work
-  author: Author
+  to_lexicon_entry_on_x: To lexicon entry on %{x} in the New Hebrew Literature Lexicon
+  total_collections_including_author: Total collections involving author
+  collapse_all_sections: Collapse all sections
+  expand_all_sections: Expand all sections
+  toggle_collapse_collection: "Collapse or expand: %{title}"
+  toggle_collapse_uncollected: Collapse or expand the uncollected works
+  toc_display_list: List
+  toc_display_snippets: Summaries
+  to_the_full_work: To the full work
   legacy_urls:
     index:
       title: Legacy URL Mappings
@@ -3181,3 +3255,97 @@ en:
     target_type_hint: "The target model class, e.g. Manifestation, Authority, FeaturedContent"
     target_id_hint: "The numeric ID of the target record"
     description_hint: "Optional note describing this mapping"
+
+  # Lexicon
+  lexicon:
+    entries:
+      list:
+        page_title: New Hebrew Literature Lexicon Entries List
+        page_header: Entries List - New Hebrew Literature Lexicon
+        entries_list_breadcrumb: Lexicon Entries List
+        welcome_title: Welcome to the New Hebrew Literature Lexicon Entries List
+        intro_html: The New Hebrew Literature Lexicon database contains <strong>%{count} published entries</strong>. This list displays all publicly available entries.
+        description: The lexicon contains bio-bibliographic information about Hebrew literature authors and creators, as well as historical publications and newspapers.
+        entries_count:
+          one: 1 entry
+          other: "%{count} entries"
+        not_migrated_badge: PHP
+        not_migrated_badge_title: Not yet migrated from the old (PHP) lexicon
+        filters:
+          entry_name: "Entry Name"
+          name_placeholder: "Search by name"
+          name_contains: "Name contains: %{name}"
+          gender_title: "Gender"
+          gender_male: "Male"
+          gender_female: "Female"
+          gender_other: "Other"
+          gender_unknown: "Unknown"
+          birth_years: "Birth Years"
+          death_years: "Death Years"
+          from_year: "From year"
+          to_year: "To year"
+          year_placeholder: "Year"
+          birth_from: "Born from: %{year}"
+          birth_to: "Born to: %{year}"
+          death_from: "Died from: %{year}"
+          death_to: "Died to: %{year}"
+          show_filters: "Show Filters"
+          hide_filters: "Hide Filters"
+          filter_panel: "Filter Panel"
+    people:
+      new:
+        title: "New %{model}"
+    publications:
+      new:
+        title: "New %{model}"
+    person_works:
+      index:
+        add_work: Add Work
+        drag_to_reorder: Drag to reorder
+        reordering_failed: Reordering failed
+      form:
+        associated_people: Associated People
+      title_links:
+        section_heading: Title Links
+        add_link: Add Title Link
+        text_label: Text in title
+      comment_links:
+        section_heading: Comment Links
+        add_link: Add Comment Link
+        text_label: Text in comment
+    citations:
+      index:
+        add_citation: Add Citation
+        drag_to_reorder: Drag to reorder
+        reordering_failed: Reordering failed
+        no_subject: General
+      edit:
+        title: Edit Citation
+      text_links:
+        section_heading: Text Links
+        add_link: Add Text Link
+        text_label: Text in citation
+    links:
+      edit:
+        title: Edit Link
+    text_links:
+      text_placeholder: Text that becomes a link
+      target_entry: Lexicon entry
+      target_url: Target URL
+      entry_placeholder: Search lexicon entry...
+      url_placeholder: "https://example.com/page.html"
+      target_hint: Fill in exactly one target – a lexicon entry or a URL.
+      entry_not_found: Entry not found
+      text_not_found: Text does not occur here
+  lex_issues:
+    index:
+      title: Lex Issues
+      new: New Lex Issue
+    new:
+      title: New Lex Issue
+    edit:
+      title: Edit Lex Issue
+    form:
+      errors_header:
+        one: "1 error prevented this lex issue from being saved"
+        other: "%{count} errors prevented this lex issue from being saved"

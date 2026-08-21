@@ -14,25 +14,13 @@
       gtag('config', 'UA-4865013-2');
     </script>
   <% end %>
-  <!-- bootstrap 4.x -->
-  <link
-  rel="stylesheet"
-  href="https://cdn.rtlcss.com/bootstrap/v4.2.1/css/bootstrap.min.css"
-  integrity="sha384-vus3nQHTD+5mpDiZ4rkEPlnkcyTP+49BhJ4wJeJunw06ZAp+wzzeBPUXr42fi8If"
-  crossorigin="anonymous">
 
   <link href="/assets/fonts.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Alef" rel="stylesheet">
 
   <%= stylesheet_link_tag    "application" %>
   <%= javascript_include_tag "application" %>
-  <!-- bootstrap 4.x -->
-  <!-- Latest compiled and minified JavaScript -->
-
-  <script src="https://cdn.rtlcss.com/bootstrap/v4.2.1/js/bootstrap.bundle.min.js"
-    integrity="sha384-K/wjzuoV8a4rD2q1L2clnXIYLNmQiFganXCXSzSWUpFGF04s38f9vwnQFj2NUhDy"
-    crossorigin="anonymous">
-  </script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
 
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.0/jquery.matchHeight-min.js"></script>
   <meta charset="utf-8">
@@ -48,7 +36,7 @@
   <%= csrf_meta_tags %>
   <%= Sentry.get_trace_propagation_meta.html_safe %>
   </head>
-<body dir="rtl" style="position:relative;">
+<body dir="rtl" style="position:relative;" class="<%= 'staging' if staging? %>">
 <% unless @print %>
   <% unless @readmode %>
   <!-- top logo area -->
@@ -76,6 +64,12 @@
             <% if @ltr.nil? %>
               <div class="statistics-box-v02">
                 <div class="statistics-v02">
+                  <div class="stat-big-v02">
+                    <%= link_to(Collection.cached_volume_and_issue_count.to_s, collections_path) %>
+                  </div>
+                  <div class="stat-small-v02"><%= t(:volumes) %></div>
+                </div>
+                <div class="statistics-v02 mobile-stat">
                   <div class="stat-big-v02">
                     <%= link_to(Manifestation.cached_count.to_s, all_works_path) %>
                   </div>
@@ -108,11 +102,17 @@
                   </div>
                   <div class="stat-small-v02"><%= t(:authors_neutral_en) %></div>
                 </div>
-                <div class="statistics-v02">
+                <div class="statistics-v02 mobile-stat">
                   <div class="stat-big-v02">
                     <%= link_to(Manifestation.cached_count.to_s, all_works_path) %>
                   </div>
                   <div class="stat-small-v02"><%= t(:works_en) %></div>
+                </div>
+                <div class="statistics-v02">
+                  <div class="stat-big-v02">
+                    <%= link_to(Collection.cached_volume_and_issue_count.to_s, collections_path) %>
+                  </div>
+                  <div class="stat-small-v02"><%= t(:volumes) %></div>
                 </div>
               </div>
             <% end %>
@@ -295,5 +295,6 @@
   });
 </script>
 
+<%= render 'shared/staging_version_indicator' %>
 </body>
 </html>

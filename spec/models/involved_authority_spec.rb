@@ -5,6 +5,36 @@ require 'rails_helper'
 describe InvolvedAuthority do
   include ActiveJob::TestHelper
 
+  describe 'roles' do
+    it 'includes the annotator role' do
+      expect(described_class.roles).to include('annotator')
+    end
+
+    it 'allows the annotator role on both works and expressions' do
+      expect(described_class::WORK_ROLES).to include('annotator')
+      expect(described_class::EXPRESSION_ROLES).to include('annotator')
+    end
+
+    it 'presents annotator after author and before translator' do
+      order = described_class::ROLES_PRESENTATION_ORDER
+      expect(order.index('annotator')).to be > order.index('author')
+      expect(order.index('annotator')).to be < order.index('translator')
+    end
+
+    it 'presents every role exactly once' do
+      expect(described_class::ROLES_PRESENTATION_ORDER).to match_array(described_class.roles.keys)
+    end
+
+    %i(he en).each do |locale|
+      it "has #{locale} translations for every role" do
+        described_class.roles.each_key do |role|
+          expect(I18n.t(role, scope: 'involved_authority.role', locale: locale, raise: true)).to be_present
+          expect(I18n.t(role, scope: 'involved_authority.abstract_roles', locale: locale, raise: true)).to be_present
+        end
+      end
+    end
+  end
+
   describe 'validations' do
     subject { record.valid? }
 

@@ -3,6 +3,56 @@ require 'addressable/uri'
 module ApplicationHelper
   include BybeUtils
 
+  # Renders a link to an authority's TOC page -- except for 'pageless' authorities (e.g. 'anonymous',
+  # 'various authors'), whose name is rendered as plain text, because a TOC page for them would falsely
+  # suggest hundreds of works by a single author.
+  #
+  # @param authority [Authority, Integer] an Authority or its id
+  # @param text [String, nil] the link text; defaults to the authority's name
+  # @return [String] html_safe anchor, or the escaped name for pageless authorities
+  def authority_link(authority, text = nil, **html_options)
+    id = authority.is_a?(Authority) ? authority.id : authority.to_i
+    text ||= authority.is_a?(Authority) ? authority.name : Authority.find(id).name
+    return ERB::Util.html_escape(text) if Authority.pageless_id?(id)
+
+    link_to(text, authority_path(id), **html_options)
+  end
+
+  # Block form of {#authority_link}, for the cases (author cards, popups) where the link wraps markup
+  # rather than a plain name. Emits a span instead of an anchor for pageless authorities, so the
+  # surrounding layout is preserved but nothing is clickable.
+  #
+  # @param authority [Authority, Integer] an Authority or its id
+  def link_to_authority(authority, html_options = {}, &)
+    id = authority.is_a?(Authority) ? authority.id : authority.to_i
+    return link_to(authority_path(id), html_options, &) unless Authority.pageless_id?(id)
+
+    content_tag(:span, html_options.except(:target, :rel), &)
+  end
+
+  def staging?
+    (ENV['cache_nonce'] || ENV['CACHE_NONCE']) == 'staging'
+  end
+
+  # Best-effort description of the running deployment, for the staging indicator:
+  # deployment timestamp plus the deployed git SHA, when available. Capistrano names
+  # release directories YYYYMMDDHHMMSS (UTC) and writes a REVISION file (holding the
+  # deployed SHA) into them; in development/test neither exists.
+  def deployment_version
+    dir = Rails.root.basename.to_s
+    revision_file = Rails.root.join('REVISION')
+    revision = revision_file.exist? ? revision_file.read.strip : nil
+    time =
+      if dir.match?(/\A\d{14}\z/)
+        Time.find_zone('UTC').strptime(dir, '%Y%m%d%H%M%S')
+      elsif revision.present?
+        revision_file.mtime
+      end
+
+    label = time.nil? ? t(:version_unknown) : time.in_time_zone.strftime('%Y-%m-%d %H:%M')
+    revision.blank? ? label : "#{label} (#{revision[0, 8]})"
+  end
+
   def u8(s)
     return s if s.nil?
 
@@ -100,6 +150,8 @@ module ApplicationHelper
       return gender == 'female' ? t(:illustrator_f) : t(:illustrator)
     when 'photographer'
       return gender == 'female' ? t(:photographer_f) : t(:photographer)
+    when 'annotator'
+      return gender == 'female' ? t(:annotator_f) : t(:annotator)
     when 'publisher'
       return t(:mlbhd)
     when 'contributor'
@@ -173,22 +225,18 @@ module ApplicationHelper
     i = 0
     people.each do |p|
       ret += ', ' if i > 0
-      ret += link_to p.name, authority_path(id: p.id)
+      ret += authority_link(p)
       i += 1
     end
     return ret
   end
 
   def authors_linked_string(m)
-    return m.expression.work.authors.map do |x|
-             "<a href=\"#{url_for(controller: :authors, action: :toc, id: x.id)}\">#{x.name}</a>"
-           end.join(', ')
+    m.expression.work.authors.map { |x| authority_link(x) }.join(', ')
   end
 
   def translators_linked_string(m)
-    return m.expression.translators.map do |x|
-             "<a href=\"#{url_for(controller: :authors, action: :toc, id: x.id)}\">#{x.name}</a>"
-           end.join(', ')
+    m.expression.translators.map { |x| authority_link(x) }.join(', ')
   end
 
   def intellectual_property_glyph(intellectual_property)
@@ -196,7 +244,7 @@ module ApplicationHelper
     case intellectual_property
     when 'public_domain'
       return 'm'
-    when 'copyrighted', 'by_permission', 'permission_for_all', 'permission_for_selected', 'orphan'
+    when 'copyrighted', 'by_permission', 'permission_for_all', 'permission_for_selected', 'orphan', 'mixed'
       return 'x'
     end
   end
@@ -353,8 +401,12 @@ module ApplicationHelper
       ]
   end
 
-  def role_options
-    InvolvedAuthority.roles.keys.map { |role| [textify_authority_role(role), role] }
+  # Options for a role select, always in the usual presentation order.
+  # @param roles - the roles to offer, e.g. InvolvedAuthority::WORK_ROLES; defaults to all of them
+  def role_options(roles = InvolvedAuthority::ROLES_PRESENTATION_ORDER)
+    roles = roles.map(&:to_s)
+    InvolvedAuthority::ROLES_PRESENTATION_ORDER.select { |role| roles.include?(role) }
+                                               .map { |role| [textify_authority_role(role), role] }
   end
 
   # One line of the footnote-discrepancy report, e.g. '[^1] (lines 4, 17)' with the

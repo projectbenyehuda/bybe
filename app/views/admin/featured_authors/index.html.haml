@@ -17,7 +17,7 @@
       %tr
         %td= link_to v.title, admin_featured_author_path(v)
         %td!= v.featured_list
-        %td= v.person.nil? ? t(:none) : link_to(v.person.authority.name, authority_path(v.person.authority))
+        %td= v.person.nil? ? t(:none) : authority_link(v.person.authority)
         %td
           = link_to t(:edit), edit_admin_featured_author_path(v)
           = link_to t(:destroy), admin_featured_author_path(v), method: :delete, data: { confirm: t(:are_you_sure) }

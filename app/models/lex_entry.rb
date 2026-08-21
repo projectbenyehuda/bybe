@@ -1,0 +1,424 @@
+# frozen_string_literal: true
+
+# Lexicon Entry (Person, Publication, etc.)
+class LexEntry < ApplicationRecord
+  include SortedTitle
+  include DownloadLink
+  include Lockable
+
+  has_one :lex_file, dependent: :nullify
+
+  # this can be LexPerson or LexPublication (or...?)
+  # TODO: make relation mandatory after all PHP files will be migrated
+  belongs_to :lex_item, polymorphic: true, optional: true, dependent: :destroy, inverse_of: :entry
+
+  has_many :linked_people,
+           class_name: 'LexLinkedPerson',
+           inverse_of: :person_entry,
+           dependent: :nullify
+
+  # Statuses related to migration process
+  MIGRATION_STATUSES = %w(raw migrating error verifying verified escalated).freeze
+
+  enum :status, {
+    draft: 0,       # entry created but not ready for public access
+    published: 1,   # entry approved for public access
+    deprecated: 2,  # entry deprecated (maybe superseded by another entry)
+    raw: 101,       # migration not done
+    migrating: 102, # async migration in progress
+    error: 103,     # error during migration
+    verifying: 104, # under verification review
+    verified: 105,  # verification complete, ready for publishing
+    escalated: 106  # escalated for further review due to some problem
+  }, prefix: true
+
+  has_many_attached :attachments # attachments referenced by link or image on the entry page
+  has_many :legacy_links, class_name: 'LexLegacyLink', dependent: :destroy, inverse_of: :lex_entry
+
+  validates :title, :sort_title, :status, presence: true
+
+  # Statuses in which an entry is still part of the migration verification workflow
+  VERIFICATION_STATUSES = %i(draft verifying error escalated).freeze
+
+  # Scopes for verification queue
+  scope :needs_verification, -> { where(status: VERIFICATION_STATUSES) }
+  scope :in_verification, -> { where(status: :verifying) }
+
+  # Main entries are shown in /lex; secondary entries (main: false) are only
+  # reachable via internal links from another entry.
+  scope :main, -> { where(main: true) }
+
+  update_index('lex_entries') { self }
+  update_index('lex_entries_autocomplete') { self }
+
+  # Returns the entry type for autocomplete and display purposes.
+  # Returns :person if the entry is backed by a LexPerson item or a person-type LexFile.
+  # Returns :publication if the entry is backed by a LexPublication item or a text-type LexFile.
+  def entry_type
+    if lex_item.is_a?(LexPerson) || lex_file&.entrytype_person?
+      :person
+    elsif lex_item.is_a?(LexPublication) || lex_file&.entrytype_text?
+      :publication
+    end
+  end
+
+  # Instance-level counterpart of the needs_verification scope: is this entry still
+  # going through migration verification (as opposed to published/deprecated)?
+  def needs_verification?
+    VERIFICATION_STATUSES.include?(status.to_sym)
+  end
+
+  # returns link to page representing this entry in old lexicon system
+  # TODO: remove after migration is complete
+  def old_lexicon_url
+    return nil unless lex_file
+
+    "#{Lexicon::OLD_LEXICON_URL}/#{lex_file.fname}"
+  end
+
+  # Returns the attachment selected as the profile image, or nil if none selected
+  def profile_image
+    return nil unless profile_image_id
+
+    attachments.find_by(id: profile_image_id)
+  end
+
+  # Whether a (re-)migration can be launched for this entry. This is the single source of
+  # truth for redo eligibility, used by Lexicon::FilesController#redo_migration and the
+  # verification queue. A lex_file is required to re-run ingestion.
+  def redo_migration_eligible?
+    lex_file.present? && (status_draft? || status_verifying? || status_escalated?)
+  end
+
+  # Should be called if we want to re-ingest the lex file
+  def reset_ingestion!
+    return if lex_file.nil? # Should not be called for entries without lex_file
+
+    Chewy.strategy(:atomic) do
+      lex_item&.destroy!
+      legacy_links.each(&:destroy!)
+      attachments.purge
+      status_raw!
+      lex_file.update!(error_message: nil)
+    end
+  end
+
+  # Returns the latest updated_at across the entry, its lex_item (LexPerson/LexPublication),
+  # lex_item citations and works (LexPerson only), and lex_item links.
+  # As a side effect, if the computed date is more than 24 hours later than updated_at,
+  # silently syncs updated_at so list views eventually reflect the real last change.
+  def last_content_update
+    timestamps = [updated_at, lex_item&.updated_at]
+
+    if lex_item.is_a?(LexPerson)
+      timestamps << lex_item.citations.maximum(:updated_at)
+      timestamps << lex_item.works.maximum(:updated_at)
+    end
+
+    timestamps << lex_item&.links&.maximum(:updated_at)
+
+    max = timestamps.compact.max
+    update_column(:updated_at, max) if max > updated_at + 24.hours
+    max
+  end
+
+  def self.cached_count
+    Rails.cache.fetch('lex_entry_count', expires_in: 24.hours) do
+      LexEntry.count
+    end
+  end
+
+  def self.cached_published_count
+    Rails.cache.fetch('lex_entry_published_count', expires_in: 24.hours) do
+      LexEntry.where(status: :published).count
+    end
+  end
+
+  # Initialize verification progress for this entry
+  def start_verification!(user_email)
+    update!(
+      status: :verifying,
+      verification_progress: {
+        verified_by: user_email,
+        started_at: Time.current.iso8601,
+        last_updated_at: Time.current.iso8601,
+        checklist: build_checklist,
+        overall_notes: '',
+        ready_for_publish: false
+      }
+    )
+  end
+
+  # Calculate verification percentage (0-100)
+  def verification_percentage
+    return 0 if verification_progress.blank? || verification_progress == {}
+
+    checklist = verification_progress['checklist'] || {}
+    total = 0
+    verified = 0
+
+    # Count top-level items (excluding collections)
+    %w(title life_years bio description toc az_navbar
+       external_identifiers attachments date_of_manual_update).each do |key|
+      next unless checklist[key]
+
+      total += 1
+      verified += 1 if checklist[key]['verified']
+    end
+
+    # Count collection items (citations/מראי מקום, links, works)
+    %w(citations links works).each do |collection|
+      next unless checklist[collection]&.dig('items')
+
+      items = checklist[collection]['items']
+      total += items.size
+      verified += items.count { |_k, v| v['verified'] }
+    end
+
+    return 0 if total.zero?
+
+    ((verified.to_f / total) * 100).round
+  end
+
+  # Check if all verification items are complete
+  def verification_complete?
+    verification_percentage == 100
+  end
+
+  # Mark entry as verified (only if verification is complete).
+  # If the entry belongs to a LexPerson linked to an Authority, copies
+  # the Authority's other_designation into this entry's other_designation.
+  def mark_verified!
+    raise 'Verification not complete' unless verification_complete?
+
+    updates = {
+      status: :published,
+      verification_progress: verification_progress.merge(
+        'ready_for_publish' => true,
+        'completed_at' => Time.current.iso8601
+      )
+    }
+
+    if lex_item.is_a?(LexPerson) && lex_item.authority&.other_designation.present?
+      updates[:other_designation] = lex_item.authority.other_designation
+    end
+
+    update!(updates)
+  end
+
+  # Update a specific checklist item
+  def update_checklist_item(path, verified, notes = '')
+    with_lock do
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+
+      # Navigate to nested key and update
+      keys = path.split('.')
+
+      if keys.length > 1
+        # For nested paths like "works.items.123", navigate to parent and update child
+        parent_keys = keys[0..-2]
+        last_key = keys.last
+
+        # Navigate to the parent hash, ensuring it exists
+        target = checklist
+        parent_keys.each do |key|
+          target[key] ||= {}
+          target = target[key]
+        end
+
+        # Set the value on the target
+        target[last_key] = { 'verified' => verified, 'notes' => notes }
+      else
+        # For top-level paths like "title"
+        checklist[keys.first] = { 'verified' => verified, 'notes' => notes }
+      end
+
+      # Auto-verify parent collections when all items are verified
+      auto_verify_collections!(checklist)
+
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
+
+  # Add a single work to the verification checklist (called synchronously when a work is created)
+  def add_work_to_checklist!(work_id)
+    return unless lex_item_type == 'LexPerson'
+
+    with_lock do
+      return if verification_progress.blank?
+
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist&.dig('works')
+
+      checklist['works']['items'] ||= {}
+      checklist['works']['items'][work_id.to_s] ||= { 'verified' => false, 'notes' => '' }
+      auto_verify_collections!(checklist)
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
+
+  # Remove a single work from the verification checklist (called synchronously when a work is destroyed)
+  def remove_work_from_checklist!(work_id)
+    return unless lex_item_type == 'LexPerson'
+
+    with_lock do
+      return if verification_progress.blank?
+
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist&.dig('works', 'items')&.key?(work_id.to_s)
+
+      checklist['works']['items'].delete(work_id.to_s)
+      auto_verify_collections!(checklist)
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
+
+  # Remove a single link from the verification checklist (called synchronously when a link is destroyed),
+  # so the deleted link stops counting towards the section's verified/total tally.
+  def remove_link_from_checklist!(link_id)
+    with_lock do
+      return if verification_progress.blank?
+
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist&.dig('links', 'items')&.key?(link_id.to_s)
+
+      checklist['links']['items'].delete(link_id.to_s)
+      # When the last link is deleted, keep whatever verified state the section had:
+      # a zero-link section can legitimately be marked verified by hand.
+      auto_verify_collections!(checklist) if checklist['links']['items'].any?
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
+
+  # Mark all works as verified (called when marking entire works section as verified)
+  def mark_all_works_verified!(notes = '')
+    return unless lex_item_type == 'LexPerson'
+
+    with_lock do
+      return if verification_progress.blank?
+
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist && checklist['works']
+
+      # Get all current work IDs from database
+      works = lex_item&.works
+      work_ids = works ? works.pluck(:id).map(&:to_s) : []
+
+      # Mark each individual work as verified
+      work_ids.each do |work_id|
+        checklist['works']['items'] ||= {}
+        checklist['works']['items'][work_id] = { 'verified' => true, 'notes' => notes }
+      end
+
+      # Mark the works section itself as verified
+      checklist['works']['verified'] = true
+      checklist['works']['notes'] = notes
+
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
+
+  private
+
+  # Auto-verify collection sections when all items are verified
+  def auto_verify_collections!(checklist)
+    %w(citations links works).each do |collection|
+      next unless checklist[collection]&.dig('items')
+
+      items = checklist[collection]['items']
+
+      # Special handling for works: verify against actual database records
+      if collection == 'works' && lex_item_type == 'LexPerson'
+        works = lex_item&.works
+        actual_work_ids = works ? works.pluck(:id).map(&:to_s) : []
+
+        # Only mark as verified if:
+        # 1. We have works in the database
+        # 2. All database works have corresponding checklist items
+        # 3. All those checklist items are verified
+        if actual_work_ids.any?
+          all_verified = actual_work_ids.all? do |work_id|
+            items[work_id].is_a?(Hash) && items[work_id]['verified'] == true
+          end
+          checklist[collection]['verified'] = all_verified
+        else
+          checklist[collection]['verified'] = false
+        end
+      else
+        # For other collections (citations, links), use the simpler check
+        checklist[collection]['verified'] =
+          items.any? &&
+          items.values.all? { |v| v.is_a?(Hash) && v['verified'] == true }
+      end
+    end
+  end
+
+  # Build initial checklist based on item type
+  def build_checklist
+    checklist = {}
+
+    case lex_item_type
+    when 'LexPerson'
+      checklist['title'] = { 'verified' => false, 'notes' => '' }
+      checklist['life_years'] = { 'verified' => false, 'notes' => '' }
+      checklist['bio'] = { 'verified' => false, 'notes' => '' }
+
+      # Works (יצירות)
+      work_items = if lex_item&.works&.any?
+                     lex_item.works.each_with_object({}) do |work, hash|
+                       hash[work.id.to_s] = { 'verified' => false, 'notes' => '' }
+                     end
+                   else
+                     {}
+                   end
+      checklist['works'] = { 'verified' => false, 'items' => work_items }
+
+      # Citations (מראי מקום)
+      citation_items = if lex_item&.citations&.any?
+                         lex_item.citations.each_with_object({}) do |cit, hash|
+                           hash[cit.id.to_s] = { 'verified' => false, 'notes' => '' }
+                         end
+                       else
+                         {}
+                       end
+      checklist['citations'] = { 'verified' => false, 'items' => citation_items }
+
+    when 'LexPublication'
+      checklist['title'] = { 'verified' => false, 'notes' => '' }
+      checklist['description'] = { 'verified' => false, 'notes' => '' }
+      checklist['toc'] = { 'verified' => false, 'notes' => '' }
+      checklist['az_navbar'] = { 'verified' => false, 'notes' => '' }
+    end
+
+    # External Identifiers (common to both)
+    checklist['external_identifiers'] = { 'verified' => false, 'notes' => '' }
+
+    # Links (common to both)
+    link_items = if lex_item&.links&.any?
+                   lex_item.links.each_with_object({}) do |link, hash|
+                     hash[link.id.to_s] = { 'verified' => false, 'notes' => '' }
+                   end
+                 else
+                   {}
+                 end
+    checklist['links'] = { 'verified' => false, 'items' => link_items }
+
+    # Attachments
+    checklist['attachments'] = { 'verified' => false, 'notes' => '' }
+
+    # Date of manual update (common to both)
+    checklist['date_of_manual_update'] = { 'verified' => false, 'notes' => '' }
+
+    checklist
+  end
+end

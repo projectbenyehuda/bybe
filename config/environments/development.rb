@@ -30,6 +30,10 @@ Rails.application.configure do
     config.action_controller.perform_caching = false
   end
 
+  # Replace the default in-process and non-durable queuing backend for Active Job.
+  config.active_job.queue_adapter = :solid_queue
+  config.solid_queue.connects_to = { database: { writing: :queue } }
+
   # In development we allow using of different locales (en for now) for non-hebrew speaking developers
   config.i18n.default_locale = ENV['BY_LANGUAGE']&.to_sym || :he
 
@@ -93,7 +97,7 @@ Rails.application.configure do
     }
     config.assets.js_compressor = :uglifier
     config.assets.css_compressor = :sass
-    config.assets.compile = false
+    config.assets.compile = true
     config.assets.digest = true
     config.assets.debug = false
 

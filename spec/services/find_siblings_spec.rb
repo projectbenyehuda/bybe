@@ -105,4 +105,95 @@ describe FindSiblings do
       expect { result }.to raise_error('Item not found in collection')
     end
   end
+
+  context 'when next sibling is a sub-collection' do
+    subject(:result) { described_class.call(manifestation_a, parent_col) }
+
+    let(:parent_col) { create(:collection) }
+    let(:sub_col) { create(:collection) }
+    let(:manifestation_a) { create(:manifestation) }
+    let(:manifestation_b) { create(:manifestation) }
+    let(:manifestation_c) { create(:manifestation) }
+
+    before do
+      parent_col.collection_items.create!(item: manifestation_a, seqno: 1)
+      parent_col.collection_items.create!(item: sub_col, seqno: 2)
+      sub_col.collection_items.create!(item: manifestation_b, seqno: 1)
+      sub_col.collection_items.create!(item: manifestation_c, seqno: 2)
+    end
+
+    it 'drills into the sub-collection and returns its first manifestation as next' do
+      expect(result.next_sibling).to eq({ item: manifestation_b, skipped: 0 })
+    end
+
+    it 'returns nil as previous' do
+      expect(result.previous_sibling).to be_nil
+    end
+  end
+
+  context 'when previous sibling is a sub-collection' do
+    subject(:result) { described_class.call(manifestation_c, parent_col) }
+
+    let(:parent_col) { create(:collection) }
+    let(:sub_col) { create(:collection) }
+    let(:manifestation_a) { create(:manifestation) }
+    let(:manifestation_b) { create(:manifestation) }
+    let(:manifestation_c) { create(:manifestation) }
+
+    before do
+      parent_col.collection_items.create!(item: sub_col, seqno: 1)
+      sub_col.collection_items.create!(item: manifestation_a, seqno: 1)
+      sub_col.collection_items.create!(item: manifestation_b, seqno: 2)
+      parent_col.collection_items.create!(item: manifestation_c, seqno: 2)
+    end
+
+    it 'drills into the sub-collection and returns its last manifestation as previous' do
+      expect(result.previous_sibling).to eq({ item: manifestation_b, skipped: 0 })
+    end
+
+    it 'returns nil as next' do
+      expect(result.next_sibling).to be_nil
+    end
+  end
+
+  context 'when next sibling sub-collection has no manifestations (all placeholders)' do
+    subject(:result) { described_class.call(manifestation_a, parent_col) }
+
+    let(:parent_col) { create(:collection) }
+    let(:empty_sub) { create(:collection) }
+    let(:manifestation_a) { create(:manifestation) }
+    let(:manifestation_b) { create(:manifestation) }
+
+    before do
+      parent_col.collection_items.create!(item: manifestation_a, seqno: 1)
+      parent_col.collection_items.create!(item: empty_sub, seqno: 2)
+      empty_sub.collection_items.create!(alt_title: 'placeholder', seqno: 1)
+      parent_col.collection_items.create!(item: manifestation_b, seqno: 3)
+    end
+
+    it 'skips the empty sub-collection and returns the next real manifestation' do
+      expect(result.next_sibling).to eq({ item: manifestation_b, skipped: 1 })
+    end
+  end
+
+  context 'when next sibling sub-collection contains a nested sub-collection' do
+    subject(:result) { described_class.call(manifestation_a, parent_col) }
+
+    let(:parent_col) { create(:collection) }
+    let(:sub_col) { create(:collection) }
+    let(:nested_sub) { create(:collection) }
+    let(:manifestation_a) { create(:manifestation) }
+    let(:manifestation_b) { create(:manifestation) }
+
+    before do
+      parent_col.collection_items.create!(item: manifestation_a, seqno: 1)
+      parent_col.collection_items.create!(item: sub_col, seqno: 2)
+      sub_col.collection_items.create!(item: nested_sub, seqno: 1)
+      nested_sub.collection_items.create!(item: manifestation_b, seqno: 1)
+    end
+
+    it 'drills recursively into nested sub-collections to find the first manifestation' do
+      expect(result.next_sibling).to eq({ item: manifestation_b, skipped: 0 })
+    end
+  end
 end

@@ -1,0 +1,50 @@
+-# haml-lint:disable LineLength
+- panes = bio_diff_panes(@comparison)
+:css
+  #generalDlg:has(.bio-diff-modal) .modal-dialog { max-width: 80vw; width: 80vw; }
+  .bio-diff-modal .diff ul { list-style: none; padding: 0; margin: 0; line-height: 1.9; }
+  .bio-diff-modal .diff li { display: inline; }
+  .bio-diff-modal .diff li::after { content: ' '; }
+  .bio-diff-modal .diff del { background-color: #f8d7da; color: #842029; text-decoration: none; border-radius: 2px; padding: 0 2px; }
+  .bio-diff-modal .diff ins { background-color: #d1e7dd; color: #0f5132; text-decoration: none; border-radius: 2px; padding: 0 2px; }
+  .bio-diff-modal .bio-diff-pane { flex: 1 1 0; min-width: 0; border: 1px solid #dee2e6; border-radius: 4px; padding: 12px; max-height: 55vh; overflow-y: auto; background-color: #fff; }
+  .bio-diff-modal .bio-diff-pane > h6 { position: sticky; top: -12px; background-color: #fff; padding: 4px 0; margin: 0 0 8px; border-bottom: 1px solid #dee2e6; }
+  .bio-diff-modal .bio-diff-body { direction: rtl; text-align: right; }
+
+%h1= t('lexicon.verification.bio_comparison.title')
+.bio-diff-modal
+  %p.text-muted.small.mb-2= t('lexicon.verification.bio_comparison.note')
+  .d-flex.gap-3
+    -# Legacy on the RIGHT (first column in RTL), migrated on the LEFT, matching the workbench where the source PHP pane is on the right and the migrated pane on the left.
+    .bio-diff-pane
+      %h6
+        = t('lexicon.verification.bio_comparison.legacy_header')
+        %span.text-muted.fw-normal (#{@comparison.legacy_count})
+      .bio-diff-body!= panes[:legacy]
+    .bio-diff-pane
+      %h6
+        = t('lexicon.verification.bio_comparison.migrated_header')
+        %span.text-muted.fw-normal (#{@comparison.migrated_count})
+      .bio-diff-body!= panes[:migrated]
+  .modal-footer
+    %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }
+      = t('close')
+
+:javascript
+  (function() {
+    // Scroll each pane so its first highlighted (added/removed) word is in view,
+    // letting the verifier jump straight to the first discrepancy. Runs once the
+    // modal is shown, since panes have no layout while the dialog is hidden.
+    function scrollBioPanesToFirstHighlight() {
+      document.querySelectorAll('.bio-diff-modal .bio-diff-pane').forEach(function(pane) {
+        var highlight = pane.querySelector('ins, del');
+        if (!highlight) return;
+
+        var paneTop = pane.getBoundingClientRect().top;
+        var highlightTop = highlight.getBoundingClientRect().top;
+        // Leave a small gap above the highlight to clear the sticky header.
+        pane.scrollTop += (highlightTop - paneTop) - 50;
+      });
+    }
+    $('#generalDlg').one('shown.bs.modal', scrollBioPanesToFirstHighlight);
+  })();

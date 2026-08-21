@@ -3,14 +3,14 @@ module AboutnessesHelper
     html = ''
     case ab.aboutable_type
     when 'Authority'
-      html += link_to(ab.aboutable.try(:name), authority_path(ab.aboutable.id))
+      html += authority_link(ab.aboutable.id, ab.aboutable.try(:name))
       html += " (#{Authority.model_name.human})"
     when 'Work'
       html += link_to(ab.aboutable.try(:title), work_show_path(id: ab.aboutable_id))
       html += ' / '
       austr = ''
       ab.aboutable.authors.each do |au|
-        austr += "#{link_to(au.name, authority_path(id: au.id))}; "
+        austr += "#{authority_link(au)}; "
       end
       html += austr[0..-3]
       html += ' ('+I18n.t(:work)+')'

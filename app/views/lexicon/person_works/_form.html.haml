@@ -1,0 +1,144 @@
+-# haml-lint:disable ViewLength
+:ruby
+  path = @work.new_record? ? lexicon_person_works_path(@person) : lexicon_work_path(@work)
+  authority = @person.authority
+  publications = authority&.publications || []
+  collections_by_pub = publications.select(&:volume).index_by(&:id)
+                                   .transform_values { |pub| { id: pub.volume.id, title: pub.volume.title } }
+
+= simple_form_for(@work, url: path, remote: true) do |f|
+  = f.error_notification
+
+  - unless authority
+    .alert.alert-warning
+      = t('lexicon.person_works.form.no_authority_warning')
+
+  = f.input :title
+  = f.input :work_type,
+            collection: LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_enum_name(:work_type, k), k] },
+            include_blank: false
+  = f.input :publisher
+  = f.input :publication_place
+  = f.input :publication_date
+  = f.input :comment, as: :text, input_html: { rows: 4 }
+
+  - if authority
+    = f.association :publication,
+                    collection: publications,
+                    label_method: :title,
+                    value_method: :id,
+                    include_blank: t('lexicon.person_works.form.select_publication'),
+                    input_html: { id: 'lex_person_work_publication_id',
+                                  data: { collections: collections_by_pub.to_json } }
+    :ruby
+      collection_volumes = authority.publications.joins(:volume).includes(:volume).map(&:volume)
+    = f.association :collection,
+                    collection: collection_volumes,
+                    label_method: :title,
+                    value_method: :id,
+                    include_blank: t('lexicon.person_works.form.select_collection'),
+                    input_html: { id: 'lex_person_work_collection_id' }
+
+  = f.submit t(:save)
+
+- unless @work.new_record?
+  %hr
+  %h4= t('.associated_people')
+  .border.rounded.p-2#linked-people-list{ data: { ajax_url: lexicon_work_linked_people_path(@work) } }
+
+  %hr
+  %h4= t('lexicon.person_works.title_links.section_heading')
+  .border.rounded.p-2#title-links-list{ data: { ajax_url: title_links_lexicon_work_path(@work) } }
+
+  %hr
+  %h4= t('lexicon.person_works.comment_links.section_heading')
+  .border.rounded.p-2#comment-links-list{ data: { ajax_url: comment_links_lexicon_work_path(@work) } }
+
+  :javascript
+    function reloadLinkedPeople() {
+      $('#linked-people-list').load('#{lexicon_work_linked_people_path(@work)}');
+    }
+
+    function reloadTitleLinks() {
+      $('#title-links-list').load('#{title_links_lexicon_work_path(@work)}');
+    }
+
+    function reloadCommentLinks() {
+      $('#comment-links-list').load('#{comment_links_lexicon_work_path(@work)}');
+    }
+
+    function addTitleLink(workId) {
+      var text = $('#title_link_text').val();
+      var entryId = $('#title_link_entry_id').val();
+      var url = $('#title_link_url').val();
+      if (!text || (!entryId && !url)) { return; }
+      $.ajax({
+        url: '/lex/works/' + workId + '/add_title_link',
+        method: 'POST',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { text: text, entry_id: entryId, url: url },
+        success: reloadTitleLinks
+      });
+    }
+
+    function removeTitleLink(workId, index) {
+      if (!confirm('#{j(t(:are_you_sure))}')) { return; }
+      $.ajax({
+        url: '/lex/works/' + workId + '/remove_title_link',
+        method: 'DELETE',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { index: index },
+        success: reloadTitleLinks
+      });
+    }
+
+    function addCommentLink(workId) {
+      var text = $('#comment_link_text').val();
+      var entryId = $('#comment_link_entry_id').val();
+      var url = $('#comment_link_url').val();
+      if (!text || (!entryId && !url)) { return; }
+      $.ajax({
+        url: '/lex/works/' + workId + '/add_comment_link',
+        method: 'POST',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { text: text, entry_id: entryId, url: url },
+        success: reloadCommentLinks
+      });
+    }
+
+    function removeCommentLink(workId, index) {
+      if (!confirm('#{j(t(:are_you_sure))}')) { return; }
+      $.ajax({
+        url: '/lex/works/' + workId + '/remove_comment_link',
+        method: 'DELETE',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { index: index },
+        success: reloadCommentLinks
+      });
+    }
+
+:javascript
+  (function() {
+    const publicationSelect = document.getElementById('lex_person_work_publication_id');
+    const collectionSelect = document.getElementById('lex_person_work_collection_id');
+
+    if (publicationSelect && collectionSelect) {
+      let collectionsData = {};
+      try {
+        collectionsData = JSON.parse(publicationSelect.dataset.collections || '{}');
+      } catch (e) {
+        console.error('Failed to parse collections data:', e);
+      }
+
+      publicationSelect.addEventListener('change', function() {
+        const publicationId = this.value;
+
+        if (publicationId && collectionsData[publicationId]) {
+          const collection = collectionsData[publicationId];
+          collectionSelect.value = collection.id;
+        } else {
+          collectionSelect.value = '';
+        }
+      });
+    }
+  })();

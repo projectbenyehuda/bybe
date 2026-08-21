@@ -44,7 +44,7 @@
       - decorator = authorlist_decorator_by_sort_type(@sort)
       - @authors.each do |au|
         %li
-          = link_to au.sort_name.presence || '_', authority_path(au.id)
+          = authority_link(au.id, au.sort_name.presence || '_')
           %span{style: 'font-size: 80%'}
             - if au.cached_works_count > 1
               = "(#{au.cached_works_count} #{t(:works)})"

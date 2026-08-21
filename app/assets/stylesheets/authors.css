@@ -22,3 +22,28 @@
 #maintext ul {
   direction:rtl;
 }
+
+/* Override fixed width to accommodate both lexicon and OSU logos */
+.author-in-lexicon {
+  width: auto;
+}
+
+/* Genre toggle styles */
+.genre-toggle {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  user-select: none;
+}
+
+.genre-toggle:hover {
+  opacity: 0.7;
+}
+
+.genre-toggle:not(.genre-active) {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.genre-toggle:not(.genre-active):hover {
+  opacity: 0.6;
+}

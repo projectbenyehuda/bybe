@@ -6,20 +6,19 @@ source 'https://rubygems.org'
 
 gem 'actionview'
 gem 'concurrent-ruby'
-gem 'rails', '8.1.3'
+gem 'rails', '~>8.1'
 gem 'rails-i18n', '~> 8' # version should match major version of Rails
 gem 'sass-rails', '~> 6.0.0'
 gem 'sprockets', '~> 4.2.1'
-gem 'sidekiq', '~> 8.1'
+gem 'solid_queue', '~> 1.4.0' # ActiveJobs backend and scheduler
 
 gem 'damerau-levenshtein' # string distance
 gem 'mysql2'
 gem 'omniauth-google-oauth2'
 gem 'rails-ujs'
-gem 'rufus-scheduler' # scheduler
 
 gem 'active_data' # for *Search classes in Chewy
-gem 'chewy', '~> 8.4.0' # for ElasticSearch 7.x
+gem 'chewy', '~> 8.4.0' # for ElasticSearch 8.x
 gem 'image_processing'
 gem 'jquery-slick-rails' # for carousel slider
 gem 'property_sets', '>= 3.7.1' # for key/value properties per model; version 3.7.1 supports Ruby 3.0 per https://github.com/zendesk/property_sets/issues/85
@@ -33,6 +32,8 @@ gem 'rack-cors', require: 'rack/cors'
 
 gem 'aws-sdk-s3' # for Active Storage
 gem 'diffy'
+gem 'faraday-retry' # for retrying failed HTTP requests
+gem 'ruby_llm', '~> 1.9'
 
 gem 'simple_form', '~> 5.3.0'
 
@@ -43,6 +44,7 @@ gem 'sqlite3' # for dictionary imports
 # gem 'rollbar' # error reporting. Airbrake replacement.
 
 gem 'activerecord-session_store'
+gem 'addressable' # used in application_helper
 gem 'jquery-rails'
 gem 'jquery-ui-rails'
 
@@ -91,13 +93,10 @@ gem 'grape-swagger', '~> 2.1.2'
 gem 'grape-swagger-entity', '~> 0.6.2'
 
 gem 'puma'
-gem 'puma_worker_killer' # cycle workers when they bloat
 gem 'rack-attack' # control misbehaving clients
 gem 'rswag-api'
 gem 'rswag-ui'
-gem 'addressable' # used in application_helper
 
-gem 'dotenv', '~> 3.1.2'
 ## these were used for some legacy HtmlDir VIAF lookup stuff. They have a huge RAM footprint (~160MB per process), so commented out until needed again.
 # gem 'rdf' #, '~> 2.0.1'
 # gem 'linkeddata' # for RDF etc.
@@ -110,7 +109,6 @@ group :production do
   gem 'dalli'
   gem 'evil-seed', require: false # for seeding large databases without timeouts
   gem 'newrelic_rpm' # performance monitoring
-  gem 'puma-daemon', require: false
 end
 
 group :test do
@@ -119,13 +117,15 @@ group :test do
   gem 'rspec-sqlimit' # to limit number of SQL queries in tests https://github.com/nepalez/rspec-sqlimit
   gem 'simplecov', require: false
   gem 'turn', '0.8.2', require: false
+  gem 'vcr'
+  gem 'webmock'
 end
 
 group :development do
   gem 'active_record_query_trace'
   gem 'bcrypt_pbkdf'
   gem 'bullet' # for suggestions to add/remove eager loading
-  gem 'capistrano', '~> 3.11', require: false
+  gem 'capistrano', '~> 3.17', require: false
   gem 'capistrano3-puma'
   gem 'capistrano-rails', '~> 1.4', require: false
   gem 'capistrano-rvm'
@@ -152,6 +152,7 @@ group :development do
 end
 
 group :test, :development do
+  gem 'dotenv-rails'
   gem 'brakeman'
   gem 'factory_bot_rails', '~> 6.2.0'
   gem 'rspec-rails'

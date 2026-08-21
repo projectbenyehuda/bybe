@@ -20,13 +20,19 @@
                        selected_values: @genders,
                        facet: @gender_facet }
 
-    - labels = Authority.intellectual_properties.keys.reject{|x| x == 'copyrighted'}.index_with { |key| textify_intellectual_property(key) }
-    - icons = Authority.intellectual_properties.keys.reject{|x| x == 'copyrighted'}.index_with { |key| intellectual_property_glyph(key) }
+    -#
+      Copyrighted authorities are deliberately not offered as a filter, so the
+      value must be dropped from the checkbox list itself and not just from the
+      labels/icons -- otherwise an unlabeled checkbox is still rendered.
+    :ruby
+      ip_values = Authority.intellectual_properties.keys.reject { |x| x == 'copyrighted' }
+      labels = ip_values.index_with { |key| textify_intellectual_property(key) }
+      icons = ip_values.index_with { |key| intellectual_property_glyph(key) }
     = render partial: 'shared/filters/checkbox_group',
              locals: { group_name: :intellectual_property,
                        title: Authority.human_attribute_name(:intellectual_property),
                        field_name: :ckb_intellectual_property,
-                       all_values: Authority.intellectual_properties.keys,
+                       all_values: ip_values,
                        labels: labels,
                        selected_values: @intellectual_property_types,
                        facet: @intellectual_property_facet,
@@ -81,9 +87,6 @@
     = hidden_field_tag(:page, 1)
     = hidden_field_tag(:reverse, 'false')
     = hidden_field_tag(:to_letter, @to_letter)
-    .mobile-only
-      .bottom-button-area
-        %button.by-button-v02#apply_mobile_filters{ type: :submit }= t(:apply_mobile_filters)
 
 :javascript
   $(document).ready(function() {
@@ -168,11 +171,5 @@
       event.preventDefault();
       $('#search_type').val('authorname');
       submit_filters();
-    });
-    $('#apply_mobile_filters').click(function() {
-      resetPagination();
-      $('#sort_filter_panel').hide();
-      $('#thelist').show();
-      $('html').scrollTop($('#thelist').offset().top);
     });
   });

@@ -18,6 +18,11 @@ describe Authority do
       expect(a).to be_valid
     end
 
+    it 'strips leading/trailing whitespace from name on save' do
+      a = create(:authority, name: '  ביאליק  ', person: create(:person))
+      expect(a.reload.name).to eq('ביאליק')
+    end
+
     describe 'uncollected works collection type validation' do
       let(:authority) { build(:authority, uncollected_works_collection: uncollected_works_collection) }
 
@@ -196,6 +201,98 @@ describe Authority do
       it { is_expected.to eq %w(article memoir poetry) }
     end
 
+    describe '.genre_stats' do
+      subject(:result) { authority.genre_stats }
+
+      let!(:poetry_as_author) { create(:manifestation, author: authority, genre: :poetry) }
+      let!(:poetry_as_author2) { create(:manifestation, author: authority, genre: :poetry) }
+      let!(:memoir_as_translator) { create(:manifestation, orig_lang: 'ru', translator: authority, genre: :memoir) }
+      let!(:article_as_translator) { create(:manifestation, orig_lang: 'en', translator: authority, genre: :article) }
+      let!(:fables_as_illustrator) { create(:manifestation, illustrator: authority, genre: :fables) }
+      let!(:prose_as_editor) { create(:manifestation, editor: authority, genre: :prose) }
+      let!(:unpublished) { create(:manifestation, author: authority, genre: :drama, status: :unpublished) }
+
+      before do
+        create_list(:manifestation, 3) # unrelated manifestations
+      end
+
+      it 'returns hash with genre counts for all roles, excluding unpublished works' do
+        expect(result).to eq({
+                               'poetry' => 2,
+                               'memoir' => 1,
+                               'article' => 1,
+                               'fables' => 1,
+                               'prose' => 1
+                             })
+      end
+
+      it 'does not include genres with zero manifestations' do
+        expect(result.keys).not_to include('drama', 'letters', 'reference', 'lexicon')
+      end
+
+      context 'when authority has no manifestations' do
+        let(:authority_without_works) { create(:authority) }
+
+        it 'returns empty hash' do
+          expect(authority_without_works.genre_stats).to eq({})
+        end
+      end
+
+      context 'when authority has multiple roles in same manifestation' do
+        let!(:multi_role) { create(:manifestation, author: authority, illustrator: authority, genre: :letters) }
+
+        it 'counts the manifestation only once per genre' do
+          expect(result['letters']).to eq(1)
+        end
+      end
+
+      context 'when all manifestations are unpublished' do
+        before do
+          Manifestation.where(id: [poetry_as_author, poetry_as_author2, memoir_as_translator,
+                                   article_as_translator, fables_as_illustrator, prose_as_editor].map(&:id))
+                       .update_all(status: Manifestation.statuses[:unpublished])
+        end
+
+        it 'returns empty hash' do
+          expect(result).to eq({})
+        end
+      end
+    end
+
+    describe '.cached_genre_stats' do
+      subject(:cached_result) { authority.cached_genre_stats }
+
+      let!(:poetry_as_author) { create(:manifestation, author: authority, genre: :poetry) }
+      let!(:memoir_as_translator) { create(:manifestation, orig_lang: 'ru', translator: authority, genre: :memoir) }
+
+      before do
+        Rails.cache.clear
+      end
+
+      it 'returns the same result as genre_stats' do
+        expect(cached_result).to eq(authority.genre_stats)
+      end
+
+      it 'caches the result across multiple calls' do
+        expected_result = { 'poetry' => 1, 'memoir' => 1 }
+
+        # First call should compute and cache the result
+        first_result = authority.cached_genre_stats
+        expect(first_result).to eq(expected_result)
+
+        # Second call should return the same cached result
+        second_result = authority.cached_genre_stats
+        expect(second_result).to eq(first_result)
+        expect(second_result).to eq(expected_result)
+      end
+
+      it 'uses the correct cache key' do
+        cache_key = "au_#{authority.id}_genre_stats"
+        expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 24.hours).and_call_original
+        authority.cached_genre_stats
+      end
+    end
+
     describe '.most_read' do
       subject { authority.most_read(limit).pluck(:id) }
 
@@ -350,6 +447,41 @@ describe Authority do
       end
 
       it { is_expected.to eq 3 }
+    end
+
+    describe '.cached_collections_count' do
+      subject { authority.cached_collections_count }
+
+      before do
+        Rails.cache.clear
+
+        # Create collections where authority is involved in various roles
+        collection1 = create(:collection)
+        collection2 = create(:collection)
+        collection3 = create(:collection)
+
+        # Add authority to collections through involved_authorities
+        create(:involved_authority, authority: authority, item: collection1, role: :author)
+        create(:involved_authority, authority: authority, item: collection2, role: :editor)
+        create(:involved_authority, authority: authority, item: collection3, role: :translator)
+
+        # Create a collection without this authority (should not be counted)
+        create(:collection)
+      end
+
+      it { is_expected.to eq 3 }
+
+      it 'caches the result' do
+        # First call
+        first_result = authority.cached_collections_count
+        expect(first_result).to eq 3
+
+        # Second call should return cached result
+        expect(Rails.cache).to receive(:fetch).with("au_#{authority.id}_collections_count",
+                                                    expires_in: 12.hours).and_call_original
+        second_result = authority.cached_collections_count
+        expect(second_result).to eq first_result
+      end
     end
 
     describe '.all_works_by_title' do
@@ -604,6 +736,62 @@ describe Authority do
       end
     end
 
+    describe '.sorted_comparison_names' do
+      context 'when authority has only a name' do
+        let(:authority) { create(:authority, name: 'James Smith', other_designation: nil) }
+
+        it 'returns array with sorted name' do
+          expect(authority.sorted_comparison_names).to eq(['James Smith'])
+        end
+      end
+
+      context 'when name has multiple words' do
+        let(:authority) { create(:authority, name: 'Robert Ames', other_designation: nil) }
+
+        it 'sorts words alphabetically within the name' do
+          expect(authority.sorted_comparison_names).to eq(['Ames Robert'])
+        end
+      end
+
+      context 'when name has three words' do
+        let(:authority) { create(:authority, name: 'James Clark Maxwell', other_designation: nil) }
+
+        it 'sorts all words alphabetically' do
+          expect(authority.sorted_comparison_names).to eq(['Clark James Maxwell'])
+        end
+      end
+
+      context 'when authority has alternate names in other_designation' do
+        let(:authority) do
+          create(:authority, name: 'James Smith', other_designation: 'Robert Ames; John Doe')
+        end
+
+        it 'returns sorted array of all sorted names' do
+          result = authority.sorted_comparison_names
+          expect(result).to eq(['Ames Robert', 'Doe John', 'James Smith'])
+        end
+      end
+
+      context 'when other_designation has names with extra spaces' do
+        let(:authority) do
+          create(:authority, name: 'Alice Brown', other_designation: ' Robert Green  ; Mary White ')
+        end
+
+        it 'handles spaces correctly' do
+          result = authority.sorted_comparison_names
+          expect(result).to eq(['Alice Brown', 'Green Robert', 'Mary White'])
+        end
+      end
+
+      context 'when other_designation is empty string' do
+        let(:authority) { create(:authority, name: 'John Doe', other_designation: '') }
+
+        it 'returns only the main name sorted' do
+          expect(authority.sorted_comparison_names).to eq(['Doe John'])
+        end
+      end
+    end
+
     describe '#normalize_sort_name' do
       let(:authority) { build(:authority) }
 
@@ -675,6 +863,104 @@ describe Authority do
       it 'excludes authorities with do_not_feature true' do
         expect(described_class.featurable).not_to include(non_featurable_authority)
       end
+
+      it 'excludes pageless authorities' do
+        pageless = create(:authority, do_not_feature: false, pageless: true)
+        expect(described_class.featurable).not_to include(pageless)
+      end
+    end
+
+    describe '.not_pageless' do
+      let!(:regular_authority) { create(:authority) }
+      let!(:pageless_authority) { create(:authority, pageless: true) }
+
+      it 'includes authorities without the pageless flag' do
+        expect(described_class.not_pageless).to include(regular_authority)
+      end
+
+      it 'excludes pageless authorities' do
+        expect(described_class.not_pageless).not_to include(pageless_authority)
+      end
+    end
+  end
+
+  # This number is shown to readers as 'N authors in the project' and labels a link to the
+  # authorities list, so it must count exactly what that list shows.
+  describe '.cached_count' do
+    let!(:published_authority) { create(:authority, status: :published) }
+
+    it 'counts published authorities' do
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes unpublished authorities' do
+      create(:authority, status: :unpublished)
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes awaiting_first authorities' do
+      create(:authority, status: :awaiting_first)
+      expect(described_class.cached_count).to eq 1
+    end
+
+    it 'excludes pageless authorities' do
+      create(:authority, status: :published, pageless: true)
+      expect(described_class.cached_count).to eq 1
+    end
+  end
+
+  describe 'pageless authorities' do
+    let!(:pageless_authority) { create(:authority, pageless: true) }
+    let!(:regular_authority) { create(:authority) }
+
+    describe '.pageless_ids' do
+      it 'lists the ids of pageless authorities only' do
+        expect(described_class.pageless_ids).to include(pageless_authority.id)
+        expect(described_class.pageless_ids).not_to include(regular_authority.id)
+      end
+    end
+
+    describe '.pageless_id?' do
+      it 'is true for a pageless authority' do
+        expect(described_class.pageless_id?(pageless_authority.id)).to be true
+      end
+
+      it 'is false for a regular authority' do
+        expect(described_class.pageless_id?(regular_authority.id)).to be false
+      end
+
+      it 'accepts a string id' do
+        expect(described_class.pageless_id?(pageless_authority.id.to_s)).to be true
+      end
+    end
+
+    # The id list is cached, so toggling the flag must invalidate that cache -- otherwise an authority
+    # would stay (un)linked for up to 12 hours after an editor changed it.
+    describe 'cache invalidation' do
+      around do |example|
+        original = Rails.cache
+        Rails.cache = ActiveSupport::Cache::MemoryStore.new
+        example.run
+        Rails.cache = original
+      end
+
+      it 'picks up an authority that has become pageless' do
+        expect(described_class.pageless_id?(regular_authority.id)).to be false
+        regular_authority.update!(pageless: true)
+        expect(described_class.pageless_id?(regular_authority.id)).to be true
+      end
+
+      it 'picks up an authority that has stopped being pageless' do
+        expect(described_class.pageless_id?(pageless_authority.id)).to be true
+        pageless_authority.update!(pageless: false)
+        expect(described_class.pageless_id?(pageless_authority.id)).to be false
+      end
+
+      it 'picks up a destroyed pageless authority' do
+        expect(described_class.pageless_id?(pageless_authority.id)).to be true
+        pageless_authority.destroy!
+        expect(described_class.pageless_ids).not_to include(pageless_authority.id)
+      end
     end
   end
 
@@ -709,6 +995,55 @@ describe Authority do
     it 'excludes popular authorities with do_not_feature flag' do
       result = described_class.popular_authors
       expect(result).not_to include(popular_non_featurable)
+    end
+  end
+
+  describe 'credits' do
+    let(:authority) { create(:authority, legacy_credits: legacy_credits) }
+    let(:legacy_credits) { nil }
+
+    describe '#fetch_credits' do
+      subject(:fetched_credits) { authority.fetch_credits.lines.map(&:strip) }
+
+      let(:legacy_credits) { "רינה רוזן\nגלי סנדיק" }
+
+      before do
+        create(:manifestation, author: authority, credits: "נורית רכס\nגלי סנדיק")
+        create(:manifestation, author: authority, credits: "אביבה שמר\n...\n\nשלומית אפל")
+      end
+
+      # 'גלי סנדיק' appears both in the manual credits and in a work's credits, and 'נורית רכס'
+      # appears in two different works
+      it 'merges manual and harvested credits into a sorted list with no repetitions' do
+        expect(fetched_credits).to eq ['אביבה שמר', 'גלי סנדיק', 'נורית רכס', 'רינה רוזן', 'שלומית אפל']
+      end
+
+      it 'sorts and dedups credits cached in an arbitrary order (e.g. cached by older code)' do
+        authority.update_column(:cached_credits, "נורית רכס\nאביבה שמר\nנורית רכס")
+        expect(fetched_credits).to eq ['אביבה שמר', 'נורית רכס']
+      end
+
+      it 'recomputes the credits when the manual credits are edited' do
+        expect(fetched_credits).to include 'רינה רוזן'
+        authority.update!(legacy_credits: 'גלי סנדיק')
+        expect(authority.fetch_credits.lines.map(&:strip)).not_to include 'רינה רוזן'
+      end
+    end
+
+    describe 'legacy_credits normalization on save' do
+      let(:legacy_credits) { " נורית רכס \nגלי סנדיק\n\nנורית רכס\nאביבה שמר" } # with a repeated name
+
+      it 'stores the manually-maintained credits sorted, stripped and deduplicated' do
+        expect(authority.reload.legacy_credits).to eq "אביבה שמר\nגלי סנדיק\nנורית רכס"
+      end
+
+      context 'when legacy_credits is blank' do
+        let(:legacy_credits) { nil }
+
+        it 'leaves it alone' do
+          expect(authority.reload.legacy_credits).to be_nil
+        end
+      end
     end
   end
 end

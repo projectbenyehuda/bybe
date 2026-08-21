@@ -9,6 +9,11 @@ describe Collection do
     expect { build(:collection, collection_type: 'made_up') }.to raise_error(ArgumentError)
   end
 
+  it 'strips leading/trailing whitespace from a manually-set sort_title on save' do
+    collection = create(:collection, title: 'כותרת', sort_title: '  זבל  ')
+    expect(collection.reload.sort_title).to eq('זבל')
+  end
+
   it 'validates suppress_download_and_print field' do
     collection = build(:collection, suppress_download_and_print: true)
     expect(collection).to be_valid
@@ -981,6 +986,19 @@ describe Collection do
       expect(html).to include(manifestation.title)
     end
 
+    it 'prepends the genre glyph and an RLM character before manifestation titles' do
+      poem = create(:manifestation, genre: 'poetry')
+      create(:collection_item, collection: issue, item: poem, seqno: 2)
+      html = issue.toc_html
+      doc = Nokogiri::HTML.fragment(html)
+
+li = doc.css('li').find { |node| node.text.include?(poem.title) }
+expect(li.at_css('span.by-icon-v02').text).to eq('t') # glyph_for_genre('poetry')
+expect(li.text).to include("‏#{poem.title}")
+expected_genre_title = ApplicationController.helpers.textify_genre('poetry')
+expect(html).to include("by-icon-v02\" title=\"#{expected_genre_title}\">t</span>&nbsp;")
+    end
+
     it 'skips items with no content' do
       create(:collection_item, collection: issue, item: nil, alt_title: nil, markdown: nil, seqno: 2)
       url_builder = ->(item) { "/manifestations/#{item.id}" }
@@ -988,6 +1006,102 @@ describe Collection do
       doc = Nokogiri::HTML.fragment(html)
       expect(doc.css('li').count).to eq(1)
       expect(doc.css("a[href=\"/manifestations/#{manifestation.id}\"]").count).to eq(1)
+    end
+
+    context 'with nested sub-collections (e.g. a volume containing a section containing a manifestation)' do
+      let(:volume) { create(:collection, collection_type: :volume) }
+      let(:section) { create(:collection, collection_type: :series) }
+      let(:url_builder) do
+        lambda do |item|
+          item.is_a?(Manifestation) ? "/manifestations/#{item.id}" : "/collections/#{item.id}"
+        end
+      end
+
+      before do
+        create(:collection_item, collection: volume, item: section, seqno: 1)
+        create(:collection_item, collection: section, item: manifestation, seqno: 1)
+      end
+
+      it 'renders sub-collections as nested <ul>s instead of a flat list' do
+        html = volume.toc_html(url_builder: url_builder)
+        doc = Nokogiri::HTML.fragment(html)
+
+        section_li = doc.at_css('li')
+        expect(section_li.at_css('ul')).to be_present
+      end
+
+      it 'renders a series sub-collection row as bold plain text rather than a link' do
+        html = volume.toc_html(url_builder: url_builder)
+        doc = Nokogiri::HTML.fragment(html)
+
+        section_li = doc.at_css('li')
+        # series groupings are not standalone pages, so the row itself must not be a link...
+        expect(section_li.at_css("> a[href=\"/collections/#{section.id}\"]")).to be_nil
+        # ...it is emphasised in bold instead...
+        expect(section_li.at_css('> strong').text).to include(section.title)
+        # ...but the nested manifestation below it remains linked
+        expect(section_li.at_css("ul a[href=\"/manifestations/#{manifestation.id}\"]")).to be_present
+      end
+
+      it 'renders the leaf manifestation as a clickable link within the nested list' do
+        html = volume.toc_html(url_builder: url_builder)
+        doc = Nokogiri::HTML.fragment(html)
+
+        nested_link = doc.at_css("li ul a[href=\"/manifestations/#{manifestation.id}\"]")
+        expect(nested_link).to be_present
+        expect(nested_link.text).to include(manifestation.title)
+      end
+    end
+  end
+
+  describe '#sole_toc_manifestation' do
+    let(:volume) { create(:collection, collection_type: :volume) }
+    let(:manifestation) { create(:manifestation) }
+
+    it 'returns the single text a one-item collection would list' do
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      expect(volume.sole_toc_manifestation).to eq manifestation
+    end
+
+    it 'returns nil when the collection holds more than one text' do
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      create(:collection_item, collection: volume, item: create(:manifestation), seqno: 2)
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+
+    it 'returns nil for an empty collection' do
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+
+    it 'ignores paratexts and empty placeholders, which the ToC skips anyway' do
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      create(:collection_item, collection: volume, item: nil, markdown: 'a note', paratext: true, seqno: 2)
+      create(:collection_item, collection: volume, item: nil, alt_title: nil, markdown: nil, seqno: 3)
+      expect(volume.sole_toc_manifestation).to eq manifestation
+    end
+
+    it 'returns nil when a non-paratext note accompanies the text, since the ToC lists it too' do
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      create(:collection_item, collection: volume, item: nil, markdown: 'see also: something else', seqno: 2)
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+
+    it 'looks through sub-collections that hold nothing but that one text' do
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: volume, item: series, seqno: 1)
+      create(:collection_item, collection: series, item: manifestation, seqno: 1)
+      expect(volume.sole_toc_manifestation).to eq manifestation
+    end
+
+    it 'returns nil when a sub-collection holds several texts' do
+      series = create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+      create(:collection_item, collection: volume, item: series, seqno: 1)
+      expect(volume.sole_toc_manifestation).to be_nil
+    end
+
+    it 'returns nil when the single text is not published' do
+      create(:collection_item, collection: volume, item: create(:manifestation, status: :unpublished), seqno: 1)
+      expect(volume.sole_toc_manifestation).to be_nil
     end
   end
 
@@ -1044,6 +1158,45 @@ describe Collection do
         collection.invalidate_cached_credits!
         expect(parent.reload.cached_credits).to be_nil
         expect(grandparent.reload.cached_credits).to be_nil
+      end
+    end
+  end
+
+  describe '.ids_with_published_manifestations' do
+    let(:empty) { create(:collection, collection_type: :periodical) }
+    let(:unpublished_only) { create(:collection, collection_type: :periodical) }
+    let(:direct) { create(:collection, collection_type: :periodical) }
+    let(:nested) { create(:collection, collection_type: :periodical) }
+    let(:issue) { create(:collection, collection_type: :periodical_issue) }
+    let(:all_ids) { [empty.id, unpublished_only.id, direct.id, nested.id] }
+
+    before do
+      create(:collection_item, collection: unpublished_only, item: create(:manifestation, status: :unpublished))
+      create(:collection_item, collection: direct, item: create(:manifestation, status: :published))
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: nested, item: issue)
+      create(:collection_item, collection: issue, item: series)
+      create(:collection_item, collection: series, item: create(:manifestation, status: :published))
+    end
+
+    it 'returns only the ids of collections holding a published manifestation at any depth' do
+      expect(Collection.ids_with_published_manifestations(all_ids)).to contain_exactly(direct.id, nested.id)
+    end
+
+    it 'returns an empty array for an empty input' do
+      expect(Collection.ids_with_published_manifestations([])).to eq([])
+    end
+
+    it 'attributes a shared sub-collection to every ancestor that reaches it' do
+      create(:collection_item, collection: empty, item: issue)
+      expect(Collection.ids_with_published_manifestations([empty.id, nested.id]))
+        .to contain_exactly(empty.id, nested.id)
+    end
+
+    it 'agrees with #any_published_manifestations? for each collection' do
+      [empty, unpublished_only, direct, nested].each do |collection|
+        expect(Collection.ids_with_published_manifestations([collection.id]).any?)
+          .to eq(collection.any_published_manifestations?)
       end
     end
   end

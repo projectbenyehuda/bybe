@@ -1,0 +1,130 @@
+:css
+  /* All verification modals: cap at top third of viewport, draggable header */
+  #generalDlg .modal-dialog {
+    margin-top: 10px;
+    margin-bottom: 0;
+  }
+
+  #generalDlg .modal-body {
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  #generalDlg .modal-header {
+    cursor: move;
+    user-select: none;
+  }
+
+  /* Wider dialog for verification section forms */
+  #generalDlg:has(.verification-edit-form[action*="section"]) .modal-dialog {
+    max-width: 70vw;
+    width: 70vw;
+  }
+
+.verification-header
+  .d-flex.justify-content-between.align-items-center.mb-3
+    .title-section
+      %h2
+        = t('lexicon.verification.show.title', entry_title: @entry.title)
+      .d-flex.gap-2.mt-1
+        = link_to lexicon_verification_queue_path, class: 'btn btn-sm btn-outline-secondary' do
+          ←
+          = t('lexicon.verification.show.back_to_queue')
+        = link_to edit_lexicon_entry_path(@entry), class: 'btn btn-sm btn-warning' do
+          = t('lexicon.verification.show.edit_entry')
+    .action-section
+      - percentage = @entry.verification_percentage
+      .progress-indicator.mb-2
+        = t('lexicon.verification.show.progress') + ':'
+        %strong= "#{percentage}%"
+        .progress{style: 'width: 200px; height: 25px;', class: 'ms-2 d-inline-block'}
+          .progress-bar{id: 'main-progress-bar', role: 'progressbar', style: "width: #{percentage}%", 'aria-valuenow': percentage, 'aria-valuemin': '0', 'aria-valuemax': '100'}
+            = "#{percentage}%"
+      .hide-verified-toggle.mb-2
+        .form-check
+          %input.form-check-input{type: 'checkbox', id: 'hide-verified-toggle'}
+          %label.form-check-label{for: 'hide-verified-toggle'}
+            = t('lexicon.verification.show.hide_verified')
+      .actions
+        %button.btn.btn-outline-secondary{ type: 'button', data: { toggle: 'modal', target: '#checklistModal' } }
+          = t('lexicon.verification.checklist.title')
+        - if @entry.verification_complete?
+          = button_to t('lexicon.verification.show.mark_verified'), lexicon_mark_verified_verification_path(@entry), method: :post, class: 'btn btn-success', id: 'mark-verified-btn'
+        - else
+          %button.btn.btn-success{disabled: true, id: 'mark-verified-btn', title: t('lexicon.verification.messages.verification_incomplete')}
+            = t('lexicon.verification.show.mark_verified')
+        %button.btn#escalate-btn{ type: 'button', style: 'background-color: #f8d7da; border-color: #f5c6cb;' }
+          = t('lexicon.verification.show.escalate')
+        = button_to t('lexicon.verification.show.release_lock'),
+                    lexicon_unlock_verification_path(@entry),
+                    method: :patch,
+                    class: 'btn btn-warning',
+                    id: 'release-lock-btn',
+                    data: { confirm: t('lexicon.entries.index.unlock_confirm') }
+        - monday_report_url = lexicon_report_to_monday_verification_path(@entry)
+        %button.btn.btn-outline-info#monday-report-btn{ type: 'button', data: { 'report-url': monday_report_url } }
+          = t('lexicon.verification.monday.report_button')
+
+- container_data = { controller: 'verification',
+                     'verification-entry-id': @entry.id,
+                     'verification-update-url': lexicon_update_checklist_verification_path(@entry),
+                     'verification-save-progress-url': lexicon_save_progress_verification_path(@entry),
+                     'verification-escalate-form-url': lexicon_escalate_form_verification_path(@entry),
+                     'verification-set-profile-image-url': lexicon_set_profile_image_verification_path(@entry),
+                     'verification-remove-attachment-url': lexicon_remove_attachment_verification_path(@entry),
+                     'profile-image-badge-text': t('lexicon.entries.show.profile_image_badge'),
+                     'use-as-profile-text': t('lexicon.verification.migrated.use_as_profile'),
+                     'attachment-removed-text': t('lexicon.verification.messages.attachment_removed'),
+                     'error-removing-attachment-text': t('lexicon.verification.messages.error_removing_attachment'),
+                     'error-saving-progress-text': t('lexicon.verification.messages.error_saving_progress'),
+                     'profile-image-set-text': t('lexicon.verification.messages.profile_image_set'),
+                     'error-setting-profile-image-text': t('lexicon.verification.messages.error_setting_profile_image'),
+                     'error-updating-checklist-text': t('lexicon.verification.messages.error_updating_checklist'),
+                     'saved-text': t('lexicon.verification.messages.saved'),
+                     'verified-badge-text': t('lexicon.verification.messages.verified_badge'),
+                     'not-verified-badge-text': t('lexicon.verification.messages.not_verified_badge'),
+                     'progress-saved-text': t('lexicon.verification.messages.progress_saved'),
+                     'section-updated-text': t('lexicon.verification.messages.section_updated'),
+                     'link-check-toast-type': flash[:link_check_toast_type],
+                     'link-check-toast-message': flash[:link_check_toast_message] }
+.verification-container{ data: container_data }
+  .verification-source
+    = render 'lexicon/verification/source_php', entry: @entry
+
+  .verification-migrated
+    = render 'lexicon/verification/migrated_entry', entry: @entry, item: @item, checklist: @checklist, php_counts: @php_counts, bio_comparison: @bio_comparison
+
+#modal-container
+
+.modal#mondayReportModal{ tabindex: '-1', role: 'dialog',
+                          aria: { hidden: true, labelledby: 'mondayReportModalTitle' },
+                          data: { keyboard: 'true', backdrop: 'true' } }
+  .modal-dialog{ role: 'document' }
+    .modal-content
+      .modal-header
+        %h5.modal-title#mondayReportModalTitle= t('lexicon.verification.monday.modal_title')
+        %button.close{ type: :button, data: { dismiss: :modal }, aria: { label: t(:close) } }
+          %span{ aria: { hidden: true } } &times;
+      .modal-body
+        .form-group
+          = text_area_tag :monday_report_description, nil,
+                          rows: 5, id: 'monday-report-description',
+                          class: 'form-control',
+                          placeholder: t('lexicon.verification.monday.textarea_placeholder')
+      .modal-footer
+        %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }
+          = t('cancel')
+        %button.btn.btn-primary#monday-report-submit{ type: 'button' }
+          = t('lexicon.verification.monday.submit')
+
+.modal#checklistModal{ tabindex: '-1', role: 'dialog',
+                       aria: { hidden: true, labelledby: 'checklistModalTitle' },
+                       data: { keyboard: 'true', backdrop: 'true' } }
+  .modal-dialog.modal-lg{ role: 'document' }
+    .modal-content
+      .modal-header
+        %h5.modal-title#checklistModalTitle= t('lexicon.verification.checklist.title')
+        %button.close{ type: :button, data: { dismiss: :modal }, aria: { label: t(:close) } }
+          %span{ aria: { hidden: true } } &times;
+      .modal-body
+        = render 'lexicon/verification/checklist', entry: @entry, checklist: @checklist, item: @item

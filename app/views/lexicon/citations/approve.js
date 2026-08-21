@@ -1,0 +1,2 @@
+closeModal();
+reloadContent($('#citations'));

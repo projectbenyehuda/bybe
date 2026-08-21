@@ -38,6 +38,33 @@ module AuthorsHelper
     return ''
   end
 
+  def manifestation_label(manifestation, role, authority_id)
+    label = manifestation.title
+    case role.to_s
+    when 'author'
+      if manifestation.authors.size > 1 || manifestation.authors.pluck(:id) != [authority_id]
+        # when the author is not the only author or not the author in a volume he is generally the author of
+        # (e.g. someone else's preface to this author's book)
+        label += " / #{authorities_string(manifestation, :author)}"
+      end
+      unless manifestation.translators.empty?
+        label += " #{t(:translated_by)} #{authorities_string(manifestation, :translator)}"
+      end
+    when 'translator'
+      label += " / #{authorities_string(manifestation, :author)}"
+      if manifestation.translators.size > 1
+        label += " / #{authorities_string(manifestation, :translator)}"
+      end
+    else # editors, illustrators, etc.
+      label += " / #{manifestation.author_string}"
+      if manifestation.involved_authorities_by_role(role).size > 1
+        label += " #{I18n.t("toc_by_role.made_by.#{role}")} #{authorities_string(manifestation, role)}"
+      end
+    end
+
+    label
+  end
+
   # Returns string, containing comma-separated list of names of authorities linked to given text with given role
   # @param manifestation
   # @param role
@@ -50,6 +77,26 @@ module AuthorsHelper
                  .join(', ')
   end
 
+  # Single-line list of the authorities involved in a work, for the works list's summary cards:
+  # "name (role), name (role)", roles in the usual presentation order.
+  #
+  # A role whose only holder is the authority whose page this is contributes nothing the page
+  # doesn't already say, so it is dropped. That is the same omission #manifestation_label makes in
+  # each of its branches: the sole author on their own page, the sole translator on theirs, and so
+  # on.
+  # @param manifestation
+  # @param authority_id - the authority whose page the list is shown on
+  def compact_authorities_line(manifestation, authority_id)
+    by_role = manifestation.involved_authorities.group_by(&:role)
+    by_named_role = InvolvedAuthority::ROLES_PRESENTATION_ORDER.filter_map do |role|
+      authorities = by_role[role].to_a.map(&:authority).uniq.sort_by(&:name)
+      next if authorities.empty? || authorities.map(&:id) == [authority_id]
+
+      authorities.map { |au| "#{au.name} (#{textify_role(role, au.gender)})" }.join(', ')
+    end
+    by_named_role.join(', ')
+  end
+
   def preloaded_author_aboutnesses(author)
     author.aboutnesses.preload(
       work: {
@@ -57,5 +104,10 @@ module AuthorsHelper
         expressions: [:manifestations, { involved_authorities: :authority }]
       }
     )
+  end
+
+  # Count total manifestations across multiple TOC nodes
+  def count_toc_nodes_manifestations(nodes, role, authority_id, involved_on_collection_level)
+    nodes.sum { |node| node.count_manifestations(role, authority_id, involved_on_collection_level) }
   end
 end

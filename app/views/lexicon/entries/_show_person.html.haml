@@ -1,0 +1,73 @@
+.row
+  .col-12.col-lg-8
+    .logo-for-print
+      %img.logoBY-v02{ src: '/assets/logo-byp-mobile.svg' }
+    .row
+      .col.side-menu-area
+        = render partial: 'navbar'
+      .col
+        = render layout: 'lexicon/header' do
+          .lexicon-author-details
+            - if @lex_entry.profile_image.present?
+              %div
+                %img.lexicon-author-pic{ alt: t('lexicon.entries.show.profile_image_alt'), src: url_for(@lex_entry.profile_image), loading: "lazy" }
+            %div
+              .author-name-years
+                .headline-1-v02= @lex_entry.title
+                .date-range!= lex_person.life_years
+              - if lex_person.authority&.published?
+                .to-pby
+                  = link_to t('lexicon.entries.show.to_pby_person'), lex_person.authority
+              - if lex_person.intellectual_property.present?
+                .metadata
+                  = render partial: 'shared/intellectual_property',
+                           locals: { intellectual_property: lex_person.intellectual_property }
+          -#
+            a div, not a p: the bio is multi-paragraph HTML, and a <p> wrapper would be
+            auto-closed by the parser, leaving the paragraphs outside #lexicon-biography
+          #lexicon-biography!= MarkdownToHtml.call(bio_for_display(lex_person.bio, @lex_entry))
+        #lexicon-works
+          = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
+            - LexPersonWork.work_types.each_key do |work_type|
+              - works_of_type = lex_person.works.select { |work| work.work_type == work_type }
+              - next if works_of_type.empty?
+
+              - if work_type != 'original'
+                %h4= LexPersonWork.human_enum_name(:work_type, work_type)
+              %ul
+                - works_of_type.sort_by(&:seqno).each do |work|
+                  %li!= render_person_work(work)
+
+        #lexicon-about
+          = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
+            - grouped_and_ordered_citations(lex_person).each do |subject, list|
+              - if subject.present?
+                %h4= citations_subject_header(subject)
+              %ul
+                - list.each do |c|
+                  - cit_text = render_citation(c)
+                  %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
+        #lexicon-links
+          = render partial: 'links', locals: { links: lex_person.links }
+        - identifier_html = render_external_identifiers(@lex_entry.external_identifiers)
+        - if identifier_html
+          #lexicon-authority-control
+            = render layout: 'lexicon/block', locals: { title: t('lexicon.entries.show_person.authority_identifiers') } do
+              .lexicon-authority-identifiers
+                = identifier_html
+
+  .col-12.col-lg-4
+    .row
+      .col.side-menu-area-left
+      -#.col
+      -#  = render partial: 'lexicon/shared/images', locals: { entry: lex_person.entry }
+      .col
+        - if lex_person.authority&.published?
+          -# main-palette-card: these two panes show content from the main BY database, so they keep
+             the main site's colors rather than the lexicon's peach palette (see lexicon.scss)
+          .by-card-v02.left-side-card-v02.main-palette-card
+            #author-whats-new-bg
+              .by-card-content-v02.card-with-bottom-links
+                = render partial: 'shared/latest_works_by_author', locals: { author: lex_person.authority }
+          .by-card-v02.left-side-card-v02.main-palette-card
+            = render partial: 'authors/aboutnesses', locals: { author: lex_person.authority }

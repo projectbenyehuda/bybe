@@ -6,9 +6,9 @@
   .row
     .col-12.col-lg-8
       .logo-for-print
-        %img.logoBY-v02{src: "/assets/logo-byp-mobile.svg", alt:""}
+        %img.logoBY-v02{src: "/assets/logo-byp-mobile.svg", alt: t(:logo)}
       .row
-        .col.side-menu-area
+        .col.author-side-menu-area
         .col
           .by-card-v02.author-main-info-card-v02
             %img.about-author-card-bookmark-fold-v02{:alt => t(:background), :height => "6", :src => "/assets/creator-bookmark-back2.png", :width => "168"}/
@@ -20,6 +20,10 @@
                   = @author.name
                 - if @author.person.present?
                   .author-page-top-years!= "(#{@author.person.life_years})"
+                  .metadata-link
+                    %a.help{href: '#', tabindex: 0, onclick: 'return false;', data: { toggle: :popover, trigger: :focus, content: t('period_popover') }}
+                      %span.metadata-link-icon> P
+                      = t(@author.person.period)
             .by-card-content-v02{class: @unpublished ? 'unpublished' : ''}
               - if @unpublished
                 .unpublished_badge= t(:unpublished)
@@ -30,25 +34,42 @@
                     %span{:style => "font-weight: bold"}= @author.wikipedia_url =~ /wikipedia\.org/ ? t(:rest_in_wikipedia) : t(:rest_of_work)
                     %span.left-arrow 1
               %br
-                .metadata
-                  %b= t(:works_in_the_project)+': '
-                  = "#{@author.cached_works_count} #{t(:works)}"
-              -#%div{:style => "margin-top: 12px;"}
-              -#  %a{:href => "#"}
-              -#    %span.by-icon-v02.iconNearText-v02> W
-              -#    לינק
-              -#    לוידאו רלוונטי
-              -#%div{:style => "margin-top: 12px;"}
-              -#  %a{:href => "#"}
-              -#    %span.by-icon-v02.iconNearText-v02> +
-              -#    לינק
-              -#    לאתר רלוונטי
+              .metadata
+                = render partial: 'shared/intellectual_property', locals: {intellectual_property: @author.intellectual_property}
+
+              .author-in-collection
+                %div
+                  .metadata
+                    %span{:style => "font-weight:bold"}= t(:total_collections_including_author)+':'
+                    %a{:href => "#"}= @author.cached_collections_count
+                  .metadata
+                    %span{:style => "font-weight:bold"}= t(:works_in_the_project)+': '
+                    = "#{@author.cached_works_count} #{t(:works)}"
+                - if @author.lexicon_entry.present?
+                  %a.author-in-lexicon{href: "#lexicon_entry"}
+                    = t(:to_lexicon_entry_on_x, x: @author.name)
+                    .lexicon-logo
+                    = image_tag 'osu-logo.jpg', class: 'osu-partner-logo', alt: 'OSU'
+              .author-works-by-type
+                - @author.cached_genre_stats.each do |pair|
+                  - genre = pair[0]
+                  - count = pair[1]
+                  .author-works-type.genre-toggle.genre-active{
+                    data: {genre: genre},
+                    tabindex: 0,
+                    role: 'button',
+                    onkeydown: "if (event.key === 'Enter' || event.key === ' ' || event.keyCode === 13 || event.keyCode === 32) { event.preventDefault(); this.click(); }"
+                  }
+                    .by-icon-v02.iconNearText-v02>= glyph_for_genre(genre)
+                    = "#{textify_genre(genre)} (#{count})"
+
               - unless @author.blog_category_url.nil? or @author.blog_category_url.empty?
                 .metadata-link
                   %a{:href => @author.blog_category_url, target: '_blank'}
                     %span.by-icon-v02> Q
                     = t(:about_author_in_blog, author:@author.name)
               - if current_user && current_user.editor?
+                %br
                 %p{style:'text-align:left'}
                   != '&nbsp;&nbsp;&nbsp;'
                   - unless @author.legacy_toc_id.present? || @author.toc.nil?
@@ -59,8 +80,6 @@
                     %span.static-btn
                       %b= link_to t(:edit_toc), authors_edit_toc_path(@author)
                   - else
-                    %b{ style: 'font-size: 1rem'}= t(:this_author_has_a_generated_toc)
-                    != "&nbsp;&nbsp;&nbsp;"
                     %b= link_to t(:manage_toc_link), authors_manage_toc_path(@author)
                     -#%b= link_to t(:convert_to_manual_toc), authors_to_manual_toc_path(@author)
                     != "&nbsp;&nbsp;&nbsp;"
@@ -80,6 +99,26 @@
                   %input#select-all{type: 'checkbox', style:'display:none'}
               %button.btn-small-outline-v02#multiselect_btn{title: t(:worklist_multi_tt)}
                 .by-icon-v02.purple-v02 \
+          -# The grouped (volumes) view and the flat texts list call for different
+             actions: collapse/expand apply only to volume cards, the list/summaries
+             switch only to the flat list. setTocBarMode() swaps them by toggling
+             .flat-mode on the bar.
+          .by-card-v02.sticky-fold
+            -# state (primary/disabled) is kept in sync by syncCollapseButtons() below
+            %button.by-button-v02.toc-grouped-action#max_collapse{ href: '#' }= t(:collapse_all_sections)
+            %button.by-button-v02.by-button-secondary-v02.toc-grouped-action#expand-all{ href: '#' }
+              = t(:expand_all_sections)
+            .BYD-switch.toc-flat-action
+              %button.search-mobile-option.active#tocmode_list= t(:toc_display_list)
+              %button.search-mobile-option#tocmode_snippets= t(:toc_display_snippets)
+            %p
+              = t(:sort_by)
+              = select_tag :sort_by, options_for_select([[t(:collections_and_pubdates_asc), 'colls'], [t(:collections_abc),'colls_abc'], [t(:alefbet_asc), 'title'], [t(:popularity_desc), 'popularity_desc'], [t(:popularity_asc), 'popularity_asc'], [t(:pubdate_asc), 'pubdate_asc'], [t(:pubdate_desc), 'pubdate_desc'], [t(:creation_date_asc), 'creation_date_asc'], [t(:creation_date_desc), 'creation_date_desc'], [t(:uploaddate_asc), 'upload_date_asc'], [t(:uploaddate_desc), 'upload_date_desc']  ], params[:sort_by])
+            .sorting_caveat{ style: 'display:none' }
+              %p
+                %b= t(:sorting_caveat_title)
+              %p= t(:sorting_caveat)
+          .sticky-fold-sentinel
           -# table of contents
           .toc.proofable#maintext{ data: { item_id: @author.id, item_type: @author.class.name } }
             .add-to-anthology{style:'display:none'}
@@ -95,11 +134,12 @@
                   .credits
                     != @credits
             - else
-              = render partial: 'generated_toc'
+              .author-works
+                = render partial: 'generated_toc'
     .col-12.col-lg-4
       .row
         %a{name: 'curated_g', 'class' => 'g_anch'}
-        .col.side-menu-area-left
+        .col.author-side-menu-area
         .col
           = render partial: 'shared/about_pby'
           = render partial: 'shared/donation_box_negative'
@@ -158,6 +198,17 @@
                     %div= t(:suggest_new_tag)
           
           = render partial: 'aboutnesses', cached: true, locals: { author: @author }
+
+          -# LexCitations
+          - if @lex_citations.any?
+            .by-card-v02.left-side-card-v02
+              .by-card-header-left-v02
+                %span.headline-1-v02= t(:lex_citations_about_author)
+              .by-card-content-v02
+                %ul
+                  - @lex_citations.each do |citation|
+                    %li= render_citation(citation)
+
           = render partial: 'shared/external_links_panel', locals: { linkable: @author }
 
           .by-card-v02#text-volunteers-mobile
@@ -171,106 +222,250 @@
 = render partial: 'shared/propose_link'
 -# found mistake popup
 = render partial: 'shared/proof'
+#tagPolicyDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
+  = render partial: 'manifestation/tag_policy', locals: { taggable: @author }
 
 :javascript
-  $(function() {
-    $('.all_links_btn').click(function(e){
+  // The genre chips in the author card are shortcuts into the flat-list filters
+  // pane: clicking one switches the TOC into filter (flat) mode and toggles the
+  // matching genre checkbox. There is no separate grouped-view genre filter.
+  $(document).ready(function() {
+    // Mirror the pane's genre facet on the chips: with no genre selected every
+    // chip looks active (nothing is filtered out); once some genres are selected
+    // only those chips stay active and the rest are struck through.
+    // The counts on the chips are for the author's whole oeuvre, so once a filter
+    // other than genre is narrowing the list they would contradict what is on
+    // screen: hide the whole list then, and let the pane's genre facet (whose
+    // counts are faceted against the other filters) speak for the genres.
+    window.syncGenreChips = function(otherFiltersActive) {
+      $('.author-works-by-type').toggle(!otherFiltersActive);
+      var anyChecked = $('.toc-filter-genre:checked').length > 0;
+      $('.genre-toggle').each(function() {
+        var checked = $('#toc-filter-genre-' + $(this).data('genre')).prop('checked');
+        $(this).toggleClass('genre-active', !anyChecked || !!checked);
+      });
+    };
+
+    // Genre chip click: enter filter mode (if needed), then toggle the matching
+    // pane checkbox, which performs the actual filtering via the filters pane.
+    $('.genre-toggle').click(function(e) {
       e.preventDefault();
-      $('#generalDlg').load("#{author_links_popup_path(id: @author.id)}");
-      $('#generalDlg').modal('show');
-    });
-    $('.anthologies_button:not(:has(.must_login))').click(function() {
-      $('#anthologiesDlg').modal({  backdrop: 'static',
-        keyboard: false, show: true});
-    });
-    $.fn.browse_multi_select_toggle = function() {
-      // determine whether to toggle on or off
-      if($('#browse_mainlist').hasClass('multiselect')) {
-        $('#browse_mainlist').removeClass('multiselect');
-        $('#multiselect_btn').removeClass('btn-active');
-        $('#select-all').hide();
-        $('.number-of-selected-texts').hide();
-        $('.add-to-anthology').hide();
-        $('#browse_mainlist input').remove();
-        $('#selected_counter').text('0');
-      } else {
-        // turn on multi-select mode
-        $('#browse_mainlist').addClass('multiselect');
-        $('#multiselect_btn').addClass('btn-active');
-        $('.select-all-with-buttons').show();
-        $('#select-all').show();
-        $('.number-of-selected-texts').show();
+      var $cb = $('#toc-filter-genre-' + $(this).data('genre'));
+      if (!$cb.length) { return; } // no matching facet (e.g. legacy-TOC authors)
 
-        selectors = ['#browse_mainlist p', '#browse_mainlist h3', '#browse_mainlist h4', '#browse_mainlist h5']
-        selectors.forEach(function(item, index){ 
-          $(item).each(function() {
-            intlink = $(this).find('a[href]');
-            if(intlink.length > 0)
-              if(intlink[0].toString().match(/\/read\/\d+/))
-                  $(this).prepend("<input class=\"multiselect_checkbox\" type=\"checkbox\" />");
+      var $sort = $('#sort_by');
+      var flat = $sort.length && $sort.val() !== 'colls' && $sort.val() !== 'colls_abc';
+      // Switching to a flat sort reveals the pane and resets its filters, so it
+      // must happen BEFORE we toggle the genre box below.
+      if (!flat && $sort.length) {
+        $sort.val('title').trigger('change');
+      }
+      $cb.prop('checked', !$cb.prop('checked')).trigger('change');
+    });
+
+    window.syncGenreChips();
+
+      $('.all_links_btn').click(function(e){
+        e.preventDefault();
+        $('#generalDlg').load("#{author_links_popup_path(id: @author.id)}");
+        $('#generalDlg').modal('show');
+      });
+      $('.anthologies_button:not(:has(.must_login))').click(function() {
+        $('#anthologiesDlg').modal({  backdrop: 'static',
+          keyboard: false, show: true});
+      });
+      $.fn.browse_multi_select_toggle = function() {
+        // determine whether to toggle on or off
+        if($('#browse_mainlist').hasClass('multiselect')) {
+          $('#browse_mainlist').removeClass('multiselect');
+          $('#multiselect_btn').removeClass('btn-active');
+          $('#select-all').hide();
+          $('.number-of-selected-texts').hide();
+          $('.add-to-anthology').hide();
+          $('#browse_mainlist input').remove();
+          $('#selected_counter').text('0');
+        } else {
+          // turn on multi-select mode
+          $('#browse_mainlist').addClass('multiselect');
+          $('#multiselect_btn').addClass('btn-active');
+          $('.select-all-with-buttons').show();
+          $('#select-all').show();
+          $('.number-of-selected-texts').show();
+
+          selectors = ['#browse_mainlist p', '#browse_mainlist h3', '#browse_mainlist h4', '#browse_mainlist h5']
+          selectors.forEach(function(item, index){ 
+            $(item).each(function() {
+              intlink = $(this).find('a[href]');
+              if(intlink.length > 0)
+                if(intlink[0].toString().match(/\/read\/\d+/))
+                    $(this).prepend("<input class=\"multiselect_checkbox\" type=\"checkbox\" />");
+            });
+          })
+
+          $('.multiselect_checkbox').change(function() {
+            if($(this).prop('checked') && $('.add-to-anthology').css('display') == 'none') {
+              $('.add-to-anthology').show();
+              startAnimation('blink 2s ease-in','.add-to-anthology');
+            }
+            $('#selected_counter').text($('.multiselect_checkbox:checked').length);
           });
-        })
-
-        $('.multiselect_checkbox').change(function() {
-          if($(this).prop('checked') && $('.add-to-anthology').css('display') == 'none') {
-            $('.add-to-anthology').show();
-           	startAnimation('blink 2s ease-in','.add-to-anthology');
-          }
-          $('#selected_counter').text($('.multiselect_checkbox:checked').length);
-        });
-      }
-    }
-    $('#initiate-add-tag').click(function(e) {
-      if("#{current_user}" != '') {
-        if($('#accepted_tag_policy').val() != 'false') {
-          $('#generalDlg').load(
-            "#{add_tagging_popup_path(taggable_id: @author.id, taggable_type: @author.class.name)}"
-          );
-          $('#generalDlg').modal('show');
         }
-        else
-          $('#tagPolicyDlg').modal({  backdrop: 'static', keyboard: false, show: true});
-      } else {
-        e.stopPropagation();
-        alert("#{t(:must_login_for_this)}");
-        return;
       }
-    });
+      $('#initiate-add-tag').click(function(e) {
+        if("#{current_user}" != '') {
+          if($('#accepted_tag_policy').val() != 'false') {
+            $('#generalDlg').load(
+              "#{add_tagging_popup_path(taggable_id: @author.id, taggable_type: @author.class.name)}"
+            );
+            $('#generalDlg').modal('show');
+          }
+          else
+            $('#tagPolicyDlg').modal({  backdrop: 'static', keyboard: false, show: true});
+        } else {
+          e.stopPropagation();
+          alert("#{t(:must_login_for_this)}");
+          return;
+        }
+      });
 
-    $('#reset_multiselect').click(function() {
-      $('.mainlist input[type=checkbox]').prop('checked', false);
-      $('#select-all').prop('checked', false);
-      $('#selected_counter').text($('.multiselect_checkbox:checked').length);
-    });
-    $('#multiselect_btn').click(function(){
-      $.fn.browse_multi_select_toggle();
-    });
-    $('#select-all').change(function(){
-      $('.mainlist input[type=checkbox]').prop('checked', $(this).prop('checked'));
-      if($('.add-to-anthology').css('display') == 'none' && $(this).prop('checked')) {
-        $('.add-to-anthology').show();
-        startAnimation('blink 2s ease-in','.add-to-anthology');
-      }
-      $('#selected_counter').text($('.multiselect_checkbox:checked').length);
-    });
-    $('#add-to-anth-btn').click(function() {
-      if(#{@anthology.nil? ? 'true' : 'false'} == true) {
-        alert('create or select an anthology first.');
-      } else {
-        // add to current anth
-        anthology_texts = []
-        $('.multiselect_checkbox:checked').each(function(){
-          hr = $(this).next().attr('href');
-          mid = hr.substring(hr.lastIndexOf('/')+1);
-          anthology_texts.push({manifestation_id: mid, anthology_id: $('#anth_id').val()});
-        });
+      $('#reset_multiselect').click(function() {
+        $('.mainlist input[type=checkbox]').prop('checked', false);
+        $('#select-all').prop('checked', false);
+        $('#selected_counter').text($('.multiselect_checkbox:checked').length);
+      });
+      $('#multiselect_btn').click(function(){
+        $.fn.browse_multi_select_toggle();
+      });
+      $('#select-all').change(function(){
+        $('.mainlist input[type=checkbox]').prop('checked', $(this).prop('checked'));
+        if($('.add-to-anthology').css('display') == 'none' && $(this).prop('checked')) {
+          $('.add-to-anthology').show();
+          startAnimation('blink 2s ease-in','.add-to-anthology');
+        }
+        $('#selected_counter').text($('.multiselect_checkbox:checked').length);
+      });
+      $('#add-to-anth-btn').click(function() {
+        if(#{@anthology.nil? ? 'true' : 'false'} == true) {
+          alert('create or select an anthology first.');
+        } else {
+          // add to current anth
+          anthology_texts = []
+          $('.multiselect_checkbox:checked').each(function(){
+            hr = $(this).next().attr('href');
+            mid = hr.substring(hr.lastIndexOf('/')+1);
+            anthology_texts.push({manifestation_id: mid, anthology_id: $('#anth_id').val()});
+          });
 
-        $.ajax({
-          type: "POST",
-          url: '#{mass_create_anthology_texts_path}',
-          dataType: 'script',
-          data: { anthology_texts }
-        });
+          $.ajax({
+            type: "POST",
+            url: '#{mass_create_anthology_texts_path}',
+            dataType: 'script',
+            data: { anthology_texts }
+          });
+        }
+      });
+
+      // Swap the action bar between the grouped (volumes) view and the flat
+      // texts list. Called by the sort handler in _generated_toc, which is what
+      // knows whether the chosen sort produces a flat list.
+      window.setTocBarMode = function(flat) {
+        $('.sticky-fold').toggleClass('flat-mode', flat);
+      };
+
+      // The Collapse all / Expand all buttons reflect the list's current state:
+      // whichever action would still change something is the primary (filled)
+      // button, and the one that would be a no-op is greyed out and disabled.
+      // In a mixed state both apply, and Collapse all stays the primary one.
+      window.syncCollapseButtons = function() {
+        var $toggles = $('#browse_mainlist .volume-collapse-toggle');
+        var collapsed = $toggles.filter('.collapsed').length;
+        var canCollapse = $toggles.length > collapsed; // something is still open
+        var canExpand = collapsed > 0;                 // something is still closed
+        $('#max_collapse').prop('disabled', !canCollapse)
+                          .toggleClass('by-button-secondary-v02', !canCollapse);
+        $('#expand-all').prop('disabled', !canExpand)
+                        .toggleClass('by-button-secondary-v02', canCollapse || !canExpand);
+      };
+
+      // Collapse all sections
+      $('#max_collapse').click(function(e) {
+        e.preventDefault();
+        $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideUp();
+        // only expandable cards (those with a .toclist) carry aria-expanded
+        $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'false');
+        // keep the focusable toggles' own aria-expanded in sync with their state
+        $('#browse_mainlist .volume-collapse-toggle').addClass('collapsed').attr('aria-expanded', 'false');
+        window.syncCollapseButtons();
+      });
+
+      // Expand all sections
+      $('#expand-all').click(function(e) {
+        e.preventDefault();
+        $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideDown();
+        // only expandable cards (those with a .toclist) carry aria-expanded
+        $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'true');
+        // keep the focusable toggles' own aria-expanded in sync with their state
+        $('#browse_mainlist .volume-collapse-toggle').removeClass('collapsed').attr('aria-expanded', 'true');
+        window.syncCollapseButtons();
+      });
+
+      // Expand a treeitem card's own children list, then cascade all the way
+      // down into its nested sub-collections: expanding a collection reveals its
+      // whole subtree, so a collapsed descendant is never left stranded out of
+      // reach (e.g. after collapse-all). Each descendant's own toggle is put
+      // back into the expanded state to match.
+      function cascadeExpand($card) {
+        var $wrapper = $card.children('.by-card-content-v02').children('.cwrapper');
+        var $list = $wrapper.children('ul.toclist');
+        // Only cards that actually have a children list are expandable and, per
+        // this view's convention, carry aria-expanded — leave others untouched.
+        if ($list.length === 0) { return; }
+        $list.slideDown();
+        $card.attr('aria-expanded', 'true');
+        // This card's own toggle lives in the title div, a sibling of the list.
+        $wrapper.children('div').find('.volume-collapse-toggle')
+                .removeClass('collapsed').attr('aria-expanded', 'true');
+        // Direct sub-collection cards inside this card's own list. The card
+        // li is a direct child of ul.toclist (the browser auto-closes the
+        // empty wrapper li that HTML forbids nesting an li inside).
+        $list.children('.by-card-v02[role="treeitem"]').each(function() {
+            cascadeExpand($(this));
+          });
       }
-    });
+
+      // Toggle a single volume's children list (delegated: nodes are server-rendered)
+      function toggleVolume($toggle) {
+        var $card = $toggle.closest('.by-card-v02[role="treeitem"]');
+        // Only this volume's own children list (direct child of its cwrapper),
+        // not the toclists of any nested collections deeper in the tree.
+        var $list = $toggle.closest('.cwrapper').children('ul.toclist');
+        var expanded = $card.attr('aria-expanded') !== 'false';
+        if (expanded) {
+          $list.slideUp();
+          // keep both the treeitem card and the focusable toggle's aria-expanded in sync
+          $card.attr('aria-expanded', 'false');
+          $toggle.addClass('collapsed').attr('aria-expanded', 'false');
+        } else {
+          // Expand this volume all the way down through any toggle-less
+          // sub-collections, which cannot be re-opened on their own.
+          cascadeExpand($card);
+          $toggle.removeClass('collapsed').attr('aria-expanded', 'true');
+        }
+        window.syncCollapseButtons();
+      }
+      $('#browse_mainlist').on('click', '.volume-collapse-toggle', function(e) {
+        e.preventDefault();
+        toggleVolume($(this));
+      });
+      $('#browse_mainlist').on('keydown', '.volume-collapse-toggle', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleVolume($(this));
+        }
+      });
+
+      // Initial button state. This ready() handler runs after the one in
+      // _generated_toc, so prune_collections has already dropped the toggles of
+      // volumes rendered as a single link.
+      window.syncCollapseButtons();
   });

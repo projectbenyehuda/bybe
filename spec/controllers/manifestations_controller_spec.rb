@@ -30,6 +30,16 @@ describe ManifestationController do
       it { is_expected.to be_successful }
     end
 
+    # Regression: when filters/search are applied via AJAX and the (few) results
+    # render above the current scroll position, the page looked empty. The AJAX
+    # JS response must instruct the browser to scroll back to the top.
+    context 'when responding to an AJAX (JS) request' do
+      it 'instructs the page to scroll back to the top' do
+        get :browse, params: browse_params, format: :js, xhr: true
+        expect(response.body).to include('window.scrollTo(0, 0)')
+      end
+    end
+
     describe 'passing params to SearchManifestation service' do
       let(:browse_params) do
         {
@@ -379,6 +389,25 @@ describe ManifestationController do
         it { is_expected.to be_successful }
       end
 
+      # A text credited to a pageless authority ('anonymous', 'various authors') must still name that
+      # authority -- the reader needs the credit -- but must not link to a page that doesn't exist.
+      context 'when the author is a pageless authority' do
+        render_views
+
+        let(:pageless_author) { create(:authority, name: 'anonymous_creator', pageless: true) }
+        let!(:manifestation) { create(:manifestation, title: title, author: pageless_author) }
+
+        before { call }
+
+        it 'still names the author' do
+          expect(response.body).to include('anonymous_creator')
+        end
+
+        it 'does not link to the authority page' do
+          expect(response.body).not_to have_css("a[href='#{authority_path(pageless_author.id)}']")
+        end
+      end
+
       context 'when there is a title footnote at the beginning of the markdown' do
         let(:manifestation) do
           create(:manifestation, markdown: "[^1]\r\nSome body text\r\n\r\n[^1]: This is the footnote.")
@@ -455,6 +484,77 @@ describe ManifestationController do
           expect(response.body).to include(I18n.t(:to_next_item))
         end
       end
+
+      context 'when manifestation is in a series nested under a volume' do
+        let!(:volume_collection) { create(:collection, collection_type: :volume) }
+        let!(:series_collection) do
+          create(:collection, collection_type: :series, manifestations: [manifestation]).tap do |series|
+            volume_collection.append_item(series)
+          end
+        end
+
+        it 'points the collection up-link to the volume parent with an anchor to the series' do
+          expect(call).to be_successful
+          expect(assigns(:containments).first.collection).to eq(series_collection)
+          expected_href = collection_path(volume_collection.id, anchor: "collection_#{series_collection.id}")
+          expect(response.body).to include("href=\"#{expected_href}\"")
+        end
+      end
+
+      context 'when manifestation belongs to more than one collection' do
+        let!(:earlier_collection) do
+          create(:collection, collection_type: :volume, pub_year: '1920', manifestations: [manifestation])
+        end
+        let!(:later_collection) do
+          create(:collection, collection_type: :volume, pub_year: '1950', manifestations: [manifestation])
+        end
+
+        it 'defaults to the earliest-published parent and lists the rest in the sidebar' do
+          expect(call).to be_successful
+          expect(assigns(:containments).size).to eq(1)
+          expect(assigns(:containments).first.collection).to eq(earlier_collection)
+          expect(assigns(:volumes)).to eq([earlier_collection])
+          expect(assigns(:other_parent_collections)).to eq([later_collection])
+          expect(response.body).to include(I18n.t(:other_containing_collections))
+          expect(response.body).to include(collection_path(later_collection))
+        end
+
+        it 'honours an explicit parent_collection_id param' do
+          get :read, params: { id: manifestation.id, parent_collection_id: later_collection.id }
+          expect(assigns(:containments).size).to eq(1)
+          expect(assigns(:containments).first.collection).to eq(later_collection)
+          expect(assigns(:other_parent_collections)).to eq([earlier_collection])
+        end
+
+        it 'uses the referring Collection#show page when no param is given' do
+          request.env['HTTP_REFERER'] = collection_url(later_collection)
+          get :read, params: { id: manifestation.id }
+          expect(assigns(:containments).first.collection).to eq(later_collection)
+        end
+
+        it 'falls back to the earliest parent when the referer is unrelated' do
+          request.env['HTTP_REFERER'] = 'https://example.com/some/other/page'
+          get :read, params: { id: manifestation.id }
+          expect(assigns(:containments).first.collection).to eq(earlier_collection)
+        end
+      end
+
+      context 'when manifestation has multiple parents and siblings in the chosen one' do
+        let(:next_manifestation) { create(:manifestation) }
+        let!(:nav_collection) do
+          create(:collection, collection_type: :volume, pub_year: '1920',
+                              manifestations: [manifestation, next_manifestation])
+        end
+        let!(:other_collection) do
+          create(:collection, collection_type: :volume, pub_year: '1950', manifestations: [manifestation])
+        end
+
+        it 'carries the chosen parent forward on sibling navigation links' do
+          expect(call).to be_successful
+          expect(assigns(:containments).first.collection).to eq(nav_collection)
+          expect(response.body).to include("parent_collection_id=#{nav_collection.id}")
+        end
+      end
     end
 
     describe '#readmode' do
@@ -505,6 +605,21 @@ describe ManifestationController do
           context 'when user has edit_catalog bit' do
             let(:user) { create(:user, :edit_catalog) }
             it { is_expected.to be_successful }
+
+            def role_select_options(item)
+              subject
+              Nokogiri::HTML(response.body)
+                      .css("#new_involved_authority_#{item.class.name}_#{item.id}_role option")
+                      .pluck('value')
+            end
+
+            it 'offers only work-level roles when adding an authority to the work' do
+              expect(role_select_options(work)).to eq(InvolvedAuthority::ROLES_PRESENTATION_ORDER - %w(translator))
+            end
+
+            it 'offers only expression-level roles when adding an authority to the expression' do
+              expect(role_select_options(expression)).to eq(InvolvedAuthority::ROLES_PRESENTATION_ORDER - %w(author))
+            end
           end
         end
       end

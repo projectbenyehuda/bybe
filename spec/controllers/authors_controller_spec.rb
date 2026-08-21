@@ -18,6 +18,16 @@ describe AuthorsController do
 
     it { is_expected.to be_successful }
 
+    # Regression: when filters/search shrink the list, the (few) results can render
+    # above the current scroll position, leaving the viewport empty. The AJAX JS
+    # response must instruct the browser to scroll back to the top.
+    context 'when responding to an AJAX (JS) request' do
+      it 'instructs the page to scroll back to the top' do
+        get :browse, params: { sort_by: sort_by }.compact, format: :js, xhr: true
+        expect(response.body).to include('window.scrollTo(0, 0)')
+      end
+    end
+
     context 'when displaying work counts' do
       render_views
 
@@ -27,6 +37,30 @@ describe AuthorsController do
         authority = Authority.order(:sort_name).first
         #        expect(response.body).to include("(#{authority.cached_works_count} יצירות)")
         expect(response.body).to include('(יצירה אחת)')
+      end
+    end
+
+    # 'Pageless' authorities ('anonymous', 'various authors') are useful for crediting a text, but
+    # have no page of their own, so they must not show up in the list of all authorities.
+    context 'when a pageless authority exists' do
+      render_views
+
+      let!(:pageless_authority) do
+        # sort_name is what the browse list actually renders
+        create(:authority, name: 'anonymous_creator', sort_name: 'anonymous_creator', pageless: true)
+      end
+
+      before do
+        Chewy.strategy(:atomic) do
+          create(:manifestation, author: pageless_authority)
+        end
+        AuthoritiesIndex.import!
+      end
+
+      it 'omits it from the authorities list' do
+        call
+        expect(response.body).not_to include('anonymous_creator')
+        expect(response.body).not_to have_css("a[href='#{authority_path(pageless_authority.id)}']")
       end
     end
 
@@ -75,25 +109,171 @@ describe AuthorsController do
     describe '#toc' do
       subject(:request) { get :toc, params: { id: author.id } }
 
-      let(:toc) { create(:toc) }
+      context 'when TOC record exists' do
+        # Legacy markdown TOC
+        let(:toc) { create(:toc) }
 
-      before do
-        create_list(:manifestation, 5, author: author, created_at: 3.days.ago)
-        author.toc = toc
-        author.save!
-      end
-
-      it 'renders successfully' do
-        expect(request).to be_successful
-      end
-
-      context 'when fresh work exists' do
         before do
-          create(:manifestation, author: author, created_at: 6.hours.ago)
+          author.toc = toc
+          author.save!
         end
 
         it 'renders successfully' do
           expect(request).to be_successful
+        end
+
+        context 'when fresh work exists' do
+          before do
+            create(:manifestation, author: author, created_at: 6.hours.ago)
+          end
+
+          it 'renders successfully' do
+            expect(request).to be_successful
+          end
+        end
+      end
+
+      context 'when collections-based TOC should be used' do
+        let(:uncollected_collection) { create(:collection, :uncollected) }
+
+        let!(:author) { create(:authority, uncollected_works_collection: uncollected_collection) }
+
+        let(:volume_manifestations) do
+          create_list(:manifestation, 2, author: author, created_at: 3.days.ago)
+        end
+
+        let!(:collection) { create(:collection, manifestations: volume_manifestations, authors: [author]) }
+
+        let(:edited_manifestation) { create(:manifestation, editor: author) }
+
+        let!(:edited_collection) { create(:collection, manifestations: [edited_manifestation]) }
+
+        let(:uncollected_manifestation) { create(:manifestation, orig_lang: 'de', translator: author) }
+
+        before do
+          uncollected_collection.collection_items.create!(item: uncollected_manifestation, seqno: 1)
+        end
+
+        it 'renders successfully' do
+          expect(request).to be_successful
+        end
+      end
+
+      # 'Pageless' authorities ('anonymous', 'various authors') aggregate works by many different
+      # people, so a TOC for them would falsely suggest one prolific author. Only editors, who may
+      # need to manage the record, may see it.
+      context 'when the authority is pageless' do
+        let!(:author) { create(:authority, pageless: true) }
+
+        it 'refuses to show the TOC to an anonymous visitor' do
+          expect(request).to redirect_to '/'
+          expect(flash[:error]).to eq I18n.t(:author_not_available)
+        end
+
+        context 'when editor logged in' do
+          include_context 'when editor logged in', :edit_people
+
+          it 'still shows the TOC' do
+            expect(request).to be_successful
+          end
+        end
+      end
+
+      context 'when collection contains non-published manifestations' do
+        let(:uncollected_collection) { create(:collection, :uncollected) }
+        let!(:author) { create(:authority, uncollected_works_collection: uncollected_collection) }
+        let(:published_mf) { create(:manifestation, title: 'Published Work', author: author, status: :published) }
+        let(:unpublished_mf) { create(:manifestation, title: 'Unpublished Work', author: author, status: :unpublished) }
+        let(:deprecated_mf) { create(:manifestation, title: 'Deprecated Work', author: author, status: :deprecated) }
+        let!(:collection) do
+          create(:collection, collection_type: 'volume', authors: [author]).tap do |coll|
+            coll.collection_items.create!(item: published_mf, seqno: 1)
+            coll.collection_items.create!(item: unpublished_mf, seqno: 2)
+            coll.collection_items.create!(item: deprecated_mf, seqno: 3)
+          end
+        end
+
+        before { request }
+
+        it 'renders successfully' do
+          expect(response).to be_successful
+        end
+
+        it 'shows published manifestation as a link' do
+          expect(response.body).to have_css(
+            "a[href='#{manifestation_path(published_mf)}']", text: 'Published Work'
+          )
+        end
+
+        it 'shows unpublished manifestation as unclickable placeholder text' do
+          expect(response.body).to include('Unpublished Work')
+          expect(response.body).not_to have_css("a[href='#{manifestation_path(unpublished_mf)}']")
+        end
+
+        it 'excludes deprecated (soft-deleted) manifestations entirely' do
+          expect(response.body).not_to include('Deprecated Work')
+        end
+      end
+
+      context 'when a series is nested under a volume' do
+        let(:series_manifestation) { create(:manifestation, title: 'Series Poem', author: author) }
+        let!(:series) do
+          create(:collection, title: 'My Poem Cycle', collection_type: :series,
+                              manifestations: [series_manifestation])
+        end
+        let!(:volume) do
+          create(:collection, title: 'The Big Volume', collection_type: :volume, included_collections: [series])
+        end
+
+        before { request }
+
+        it 'renders the series title but not as a link to the series' do
+          expect(response.body).to include('My Poem Cycle')
+          expect(response.body).not_to have_css("a[href='#{collection_path(series)}']")
+        end
+
+        it 'still renders the containing volume title as a link' do
+          expect(response.body).to have_css("a[href='#{collection_path(volume)}']", text: 'The Big Volume')
+        end
+      end
+
+      context 'when author has lex_person with general citations' do
+        let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
+        let(:lex_person) { lex_entry.lex_item }
+        let!(:citation) { create(:lex_citation, person: lex_person) }
+
+        before do
+          author.update(lex_person: lex_person)
+        end
+
+        it 'assigns @lex_citations with general citations only' do
+          request
+          expect(assigns(:lex_citations)).to eq([citation])
+        end
+      end
+
+      context 'when author has lex_person with work-specific citation' do
+        let(:lex_entry) { create(:lex_entry, :person, status: 'draft') }
+        let(:lex_person) { lex_entry.lex_item }
+        let(:lex_person_work) { create(:lex_person_work, person: lex_person) }
+        let!(:work_citation) do
+          create(:lex_citation, person: lex_person, person_work: lex_person_work, title: 'About a Work')
+        end
+
+        before do
+          author.update(lex_person: lex_person)
+        end
+
+        it 'does not include work-specific citations in @lex_citations' do
+          request
+          expect(assigns(:lex_citations)).to eq([])
+        end
+      end
+
+      context 'when author has no lex_person' do
+        it 'assigns empty @lex_citations' do
+          request
+          expect(assigns(:lex_citations)).to eq([])
         end
       end
     end
@@ -133,7 +313,7 @@ describe AuthorsController do
     end
 
     describe '#print' do
-      subject { get :print, params: { id: author.id } }
+      subject(:request) { get :print, params: { id: author.id } }
 
       before do
         create(:manifestation, author: author)
@@ -141,6 +321,42 @@ describe AuthorsController do
       end
 
       it { is_expected.to be_successful }
+
+      # The printable TOC must carry the same access gate as the TOC itself, otherwise it is a
+      # back door to the very page we refuse to render.
+      context 'when the authority is pageless' do
+        let!(:author) { create(:authority, pageless: true) }
+
+        it 'refuses to print for an anonymous visitor' do
+          expect(request).to redirect_to '/'
+          expect(flash[:error]).to eq I18n.t(:author_not_available)
+        end
+
+        context 'when editor logged in' do
+          include_context 'when editor logged in', :edit_people
+
+          it 'still prints' do
+            expect(request).to be_successful
+          end
+        end
+      end
+
+      context 'when the authority is unpublished' do
+        let!(:author) { create(:authority, status: :unpublished) }
+
+        it 'refuses to print for an anonymous visitor' do
+          expect(request).to redirect_to '/'
+          expect(flash[:error]).to eq I18n.t(:author_not_available)
+        end
+
+        context 'when editor logged in' do
+          include_context 'when editor logged in', :edit_people
+
+          it 'still prints' do
+            expect(request).to be_successful
+          end
+        end
+      end
     end
   end
 

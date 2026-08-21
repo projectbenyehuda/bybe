@@ -36,6 +36,30 @@ describe WelcomeController do
         end
       end
     end
+
+    context 'when an authority appears in the most-popular authors carousel' do
+      render_views false
+
+      let!(:popular_authority) { create(:authority, :with_image) }
+      let!(:other_authorities) { create_list(:authority, 2, :with_image) }
+
+      before do
+        create_list(:ahoy_event, 3, :with_item, item: popular_authority, name: 'view')
+        get :index
+      end
+
+      it 'includes it in the most-popular authors carousel' do
+        expect(assigns(:pop_authors)).to include(popular_authority)
+      end
+
+      it 'excludes it from the random authors carousel' do
+        expect(assigns(:random_authors)).not_to include(popular_authority)
+      end
+
+      it 'still offers the remaining featurable authorities as random authors' do
+        expect(assigns(:random_authors)).to match_array(other_authorities)
+      end
+    end
   end
 
   describe '#featured_author_popup' do

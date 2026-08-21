@@ -1,0 +1,41 @@
+%table.table
+  %thead
+    %tr
+      %td= t('.filename')
+      %td= t(:link)
+      %td= t('.size')
+      %td= t('.preview')
+      %td
+  - @lex_entry.attachments.preload(:blob).each do |a|
+    %tr
+      - filename = a.blob.filename.to_s
+      %td= filename
+      %td
+        .attachment-link= @lex_entry.download_path(filename)
+        = link_to t('.copy_link'), '#', class: 'copy-attachment-link'
+      %td= format_filesize(a.blob.byte_size)
+      %td
+        - if a.blob.content_type =~ /\Aimage/
+          = image_tag url_for(a)
+      %td
+        = link_to t(:destroy),
+                  lexicon_entry_attachment_path(@lex_entry.id, a.blob_id),
+                  method: :delete,
+                  remote: true,
+                  data: { confirm: t(:are_you_sure) }
+
+= form_tag lexicon_entry_attachments_path(@lex_entry), multipart: true, id: :new_attachment_form, remote: true do
+  .row
+    .col-sm-2
+      = label_tag :attachment, t('.attach_new_file')
+    .col-sm-2
+      = file_field_tag :attachment
+    .col-sm-1
+      = submit_tag t(:upload), class: 'btn btn-primary', id: :submit_new_attachment
+
+:javascript
+  $('.copy-attachment-link').click(function(e) {
+    e.preventDefault();
+    const text = $(this).siblings('.attachment-link').text();
+    navigator.clipboard.writeText(text);
+  });

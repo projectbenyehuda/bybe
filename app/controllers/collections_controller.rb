@@ -3,15 +3,35 @@
 # Controller to work with Collections.
 # Most of the actions require editor's permissions
 class CollectionsController < ApplicationController
+  include ApplicationHelper
   include Tracking
   include BybeUtils
   include KwicConcordanceConcern
+  include FilteringAndPaginationConcern
 
-  before_action :require_editor, except: %i(show download print kwic kwic_download pby_volumes)
+  before_action :require_editor, except: %i(browse show download print kwic kwic_download pby_volumes)
   before_action :set_collection, only: %i(show update destroy)
 
   # GET /collections/1 or /collections/1.json
   def show
+    # Sub-volume/sub-issue collections (type 'series') and uncollected-works collections should
+    # never be the focus of a Collection#show view. Redirect them to a more appropriate target
+    # (to prevent URL-hacking or stale links to sub-collections). If there is no suitable target
+    # (e.g. an orphan series with no volume/issue ancestor), fall through and render normally.
+    if @collection.series?
+      parent = @collection.parent_volume_or_isssue
+      if parent.present?
+        redirect_to collection_path(parent.id, q: params[:q])
+        return
+      end
+    elsif @collection.uncollected?
+      authority = Authority.find_by(uncollected_works_collection_id: @collection.id)
+      if authority.present?
+        redirect_to authority_path(authority)
+        return
+      end
+    end
+
     data = FetchCollection.call(@collection)
 
     if data.all_manifestations.size == 1
@@ -24,6 +44,9 @@ class CollectionsController < ApplicationController
     @print_url = url_for(action: :print, collection_id: @collection.id)
     @pagetype = :collection
     @taggings = @collection.taggings
+    @lex_citations = @collection.lex_citations
+    # Prev/next volume navigation when this volume sits inside a volume_series
+    @volume_series_nav = FindSeriesVolumeSiblings.call(@collection) if @collection.volume?
 
     @included_recs = @collection.included_recommendations.count
     @total_recs = @collection.recommendations.count + @included_recs
@@ -39,6 +62,21 @@ class CollectionsController < ApplicationController
     @pby_volumes = Collection.pby_volumes.order(:title).load
     @pby_volumes_count = @pby_volumes.size
     @page_title = "#{t(:pby_volumes)} - #{t(:default_page_title)}"
+  end
+
+  # GET /collections - Browse all collections with filters
+  def browse
+    @pagetype = :collections
+    @collections_list_title = t(:collections_list) unless @collections_list_title.present?
+    if valid_query?
+      es_prep_collection
+      @maxdate = Time.zone.today.strftime('%Y')
+      @header_partial = 'collections/browse_top'
+
+      render :browse
+    else
+      head :bad_request
+    end
   end
 
   # GET /collections/1/periodical_issues
@@ -437,6 +475,132 @@ class CollectionsController < ApplicationController
               disposition: 'attachment'
   end
 
+  def es_prep_collection
+    @sort_dir = 'default'
+    if params[:sort_by].present?
+      @sort = params[:sort_by].dup
+      @sort_by = params[:sort_by].sub(/_(a|de)sc$/, '')
+      @sort_dir = ::Regexp.last_match(0)[1..-1] unless ::Regexp.last_match(0).nil?
+    else
+      # use alphabetical sorting by default
+      @sort = 'alphabetical_asc'
+      @sort_by = 'alphabetical'
+      @sort_dir = 'asc'
+    end
+
+    filter = build_es_filter_from_filters
+
+    # This param means that we're getting previous page
+    # so we should revert sort ordering while quering ElasticSearch index
+    @reverse = params[:reverse] == 'true'
+    sort_dir_to_use = if @reverse
+                        @sort_dir == 'asc' ? 'desc' : 'asc'
+                      else
+                        @sort_dir
+                      end
+
+    @collection = SearchCollections.call(@sort_by, sort_dir_to_use, filter)
+
+    # Adding filtering by first letter
+    @to_letter = params['to_letter']
+    if @to_letter.present?
+      @collection = @collection.filter({ prefix: { sort_title: @to_letter } })
+      @filters << [I18n.t(:title_starts_with_x, x: @to_letter), :to_letter, :text]
+    end
+
+    @collections = paginate(@collection)
+  end
+
+  def build_es_filter_from_filters
+    ret = {}
+    @filters = []
+
+    # collection types -- the browse view only ever surfaces the "browsable" types (see
+    # Collection::BROWSABLE_COLLECTION_TYPES); series/other/uncollected are never shown here. Drop any
+    # disallowed values from the user's selection up front so the ES filter, the active-filter chips, and the
+    # checkbox state all agree; when nothing browsable remains we default to the whole allowed set.
+    @collection_types = params['ckb_collection_types'] if @collection_types.blank?
+    @collection_types &= Collection::BROWSABLE_COLLECTION_TYPES if @collection_types.present?
+    if @collection_types.present?
+      ret['collection_types'] = @collection_types
+      @filters += @collection_types.map { |x| [textify_collection_type(x), "collection_type_#{x}", :checkbox] }
+    else
+      ret['collection_types'] = Collection::BROWSABLE_COLLECTION_TYPES
+    end
+
+    # tags by tag_id
+    tag_ids_array = params['tag_ids'].split(',').map(&:to_i) unless @tag_ids.present? || params['tag_ids'].blank?
+    if tag_ids_array.present?
+      tag_data = Tag.where(id: tag_ids_array).pluck(:id, :name)
+      ret['tags'] = tag_data.map(&:last)
+      @filters += tag_data.map { |x| [x.last, "tag_#{x.first}", :checkbox] }
+      @tag_ids = tag_ids_array.join(',') # Keep as comma-separated string for the form
+    end
+
+    # publication date range
+    @fromdate = params['fromdate'].to_i if params['fromdate'].present?
+    @todate = params['todate'].to_i if params['todate'].present?
+    range_expr = {}
+
+    if @fromdate.present?
+      range_expr['from'] = @fromdate
+      @filters << ["#{I18n.t(:publication_date)} #{I18n.t(:fromdate)}: #{@fromdate}", :fromdate, :text]
+    end
+
+    if @todate.present?
+      range_expr['to'] = @todate
+      @filters << ["#{I18n.t(:publication_date)} #{I18n.t(:todate)}: #{@todate}", :todate, :text]
+    end
+
+    ret['publication_date_between'] = range_expr unless range_expr.empty?
+
+    # authority ids - multi-select authorities
+    if params['authorities'].present?
+      authority_ids = params['authorities'].split(',').map(&:to_i)
+      ret['authority_ids'] = authority_ids
+      @authorities = authority_ids
+      @authorities_names = params['authorities_names']
+      # Strip trailing semicolon and whitespace from authority names, handling nil case
+      authorities_display = @authorities_names.to_s.sub(/;\s+$/, '')
+      @filters << [I18n.t(:authors_xx, xx: authorities_display), 'authorities', :authoritylist]
+    end
+
+    # title search
+    @search_input = params['search_input']
+    if @search_input.present?
+      ret['title'] = @search_input
+      @filters << [I18n.t(:title_x, x: @search_input), :search_input, :text]
+    end
+
+    return ret
+  end
+
+  def prepare_totals(collection)
+    standard_aggregations = {
+      collection_types: { terms: { field: 'collection_type' } },
+      # We may need to increase `size` threshold in future if number of authorities exceeds 2000
+      authority_ids: { terms: { field: 'involved_authority_ids', size: 2000 } }
+    }
+
+    collection = collection.aggregations(standard_aggregations)
+    aggs = collection.aggs || {} # Access aggs to trigger the query, fallback to empty hash
+
+    @collection_type_facet = buckets_to_totals_hash(aggs.dig('collection_types', 'buckets') || [])
+
+    # Preparing list of authorities to show in multiselect modal on collections browse page
+    if collection.filter.present?
+      authority_ids = aggs.dig('authority_ids', 'buckets')&.pluck('key') || []
+      @authorities_list = Authority.where(id: authority_ids)
+    else
+      @authorities_list = Authority.all
+    end
+    @authorities_list = @authorities_list.select(:id, :name).sort_by(&:name)
+  end
+
+  def get_sort_column(sort_by)
+    SearchCollections::SORTING_PROPERTIES[sort_by][:column]
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -509,6 +673,7 @@ class CollectionsController < ApplicationController
 
   def prep_for_show
     @htmls = []
+    @collapsed_texts = {} # collection_item id => the lone Manifestation its ToC would have listed
     counter = { value: 1 } # Use hash to maintain reference across recursive calls
     parent_authorities = @collection.involved_authorities.map { |ia| [ia.authority_id, ia.role] }
 
@@ -533,6 +698,11 @@ class CollectionsController < ApplicationController
         next unless (@collection.periodical? && ci.item.collection_type == 'periodical_issue') ||
                     (@collection.volume_series? && ci.item.collection_type == 'volume')
 
+        # A volume/issue whose whole ToC is a single text would list that text's title -- the very
+        # same title -- right under its own heading, so Collection#show collapses the two into one
+        # heading (see #1488). The ToC itself is still built, for the print and download variants.
+        sole_text = ci.item.sole_toc_manifestation
+        @collapsed_texts[ci.id] = sole_text if sole_text.present?
         html = ci.item.toc_html(url_builder: method(:url_for))
         @htmls << [ci.item.title, ci.involved_authorities_by_role('editor'), html, false,
                    ci.genre, counter[:value], ci, 0, [], nil] # nil for footnote (TOC items don't have footnotes)
@@ -562,7 +732,15 @@ class CollectionsController < ApplicationController
 
   def build_htmls_recursively(collection_items, parent_authorities, nesting_level, counter)
     collection_items.each do |ci|
-      next if ci.item.present? && ci.item_type == 'Manifestation' && ci.item.status != 'published' # deleted or unpublished manifestations
+      unless ci.public?
+        next if ci.item.deprecated? # soft-deleted items excluded entirely
+
+        # unpublished / nonpd: show as unclickable placeholder title
+        @htmls << [ci.title, ci.involved_authorities, '', false, ci.genre, counter[:value], ci,
+                   nesting_level, parent_authorities, nil]
+        counter[:value] += 1
+        next
+      end
 
       if ci.item.present? && ci.item_type == 'Collection'
         # This is a sub-collection - render it with full detail
@@ -609,6 +787,10 @@ class CollectionsController < ApplicationController
   end
 
   protected
+
+  def valid_query?
+    return true unless params[:to_letter].present? && (params[:to_letter].any_hebrew? == false)
+  end
 
   def downloadable_html(h)
     title, ias, html, = h
