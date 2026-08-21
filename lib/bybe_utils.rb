@@ -559,7 +559,11 @@ module BybeUtils
       pre = ::Regexp.last_match.pre_match[0..rpos - 1] unless rpos.nil? # move back to last space (because month may have contained a prefix, like מרחשוון)
       rpos = pre.rindex(' ')
       pre = pre[rpos + 1..-1] unless pre.empty? or rpos.nil?
-      year = ::Regexp.last_match.post_match.match(HEB_YEAR_PATTERN).to_s.strip.tr(GERESH_CHARS, '')
+year = ::Regexp.last_match.post_match.match(HEB_YEAR_PATTERN).to_s.strip
+if year =~ DATE_RANGE_SEPARATORS
+  year = year.split(DATE_RANGE_SEPARATORS)[0] # take the first year
+end
+year = year.tr(GERESH_CHARS, '')
       day = if pre.empty?
               15
             else
