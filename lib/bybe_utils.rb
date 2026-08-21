@@ -19,6 +19,11 @@ GREGMONTHS = { 'ינואר' => 1, 'פברואר' => 2, 'מרץ' => 3, 'מרס' =
 HEB_LETTER_VALUE = { 'א' => 1, 'ב' => 2, 'ג' => 3, 'ד' => 4, 'ה' => 5, 'ו' => 6, 'ז' => 7, 'ח' => 8, 'ט' => 9,
                      'י' => 10, 'כ' => 20, 'ך' => 20, 'ל' => 30, 'מ' => 40, 'ם' => 40, 'נ' => 50, 'ן' => 50, 'ס' => 60, 'ע' => 70, 'פ' => 80, 'ף' => 80, 'צ' => 90, 'ץ' => 90, 'ק' => 100, 'ר' => 200, 'ש' => 300, 'ת' => 400 }
 
+# apostrophe and quote, and their Hebrew equivalents geresh (U+05F3) and gershayim (U+05F4)
+GERESH_CHARS = %q('"׳״).freeze
+DATE_RANGE_SEPARATORS = /[-־–—]/ # hyphen, maqaf, en-dash, em-dash
+HEB_YEAR_PATTERN = /\S+["״]\S/ # a Hebrew year numeral has gershayim before its last letter
+
 SUSPICIOUS_TITLES = ['מבוא', 'פתיחה', 'הקדמה', 'אחרית דבר', 'אפילוג', 'סוף דבר', 'על הספר']
 
 class TitleValidator < ActiveModel::Validator
@@ -542,12 +547,13 @@ module BybeUtils
   end
 
   def parse_hebrew_day(str)
-    s = str.tr("'\"", '') # ignore quotes
+    s = str.split(DATE_RANGE_SEPARATORS)[0].to_s # for a range of days (e.g. ט'-כ"ג), take the first day
+    s = s.tr(GERESH_CHARS, '') # ignore quotes, both ASCII and Hebrew geresh/gershayim
     s = s[0..1] if s.length > 2 # ignore prefixes like ב
     s = s[0] unless s.length == 1 || %w(ט י כ ל).include?(s[0]) # only possible first-letters of a two-character hebrew date day
     i = 0
-    s.each_char { |c| i += HEB_LETTER_VALUE[c] }
-    return i
+    s.each_char { |c| i += HEB_LETTER_VALUE[c] if HEB_LETTER_VALUE[c] } # ignore anything that isn't a Hebrew letter
+    return i == 0 ? nil : i
   end
 
   def parse_hebrew_date(str)
@@ -560,7 +566,11 @@ module BybeUtils
       pre = ::Regexp.last_match.pre_match[0..rpos - 1] unless rpos.nil? # move back to last space (because month may have contained a prefix, like מרחשוון)
       rpos = pre.rindex(' ')
       pre = pre[rpos + 1..-1] unless pre.empty? or rpos.nil?
-      year = ::Regexp.last_match.post_match.match(/\S+"\S/).to_s.strip.tr('\"\'', '')
+year = ::Regexp.last_match.post_match.match(HEB_YEAR_PATTERN).to_s.strip
+if year =~ DATE_RANGE_SEPARATORS
+  year = year.split(DATE_RANGE_SEPARATORS)[0] # take the first year
+end
+year = year.tr(GERESH_CHARS, '')
       day = if pre.empty?
               15
             else
@@ -573,14 +583,14 @@ module BybeUtils
       return hd.julian_date
     end
     # no month name -- try treating the whole thing as a Hebrew year
-    year = str.match(/\S+"\S/)
+    year = str.match(HEB_YEAR_PATTERN)
     return nil if year.nil?
 
     year = year.to_s
-    if year =~ /[-־–]/ # range of years
-      year = year.split(/[-־–]/)[0] # take the first year
+    if year =~ DATE_RANGE_SEPARATORS # range of years
+      year = year.split(DATE_RANGE_SEPARATORS)[0] # take the first year
     end
-    year = year.to_s.strip.tr('\"\'[]()', '')
+    year = year.to_s.strip.tr("#{GERESH_CHARS}[]()", '')
     hyear = parse_hebrew_year(year)
     return nil if hyear.nil? || hyear == 0
 
