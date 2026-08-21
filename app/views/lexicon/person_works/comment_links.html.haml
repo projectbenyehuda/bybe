@@ -1,0 +1,10 @@
+= render 'lexicon/shared/text_links_editor',
+         links: @work.comment_links,
+         record_id: @work.id,
+         prefix: 'comment_link',
+         list_class: 'comment-links-list',
+         text_label: t('lexicon.person_works.comment_links.text_label'),
+         add_label: t('lexicon.person_works.comment_links.add_link'),
+         add_fn: 'addCommentLink',
+         remove_fn: 'removeCommentLink',
+         source_text: @work.comment

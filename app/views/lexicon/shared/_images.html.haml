@@ -1,0 +1,11 @@
+- if entry.lex_file.present?
+  -# For debugging purpose. To be removed in future
+  = link_to t(:to_old_lexicon_page),
+            "https://benyehuda.org/lexicon/#{entry.lex_file.fname}",
+            target: '_blank',
+            rel: 'noopener'
+.row
+  - entry.attachments.each do |image|
+    - next unless image.blob.filename.to_s.match(%r{\.(png|jpg|jpeg|gif)\z})
+
+    = image_tag image, class: 'img-fluid'

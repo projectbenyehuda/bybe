@@ -1,0 +1,54 @@
+%a.btn.btn-primary.add-person-work= t('.add_work')
+- @lex_person_works.group_by(&:work_type).each do |work_type, works|
+  %h4= LexPersonWork.human_enum_name(:work_type, work_type)
+  %ul{ id: "works_#{work_type}", data: { work_type: work_type } }
+    - works.sort_by(&:seqno).each do |w|
+      %li{ id: "work_#{w.id}", data: { work_id: w.id } }
+        %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
+          %span.handle ☰
+        != render_person_work(w)
+        = link_to t(:edit), '#', class: 'edit-person-work', data: { id: w.id }
+        = link_to t(:delete),
+                  lexicon_work_path(w),
+                  remote: true, data: { confirm: t(:are_you_sure) }, method: :delete
+
+:javascript
+  $('.edit-person-work').click(function(e) {
+    e.preventDefault();
+    const workId = $(this).data('id');
+    openModal(`/lex/works/${workId}/edit`);
+  });
+  $('a.add-person-work').click(function() {
+    openModal('/lex/people/#{@person.id}/works/new');
+  });
+
+  // Initialize Sortable for each work type table
+  document.querySelectorAll('[id^="works_"]').forEach(function(tbody) {
+    const workType = tbody.dataset.workType;
+    Sortable.create(
+      tbody,
+      {
+        handle: '.drag-handle',
+        animation: 150,
+        onEnd: function(evt) {
+          const oldIndex = evt.oldIndex; // zero-based
+          const newIndex = evt.newIndex; // zero-based
+          if (newIndex !== oldIndex) {
+            $.post({
+              url: `/lex/works/${evt.item.dataset.workId}/reorder`,
+              data: {
+                new_index: newIndex,
+                old_index: oldIndex,
+                work_type: workType
+              },
+              error: function(xhr, status, error) {
+                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+                alert('#{t('.reordering_failed')}\n' + errorMsg);
+                reloadContent($('#works'));
+              }
+            });
+          }
+        }
+      }
+    );
+  });

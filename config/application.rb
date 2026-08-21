@@ -7,6 +7,12 @@ require 'active_job'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# Configure RubyLLM before Rails::Application is inherited
+# see https://rubyllm.com/upgrading/#troubleshooting
+RubyLLM.configure do |config|
+  config.use_new_acts_as = true
+end
+
 module Bybeconv
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -24,8 +30,6 @@ module Bybeconv
     #
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
-    config.active_job.queue_adapter = :sidekiq
-    # config.active_job.queue_name_prefix = Rails.env
 
     config.i18n.default_locale = :he
     config.i18n.available_locales = %i(he en)
@@ -35,7 +39,7 @@ module Bybeconv
     config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins '*'
-        resource '*', headers: :any, methods: %i(get post options)
+        resource '*', headers: :any, methods: %i(get post put patch delete options)
       end
     end
     if ENV['PROFILE'] == 'true'

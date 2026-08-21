@@ -28,24 +28,65 @@ module TocTree
     end
 
     # Checks if given Node should be displayed in TOC tree for given authority and role combination
-    def visible?(role, authority_id)
-      if @collection.involved_authorities.any? { |ia| ia.role == role.to_s && ia.authority_id == authority_id }
-        # authority is specified on collection level with given role
-        true
-      else
-        # or collection contains other items where given authority has given role (recursive check)
-        children_by_role(role, authority_id).present?
+    # @param role [String] role of authority
+    # @param authority_id [Integer] id of authority
+    # @param involved_on_collection_level [Boolean] mode of check: if true we check if authority is involved on
+    #   collection level (and optionally at work level), otherwise we check if authority is NOT involved on
+    #   collection level
+    # @param parent_collection [Collection] optional parent collection context (not used for CollectionNode,
+    #   but needed for signature consistency with other node types)
+    def visible?(role, authority_id, involved_on_collection_level, parent_collection = nil)
+      involvement_check = @collection.involved_authorities.any? do |ia|
+        ia.role == role.to_s && ia.authority_id == authority_id
       end
+
+      if involved_on_collection_level
+        return true if involvement_check
+      elsif !@collection.uncollected?
+        return false if involvement_check
+      end
+
+      # Checking if collection contains visible children (recursive check)
+      return children_by_role(role, authority_id, involved_on_collection_level).present?
     end
 
     # Returns array of child elements (Manifestations or Nodes) where given author is involved with given role
-    def children_by_role(role, authority_id)
+    def children_by_role(role, authority_id, involved_on_collection_level)
       @children_by_role ||= {}
-      @children_by_role[role] ||= sorted_children.select { |child| child.visible?(role, authority_id) }
+      @children_by_role["#{role}_#{involved_on_collection_level}"] ||= sorted_children.select do |child|
+        child.visible?(role, authority_id, involved_on_collection_level, @collection)
+      end
     end
 
     def sorted_children
       @sorted_children ||= children.sort_by { |child, seqno| [seqno, child.id] }.map(&:first)
+    end
+
+    # Criteria used to sort collection nodes in TOC tree
+    def sort_term
+      [
+        @collection.normalized_pub_year.presence || @collection.created_at.year,
+        @collection.id
+      ]
+    end
+
+    # Count manifestations recursively in this collection and its children.
+    # Result is memoized per (role, authority_id, involved_on_collection_level); parent_collection
+    # is accepted for interface consistency with ManifestationNode but is unused here since
+    # CollectionNode#visible? derives involvement from its own involved_authorities.
+    def count_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
+      @manifestation_counts ||= {}
+      cache_key = "#{role}_#{authority_id}_#{involved_on_collection_level}"
+      return @manifestation_counts[cache_key] if @manifestation_counts.key?(cache_key)
+
+      count = if visible?(role, authority_id, involved_on_collection_level, parent_collection)
+                children_by_role(role, authority_id, involved_on_collection_level).sum do |child|
+                  child.count_manifestations(role, authority_id, involved_on_collection_level, @collection)
+                end
+              else
+                0
+              end
+      @manifestation_counts[cache_key] = count
     end
   end
 end

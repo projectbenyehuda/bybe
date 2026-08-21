@@ -19,6 +19,7 @@
         %button.by-button-v02.by-button-secondary-v02.linkcolor.pointer{'data-dismiss'=>'modal'}
           %div= t(:cancel)
 
+- tagging_popup_url = add_tagging_popup_path(taggable_id: taggable.id, taggable_type: taggable.class.name)
 :javascript
   $(document).ready(function(){
     $('#accept_cbox').click(function(){
@@ -32,7 +33,7 @@
       $.ajax( { url: "#{preference_url(:accepted_tag_policy)}", method: 'PUT', data: { value: "true" } });
       $('#tagPolicyDlg').modal('hide');
       $('#accepted_tag_policy').val('true');
-      $('#generalDlg').load("#{ add_tagging_popup_path(taggable_id: @m.id, taggable_type: @tagging.taggable_type) }");
+      $('#generalDlg').load("#{tagging_popup_url}");
       $('#generalDlg').modal('show');
     });
   });

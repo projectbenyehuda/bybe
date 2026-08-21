@@ -1,0 +1,8 @@
+/ Browse collections top header
+.container-fluid#header-author
+  = render partial: 'shared/breadcrumbs'
+  .top-space
+  .texts-list-top
+    .texts-list-top-info-card
+      .headline-1-v02= @collections_list_title
+      = render partial: 'shared/mobile_filter_toggle', locals: { form_id: 'collections_filters' }

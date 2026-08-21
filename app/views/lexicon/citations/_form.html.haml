@@ -1,0 +1,70 @@
+- path = @citation.new_record? ? lexicon_person_citations_path(@person) : lexicon_citation_path(@citation)
+= simple_form_for(@citation, url: path, remote: true) do |f|
+  = f.error_notification
+  = f.input :subject
+  = f.association :person_work,
+                  collection: @person.works.sort_by(&:title),
+                  label_method: :title,
+                  selected: @citation.person_work&.id,
+                  include_blank: true
+  = f.input :title
+  = f.input :from_publication
+  = f.input :pages
+  = f.input :link
+  = f.input :backup_url
+  - if @citation.backup_file.attached?
+    .form-group
+      %label= LexCitation.human_attribute_name(:backup_file)
+      %div
+        = link_to @citation.backup_file.filename,
+                  rails_blob_path(@citation.backup_file, disposition: :inline),
+                  target: '_blank', rel: 'noopener'
+  = f.input :notes
+  = f.submit t(:save)
+%hr
+
+%h4= LexCitation.human_attribute_name(:authors)
+#authors-list.border.rounded.p-2
+  - if @citation.new_record?
+    %span.text-secondary= t('.save_before_adding_authors')
+
+- unless @citation.new_record?
+  %hr
+  %h4= t('lexicon.citations.text_links.section_heading')
+  .border.rounded.p-2#text-links-list
+
+  :javascript
+    function reloadAuthors() {
+      $('#authors-list').load(`/lex/citations/#{@citation.id}/authors`);
+    }
+    reloadAuthors();
+
+    function reloadCitationTextLinks() {
+      $('#text-links-list').load('#{text_links_lexicon_citation_path(@citation)}');
+    }
+    reloadCitationTextLinks();
+
+    function addCitationTextLink(citationId) {
+      var text = $('#text_link_text').val();
+      var entryId = $('#text_link_entry_id').val();
+      var url = $('#text_link_url').val();
+      if (!text || (!entryId && !url)) { return; }
+      $.ajax({
+        url: '/lex/citations/' + citationId + '/add_text_link',
+        method: 'POST',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { text: text, entry_id: entryId, url: url },
+        success: reloadCitationTextLinks
+      });
+    }
+
+    function removeCitationTextLink(citationId, index) {
+      if (!confirm('#{j(t(:are_you_sure))}')) { return; }
+      $.ajax({
+        url: '/lex/citations/' + citationId + '/remove_text_link',
+        method: 'DELETE',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: { index: index },
+        success: reloadCitationTextLinks
+      });
+    }

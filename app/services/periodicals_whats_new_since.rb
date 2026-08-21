@@ -6,7 +6,9 @@ class PeriodicalsWhatsNewSince < ApplicationService
     authors = {}
     # Get all published manifestations that are new since the timestamp
     # and are contained in periodicals (have periodical_issue in parent chain)
+    # non-primary works (e.g. an issue's editorial column) are parts of a larger text, not standalone works
     Manifestation.all_published.new_since(timestamp)
+                 .joins(expression: :work).where(works: { primary: true })
                  .includes({ expression: { work: { involved_authorities: :authority } } }, collection_items: :collection)
                  .find_each do |m|
       # Skip if not in a periodical

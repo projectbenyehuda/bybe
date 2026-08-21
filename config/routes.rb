@@ -57,6 +57,91 @@ Bybeconv::Application.routes.draw do
     resources :taggings, only: %i(index show destroy)
   end
 
+  namespace :lexicon, path: :lex do # use path 'lex' to avoid conflict with old Lexicon hosted on benyehuda.org/lexicon
+    root to: 'entries#list' # default to main public view
+
+    # Public list of published entries
+    match 'list', to: 'entries#list', as: :entries_list, via: %i(get post)
+    match 'admin', to: 'entries#index', as: :lex_backend, via: %i(get post)
+
+    resources :people, only: %i(edit update new create) do
+      resources :citations, shallow: true, except: %i(show) do
+        post :reorder, on: :member
+        resources :authors, controller: 'citation_authors', only: %i(index create)
+        member do
+          get :text_links
+          post :add_text_link
+          delete :remove_text_link
+        end
+      end
+      resources :works, controller: 'person_works', shallow: true, except: %i(show) do
+        post :reorder, on: :member
+        resources :linked_people, only: %i(index create)
+        member do
+          get :title_links
+          post :add_title_link
+          delete :remove_title_link
+          get :comment_links
+          post :add_comment_link
+          delete :remove_comment_link
+        end
+      end
+    end
+
+    resources :citation_authors, only: %i(update destroy)
+    resources :linked_people, only: %i(destroy) do
+      member do
+        post :reorder
+      end
+    end
+
+    resources :publications, only: %i(edit update new create)
+    resources :entries, except: %i(new create) do
+      collection do
+        get :autocomplete
+      end
+      member do
+        patch :unlock
+      end
+      resources :attachments, only: %i(index create destroy)
+      resources :links, shallow: true, except: %i(show)
+    end
+
+    # Verification workbench
+    get 'verification/queue', to: 'verification#index', as: :verification_queue
+    get 'verification', to: 'verification#index', as: :verification_index
+    scope :verification do
+      get ':id', to: 'verification#show', as: :verification
+      get ':id/source', to: 'verification#source', as: :verification_source
+      patch ':id/unlock', to: 'verification#unlock', as: :unlock_verification
+      patch ':id/update_checklist', to: 'verification#update_checklist', as: :update_checklist_verification
+      patch ':id/save_progress', to: 'verification#save_progress', as: :save_progress_verification
+      patch ':id/set_profile_image', to: 'verification#set_profile_image', as: :set_profile_image_verification
+      delete ':id/remove_attachment', to: 'verification#remove_attachment', as: :remove_attachment_verification
+      patch ':id/confirm_work_match', to: 'verification#confirm_work_match', as: :confirm_work_match_verification
+      post ':id/mark_verified', to: 'verification#mark_verified', as: :mark_verified_verification
+      get ':id/bio_comparison', to: 'verification#bio_comparison', as: :bio_comparison_verification
+      get ':id/escalate_form', to: 'verification#escalate_form', as: :escalate_form_verification
+      post ':id/escalate', to: 'verification#escalate', as: :escalate_verification
+      get ':id/edit_section', to: 'verification#edit_section', as: :edit_section_verification
+      patch ':id/update_section', to: 'verification#update_section', as: :update_section_verification
+      post ':id/report_to_monday', to: 'verification#report_to_monday', as: :report_to_monday_verification
+    end
+
+    resources :files, only: :index do
+      member do
+        post :migrate
+        post :redo_migration
+      end
+    end
+
+    # handling for legacy links support
+    get '*old_path', to: 'legacy_links#open_legacy_link',
+                     format: false # otherwise :old_path param will not contain file extension
+  end
+
+  resources :lex_links
+
   resources :ingestibles do
     resources :authorities, controller: :ingestible_authorities, only: %i(create destroy) do
       member do
@@ -141,7 +226,7 @@ Bybeconv::Application.routes.draw do
   get 'crowd/populate_edition' => 'crowd#populate_edition', as: 'crowd_populate_edition'
   get 'crowd/populate_edition/:id' => 'crowd#populate_edition', as: 'crowd_populate_edition_id'
   post 'crowd/do_populate_edition' => 'crowd#do_populate_edition', as: 'crowd_do_populate_edition'
-  resources :lex_files
+
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
   mount V1::Api => '/'
@@ -316,6 +401,7 @@ Bybeconv::Application.routes.draw do
   match 'authors', to: 'authors#browse', as: 'authors', via: %i(get post)
   get 'works', to: 'manifestation#browse', as: 'works'
   get 'works/all', to: 'manifestation#all', as: 'all_works'
+  match 'collections', to: 'collections#browse', as: 'collections_browse', via: %i(get post)
   match 'manifestation/genre' => 'manifestation#genre', as: 'genre', via: %i(get post)
   match 'period/:period' => 'manifestation#period', as: 'period', via: %i(get post)
   match 'translations' => 'manifestation#translations', as: 'translations', via: %i(get post)
@@ -330,6 +416,7 @@ Bybeconv::Application.routes.draw do
   get 'kwic/:id/download' => 'manifestation#kwic_download', as: 'manifestation_kwic_download'
   get 'kwic/:id/context/:paragraph' => 'manifestation#kwic_context', as: 'manifestation_kwic_context'
   get 'manifestation/show/:id' => 'manifestation#show', as: 'manifestation_show'
+  get 'manifestation/snippets' => 'manifestation#snippets', as: 'manifestation_snippets'
   get 'manifestation/render_html'
   get 'manifestation/chomp_period/:id' => 'manifestation#chomp_period', as: 'manifestation_chomp_period'
   post 'manifestation/set_bookmark'

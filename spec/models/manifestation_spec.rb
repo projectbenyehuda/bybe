@@ -4,6 +4,11 @@ require 'rails_helper'
 require 'hebrew'
 
 describe Manifestation do
+  it 'strips leading/trailing whitespace from a manually-set sort_title on save' do
+    manifestation = create(:manifestation, title: 'כותרת', sort_title: '  זבל  ')
+    expect(manifestation.reload.sort_title).to eq('זבל')
+  end
+
   describe '.safe_filename' do
     let(:manifestation) { create(:manifestation) }
     let(:subject) { manifestation.safe_filename }
@@ -123,6 +128,51 @@ describe Manifestation do
       it 'does not count unpublished works' do
         expect(subject).to eq expected_result
       end
+    end
+  end
+
+  describe '#snippet_html' do
+    subject(:snippet) { manifestation.snippet_html(10) }
+
+    let(:manifestation) { create(:manifestation, markdown: markdown) }
+
+    context 'when the text opens with a title and a chapter heading' do
+      let(:markdown) { "\n\n## The Title\n\n### א\n\nThe first real line.\n\nThe second one.\n" }
+
+      it 'skips the headings and starts at the text itself' do
+        expect(snippet).to include('The first real line.')
+        expect(snippet).to include('The second one.')
+        expect(snippet).not_to include('The Title')
+        expect(snippet).not_to include('<h')
+      end
+    end
+
+    context 'when the text runs longer than the requested number of lines' do
+      let(:markdown) { (1..40).map { |i| "Line #{i}." }.join("\n\n") }
+
+      it 'stops after them' do
+        expect(snippet).to include('Line 1.')
+        expect(snippet).not_to include('Line 40.')
+      end
+    end
+  end
+
+  describe '#word_count' do
+    let(:manifestation) { create(:manifestation, markdown: "One two three\nfour\n") }
+
+    it 'is cached on save' do
+      expect(manifestation.word_count).to eq 4
+    end
+
+    it 'is recalculated when the markdown changes' do
+      expect { manifestation.update!(markdown: 'Only two') }
+        .to change { manifestation.reload.word_count }.from(4).to(2)
+    end
+
+    it 'is not recalculated when the markdown is untouched' do
+      # a value the markdown could never yield, so any recalculation would show
+      manifestation.update_columns(word_count: 999)
+      expect { manifestation.update!(title: 'A new title') }.not_to(change { manifestation.reload.word_count })
     end
   end
 

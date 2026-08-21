@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'By tag filtering', :js, type: :system do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'By tag filtering' do
   before(:all) do
     clean_tables
 

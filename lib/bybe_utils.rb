@@ -68,8 +68,13 @@ module BybeUtils
       ret += I18n.t(role, scope: 'involved_authority.abstract_roles') + ': '
       ras.each do |ra|
         ret += ', ' if i > 0
-        url = full_url ? Rails.application.routes.url_helpers.authority_url(ra.authority) : Rails.application.routes.url_helpers.authority_path(ra.authority)
-        ret += "<a href=\"#{url}\">#{ra.authority.name}</a>"
+        if ra.authority.pageless? # pageless authorities have no page to link to
+          ret += ra.authority.name
+        else
+          helpers = Rails.application.routes.url_helpers
+          url = full_url ? helpers.authority_url(ra.authority) : helpers.authority_path(ra.authority)
+          ret += "<a href=\"#{url}\">#{ra.authority.name}</a>"
+        end
         i += 1
       end
       ret += '<br />'
@@ -97,6 +102,8 @@ module BybeUtils
       return 'ill'
     when 'photographer'
       return 'pht'
+    when 'annotator'
+      return 'ann'
     when 'contributor'
       return 'ctb'
     else

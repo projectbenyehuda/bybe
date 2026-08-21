@@ -46,7 +46,8 @@ class Collection < ApplicationRecord
 
   # enum :status, { published: 0, nonpd: 1, unpublished: 2, deprecated: 3 }
 
-  # series express anything from a cycle of poems to a multi-volume work or a series of detective novels;
+  # series express things like a cycle of poems or a series of essays or any other sub-volume grouping
+  # volume_series is for multi-volume works or a series of novels;
   # anthologies are collections of texts by multiple authors, such as festschrifts, almanacs,
   #   or collective anthologies;
   # periodicals are journals, magazines, newspapers, etc., where there is a known sequence of issues;
@@ -66,6 +67,12 @@ class Collection < ApplicationRecord
   }
   enum :toc_strategy, { default: 0, custom_markdown: 1 } # placeholder for future custom ToC-generation strategies
 
+  # Collection types surfaced in the public /collections browse listing. `series` and `other` are deliberately
+  # excluded (they are not meaningful as standalone browsable collections), as are `uncollected` collections.
+  # `periodical_issue` is listed for completeness, but note it is also excluded from CollectionsIndex, so it never
+  # actually appears in the browse list (issues are shown nested under their parent periodical).
+  BROWSABLE_COLLECTION_TYPES = %w(volume periodical periodical_issue volume_series).freeze
+
   # scope :published, -> { where(status: Collection.statuses[:published]) }
   scope :by_type, ->(thetype) { where(collection_type: thetype) }
   scope :by_tag, ->(tag_id) { joins(:taggings).where(taggings: { tag_id: tag_id }) }
@@ -80,6 +87,12 @@ class Collection < ApplicationRecord
 
   validates :title, presence: true
   validates :suppress_download_and_print, inclusion: { in: [true, false] }
+
+  def self.cached_volume_and_issue_count
+    Rails.cache.fetch('volume_and_issue_count', expires_in: 24.hours) do
+      Collection.where(collection_type: %i(volume periodical_issue)).count
+    end
+  end
 
   # Checks if collection is a system-managed collection. We cannot change type of system collection (maybe some
   # other limitations will be added in future)
@@ -155,33 +168,91 @@ class Collection < ApplicationRecord
     false
   end
 
-  # produce HTML for a table of contents of the collection - used for periodicals, and skips paratexts
+  # produce HTML for a table of contents of the collection - used for periodicals and volume series,
+  # and skips paratexts. Sub-collections are rendered as nested <ul>s (indented), preserving the
+  # collection hierarchy instead of flattening it; leaf items (typically Manifestations) are linked.
   # url_builder: optional callable (e.g. method(:url_for)) to generate links for each item
   def toc_html(url_builder: nil)
-    ret = '<div class="collection_toc"><ul>'
-    flatten_items.each do |ci|
-      next if ci.item.nil? && ci.markdown.blank? && ci.alt_title.blank?
-      next if ci.paratext # Skip items of type paratext in periodical toc display
+    "<div class=\"collection_toc\">#{toc_html_list(url_builder)}</div>"
+  end
 
-      item_text = if ci.item.present?
-                    ERB::Util.html_escape(ci.title_and_authors)
-                  elsif ci.alt_title.present?
-                    ERB::Util.html_escape(ci.alt_title)
-                  elsif ci.markdown.present?
-                    ERB::Util.html_escape(ci.first_contentful_markdown.to_s)
+  # renders this collection's items as a <ul>, recursing into sub-collections as nested <ul>s;
+  # returns '' if there is nothing to show (so empty sub-collections don't produce an empty <ul>)
+  def toc_html_list(url_builder)
+    items_html = collection_items.filter_map { |coll_item| toc_html_item(coll_item, url_builder) }
+    return '' if items_html.empty?
+
+    "<ul>#{items_html.join}</ul>"
+  end
+
+  def toc_html_item(coll_item, url_builder)
+    return nil if coll_item.paratext # Skip items of type paratext in periodical/volume-series toc display
+
+    if coll_item.item.present? && coll_item.item.instance_of?(Collection)
+      label = ERB::Util.html_escape(coll_item.title_and_authors)
+      return nil if label.blank?
+
+      # series sub-collections are groupings (not standalone browsable pages), so render their
+      # row as bold plain text rather than a link; their nested items below remain linked as usual
+      if url_builder && !coll_item.item.series?
+        url = ERB::Util.html_escape(url_builder.call(coll_item.item))
+        label = "<a href=\"#{url}\">#{label}</a>"
+      else
+        label = "<strong>#{label}</strong>"
+      end
+      "<li>#{label}#{coll_item.item.toc_html_list(url_builder)}</li>"
+    else
+      return nil if coll_item.item.nil? && coll_item.markdown.blank? && coll_item.alt_title.blank?
+
+      item_text = if coll_item.item.present?
+                    ERB::Util.html_escape(coll_item.title_and_authors)
+                  elsif coll_item.alt_title.present?
+                    ERB::Util.html_escape(coll_item.alt_title)
+                  elsif coll_item.markdown.present?
+                    ERB::Util.html_escape(coll_item.first_contentful_markdown.to_s)
                   end
+      return nil if item_text.blank?
 
-      next if item_text.blank?
+      genre_glyph = ''
+      if coll_item.item_type == 'Manifestation'
+        genre_glyph = "#{toc_html_genre_glyph(coll_item.genre)}&nbsp;"
+        item_text = "‏#{item_text}" # RLM character to help with LTR elements in title. Fixes #664
+      end
 
-      ret += if url_builder && ci.item.present?
-               url = ERB::Util.html_escape(url_builder.call(ci.item))
-               "<li><a href=\"#{url}\">#{item_text}</a></li>"
-             else
-               "<li>#{item_text}</li>"
-             end
+      if url_builder && coll_item.item.present?
+        url = ERB::Util.html_escape(url_builder.call(coll_item.item))
+        "<li>#{genre_glyph}<a href=\"#{url}\">#{item_text}</a></li>"
+      else
+        "<li>#{genre_glyph}#{item_text}</li>"
+      end
     end
-    ret += '</ul></div>'
-    ret
+  end
+
+  # A collection whose entire table of contents is a single text is displayed *collapsed*: the
+  # containing view shows one heading, linking straight to that text, instead of repeating the
+  # very same title as both the collection's heading and its one-item ToC. Returns that lone
+  # Manifestation, or nil when the ToC has anything else to show. Sub-collections holding nothing
+  # but that one text (e.g. volume -> series -> text) are collapsed away as well.
+  def sole_toc_manifestation
+    # mirror the items toc_html_item would actually render: paratexts and empty placeholders are skipped
+    items = collection_items.reject do |ci|
+      ci.paratext || (ci.item.nil? && ci.markdown.blank? && ci.alt_title.blank?)
+    end
+    return nil unless items.one?
+
+    ci = items.first
+    return nil if ci.item.nil? || !ci.public?
+    return ci.item.sole_toc_manifestation if ci.item.is_a?(Collection)
+    return nil unless ci.item_type == 'Manifestation'
+
+    ci.item
+  end
+
+  # same genre-glyph markup used elsewhere in Collection#show for non-periodical/volume_series items
+  def toc_html_genre_glyph(genre)
+    helpers = ApplicationController.helpers
+    title_attr = ERB::Util.html_escape(helpers.textify_genre(genre))
+    "<span class=\"by-icon-v02\" title=\"#{title_attr}\">#{helpers.glyph_for_genre(genre)}</span>"
   end
 
   def flatten_items
@@ -364,6 +435,49 @@ class Collection < ApplicationRecord
     end
 
     return false
+  end
+
+  # Bulk equivalent of #any_published_manifestations? for a set of collections: returns the ids of those
+  # whose item tree contains, at any depth, at least one Manifestation in status 'published'.
+  # Traverses the trees one level at a time, so the whole set costs a couple of queries per level of
+  # nesting rather than a query per item. Each (collection, ancestor) pair is visited at most once, so a
+  # sub-collection shared by several ancestors is still attributed to each of them, without rework.
+  def self.ids_with_published_manifestations(collection_ids)
+    roots = collection_ids.to_a.uniq
+    return [] if roots.empty?
+
+    found = Set.new
+    ancestors_by_collection = roots.index_with { |id| Set[id] } # collection being visited => roots it belongs to
+    seen = roots.index_with { |id| Set[id] } # (collection, root) pairs already queued, to avoid rework/cycles
+
+    until ancestors_by_collection.empty? || found.size == roots.size
+      items = CollectionItem.where(collection_id: ancestors_by_collection.keys)
+                            .pluck(:collection_id, :item_type, :item_id)
+      manifestation_ids = items.filter_map { |_, type, item_id| item_id if type == 'Manifestation' }.uniq
+      published = if manifestation_ids.empty?
+                    Set.new
+                  else
+                    Manifestation.all_published.where(id: manifestation_ids).pluck(:id).to_set
+                  end
+      next_level = {}
+      items.each do |parent_id, item_type, item_id|
+        ancestors = ancestors_by_collection[parent_id] - found # roots still looking for a published work
+        next if ancestors.empty?
+
+        if item_type == 'Manifestation'
+          found.merge(ancestors) if published.include?(item_id)
+        elsif item_type == 'Collection'
+          fresh = ancestors - (seen[item_id] ||= Set.new)
+          next if fresh.empty?
+
+          seen[item_id].merge(fresh)
+          (next_level[item_id] ||= Set.new).merge(fresh)
+        end
+      end
+      ancestors_by_collection = next_level
+    end
+
+    found.to_a
   end
 
   def like_count
@@ -578,6 +692,13 @@ class Collection < ApplicationRecord
 
   def parent_collections
     parent_collection_items.map(&:collection)
+  end
+
+  # Get LexCitations for this collection via Publication -> LexPersonWork -> LexCitation chain
+  def lex_citations
+    return [] if publication.blank?
+
+    publication.lex_citations.includes(:authors, :manifestation)
   end
 
   # update status of ALL manifestations included in this collection, including in nested collections

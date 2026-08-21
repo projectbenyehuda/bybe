@@ -82,6 +82,37 @@ RSpec.describe 'Periodicals', type: :request do
     end
   end
 
+  # Regression: works flagged non-primary (e.g. an issue's editorial column) are parts of a larger
+  # text, not standalone works, and must not surface in the periodicals landing page's work lists.
+  describe 'suppression of non-primary works in the newest/popular lists' do
+    let!(:periodical_issue) { create(:collection, collection_type: 'periodical_issue') }
+    let!(:primary_work) do
+      create(:manifestation, title: 'Primary Periodical Work', impressions_count: 5, collections: [periodical_issue])
+    end
+    let!(:non_primary_work) do
+      create(:manifestation, title: 'Editorial Column', primary: false, impressions_count: 99,
+                             collections: [periodical_issue])
+    end
+
+    before do
+      Chewy.massacre
+      import_and_await(ManifestationsIndex, [primary_work, non_primary_work])
+      get '/periodicals'
+    end
+
+    after do
+      Chewy.massacre
+    end
+
+    it 'excludes non-primary works from @newest_works' do
+      expect(assigns(:newest_works).map { |w| w.id.to_i }).to contain_exactly(primary_work.id)
+    end
+
+    it 'excludes non-primary works from @popular_works' do
+      expect(assigns(:popular_works).map { |w| w.id.to_i }).to contain_exactly(primary_work.id)
+    end
+  end
+
   describe 'GET /show' do
     it 'returns http success' do
       get '/periodicals/show'
@@ -105,6 +136,8 @@ RSpec.describe 'Periodicals', type: :request do
     before do
       create(:collection_item, collection: periodical, item: issue_no_cover, seqno: 1)
       create(:collection_item, collection: periodical, item: issue_with_cover, seqno: 2)
+      # the index only lists periodicals with publicly accessible works
+      create(:collection_item, collection: issue_no_cover, item: create(:manifestation, status: :published), seqno: 1)
     end
 
     it 'assigns @periodical_first_covers as a hash' do
@@ -131,6 +164,8 @@ RSpec.describe 'Periodicals', type: :request do
 
     before do
       create(:collection_item, collection: periodical, item: issue_no_cover, seqno: 1)
+      # the index only lists periodicals with publicly accessible works
+      create(:collection_item, collection: issue_no_cover, item: create(:manifestation, status: :published), seqno: 1)
     end
 
     it 'maps the periodical to nil when no issues have a cover' do
@@ -155,6 +190,8 @@ RSpec.describe 'Periodicals', type: :request do
 
     before do
       create(:collection_item, collection: periodical_with_issue, item: issue, seqno: 1)
+      # the index only lists periodicals with publicly accessible works
+      create(:collection_item, collection: issue, item: create(:manifestation, status: :published), seqno: 1)
     end
 
     it 'does not include zero-issue periodicals in @periodicals' do
@@ -171,6 +208,68 @@ RSpec.describe 'Periodicals', type: :request do
     it 'sets @periodicals_count to only count periodicals with issues' do
       get '/periodicals'
       expect(assigns(:periodicals_count)).to eq(assigns(:periodicals).size)
+    end
+  end
+
+  describe 'suppression of periodicals without publicly accessible works' do
+    let!(:periodical_with_published) do
+      create(:collection, collection_type: 'periodical', title: 'Published Works Periodical')
+    end
+    let!(:periodical_unpublished_only) do
+      create(:collection, collection_type: 'periodical', title: 'Unpublished Only Periodical')
+    end
+    let!(:periodical_empty_issues) do
+      create(:collection, collection_type: 'periodical', title: 'Empty Issues Periodical')
+    end
+
+    before do
+      %w(published unpublished empty).zip(
+        [periodical_with_published, periodical_unpublished_only, periodical_empty_issues]
+      ).each do |kind, periodical|
+        issue = create(:collection, collection_type: 'periodical_issue')
+        create(:collection_item, collection: periodical, item: issue, seqno: 1)
+        next if kind == 'empty'
+
+        status = kind == 'published' ? :published : :unpublished
+        create(:collection_item, collection: issue, item: create(:manifestation, status: status), seqno: 1)
+      end
+    end
+
+    it 'lists only the periodical holding a published work' do
+      get '/periodicals'
+      expect(assigns(:periodicals)).to include(periodical_with_published)
+      expect(assigns(:periodicals)).not_to include(periodical_unpublished_only, periodical_empty_issues)
+    end
+
+    it 'does not render the suppressed periodicals on the page' do
+      get '/periodicals'
+      expect(response.body).to include('Published Works Periodical')
+      expect(response.body).not_to include('Unpublished Only Periodical')
+      expect(response.body).not_to include('Empty Issues Periodical')
+    end
+
+    it 'counts only the listed periodicals' do
+      get '/periodicals'
+      expect(assigns(:periodicals_count)).to eq(assigns(:periodicals).size)
+    end
+
+    context 'when the published work sits in a sub-collection of the issue' do
+      let!(:periodical_nested) do
+        create(:collection, collection_type: 'periodical', title: 'Nested Works Periodical')
+      end
+
+      before do
+        issue = create(:collection, collection_type: 'periodical_issue')
+        series = create(:collection, collection_type: 'series')
+        create(:collection_item, collection: periodical_nested, item: issue, seqno: 1)
+        create(:collection_item, collection: issue, item: series, seqno: 1)
+        create(:collection_item, collection: series, item: create(:manifestation, status: :published), seqno: 1)
+      end
+
+      it 'still lists the periodical' do
+        get '/periodicals'
+        expect(assigns(:periodicals)).to include(periodical_nested)
+      end
     end
   end
 end

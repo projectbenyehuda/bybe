@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   before_action :set_base_user
   before_action :mention_skipped
   before_action :prep_tabs
-  after_action :set_access_control_headers
+  #  after_action :set_access_control_headers # replaced with rack-cors in config/application.rb
   autocomplete :tag_name, :name, limit: 15, scopes: [:approved], extra_data: [:tag_id] # TODO: also search alternate titles!
 
   # returns BaseUser record associated with current user
@@ -56,7 +56,7 @@ class ApplicationController < ActionController::Base
     headers['Access-Control-Allow-Origin'] = '*' # TODO: restrict
     headers['Access-Control-Allow-Methods'] = '*'
     headers['Access-Control-Request-Method'] = '*'
-    headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
+    headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, content-type, Accept'
   end
 
   def mobile_search
@@ -119,25 +119,6 @@ class ApplicationController < ActionController::Base
   def popular_authors(update = false)
     Authority.recalc_popular if update
     @popular_authors = Authority.popular_authors
-  end
-
-  def randomize_authors(exclude_list, genre = nil)
-    list = []
-    ceiling = [Person.cached_toc_count - exclude_list.count - 1, 10].min
-    return list if ceiling <= 0
-
-    i = 0
-    begin
-      if genre.nil?
-        candidates = Person.has_toc.order('RAND()').limit(ceiling - list.size) # fetch as many as are still needed
-      else
-        candidates = Person.has_toc.joins(:expressions).where(expressions: { genre: genre }).order('RAND()').limit(ceiling - list.size) # fetch as many as are still needed
-      end
-
-      candidates.each { |author| list << author unless (exclude_list.include? author) or (list.include? author) }
-      i += 1
-    end until list.size >= ceiling or i > 10 # TODO: fix bug where only one author is retrieved by above block
-    return list
   end
 
   def randomize_works_by_genre(genre, how_many)

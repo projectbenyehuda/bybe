@@ -1,0 +1,10 @@
+= render 'lexicon/shared/text_links_editor',
+         links: @work.title_links,
+         record_id: @work.id,
+         prefix: 'title_link',
+         list_class: 'title-links-list',
+         text_label: t('lexicon.person_works.title_links.text_label'),
+         add_label: t('lexicon.person_works.title_links.add_link'),
+         add_fn: 'addTitleLink',
+         remove_fn: 'removeTitleLink',
+         source_text: @work.title

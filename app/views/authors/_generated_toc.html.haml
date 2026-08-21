@@ -1,35 +1,60 @@
-#genre_filtering{style: 'display: none;'}
-  %h3= t(:show_genres)
-  -# show a checkbox for each present genre to show/hide items of that genre
-  - get_genres.each do |genre|
-    %span.hidden{id: "genre_#{genre}"}
-      = check_box_tag "genre_#{genre}", 1, true, class: 'genre_checkbox'
-      = label_tag "genre_#{genre}", textify_genre(genre)
-%p
-  = t(:sort_by)
-  = select_tag :sort_by, options_for_select([[t(:collections_and_pubdates_asc), 'colls'], [t(:collections_abc),'colls_abc'], [t(:alefbet_asc), 'title'], [t(:popularity_desc), 'popularity_desc'], [t(:popularity_asc), 'popularity_asc'], [t(:pubdate_asc), 'pubdate_asc'], [t(:pubdate_desc), 'pubdate_desc'], [t(:creation_date_asc), 'creation_date_asc'], [t(:creation_date_desc), 'creation_date_desc'], [t(:uploaddate_asc), 'upload_date_asc'], [t(:uploaddate_desc), 'upload_date_desc']  ], params[:sort_by])
-.sorting_caveat{ style: 'display:none' }
-  %p
-    %b= t(:sorting_caveat_title)
-  %p= t(:sorting_caveat)
+-# Kept outside #browse_mainlist: a re-sort replaces that div's entire contents.
+#spinnerdiv{ style: 'display: none; top: 50%; left: 50%;' }
+  #floatingCirclesG
+    .f_circleG#frotateG_01
+    .f_circleG#frotateG_02
+    .f_circleG#frotateG_03
+    .f_circleG#frotateG_04
+    .f_circleG#frotateG_05
+    .f_circleG#frotateG_06
+    .f_circleG#frotateG_07
+    .f_circleG#frotateG_08
 .mainlist#browse_mainlist
   = cache_unless current_user&.editor?, @author, expires_in: 12.hours do
-    - top_nodes = GenerateTocTree.call(@author)
-    = render partial: 'authors/toc_by_role',
-              locals: { top_nodes: top_nodes,
-                        title: t(:original_works),
-                        role: :author,
-                        authority_id: @author.id, editable: false, nonce: 'a' }
-    = render partial: 'authors/toc_by_role',
-              locals: { top_nodes: top_nodes,
-                        title: t(:translations),
-                        role: :translator,
-                        authority_id: @author.id, editable: false, nonce: 't' }
-    = render partial: 'authors/toc_by_role',
-              locals: { top_nodes: top_nodes,
-                        title: t(:edited_works, gender_letter: @author.gender_letter),
-                        role: :editor,
-                        authority_id: @author.id, editable: false, nonce: 'e' }
+    :ruby
+    - top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
+    - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+      = render partial: 'authors/toc_by_role',
+               locals: { top_nodes: top_nodes,
+                         title: t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter),
+                         role: role,
+                         authority_id: @author.id,
+                         editable: false,
+                         nonce: role }
+  - if @lexicon_entry.present?
+    - lex_person = @lexicon_entry.lex_item # TODO: generalize for other lex_item types
+    .headline-books
+      = t('lexicon.header.title')
+      .lexicon-logo
+      = image_tag 'osu-logo.jpg', class: 'osu-partner-logo', alt: 'OSU'
+    .peach2-lexicon
+      .by-card-v02
+        #lexicon-bio
+        .by-card-content-v02
+          -# a div, not a p: see lexicon/entries/_show_person
+          #lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
+      #lexicon-works
+        = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
+          - LexPersonWork.work_types.each_key do |work_type|
+            - works_of_type = lex_person.works.select { |work| work.work_type == work_type }
+            - next if works_of_type.empty?
+
+            - if work_type != 'original'
+              %h4= LexPersonWork.human_enum_name(:work_type, work_type)
+            %ul
+              - works_of_type.sort_by(&:seqno).each do |work|
+                %li!= render_person_work(work)
+      #lexicon-about
+        = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
+          - lex_person.citations.group_by(&:subject).each do |subject, list|
+            %h4= subject
+            %ul
+              - list.each do |c|
+                - cit_text = render_citation(c)
+                %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
+      #lexicon-links
+        = render partial: 'lexicon/entries/links', locals: { links: lex_person.links }
+
   .by-card-v02#text-volunteers-desktop
     .by-card-header-v02
       .headline-1-v02= t(:volunteers_who_helped, author: @author.name, gender_letter: @author.gender_letter)
@@ -38,20 +63,6 @@
         != @credits
 :javascript
   $(document).ready(function() {
-    var genres = { #{get_genres.map { |g| "'#{g}': '#{textify_genre(g)}'" }.join(', ') } };
-    for(var genre in genres) {
-      if($('.by-icon-v02[title="' + genres[genre] + '"]').length > 0)
-        $('#genre_'+genre).show();
-    }
-    $('.genre_checkbox').on('change', function(e){
-      genre = this.id.replace('genre_', '');
-      if(this.checked) {
-        $('.by-icon-v02[title="' + genres[genre] + '"]').closest('.manifestation-node').show();
-      } else {
-        $('.by-icon-v02[title="' + genres[genre] + '"]').closest('.manifestation-node').hide();
-      }
-    });
-
     function prune_collections() {
       $('.cwrapper').each(function() {
         if($(this).hasClass('uncollected') == false) {
@@ -62,117 +73,684 @@
               $(this).children('.by-icon-v02').remove();
               $(this).prepend(manifs.find('.by-icon-v02').clone());
               manifs.hide();
+              // this volume is now shown as a single link, so there is nothing left
+              // to collapse: drop the per-volume toggle and its ARIA expanded state
+              $(this).find('.volume-collapse-toggle').remove();
+              $(this).closest('.by-card-v02[role="treeitem"]').removeAttr('aria-expanded');
             }
           }
         }
       });
     }
+    // Alphabetical Collections sort ('colls_abc'): keep the chronological
+    // one-card-per-collection layout and only reorder the top-level collection
+    // cards within each section list (ul.toclist[role=tree]) by title.
+    // Each collection is emitted as a trio [empty wrapper <li>, card <li>, <br>];
+    // the trio is moved together so per-card spacing/margins are preserved.
+    // Uncollected works have an empty .ctitle_only and always sort to the end
+    // (in practice they sit alone in their own trailing section).
+    function sortCollectionsAbc() {
+      $('#browse_mainlist ul.toclist[role="tree"]').each(function() {
+        var $list = $(this);
+        var $cards = $list.children('li.by-card-v02');
+        if($cards.length < 2) { return; }
+        var units = $cards.map(function() {
+          var $card = $(this);
+          var $unit = $card;
+          var $prev = $card.prev();
+          if($prev.is('li') && !$prev.hasClass('by-card-v02')) { $unit = $prev.add($unit); }
+          var $next = $card.next();
+          if($next.is('br')) { $unit = $unit.add($next); }
+          return { key: $card.find('.ctitle_only').first().text().trim(), nodes: $unit };
+        }).get();
+        units.sort(function(a, b) {
+          if(!a.key && !b.key) { return 0; }
+          if(!a.key) { return 1; }  // uncollected / untitled last
+          if(!b.key) { return -1; }
+          return a.key.localeCompare(b.key);
+        });
+        units.forEach(function(u) { $list.append(u.nodes); });
+      });
+    }
     $('#sort_by').change(function(){
+      var flat = isFlatSort(this.value);
+      // The flat sorts render a single #sorted_card; its presence tells us the
+      // PREVIOUS sort was also a flat one, so we can preserve the active pane
+      // filters across a flat->flat re-sort instead of resetting them.
+      var wasFlat = $('#sorted_card').length > 0;
       if(this.value == 'colls') {
         $('#browse_mainlist').html(orig_mainlist);
-        $('#genre_filtering').hide();
+      } else if(this.value == 'colls_abc') {
+        // Alphabetical Collections sort: restore the chronological
+        // one-card-per-collection layout (role + section headers), then reorder
+        // the collection cards within each section list by title. Uncollected
+        // works keep their own trailing section (sorted last).
+        $('#browse_mainlist').html(orig_mainlist);
+        sortCollectionsAbc();
       } else {
         $('.sorting_caveat').hide();
         $('.metadata-creation-date').hide();
         $('.metadata-pubdate').hide();
         $('.metadata-upload-date').hide();
-        if (this.value == 'colls_abc') {
-          $('#browse_mainlist').html(orig_mainlist);
-          $('#genre_filtering').hide();
-          nodes_to_sort = $('.cwrapper');
+        $('.metadata-source-edition').hide();
+        // de-dup: in the flat list a work appears once, without its role/collection context
+        nodes_to_sort = dedupByMid($('.manifestation-node'));
+        var sortval;
+        var sort_asc = true;
+        switch(this.value) {
+          case 'title':
+            sortval = 'data-title';
+            break;
+          case 'popularity_desc':
+            sort_asc = false;
+          case 'popularity_asc':
+            sortval = 'data-impressions';
+            break;
+          case 'pubdate_desc':
+            sort_asc = false;
+          case 'pubdate_asc':
+            sortval = 'data-pubdate';
+            $('.sorting_caveat').show();
+            $('.metadata-pubdate').show();
+            break;
+          case 'creation_date_desc':
+            sort_asc = false;
+          case 'creation_date_asc':
+            sortval = 'data-creation-date';
+            $('.sorting_caveat').show();
+            $('.metadata-creation-date').show();
+            break;
+          case 'upload_date_desc':
+            sort_asc = false;
+          case 'upload_date_asc':
+            sortval = 'data-upload-date';
+            $('.metadata-upload-date').show();
+            break;
+        }
+        if(sort_asc) {
           nodes_to_sort.sort(function(a, b) {
-            x = $(a).find('span').text();
-            y = $(b).find('span').text();
-            return x.localeCompare(y);
+            x = $(a).find('.sorting-metadata').attr(sortval);
+            y = $(b).find('.sorting-metadata').attr(sortval);
+            if(sortval == 'data-impressions') {
+              x = parseInt(x);
+              y = parseInt(y);
+            }
+            if (x == null) {
+              x = '';
+            }
+            if (y == null) {
+              y = '';
+            }
+            if(x > y) {
+              return 1;
+            } else if(x < y) {
+              return -1;
+            } else {
+              return 0;
+            }
           });
         } else {
-          $('.metadata-source-edition').hide();
-          $('#genre_filtering').show();
-          nodes_to_sort = $('.manifestation-node');
-          var sortval;
-          var sort_asc = true;
-          switch(this.value) {
-            case 'title':
-              sortval = 'data-title';
-              break;
-            case 'popularity_desc':
-              sort_asc = false;
-            case 'popularity_asc':
-              sortval = 'data-impressions';
-              break;
-            case 'pubdate_desc':
-              sort_asc = false;
-            case 'pubdate_asc':
-              sortval = 'data-pubdate';
-              $('.sorting_caveat').show();
-              $('.metadata-pubdate').show();
-              break;
-            case 'creation_date_desc':
-              sort_asc = false;
-            case 'creation_date_asc':
-              sortval = 'data-creation-date';
-              $('.sorting_caveat').show();
-              $('.metadata-creation-date').show();
-              break;
-            case 'upload_date_desc':
-              sort_asc = false;
-            case 'upload_date_asc':
-              sortval = 'data-upload-date';
-              $('.metadata-upload-date').show();
-              break;
-          }
-          if(sort_asc) {
-            nodes_to_sort.sort(function(a, b) {
-              x = $(a).find('.sorting-metadata').attr(sortval);
-              y = $(b).find('.sorting-metadata').attr(sortval);
-              if(sortval == 'data-impressions') {
-                x = parseInt(x);
-                y = parseInt(y);
-              }
-              if (x == null) {
-                x = '';
-              }
-              if (y == null) {
-                y = '';
-              }
-              if(x > y) {
-                return 1;
-              } else if(x < y) {
-                return -1;
-              } else {
-                return 0;
-              }
-            });
-          } else {
-            nodes_to_sort.sort(function(a, b) {
-              x = $(a).find('.sorting-metadata').attr(sortval);
-              y = $(b).find('.sorting-metadata').attr(sortval);
-              if(sortval == 'data-impressions') {
-                x = parseInt(x);
-                y = parseInt(y);
-              }
-              if (x == null) {
-                x = '';
-              }
-              if (y == null) {
-                y = '';
-              }
-              if(x < y) {
-                return 1;
-              } else if(x > y) {
-                return -1;
-              } else {
-                return 0;
-              }
-            });
-          }
+          nodes_to_sort.sort(function(a, b) {
+            x = $(a).find('.sorting-metadata').attr(sortval);
+            y = $(b).find('.sorting-metadata').attr(sortval);
+            if(sortval == 'data-impressions') {
+              x = parseInt(x);
+              y = parseInt(y);
+            }
+            if (x == null) {
+              x = '';
+            }
+            if (y == null) {
+              y = '';
+            }
+            if(x < y) {
+              return 1;
+            } else if(x > y) {
+              return -1;
+            } else {
+              return 0;
+            }
+          });
         }
         $('#browse_mainlist').html('<div class="by-card-v02"><div class="by-card-content-v02" id="sorted_card"></div></div>');
         $('#sorted_card').html(nodes_to_sort.detach());
       }
+      // Show the filters pane (in place of the navbar) for the flat-list sorts;
+      // restore the navbar and clear filters for the grouped views (colls/colls_abc).
+      showFilterPane(flat);
+      if(flat && window.TocFilters) {
+        // Re-sorting within flat mode keeps the currently active filters (genre,
+        // name, language, character, date range) and just reapplies them to the
+        // freshly sorted nodes; only a fresh entry into flat mode (from a grouped
+        // view) recomputes the date range and clears the filters.
+        if(wasFlat) {
+          window.TocFilters.reapply();
+        } else {
+          window.TocFilters.activate();
+        }
+      } else if(window.TocFilters) {
+        // Grouped views (colls / colls_abc) always show every genre; clear any
+        // active pane filters (which also re-syncs the genre chips via apply()).
+        window.TocFilters.reset();
+      }
+      // The list was just rebuilt (and entering flat mode shrinks it a lot), so
+      // return the reader to the top of the page as the filters do.
+      if(window.TocFilters) { window.TocFilters.scrollToTop(); }
+      // Swap the action bar: collapse/expand belong to the grouped views, the
+      // list/summaries switch to the flat list.
+      if(window.setTocBarMode) { window.setTocBarMode(flat); }
+      if(flat) {
+        // A flat->flat re-sort keeps the summaries view; the nodes (and the
+        // snippets already inside them) were only reordered.
+        TocSnippets.refresh();
+      } else {
+        // Leaving flat mode rebuilds the list from scratch, so the summaries
+        // view has nothing left to show: fall back to the plain list.
+        setTocDisplayMode(false);
+      }
+      // The rebuilt list is fully expanded again (and the flat sorts have no
+      // collapsible cards at all), so re-evaluate the collapse/expand buttons.
+      if(window.syncCollapseButtons) { window.syncCollapseButtons(); }
     });
     prune_collections();
     var orig_mainlist = $('#browse_mainlist').html();
+
+    // ---- Flat-list filters pane (bead ln5) ----
+    function isFlatSort(v) { return v !== 'colls' && v !== 'colls_abc'; }
+
+    // Keep only the first node per manifestation id (data-mid).
+    function dedupByMid($nodes) {
+      var seen = {};
+      return $nodes.filter(function() {
+        var mid = $(this).find('.sorting-metadata').attr('data-mid');
+        if (!mid) { return true; }
+        if (seen[mid]) { return false; }
+        seen[mid] = true;
+        return true;
+      });
+    }
+
+    // The pane's visibility is a class, not an inline display, so that the
+    // mobile rules can keep it collapsed until #mobile_filter_btn opens it.
+    function showFilterPane(show) {
+      var $navs = $('.author-side-nav-col .book-nav-full, .author-side-nav-col .book-nav-thin');
+      $('#toc_filters_pane').toggleClass('pane-visible', show);
+      if (show) {
+        $navs.hide();
+      } else {
+        // Clear inline display so breakpoint CSS controls which navbar is visible
+        $navs.css('display', '');
+        // Leaving filter mode: the mobile sheet has nothing left to show.
+        if (typeof closeMobileFilters === 'function') { closeMobileFilters(); }
+      }
+    }
+
+    window.TocFilters = (function() {
+      var NAME_DEBOUNCE = 400;
+      var debounceTimer = null;
+      var dateField = 'pubyear';      // 'pubyear' | 'creation-year' | 'upload-year'
+      var minYear = null, maxYear = null, fromYear = null, toYear = null;
+      var dateActive = false;
+
+      function $nodes() { return $('#sorted_card .manifestation-node'); }
+
+      function nodeData(node) {
+        var $m = $(node).find('.sorting-metadata');
+        return {
+          mid: $m.attr('data-mid'),
+          title: ($(node).find('.mtitle').text() || '').toLowerCase(),
+          genre: $m.attr('data-genre'),
+          lang: $m.attr('data-orig-lang'),
+          translated: $m.attr('data-translated') === '1',
+          featured: $m.attr('data-featured') === '1',
+          recommended: $m.attr('data-recommended') === '1',
+          aboutness: $m.attr('data-aboutness') === '1',
+          tagging: $m.attr('data-tagging') === '1',
+          'pubyear': parseInt($m.attr('data-pubyear'), 10),
+          'creation-year': parseInt($m.attr('data-creation-year'), 10),
+          'upload-year': parseInt($m.attr('data-upload-year'), 10)
+        };
+      }
+
+      function readState() {
+        return {
+          name: ($('#toc-filter-name').val() || '').trim().toLowerCase(),
+          genres: $('.toc-filter-genre:checked').map(function() { return this.value; }).get(),
+          langs: $('.toc-filter-lang:checked').map(function() { return this.value; }).get(),
+          translatedAny: $('#toc-filter-translated').is(':checked'),
+          chars: $('.toc-filter-char:checked').map(function() { return this.value; }).get(),
+          dateField: dateField,
+          fromYear: dateActive ? fromYear : null,
+          toYear: dateActive ? toYear : null
+        };
+      }
+
+      function hasProps(d) { return d.featured || d.recommended || d.aboutness || d.tagging; }
+
+      // Is any section OTHER than genre narrowing the list? The author-card genre
+      // chips show a per-genre count of the author's whole oeuvre, so once another
+      // filter is in effect they no longer describe what the list is showing, and
+      // the card hides them (the pane's own genre facet, with live faceted counts,
+      // takes over). Genre-only filtering leaves the chips up, so they stay usable
+      // as toggles.
+      function otherSectionsActive(s) {
+        return !!(s.name || s.langs.length || s.translatedAny || s.chars.length ||
+                  s.fromYear != null || s.toYear != null);
+      }
+
+      // Does a node match every active filter section, optionally excluding one section.
+      function matches(d, s, exclude) {
+        if (exclude !== 'name' && s.name && d.title.indexOf(s.name) === -1) { return false; }
+        if (exclude !== 'genre' && s.genres.length && s.genres.indexOf(d.genre) === -1) { return false; }
+        if (exclude !== 'lang') {
+          if (s.langs.length || s.translatedAny) {
+            var langOk = s.langs.indexOf(d.lang) !== -1 || (s.translatedAny && d.translated);
+            if (!langOk) { return false; }
+          }
+        }
+        if (exclude !== 'char' && s.chars.length) {
+          var charOk = false;
+          for (var i = 0; i < s.chars.length; i++) {
+            if (s.chars[i] === 'curatorial' && hasProps(d)) { charOk = true; }
+            if (s.chars[i] === 'recommended' && d.recommended) { charOk = true; }
+            if (s.chars[i] === 'noprops' && !hasProps(d)) { charOk = true; }
+          }
+          if (!charOk) { return false; }
+        }
+        if (exclude !== 'date' && (s.fromYear != null || s.toYear != null)) {
+          var y = d[s.dateField];
+          if (isNaN(y)) { return false; }
+          if (s.fromYear != null && y < s.fromYear) { return false; }
+          if (s.toYear != null && y > s.toYear) { return false; }
+        }
+        return true;
+      }
+
+      // Whether a node matches a specific facet option (used for counts).
+      function optionMatches(section, value, d) {
+        switch (section) {
+          case 'genre': return d.genre === value;
+          case 'lang':
+            return value === 'translated' ? d.translated : d.lang === value;
+          case 'char':
+            if (value === 'curatorial') { return hasProps(d); }
+            if (value === 'recommended') { return d.recommended; }
+            if (value === 'noprops') { return !hasProps(d); }
+        }
+        return true;
+      }
+
+      // Faceted counts: for each option, count distinct works passing all OTHER sections.
+      function updateCounts(state, all) {
+        $('.toc-facet-count').each(function() {
+          var section = $(this).attr('data-section');
+          var value = $(this).attr('data-value');
+          var seen = {}, count = 0;
+          for (var i = 0; i < all.length; i++) {
+            var d = all[i];
+            if (!matches(d, state, section)) { continue; }
+            if (!optionMatches(section, value, d)) { continue; }
+            if (d.mid) { if (seen[d.mid]) { continue; } seen[d.mid] = true; }
+            count++;
+          }
+          $(this).text(' (' + count + ')');
+        });
+      }
+
+      function apply() {
+        var state = readState();
+        var all = [];
+        $nodes().each(function() {
+          var d = nodeData(this);
+          all.push(d);
+          $(this).toggle(matches(d, state, null));
+        });
+        updateCounts(state, all);
+        // Keep the author-card genre chips in sync with the pane's genre facet.
+        if (window.syncGenreChips) { window.syncGenreChips(otherSectionsActive(state)); }
+      }
+
+      // A filter interaction can shrink the flat list dramatically, leaving a
+      // reader who had scrolled down facing an apparently empty main area (the
+      // long side column keeps the page tall). Go back to the top of the page
+      // so the remaining results are what the reader sees.
+      function scrollToTop() {
+        window.scrollTo(0, 0);
+      }
+
+      // apply() triggered by a user filter interaction: re-filter, then reveal results.
+      function applyFromUser() { apply(); scrollToTop(); }
+
+      // ---- date histogram + range slider ----
+      function positionSlider() {
+        if (minYear == null || maxYear == null || maxYear === minYear) {
+          $('#toc-date-range-inside').css({ left: '0%', width: '100%' });
+          return;
+        }
+        var span = maxYear - minYear;
+        var lp = ((fromYear - minYear) / span) * 100;
+        var rp = ((toYear - minYear) / span) * 100;
+        $('#toc-date-range-inside').css({ left: lp + '%', width: (rp - lp) + '%' });
+      }
+
+      function renderHistogram(state) {
+        var $area = $('#toc-date-histogram').empty();
+        if (minYear == null || maxYear == null) { return; }
+        var buckets = {}, maxCount = 0;
+        $nodes().each(function() {
+          var d = nodeData(this);
+          // histogram reflects the set filtered by everything EXCEPT the date range
+          if (!matches(d, state, 'date')) { return; }
+          var y = d[dateField];
+          if (isNaN(y)) { return; }
+          buckets[y] = (buckets[y] || 0) + 1;
+          if (buckets[y] > maxCount) { maxCount = buckets[y]; }
+        });
+        for (var y = minYear; y <= maxYear; y++) {
+          var c = buckets[y] || 0;
+          var h = maxCount > 0 ? Math.round((c / maxCount) * 100) : 0;
+          $('<div class="toc-hist-bar"></div>')
+            .css('height', h + '%')
+            .attr('title', y + ': ' + c)
+            .appendTo($area);
+        }
+      }
+
+      function computeRange() {
+        minYear = null; maxYear = null;
+        $nodes().each(function() {
+          var y = nodeData(this)[dateField];
+          if (isNaN(y)) { return; }
+          if (minYear == null || y < minYear) { minYear = y; }
+          if (maxYear == null || y > maxYear) { maxYear = y; }
+        });
+        fromYear = minYear;
+        toYear = maxYear;
+        dateActive = false;
+        $('#toc-date-from').val('');
+        $('#toc-date-to').val('');
+      }
+
+      function refreshDateWidget() {
+        computeRange();
+        positionSlider();
+        renderHistogram(readState());
+      }
+
+      function setRange(from, to) {
+        if (minYear == null) { return; }
+        fromYear = Math.max(minYear, Math.min(from, to));
+        toYear = Math.min(maxYear, Math.max(from, to));
+        dateActive = (fromYear > minYear) || (toYear < maxYear);
+        $('#toc-date-from').val(fromYear);
+        $('#toc-date-to').val(toYear);
+        positionSlider();
+        apply();
+      }
+
+      function yearFromEvent(e, $track) {
+        var left = $track.offset().left;
+        var width = $track.width();
+        var px = e.pageX != null ? e.pageX : e.originalEvent.touches[0].pageX;
+        var ratio = Math.max(0, Math.min(1, (px - left) / width));
+        return Math.round(minYear + ratio * (maxYear - minYear));
+      }
+
+      function bindSlider() {
+        var $track = $('#toc-date-range');
+        var dragging = null;
+        function onMove(e) {
+          if (!dragging || minYear == null || maxYear === minYear) { return; }
+          var y = yearFromEvent(e, $track);
+          if (dragging === 'left') { setRange(y, toYear); }
+          else { setRange(fromYear, y); }
+          e.preventDefault();
+        }
+        $('#toc-date-handle-left').on('mousedown touchstart', function(e) { dragging = 'left'; e.preventDefault(); });
+        $('#toc-date-handle-right').on('mousedown touchstart', function(e) { dragging = 'right'; e.preventDefault(); });
+        $(document).on('mousemove touchmove', onMove);
+        $(document).on('mouseup touchend', function() {
+          if (!dragging) { return; }
+          dragging = null;
+          // Only once the drag ends, so the list doesn't jump while dragging.
+          scrollToTop();
+        });
+
+        $('#toc-date-from, #toc-date-to').on('change', function() {
+          var f = parseInt($('#toc-date-from').val(), 10);
+          var t = parseInt($('#toc-date-to').val(), 10);
+          if (isNaN(f)) { f = minYear; }
+          if (isNaN(t)) { t = maxYear; }
+          setRange(f, t);
+          scrollToTop();
+        });
+
+        $('.toc-date-type').on('click', function() {
+          $('.toc-date-type').removeClass('active');
+          $(this).addClass('active');
+          dateField = $(this).attr('data-datefield');
+          refreshDateWidget();
+          applyFromUser();
+        });
+      }
+
+      function bindInputs() {
+        $('#toc-filter-name').on('input', function() {
+          if (debounceTimer) { window.clearTimeout(debounceTimer); }
+          debounceTimer = window.setTimeout(applyFromUser, NAME_DEBOUNCE);
+        });
+        $('#toc-filter-name-clear').on('click', function(e) {
+          e.preventDefault();
+          $('#toc-filter-name').val('');
+          applyFromUser();
+        });
+        $('#toc_filters_pane').on('change', 'input[type=checkbox]', applyFromUser);
+        $('#toc-filter-reset').on('click', function(e) { e.preventDefault(); reset(); scrollToTop(); });
+      }
+
+      function clearInputs() {
+        $('#toc_filters_pane input[type=checkbox]').prop('checked', false);
+        $('#toc-filter-name').val('');
+        dateField = 'pubyear';
+        $('.toc-date-type').removeClass('active');
+        $('.toc-date-type[data-datefield="pubyear"]').addClass('active');
+      }
+
+      function reset() {
+        clearInputs();
+        refreshDateWidget();
+        apply();
+      }
+
+      function activate() {
+        refreshDateWidget();
+        apply();
+      }
+
+      // Reapply the CURRENT filter state (including the date range) to a freshly
+      // re-sorted node set, without recomputing/resetting the date widget. Used
+      // when re-sorting while already in flat mode, to preserve active filters.
+      function reapply() {
+        apply();
+      }
+
+      return {
+        init: function() { bindInputs(); bindSlider(); },
+        activate: activate,
+        reapply: reapply,
+        reset: reset,
+        scrollToTop: scrollToTop
+      };
+    })();
+    window.TocFilters.init();
+
+    // ---- Summaries view of the flat list (bead r81) ----
+    // In the flat list each work can also show an excerpt of its text, in the
+    // same card the dictionary list uses for entry summaries. An author can
+    // have hundreds of works, so the excerpts are fetched from the server in
+    // batches, and only for the rows that actually scroll into view.
+    var TocSnippets = (function() {
+      var BATCH_SIZE = 25;      // must not exceed the server's per-request cap
+      var BATCH_DEBOUNCE = 60;  // ms to collect ids scrolled into view
+      var MASK_WATCHDOG = 500;  // ms to wait for the observer to hand us its rows
+      var enabled = false;
+      var observer = null;
+      var pending = [];
+      var timer = null;
+      var inflight = 0;         // snippet requests currently in the air
+      var masked = false;       // is the loading mask up?
+      var eager = false;        // are we in a burst the reader is waiting on?
+
+      function $rows() { return $('#sorted_card .manifestation-node'); }
+      function midOf(node) { return $(node).find('.sorting-metadata').attr('data-mid'); }
+
+      // The card's contents (metadata line, excerpt, read-more) come rendered from the server;
+      // all that is left to do here is wrap them and hide the read-more when it is pointless.
+      function render(mid, html) {
+        var $row = $rows().filter(function() { return midOf(this) === mid; }).first();
+        if ($row.length === 0 || $row.children('.toc-snippet').length > 0) { return; }
+        var $card = $('<div class="value-summary-card-v02 toc-snippet"></div>').html(html).appendTo($row);
+        // Only offer "read more" when the excerpt is actually cut off.
+        try {
+          if (is_clamped('toc_snippet_text_' + mid)) { $card.children('.summary-read-more').show(); }
+        } catch (e) {}
+      }
+
+      // The list is unpaginated, so the first batch of excerpts can keep a reader of
+      // a prolific author waiting a couple of seconds. Mask the page meanwhile, with
+      // the same spinner the /works filters use. Only the bursts the reader asked for
+      // (entering the summaries view, re-sorting in it) raise the mask -- the batches
+      // fetched later, while scrolling, must not block the very scrolling that
+      // triggered them.
+      function maskUp() {
+        if (masked) { return; }
+        masked = true;
+        startModal('spinnerdiv');
+      }
+
+      function maskDown() {
+        if (!masked) { return; }
+        masked = false;
+        stopModal('spinnerdiv');
+      }
+
+      function maskDownIfIdle() {
+        if (inflight === 0 && pending.length === 0 && timer === null) { maskDown(); }
+      }
+
+      function flush() {
+        timer = null;
+        while (pending.length > 0) {
+          var chunk = pending.splice(0, BATCH_SIZE);
+          var params = { ids: chunk.join(','), authority_id: #{@author.id} };
+          inflight++;
+          $.getJSON("#{manifestation_snippets_path}", params, function(data) {
+            if (!enabled) { return; } // reader switched back to the plain list meanwhile
+            $.each(data, function(mid, html) { render(mid, html); });
+          }).always(function() {
+            // always, not done: a failed batch must not leave the page masked.
+            inflight--;
+            maskDownIfIdle();
+          });
+        }
+      }
+
+      function request(mid) {
+        pending.push(mid);
+        if (eager) { maskUp(); }
+        if (timer === null) { timer = window.setTimeout(flush, BATCH_DEBOUNCE); }
+      }
+
+      // Rows already carrying (or awaiting) a snippet are skipped, so this is
+      // safe to re-run after a re-sort or a filter change.
+      function observe() {
+        $rows().each(function() {
+          var mid = midOf(this);
+          if (!mid || $(this).attr('data-snippet-requested') === '1') { return; }
+          if (observer) {
+            observer.observe(this);
+          } else {
+            // No IntersectionObserver: fall back to fetching the visible rows.
+            $(this).attr('data-snippet-requested', '1');
+            request(mid);
+          }
+        });
+      }
+
+      function onIntersect(entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (!entries[i].isIntersecting) { continue; }
+          var row = entries[i].target;
+          observer.unobserve(row);
+          if ($(row).attr('data-snippet-requested') === '1') { continue; }
+          $(row).attr('data-snippet-requested', '1');
+          request(midOf(row));
+        }
+      }
+
+      // Start observing on the reader's behalf: whatever the observer asks for over
+      // the next moment is what the reader is waiting on, so mask the page for it.
+      // The observer hands us its rows asynchronously, hence the window rather than
+      // a straight flag around observe().
+      function observeEagerly() {
+        eager = true;
+        observe();
+        window.setTimeout(function() {
+          eager = false;
+          maskDownIfIdle(); // nothing was queued after all
+        }, MASK_WATCHDOG);
+      }
+
+      return {
+        enable: function() {
+          enabled = true;
+          if (observer === null && window.IntersectionObserver) {
+            // A screenful of margin so the next rows are ready before they show.
+            observer = new IntersectionObserver(onIntersect, { rootMargin: '400px 0px' });
+          }
+          observeEagerly();
+        },
+        disable: function() {
+          enabled = false;
+          pending = [];
+          eager = false;
+          maskDown(); // the reader left the summaries view; nothing left to wait for
+          if (observer) { observer.disconnect(); }
+          $('#browse_mainlist .toc-snippet').remove();
+          $('#browse_mainlist .manifestation-node').removeAttr('data-snippet-requested');
+        },
+        refresh: function() { if (enabled) { observeEagerly(); } }
+      };
+    })();
+
+    function setTocDisplayMode(snippets) {
+      $('#tocmode_snippets').toggleClass('active', snippets);
+      $('#tocmode_list').toggleClass('active', !snippets);
+      if (snippets) { TocSnippets.enable(); } else { TocSnippets.disable(); }
+    }
+
+    $('#tocmode_list').click(function(e) { e.preventDefault(); setTocDisplayMode(false); });
+    $('#tocmode_snippets').click(function(e) { e.preventDefault(); setTocDisplayMode(true); });
+
+    // Expand a clamped excerpt; once it is expanded as far as the card goes,
+    // the link takes the reader to the work itself.
+    $('#browse_mainlist').on('click', '.toc-snippet .summary-read-more', function() {
+      var $card = $(this).closest('.toc-snippet');
+      var $text = $card.children('.summary-text').first();
+      if ($text.length > 0) {
+        $text.removeClass('summary-text').addClass('summary-text-more-lines');
+        try {
+          if (is_clamped($text.attr('id'))) {
+            $(this).find('span').text(#{I18n.t(:to_the_full_work).to_json});
+            return;
+          }
+        } catch (e) {}
+        $(this).hide();
+      } else {
+        var href = $(this).closest('.manifestation-node').find('a[href]').first().attr('href');
+        if (href) { window.location.href = href; }
+      }
+    });
 
     $(document).on('show.bs.collapse', '[id^="paratext_collapse_"]', function() {
       $('[aria-controls="' + this.id + '"]').text(#{I18n.t(:show_less).to_json});

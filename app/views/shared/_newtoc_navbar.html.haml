@@ -1,33 +1,218 @@
-- genres = get_genres + ['translations']
+- top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
 - first = true
-%nav.navbar#genrenav
-  %ul.nav.navbar-nav.flex-column.by-card-v02#genre-nav{'aria-orientation' => 'vertical'}
-    - genres.each do |g|
-      - if genres_present.include?(g)
-        %li.nav-item
-          %a{'class' => 'nav-link '+(first ? 'active' : ''), id: g+'_button', href: "##{g}_g", 'aria-controls' => "##{g}_g", 'aria-selected' => (first ? 'true' : 'false')}
-            .side-menu-icon= glyph_for_genre(g)
-            .side-menu-name= textify_genre(g)
+
+-# Calculate visibility for all roles upfront to share between full and thin navbars
+:ruby
+  max_expanded_works = 20
+  sidebar_collection_types = %w(volume_series volume periodical)
+
+  visible_roles = []
+  roles_data = {}
+
+  InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+    role_counts = @toc_counts ? @toc_counts[role] : nil
+    next unless role_counts && role_counts[:total] > 0
+
+    all_collection_level_nodes = top_nodes.select { |node| node.visible?(role, authority_id, true) }
+    involved_on_collection_level = all_collection_level_nodes
+                                   .select { |node| sidebar_collection_types.include?(node.collection.collection_type) }
+                                   .sort_by(&:sort_term)
+    filtered_collection_level_count = involved_on_collection_level.sum do |node|
+      node.count_manifestations(role, authority_id, true)
+    end
+    all_work_level_nodes = top_nodes.select { |node| node.visible?(role, authority_id, false) }
+                                    .sort_by(&:sort_term)
+    uncollected_node = all_work_level_nodes.detect { |node| node.collection.uncollected? }
+    non_uncollected = all_work_level_nodes - [uncollected_node].compact
+    involved_on_work_level = non_uncollected.select do |node|
+      sidebar_collection_types.include?(node.collection.collection_type)
+    end
+    filtered_work_level_count = involved_on_work_level.sum do |node|
+      node.count_manifestations(role, authority_id, false)
+    end
+
+    # Determine the first visible scroll target for this role (for thin navbar)
+    first_scroll_target = if role_counts[:collection_level] > 0
+                           "#works-#{role}-collection-level"
+                          elsif role_counts[:work_level] > 0
+                           "#works-#{role}-work-level"
+                          elsif role_counts[:uncollected] > 0
+                           "#works-#{role}-uncollected"
+                          end
+
+    visible_roles << role
+    roles_data[role] = {
+      counts: role_counts,
+      involved_on_collection_level: involved_on_collection_level,
+      filtered_collection_level_count: filtered_collection_level_count,
+      involved_on_work_level: involved_on_work_level,
+      filtered_work_level_count: filtered_work_level_count,
+      uncollected_node: uncollected_node,
+      first_scroll_target: first_scroll_target
+    }
+  end
+
+  total_works = @author.published_manifestations.count
+  start_expanded = total_works <= max_expanded_works
+
+%nav.book-nav-full.by-card-v02
+  .side-nav-in-page
+    = t(:navigation_in_page)
+    %a.horizontal-collapse-expand{ href: '#', 'aria-label': t(:expand_menu) }
+  - visible_roles.each do |role|
+    - data = roles_data[role]
+    - role_counts = data[:counts]
+    - involved_on_collection_level = data[:involved_on_collection_level]
+    - involved_on_work_level = data[:involved_on_work_level]
+    - uncollected_node = data[:uncollected_node]
+    - ul_class = start_expanded ? 'collapse navbar-nav show' : 'collapse navbar-nav'
+    - filtered_collection_level_count = data[:filtered_collection_level_count]
+    - filtered_work_level_count = data[:filtered_work_level_count]
+
+    %div{ class: first ? "nav-book-group selected" : "nav-book-group" }
+      .headline-2-v02
+        = t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
+        - if role_counts[:total] > 0
+          = " (#{role_counts[:total]})"
+      - if involved_on_collection_level.present?
+        %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
+          .truncate{'data-bs-toggle' => 'collapse', 'data-bs-target' => "#collection-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-collection-level"}
+            = t('toc_by_role.involved_on_collection_level', gender_letter: @author.gender_letter)
+            %span.count-badge= " (#{filtered_collection_level_count})"
+            %span.collapse-arrow ↓
+        %ul{ id: "collection-#{role}-collapse", class: ul_class, 'aria-label' => 'file-navigator', role: 'tree' }
+          = render partial: 'shared/navbar/toc_node', collection: involved_on_collection_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-collection", uncollected: false, involved_on_collection_level: true }
+          %li.section-collapse-btn{ role: 'none' }
+            %button.section-collapse-link{ type: 'button', 'aria-label': t(:collapse_section) }
+              ▲
         - first = false
-    /- if curated_content
-    %li.by-side-menu-seperator
-    %li.nav-item
-      %a.nav-link.nav-link-edit{id: 'curated_button', href: "#curated_g"}
-        .side-menu-icon.icon-byadditionals
+      - if involved_on_work_level.present?
+        %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
+          .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level" }
+            = t('toc_by_role.involved_on_work_level')
+            %span.count-badge= " (#{filtered_work_level_count})"
+            %span.collapse-arrow ↓
+        %ul{ id: "work-#{role}-collapse", class: ul_class, 'aria-label' => 'file-navigator', role: 'tree' }
+          = render partial: 'shared/navbar/toc_node', collection: involved_on_work_level, locals: { role: role, authority_id: authority_id, nonce: "#{role}-work", uncollected: false, involved_on_collection_level: false }
+          %li.section-collapse-btn{ role: 'none' }
+            %button.section-collapse-link{ type: 'button', 'aria-label': t(:collapse_section) }
+              ▲
+        - first = false
+      - if role_counts[:uncollected] > 0
+        %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
+          .truncate{ 'data-scroll-target' => "#works-#{role}-uncollected" }
+            = t('toc_by_role.uncollected_works')
+            %span.count-badge= " (#{role_counts[:uncollected]})"
+        %ul.navbar-nav{ 'aria-label' => 'file-navigator', role: 'tree' }
+          = render partial: 'shared/navbar/toc_node', collection: [uncollected_node], locals: { role: role, authority_id: authority_id, uncollected: false, involved_on_collection_level: false }
+        - first = false
+
+  .nav-book-group.editorial-nav
+    .headline-2-v02= t(:additional_content)
+    .book-type
+      .truncate= t(:latest_updates)
+    .book-type
+      .truncate= t(:works_about_this_author, gender_suffix: @author.gender == 'female' ? '/ת' : '')
+    .book-type
+      .truncate= t(:external_links)
+    .book-type
+      .truncate= t(:recommendations_for_work)
+  - if @lexicon_entry.present?
+    .nav-book-group.lexicon-background-color{ 'data-scroll-target' => '#lexicon-bio' }
+      .headline-2-v02= t(:lexicon_content)
+      .book-type.pointer
+        .truncate{ 'data-scroll-target' => '#lexicon-bio' }= t('lexicon.verification.sections.biography')
+      .book-type.pointer
+        .truncate{ 'data-scroll-target' => '#lexicon-works' }= t('lexicon.verification.sections.works_section')
+      .book-type.pointer
+        .truncate{ 'data-scroll-target' => '#lexicon-about' }= t('activerecord.attributes.lex_person.about', gender_suffix: @author.person.female? ? 'ת' : '', gender_letter: @author.gender_letter)
+      .book-type.pointer
+        .truncate{ 'data-scroll-target' => '#lexicon-links' }= t('lexicon.verification.sections.links_section')
+
+%nav.book-nav-thin.by-card-v02
+  .side-nav-in-page
+    %a.horizontal-collapse-expand{ href: '#', 'aria-label': t(:expand_menu) }
+  - visible_roles.each do |role|
+    - scroll_target = roles_data[role][:first_scroll_target]
+    .nav-books.pointer{ 'data-scroll-target' => scroll_target }
+      .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
+  .nav-books.pointer{ 'data-scroll-target' => '#author-whats-new-bg' }
+    .headline-2-v02= t(:additional_content)
+  - if @lexicon_entry.present?
+    .nav-books.lexicon-background-color.pointer{ 'data-scroll-target' => '#lexicon-bio' }
+      .headline-2-v02= t(:lexicon_content)
+
+.mobile-navbar-backdrop{ role: 'button', tabindex: '0', 'aria-label': t(:close_menu) }
+
 :javascript
   $(document).ready(function() {
-    $(window).scroll(function() {
-      var scroll = $(window).scrollTop();
-      if(scroll <= 200) {
-        $('.nav-link').first().addClass('active');
+    // Shared function to collapse the mobile navbar
+    function collapseNavbar() {
+      $('.book-nav-full').removeClass('mobile-expanded');
+      $('.book-nav-thin').show();
+      $('.mobile-navbar-backdrop').removeClass('active');
+    }
+
+    // Initialize arrows based on current collapse state
+    $('.collapse.navbar-nav').each(function() {
+      var targetId = $(this).attr('id');
+      var isExpanded = $(this).hasClass('show');
+      $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text(isExpanded ? '↑' : '↓');
+    });
+
+    // Handle clicks on collapsible sections
+    // Note: While Bootstrap can auto-handle via data-bs-toggle, we need to manually
+    // trigger it here to ensure our scroll timing works correctly with the collapse events
+    $('.book-type .truncate[data-bs-toggle="collapse"]').click(function(e) {
+      var $trigger = $(this);
+      var $collapseTarget = $($trigger.data('bs-target'));
+      var scrollTarget = $trigger.data('scroll-target');
+
+      // Remove .selected from all .book-type elements and add to the clicked one
+      $('.book-type').removeClass('selected');
+      $trigger.closest('.book-type').addClass('selected');
+
+      // Set up one-time listener for scroll after collapse animation
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        $collapseTarget.one('shown.bs.collapse hidden.bs.collapse', function() {
+          var headerHeight = $('#header-author').outerHeight() || 0;
+          var offset = $(scrollTarget).offset().top - headerHeight - 120;
+          $('html, body').animate({
+            scrollTop: offset
+          }, 500);
+        });
+      }
+
+      // Manually trigger the collapse
+      // (Prevents Bootstrap's automatic handler from also triggering - avoids double-toggle)
+      e.preventDefault();
+      $collapseTarget.collapse('toggle');
+    });
+
+    // Handle clicks on sections without collapse targets (just scroll immediately)
+    $('.book-type .truncate').not('[data-bs-toggle="collapse"]').click(function(e) {
+      var scrollTarget = $(this).data('scroll-target');
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        var headerHeight = $('#header-author').outerHeight() || 0;
+        var offset = $(scrollTarget).offset().top - headerHeight - 120;
+        $('html, body').animate({
+          scrollTop: offset
+        }, 500);
       }
     });
-    //$('.nav-item').first().addClass('current-menu-item');
-    // ensure smooth scrollTo behavior
-    //$('.g_anch').css('top', -($('#header').height()+15));
-   //$('.g_anch').css('padding-top', $('#header').height());
-    //$('.g_anch').css('margin-top', -$('#header').height());
-    
+
+    // Handle collection anchor links smooth scrolling
+    $('.collection-anchor-link').click(function(e) {
+      e.preventDefault();
+      var target = $(this).attr('href');
+      if ($(target).length > 0) {
+        var headerHeight = $('#header-author').outerHeight() || 0;
+        var offset = $(target).offset().top - headerHeight - 150;
+        $('html, body').animate({
+          scrollTop: offset
+        }, 500);
+      }
+    });
     $('.nav-link').click(function(e) {
       e.preventDefault();
       //$('.nav-item').removeClass('current-menu-item');
@@ -36,5 +221,95 @@
       $('html, body').animate({
         scrollTop: $('a[name='+anchor+']').offset().top - $('#header').height() -65
       }, 800);
-    }); 
+    });
+
+    // Toggle collapse arrows
+    $('.collapse.navbar-nav').on('show.bs.collapse', function() {
+      var targetId = $(this).attr('id');
+      $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text('↑');
+    });
+
+    $('.collapse.navbar-nav').on('hide.bs.collapse', function() {
+      var targetId = $(this).attr('id');
+      $('.truncate[data-bs-target="#' + targetId + '"] .collapse-arrow').text('↓');
+    });
+
+    // Handle clicks on thin navbar items (mobile)
+    $('.book-nav-thin .nav-books[data-scroll-target]').click(function(e) {
+      var scrollTarget = $(this).data('scroll-target');
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        var headerHeight = $('#header-author').outerHeight() || 0;
+        var offset = $(scrollTarget).offset().top - headerHeight - 120;
+        $('html, body').animate({
+          scrollTop: offset
+        }, 500);
+      }
+    });
+
+    // Handle mobile navbar expansion toggle
+    $('.horizontal-collapse-expand').click(function(e) {
+      e.preventDefault();
+      // Find the thin and full navbars (they are siblings)
+      var $thinNav = $(this).closest('.book-nav-thin');
+      var $fullNav = $thinNav.length ? $thinNav.siblings('.book-nav-full') : $(this).closest('.book-nav-full');
+      var $backdrop = $('.mobile-navbar-backdrop');
+
+      // Toggle the expanded state
+      if ($fullNav.hasClass('mobile-expanded')) {
+        collapseNavbar();
+      } else {
+        // Currently collapsed, expand it
+        $('.book-nav-thin').hide();
+        $fullNav.addClass('mobile-expanded');
+        $backdrop.addClass('active');
+      }
+    });
+
+    // Handle clicking on backdrop to close navbar
+    $('.mobile-navbar-backdrop').click(function() {
+      collapseNavbar();
+    });
+
+    // Handle keyboard navigation - Escape key to close navbar
+    $(document).on('keydown', function(e) {
+      if (e.key === 'Escape' && $('.book-nav-full').hasClass('mobile-expanded')) {
+        collapseNavbar();
+      }
+    });
+
+    // Handle bottom-of-section collapse buttons
+    $('.section-collapse-link').click(function(e) {
+      e.preventDefault();
+      var $collapseTarget = $(this).closest('.collapse.navbar-nav');
+      var targetId = '#' + $collapseTarget.attr('id');
+      var $trigger = $('.truncate[data-bs-target="' + targetId + '"]');
+      var scrollTarget = $trigger.data('scroll-target');
+
+      $('.book-type').removeClass('selected');
+
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        $collapseTarget.one('hidden.bs.collapse', function() {
+          var headerHeight = $('#header-author').outerHeight() || 0;
+          var offset = $(scrollTarget).offset().top - headerHeight - 120;
+          $('html, body').animate({ scrollTop: offset }, 500);
+        });
+      }
+
+      $collapseTarget.collapse('hide');
+    });
+
+    // Handle clicks on full navbar links in mobile expanded mode
+    // When a link is clicked, collapse back to thin navbar and scroll
+    // But exclude collapsible triggers (data-bs-toggle) which should expand/collapse sections
+    var mobileExpandedSelectors = [
+      '.book-nav-full .book-type[data-scroll-target]:not([data-bs-toggle])',
+      '.book-nav-full .truncate[data-scroll-target]:not([data-bs-toggle])',
+      '.book-nav-full .nav-link'
+    ].join(', ');
+    $(mobileExpandedSelectors).click(function() {
+      // Check if we're in mobile expanded mode
+      if ($('.book-nav-full').hasClass('mobile-expanded')) {
+        collapseNavbar();
+      }
+    });
   });

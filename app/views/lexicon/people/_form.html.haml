@@ -1,0 +1,25 @@
+- url = @lex_person.new_record? ? lexicon_people_path : lexicon_person_path(@lex_person)
+= simple_form_for @lex_person, url: url, remote: true do |f|
+  = f.simple_fields_for :entry do |ef|
+    = ef.input :title
+    = ef.input :other_designation
+    = ef.input :date_of_manual_update
+    = ef.input :status do
+      .form-control
+        %span.badge.badge-primary= LexEntry.human_enum_name(:status, @lex_person.entry.status)
+  = f.input :aliases, as: :text
+  = f.input :authority,
+            input_html: { value: @lex_person.authority&.name },
+            url: autocomplete_authority_name_and_aliases_path,
+            as: :autocomplete,
+            id_element: '#lex_person_authority_id',
+            class: 'form-control'
+  = f.hidden_field :authority_id
+
+  = f.input :copyrighted, as: :boolean
+  - gender_options = LexPerson.genders.keys.map { |k| [LexPerson.human_enum_name(:gender, k), k] }
+  = f.input :gender, as: :select, collection: gender_options, include_blank: false
+  = f.input :birthdate
+  = f.input :deathdate
+  = f.input :bio, as: :text, input_html: { rows: 20 }
+  = f.button :submit, class: 'btn btn-primary'

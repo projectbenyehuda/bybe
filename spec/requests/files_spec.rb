@@ -20,6 +20,54 @@ describe '/files' do
       end
     end
 
+    context 'when entry is a LexEntry' do
+      let(:record_type) { 'lex' }
+      let(:record) do
+        create(:lex_entry).tap do |entry|
+          entry.attachments.attach(io: StringIO.new('First'), filename: 'file_1.txt', content_type: 'text/plain')
+          entry.attachments.attach(io: StringIO.new('Second'), filename: 'file_2', content_type: 'text/plain')
+        end
+      end
+      let(:record_id) { record.id }
+
+      context 'when wrong entry_id is given' do
+        let(:record_id) { record.id + 1 }
+        let(:filename) { 'file_1.txt' }
+
+        it 'fails with Not Found status' do
+          expect(call).to eq(404)
+          expect(response.body).to eq("File not found: #{filename}")
+        end
+      end
+
+      context 'when wrong filename is given' do
+        let(:filename) { 'missing.txt' }
+
+        it 'fails with Not Found status' do
+          expect(call).to eq(404)
+          expect(response.body).to eq('File not found: missing.txt')
+        end
+      end
+
+      context 'when correct file is requested' do
+        let(:filename) { 'file_1.txt' }
+
+        it 'redirects to the file URL' do
+          expect(call).to eq(302)
+          expect(response.location).to include('file_1.txt')
+        end
+      end
+
+      context 'when file without extension is requested' do
+        let(:filename) { 'file_2' }
+
+        it 'redirects to the file URL' do
+          expect(call).to eq(302)
+          expect(response.location).to include('file_2')
+        end
+      end
+    end
+
     context 'when record is a Manifestation' do
       let(:record) do
         create(:manifestation).tap do |record|

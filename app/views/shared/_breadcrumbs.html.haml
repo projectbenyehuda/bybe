@@ -10,18 +10,16 @@
       authority = e.translators.count > 0 ? e.translators[0] : w.authors[0] # TODO: handle multiple authors
     .breadcrumbs-text
       - unless authority.nil?
-        = link_to authority.name, authority_path(id: authority.id)
+        = authority_link(authority)
       - else
         = '?'
-    .breadcrumbs-arrow= 1
-    - genre = textify_genre(w.genre)
-    - unless authority.nil?
+    - Array(@breadcrumb_collections).each do |coll|
+      .breadcrumbs-arrow= 1
       .breadcrumbs-text
-        = link_to e.translation ? "#{t(:translation)} #{genre}" : genre,
-                  controller: :authors, action: :toc, id: authority.id, genre: w.genre
-      -#.breadcrumbs-arrow= 1
-      -#.breadcrumbs-text
-      -#  %b= @entity.title
+        - if coll.series?
+          = coll.title
+        - else
+          = link_to coll.title, collection_path(coll)
   - elsif @pagetype == :author
     .breadcrumbs-text= link_to t(:authors), authors_path
     -#.breadcrumbs-arrow= 1

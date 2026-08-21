@@ -43,6 +43,8 @@ class Authority < ApplicationRecord
   belongs_to :person, optional: true
   belongs_to :corporate_body, optional: true
   belongs_to :uncollected_works_collection, class_name: 'Collection', optional: true
+  belongs_to :lexicon_entry, class_name: 'LexEntry', optional: true
+  has_one :lex_person, dependent: :nullify
 
   attr_readonly :person, :corporate_body # Should not be modified after creation
 
@@ -63,7 +65,8 @@ class Authority < ApplicationRecord
                         joins(:taggings).where(taggings: { tag_id: tag_id, status: Tagging.statuses[:approved] })
                                         .distinct
                       }
-  scope :featurable, -> { where(do_not_feature: false) }
+  scope :not_pageless, -> { where(pageless: false) }
+  scope :featurable, -> { where(do_not_feature: false, pageless: false) }
 
   # features
   has_paper_trail ignore: %i(impressions_count created_at updated_at)
@@ -81,6 +84,9 @@ class Authority < ApplicationRecord
   validates_attachment_content_type :profile_image, content_type: %r{\Aimage/.*\z}
 
   before_validation do
+    # Strip incidental leading/trailing whitespace so it doesn't corrupt alphabetical sorting/display
+    self.name = SortedTitle.normalize_whitespace(name) if name.present?
+
     if wikidata_uri.blank?
       self.wikidata_uri = nil
     else
@@ -103,19 +109,44 @@ class Authority < ApplicationRecord
 
   before_save :update_other_designation, if: :name_changed?
   before_save :normalize_sort_name
+  before_save :sort_legacy_credits, if: :legacy_credits_changed?
+  # editing the manual credits changes the merged list, so the cache must go (cf. Collection)
+  before_save :clear_cached_credits, if: :legacy_credits_changed?
 
   after_commit :update_manifestation_responsibility_statements, on: :update, if: :saved_change_to_name?
+  # covers create, update and destroy of a pageless authority, as well as the flag being turned off
+  after_commit :bust_pageless_ids_cache, if: -> { pageless? || saved_change_to_pageless? }
+
+  PAGELESS_IDS_CACHE_KEY = 'authority_pageless_ids'
+
+  # IDs of authorities which have no meaningful page of their own (e.g. 'anonymous', 'various authors').
+  # The list is tiny and changes very rarely, so it is cached and consulted in memory rather than
+  # hitting the DB for every authority mentioned on a page.
+  def self.pageless_ids
+    Rails.cache.fetch(PAGELESS_IDS_CACHE_KEY, expires_in: 12.hours) do
+      where(pageless: true).pluck(:id).to_set
+    end
+  end
+
+  # @param id [Integer, String] authority id
+  def self.pageless_id?(id)
+    pageless_ids.include?(id.to_i)
+  end
+
+  def bust_pageless_ids_cache
+    Rails.cache.delete(PAGELESS_IDS_CACHE_KEY)
+  end
 
   def update_manifestation_responsibility_statements
     # Find all manifestations related to this authority through involved_authorities
     # This includes both work-level (authors) and expression-level (translators) authorities
     manifestation_ids = Manifestation
-                         .joins("INNER JOIN expressions ON manifestations.expression_id = expressions.id")
-                         .joins("LEFT JOIN involved_authorities work_ias ON work_ias.item_id = expressions.work_id AND work_ias.item_type = 'Work'")
-                         .joins("LEFT JOIN involved_authorities expr_ias ON expr_ias.item_id = expressions.id AND expr_ias.item_type = 'Expression'")
-                         .where("work_ias.authority_id = ? OR expr_ias.authority_id = ?", id, id)
-                         .distinct
-                         .pluck(:id)
+                        .joins('INNER JOIN expressions ON manifestations.expression_id = expressions.id')
+                        .joins("LEFT JOIN involved_authorities work_ias ON work_ias.item_id = expressions.work_id AND work_ias.item_type = 'Work'")
+                        .joins("LEFT JOIN involved_authorities expr_ias ON expr_ias.item_id = expressions.id AND expr_ias.item_type = 'Expression'")
+                        .where('work_ias.authority_id = ? OR expr_ias.authority_id = ?', id, id)
+                        .distinct
+                        .pluck(:id)
 
     # Enqueue background job to update responsibility statements in bulk
     UpdateManifestationResponsibilityStatementsJob.perform_later(manifestation_ids) unless manifestation_ids.empty?
@@ -135,6 +166,18 @@ class Authority < ApplicationRecord
     # Replace Hebrew maqaf (U+05BE), regular hyphen-minus (U+002D),
     # en dash (U+2013), and em dash (U+2014) with spaces
     self.sort_name = sort_name.gsub(/[\u05BE\u002D\u2013\u2014]/, ' ')
+  end
+
+  # Keep the manually-maintained credits alphabetically sorted, so they are easier to edit later
+  # (and so they match the order in which credits are displayed).
+  def sort_legacy_credits
+    return if legacy_credits.blank?
+
+    self.legacy_credits = self.class.sorted_credit_lines(legacy_credits.lines).join("\n")
+  end
+
+  def clear_cached_credits
+    self.cached_credits = nil
   end
 
   # return all collections of type volume that are associated with this authority
@@ -172,19 +215,25 @@ class Authority < ApplicationRecord
     )
   end
 
-  def fetch_credits
-    return cached_credits if cached_credits.present?
+  # Clean up a list of raw credit lines: strip them, drop blanks and placeholders,
+  # de-duplicate, and sort alphabetically.
+  def self.sorted_credit_lines(lines)
+    lines.map(&:strip).reject { |line| line.blank? || line == '...' }.uniq.sort
+  end
 
+  def fetch_credits
+    # Sorting (and de-duplicating) on read too, so that credits cached before this behavior was
+    # introduced, or cached by some other code path, are still presented as one clean list.
+    return self.class.sorted_credit_lines(cached_credits.lines).join("\n") if cached_credits.present?
+
+    # manual credits and the ones harvested from the works are merged into a single list, so a
+    # volunteer listed in both appears only once
     credits = []
     credits += legacy_credits.lines if legacy_credits.present?
     published_manifestations.each do |m|
       credits += m.credits.lines if m.credits.present?
     end
-    credits.map!(&:strip)
-    credits.uniq!
-    credits.reject! { |c| c == '...' }
-    credits.sort!
-    self.cached_credits = credits.join("\n")
+    self.cached_credits = self.class.sorted_credit_lines(credits).join("\n")
     save!
     return cached_credits
   end
@@ -241,6 +290,38 @@ class Authority < ApplicationRecord
                                                   .sort
   end
 
+  # Returns a hash of genre => manifestation count for each genre where the authority
+  # has been involved in at least one manifestation (in any role).
+  # Only counts published manifestations.
+  # Example: { 'poetry' => 5, 'prose' => 3, 'memoir' => 1 }
+  def genre_stats
+    # Get work IDs and expression IDs where authority is involved (in any role)
+    items = involved_authorities.pluck(:item_type, :item_id)
+
+    work_ids = items.select { |type, _| type == 'Work' }.map(&:last).compact.uniq
+    expression_ids = items.select { |type, _| type == 'Expression' }.map(&:last).compact.uniq
+
+    # Return empty hash if authority has no involvements
+    return {} if work_ids.empty? && expression_ids.empty?
+
+    # Count published manifestations by genre
+    # Use [0] as placeholder when array is empty to avoid SQL syntax errors
+    Manifestation
+      .all_published
+      .joins(expression: :work)
+      .where('works.id IN (?) OR expressions.id IN (?)',
+             work_ids.presence || [0],
+             expression_ids.presence || [0])
+      .group('works.genre')
+      .count
+  end
+
+  def cached_genre_stats
+    Rails.cache.fetch("au_#{id}_genre_stats", expires_in: 24.hours) do
+      genre_stats
+    end
+  end
+
   def original_works
     published_manifestations(:author)
   end
@@ -281,6 +362,12 @@ class Authority < ApplicationRecord
     Rails.cache.delete("au_#{id}_work_count")
   end
 
+  def cached_collections_count
+    Rails.cache.fetch("au_#{id}_collections_count", expires_in: 12.hours) do
+      collections.count
+    end
+  end
+
   def any_bibs?
     return publications.count > 0
   end
@@ -300,15 +387,13 @@ class Authority < ApplicationRecord
     dl
   end
 
+  # The count of authorities we advertise to readers ('N authors in the project'), and which labels a
+  # link to the authorities list -- so it must count exactly what that list shows.
+  # NOTE: cache key deliberately renamed from 'au_total_count', so deployments pick up the corrected
+  # figure immediately instead of serving the old, inflated one until the TTL expires.
   def self.cached_count
-    Rails.cache.fetch('au_total_count', expires_in: 12.hours) do
-      count
-    end
-  end
-
-  def self.cached_toc_count
-    Rails.cache.fetch('au_toc_count', expires_in: 12.hours) do
-      has_toc.count
+    Rails.cache.fetch('au_published_count', expires_in: 12.hours) do
+      published.not_pageless.count
     end
   end
 
@@ -428,6 +513,21 @@ class Authority < ApplicationRecord
   def gender_letter
     # TODO: refactor this. Added this method to reduce amount of code to be changed during Authorities refactoring
     person.present? ? person.gender_letter : 'ו'
+  end
+
+  # Returns an array of sorted names for efficient comparison
+  # Each name has its words sorted alphabetically, then the array itself is sorted
+  # Example: ["James Smith", "Robert Ames"] => ["James Smith", "Ames Robert"]
+  def sorted_comparison_names
+    names = [name]
+    names += other_designation.split(';').map(&:strip) if other_designation.present?
+
+    # Sort words within each name alphabetically
+    sorted_names = names.map do |n|
+      n.split(/\s+/).sort.join(' ')
+    end
+
+    sorted_names.sort
   end
 
   # set all person's works to status published

@@ -1,0 +1,17 @@
+-# haml-lint:disable LineLength
+= form_with url: lexicon_update_section_verification_path(@entry), method: :patch, local: false, html: { class: 'verification-edit-form' } do |f|
+  = hidden_field_tag :section, 'external_identifiers'
+
+  %p.text-muted= t('lexicon.verification.edit.external_identifiers.instructions')
+
+  = render 'lexicon/entries/external_identifiers_form', entry: @entry
+
+  .form-check.mt-3
+    - already_verified = @entry.verification_progress&.dig('checklist', 'external_identifiers', 'verified') || false
+    = check_box_tag :mark_verified, '1', already_verified, class: 'form-check-input'
+    = label_tag :mark_verified, t('lexicon.verification.edit.mark_as_verified'), class: 'form-check-label'
+
+  .modal-footer
+    %button.btn.btn-secondary{ type: 'button', data: { dismiss: 'modal' } }
+      = t('cancel')
+    = f.submit t('save'), class: 'btn btn-primary'

@@ -16,6 +16,8 @@ class AuthorsController < ApplicationController
                 only: %i(show edit update destroy toc edit_toc print all_links delete_photo
                          whatsnew_popup latest_popup publish to_manual_toc volumes
                          kwic kwic_download kwic_context)
+  # must come after set_author, which it depends on
+  before_action :restrict_to_viewable_authority, only: %i(print)
   layout 'backend', only: %i(manage_toc)
 
   def publish
@@ -452,7 +454,7 @@ class AuthorsController < ApplicationController
   end
 
   def toc
-    if @author.published? || (current_user.present? && current_user.editor?)
+    if authority_viewable?(@author)
       # Note that we are accessing an unpublished author, if that's the case
       @unpublished = true unless @author.published?
 
@@ -481,7 +483,25 @@ class AuthorsController < ApplicationController
           RefreshUncollectedWorksCollection.call(@author)
         end
         # generate_toc # legacy generated TOC
+        # Pre-calculate TOC tree and counts for efficiency (used in both navbar and TOC body)
+        @toc_tree = GenerateTocTree.call(@author)
+        @toc_counts = calculate_toc_counts(@toc_tree, @author.id)
+        # Data for the flat-list filters pane (bead ln5). Relatively expensive, so
+        # cache per author for non-editors (mirrors the _generated_toc fragment cache);
+        # editors get fresh data so recent featuring/recommendation changes show up.
+        @toc_filter_data =
+          if current_user&.editor?
+            AuthorTocFilterData.call(@author)
+          else
+            Rails.cache.fetch("author_toc_filter_data/#{@author.id}", expires_in: 12.hours) do
+              AuthorTocFilterData.call(@author)
+            end
+          end
       end
+      if @author.lex_person.present? && @author.lex_person.entry.status_published?
+        @lexicon_entry = @author.lex_person.entry
+      end
+      @lex_citations = @author.lex_person&.general_citations || []
       prep_user_content(:author)
       @scrollspy_target = 'genrenav'
     else
@@ -685,6 +705,21 @@ class AuthorsController < ApplicationController
     @author = Authority.find(params[:id])
   end
 
+  # An authority's public pages (TOC, print) are visible when it is published and has a page of its
+  # own. Pageless authorities ('anonymous', 'various authors' and the like) aggregate the works of
+  # many different people, so a page for them would falsely suggest a single prolific author.
+  # Editors see either kind regardless, since they may need to manage the record.
+  def authority_viewable?(author)
+    (author.published? && !author.pageless?) || current_user&.editor? || false
+  end
+
+  def restrict_to_viewable_authority
+    return if authority_viewable?(@author)
+
+    flash[:error] = t(:author_not_available)
+    redirect_to '/'
+  end
+
   def authority_params
     params.require(:authority).permit(
       :comment,
@@ -702,6 +737,7 @@ class AuthorsController < ApplicationController
       :profile_image,
       :bib_done,
       :do_not_feature,
+      :pageless,
       :sort_name,
       :status,
       :legacy_credits,
@@ -723,5 +759,49 @@ class AuthorsController < ApplicationController
         generate_toc
       end
     end
+  end
+
+  private
+
+  # Calculate manifestation counts for each role and section (collection_level, work_level, uncollected)
+  # This is called once in the controller to avoid duplicate calculations in navbar and TOC body
+  def calculate_toc_counts(toc_tree, authority_id)
+    counts = {}
+
+    InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+      top_nodes = toc_tree.top_level_nodes
+
+      involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
+                                              .sort_by(&:sort_term)
+      involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
+                                        .sort_by(&:sort_term)
+      uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
+      involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+
+      collection_level_count = involved_on_collection_level.sum do |node|
+        node.count_manifestations(role, authority_id, true)
+      end
+
+      work_level_count = involved_on_work_level.sum do |node|
+        node.count_manifestations(role, authority_id, false)
+      end
+
+      uncollected_count = if uncollected_node&.visible?(role, authority_id, false)
+                            uncollected_node.count_manifestations(role, authority_id, false)
+                          else
+                            0
+                          end
+
+      total_count = collection_level_count + work_level_count + uncollected_count
+
+      counts[role] = {
+        collection_level: collection_level_count,
+        work_level: work_level_count,
+        uncollected: uncollected_count,
+        total: total_count
+      }
+    end
+
+    counts
   end
 end

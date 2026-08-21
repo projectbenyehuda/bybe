@@ -1,0 +1,677 @@
+// Verification Workbench Styles
+
+.verification-header {
+  background: #f8f9fa;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+
+  // Collapse the Bootstrap utility margins used in the markup (mb-3/mb-2) to
+  // keep the header compact. !important is required because Bootstrap's
+  // spacing utilities are themselves declared with !important.
+  .d-flex {
+    margin-bottom: 0 !important;
+  }
+
+  .progress-indicator,
+  .hide-verified-toggle {
+    margin-bottom: 0.25rem !important;
+  }
+
+  .title-section {
+    h2 {
+      margin-bottom: 0.25rem;
+      font-size: 1.25rem;
+    }
+  }
+
+  .progress-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+// Fill the viewport exactly so the two panes take all remaining vertical space
+// (only the panes scroll internally) instead of relying on a hardcoded offset.
+// Scoped to this page via :has() so other pages using the layout are unaffected.
+body:has(.verification-container) {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  main.container-fluid {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.verification-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  flex: 1 1 auto;
+  min-height: 0;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+// Checklist Modal
+#checklistModal .modal-body {
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+#checklistModal .checklist-card {
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.checklist-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+
+  .checklist-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .checklist-item {
+      margin-bottom: 0.75rem;
+
+      label {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+
+        input[type="checkbox"] {
+          margin-top: 0.25rem;
+          cursor: pointer;
+        }
+
+        &:hover {
+          color: #007bff;
+        }
+      }
+
+      .count {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-left: 0.25rem;
+      }
+    }
+
+    .nested-checklist {
+      list-style: none;
+      padding: 0 0 0 1.5rem;
+      margin: 0.5rem 0 0 0;
+
+      .nested-item {
+        margin-bottom: 0.5rem;
+
+        label {
+          font-weight: normal;
+          font-size: 0.9rem;
+          color: #495057;
+        }
+      }
+    }
+  }
+
+  .overall-notes {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+
+    .form-label {
+      margin-bottom: 0.5rem;
+    }
+
+    textarea {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Source Column
+.verification-source {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.source-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .source-header {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .source-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .filename {
+      font-size: 0.85rem;
+      font-family: monospace;
+    }
+  }
+
+  .source-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    .source-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  }
+}
+
+// Migrated Entry Column
+.verification-migrated {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.migrated-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .migrated-header {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+
+    .migrated-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .migrated-shortcuts {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+
+      .shortcuts-label {
+        color: #6c757d;
+      }
+
+      .migrated-shortcut {
+        cursor: pointer;
+        text-decoration: none;
+        border-bottom: 1px dotted currentColor;
+
+        &:hover,
+        &:focus {
+          text-decoration: none;
+          border-bottom-style: solid;
+        }
+      }
+    }
+  }
+
+  .migrated-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+}
+
+// Verification Sections
+.verification-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: #fff;
+  position: relative;
+  transition: all 0.3s ease;
+
+  &.verified {
+    border-color: #28a745;
+    background: #f0fff4;
+  }
+
+  &.not-verified {
+    border-color: #ffc107;
+    background: #fffbf0;
+  }
+
+  &.highlight-flash {
+    animation: highlight 2s ease;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+
+    h5 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    // Title plus its verified/total tally, kept together at the start of the header
+    // (Bootstrap 4 has no gap-* utilities, hence the explicit gap here).
+    .section-title-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .verification-badge {
+      font-size: 0.85rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 500;
+
+      &.verified {
+        background: #28a745;
+        color: white;
+      }
+
+      &.not-verified {
+        background: #ffc107;
+        color: #333;
+      }
+    }
+  }
+
+  .section-content {
+    margin-bottom: 1rem;
+
+    p {
+      margin-bottom: 0.5rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .text-muted {
+      // Removed italic styling - italics are foreign to Hebrew typography
+    }
+  }
+
+  .section-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+// Hide verified items when toggle is active
+.hidden-verified {
+  display: none !important;
+}
+
+// Citation Cards
+.citation-group {
+  .subject-header {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+}
+
+.work-type-heading {
+  font-weight: 600;
+  border-bottom: 2px solid #6c757d;
+  padding-bottom: 0.25rem;
+  color: #495057;
+}
+
+.citation-card, .link-card, .work-card {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  background: #fff;
+  transition: all 0.2s ease;
+
+  &.verified {
+    border-color: #28a745;
+    background: #f0fff4;
+  }
+
+  &.not-verified {
+    border-color: #ffc107;
+    background: #fffbf0;
+  }
+
+  // Broken links override the verified/not-verified background
+  &.broken-link {
+    border-color: #dc3545;
+    background: #fff5f5;
+  }
+
+  .broken-link-badge {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #dc3545;
+    background: #fde8ea;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    margin-inline-end: 0.4rem;
+  }
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .citation-content, .link-content, .work-content {
+    margin-bottom: 0.75rem;
+    overflow-wrap: break-word;
+    word-break: break-all;
+
+    strong {
+      display: block;
+      color: #212529;
+      margin-bottom: 0.25rem;
+    }
+
+    .text-muted {
+      font-size: 0.9rem;
+    }
+
+    a.citation-link {
+      color: #007bff;
+      text-decoration: none;
+      font-size: 0.9rem;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .citation-actions, .link-actions, .work-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+// Per-work edit panel: non-modal mode.
+// pointer-events:none on the overlay lets clicks pass through to the source (PHP) pane;
+// pointer-events:auto restores interaction for the dialog itself.
+#generalDlg.no-modal-mode {
+  pointer-events: none;
+}
+
+#generalDlg.no-modal-mode .modal-dialog {
+  pointer-events: auto;
+}
+
+// Per-work edit modal: full height, anchored to left (migrated data) pane.
+// margin-left:0 + margin-right:auto anchors to physical-left (= visual-left in RTL grid).
+// Both dialog and content use 100vh directly — avoids Bootstrap 4 percentage-height resolution
+// issues where height:100% on a relative child resolves to auto when parent has no explicit height.
+// Scroll goes on #generalDlgBody so the resize handles on .modal-content stay unclipped.
+#generalDlg:has(.per-work-edit-form) .modal-dialog {
+  max-width: 42vw;
+  margin-left: 0;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 100vh;
+}
+
+#generalDlg:has(.per-work-edit-form) .modal-content {
+  height: 100vh;
+  border-radius: 0;
+}
+
+#generalDlg:has(.per-work-edit-form) #generalDlgBody {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// Auto-match works modal: wider with scrollable body
+#generalDlg:has(.auto-match-works-modal) .modal-dialog {
+  max-width: 70vw;
+}
+
+#generalDlg:has(.auto-match-works-modal) .modal-content {
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#generalDlg:has(.auto-match-works-modal) .modal-body {
+  overflow-y: auto;
+}
+
+// Attachment Items
+.attachment-item {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .attachment-thumbnail {
+    flex-shrink: 0;
+
+    img {
+      max-height: 80px;
+      width: auto;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .attachment-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex-grow: 1;
+  }
+
+  a {
+    font-weight: 500;
+    color: #007bff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .text-muted {
+    font-size: 0.85rem;
+  }
+}
+
+// Highlight Animation
+@keyframes highlight {
+  0%, 100% {
+    background: inherit;
+  }
+  50% {
+    background: #fff3cd;
+    border-color: #856404;
+  }
+}
+
+// Toast Notification
+.toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #28a745;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 9999;
+  animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
+  font-weight: 500;
+
+  &.toast-error {
+    background: #dc3545;
+  }
+
+  &.toast-warning {
+    background: #856404;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+// Verification Queue Table
+.verification-queue-table {
+  .progress {
+    margin: 0;
+  }
+
+  .badge {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  tr.status-draft {
+    background-color: #f8f9fa;
+  }
+
+  tr.status-verifying {
+    background-color: #fff3cd;
+  }
+
+  tr.status-error {
+    background-color: #f8d7da;
+  }
+
+  tr.status-verified {
+    background-color: #d4edda;
+  }
+}
+
+// LTR fields: override RTL body text-align when dir="ltr" is set on a container
+// (Bootstrap RTL explicitly sets body { text-align: right }, so dir="ltr" alone
+// changes direction but not alignment — this rule restores left alignment.)
+.work-content[dir="ltr"],
+.citation-content[dir="ltr"],
+.link-content[dir="ltr"],
+p[dir="ltr"] {
+  text-align: left;
+}
+
+// RTL Support
+[dir="rtl"] {
+  .checklist-card .nested-checklist {
+    padding-left: 0;
+    padding-right: 1.5rem;
+  }
+
+  .verification-section .section-header {
+    text-align: right;
+  }
+
+  .citation-card .citation-actions,
+  .link-card .link-actions,
+  .work-card .work-actions {
+    flex-direction: row-reverse;
+  }
+
+  .toast-notification {
+    right: auto;
+    left: 2rem;
+    animation: slideInRtl 0.3s ease, slideOutRtl 0.3s ease 2.7s;
+  }
+}
+
+@keyframes slideInRtl {
+  from {
+    transform: translateX(-400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRtl {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-400px);
+    opacity: 0;
+  }
+}

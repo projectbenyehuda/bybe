@@ -6,7 +6,9 @@ require 'rails_helper'
 # the mode toggle (propose a tag / pick from the full list) used to overflow the
 # popup, and the suggestion-heuristic tabs used to render as a plain list rather
 # than a usable tab strip.
-RSpec.describe 'Tag proposal popup on mobile', :js, type: :system do
+# :narrow_viewport runs this spec under headless Chrome: headless Firefox, the default
+# driver for system specs here, will not size its window below 500px wide.
+RSpec.describe 'Tag proposal popup on mobile', :js, :narrow_viewport, type: :system do
   let(:user) { create(:user) }
   let!(:base_user) { BaseUser.create!(user: user) }
   let(:author) { create(:authority, toc: create(:toc)) }

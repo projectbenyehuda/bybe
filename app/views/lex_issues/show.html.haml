@@ -1,0 +1,24 @@
+%p#notice= notice
+
+%p
+  %b #{LexIssue.human_attribute_name(:subtitle)}:
+  = @lex_issue.subtitle
+%p
+  %b #{LexIssue.human_attribute_name(:volume)}:
+  = @lex_issue.volume
+%p
+  %b #{LexIssue.human_attribute_name(:issue)}:
+  = @lex_issue.issue
+%p
+  %b #{LexIssue.human_attribute_name(:seq_num)}:
+  = @lex_issue.seq_num
+%p
+  %b #{LexIssue.human_attribute_name(:toc)}:
+  = @lex_issue.toc
+%p
+  %b #{LexIssue.human_attribute_name(:lex_publication)}:
+  = @lex_issue.lex_publication
+
+= link_to t(:edit), edit_lex_issue_path(@lex_issue)
+\|
+= link_to t(:back), lex_issues_path

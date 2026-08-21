@@ -1,0 +1,54 @@
+%a.btn.btn-primary.add-citation= t('.add_citation')
+- grouped_and_ordered_citations(@person).each do |subject_title, entries|
+  %h4= citations_subject_header(subject_title)
+  %ul.citations-group{ data: { subject_title: subject_title } }
+    - entries.each do |c|
+      %li{ data: { citation_id: c.id } }
+        %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
+          %span.handle ☰
+        = raw render_citation(c)
+        = link_to t(:edit), nil, class: 'edit-citation', data: { id: c.id }
+        = link_to t(:delete),
+                  lexicon_citation_path(c),
+                  remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-citation'
+
+:javascript
+  $('.edit-citation').click(function(e) {
+    e.preventDefault();
+    const citationId = $(this).data('id');
+    openModal(`/lex/citations/${citationId}/edit`);
+  });
+  $('a.add-citation').click(function() {
+    openModal('/lex/people/#{@person.id}/citations/new');
+  });
+
+  // Initialize Sortable for each subject_title table
+  document.querySelectorAll('ul.citations-group').forEach(function(list) {
+    const subjectTitle = list.dataset.subjectTitle;
+    Sortable.create(
+      list,
+      {
+        handle: '.drag-handle',
+        animation: 150,
+        onEnd: function(evt) {
+          const oldIndex = evt.oldIndex; // zero-based
+          const newIndex = evt.newIndex; // zero-based
+          if (newIndex !== oldIndex) {
+            $.post({
+              url: `/lex/citations/${evt.item.dataset.citationId}/reorder`,
+              data: {
+                new_index: newIndex,
+                old_index: oldIndex,
+                subject_title: subjectTitle
+              },
+              error: function(xhr, _status, _error) {
+                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+                alert('#{t('.reordering_failed')}\n' + errorMsg);
+                reloadContent($('#citations'));
+              }
+            });
+          }
+        }
+      }
+    );
+  });

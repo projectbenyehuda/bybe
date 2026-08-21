@@ -1,35 +1,20 @@
 -# rubocop:disable Style/CaseLikeIf
 - nodeclass = case when toc_node.is_a?(TocTree::ManifestationNode) then 'manifestation-node' when toc_node.is_a?(TocTree::PlaceholderNode) then 'ph-node' else '' end
-%li{ class: nodeclass, style: toc_node.is_a?(TocTree::ManifestationNode) ? '' : 'margin-top: 12px; margin-bottom: 10px;' }
+%li{ class: nodeclass}
   - if toc_node.is_a?(TocTree::ManifestationNode)
     - m = toc_node.manifestation
     - e = m.expression
     - w = e.work
     - genre = w.genre
-    %span.sorting-metadata{ 'data-impressions': m.impressions_count, 'data-title': m.sort_title, 'data-pubdate': e.normalized_pub_date.present? ? e.normalized_pub_date.to_date.jd : nil, 'data-creation-date': w.normalized_creation_date.present? ? w.normalized_creation_date.to_date.jd : nil, 'data-upload-date': m.publication_date.to_date.jd }
+    - fd = @toc_filter_data
+    - pub_date = e.normalized_pub_date.presence&.to_date
+    - creation_date = w.normalized_creation_date.presence&.to_date
+    - upload_date = m.publication_date.presence&.to_date
+    %span.sorting-metadata{ 'data-impressions': m.impressions_count, 'data-title': m.sort_title, 'data-pubdate': pub_date&.jd, 'data-creation-date': creation_date&.jd, 'data-upload-date': upload_date&.jd, 'data-mid': m.id, 'data-genre': genre, 'data-orig-lang': w.orig_lang, 'data-translated': e.translation ? '1' : '0', 'data-pubyear': pub_date&.year, 'data-creation-year': creation_date&.year, 'data-upload-year': upload_date&.year, 'data-featured': fd && fd[:featured_ids].include?(m.id) ? '1' : '0', 'data-recommended': fd && fd[:recommended_ids].include?(m.id) ? '1' : '0', 'data-aboutness': fd && fd[:aboutness_ids].include?(m.id) ? '1' : '0', 'data-tagging': fd && fd[:tagging_ids].include?(m.id) ? '1' : '0' }
     %span.by-icon-v02{ title: textify_genre(genre) }>= glyph_for_genre(genre)
     &nbsp;&rlm;
-    :ruby
-      label = '‏' + m.title # RLM character to help with LTR elements in title. Fixes #664
-      case role
-      when :editor
-        label += " / #{m.author_string}"
-      when :translator
-        label += " / #{authorities_string(m, :author)}"
-        if m.translators.size > 1
-          label += " / #{authorities_string(m, :translator)}"
-        end
-      when :author
-        if m.authors.size > 1 || m.authors.pluck(:id) != [authority_id] # when the author is not the only author or not the author in a volume he is generally the author of (e.g. someone else's preface to this author's book)
-          label += " / #{authorities_string(m, :author)}"
-        end
-        if m.translators.size > 0
-          label += " #{t(:translated_by)} #{authorities_string(m, :translator)}"
-        end
-      end
-
     - if m.published?
-      = link_to label, manifestation_path(m)
+      = link_to manifestation_label(m, role, authority_id), manifestation_path(m)
       %span.hidden.metadata-creation-date
         != "&nbsp;&nbsp;&nbsp;"
         - if w.date.present?
@@ -50,75 +35,97 @@
             - edition += ', '+e.date
           = edition
     - else
-      = label
+      = manifestation_label(m, role, authority_id)
     %span.mtitle{ style: 'display:none' }= m.title
   - elsif toc_node.is_a?(TocTree::CollectionNode)
     -# Collection node
     - collection = toc_node.collection
     - type_prefix = collection.collection_type == 'uncollected' ? '' : textify_collection_type(collection.collection_type)
     - uncollected = collection.collection_type == 'uncollected'
-    - is_involved = collection.involved_authorities.any? { |ia| ia.authority_id == authority_id && ia.role == role.to_s }
-    - unless full_toc
-      - full_toc = is_involved # only show full TOC for collections where this particular author is a principal contributor
-    - children = full_toc ? toc_node.sorted_children : toc_node.children_by_role(role, authority_id)
-    - children.reject!{ |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.status != 'published' } # don't show deleted or unpublished manifestations in the TOC
+    - children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
+    - children.reject! { |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.deprecated? }
+    -# a collapsible ul.toclist is rendered only in the non-editable branch below, when there are children
+    - renders_toclist = children.present? && !(editable && (collection.uncollected? || involved_on_collection_level))
     - if !uncollected || children.present?
-      .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
-        %span{style:'font-size:120%;'}
-          - unless uncollected
-            %span.ctitle_only{ style: 'display:none;' }= collection.title
-            %span.ctitle
-              - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
-              - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
-              - if children.present?
-                - unless full_toc
-                  = t(:out_of)
-                = link_to ctitle, collection_path(collection), extra_data
+      -# aria-expanded only on items that actually have an expandable list, per ARIA tree semantics
+      %li.by-card-v02{ 'aria-expanded' => (renders_toclist ? 'true' : nil), :role => 'treeitem' }
+        .by-card-content-v02{:style => "padding-top: 12px;"}
+          .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
+            %div{style:'font-size:120%;'}
+              - if uncollected
+                %p{style: 'font-size: 0.8rem; color: #222222;'}
+                  = t(:uncollected_works_collection_explanation)
+                  -# same chevron toggle the volumes carry, trailing the card's only text line
+                  - if renders_toclist
+                    - toggle_label = t(:toggle_collapse_uncollected)
+                    %span.volume-collapse-toggle{ role: 'button', tabindex: 0, title: toggle_label,
+                                                  aria: { label: toggle_label, expanded: 'true' } } )
               - else
-                = ctitle
-            - if current_user && current_user.editor?
-              - if type_prefix.present?
-                = " (#{type_prefix})"
-              != '&nbsp;&nbsp;&nbsp;'
-              = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
-          - else
-            %p{style: 'font-size: 0.8rem; color: #222222;'}= t(:uncollected_works_collection_explanation)
-          - # if the collection's involved authorities number more than one for any given role, return all for that role. Otherwise, return only authorities that aren't the authority_id.
-          - ias = collection.involved_authorities
-          - authorities = {}
-          - ias.each do |ia|
-            - if authorities[ia.role].present?
-              - authorities[ia.role] << ia.authority
+                %span.ctitle_only{ style: 'display:none;' }= collection.title
+                %span.ctitle
+                  - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
+                  - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
+                  - manifestation_count = toc_node.count_manifestations(role, authority_id, involved_on_collection_level)
+                  - if children.present?
+                    - if !involved_on_collection_level
+                      = t(:out_of)
+                    -# Series (sub-volume) collections aren't a valid Collection#show focus, so not clickable here
+                    - if collection.series?
+                      %span{ extra_data.merge(style: 'font-weight: bold;') }= ctitle
+                    - else
+                      = link_to ctitle, collection_path(collection), extra_data
+                  - else
+                    = ctitle
+                  - if manifestation_count > 0
+                    %span.count-badge= " (#{manifestation_count})"
+                - if current_user && current_user.editor?
+                  - if type_prefix.present?
+                    = " (#{type_prefix})"
+                  != '&nbsp;&nbsp;&nbsp;'
+                  = link_to t(:edit), collection_manage_path(collection.id), style: 'font-size: 70%;'
+                -# Every collapsible collection card (any type, not just volumes) gets its own toggle,
+                   except in the editable (collections-migration) view, which has no collapse JS.
+                - if renders_toclist && !editable
+                  - toggle_label = t(:toggle_collapse_collection, title: collection.title)
+                  -# aria-expanded on the toggle itself: focus lands here, not on the treeitem li
+                  %span.volume-collapse-toggle{ role: 'button', tabindex: 0, title: toggle_label,
+                                                aria: { label: toggle_label, expanded: 'true' } } )
+              - ias = collection.involved_authorities
+              - authorities = {}
+              - ias.each do |ia|
+                - if authorities[ia.role].present?
+                  - authorities[ia.role] << ia.authority
+                - else
+                  - authorities[ia.role] = [ia.authority]
+              - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |r|
+                - next unless authorities[r].present?
+                - if authorities[r].size > 1
+                  - authorities[r].each do |authority|
+                    %p= "#{authority.name} (#{textify_role(r, authority.gender)})"
+                - else
+                  - authority = authorities[r].first
+                  - if authority.id == authority_id # if the single authority is the same as the one whose page we are on
+                    - next if r.to_sym == role # this is implicit
+                  %p= "#{authority.name} (#{textify_role(r, authority.gender)})" # author X may have a work in which they are both an author and an illustrator, for example.
+              - if collection.publisher_line.present?
+                %p
+                  - pyear = collection.pub_year.present? ? ", #{collection.pub_year}" : ''
+                  - unless pyear.strip == ', 0' # special case to suppress year of a collection we want to place at the head of the page
+                    = "#{collection.publisher_line}#{pyear}"
+            - if editable && (collection.uncollected? || involved_on_collection_level)
+              -# only show editable collections for collections where this particular author is a principal contributor
+              = render partial: 'shared/manage_collection', locals: { collection: collection, title: collection.title, nonce: nonce }
             - else
-              - authorities[ia.role] = [ia.authority]
-          - %w[ author illustrator translator editor photographer designer contributor other ].each do |r|
-            - next unless authorities[r].present?
-            - if authorities[r].size > 1
-              - authorities[r].each do |authority|
-                %p= "#{authority.name} (#{textify_role(r, authority.gender)})"
-            - else
-              - authority = authorities[r].first
-              - if authority.id == authority_id # if the single authority is the same as the one whose page we are on
-                - next if r.to_sym == role # this is implicit
-              %p= "#{authority.name} (#{textify_role(r, authority.gender)})" # author X may have a work in which they are both an author and an illustrator, for example.
-          - if collection.publisher_line.present?
-            %p
-              - pyear = collection.pub_year.present? ? ", #{collection.pub_year}" : ''
-              - unless pyear.strip == ', 0' # special case to suppress year of a collection we want to place at the head of the page
-                = "#{collection.publisher_line}#{pyear}"
-        - if editable && (collection.collection_type == 'uncollected' || is_involved) # only show editable collections for collections where this particular author is a principal contributor
-          = render partial: 'shared/manage_collection', locals: { collection: collection, title: collection.title, nonce: nonce }
-        - else
-          - unless children.empty?
-            %ul.toclist
-              = render partial: 'authors/toc_node', collection: children,
-                      locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce, uncollected: uncollected, full_toc: full_toc }
+              - unless children.empty?
+                %ul.toclist
+                  = render partial: 'authors/toc_node', collection: children,
+                          locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce,
+                                    uncollected: uncollected, involved_on_collection_level: involved_on_collection_level }
       %br
   - elsif toc_node.is_a?(TocTree::PlaceholderNode)
     -# Placeholder, toc_node should be a String with HTML layout
     - ci = toc_node.collection_item
     - if toc_node.markdown.present?
-      %br
       - if ci.alt_title.present?
         %h4= ci.alt_title
       - full_html = MultiMarkdown.new(ci.markdown).to_html

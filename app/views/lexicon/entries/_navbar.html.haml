@@ -1,0 +1,95 @@
+-# Navbar for lexicon entry show pages: biography, works, links, etc.
+
+- lex_item = @lex_entry.lex_item
+- is_person = lex_item.is_a?(LexPerson)
+
+%nav.navbar#genrenav
+  %ul.navbar-nav.flex-column.by-card-v02#genre-nav{ 'aria-orientation' => 'vertical' }
+    - if is_person
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-biography' }
+        %a.nav-link.active#translations_button{ 'aria-selected' => 'true', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.biography')
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-works' }
+        %a.nav-link#works_button{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.works_section')
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-about' }
+        - about_title = t('activerecord.attributes.lex_person.about',
+                          gender_suffix: lex_item.female? ? 'ת' : '',
+                          gender_letter: lex_item.gender_letter)
+        %a.nav-link#about_author_button{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
+          .side-menu-name= about_title
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
+        %a.nav-link#links_button{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.links_section')
+      - if @lex_entry.external_identifiers.present?
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-authority-control' }
+          %a.nav-link#authority_control_button{ 'aria-selected' => 'false', href: '#' }
+            .side-menu-icon
+            .side-menu-name= t('lexicon.verification.sections.authority_control_section')
+    - else
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-description' }
+        %a.nav-link.active{ 'aria-selected' => 'true', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.description_section')
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-toc' }
+        %a.nav-link{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.toc_section')
+      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
+        %a.nav-link{ 'aria-selected' => 'false', href: '#' }
+          .side-menu-icon
+          .side-menu-name= t('lexicon.verification.sections.links_section')
+
+
+:javascript
+  $(document).ready(function() {
+    // The site header is position:fixed, and its height is not constant: the lexicon
+    // entry header adds a breadcrumbs/actions row (which keeps its buttons visible
+    // when scrolled, and holds an extra "edit" button for editors), and the whole
+    // header shrinks once the layout adds .scrolled. So measure it instead of
+    // hardcoding an offset, and publish it for the sticky sidebar CSS to consume.
+    var HEADER_GAP = 8;
+    var lastStickyTop = null;
+    var pendingFrame = false;
+
+    function stickyTop() {
+      return Math.ceil($('#header').outerHeight() || 0) + HEADER_GAP;
+    }
+
+    function applyStickyTop() {
+      pendingFrame = false;
+      var top = stickyTop();
+      if (top === lastStickyTop) return;
+      lastStickyTop = top;
+      document.documentElement.style.setProperty('--lexicon-sticky-top', top + 'px');
+    }
+
+    applyStickyTop();
+    $(window).on('scroll resize', function() {
+      if (pendingFrame) return;
+      pendingFrame = true;
+      window.requestAnimationFrame(applyStickyTop);
+    });
+
+    // Handle clicks on navbar items (scoped to #genre-nav to avoid affecting other navbars)
+    $('#genre-nav .nav-item[data-scroll-target]').click(function(e) {
+      var scrollTarget = $(this).data('scroll-target');
+
+      // Remove .active from all nav links in this navbar only
+      $('#genre-nav .nav-link').removeClass('active').attr('aria-selected', 'false');
+      $(this).find('.nav-link').addClass('active').attr('aria-selected', 'true');
+      if (scrollTarget && $(scrollTarget).length > 0) {
+        var offset = $(scrollTarget).offset().top - stickyTop();
+        $('html, body').animate({
+          scrollTop: offset
+        }, 500);
+      }
+    });
+    $('#genre-nav .nav-link').click(function(e) {
+      e.preventDefault();
+    });
+  });

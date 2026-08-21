@@ -1,0 +1,21 @@
+.migrated-card
+  .migrated-header
+    %h4.migrated-title= t('lexicon.verification.migrated.header')
+    -# Shortcuts scrolling the migrated pane to a section. Rendered for all item types;
+      shortcuts whose target section is absent (e.g. bio/works/citations for publications)
+      are hidden by verification.js.
+    %nav.migrated-shortcuts{ 'aria-label': t('lexicon.verification.migrated.jump_to') }
+      %span.shortcuts-label= t('lexicon.verification.migrated.jump_to')
+      - { 'section-bio' => 'biography', 'section-works' => 'works_section',
+          'section-citations' => 'citations_section', 'section-links' => 'links_section' }.each do |section_id, key|
+        %a.migrated-shortcut{ href: "##{section_id}", data: { 'section-target': section_id } }
+          = t("lexicon.verification.sections.#{key}")
+
+  .migrated-content
+    - if item.is_a?(LexPerson)
+      = render 'lexicon/verification/person_sections', entry: entry, item: item, checklist: checklist, php_counts: php_counts, bio_comparison: bio_comparison
+    - elsif item.is_a?(LexPublication)
+      = render 'lexicon/verification/publication_sections', entry: entry, item: item, checklist: checklist, php_counts: php_counts
+    - else
+      .alert.alert-danger
+        = t('lexicon.verification.migrated.unsupported_type', type: item.class.name)

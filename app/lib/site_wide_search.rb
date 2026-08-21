@@ -27,7 +27,8 @@ class SiteWideSearch
     'manifestations' => ManifestationsIndex,
     'authorities' => AuthoritiesIndex,
     'dict' => DictIndex,
-    'collections' => CollectionsIndex
+    'collections' => CollectionsIndex,
+    'lex_entries' => LexEntriesIndex
   }.freeze
 
   # Returns all available index types
@@ -41,7 +42,7 @@ class SiteWideSearch
                 JSON.parse(index_types).map { |type| INDEX_TYPE_MAP[type] }.compact
               else
                 # Default to all indices if none specified
-                [AuthoritiesIndex, ManifestationsIndex, DictIndex, CollectionsIndex]
+                [AuthoritiesIndex, ManifestationsIndex, DictIndex, CollectionsIndex, LexEntriesIndex]
               end
 
     MultiIndexSearchRequest.new(*indices)
@@ -93,6 +94,8 @@ class SiteWideSearch
                   return 2;
                 } else if (index_name.indexOf('dict') >= 0) {
                   return 3;
+                } else if (index_name.indexOf('lex_entries') >= 0) {
+                  return 4;
                 } else {
                   return 100;
                 }

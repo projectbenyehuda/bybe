@@ -31,6 +31,24 @@ class ManifestationController < ApplicationController
   DATE_FIELD = { 'uploaded' => 'manifestations.created_at', 'created' => 'works.normalized_creation_date',
                  'published' => 'expressions.normalized_pub_date' }.freeze
 
+  # #snippets serves one screenful of the flat list at a time; the cap keeps a
+  # hand-crafted request from asking for an author's entire corpus at once.
+  SNIPPET_BATCH_LIMIT = 30
+  # Lines of text per snippet: the card clamps to 3 rendered lines, so this is
+  # merely enough to fill it for any reasonable line length.
+  SNIPPET_LINES = 10
+  # Everything the snippet card touches, so that a batch of them costs a fixed number of queries
+  # rather than a handful per work: the work (genre, original language), the authorities it names
+  # along with their gender (which lives on the Person behind the Authority), and the collections
+  # containing it. The containment goes one level up, which covers a work sitting in a series
+  # inside a volume; deeper nestings still cost Collection#parent_volume_or_isssue a query per
+  # level, its walk up the tree being of no fixed depth.
+  SNIPPET_INCLUDES = [
+    { collection_items: { collection: { parent_collection_items: :collection } } },
+    { expression: [{ involved_authorities: { authority: :person } },
+                   { work: { involved_authorities: { authority: :person } } }] }
+  ].freeze
+
   #############################################
   # public actions
   #############################################
@@ -141,6 +159,30 @@ class ManifestationController < ApplicationController
     @tabclass = set_tab('periods')
     @page_title = t(:periods) + ' - ' + t(:project_ben_yehuda)
     @pagetype = :periods
+  end
+
+  # Summary cards (work metadata plus a text excerpt) for a batch of works, as JSON keyed by
+  # manifestation id. The author page's flat-list summaries view fetches these lazily as the reader
+  # scrolls, because an author can have hundreds of works and rendering every card with the page
+  # would be prohibitively slow.
+  #
+  # authority_id is the authority whose page the cards are shown on: it decides which involved
+  # authorities the card can leave unsaid, so it is part of the cache key. The key does not cover
+  # the work's collections or authorities, which change far more rarely than the text; the 24-hour
+  # expiry is what bounds staleness there.
+  def snippets
+    ids = params[:ids].to_s.split(',').map(&:to_i).reject(&:zero?).first(SNIPPET_BATCH_LIMIT)
+    authority_id = params[:authority_id].to_i
+    scope = Manifestation.where(id: ids).includes(SNIPPET_INCLUDES)
+    scope = scope.all_published unless current_user&.editor?
+    result = scope.each_with_object({}) do |m, acc|
+      key = "m_snippet_card_#{m.id}_#{authority_id}_#{m.updated_at.to_i}"
+      acc[m.id] = Rails.cache.fetch(key, expires_in: 24.hours) do
+        render_to_string(partial: 'manifestation/snippet_card', formats: [:html],
+                         locals: { m: m, authority_id: authority_id })
+      end
+    end
+    render json: result
   end
 
   # This code was used for 'secondary portal', but not used anymore. We may need to reimplement it at some point
@@ -1288,6 +1330,7 @@ class ManifestationController < ApplicationController
     @translators = @m.translators
     @illustrators = @m.involved_authorities_by_role(:illustrator)
     @photographers = @m.involved_authorities_by_role(:photographer)
+    @annotators = @m.involved_authorities_by_role(:annotator)
     @designers = @m.involved_authorities_by_role(:designer)
     @editors = @m.involved_authorities_by_role(:editor)
     @contributors = @m.involved_authorities_by_role(:contributor)
@@ -1325,10 +1368,119 @@ class ManifestationController < ApplicationController
       RefreshUncollectedWorksCollectionJob.perform_later(uncollected_collection_ids)
       @containments.reject! { |ci| ci.collection.uncollected? }
     end
-    @single_text_volume = @containments.size == 1 && @containments.first.collection.collection_type == 'volume' && !@containments.first.collection.has_multiple_manifestations?
+    select_parent_containment
+    # Computed after select_parent_containment so it reflects the finally-chosen containment. A work
+    # with several parents is never treated as a single-text volume: we still want to show the chosen
+    # parent's "inside X" line and navigation alongside the other-parents sidebar.
+    @single_text_volume = !@multiple_parents && @containments.size == 1 &&
+                          @containments.first.collection.collection_type == 'volume' &&
+                          !@containments.first.collection.has_multiple_manifestations?
+    # Ancestor collection chain (root-first) for the breadcrumbs of the chosen containment.
+    @breadcrumb_collections = breadcrumb_collection_chain(@containments.first)
   end
 
   private
+
+  # When a manifestation belongs to more than one collection, navigating within one collection can
+  # inadvertently land the user on a work that is also in a second collection, whose next/prev
+  # controls would then lead them astray. To prevent this we surface only a single parent collection
+  # -- both in the "inside X" volume list (@volumes) and in the in-collection navigation
+  # (@containments) -- choosing it from (in order of preference):
+  #   1. an explicit parent_collection_id param (carried by sibling next/prev links), or
+  #   2. the Collection#show page the user arrived from (via the referer header), or
+  #   3. the parent with the earliest publication year (fallback for direct/external arrivals).
+  # The remaining parent collections are exposed via @other_parent_collections for a sidebar pane.
+  def select_parent_containment
+    @other_parent_collections = []
+    return if @containments.size <= 1
+
+    @multiple_parents = true
+    chosen = containment_for_hint(parent_collection_hint) ||
+             @containments.min_by { |ci| parent_pub_year(ci) }
+    chosen_volume = parent_volume_for(chosen)
+    @other_parent_collections = (@containments - [chosen])
+                                .map { |ci| parent_volume_for(ci) || ci.collection }
+                                .uniq
+                                .reject { |c| c == chosen_volume }
+                                .sort_by { |c| [c.normalized_pub_year || Float::INFINITY, c.id] }
+    @containments = [chosen]
+    @volumes = [chosen_volume].compact
+  end
+
+  # Builds the ancestor collection chain (root-first) for a chosen containment, used by the
+  # Manifestation breadcrumbs. Starting from the immediate parent collection, it walks up to
+  # the outermost root, so a text in series A in series B in volume C yields [C, B, A]. The
+  # system 'uncollected' collection is not a real container and yields no breadcrumbs. When a
+  # collection has several parents we follow the lowest-id one (a deterministic pick for the
+  # rare multi-parent case); a visited set guards against cycles.
+  def breadcrumb_collection_chain(containment)
+    return [] if containment.nil?
+
+    collection = containment.collection
+    return [] if collection.nil? || collection.uncollected?
+
+    chain = []
+    visited = Set.new
+    current = collection
+    while current && visited.exclude?(current.id)
+      visited.add(current.id)
+      chain << current
+      current = first_parent_collection(current)
+    end
+    chain.reverse
+  end
+
+  # Deterministically returns a single parent collection of the given collection (or nil), the
+  # one with the lowest parent collection_id, eager-loading it to avoid an N+1 while walking the
+  # breadcrumb chain. Ordering directly on parent_collection_items (which is otherwise unordered)
+  # keeps the chosen ancestor stable across DB/query plans.
+  def first_parent_collection(collection)
+    collection.parent_collection_items
+              .includes(:collection)
+              .order(:collection_id)
+              .first&.collection
+  end
+
+  # Returns the containment matching the given collection id, either directly or via its
+  # volume/issue-level ancestor (a Collection#show referer points at the volume, not the sub-series).
+  def containment_for_hint(collection_id)
+    return nil if collection_id.nil?
+
+    @containments.find { |ci| ci.collection_id == collection_id || parent_volume_for(ci)&.id == collection_id }
+  end
+
+  # The volume/issue-level collection a containment ultimately belongs to (itself if it is one, its
+  # volume/issue ancestor otherwise, or nil for collections with no such ancestor). Mirrors the
+  # per-collection logic in Manifestation#volumes so @volumes stays consistent with the chosen parent.
+  def parent_volume_for(containment)
+    collection = containment.collection
+    return collection if collection.volume? || collection.periodical_issue?
+
+    collection.parent_volume_or_isssue
+  end
+
+  # Publication year used to pick the default parent: the volume/issue's year (falling back to the
+  # containing collection's own), with unknowns sorting last.
+  def parent_pub_year(containment)
+    (parent_volume_for(containment) || containment.collection).normalized_pub_year || Float::INFINITY
+  end
+
+  # Extracts a hint about the "current" parent collection from the request: an explicit
+  # parent_collection_id param takes precedence, otherwise a referer pointing at a Collection#show
+  # page (/collections/:id) is used. Returns an Integer id or nil.
+  def parent_collection_hint
+    id = params[:parent_collection_id].presence
+    return id.to_i if id
+
+    ref = request.referer
+    return nil if ref.blank?
+
+    path = URI(ref).path
+    match = path.match(%r{\A/collections/(\d+)})
+    match && match[1].to_i
+  rescue URI::InvalidURIError
+    nil
+  end
 
   def set_manifestation
     @m = Manifestation.find(params[:id])

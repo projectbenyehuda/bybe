@@ -1,4 +1,6 @@
 require "active_support/core_ext/integer/time"
+require 'deployment_helpers'
+require 'site_constants'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -58,10 +60,11 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   # config.cache_store = :mem_cache_store
   # Use a different cache store in production
-  config.cache_store = :mem_cache_store, '127.0.0.1', {namespace: ENV['CACHE_NONCE'], value_max_bytes: 40*1024*1024}
+  config.cache_store = :mem_cache_store, {namespace: ENV['CACHE_NONCE'], value_max_bytes: 40*1024*1024}
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
-  # config.active_job.queue_adapter = :resque
+  config.active_job.queue_adapter = :solid_queue
+  config.solid_queue.connects_to = { database: { writing: :queue } }
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
@@ -95,6 +98,8 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
-  routes.default_url_options = { host: ENV.fetch('APP_HOSTNAME', 'benyehuda.org'), protocol: 'https' }
-  config.action_mailer.default_url_options = { host: ENV.fetch('APP_HOSTNAME', 'benyehuda.org') }
+  unless DeploymentHelpers.assets_compilation?
+    routes.default_url_options = { host: SiteConstants::APP_HOSTNAME, protocol: 'https' }
+    config.action_mailer.default_url_options = { host: SiteConstants::APP_HOSTNAME }
+  end
 end

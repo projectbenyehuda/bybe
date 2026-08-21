@@ -24,7 +24,7 @@
           - unless @text.author.nil?
             %h3
               = t(:by)+' '
-              = link_to "#{@text.author.name} (#{t(:author)})", authority_path(id: @text.author)
+              = authority_link(@text.author, "#{@text.author.name} (#{t(:author)})")
               - unless @text.translator.nil?
                 = t(:translated_by)+' '
                 = link_to "#{@text.translator.name} (#{t(:translator)})", authors_show_path(id: @text.translator.id)

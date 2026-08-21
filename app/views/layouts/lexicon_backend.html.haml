@@ -1,0 +1,46 @@
+!!!
+%html{ dir: :rtl, lang: :he }
+  %head
+    %meta{ content: 'text/html; charset=UTF-8', 'http-equiv' => 'Content-Type' }
+    %meta{ charset: 'utf-8' }
+    %meta{ content: 'width=device-width, initial-scale=1', name: 'viewport' }
+    %title= @page_title || t(:default_page_title)
+
+    %link{ href: 'https://fonts.googleapis.com/css?family=Alef', rel: 'stylesheet' }
+
+    = stylesheet_link_tag 'lexicon_backend'
+    = javascript_include_tag 'lexicon_backend'
+    = csrf_meta_tags
+  %body{ class: ('staging' if staging?) }
+    %header.container-fluid
+      - flash.each do |name, msg|
+        - if %w(notice alert error success).include?(name)
+          .alert.alert-dismissable{ class: %w(error alert).include?(name) ? 'alert-danger' : 'alert-success' }
+            %button.close{ type: :button, data: { dismiss: :alert } } &times;
+            = msg
+
+      %nav.navbar-expand-md.navbar-light.bg-light
+        %a.navbar-brand{ href: lexicon_root_path }= t('lexicon.layout.title')
+        %button.navbar-toggler{ type: :button,
+                                data: { toggle: :collapse, target: '#navbarNavAltMarkup' },
+                                aria: { controls: 'navbarNavAltMarkup', expanded: false, label: 'Toggle navigation' } }
+          %span.navbar-toggler-icon
+        .collapse.navbar-collapse#navbarNavAltMarkup
+          .navbar-nav
+            %a.nav-link{ class: (:active if controller_name == 'entries' && action_name == 'index'),
+                         href: lexicon_entries_path }= t('lexicon.layout.entries')
+            = ' | '
+            %a.nav-link{ class: (:active if controller_name == 'files' && action_name == 'index'),
+                         href: lexicon_files_path }= t('lexicon.layout.files')
+    %main.container-fluid
+      = yield
+      .modal#generalDlg{ tabindex: '-1', role: 'dialog', data: { keyboard: 'true', backdrop: 'true' } }
+        .modal-dialog
+          .modal-content
+            .modal-header
+              %h5.modal-title
+              %button.close{ type: :button, data: { dismiss: :modal }, aria: { label: t(:close) } }
+                %span{ aria: { hidden: true } } &times;
+            .modal-body#generalDlgBody
+    %footer.container-fluid
+    = render 'shared/staging_version_indicator'

@@ -3,3 +3,5 @@
 //= link application.css
 //= link application.js
 //= link jquery.ddslick.min.js
+//= link lexicon_backend.css
+//= link lexicon_backend.js

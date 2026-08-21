@@ -2,20 +2,13 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Collection show page - authority display', :js, type: :system do
-  before do
-    begin
-      Capybara.current_session.driver.browser if Capybara.current_session.driver.respond_to?(:browser)
-    rescue StandardError
-      skip 'WebDriver not available or misconfigured'
-    end
-  end
-
+describe 'Collection show page - authority display' do
   # Create authorities for each role
   let!(:author) { create(:authority, name: 'Author Name') }
   let!(:translator) { create(:authority, name: 'Translator Name') }
   let!(:illustrator) { create(:authority, name: 'Illustrator Name') }
   let!(:photographer) { create(:authority, name: 'Photographer Name') }
+  let!(:annotator) { create(:authority, name: 'Annotator Name') }
   let!(:designer) { create(:authority, name: 'Designer Name') }
   let!(:editor) { create(:authority, name: 'Editor Name') }
   let!(:contributor) { create(:authority, name: 'Contributor Name') }
@@ -30,6 +23,7 @@ RSpec.describe 'Collection show page - authority display', :js, type: :system do
       create(:involved_authority, item: col, authority: translator, role: 'translator')
       create(:involved_authority, item: col, authority: illustrator, role: 'illustrator')
       create(:involved_authority, item: col, authority: photographer, role: 'photographer')
+      create(:involved_authority, item: col, authority: annotator, role: 'annotator')
       create(:involved_authority, item: col, authority: designer, role: 'designer')
       create(:involved_authority, item: col, authority: editor, role: 'editor')
       create(:involved_authority, item: col, authority: contributor, role: 'contributor')
@@ -68,6 +62,10 @@ RSpec.describe 'Collection show page - authority display', :js, type: :system do
         # Verify photographers are displayed
         expect(page).to have_text(I18n.t('involved_authority.abstract_roles.photographer'))
         expect(page).to have_link('Photographer Name', href: authority_path(photographer))
+
+        # Verify annotators are displayed
+        expect(page).to have_text(I18n.t('involved_authority.abstract_roles.annotator'))
+        expect(page).to have_link('Annotator Name', href: authority_path(annotator))
 
         # Verify designers are displayed
         expect(page).to have_text(I18n.t('involved_authority.abstract_roles.designer'))
@@ -119,6 +117,9 @@ RSpec.describe 'Collection show page - authority display', :js, type: :system do
 
         # Should NOT have photographer label
         expect(page).not_to have_text(I18n.t('involved_authority.abstract_roles.photographer'))
+
+        # Should NOT have annotator label
+        expect(page).not_to have_text(I18n.t('involved_authority.abstract_roles.annotator'))
 
         # Should NOT have designer label
         expect(page).not_to have_text(I18n.t('involved_authority.abstract_roles.designer'))

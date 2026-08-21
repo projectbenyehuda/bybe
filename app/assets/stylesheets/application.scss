@@ -2,6 +2,7 @@
  * This is a manifest file that'll automatically include all the stylesheets available in this directory
  * and any sub-directories. You're free to add application-wide styles to this file and they'll appear at
  * the top of the compiled file, but it's generally better to create a new file per style scope.
+ *= require bootstrap-rtl-4.2.1.min
  *= require jquery-ui
  *= require BY_styles_General.css
  *= require BY_styles_Max1279.css
@@ -12,10 +13,75 @@
  *= require BY_styles_Max399.css
  *= require_tree .
  *= require_self
+ *= require slick
 */
-/*
-*= require slick
-*/
+// Collapse all / Expand all in the Authority TOC: the button whose action is
+// currently a no-op is disabled, and greys out like .by-button-v02.disabled.
+#max_collapse:disabled,
+#expand-all:disabled {
+  background-color: #bfbfbf;
+  border-color: #bfbfbf;
+  color: #ffffff;
+  cursor: default;
+}
+
+// Per-collection collapse toggle in the Authority TOC: uses the ben-yehuda chevron
+// glyph ")" (same as the navbar .dropdown-arrow). Expanded points up, collapsed points down.
+.volume-collapse-toggle {
+  font-family: ben-yehuda;
+  font-size: 0.7em;
+  cursor: pointer;
+  display: inline-block;
+  margin-inline-start: 8px;
+  transform: rotate(180deg); // expanded state: chevron points up
+  transition: transform 0.2s ease;
+
+  &.collapsed {
+    transform: rotate(0deg); // collapsed state: chevron points down
+  }
+
+  // In the uncollected-works card the toggle trails a deliberately small explanation line;
+  // pin its size so it matches the chevrons on the volume cards above it.
+  .cwrapper.uncollected & {
+    font-size: 0.85rem;
+  }
+}
+
+// Staging environment indicator: diagonal stripe overlay
+body.staging::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  //background: repeating-linear-gradient(
+  //  -45deg,
+  //  rgba(255, 165, 0, 0.06) 0px,
+  //  rgba(255, 165, 0, 0.06) 10px,
+  //  transparent 10px,
+  //  transparent 30px
+  //);
+}
+
+// Staging environment indicator: running version, always visible at bottom left
+.staging-version-indicator {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 10000; // above the body.staging::before overlay
+  padding: 2px 6px;
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #000;
+  font-size: 11px;
+  line-height: 1.3;
+  direction: ltr;
+  pointer-events: none;
+}
+
 /*body{font-size:14px;} /* default */
 /* temporary fix */
 .credits{
@@ -56,7 +122,13 @@ input[type=checkbox].multiselect_checkbox {
 	box-sizing:border-box;
 	width:44px;
 }
-
+.popover {
+  max-width: 450px;
+}
+.headline-books{
+  gap: 5px;
+  justify-content: unset;
+}
 .author-name-v02 {
   color:white;
 }
@@ -178,6 +250,17 @@ body {
   margin-top: 93px;
 }
 
+/* Only the outermost .top-element (the layout's #content) needs a top margin to clear the
+   fixed header; several views wrap their body in another .top-element nested inside it.
+   That inner margin is normally invisible because it collapses into the outer one, but any
+   element rendered before it (e.g. the returning-visitor donation banner) breaks the
+   collapse and the duplicate margin turns into a band of blank space above the page's
+   heading. !important is needed because the layout's JS sets margin-top inline on every
+   .top-element. */
+.top-element .top-element {
+  margin-top: 0 !important;
+}
+
 header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's carousel track having a virtual width of 50000) */
 .share {cursor: pointer;}
 .pointer {cursor: pointer;}
@@ -262,6 +345,12 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
   height: 2px;
 }
 #chapternav{ width: min-content;}
+// Keep the side TOC navbar within its .side-nav-col (155px). Without this cap,
+// `width: min-content` grows the nav to fit the longest un-truncated item, which
+// defeats the ellipsis truncation on .nav-chapter-name and lets long titles
+// (e.g. periodical article titles in Collection#show) overflow the column and
+// overlap the content card. Capping to 100% lets the existing ellipsis engage.
+.side-nav-col #chapternav { max-width: 100%; }
 #chapter-nav{
   max-height: 400px;
   max-height: clamp(0px, calc(100dvh - 200px), 400px);
@@ -287,6 +376,7 @@ header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's 
 @media screen and (max-width: 991px) {
   #moreMobile .dropdown-menu{ transform: translate3d(5px, 42px, 0px) !important;}
   #moreMobile-author .dropdown-menu{ transform: translate3d(5px, 72px, 0px) !important;}
+  .error-found-text { display: none; }
 }
 @media screen and (max-width: 399px) {
   #moreMobile .dropdown-menu{ transform: translate3d(5px, 28px, 0px) !important;}
@@ -533,9 +623,6 @@ td.label-name{
 small p{
   font-size: 80% !important;
 }
-
-
-@charset "UTF-8";
 
 @font-face {
   font-family: "ben-yehuda";
@@ -938,6 +1025,17 @@ small p{
   line-height: 1.2;
 }
 
+.collection_toc ul {
+  list-style: none;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.collection_toc ul ul {
+  padding-right: 20px;
+  padding-left: 0;
+}
+
 .mainlist .toclist {
   list-style-type:none;
   margin-top: 5px;
@@ -1152,6 +1250,9 @@ p.by-genre-name-v02.headline-2-v02 {
   padding: 5px;
   border-radius: 3px;
 }
+.nav-book-group .headline-2-v02 {
+    white-space: unset;
+}
 
 .sort-type .search-mobile-switch{
 	width: unset;
@@ -1161,6 +1262,30 @@ p.by-genre-name-v02.headline-2-v02 {
 .by-icon-v02 {
   height: 26px;
   width: 26px;
+}
+
+/* Vertically align the elements in the author page top card's second line.
+   The by-icon-v02 glyphs have an 18px line-height inside a 26px CLS box, so
+   they render top-aligned and sit a few pixels above the neighbouring text and
+   toggle (which are centered), making the row look wobbly. Center the glyph in
+   its box and use consistent center alignment for the icon group. */
+.author-page-top-info-card {
+  .by-icon-v02 {
+    line-height: 26px;
+  }
+
+  .top-left-icons-group {
+    align-items: center;
+  }
+
+  /* Tie the intellectual-property glyph to its label and separate it from the
+     life years. This is an RTL row, so the life years sit to the glyph's right
+     and its label to its left: add space on the right (away from the years),
+     and drop the left margin so the glyph hugs its label. */
+  .copyright-icon {
+    margin-right: 8px;
+    margin-left: 0;
+  }
 }
 
 .share-name {
@@ -1176,42 +1301,53 @@ p.by-genre-name-v02.headline-2-v02 {
   height: auto;
 }
 
-/* 120 was wrapping after by-icon-v02 CLS optimization */
+/* 120 was wrapping after by-icon-v02 CLS optimization.
+   Safari measures the label slightly wider than Chrome/Firefox and wrapped even
+   at 122px, so keep the label on one line and let the button grow to fit it. */
 .donation-btn-v02 {
   min-width: 122px;
+  white-space: nowrap;
 }
 
 /* Tag-proposal popup: the mode toggle (suggest / pick from full list) and the
-   tag-suggestion heuristic strip. Both are jQuery UI tab navs; the layout that
-   used to be set inline on the <ul> lives here so mobile can override it. */
-.tag-mode-tabs {
+   tag-suggestion heuristic strip. Both are Bootstrap tab navs, and Bootstrap's
+   .nav / .nav-link class names collide with the side-menu rules in
+   BY_styles_General.css (.nav { width: 100px }, .nav-link { width: 100px }),
+   which squeezes both strips into a 100px column. The strips therefore restore
+   their own widths here, where mobile can also override them. */
+.tag-mode-tabs,
+.tag-heuristic-tabs {
   display: flex;
+  width: 100%;
 }
 
 .tag-heuristic-tabs {
-  display: flex;
   flex-wrap: wrap;
   font-size: 80%;
 }
 
-/* .by-card-content-v02 ul sets list-style: disc, which leaks into the strips
-   wherever the jQuery UI tab stylesheet loses the cascade */
+/* .by-card-content-v02 ul sets list-style: disc, which leaks into the strips */
 .tag-mode-tabs > li,
 .tag-heuristic-tabs > li {
   list-style: none;
 }
 
+/* on desktop each tab is only as wide as its own label (see .nav-link above) */
+.tag-mode-tabs > li > a,
+.tag-heuristic-tabs > li > a {
+  width: auto;
+}
+
 @media screen and (max-width: 767px) {
   /* mode toggle becomes a full-width, two-up segmented control */
-  .ui-tabs .tag-mode-tabs {
-    width: 100%;
+  .tag-mode-tabs {
     margin: 0 0 12px;
     padding: 0;
     border: 0;
     background: none;
   }
 
-  .ui-tabs .tag-mode-tabs > li {
+  .tag-mode-tabs > li {
     float: none;
     flex: 1 1 50%;
     min-width: 0;
@@ -1220,25 +1356,24 @@ p.by-genre-name-v02.headline-2-v02 {
     white-space: normal;
   }
 
-  .ui-tabs .tag-mode-tabs > li .ui-tabs-anchor {
+  .tag-mode-tabs > li > a {
     float: none;
     display: block;
+    width: auto;
     padding: 10px 6px;
     white-space: normal;
   }
 
   /* heuristics become wrapping chips, so all of them stay visible */
-  .ui-tabs .tag-heuristic-tabs {
-    flex-wrap: wrap;
+  .tag-heuristic-tabs {
     gap: 6px;
-    width: 100%;
     margin: 0 0 12px;
     padding: 0;
     border: 0;
     background: none;
   }
 
-  .ui-tabs .tag-heuristic-tabs > li {
+  .tag-heuristic-tabs > li {
     float: none;
     flex: 0 0 auto;
     margin: 0;
@@ -1246,14 +1381,11 @@ p.by-genre-name-v02.headline-2-v02 {
     white-space: normal;
   }
 
-  .ui-tabs .tag-heuristic-tabs > li .ui-tabs-anchor {
+  .tag-heuristic-tabs > li > a {
     float: none;
     display: block;
+    width: auto;
     padding: 6px 12px;
-  }
-
-  #add_tagging_tabs .ui-tabs-panel {
-    padding: 0;
   }
 }
 
@@ -1302,17 +1434,599 @@ p.by-genre-name-v02.headline-2-v02 {
   align-items: center;
   gap: 6px;
   margin-bottom: 8px;
+}
+.js-markdown-action {
+  flex: 1 1 140px;
+  min-width: 0;
+}
 
-  .js-markdown-action {
-    flex: 1 1 140px;
+.js-markdown-action-apply {
+  flex: 0 0 auto;
+}
+.author-side-nav-col{
+	position: sticky;
+  top: 138px;
+	max-height: calc(100vh - 138px);
+	overflow-y: auto;
+}
+
+/* The collapse/expand/sort bar lives inside the (narrow) TOC column. It is a
+ * non-wrapping flexbox, so on narrow viewports the two buttons plus the sort
+ * dropdown could not fit on one line and spilled out of the page. That made the
+ * document wider than the viewport, which widened the layout viewport, which in
+ * turn stretched the fixed #header (width: 100%) past the screen and pushed the
+ * sticky nav column off its 50px gutter and on top of the author metadata.
+ * Letting the bar wrap keeps the page within the viewport. */
+.sticky-fold {
+	flex-wrap: wrap;
+
+	/* The sort label + <select> share a <p>; both need to be shrinkable, or the
+	 * select's widest option sets an un-shrinkable min-content width. */
+	p {
+		min-width: 0;
+	}
+
+	select {
+		max-width: 100%;
+	}
+
+	/* Grouped (volumes) view vs. flat texts list: each mode's actions are shown
+	 * only in that mode. .flat-mode is set by setTocBarMode() (authors/toc). */
+	.toc-flat-action {
+		display: none;
+	}
+
+	&.flat-mode {
+		.toc-grouped-action {
+			display: none;
+		}
+
+		.toc-flat-action {
+			display: flex;
+		}
+	}
+}
+
+/* Summaries view of the flat texts list: an excerpt card under each work,
+ * matching the dictionary list's entry summaries. The card is a block inside
+ * the work's <li>, which otherwise lays its title out inline. */
+.toc-snippet {
+	margin-top: 6px;
+	margin-left: 0;
+
+	/* The work's metadata, above the excerpt: kept to as few lines as possible, so the items flow
+	 * along one line and wrap only when the card runs out of width. */
+	.toc-snippet-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2px 12px;
+		margin-bottom: 4px;
+	}
+}
+
+/* The latest-works pane (shared/_latest_works_by_author) has a title longer than the
+   sidebar it sits in is wide, and the base `.headline-2-v02` rule (BY_styles_General.css)
+   truncates it with an ellipsis. In this pane -- on the Authority TOC and on public
+   lexicon entries alike -- let it wrap onto as many lines as it needs. */
+#author-whats-new-bg p.headline-2-v02 {
+  text-wrap: wrap; /* overrides the base rule's `text-wrap: nowrap` */
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Sticky navbar for lexicon entries.
+ * --lexicon-sticky-top is measured from the fixed #header at runtime (see
+ * lexicon/entries/_navbar), because the header's height varies: the entry
+ * header adds a breadcrumbs/actions row that stays visible when scrolled, and
+ * editors get an extra "edit" button plus the dashboard link in the top bar.
+ * The literals below are only the pre-JS fallback. */
+.peach2-lexicon .side-menu-area {
+	position: sticky;
+  top: var(--lexicon-sticky-top, 80px);
+	align-self: flex-start;
+}
+
+.peach2-lexicon .side-menu-area .book-nav-full {
+	max-height: calc(100vh - var(--lexicon-sticky-top, 80px) - 20px);
+	overflow-y: auto;
+}
+
+@media only screen and (max-width: 991px) {
+  .author-side-nav-col {
+    position: sticky;
+    top: 120px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  // Same fix as desktop (min-width: 992px block below): prevent the content col
+  // from wrapping past the spacer and overlapping the sticky nav column.
+  // Unlike desktop this must cover BOTH columns: below 992px the col-lg-4
+  // sidebar column stacks full-width under the col-lg-8 one, so the thin nav
+  // column floats over it too and it needs to keep its own spacer on the line.
+  .author-page-content .col-12 > .row {
+    flex-wrap: nowrap;
+  }
+
+  .author-page-content .col-12 > .row > .col:not(.author-side-menu-area) {
     min-width: 0;
   }
 
-  .js-markdown-action-apply {
-    flex: 0 0 auto;
+  .peach2-lexicon .side-menu-area {
+    position: sticky;
+    top: var(--lexicon-sticky-top, 60px);
+    align-self: flex-start;
+  }
+
+  .peach2-lexicon .side-menu-area .book-nav-full {
+    max-height: calc(100vh - var(--lexicon-sticky-top, 60px) - 20px);
+    overflow-y: auto;
   }
 }
 
+// footnote reference/body mismatch report shown above the markdown editors
+// (shared/_footnote_discrepancies)
+.footnote-discrepancies {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+  .footnote-discrepancies-toggle {
+    display: block;
+    font-weight: bold;
+    color: #721c24;
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+      color: #721c24;
+      text-decoration: underline;
+    }
+  }
+
+  h5 {
+    margin-top: 10px;
+  }
+
+  .footnote-discrepancies-list {
+    margin-bottom: 0;
+  }
+
+  // the whole reported row is clickable, as is each line number within it
+  li.js-goto-markdown-line {
+    cursor: pointer;
+    padding: 1px 4px;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: rgba(114, 28, 36, 0.1);
+    }
+  }
+
+  a.js-goto-markdown-line {
+    color: #721c24;
+    text-decoration: underline;
+
+    &:hover,
+    &:focus {
+      color: #491217;
+    }
+  }
+/* Navbar hover expansion - expand clipped content on hover */
+/* Author TOC navbar - .truncate elements */
+.book-nav-full .truncate:hover,
+.nav-book-group .truncate:hover,
+.book-type .truncate:hover {
+  width: auto;
+  max-width: max-content;
+  overflow: visible;
+  text-overflow: clip;
+  position: relative;
+}
+/* Fix: prevent sidebar overlap at 992-1279px viewports.
+ * The inner row (spacer + content col) can flex-wrap at narrow widths,
+ * causing the content col to take full row width and overlap the fixed sidebar.
+ * flex-wrap: nowrap forces them to share the row; min-width: 0 lets the
+ * content col shrink below its natural min-content-size. */
+@media (min-width: 992px) {
+  .author-page-content .col-12.col-lg-8 > .row {
+    flex-wrap: nowrap;
+  }
+
+  .author-page-content .col-12.col-lg-8 > .row > .col:not(.author-side-menu-area) {
+    min-width: 0;
+  }
+}
+
+/* Navbar items always wrap - full text visible without hover (needed for mobile) */
+.author-side-nav-col .truncate,
+.side-nav-col .truncate {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word !important;
+}
+
+.author-side-nav-col .book-type .nav-author a,
+.author-side-nav-col .nav-link-chapter a,
+.side-nav-col .book-type .nav-author a,
+.side-nav-col .nav-link-chapter a {
+  white-space: normal !important;
+}
+
+/* Collection show - .side-menu-item links */
+.binder-texts-list .side-menu-item:hover {
+  width: auto;
+  max-width: max-content;
+  overflow: visible;
+  white-space: nowrap;
+  position: relative;
+  z-index: 100;
+  background-color: white;
+  padding-left: 4px;
+  padding-right: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+/* Add visual feedback on navbar hover - shadow only, no padding to avoid layout shift */
+.author-side-nav-col:hover .book-nav-full,
+.author-side-nav-col:hover .mainlist,
+.side-nav-col:hover #chapter-nav,
+.side-nav-col:hover #chapternav,
+.side-nav-col:hover .binder-texts-list {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Collapse arrow indicators for navbar */
+.collapse-arrow {
+  margin-left: 4px;
+  user-select: none;
+}
+
+/* Bottom-of-section collapse button */
+.section-collapse-btn {
+  list-style: none;
+  text-align: center;
+  padding: 6px 0 2px;
+  margin-top: 2px;
+  border-top: 1px solid var(--pink-10);
+}
+
+.section-collapse-link {
+  color: var(--pink-100);
+  font-size: 11px;
+  text-decoration: none;
+  display: block;
+  padding: 2px;
+  opacity: 0.6;
+  user-select: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+
+  &:hover {
+    opacity: 1;
+    text-decoration: none;
+    color: var(--pink-100);
+  }
+}
+
+/* Mobile navbar expansion styles (max-width: 991px) */
+@media only screen and (max-width: 991px) {
+  /* On mobile only the thin navbar shows; the full navbar stays hidden until
+     the user expands it (which adds the .mobile-expanded class handled below). */
+  .author-side-nav-col .book-nav-full:not(.mobile-expanded) {
+    display: none;
+  }
+
+  .book-nav-full.mobile-expanded {
+    display: block;
+    position: fixed;
+    right: 0;
+    top: 120px;
+    width: 300px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+    margin-right: 50px;
+  }
+
+  .book-nav-full.mobile-expanded .side-nav-in-page .horizontal-collapse-expand {
+    display: flex !important;
+    height: 34px;
+    width: 34px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-navbar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  .mobile-navbar-backdrop.active {
+    display: block;
+  }
+}
+
+// Fix #authorsDlg (multi-author selection modal) on desktop:
+// The original bug: .modal-dialog has margin-top:100px (BY CSS) and .by-popup-v02
+// adds margin-top:5vh, so the total height is 100px + 5vh + popup-height which can
+// exceed 100vh, causing Bootstrap to add overflow-y:auto (a second scrollbar) to the
+// modal overlay. .authors-names-area's own overflow:auto creates a third.
+//
+// Fix: cap the flex-popup and the popup itself at (100vh - 100px), remove the extra
+// 5vh margin, and give the list a specific max-height so it is the only thing that
+// scrolls. Follows the same pattern used for #texts-about-author-popup in BY CSS.
+@media screen and (min-width: 992px) {
+  #authorsDlg {
+    overflow: hidden !important; // prevent Bootstrap from adding overflow-y:auto
+
+    // Cap at viewport minus the 100px top margin so nothing overflows the modal
+    .flex-popup {
+      max-height: calc(100vh - 100px);
+      overflow: hidden;
+    }
+
+    .by-popup-v02 {
+      margin-top: 0; // remove 5vh that compounds with the 100px dialog margin
+      max-height: calc(100vh - 100px);
+      overflow: hidden;
+    }
+
+    // Only this element scrolls.
+    // 310px = 100px dialog margin + ~100px card header + 30px card padding
+    //        + ~47px bottom buttons + 33px buffer
+    .limited-height-popup-content-v02 {
+      max-height: calc(100vh - 310px);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .authors-names-area {
+      overflow: visible; // no nested scrollbar; parent handles it
+    }
+  }
+}
+
+// Authority TOC flat-list filters pane (bead ln5)
+// Mirror the /works filters (.side-sort) treatment: make the "filter by"
+// headline inline so the floated .reset link shares its line and is cleared
+// by the collapsible blocks below. Without this the block-level headline
+// pushes the float onto its own line, and the first filter section's label
+// wraps around it and the work-title input overlaps the label.
+.author-side-sort .by-card-content-v02 .headline-2-v02 {
+  display: inline;
+}
+
+// The facet checkbox lists inherit .by-card-content-v02 ul's 22px right
+// padding (meant for bulleted lists), which indents each checkbox well away
+// from the card edge and cramps the labels so longer ones (e.g. "מאמרים
+// ומסות") wrap. Trim it to give the labels more room. (0,0,2,1) beats the
+// 22px rule's (0,0,1,1).
+.author-side-sort .by-card-content-v02 ul {
+  padding-right: 8px;
+}
+
+// JS-controlled date range slider positioning + histogram bars.
+// (BY_*.css supplies the base look; these only enable dynamic control.)
+#toc-date-range {
+  position: relative;
+  margin-top: 4px;
+}
+#toc-date-range-inside {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#toc-date-histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+}
+.toc-hist-bar {
+  flex: 1 1 auto;
+  min-width: 1px;
+  background-color: #907989;
+}
+.toc-facet-count {
+  color: #907989;
+}
+
+// Filter panes (/works, /authors, /collections, lexicon list) lay their option
+// lists out in CSS columns (.nested-list, column-count: 2), so each option gets
+// only about half the (already narrow) pane. Labels are display: inline-block
+// site-wide, which makes them unbreakable atomic boxes: as soon as a label is
+// wider than what is left of the line beside its 18px checkbox, the whole label
+// drops to the next line and the checkbox is stranded alone on its own line —
+// looking, at a glance, like a checkbox belonging to the label above it. Laying
+// the row out as a flex line instead lets the label wrap its own text while
+// staying beside its checkbox, at any zoom level or label length.
+.filter-checkbox {
+  display: flex;
+  align-items: flex-start;
+
+  // Also keep the row whole when the CSS-column breaker picks a break point.
+  -webkit-column-break-inside: avoid; // Safari, older Chrome
+  page-break-inside: avoid; // Firefox
+  break-inside: avoid;
+
+  > input[type='checkbox'] {
+    flex: none; // never let the checkbox itself be squeezed
+  }
+
+  > label {
+    min-width: 0; // allow the label to shrink below its max-content width
+  }
+}
+
+// In list-view result headers (.headline-2-v02), push the permalink to the
+// left edge of its container (away from the result count) and de-emphasize it
+// by overriding the container's bold with a regular weight.
+.by-card-header-v02 .headline-2-v02 .permalink-btn {
+  float: left;
+  font-weight: normal;
+}
+
+// The header statistics box only has room for a single stat below 992px, so
+// BY_styles_Max991.css keeps `:first-child` and hides the rest. That picked the
+// works count by accident of source order; once the box was reordered the lone
+// mobile stat silently became the volumes count. Select the stat we actually
+// want to keep by marker class instead -- source order also differs between the
+// Hebrew and the LTR variants of the box.
+@media only screen and (max-width: 991px) {
+  .statistics-box-v02 > .statistics-v02 {
+    display: none;
+
+    &.mobile-stat {
+      display: block;
+    }
+  }
+}
+
+// The mobile filter toggle and its "apply" companion (shared/_mobile_filter_toggle)
+// share one row. That row is inside the fixed page header, so both stay on
+// screen while the user scrolls a long filter panel -- which is the whole point
+// of hoisting "apply" out of the foot of that panel. Both pages that render the
+// partial want this layout, but at different breakpoints, hence a mixin.
+@mixin mobile-filter-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  // .by-button-v02 is a fixed 32px tall box, so a label that wraps to a
+  // second line spills out of it. As flex items these buttons would happily
+  // be squeezed narrow enough to wrap.
+  button {
+    flex: none;
+    white-space: nowrap;
+  }
+}
+
+// Browse lists (/works, /authors, /collections): below the Bootstrap `md`
+// breakpoint the filter column and the list column stack, and the filter panel
+// comes first in source order -- which pushed the list off the first screenful
+// on mobile. Collapse the panel there and let #mobile_filter_btn (rendered in
+// the page header, above the list) toggle it open.
+@media only screen and (max-width: 767px) {
+  #sort_filter_panel.mobile-collapsible-filters {
+    display: none;
+  }
+
+  body.mobile-filters-open #sort_filter_panel.mobile-collapsible-filters {
+    display: block;
+  }
+
+  .mobile-filter-toggle {
+    @include mobile-filter-toggle-row;
+  }
+
+  // "Apply" only means something while the panel is open.
+  #apply_mobile_filters {
+    display: none;
+  }
+
+  body.mobile-filters-open #apply_mobile_filters {
+    display: block;
+  }
+}
+
+// This row lives in .author-page-top-sort-mobile, which BY_styles_Max991.css
+// reveals at 991px -- but between 768px and 991px the two columns are still
+// side by side and the panel is permanently visible, so neither button has a
+// job to do. Hide the whole wrapper, not just the buttons: it is a flex item
+// in the authors header and an empty one would still take its margins.
+@media only screen and (min-width: 768px) {
+  .author-page-top-sort-mobile.mobile-filter-toggle {
+    display: none;
+  }
+}
+
+// Authority TOC (/authors/:id) filters pane. Hidden until one of the flat sort
+// orders puts the list into filter mode and adds .pane-visible (showFilterPane
+// in authors/_generated_toc). A class rather than an inline display, so the
+// mobile rules below can override it.
+#toc_filters_pane {
+  display: none;
+}
+
+#toc_filters_pane.pane-visible {
+  display: block;
+}
+
+// The TOC's "mobile" band is everything below 992px: that is where BY CSS
+// swaps .author-page-top-sort-desktop for .author-page-top-sort-mobile and
+// shrinks .author-side-nav-col -- the column holding the pane -- to a 34px
+// rail. (The browse lists' band is below 768px, where their columns stack.)
+@media only screen and (max-width: 991px) {
+  .toc-mobile-filter-toggle {
+    @include mobile-filter-toggle-row;
+  }
+
+  // "Apply" only means something while the pane is open.
+  .toc-mobile-filter-toggle #apply_mobile_filters {
+    display: none;
+  }
+
+  body.mobile-filters-open .toc-mobile-filter-toggle #apply_mobile_filters {
+    display: block;
+  }
+
+  // The pane cannot be shown in place inside that 34px rail, so entering filter
+  // mode is not enough here: reveal it as a fixed full-width sheet below the
+  // page header -- the treatment this page already gives its in-page navbar
+  // when expanded (.book-nav-full.mobile-expanded) -- and only while
+  // #mobile_filter_btn reports it open.
+  //
+  // --toc-sheet-top is measured from the fixed #header at runtime (see
+  // authors/_author_top), because this page's header is both taller than the
+  // literal below and variable: it carries a breadcrumbs and an author row, and
+  // shrinks again once the page is scrolled. The literal is only the pre-JS
+  // fallback. Without it the sheet's own header -- "filter by" and the reset
+  // link -- hides behind the page header.
+  #toc_filters_pane.pane-visible {
+    display: none;
+  }
+
+  body.mobile-filters-open #toc_filters_pane.pane-visible {
+    display: block;
+    position: fixed;
+    top: var(--toc-sheet-top, 120px);
+    right: 0;
+    left: 0;
+    max-height: calc(100vh - var(--toc-sheet-top, 120px));
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Collection#show: the genre glyph preceding a work title floats above the
+   text, because .by-icon-v02 is an 18px box aligned with vertical-align:
+   text-top inside a 16pt/18pt headline. Center it on the title's line box
+   instead. */
+.proofable .by-card-header-v02 .headline-1-v02 .by-icon-v02 {
+  vertical-align: middle;
+}
+
+/* An intellectual-property statement wrapped as one unit inside a .metadata
+   flex row: the glyph is inline (so it isn't stretched to the 26px CLS box
+   reserved for flex items) and hugs its label with the same single space the
+   genre glyph has before a work title. */
+.ip-statement .copyright-icon {
+  margin-left: 0;
+}
 // footnote reference/body mismatch report shown above the markdown editors
 // (shared/_footnote_discrepancies)
 .footnote-discrepancies {

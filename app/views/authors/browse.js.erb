@@ -1,22 +1,7 @@
 $('#thelist').html("<%= j(render partial: 'browse_list') %>");
 $('#sort_filter_panel').html("<%= j(render partial: 'browse_filters') %>");
-
-<% if @filters.present? %>
-// Filters are active, show filter panel and hide intro
-$('#browse_intro').hide();
-$('#sort_filter_panel').show();
-setTimeout(function() {
-  $('.toggle-button-no').css('display', 'none');
-  $('.toggle-button-yes').css('display', 'block');
-}, 0);
-<% else %>
-// No filters active, show intro and hide filter panel
-$('#browse_intro').show();
-$('#sort_filter_panel').hide();
-setTimeout(function() {
-  $('.toggle-button-no').css('display', 'block');
-  $('.toggle-button-yes').css('display', 'none');
-}, 0);
-<% end %>
-
 stopModal('spinnerdiv');
+// After filters/search/pagination replace the list, the (possibly few) results may
+// render above the current scroll position, leaving the viewport apparently empty.
+// Scroll back to the top so the freshly rendered results are visible.
+window.scrollTo(0, 0);

@@ -1,0 +1,380 @@
+he:
+  file: קובץ
+  entry: ערך
+  lexicon_name: לקסיקון הספרות העברית החדשה
+  to_lexicon_entries: לערכי הלקסיקון
+  to_old_lexicon_page: "לעמוד בלקסיקון הישן"
+  lexicon_show_person: הצגת ערך
+  lex_prev_entry: לרשומה הקודמת
+  lex_next_entry: לרשומה הבאה
+  author_in_pby: היוצר/ת מופיע/ה בפרויקט בן־יהודה
+  about_the_author_and_their_work: על היוצר/ת ויצירתה/ו
+  migration_results_edit_later: להלן תוצאות ההסבה האוטומטית. אפשר לתקן במסך העריכה.
+  entrytype: סוג הערך
+  ingested: נקלט
+  links: קישוריוֹת
+  text: טקסט
+  bib: ביבליוגרפיה
+  classified: זוהה סוג הערך
+  unclassified: לא זוהה סוג הערך
+  galron_entries: ערכים בלקסיקון הספרות העברית החדשה
+  lexicon:
+    layout:
+      entries: ערכי הלקסיקון
+      files: קבצים להסבה
+      title: לקסיקון הספרות העברית החדשה - ממשק ניהול
+    entries:
+      destroy:
+        success: רשומת לקסיקון נמחקה
+      edit:
+        title: עריכת רשומת לקסיקון
+        properties: מאפיינים
+        attachments: קבצים מצורפים
+        citations: מראי מקום
+        works: יצירות
+        links: קישוריות
+        show: הצג
+        back: חזרה לרשימה
+        migration_in_progress: "ערך זה נמצא בתהליך הסבה או בדיקה."
+        back_to_workbench: חזרה למסך הבדיקה
+      index:
+        add_person: הוספת יוצר/ת
+        add_publication: הוספת פרסום
+        title: רשימת ערכי הלקסיקון
+        filter_title: כותרת
+        filter_title_placeholder: חיפוש לפי כותרת...
+        filter_status: סטטוס
+        all_statuses: כל הסטטוסים
+        filter: סנן
+        clear_filters: נקה סינונים
+        my_locked_title: ערכים נעולים על ידך
+        locked_by_others_title: ערכים נעולים על ידי עורכים אחרים
+        other_title: ערכים אחרים
+        locked_by: נעול על ידי
+        unlock_confirm: לשחרר את הנעילה?
+      unlock:
+        success: הנעילה שוחררה בהצלחה!
+        not_locked_by_you: הרשומה אינה נעולה על ידך!
+      list:
+        page_title: רשימת ערכי לקסיקון הספרות העברית החדשה
+        page_header: רשימת הערכים - לקסיקון הספרות העברית החדשה
+        entries_list_breadcrumb: רשימת ערכי הלקסיקון
+        welcome_title: ברוכים הבאים לרשימת ערכי לקסיקון הספרות העברית החדשה
+        intro_html: במאגר של לקסיקון הספרות העברית החדשה ישנם <strong>%{count} ערכים</strong> מפורסמים. הרשימה מציגה את כל הערכים הזמינים לציבור.
+        description: הלקסיקון מכיל מידע ביו-ביבליוגרפי על יוצרים ויוצרות בספרות העברית, וכן פרסומים ועיתונים היסטוריים.
+        entries_count:
+          one: ערך אחד
+          other: "%{count} ערכים"
+        filters:
+          entry_name: "שם הערך"
+          name_placeholder: "חיפוש לפי שם"
+          name_contains: "שם מכיל: %{name}"
+          gender_title: "מגדר"
+          gender_male: "זכר"
+          gender_female: "נקבה"
+          gender_other: "אחר"
+          gender_unknown: "לא ידוע"
+          birth_years: "שנות לידה"
+          death_years: "שנות פטירה"
+          from_year: "משנת"
+          to_year: "עד שנת"
+          year_placeholder: "שנה"
+          birth_from: "נולד משנת: %{year}"
+          birth_to: "נולד עד שנת: %{year}"
+          death_from: "נפטר משנת: %{year}"
+          death_to: "נפטר עד שנת: %{year}"
+      show:
+        to_pby_person: לדף היוצר בפרויקט בן־יהודה
+        unsupported_entry_type: סוג פריט לא נתמך
+        profile_image_alt: תמונת פרופיל
+        profile_image_badge: תמונת פרופיל
+        unpublished_warning: "אזהרה: סטטוס הערך הוא '%{status}', ולכן אינו גלוי לציבור."
+        last_updated: "עודכן לאחרונה ב: %{date}"
+        back_to_migration_list: חזרה לרשימת ההסבה
+      show_person:
+        pages: p.
+        authority_identifiers: מזהים חיצוניים
+    attachments:
+      create:
+        file_exists: "קובץ בשם זה כבר קיים: %{filename}"
+      index:
+        attach_new_file: צרף קובץ חדש
+        filename: שם הקובץ
+        size: גודל
+        preview: תצוגה מקדימה
+        copy_link: העתקת קישור ללוח
+    citation_authors:
+      form:
+        add_author: הוספת יוצר/ת
+    citations:
+      header:
+        subject_line: על ״%{subject}״
+        general: כללי
+      index:
+        add_citation: הוספת מראה מקום
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+      form:
+        save_before_adding_authors: נא לשמור את מראה המקום לפני הוספת מחברים
+    linked_people:
+      index:
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+    person_works:
+      index:
+        add_work: הוספת יצירה
+        drag_to_reorder: גרור לשינוי סדר
+        reordering_failed: שינוי הסדר נכשל
+      edit:
+        title: עריכת יצירה
+      form:
+        associated_people: אישים מקושרים
+        no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
+        select_publication: בחר פרסום...
+        select_collection: בחר אוסף...
+    links:
+      index:
+        add_link: הוספת קישורית
+        no_links: אין קישוריות עדיין
+    files:
+      index:
+        title: הסבת הלקסיקון
+        subtitle: רשימת הקבצים
+        title_placeholder: חיפוש לפי כותרת...
+        fname_placeholder: חפש לפי שם קובץ...
+        entry_status_filter: סטטוס ערך
+        my_locked_title: קבצים נעולים על ידי
+        locked_by_others_title: קבצים נעולים על ידי עורכים אחרים
+        other_title: קבצים אחרים
+        migration_item_count: פריטים
+        file_size: גודל (ק״ב)
+      migrate:
+        success: ההסבה החלה
+        title: התחל הסבה
+      redo_migrate:
+        title: הסב מחדש
+        confirm: "הסבה מחדש תמחק את כל התיקונים והשינויים הידניים שבוצעו לערך זה. האם להמשיך?"
+    header:
+      title: לקסיקון הספרות העברית החדשה
+      part_of_pby: חלק מפרויקט בן־יהודה
+    people:
+      create:
+        success: נוצרה ישות חדשה
+      update:
+        success: עודכן!
+    publications:
+      create:
+        success: נוצרה ישות חדשה
+      update:
+        success: עודכן!
+    verification:
+      queue:
+        title: רשימת הסבות לבדיקה
+        columns:
+          title: כותרת
+          type: סוג
+          status: סטטוס
+          progress: התקדמות
+          migration_item_count: פריטים
+          last_updated: עדכון אחרון
+          actions: פעולות
+        actions:
+          start: התחל בדיקה
+          continue: המשך בדיקה
+          start_or_continue: לבדיקת ההסבה
+        filters:
+          all: הכל
+          draft: טיוטה
+          verifying: בבדיקה
+          verified: מאומת
+          error: שגיאה
+          escalated: הועבר לבדיקה נוספת
+          person: יוצר/ת
+          publication: פרסום
+          max_items_label: "מקסימום פריטים"
+          max_items_placeholder: "למשל 20"
+        time_updated: "לפני %{time}"
+        my_locked_title: ערכים שנעלתי
+        locked_by_others_title: ערכים נעולים על ידי עורכים אחרים
+        other_title: ערכים אחרים
+      show:
+        title: "אימות: %{entry_title}"
+        back_to_queue: חזור לרשימה
+        edit_entry: עריכת הערך במסך העריכה
+        save_progress: שמור התקדמות
+        mark_verified: סמן כבדוק
+        escalate: העברה לבדיקה נוספת
+        escalate_confirm: הערך יועבר לבדיקה נוספת. ניתן להוסיף הערות המסבירות את הסיבה להעברה.
+        progress: התקדמות
+        hide_verified: הסתר פריטים בדוקים
+        release_lock: שחרר נעילה
+      unlock:
+        success: הנעילה שוחררה בהצלחה!
+        not_locked_by_you: הרשומה אינה נעולה על ידך!
+      checklist:
+        title: רשימת בדיקה
+        overall_notes: הערות כלליות
+        person:
+          authority: ישות במאגר
+          title: כותרת
+          life_years: שנות חיים
+          bio: ביוגרפיה
+          works: יצירות
+          citations: מראי מקום
+          links: קישוריוֹת
+          attachments: קבצים מצורפים
+          external_identifiers: מזהים חיצוניים
+          date_of_manual_update: תאריך עדכון ידני אחרון
+        publication:
+          title: כותרת
+          description: תיאור
+          toc: תוכן עניינים
+          az_navbar: ניווט א-ב
+          links: קישוריוֹת
+          attachments: קבצים מצורפים
+          external_identifiers: מזהים חיצוניים
+          date_of_manual_update: תאריך עדכון ידני אחרון
+      source:
+        header: קובץ מקור
+        file_not_found: "⚠️ קובץ מקור לא נמצא"
+      migrated:
+        header: הערך המוסב
+        jump_to: "קפיצה אל:"
+        edit: ערוך
+        add_citation: הוסף מראה מקום
+        add_link: הוסף קישור
+        delete_link: מחק קישור
+        delete_link_confirm: למחוק את הקישורית לצמיתות?
+        upload_file: העלה קובץ
+        remove_attachment: הסר קובץ
+        profile_image_badge: תמונת פרופיל
+        use_as_profile: הצג כתמונת פרופיל
+        unsupported_type: "סוג פריט לא נתמך: %{type}"
+        verified: בדוק
+        not_verified: לא בדוק
+        mark_verified: סמן כבדוק
+      sections:
+        title_and_years: שם ותאריכים
+        biography: ביוגרפיה
+        works_section: יצירות
+        authority_control_section: מזהים חיצוניים
+        citations_section: מראי מקום
+        links_section: קישוריוֹת
+        attachments_section: קבצים מצורפים
+        description_section: תיאור
+        toc_section: תוכן עניינים
+        az_navbar_section: ניווט א-ב
+        no_biography: "(אין ביוגרפיה)"
+        no_works: "(אין יצירות)"
+        no_citations: "(אין מראי מקום)"
+        no_links: "(אין קישוריוֹת)"
+        no_attachments: "(אין קבצים מצורפים)"
+        date_of_manual_update_section: תאריך עדכון ידני אחרון
+        no_date_of_manual_update: "(אין תאריך עדכון ידני)"
+        no_description: "(אין תיאור)"
+        no_toc: "(אין תוכן עניינים)"
+        has_az_navbar: "סרגל ניווט א-ב: מסומן"
+        no_az_navbar: "סרגל ניווט א-ב: לא מסומן"
+        external_identifiers_section: מזהים חיצוניים
+        no_external_identifiers: "(אין מזהים חיצוניים)"
+        citation_from_publication: "ממקור:"
+        citation_pages: "עמ׳:"
+        citation_link: "קישורית:"
+        citation_backup_file: "גיבוי:"
+        attachment_used_in_citation: "בשימוש במ״מ:"
+        count_mismatch: "אי-התאמה בספירה: %{php_count} פריט/ים בקובץ המקור, אך %{migrated_count} פריטים מועברים. ייתכן שאי-ההתאמה מוצדקת ואינה מונעת את אישור הערך."
+        bio_count_mismatch: "אי-התאמה בספירת מילים: בביוגרפיה שהומרה %{migrated_count} מילים, אך במקור הישן %{legacy_count}. ייתכן שאי-ההתאמה מוצדקת ואינה מונעת את אישור הערך."
+        compare_button: "השוואה"
+        auto_match_works_btn: "התאמה אוטומטית של יצירות לפרסומים"
+        auto_match_works_heading: "התאמה אוטומטית של יצירות לפרסומים"
+        auto_match_intro: "היצירות הבאות הותאמו אוטומטית לפרסומים על בסיס דמיון בכותרת. אשר כל התאמה שברצונך להחיל."
+        no_auto_match_proposals: "לא נמצאו הצעות התאמה אוטומטית. ייתכן שכל היצירות כבר מותאמות, או שדמיון הכותרת היה נמוך מדי."
+        close: "סגור"
+        work_from_publication: "משויך לביבליוגרפיה:"
+        work_from_collection: "משויך לכותר:"
+        unmatched_publications_heading: "פרסומים שאינם בערך הלקסיקון"
+        unmatched_publications_intro: "הפרסומים הבאים משויכים לרשומת הסמכות אך אינם מותאמים לאף יצירה בערך הלקסיקון:"
+      bio_comparison:
+        title: "השוואת ביוגרפיה"
+        note: "שני הטקסטים מוצגים ללא תגי HTML וללא סימני פיסוק, ולכן אינם ניתנים לעריכה כאן. מילים שונות מודגשות בצבע. לתיקון אי-התאמה, סגרו חלון זה ולחצו על ״עריכה״ בלוח הביוגרפיה."
+        legacy_header: "מקור ישן (PHP)"
+        migrated_header: "מומר"
+      broken_link:
+        badge: "קישור שבור (HTTP %{status})"
+        unchecked_badge: "קישור לא נבדק"
+        now_accessible: "הקישור כעת נגיש"
+        still_broken: "הקישור עדיין שבור (HTTP %{status})"
+        inaccessible: "קישור לא נגיש (לא ניתן לאחזר אותו)"
+        internet_archive: "ארכיון האינטרנט"
+      messages:
+        progress_saved: ההתקדמות נשמרה בהצלחה
+        entry_verified: הערך אומת בהצלחה
+        entry_verified_public: הערך סומן כמאומת. לפניך התצוגה הציבורית שלו.
+        entry_escalated: הערך הועבר לבדיקה נוספת
+        error_escalating_entry: שגיאה בהעברה לבדיקה נוספת
+        add_escalation_notes: הוספת הערות לבודק...
+        escalation_notes_help: הערות אלו יהיו גלויות לבודק שיסקור את הערך.
+        section_updated: הקטע עודכן בהצלחה
+        verification_incomplete: אימות לא הושלם - אנא אמת את כל הרכיבים
+        work_match_confirmed: היצירה הותאמה לפרסום בהצלחה
+        attachment_removed: הקובץ הוסר
+        error_removing_attachment: שגיאה בהסרת הקובץ
+        error_saving_progress: שגיאה בשמירת ההתקדמות
+        profile_image_set: תמונת הפרופיל הוגדרה בהצלחה
+        error_setting_profile_image: שגיאה בהגדרת תמונת הפרופיל
+        error_updating_checklist: שגיאה בעדכון רשימת הביקורת
+        saved: נשמר
+        verified_badge: "✓ מאומת"
+        not_verified_badge: לא אומת
+        person_no_authority: אין ישות מקושרת לאדם זה
+        publication_not_in_authority: הפרסום אינו שייך לישות
+        collection_not_in_publication: האוסף אינו שייך לפרסום
+        work_not_found: יצירה לא נמצאה
+        attachment_not_found: קובץ מצורף לא נמצא
+        unknown_error: שגיאה לא ידועה
+        error_updating_work_verification: שגיאה בעדכון אימות יצירה
+        error_updating_works_section: שגיאה בעדכון קטע היצירות
+        error_confirming_match: שגיאה באישור ההתאמה
+        error_reloading_works: שגיאה בטעינה מחדש של היצירות
+      edit:
+        mark_as_verified: סמן קטע זה כמאומת
+        mark_all_works_verified: סמן את כל היצירות כמאומתות
+        no_works: אין יצירות עדיין
+        verified: אומת
+        html_allowed: ניתן להשתמש ב-HTML
+        auto_matched_works:
+          one: "יצירה אחת הותאמה אוטומטית לפרסומים בהתבסס על דמיון בכותרת"
+          other: "%{count} יצירות הותאמו אוטומטית לפרסומים בהתבסס על דמיון בכותרת"
+        confirm_match: אשר התאמה
+        reject_match: דחה התאמה
+        proposed_collection: "(כותר: %{title})"
+        date_of_manual_update:
+          instructions: "הכנס את תאריך העדכון הידני האחרון כפי שמופיע בקובץ המקור. ניתן לתקן אם נקלט בצורה שגויה."
+        external_identifiers:
+          instructions: "הכנס ערכי מזהה עבור מערכות בקרת סמכות. השאר שדה ריק כדי להסיר את המזהה."
+          leave_blank_to_remove: "השאר ריק כדי להסיר"
+          lc: "ספריית הקונגרס (LC)"
+          viaf: VIAF
+          nli: NLI
+          wikidata: Wikidata
+          openlibrary: OpenLibrary
+      monday:
+        report_button: דיווח ב-Monday
+        missing_work_button: "דווח: חיבור חסר בלקסיקון"
+        modal_title: שליחת דיווח ל-Monday
+        textarea_placeholder: "תאר את הבעיה..."
+        submit: שלח דיווח
+        report_sent: הדיווח נשלח בהצלחה
+        report_error: שגיאה בשליחת הדיווח
+        link_text: קישורית לערך המוסב
+        general_name: ראה תיאור נרחב
+        missing_work_name: "החיבור %{title} ידוע בביבליוגרפיה אך לא מופיע בערך הלקסיקון."
+        missing_work_details: "מו״ל: %{publisher}. שנת הוצאה: %{year}."
+        missing_work_reported: "דווח בעבר"
+        fixed_broken_link_name: "קישור שבור הוחלף ב%{subject}."
+        fixed_broken_link_subject:
+          citation: "מראה המקום %{title}"
+          link: "קישור %{title}"
+        fixed_broken_link_details: "הקישור הקודם: %{old_link}. הקישור החדש: %{new_link}."
+        link_removed: "(ללא קישור)"
+        migration_report_failed: "הערך סומן כמאומת, אך שליחת הדיווח ל-Monday נכשלה: %{error}"

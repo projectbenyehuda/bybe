@@ -2,6 +2,7 @@ en:
   attributes:
     created_at: Created At
     updated_at: Updated At
+    description: Description
     name: Name
     sort_name: Sort Name
     status: Status
@@ -17,10 +18,19 @@ en:
       collection_item: Collection Item
       corporate_body: Corporate Body
       featured_content: Featured Content
+      ingestible: Ingestible
+      lex_citation: Citation of Lexicon Entry
+      lex_citation_author: Citation Author
+      lex_entry: Lexicon Entry
+      lex_linked_person: Associated Person
+      lex_person: Lexicon Person
+      lex_person_work: Lexicon Person's Work
+      lex_publication: Lexicon Publication
       person: Person
     errors:
       messages:
         required: required
+        present: must be blank
       models:
         involved_authority:
           attributes:
@@ -42,6 +52,22 @@ en:
           attributes:
             manifestation:
               taken: Text is already in the anthology
+        lex_citation:
+          attributes:
+            person_work:
+              belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
+            subject:
+              present: must be empty if record is linked to a work
+        lex_citation_author:
+          attributes:
+            link:
+              link_with_entry_error: link can only be specified if we don't have a Lexicon entry for author
+            entry:
+              not_a_person: must be a Person entry
+        lex_linked_person:
+          attributes:
+            person_entry:
+              not_a_person: must be a Person entry
     attributes:
       authority:
         other_designation: Other designation
@@ -50,6 +76,7 @@ en:
         comment: Comment
         bib_done: Is bibliography done?
         do_not_feature: Do not feature in homepage carousels
+        pageless: Pageless authority
         nli_id: ID in National Library
         viaf_id: ID in VIAF database
         blog_category_url: Link to category about the creator in blog
@@ -64,7 +91,7 @@ en:
           volume_series: Volume Series
           other: Other
           uncollected: Uncollected Works
-        credits: Credits
+        credits: Manual credits
       collection_item:
         item_type: Item Type
       corporate_body:
@@ -84,6 +111,92 @@ en:
         birthdate: Birthdate
         deathdate: Deathdate
         gender: Gender
+      ingestible:
+        defaults: fields for all works
+        title: Title to upload
+        scenario: Type of upload
+        status: Status
+        metadata: Metadata
+        comments: Comments
+        markdown: Markdown
+        volume_id: Title
+        statuses:
+          awaiting_authorities: Waiting to create personalities
+          draft: Draft at work
+          ingested: Recorded in the catalogue
+          failed: Upload failed
+      lex_citation:
+        authors: Authors
+        backup_file: Backup File
+        backup_url: Backup URL
+        from_publication: From Publication
+        notes: Context notes
+        pages: Pages
+        person_work: Work
+      lex_file:
+        error_message: Error message
+        entrytype: Entry type
+        fname: File name
+        entrytypes:
+          unknown: Unknown
+          person: Person
+          text: Text
+          bib: Bib
+          other: Other
+      lex_entry:
+        title: Title
+        english_title: English Title
+        other_designation: Other Designation
+        date_of_manual_update: Date of Last Manual Update
+        statuses:
+          draft: Draft
+          deprecated: Deprecated
+          published: Published
+          raw: Raw
+          migrating: Migrating
+          error: Error
+          verifying: Verifying
+          verified: Verified
+          escalated: Escalated
+      lex_linked_person:
+        person_entry: Lexicon Entry for Person
+        link_type: Link Type
+        link_types:
+          author: "Author - "
+          illustrator: "Illustrator - "
+          editor: "Editor - "
+          collaborator: "In collaboration with "
+          about: "About "
+      lex_person:
+        birthdate: Birthdate
+        deathdate: Deathdate
+        bio: Biographical synopsis
+        books: Books
+        authority: Authority
+        aliases: Aliases
+        copyrighted: Copyrighted
+        gender: Gender
+        intellectual_property: Copyright Status
+        genders:
+          male: Male
+          female: Female
+          other: Other
+          unknown: Unknown
+      lex_person_work:
+        title: Title
+        work_type: Work Type
+        publisher: Publisher
+        publication_date: Publication Date
+        publication_place: Publication Place
+        comment: Comment
+        work_types:
+          original: Original
+          translated: Translated
+          edited: Edited
+          festschrift: Festschriften
+      lex_publication:
+        toc: Table of Contents
+        az_navbar: Show AZ navbar?
       project:
         one: Project
         other: Projects

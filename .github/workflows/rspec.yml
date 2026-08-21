@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ '**' ]
+    branches: [ '*' ]
 
 jobs:
   test:
@@ -19,15 +19,13 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       elasticsearch:
-        image: elasticsearch:7.17.8
+        image: elasticsearch:8.19.19
         env:
           discovery.type: single-node
           xpack.security.enabled: false
           ingest.geoip.downloader.enabled: false
           action.destructive_requires_name: false
           ES_JAVA_OPTS: -Xms1024m -Xmx1024m
-      redis:
-        image: redis:7.2.3
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -42,7 +40,6 @@ jobs:
         run: |
           echo ELASTICSEARCH_HOST=elasticsearch:9200 > ./.env.test.local
           echo DATABASE_URL=mysql2://root:root@mysql:3306/bybe_test >> ./.env.test.local
-          echo REDIS_URL=redis://redis:6379/1 >> ./.env.test.local
       - name: Setup DB
         run: |
           bin/rails db:create RAILS_ENV=test

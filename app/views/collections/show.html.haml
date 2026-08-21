@@ -1,4 +1,7 @@
 .top-element
+-# Load Mark.js for search highlighting
+%script{ src: 'https://cdn.jsdelivr.net/npm/mark.js@8.11.1/dist/jquery.mark.min.js' }
+
 = render partial: 'shared/search_highlight_controls',
          locals: { search_query: params[:q], entity_title: @collection.title }
 #content.container-fluid
@@ -32,48 +35,54 @@
                     %span.by-button-v02.pointer{style: 'width: min-content;'}= t(:edit)
                 .headline-2-v02
                   - if @collection.authors.present?
-                    != @collection.authors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != @collection.authors.map { |t| authority_link(t) }.join(', ')
                   - translators = @collection.translators
                   - if translators.present?
                     %br
                     = "#{t('involved_authority.abstract_roles.translator')}: "
-                    != translators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != translators.map { |t| authority_link(t) }.join(', ')
 
                 - illustrators = @collection.involved_authorities_by_role(:illustrator)
                 - if illustrators.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.illustrator')}: "
-                    != illustrators.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != illustrators.map { |t| authority_link(t) }.join(', ')
 
                 - photographers = @collection.involved_authorities_by_role(:photographer)
                 - if photographers.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.photographer')}: "
-                    != photographers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != photographers.map { |t| authority_link(t) }.join(', ')
+
+                - annotators = @collection.involved_authorities_by_role(:annotator)
+                - if annotators.present?
+                  .headline-3-v02
+                    = "#{t('involved_authority.abstract_roles.annotator')}: "
+                    != annotators.map { |t| authority_link(t) }.join(', ')
 
                 - designers = @collection.involved_authorities_by_role(:designer)
                 - if designers.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.designer')}: "
-                    != designers.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != designers.map { |t| authority_link(t) }.join(', ')
 
                 - editors = @collection.editors(true)
                 - if editors.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.editor')}: "
-                    != editors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != editors.map { |t| authority_link(t) }.join(', ')
 
                 - contributors = @collection.involved_authorities_by_role(:contributor)
                 - if contributors.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.contributor')}: "
-                    != contributors.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != contributors.map { |t| authority_link(t) }.join(', ')
 
                 - others = @collection.involved_authorities_by_role(:other)
                 - if others.present?
                   .headline-3-v02
                     = "#{t('involved_authority.abstract_roles.other')}: "
-                    != others.map { |t| link_to(t.name, authority_path(t)) }.join(', ')
+                    != others.map { |t| authority_link(t) }.join(', ')
 
                 -# %button.by-button-v02{href: "#"} יוצרים שונים
                 - if @collection.parent_collections.present?
@@ -93,8 +102,16 @@
                     %span{:style => "font-weight:bold"}= t(:source_edition)+': '
                     = edition
                 .metadata{style: "gap: 20px"}
-                  - @collection.intellectual_property_statuses.each do |intellectual_property|
-                    = render partial: 'shared/intellectual_property', locals: {intellectual_property: intellectual_property}
+                  -# wrap each statement, so the flex gap separates statements, not a glyph from its label
+                  - ips = @collection.intellectual_property_statuses
+                  - if ips.size > 1
+                    .ip-statement
+                      = render partial: 'shared/intellectual_property', locals: { intellectual_property: 'mixed' }
+                  - else
+                    - ips.each do |intellectual_property|
+                      - ip_locals = { intellectual_property: intellectual_property }
+                      .ip-statement
+                        = render partial: 'shared/intellectual_property', locals: ip_locals
                 .metadata{style: "gap: 20px"}
                   - @collection.included_genres.each do |genre|
                     %div
@@ -121,6 +138,31 @@
                 -#.metadata.mobile-work-details
                 -#  %span{style: "font-weight:bold"} המלצות:
                 -#  %a{href: "#"} 3 המלצות קוראים
+
+          -# Prev/next volume navigation within a containing volume_series (mirrors Manifestation#read nav)
+          - if @volume_series_nav&.series.present?
+            - prev_vol = @volume_series_nav.prev_volume
+            - next_vol = @volume_series_nav.next_volume
+            - if prev_vol.present? || next_vol.present?
+              .author-works-nav
+                .topNavEntry
+                  .link-nav
+                    - if prev_vol.present?
+                      = link_to collection_path(prev_vol) do
+                        %span.right-arrow= '2'
+                        = t(:to_previous_volume)
+                .topNavEntry
+                  .link-nav{style: 'margin-left:20px; margin-right:20px;'}
+                    = link_to collection_path(@volume_series_nav.series) do
+                      %span.right-arrow= '🢁'
+                      = textify_collection_up_link(@volume_series_nav.series)
+                      %span.left-arrow= '🢁'
+                .topNavEntry
+                  .link-nav
+                    - if next_vol.present?
+                      = link_to collection_path(next_vol) do
+                        = t(:to_next_volume)
+                        %span.left-arrow= '1'
 
           - if @collection.cover_image.attached?
             .by-card-v02.collection-cover-image-card
@@ -177,14 +219,20 @@
             %a{ name: "collitem_text_#{i}" }
             - card_attrs = { data: { item_id: ci.item_id, item_type: ci.item_type } }
             - card_attrs[:style] = "margin-right: #{nesting_level * 10}px;" if nesting_level > 0
-            - if html.nil? && ci.item_type == 'Collection'
+            -# a sub-collection whose whole ToC is a single text is collapsed into it: heading only (#1488)
+            - collapsed_text = @collapsed_texts[ci.id]
+            - if collapsed_text.present? || (html.nil? && ci.item_type == 'Collection')
               -# This is a sub-collection header - render with full detail
+              -# Stable anchor (keyed by sub-collection id) so search results and deep links can jump here
+              %a{ name: "collection_#{ci.item_id}" }
               .by-card-v02.proofable{ card_attrs }
                 .by-card-header-v02
                   .by-icon-v02
                   .headline-1-v02
-                    - link = url_for_collection_item(ci)
-                    %span.by-icon-v02{title: textify_genre(genre)}= glyph_for_genre(genre)
+                    -# a collapsed heading takes over the link and genre glyph of the text it stands for
+                    - link = collapsed_text.present? ? url_for(collapsed_text) : url_for_collection_item(ci)
+                    - glyph_genre = collapsed_text.present? ? collapsed_text.genre : genre
+                    %span.by-icon-v02{title: textify_genre(glyph_genre)}= glyph_for_genre(glyph_genre)
                     - if link.present?
                       = link_to '‏' + title, link # RLM character to help with LTR elements in title. Fixes #664
                     - else
@@ -196,17 +244,17 @@
                   - if authors.present?
                     %p
                       = t(:by)
-                      != authors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                      != authors.map { |a| authority_link(a) }.join(', ')
                   - editors = ias.select{|ia| ia.role == 'editor'}.map(&:authority)
                   - if editors.present?
                     %p
                       = t(:edited_by)
-                      != editors.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                      != editors.map { |a| authority_link(a) }.join(', ')
                   - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority)
                   - if translators.present?
                     %p
                       = t(:translated_by)
-                      != translators.map { |a| link_to(a.name, authority_path(a)) }.join(', ')
+                      != translators.map { |a| authority_link(a) }.join(', ')
             - else
               -# This is a manifestation or other content item
               .by-card-v02.proofable{ card_attrs }
@@ -225,7 +273,15 @@
                         != ' ' + title_footnote
                       - translators = ias.select{|ia| ia.role == 'translator'}.map(&:authority).reject{|a| ctranslators.map(&:id).include?(a.id)}
                       - if translators.present?
-                        %p= "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
+                        %p
+                          = "#{t(:translated_by)} #{translators.map(&:name).join(', ')}"
+                          - if ci.item_type == 'Manifestation' && ci.item&.expression&.work.present?
+                            = " (#{orig_lang_label(ci.item.expression.work.orig_lang)})"
+                    - if ci.item_type == 'Manifestation' && ci.item.present?
+                      - item_ip = ci.item.expression.intellectual_property
+                      .metadata{ style: 'padding-top: 4px;' }
+                        .ip-statement
+                          = render partial: 'shared/intellectual_property', locals: { intellectual_property: item_ip }
                 .by-card-content-v02.textcard#actualtext
                   != convert_internal_links_to_relative(request.base_url, html, request.path)
           - credit_lines = @collection.fetch_credits.lines
@@ -263,6 +319,16 @@
                   %button.by-button-v02.must-login#initiate-add-tag
                     .metadata-link-icon.small-icon.pointer &amp;
                     %div= t(:suggest_new_tag)
+
+          -# LexCitations
+          - if @lex_citations.any?
+            .by-card-v02.left-side-card-v02
+              .by-card-header-left-v02
+                %span.headline-1-v02= t(:lex_citations_about_collection)
+              .by-card-content-v02
+                %ul
+                  - @lex_citations.each do |citation|
+                    %li= render_citation(citation)
 
           -# External links
           = render partial: 'shared/external_links_panel', locals: { linkable: @collection }
@@ -305,6 +371,9 @@
 
 #printDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
   = render partial: 'shared/print_modal', locals: {entity: @collection}
+
+#tagPolicyDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
+  = render partial: 'manifestation/tag_policy', locals: { taggable: @collection }
 
 = render partial: 'shared/proof'
 = render partial: 'shared/propose_link'

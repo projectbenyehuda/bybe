@@ -1,0 +1,96 @@
+# frozen_string_literal: true
+
+module Lexicon
+  # Base class for php file ingestion
+  class IngestBase < ApplicationService
+    def call(lex_file)
+      @lex_entry = lex_file.lex_entry
+
+      html_doc = HtmlUtils.parse_file(lex_file.full_path)
+      Lexicon::AttachImages.call(html_doc, @lex_entry)
+      Lexicon::ProcessLinks.call(html_doc, @lex_entry)
+
+      @lex_entry.lex_item = create_lex_item(html_doc)
+      @lex_entry.english_title = extract_english_title(html_doc)
+      @lex_entry.external_identifiers = extract_external_identifiers(html_doc)
+      @lex_entry.date_of_manual_update = extract_date_of_manual_update(html_doc)
+      @lex_entry.migration_item_count = compute_migration_item_count
+      @lex_entry.status_draft!
+
+      lex_file.status_ingested!
+
+      Lexicon::CheckExternalLinksJob.perform_later(@lex_entry.id)
+
+      @lex_entry
+    end
+
+    def create_lex_item(_html_doc)
+      raise('Not implemented')
+    end
+
+    private
+
+    def compute_migration_item_count
+      lex_item = @lex_entry.lex_item
+      count = 0
+      count += lex_item.works.count if lex_item.respond_to?(:works)
+      count += lex_item.citations.count if lex_item.respond_to?(:citations)
+      count += lex_item.links.count
+      count += @lex_entry.attachments.count
+      count
+    end
+
+    # Extract the "עודכן לאחרונה:" date string from the PHP footer area.
+    # The label may be surrounded by brackets (e.g. "[עודכן לאחרונה: DATE]").
+    def extract_date_of_manual_update(html_doc)
+      html_doc.css('font[size="2"]').each do |node|
+        text = node.text.strip
+        next unless text.include?('עודכן לאחרונה:')
+
+        return text.sub(/.*עודכן לאחרונה:\s*/, '').gsub(/\]$/, '').strip.presence
+      end
+      nil
+    end
+
+    # Extract English title from the header table
+    def extract_english_title(html_doc)
+      # Look for table cell with dir="ltr" containing the English title
+      # The pattern is: <td><p align="center" dir="ltr"><font size="5" color="#FF0000">English Name</font></td>
+      english_cell = html_doc.at_css('table td p[dir="ltr"] font[size="5"][color="#FF0000"]')
+      english_cell&.text&.squish
+    end
+
+    # Extract external identifiers from the footer table
+    def extract_external_identifiers(html_doc)
+      identifiers = {}
+
+      # Find all table cells with external identifier links
+      html_doc.css('table td[dir="ltr"]').each do |cell|
+        text = cell.text.strip
+        link = cell.at_css('a')
+        next unless link
+
+        # Extract identifier type and value based on the text pattern
+        case text
+        when /^OpenLibrary\s*–\s*/
+          identifiers['openlibrary'] = link.text.strip
+        when /^Wikidata\s*–\s*/
+          identifiers['wikidata'] = link.text.strip
+        when /^J9U\s*–\s*/
+          identifiers['j9u'] = link.text.strip
+        when /^NLI\s*–\s*/
+          identifiers['nli'] = link.text.strip
+        when /^LC\s*–\s*/
+          identifiers['lc'] = link.text.strip
+        when /^VIAF\s*–\s*/
+          identifiers['viaf'] = link.text.strip
+        end
+      end
+
+      # J9U is the new-generation NLI ID; prefer it over any legacy NLI value
+      identifiers['nli'] = identifiers.delete('j9u') if identifiers.key?('j9u')
+
+      identifiers.presence # Return nil if empty, otherwise return the hash
+    end
+  end
+end

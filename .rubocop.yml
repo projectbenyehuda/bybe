@@ -8,6 +8,7 @@ AllCops:
     - config/environments/*
     - db/migrate/*
     - db/schema.rb
+    - db/queue_schema.rb
 
 plugins:
   - rubocop-rails
@@ -101,7 +102,7 @@ RSpec/BeforeAfterAll:
   Enabled: false
 
 RSpec/ExampleLength:
-  Max: 20
+  Max: 30
 
 RSpec/IndexedLet:
   Enabled: false

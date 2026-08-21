@@ -1,0 +1,12 @@
+.container-fluid#header-author
+  .top-space
+  #breadcrumbs
+    .breadcrumbs-text
+      = link_to t(:homepage), root_path
+    .breadcrumbs-arrow 1
+    .breadcrumbs-text
+      = link_to t('lexicon.entries.list.entries_list_breadcrumb'), lexicon_entries_list_path
+
+  .texts-list-top.peach2-lexicon
+    .texts-list-top-info-card.left-side-card-v02
+      .headline-1-v02= t('lexicon.entries.list.page_header')

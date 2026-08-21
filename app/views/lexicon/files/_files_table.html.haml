@@ -1,0 +1,23 @@
+- sortable = local_assigns.fetch(:sortable, false)
+%table.table
+  %tr
+    %th= LexFile.human_attribute_name(:error_message)
+    %th= LexFile.human_attribute_name(:fname)
+    %th= t('lexicon.files.index.file_size')
+    %th= t(:title)
+    %th #{t(:status)} (#{t(:file)} / #{t(:entry)})
+    %th= t(:entrytype)
+    %th
+      - if sortable
+        - next_dir = @sort == 'migration_item_count' && @direction == 'asc' ? 'desc' : 'asc'
+        - sort_url = request.params.merge(sort: 'migration_item_count', direction: next_dir)
+        = link_to t('lexicon.files.index.migration_item_count'), sort_url
+        - if @sort == 'migration_item_count'
+          = @direction == 'asc' ? '▲' : '▼'
+      - else
+        = t('lexicon.files.index.migration_item_count')
+    - if show_locked_by
+      %th= t('lexicon.entries.index.locked_by')
+    %th= t(:actions)
+  - files.each do |lf|
+    = render partial: 'file_row', locals: { lf: lf, show_locked_by: show_locked_by, unlockable: unlockable }

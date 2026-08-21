@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Works browse multiselect button', type: :system, js: true do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+describe 'Works browse multiselect button' do
   after do
     Chewy.massacre
   end
@@ -47,7 +43,7 @@ RSpec.describe 'Works browse multiselect button', type: :system, js: true do
         expect(page).to have_css('#multiselect_btn')
       end
 
-      it 'displays the select-all checkbox when multi-select is activated' do
+      it 'displays the select-all checkbox when multi-select is activated', :js do
         visit '/works'
 
         # Initially hidden
