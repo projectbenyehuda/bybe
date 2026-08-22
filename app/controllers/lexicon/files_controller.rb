@@ -16,13 +16,18 @@ module Lexicon
 
     SORTABLE_COLUMNS = %w(fname migration_item_count).freeze
     SORT_DIRECTIONS = %w(asc desc).freeze
+    # Migrating raw person entries is by far the most common task, so that is what an
+    # unfiltered visit shows. An explicitly blank entrytype (the select's blank option)
+    # still means "all types", hence the params.key? check rather than #presence.
+    DEFAULT_ENTRYTYPE = 'person'
+    DEFAULT_ENTRY_STATUSES = %w(raw).freeze
 
     def index
-      @entrytype = params[:entrytype]
+      @entrytype = params.key?(:entrytype) ? params[:entrytype] : DEFAULT_ENTRYTYPE
       @title = params[:title]
       @fname = params[:fname]
       @page = params[:page]
-      @entry_statuses = params[:entry_statuses].presence || %w(raw migrating error draft verifying)
+      @entry_statuses = params[:entry_statuses].presence || DEFAULT_ENTRY_STATUSES
       @sort = params[:sort].presence_in(SORTABLE_COLUMNS) || 'fname'
       @direction = params[:direction].presence_in(SORT_DIRECTIONS) || 'asc'
 
@@ -31,7 +36,6 @@ module Lexicon
       scope = scope.where(entrytype: @entrytype) if @entrytype.present?
       scope = scope.where('lex_entries.title LIKE ?', "%#{@title}%") if @title.present?
       scope = scope.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
-      scope = scope.where(lex_entries: { status: @entry_statuses })
 
       sort_clause = if @sort == 'migration_item_count'
                       "lex_entries.migration_item_count #{@direction}, lex_files.id ASC"
@@ -41,13 +45,16 @@ module Lexicon
 
       # Files whose entry is currently locked are surfaced in their own sections (mine vs. others')
       # and excluded from the main paginated list to avoid showing the same file twice.
+      # They deliberately ignore the entry status filter: an editor must always see the entries
+      # they hold a lock on, which are typically `migrating`/`verifying` rather than the default `raw`.
       locked_files = scope.where('lex_entries.locked_at > ?', LexEntry::LOCK_TIMEOUT_IN_SECONDS.seconds.ago)
       @my_locked_files = locked_files.where(lex_entries: { locked_by_user_id: current_user.id })
                                      .preload(:lex_entry).order(:fname)
       @locked_by_others_files = locked_files.where.not(lex_entries: { locked_by_user_id: current_user.id })
                                             .preload(:lex_entry).order(:fname)
 
-      @lex_files = scope.where.not(id: locked_files.select('lex_files.id'))
+      @lex_files = scope.where(lex_entries: { status: @entry_statuses })
+                        .where.not(id: locked_files.select('lex_files.id'))
                         .preload(:lex_entry)
                         .order(Arel.sql(sort_clause))
                         .page(@page)
