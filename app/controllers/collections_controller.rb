@@ -469,6 +469,7 @@ class CollectionsController < ApplicationController
 
     filename = "#{@collection.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
 
+    track_download(@collection, 'kwic')
     send_data kwic_text,
               filename: filename,
               type: 'text/plain; charset=utf-8',

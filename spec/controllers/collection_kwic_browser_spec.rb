@@ -481,6 +481,15 @@ describe CollectionsController do
         expect(content).to include('[First Work')
         expect(content).to include('[Second Work')
       end
+
+      it 'records an Ahoy download event so the download shows up in the by-format report' do
+        stub_browser_user_agent
+        subject
+
+        event = Ahoy::Event.find_by(name: 'download')
+        expect(event).to be_present
+        expect(event.properties).to include('type' => 'Collection', 'id' => collection.id, 'format' => 'kwic')
+      end
     end
 
     context 'with filter parameter' do
