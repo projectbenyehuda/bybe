@@ -145,7 +145,7 @@ describe '/lexicon/files' do
 
         let(:params) { { fname: '00003', entrytype: '' } }
 
-        it 'filters files by title substring' do
+        it 'filters files by fname substring' do
           call
           expect(file_ids).to contain_exactly(person_file.id, publication_file.id)
         end
