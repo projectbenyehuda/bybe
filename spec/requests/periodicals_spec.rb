@@ -253,6 +253,39 @@ RSpec.describe 'Periodicals', type: :request do
       expect(assigns(:periodicals_count)).to eq(assigns(:periodicals).size)
     end
 
+    # rubocop:disable RSpec/AnyInstance -- matches how the rest of the suite logs a user in
+    def login_as(user)
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    end
+    # rubocop:enable RSpec/AnyInstance
+
+    context 'when an editor is logged in' do
+      before { login_as(create(:user, editor: true)) }
+
+      it 'lists the periodicals lacking publicly accessible works too' do
+        get '/periodicals'
+        expect(assigns(:periodicals)).to include(
+          periodical_with_published, periodical_unpublished_only, periodical_empty_issues
+        )
+      end
+
+      it 'renders the otherwise-suppressed periodicals on the page' do
+        get '/periodicals'
+        expect(response.body).to include('Unpublished Only Periodical')
+        expect(response.body).to include('Empty Issues Periodical')
+      end
+    end
+
+    context 'when a logged-in non-editor is browsing' do
+      before { login_as(create(:user)) }
+
+      it 'still suppresses the periodicals lacking publicly accessible works' do
+        get '/periodicals'
+        expect(assigns(:periodicals)).to include(periodical_with_published)
+        expect(assigns(:periodicals)).not_to include(periodical_unpublished_only, periodical_empty_issues)
+      end
+    end
+
     context 'when the published work sits in a sub-collection of the issue' do
       let!(:periodical_nested) do
         create(:collection, collection_type: 'periodical', title: 'Nested Works Periodical')

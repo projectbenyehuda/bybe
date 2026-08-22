@@ -9,9 +9,14 @@ class PeriodicalsController < ApplicationController
                             .where(id: with_issue_ids)
                             .order(:title)
                             .to_a
-    # a periodical whose issues hold nothing publicly accessible would only lead readers to empty pages
-    with_public_works = Collection.ids_with_published_manifestations(periodicals.map(&:id)).to_set
-    @periodicals = periodicals.select { |p| with_public_works.include?(p.id) }
+    # a periodical whose issues hold nothing publicly accessible would only lead readers to empty
+    # pages, but editors need to see those periodicals in order to work on them
+    @periodicals = if current_user&.editor?
+                     periodicals
+                   else
+                     with_public_works = Collection.ids_with_published_manifestations(periodicals.map(&:id)).to_set
+                     periodicals.select { |p| with_public_works.include?(p.id) }
+                   end
     @periodicals_count = @periodicals.size
     # non-primary works (e.g. an issue's editorial column) are parts of a larger text, not standalone works
     @popular_works = ManifestationsIndex.query(match: { in_periodical: true })
