@@ -13,6 +13,7 @@ en:
     todate: To Date
   activerecord:
     models:
+      anthology: Anthology
       authority: Authority
       collection: Collection
       collection_item: Collection Item
@@ -26,6 +27,7 @@ en:
       lex_person: Lexicon Person
       lex_person_work: Lexicon Person's Work
       lex_publication: Lexicon Publication
+      manifestation: Work
       person: Person
     errors:
       messages:

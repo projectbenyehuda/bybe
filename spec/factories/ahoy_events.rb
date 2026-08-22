@@ -16,13 +16,17 @@ FactoryBot.define do
     trait :with_item do
       transient do
         item { create(:authority) }
+        # Only download events carry a file format
+        doctype { nil }
       end
 
       controller { item.class.name.pluralize }
       action { name }
 
       properties do
-        { id: item.id, type: item.class.name, controller: controller, action: action }
+        props = { id: item.id, type: item.class.name, controller: controller, action: action }
+        props[:format] = doctype if doctype.present?
+        props
       end
     end
   end

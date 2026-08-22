@@ -411,6 +411,17 @@ describe CollectionsController do
         expect(downloadable).to be_present
         expect(downloadable.stored_file).to be_attached
       end
+
+      it 'records an Ahoy download event carrying the requested format' do
+        # Ahoy.track_bots is false, and the default controller-spec user agent ('Rails Testing') is
+        # classified as a bot, so we must present a browser user agent for the event to be recorded.
+        request.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120'
+        get :download, params: { collection_id: collection.id, format: 'html', download_scope: 'full' }
+
+        event = Ahoy::Event.find_by(name: 'download')
+        expect(event).to be_present
+        expect(event.properties).to include('type' => 'Collection', 'id' => collection.id, 'format' => 'html')
+      end
     end
 
     context 'with selective download (partial scope)' do

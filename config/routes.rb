@@ -276,6 +276,7 @@ Bybeconv::Application.routes.draw do
   get 'admin/texts_between_dates'
   get 'admin/authority_records_between_dates'
   get 'admin/first_manifestations_between_dates'
+  get 'admin/downloads_by_format'
   get 'admin/suspicious_titles'
   get 'admin/slash_in_titles'
   get 'admin/similar_titles'

@@ -13,6 +13,7 @@ he:
     todate: עד תאריך
   activerecord:
     models:
+      anthology: מקראה
       authority: מחבר
       collection: אוסף
       collection_item: פריט באוסף
@@ -26,6 +27,7 @@ he:
       lex_person: אדם בלקסיקון
       lex_person_work: יצירת אדם בלקסיקון
       lex_publication: כותר בלקסיקון
+      manifestation: יצירה
       person: אדם
     errors:
       messages:

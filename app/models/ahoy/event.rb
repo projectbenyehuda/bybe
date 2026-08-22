@@ -29,6 +29,10 @@ module Ahoy
 
     self.table_name = 'ahoy_events'
 
+    # `format` is stored inside the JSON properties by Tracking#track_download, and unlike `id` and `type`
+    # it has no virtual column, so we have to extract it explicitly when aggregating.
+    FORMAT_EXPRESSION = Arel.sql("json_unquote(json_extract(properties, '$.format'))")
+
     belongs_to :visit
     belongs_to :user, optional: true
 
@@ -37,5 +41,14 @@ module Ahoy
     belongs_to :item, optional: true, polymorphic: true
 
     validates :name, presence: true, inclusion: { in: ALLOWED_NAMES }
+
+    # Aggregates download events in the given time range.
+    # @return [Hash] mapping [format, item_type] pairs to the number of downloads.
+    #   Events recorded before format tracking was introduced have a nil format.
+    def self.download_counts_by_format(from, to)
+      where(name: 'download', time: from..to)
+        .group(FORMAT_EXPRESSION, :item_type)
+        .count
+    end
   end
 end
