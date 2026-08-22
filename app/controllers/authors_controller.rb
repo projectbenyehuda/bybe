@@ -682,6 +682,7 @@ class AuthorsController < ApplicationController
 
     # Send as downloadable file
     filename = "#{@author.name.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
+    track_download(@author, 'kwic')
     send_data content, filename: filename, type: 'text/plain; charset=utf-8', disposition: 'attachment'
   end
 

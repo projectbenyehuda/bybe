@@ -115,6 +115,8 @@
       %p
         %b= link_to t(:first_manifestations_between_dates), admin_first_manifestations_between_dates_path
       %p
+        %b= link_to t(:downloads_by_format), admin_downloads_by_format_path
+      %p
         %b= link_to t(:authors_without_works), admin_authors_without_works_path
         = ' ('+Rails.cache.read('report_authors_without_works').to_s+')'
       %p

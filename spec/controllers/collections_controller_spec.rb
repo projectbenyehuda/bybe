@@ -411,6 +411,15 @@ describe CollectionsController do
         expect(downloadable).to be_present
         expect(downloadable.stored_file).to be_attached
       end
+
+      it 'records an Ahoy download event carrying the requested format' do
+        stub_browser_user_agent
+        get :download, params: { collection_id: collection.id, format: 'html', download_scope: 'full' }
+
+        event = Ahoy::Event.find_by(name: 'download')
+        expect(event).to be_present
+        expect(event.properties).to include('type' => 'Collection', 'id' => collection.id, 'format' => 'html')
+      end
     end
 
     context 'with selective download (partial scope)' do

@@ -10,6 +10,15 @@ module TestHelpers
   end
   # rubocop:enable RSpec/AnyInstance
 
+  BROWSER_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120'
+
+  # Ahoy.track_bots is false and the default controller-spec user agent ('Rails Testing') is
+  # classified as a bot, so tracking silently records nothing. Call this before the request in any
+  # spec that asserts on Ahoy::Event rows.
+  def stub_browser_user_agent
+    request.user_agent = BROWSER_USER_AGENT
+  end
+
   # Creates an editor user with edit_catalog privileges for testing
   # Returns the created user, or the existing one if already created in this test run
   def create_catalog_editor

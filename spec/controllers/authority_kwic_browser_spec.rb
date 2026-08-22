@@ -466,6 +466,15 @@ describe AuthorsController do
         expect(content).to include('[First Work')
         expect(content).to include('[Second Work')
       end
+
+      it 'records an Ahoy download event so the download shows up in the by-format report' do
+        stub_browser_user_agent
+        subject
+
+        event = Ahoy::Event.find_by(name: 'download')
+        expect(event).to be_present
+        expect(event.properties).to include('type' => 'Authority', 'id' => authority.id, 'format' => 'kwic')
+      end
     end
 
     context 'when concordance does not exist yet' do
@@ -488,6 +497,12 @@ describe AuthorsController do
         subject
         expect(response).to have_http_status(:redirect)
         expect(flash[:notice]).to eq(I18n.t(:kwic_being_generated))
+      end
+
+      it 'records no download event, since nothing was actually downloaded' do
+        stub_browser_user_agent
+        subject
+        expect(Ahoy::Event.where(name: 'download')).to be_empty
       end
     end
 

@@ -1534,6 +1534,8 @@ en:
   select_all: Select all
   format_to_save: Format to save
   download_to_file: Save Text to File
+  downloads_by_format: Downloads by Format
+  file_format: File Format
   dpublished: Published
   dfirst_published: First Published
   duploaded: Uploaded to Site

@@ -986,6 +986,7 @@ class ManifestationController < ApplicationController
 
     filename = "#{@m.title.gsub(/[^0-9א-תA-Za-z.\-]/, '_')}_kwic.txt"
 
+    track_download(@m, 'kwic')
     send_data kwic_text,
               filename: filename,
               type: 'text/plain; charset=utf-8',

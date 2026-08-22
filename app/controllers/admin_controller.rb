@@ -1543,7 +1543,29 @@ class AdminController < ApplicationController
     @users = whodunnit_ids.any? ? User.where(id: whodunnit_ids).index_by(&:id) : {}
   end
 
+  # Reports how many downloads were served per file format, broken down by the type of the downloaded object,
+  # so we can tell which formats are actually being used.
+  def downloads_by_format
+    @from = parse_report_date(params[:from], 1.year.ago.to_date)
+    @to = parse_report_date(params[:to], Date.current)
+
+    @counts = Ahoy::Event.download_counts_by_format(@from.beginning_of_day, @to.end_of_day)
+    @item_types = @counts.keys.map(&:last).compact.uniq.sort
+    @formats = @counts.keys.map(&:first).uniq.sort_by(&:to_s)
+    @format_totals = @formats.index_with do |format|
+      @item_types.sum { |item_type| @counts.fetch([format, item_type], 0) }
+    end
+    @grand_total = @format_totals.values.sum
+  end
+
   private
+
+  # Both report dates are optional, and a malformed one should fall back to the default rather than blow up
+  def parse_report_date(value, default)
+    value.present? ? Date.parse(value) : default
+  rescue Date::Error
+    default
+  end
 
   def parse_manifestation_ids(input)
     ids = []
