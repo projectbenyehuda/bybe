@@ -61,7 +61,9 @@ RSpec.describe 'Author TOC mobile layout', :js, type: :system do
     visit_toc_at_mobile_width
 
     sidebar_row = '.author-page-content .col-12.col-lg-4 > .row'
-    sidebar_col = "#{sidebar_row} > .col:not(.author-side-menu-area)"
+    # This column's spacer is .side-menu-area-left (the main column's is
+    # .author-side-menu-area) -- exclude both so we measure the content col.
+    sidebar_col = "#{sidebar_row} > .col:not(.author-side-menu-area):not(.side-menu-area-left)"
     expect(page).to have_css(sidebar_col, wait: 5)
 
     # The spacer and the content col must stay on one line, or the content col
