@@ -3,6 +3,9 @@
 module Lexicon
   # Base class for php file ingestion
   class IngestBase < ApplicationService
+    LAST_UPDATE_LABEL = 'עודכן לאחרונה'
+    LAST_UPDATE_RE = /#{LAST_UPDATE_LABEL}:?\s*([^\]\r\n]*)/
+
     def call(lex_file)
       @lex_entry = lex_file.lex_entry
 
@@ -41,15 +44,22 @@ module Lexicon
     end
 
     # Extract the "עודכן לאחרונה:" date string from the PHP footer area.
-    # The label may be surrounded by brackets (e.g. "[עודכן לאחרונה: DATE]").
+    # The label may be surrounded by brackets (e.g. "[עודכן לאחרונה: DATE]") and the colon is
+    # missing in a handful of files. We search the whole document text rather than a specific
+    # element, because unclosed <font> tags in many legacy files make element boundaries
+    # meaningless, and we take the *last* occurrence, because the phrase also shows up inside
+    # bibliography citations while the date we want is always in the footer. The capture stops at
+    # the end of the line (or at a closing bracket) so a mis-parsed document cannot yield a value
+    # far longer than a date.
     def extract_date_of_manual_update(html_doc)
-      html_doc.css('font[size="2"]').each do |node|
-        text = node.text.strip
-        next unless text.include?('עודכן לאחרונה:')
+      text = html_doc.text
+      label_at = text.rindex(LAST_UPDATE_LABEL)
+      return nil if label_at.nil?
 
-        return text.sub(/.*עודכן לאחרונה:\s*/, '').gsub(/\]$/, '').strip.presence
-      end
-      nil
+      date = text[label_at..][LAST_UPDATE_RE, 1].to_s.strip
+      # Files where the label is present but the date was never filled in: don't pick up whatever
+      # markup happens to follow the label.
+      date.match?(/\d/) ? date : nil
     end
 
     # Extract English title from the header table
