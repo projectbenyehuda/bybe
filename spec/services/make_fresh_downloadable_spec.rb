@@ -79,4 +79,23 @@ RSpec.describe MakeFreshDownloadable do
       end
     end
   end
+
+  describe '#call' do
+    context "with the 'odt' format" do
+      it 'produces a right-to-left document' do
+        downloadable = service.call('odt', 'test.odt', '<h1>כותרת</h1><p>פסקה בעברית.</p>', manifestation, 'מחבר')
+
+        styles = nil
+        Zip::File.open_buffer(StringIO.new(downloadable.stored_file.download)) do |zip|
+          styles = zip.get_entry('styles.xml').get_input_stream.read
+        end
+        properties = Nokogiri::XML(styles)
+                             .at_xpath('//style:default-style[@style:family="paragraph"]/style:paragraph-properties',
+                                       FixOdtDirectionality::NS)
+
+        expect(properties['style:writing-mode']).to eq('rl-tb')
+        expect(properties['fo:text-align']).to eq('end')
+      end
+    end
+  end
 end

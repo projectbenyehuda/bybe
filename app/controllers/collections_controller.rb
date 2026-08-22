@@ -635,7 +635,8 @@ class CollectionsController < ApplicationController
       content = PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :docx).force_encoding('UTF-8')
       send_data content, filename: filename, type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     when 'odt'
-      content = PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :odt).force_encoding('UTF-8')
+      # pandoc's ODT writer ignores dir=rtl, so FixOdtDirectionality applies the RTL defaults
+      content = FixOdtDirectionality.call(PandocRuby.convert(html, from: :html, to: :odt))
       send_data content, filename: filename, type: 'application/vnd.oasis.opendocument.text'
     when 'html'
       send_data html, filename: filename, type: 'text/html; charset=utf-8'
