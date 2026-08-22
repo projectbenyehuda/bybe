@@ -1288,6 +1288,15 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
+/* Same 18px-glyph-in-a-26px-CLS-box problem as the author page card above: in
+   the work page's reading-mode buttons the glyph rendered against the top of
+   the purple background instead of lining up with the "reading mode" label
+   beside it. Center the glyph in its box. */
+.reading-mode-btn-v02 .by-icon-v02,
+.reading-mode-icon-btn-v02 .by-icon-v02 {
+  line-height: 26px;
+}
+
 .share-name {
   font-family: Alef;
 }
