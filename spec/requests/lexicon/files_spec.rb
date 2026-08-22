@@ -15,17 +15,35 @@ describe '/lexicon/files' do
     context 'when no filters are applied' do
       let(:params) { {} }
 
+      let!(:raw_people) { create_list(:lex_file, 2, :person, status: :classified, entry_status: :raw) }
+
       before do
-        create_list(:lex_file, 2, :person, status: :classified, entry_status: :raw)
         create_list(:lex_file, 2, :person, status: :ingested, entry_status: :error)
-        create_list(:lex_file, 2, :publication, status: :classified, entry_status: :draft)
+        create_list(:lex_file, 2, :publication, status: :classified, entry_status: :raw)
         create_list(:lex_file, 2, :publication, status: :ingested, entry_status: :published)
       end
 
-      it 'renders successfully and shows default statuses selection' do
-        call
+      it 'defaults to raw person entries, the most common migration task' do
         expect(call).to eq(200)
-        expect(file_ids.size).to eq(6)
+        expect(file_ids).to match_array(raw_people.map(&:id))
+      end
+
+      it 'preselects person and raw in the filter form' do
+        call
+        expect(assigns(:entrytype)).to eq('person')
+        expect(assigns(:entry_statuses)).to eq(%w(raw))
+      end
+    end
+
+    context 'when the entrytype filter is explicitly blanked' do
+      let(:params) { { entrytype: '' } }
+
+      let!(:person_file) { create(:lex_file, :person, status: :classified, entry_status: :raw) }
+      let!(:publication_file) { create(:lex_file, :publication, status: :classified, entry_status: :raw) }
+
+      it 'shows all entry types rather than falling back to the person default' do
+        call
+        expect(file_ids).to contain_exactly(person_file.id, publication_file.id)
       end
     end
 
@@ -125,7 +143,7 @@ describe '/lexicon/files' do
           )
         end
 
-        let(:params) { { fname: '00003' } }
+        let(:params) { { fname: '00003', entrytype: '' } }
 
         it 'filters files by title substring' do
           call
@@ -191,11 +209,9 @@ describe '/lexicon/files' do
         context 'when no entry_statuses param is provided (default)' do
           let(:params) { {} }
 
-          it 'defaults to raw, migrating, error, draft and verifying statuses' do
+          it 'defaults to the raw status only' do
             call
-            expect(file_ids).to contain_exactly(
-              raw_file.id, error_file.id, migrating_file.id, draft_file.id, verifying_file.id
-            )
+            expect(file_ids).to contain_exactly(raw_file.id)
           end
         end
       end
@@ -241,7 +257,7 @@ describe '/lexicon/files' do
 
       let!(:my_locked) { create(:lex_file, :person, entry_status: :verifying) }
       let!(:other_locked) { create(:lex_file, :person, entry_status: :verifying) }
-      let!(:unlocked) { create(:lex_file, :person, entry_status: :draft) }
+      let!(:unlocked) { create(:lex_file, :person, entry_status: :raw) }
 
       before do
         my_locked.lex_entry.obtain_lock?(current_user)
@@ -261,6 +277,12 @@ describe '/lexicon/files' do
       it 'excludes locked files from the main @lex_files list' do
         call
         expect(assigns(:lex_files).map(&:id)).to contain_exactly(unlocked.id)
+      end
+
+      it 'still lists locked files when their status is excluded by the status filter' do
+        get '/lex/files', params: { entry_statuses: ['raw'] }
+        expect(assigns(:my_locked_files).map(&:id)).to contain_exactly(my_locked.id)
+        expect(assigns(:locked_by_others_files).map(&:id)).to contain_exactly(other_locked.id)
       end
 
       it 'shows an unlock button only for files locked by me' do
