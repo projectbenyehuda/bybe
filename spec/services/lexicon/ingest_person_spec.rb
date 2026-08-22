@@ -467,4 +467,51 @@ describe Lexicon::IngestPerson do
       expect(call.date_of_manual_update).to eq('15 במרץ 2024')
     end
   end
+
+  describe 'date of manual update extraction' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'ישראלי, ישראל',
+          fname: fixture,
+          full_path: Rails.root.join('spec/fixtures/files/lexicon', fixture)
+        }
+      )
+    end
+
+    context 'when an unclosed font tag nests the footer inside the bibliography' do
+      let(:fixture) { 'unclosed_font_date.php' }
+
+      it 'extracts the date alone, not the bibliography preceding it' do
+        expect(call.date_of_manual_update).to eq('2 בספטמבר 2020')
+      end
+    end
+
+    context 'when the phrase also appears inside a citation' do
+      let(:fixture) { 'date_in_citation_and_footer.php' }
+
+      it 'takes the footer date rather than the citation one' do
+        expect(call.date_of_manual_update).to eq('6 בנובמבר 2022')
+      end
+    end
+
+    context 'when the date is on the line following the label' do
+      let(:fixture) { 'date_on_next_line.php' }
+
+      it 'extracts the date' do
+        expect(call.date_of_manual_update).to eq('7 באפריל 2021')
+      end
+    end
+
+    context 'when the label is present but no date was filled in' do
+      let(:fixture) { 'label_without_date.php' }
+
+      it 'leaves the date blank rather than grabbing the markup that follows' do
+        expect(call.date_of_manual_update).to be_nil
+      end
+    end
+  end
 end
