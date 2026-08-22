@@ -41,7 +41,7 @@
                 %div
                   .metadata
                     %span{:style => "font-weight:bold"}= t(:total_collections_including_author)+':'
-                    %a{:href => "#"}= @author.cached_collections_count
+                    = @author.cached_collections_count
                   .metadata
                     %span{:style => "font-weight:bold"}= t(:works_in_the_project)+': '
                     = "#{@author.cached_works_count} #{t(:works)}"
