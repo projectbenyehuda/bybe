@@ -53,13 +53,13 @@ describe 'Author TOC sidebar panel width', :js do
     # Below 992px the sidebar stacks under the TOC column, so the sticky rail
     # floats over it too and its spacer must stay on the line. RTL page: the
     # rail is on the right, so the panels must end to its left.
-    rail_right, panel_right = page.evaluate_script(<<~JS)
-      [document.querySelector('.author-side-nav-col').getBoundingClientRect().right,
+    rail_left, panel_right = page.evaluate_script(<<~JS)
+      [document.querySelector('.author-side-nav-col').getBoundingClientRect().left,
        document.querySelector('#{sidebar_card}').getBoundingClientRect().right]
     JS
 
-    expect(panel_right).to be <= rail_right,
+    expect(panel_right).to be <= rail_left,
                            "Side panel right edge (#{panel_right.round}px) overlaps " \
-                           "the nav rail (right edge #{rail_right.round}px)"
+                           "the nav rail (left edge #{rail_left.round}px)"
   end
 end
