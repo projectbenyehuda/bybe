@@ -42,9 +42,7 @@ describe 'Reading mode icon alignment', :js do
     expect(icon_offset_from_button_centre('.reading-mode-btn-v02').abs).to be < 1.5
   end
 
-  it 'centres the glyph in the mobile reading-mode icon button' do
-    page.driver.browser.manage.window.resize_to(390, 900)
-    visit manifestation_path(manifestation)
+it 'centres the glyph in the mobile reading-mode icon button', :narrow_viewport do
 
     expect(page).to have_css('.reading-mode-icon-btn-v02')
     expect(icon_offset_from_button_centre('.reading-mode-icon-btn-v02').abs).to be < 1.5
