@@ -77,6 +77,12 @@ elastic_start.sh
 mise.toml
 
 # beads issue tracking
+#
+# Do NOT `git add -f` anything under .beads/. Its contents are per-clone state:
+# metadata.json records which Dolt database this clone uses, embedded vs. server
+# mode, and a project_id unique to the clone. Committing it repoints every other
+# clone at the committing developer's database, at which point `bd ready` goes
+# silently empty. Each clone generates its own via `bd init`.
 
 .beads/
 .git/beads-worktrees/
