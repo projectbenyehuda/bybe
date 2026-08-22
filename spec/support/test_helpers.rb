@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 module TestHelpers
+  # Logs the given user in for the duration of the example. This is the single place the suite
+  # stubs authentication -- reach for it instead of hand-rolling the stub in individual specs.
+  # rubocop:disable RSpec/AnyInstance -- the app has no password login to drive; OmniAuth only
+  def login_as(user)
+    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    user
+  end
+  # rubocop:enable RSpec/AnyInstance
+
   # Creates an editor user with edit_catalog privileges for testing
   # Returns the created user, or the existing one if already created in this test run
   def create_catalog_editor
@@ -15,7 +24,7 @@ module TestHelpers
   # Login helper for system specs using rack_test driver
   def login_as_catalog_editor
     user = create_catalog_editor
-    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    login_as(user)
     allow_any_instance_of(ApplicationController).to receive(:require_editor).and_return(true)
     user
   end
@@ -32,7 +41,7 @@ module TestHelpers
   # Login helper for mass-update / saved-selections specs
   def login_as_batch_editor
     user = create_batch_editor
-    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    login_as(user)
     allow_any_instance_of(ApplicationController).to receive(:require_editor).and_return(true)
     user
   end
@@ -51,7 +60,7 @@ module TestHelpers
   # Login helper for tag moderation specs
   def login_as_moderator
     user = create_moderator
-    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    login_as(user)
     allow_any_instance_of(ApplicationController).to receive(:require_editor).and_return(true)
     # Store user for mock_tagging_lock to use
     @current_test_user = user
@@ -85,7 +94,7 @@ module TestHelpers
   # Login helper for lexicon specs
   def login_as_lexicon_editor
     user = create_lexicon_editor
-    allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    login_as(user)
     allow_any_instance_of(ApplicationController).to receive(:require_editor).and_return(true)
     user
   end
