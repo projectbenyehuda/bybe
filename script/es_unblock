@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Clears Elasticsearch read_only_allow_delete blocks on all indices.
+# Run this after a disk-full event that caused ES to lock indices read-only.
+
+set -euo pipefail
+
+ES="${ES_URL:-http://localhost:9200}"
+
+echo "Clearing read_only_allow_delete on all indices..."
+curl -sf -X PUT "${ES}/_all/_settings" \
+  -H "Content-Type: application/json" \
+  -d '{"index": {"blocks": {"read_only_allow_delete": "false"}}}' | python3 -m json.tool
+
+echo ""
+echo "Verifying indices..."
+
+failed=0
+while IFS= read -r index; do
+  # .geoip_databases is a fully internal ES-managed index; all external API access is rejected.
+  if [[ "$index" == ".geoip_databases" ]]; then
+    echo "  - ${index} (internal, skipped)"
+    continue
+  fi
+
+  # System indices (dot-prefixed) have strict mappings that reject arbitrary writes.
+  # Verify them by inspecting settings instead.
+  if [[ "$index" == .* ]]; then
+    block=$(curl -sf "${ES}/${index}/_settings" | \
+      python3 -c "
+import sys, json
+s = json.load(sys.stdin)
+vals = [v.get('settings',{}).get('index',{}).get('blocks',{}).get('read_only_allow_delete','false')
+        for v in s.values()]
+print('true' if any(v == 'true' for v in vals) else 'false')
+" 2>/dev/null || echo "unknown")
+    if [ "$block" = "false" ]; then
+      echo "  ✓ ${index} (system)"
+    else
+      echo "  ✗ ${index} (system) — block=${block}"
+      failed=$((failed + 1))
+    fi
+    continue
+  fi
+
+  # Application indices: verify with an actual write + delete.
+  result=$(curl -sf -X POST "${ES}/${index}/_doc" \
+    -H "Content-Type: application/json" \
+    -d '{"_test": "write_check"}' 2>&1) || true
+  doc_id=$(echo "$result" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('_id',''))" 2>/dev/null || true)
+  if [ -n "$doc_id" ]; then
+    curl -sf -X DELETE "${ES}/${index}/_doc/${doc_id}" > /dev/null
+    echo "  ✓ ${index}"
+  else
+    echo "  ✗ ${index} — still blocked or unreachable"
+    failed=$((failed + 1))
+  fi
+done < <(curl -sf "${ES}/_cat/indices?h=index" | sort)
+
+echo ""
+if [ "$failed" -eq 0 ]; then
+  echo "All indices are writable."
+else
+  echo "${failed} index(es) could not be unblocked. Check disk usage: $(df -h / | tail -1)"
+  exit 1
+fi
