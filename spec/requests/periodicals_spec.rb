@@ -253,12 +253,6 @@ RSpec.describe 'Periodicals', type: :request do
       expect(assigns(:periodicals_count)).to eq(assigns(:periodicals).size)
     end
 
-    # rubocop:disable RSpec/AnyInstance -- matches how the rest of the suite logs a user in
-    def login_as(user)
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
-    end
-    # rubocop:enable RSpec/AnyInstance
-
     context 'when an editor is logged in' do
       before { login_as(create(:user, editor: true)) }
 
