@@ -1559,7 +1559,11 @@ p.by-genre-name-v02.headline-2-v02 {
     flex-wrap: nowrap;
   }
 
-  .author-page-content .col-12 > .row > .col:not(.author-side-menu-area) {
+  // The two columns spell their spacer differently: the TOC column uses
+  // .author-side-menu-area, the sidebar column .side-menu-area-left (which is
+  // display:none on desktop, where no rail floats over it).
+  .author-page-content .col-12 > .row
+  > .col:not(.author-side-menu-area):not(.side-menu-area-left) {
     min-width: 0;
   }
 

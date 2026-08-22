@@ -139,7 +139,12 @@
     .col-12.col-lg-4
       .row
         %a{name: 'curated_g', 'class' => 'g_anch'}
-        .col.author-side-menu-area
+        -# Spacer keeping this column clear of the sticky in-page nav rail. Only
+           the narrow (<= 991px) rail floats over this column, since there the
+           sidebar stacks under the TOC column; on desktop the rail is beside the
+           TOC column only, so .side-menu-area-left collapses (display:none) and
+           the side panels get the column's full width.
+        .col.side-menu-area-left
         .col
           = render partial: 'shared/about_pby'
           = render partial: 'shared/donation_box_negative'
