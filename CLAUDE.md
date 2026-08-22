@@ -385,21 +385,28 @@ Important reminders:
 
 Addressing PR code review comments:
 
-**CRITICAL**: When asked to address PR code review comments, use this two-step process:
+**CRITICAL**: Use `gh api`, never `gh pr view` / `gh pr edit` — both are blocked on this repo
+(see `.claude/rules/gh-pr-via-api.md`). A review has TWO separate parts, and you must fetch both:
 
-1. **Get review metadata**: Run `gh pr view <number> --json reviews,comments` to see all reviews
-2. **Fetch full review content**: If reviews exist with actual content (not just line comments from bots), use WebFetch on the review URL to get the full substantive review. The URL format is:
+1. **Review bodies** (the substantive analysis, summary, and recommendations):
+   ```bash
+   gh api repos/projectbenyehuda/bybe/pulls/<number>/reviews \
+     --jq '.[] | {author: .user.login, state, body}'
    ```
-   https://github.com/projectbenyehuda/bybe/pull/<number>#pullrequestreview-<review-id>
+2. **Line comments** (lint issues, isolated per-line feedback):
+   ```bash
+   gh api repos/projectbenyehuda/bybe/pulls/<number>/comments \
+     --jq '.[] | {path, line, body}'
    ```
 
 **Why this matters**:
-- `gh api repos/.../pulls/<number>/comments` only returns individual line comments (lint issues, isolated feedback)
-- It does NOT return the full review body text or comprehensive review content
-- Bot reviews (github-actions, copilot-pull-request-reviewer) often provide detailed analysis in the review body, not just line comments
-- WebFetch on the review URL provides the complete review including summary, analysis, and all recommendations
+- The `/comments` endpoint returns ONLY individual line comments — it does NOT return review body text
+- Bot reviews (github-actions, copilot-pull-request-reviewer) often put their real analysis in the
+  review body, which lives on `/reviews`
+- **Don't rely solely on the comments API** — it will miss substantive reviews!
 
-**Don't rely solely on the comments API** - it will miss substantive reviews!
+If a review body is truncated or references content the API doesn't return, fall back to WebFetch on
+`https://github.com/projectbenyehuda/bybe/pull/<number>#pullrequestreview-<review-id>`.
 
 For more details, see README.md in the project home directory.
 
