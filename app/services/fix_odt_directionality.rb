@@ -45,7 +45,7 @@ class FixOdtDirectionality < ApplicationService
   end
 
   def rezip(entries)
-    buffer = Zip::OutputStream.write_buffer(StringIO.new(String.new)) do |zos|
+    buffer = Zip::OutputStream.write_buffer(StringIO.new(''.b)) do |zos|
       # ODF requires 'mimetype' to be the archive's first entry, stored uncompressed
       if entries.key?('mimetype')
         zos.put_next_entry('mimetype', nil, nil, Zip::Entry::STORED)
@@ -58,8 +58,7 @@ class FixOdtDirectionality < ApplicationService
         zos.write content
       end
     end
-    buffer.string
-  end
+    buffer.string.force_encoding(Encoding::BINARY)
 
   def rtl_styles(styles_xml)
     doc = Nokogiri::XML(styles_xml)
