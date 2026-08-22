@@ -12,7 +12,7 @@
     %p= t(:no_results)
   - else
     %h3= "#{t(:total)}: #{@grand_total}"
-    %table{ style: 'cell-spacing: 10;' }
+    %table{ style: 'border-spacing: 10px; border-collapse: separate;' }
       %tr
         %th= t(:file_format)
         - @item_types.each do |item_type|
