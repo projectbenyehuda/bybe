@@ -26,8 +26,9 @@ class MakeFreshDownloadable < ApplicationService
         end
       when 'docx'
         begin
-          temp_file = Tempfile.new('tmp_doc_' + download_entity.id.to_s, 'tmp/')
-          temp_file.puts(PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :docx).force_encoding('UTF-8')) # requires pandoc 1.17.3 or higher, for correct directionality
+          temp_file = Tempfile.new('tmp_doc_' + download_entity.id.to_s, 'tmp/', binmode: true)
+          # requires pandoc 1.17.3 or higher, for correct directionality
+          temp_file.write(PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :docx))
           temp_file.chmod(0o644)
           temp_file.rewind
           dl.stored_file.attach(io: temp_file, filename: filename)

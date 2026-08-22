@@ -97,5 +97,36 @@ RSpec.describe MakeFreshDownloadable do
         expect(properties['fo:text-align']).to eq('end')
       end
     end
+
+    context "with the 'docx' format" do
+      # The archive used to be written with IO#puts, which appends a newline after the ZIP
+      # end-of-central-directory record, leaving trailing garbage in every DOCX we served.
+      it 'stores the archive pandoc produced byte for byte' do
+        pandoc_output = nil
+        allow(PandocRuby).to receive(:convert).and_wrap_original do |original, *args, **kwargs|
+          pandoc_output = original.call(*args, **kwargs)
+        end
+
+        downloadable = service.call('docx', 'test.docx', '<p>פסקה בעברית.</p>', manifestation, 'מחבר')
+
+        # Compare sizes and digests rather than the archives themselves, so a failure reports a
+        # readable diff instead of dumping kilobytes of binary
+        stored = downloadable.stored_file.download
+        expect(stored.bytesize).to eq(pandoc_output.bytesize)
+        expect(Digest::SHA256.hexdigest(stored)).to eq(Digest::SHA256.hexdigest(pandoc_output))
+      end
+
+      # Unlike ODT, pandoc's DOCX writer does honour dir=rtl, so no post-processing is needed
+      it 'produces a right-to-left document' do
+        downloadable = service.call('docx', 'test.docx', '<p>פסקה בעברית.</p>', manifestation, 'מחבר')
+
+        document = nil
+        Zip::File.open_buffer(StringIO.new(downloadable.stored_file.download)) do |zip|
+          document = zip.get_entry('word/document.xml').get_input_stream.read
+        end
+
+        expect(document).to include('<w:bidi />')
+      end
+    end
   end
 end

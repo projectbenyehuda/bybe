@@ -453,6 +453,24 @@ describe CollectionsController do
         expect(properties['fo:text-align']).to eq('end')
       end
 
+      it 'sends an intact right-to-left DOCX' do
+        get :download, params: {
+          collection_id: collection.id,
+          format: 'docx',
+          download_scope: 'partial',
+          manifestation_ids: [manifestation1.id]
+        }
+
+        expect(response).to be_successful
+
+        document = nil
+        Zip::File.open_buffer(StringIO.new(response.body.dup.force_encoding(Encoding::BINARY))) do |zip|
+          document = zip.get_entry('word/document.xml').get_input_stream.read
+        end
+
+        expect(document).to include('<w:bidi />')
+      end
+
       it 'does not overwrite existing full collection cache' do
         # First, create a full collection downloadable
         get :download, params: { collection_id: collection.id, format: 'html', download_scope: 'full' }
