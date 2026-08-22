@@ -59,6 +59,7 @@ class FixOdtDirectionality < ApplicationService
       end
     end
     buffer.string.force_encoding(Encoding::BINARY)
+  end
 
   def rtl_styles(styles_xml)
     doc = Nokogiri::XML(styles_xml)
