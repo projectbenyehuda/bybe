@@ -36,8 +36,9 @@ class MakeFreshDownloadable < ApplicationService
         end
       when 'odt'
         begin
-          temp_file = Tempfile.new('tmp_doc_' + download_entity.id.to_s, 'tmp/')
-          temp_file.puts(PandocRuby.convert(html, M: 'dir=rtl', from: :html, to: :odt).force_encoding('UTF-8')) # requires pandoc 1.17.3 or higher, for correct directionality
+          temp_file = Tempfile.new('tmp_doc_' + download_entity.id.to_s, 'tmp/', binmode: true)
+          # pandoc's ODT writer ignores dir=rtl, so FixOdtDirectionality applies the RTL defaults
+          temp_file.write(FixOdtDirectionality.call(PandocRuby.convert(html, from: :html, to: :odt)))
           temp_file.chmod(0o644)
           temp_file.rewind
           dl.stored_file.attach(io: temp_file, filename: filename)

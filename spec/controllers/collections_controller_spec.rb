@@ -431,6 +431,28 @@ describe CollectionsController do
         expect(collection.downloadables.where(doctype: 'html')).to be_empty
       end
 
+      it 'sends a right-to-left ODT' do
+        get :download, params: {
+          collection_id: collection.id,
+          format: 'odt',
+          download_scope: 'partial',
+          manifestation_ids: [manifestation1.id]
+        }
+
+        expect(response).to be_successful
+
+        styles = nil
+        Zip::File.open_buffer(StringIO.new(response.body.dup.force_encoding(Encoding::BINARY))) do |zip|
+          styles = zip.get_entry('styles.xml').get_input_stream.read
+        end
+        properties = Nokogiri::XML(styles)
+                             .at_xpath('//style:default-style[@style:family="paragraph"]/style:paragraph-properties',
+                                       FixOdtDirectionality::NS)
+
+        expect(properties['style:writing-mode']).to eq('rl-tb')
+        expect(properties['fo:text-align']).to eq('end')
+      end
+
       it 'does not overwrite existing full collection cache' do
         # First, create a full collection downloadable
         get :download, params: { collection_id: collection.id, format: 'html', download_scope: 'full' }
