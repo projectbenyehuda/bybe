@@ -270,37 +270,21 @@ class LexEntry < ApplicationRecord
   def remove_work_from_checklist!(work_id)
     return unless lex_item_type == 'LexPerson'
 
-    with_lock do
-      return if verification_progress.blank?
-
-      progress = verification_progress.deep_dup
-      checklist = progress['checklist']
-      return unless checklist&.dig('works', 'items')&.key?(work_id.to_s)
-
-      checklist['works']['items'].delete(work_id.to_s)
-      auto_verify_collections!(checklist)
-      progress['last_updated_at'] = Time.current.iso8601
-      update!(verification_progress: progress)
-    end
+    remove_collection_item_from_checklist!('works', work_id, auto_verify_when_empty: true)
   end
 
   # Remove a single link from the verification checklist (called synchronously when a link is destroyed),
   # so the deleted link stops counting towards the section's verified/total tally.
   def remove_link_from_checklist!(link_id)
-    with_lock do
-      return if verification_progress.blank?
+    remove_collection_item_from_checklist!('links', link_id)
+  end
 
-      progress = verification_progress.deep_dup
-      checklist = progress['checklist']
-      return unless checklist&.dig('links', 'items')&.key?(link_id.to_s)
+  # Remove a single citation from the verification checklist (called synchronously when a citation is
+  # destroyed), so the deleted citation stops counting towards the section's verified/total tally.
+  def remove_citation_from_checklist!(citation_id)
+    return unless lex_item_type == 'LexPerson'
 
-      checklist['links']['items'].delete(link_id.to_s)
-      # When the last link is deleted, keep whatever verified state the section had:
-      # a zero-link section can legitimately be marked verified by hand.
-      auto_verify_collections!(checklist) if checklist['links']['items'].any?
-      progress['last_updated_at'] = Time.current.iso8601
-      update!(verification_progress: progress)
-    end
+    remove_collection_item_from_checklist!('citations', citation_id)
   end
 
   # Mark all works as verified (called when marking entire works section as verified)
@@ -334,6 +318,25 @@ class LexEntry < ApplicationRecord
   end
 
   private
+
+  # Drop one item from a collection section of the checklist. `auto_verify_when_empty` controls what
+  # happens once the section runs dry: works re-derive their verified flag from the database (so an
+  # emptied works section correctly becomes unverified), while citations and links keep whatever
+  # verified state they had — an empty section can legitimately be marked verified by hand.
+  def remove_collection_item_from_checklist!(collection, item_id, auto_verify_when_empty: false)
+    with_lock do
+      return if verification_progress.blank?
+
+      progress = verification_progress.deep_dup
+      checklist = progress['checklist']
+      return unless checklist&.dig(collection, 'items')&.key?(item_id.to_s)
+
+      checklist[collection]['items'].delete(item_id.to_s)
+      auto_verify_collections!(checklist) if auto_verify_when_empty || checklist[collection]['items'].any?
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
 
   # Auto-verify collection sections when all items are verified
   def auto_verify_collections!(checklist)

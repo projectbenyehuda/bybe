@@ -244,6 +244,8 @@ en:
         jump_to: "Jump to:"
         edit: Edit
         add_citation: Add Citation
+        delete_citation: Delete Citation
+        delete_citation_confirm: Permanently delete this citation?
         add_link: Add Link
         delete_link: Delete Link
         delete_link_confirm: Permanently delete this link?

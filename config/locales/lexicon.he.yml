@@ -245,6 +245,8 @@ he:
         jump_to: "קפיצה אל:"
         edit: ערוך
         add_citation: הוסף מראה מקום
+        delete_citation: מחק מראה מקום
+        delete_citation_confirm: למחוק את מראה המקום לצמיתות?
         add_link: הוסף קישור
         delete_link: מחק קישור
         delete_link_confirm: למחוק את הקישורית לצמיתות?

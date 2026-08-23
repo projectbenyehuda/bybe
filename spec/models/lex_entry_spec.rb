@@ -186,6 +186,52 @@ RSpec.describe LexEntry, type: :model do
       end
     end
 
+    describe '#remove_citation_from_checklist!' do
+      let!(:citation1) { create(:lex_citation, person: person) }
+      let!(:citation2) { create(:lex_citation, person: person) }
+
+      before do
+        person.reload
+        entry.start_verification!('test@example.com')
+      end
+
+      it 'removes the citation ID from checklist items' do
+        citation1.destroy!
+        entry.remove_citation_from_checklist!(citation1.id)
+
+        items = entry.reload.verification_progress.dig('checklist', 'citations', 'items')
+        expect(items[citation1.id.to_s]).to be_nil
+        expect(items[citation2.id.to_s]).to be_present
+      end
+
+      it 'does nothing when the citation ID is not in the checklist' do
+        expect { entry.remove_citation_from_checklist!(999_999) }.not_to raise_error
+      end
+
+      it 'auto-verifies the section when all remaining citations are verified' do
+        entry.update_checklist_item("citations.items.#{citation2.id}", true)
+
+        citation1.destroy!
+        entry.remove_citation_from_checklist!(citation1.id)
+
+        expect(entry.reload.verification_progress.dig('checklist', 'citations', 'verified')).to be true
+      end
+
+      it 'keeps the citations section verified when the last verified citation goes' do
+        entry.update_checklist_item("citations.items.#{citation1.id}", true)
+        entry.update_checklist_item("citations.items.#{citation2.id}", true)
+
+        [citation1, citation2].each do |citation|
+          citation.destroy!
+          entry.remove_citation_from_checklist!(citation.id)
+        end
+
+        progress = entry.reload.verification_progress
+        expect(progress.dig('checklist', 'citations', 'items')).to be_empty
+        expect(progress.dig('checklist', 'citations', 'verified')).to be true
+      end
+    end
+
     describe '#verification_percentage' do
       let!(:work1) { create(:lex_person_work, person: person, title: 'Work 1') }
       let!(:work2) { create(:lex_person_work, person: person, title: 'Work 2') }

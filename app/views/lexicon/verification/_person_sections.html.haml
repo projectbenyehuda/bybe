@@ -254,6 +254,8 @@
                 %button.btn.btn-sm{class: checklist['citations']&.dig('items', citation.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: "citations.items.#{citation.id}"}}
                   ✓
                   = t('lexicon.verification.migrated.mark_verified')
+                -# Legacy PHP parsing sometimes mistakes a few lines of external links for citations, so verifiers need a way to throw the bogus ones away.
+                = link_to t('lexicon.verification.migrated.delete_citation'), lexicon_citation_path(citation), remote: true, method: :delete, class: 'btn btn-sm btn-outline-danger delete-citation', data: { confirm: t('lexicon.verification.migrated.delete_citation_confirm') }
     - else
       %p.text-muted= t('lexicon.verification.sections.no_citations')
   .section-actions
