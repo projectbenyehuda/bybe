@@ -48,7 +48,10 @@ class FilesController < ApplicationController
       result = {}
       record&.downloadable_attachments&.each do |attachment|
         blob = attachment.blob
-        disposition = blob.image? ? 'inline' : 'attachment'
+        # PDFs are linked from lexicon entries as documents to read (sometimes with a #page
+        # anchor), so like images they are served inline and open in the browser's viewer
+        # rather than downloading. Everything else is still offered as a download.
+        disposition = blob.image? || blob.content_type == 'application/pdf' ? 'inline' : 'attachment'
         result[attachment.filename.to_s] = blob.url(
           disposition: disposition,
           expires_in: CACHE_EXPIRATION_TIME + 1.minute

@@ -26,6 +26,11 @@ describe '/files' do
         create(:lex_entry).tap do |entry|
           entry.attachments.attach(io: StringIO.new('First'), filename: 'file_1.txt', content_type: 'text/plain')
           entry.attachments.attach(io: StringIO.new('Second'), filename: 'file_2', content_type: 'text/plain')
+          entry.attachments.attach(
+            io: StringIO.new("%PDF-1.4\nfake pdf\n"),
+            filename: 'scan.pdf',
+            content_type: 'application/pdf'
+          )
         end
       end
       let(:record_id) { record.id }
@@ -52,9 +57,23 @@ describe '/files' do
       context 'when correct file is requested' do
         let(:filename) { 'file_1.txt' }
 
-        it 'redirects to the file URL' do
+        it 'redirects to the file URL, served as a download' do
           expect(call).to eq(302)
           expect(response.location).to include('file_1.txt')
+          follow_redirect!
+          expect(response.headers['Content-Disposition']).to start_with('attachment')
+        end
+      end
+
+      context 'when a PDF file is requested' do
+        let(:filename) { 'scan.pdf' }
+
+        # PDFs linked from a lexicon entry should open in the browser's viewer in the new
+        # tab the link targets, not download
+        it 'redirects to the file URL, served inline' do
+          expect(call).to eq(302)
+          follow_redirect!
+          expect(response.headers['Content-Disposition']).to start_with('inline')
         end
       end
 
