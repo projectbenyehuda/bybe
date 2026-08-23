@@ -72,6 +72,31 @@ describe Lexicon::ExtractCitations do
     end
   end
 
+  context 'when the citation lists follow the header directly, with no <font> wrapper at all' do
+    # Regression test for 00044.php: the current production export dropped the <font size="2">
+    # wrapper that older files placed right after the Bib. anchor, so the first <ul> is now the
+    # header's immediate sibling. The guard requiring the section to open with a <font> made the
+    # service return [], and not a single citation of the entry was migrated.
+    let(:filename) { Rails.root.join('spec/fixtures/files/lexicon/ul_directly_after_citations_header.php') }
+
+    it 'extracts all citations across every subject group' do
+      captured_html = nil
+      allow(Lexicon::ParseCitations).to receive(:call) do |html|
+        captured_html = html
+        []
+      end
+
+      result
+
+      expect(captured_html).not_to be_nil
+      expect(Nokogiri::HTML(captured_html).css('li').size).to eq(3)
+      expect(captured_html).to include('כהן, דוד')
+      expect(captured_html).to include('על ״ספר ראשון״')
+      # The walk must stop at the Links section header rather than swallowing its list.
+      expect(captured_html).not_to include('אתר חיצוני שאינו ציטוט')
+    end
+  end
+
   context 'when a stray </span> inside a <li> prematurely closes the parent span' do
     # Regression test for 00034.php: a stray </span> after </b> inside a citation <li>
     # caused Nokogiri to prematurely close the <span dir="rtl"> wrapping the citations section.
