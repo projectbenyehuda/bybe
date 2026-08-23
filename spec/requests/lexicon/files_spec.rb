@@ -35,6 +35,50 @@ describe '/lexicon/files' do
       end
     end
 
+    context 'with the person migration progress stats' do
+      let(:params) { {} }
+
+      before do
+        create_list(:lex_file, 3, :person, entry_status: :raw)
+        create(:lex_file, :person, entry_status: :migrating)
+        create(:lex_file, :person, entry_status: :draft)
+        create(:lex_file, :person, entry_status: :verifying)
+        create(:lex_file, :person, entry_status: :published)
+        # publications must not be counted at all
+        create(:lex_file, :publication, entry_status: :raw)
+        create(:lex_file, :publication, entry_status: :published)
+      end
+
+      it 'counts person entries by migration state and renders the progress bar' do
+        call
+        expect(assigns(:person_entry_count)).to eq(7)
+        expect(assigns(:raw_person_entry_count)).to eq(3)
+        expect(assigns(:migrated_person_entry_count)).to eq(3) # draft, verifying, published
+        expect(assigns(:migrated_person_percentage)).to eq(42.9)
+        expect(response.body).to include(
+          I18n.t('lexicon.files.index.stats', total: 7, migrated: 3, raw: 3)
+        )
+        expect(response.body).to include('width: 42.9%')
+      end
+
+      it 'ignores the active filters, reporting global progress' do
+        get '/lex/files', params: { entry_statuses: ['published'], title: 'no-such-title' }
+        expect(assigns(:lex_files)).to be_empty
+        expect(assigns(:person_entry_count)).to eq(7)
+        expect(assigns(:migrated_person_entry_count)).to eq(3)
+      end
+    end
+
+    context 'when there are no person entries at all' do
+      let(:params) { {} }
+
+      it 'reports zero percent without dividing by zero' do
+        call
+        expect(assigns(:person_entry_count)).to eq(0)
+        expect(assigns(:migrated_person_percentage)).to eq(0)
+      end
+    end
+
     context 'when the entrytype filter is explicitly blanked' do
       let(:params) { { entrytype: '' } }
 

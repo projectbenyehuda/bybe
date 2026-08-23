@@ -142,6 +142,7 @@ he:
         subtitle: רשימת הקבצים
         title_placeholder: חיפוש לפי כותרת...
         fname_placeholder: חפש לפי שם קובץ...
+        stats: "ערכי אישים: %{total} | הוסבו במלואם: %{migrated} | ממתינים להסבה: %{raw}"
         entry_status_filter: סטטוס ערך
         my_locked_title: קבצים נעולים על ידי
         locked_by_others_title: קבצים נעולים על ידי עורכים אחרים
