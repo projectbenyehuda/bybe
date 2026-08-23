@@ -58,6 +58,9 @@ class Manifestation < ApplicationRecord
   # An editor's verdict that a flagged text is in fact correct. Kept in its own list so that
   # rebuilding the queue never discards it.
   SUSPECTED_TYPOS_OKAY_LISTKEY = 'suspected_typos_okay'
+  # Single-row marker holding, in `extra`, the ISO8601 watermark that .update_suspected_typos_list
+  # scanned through. Later runs only look at texts modified since.
+  SUSPECTED_TYPOS_LAST_RUN_LISTKEY = 'suspected_typos_last_run'
 
   update_index('manifestations') { self } # update ManifestationsIndex when entity is updated
   update_index('manifestations_autocomplete') { self } # update ManifestationsAutocompleteIndex when entity is updated
@@ -529,23 +532,36 @@ class Manifestation < ApplicationRecord
     ids.filter_map { |id| manifestations[id] }
   end
 
-  # Rebuilds the queue of published texts that DetectSuspectedTypos considers worth a human
+  # Updates the queue of published texts that DetectSuspectedTypos considers worth a human
   # look, one ListItem per text, with a "<type>:<count>;..." tally in `extra`. Run weekly
   # from config/recurring.yml and surfaced by AdminController#suspected_typos.
   #
-  # The pass is a full rebuild rather than an append: a text whose typos have since been
-  # fixed drops off the list by itself, so editors never have to clear an entry by hand. The
-  # only thing that survives a rebuild is the editor's verdict, held separately in the
+  # Incremental: only texts modified since the watermark recorded by the previous run are
+  # scanned, which after the first pass turns a whole-corpus job into a handful of texts. The
+  # first run, and any run passed `full: true`, scans everything - use that after changing a
+  # heuristic in DetectSuspectedTypos, since unmodified texts would otherwise keep the verdict
+  # the old rules gave them.
+  #
+  # Within the scanned set the pass is a rebuild, not an append: a text whose typos have been
+  # fixed drops off the queue by itself, so editors never clear an entry by hand. The only
+  # thing that survives is the editor's verdict, held separately in the
   # SUSPECTED_TYPOS_OKAY_LISTKEY whitelist, whose members are not scanned at all.
-  def self.update_suspected_typos_list
-    whitelisted = ListItem.where(listkey: SUSPECTED_TYPOS_OKAY_LISTKEY, item_type: name).select(:item_id)
-    # item_id => list_item_id, so an entry can be updated in place and, once seen, removed
-    # from the hash; whatever is left at the end is stale and gets dropped.
-    stale = ListItem.where(listkey: SUSPECTED_TYPOS_LISTKEY, item_type: name).pluck(:item_id, :id).to_h
-    scope = all_published.where.not(id: whitelisted)
-                         .joins(expression: :work)
-                         .select('manifestations.id, manifestations.markdown, works.genre as work_genre')
+  def self.update_suspected_typos_list(full: false)
+    # Read before the scan starts, so a text edited while the scan is running is picked up by
+    # the next run rather than missed by both. Rounded down to the whole second and then
+    # backed off by one more, because MySQL *rounds* fractional seconds into these
+    # precision-0 datetime columns while Ruby's iso8601 truncates them: without the margin a
+    # text saved during the run can land on a stamp that is not strictly greater than the
+    # watermark, and would then be skipped by every later run. The margin costs one second's
+    # worth of texts being re-scanned.
+    watermark = 1.second.ago.change(usec: 0)
+    since = full ? nil : suspected_typos_scanned_through
+
+    scope = suspected_typos_scan_scope(since)
     total = scope.count(:all) # :all, because counting the multi-column custom select is not valid SQL
+    # item_id => list_item_id for the whole queue, so each scanned text costs a hash lookup
+    # rather than a query.
+    queued = ListItem.where(listkey: SUSPECTED_TYPOS_LISTKEY, item_type: name).pluck(:item_id, :id).to_h
     handled = 0
     added = 0
 
@@ -553,7 +569,7 @@ class Manifestation < ApplicationRecord
       handled += 1
       Rails.logger.info "update_suspected_typos_list: handled #{handled} of #{total}" if (handled % 500).zero?
       findings = DetectSuspectedTypos.call(m.markdown, m[:work_genre])
-      list_item_id = stale.delete(m.id)
+      list_item_id = queued[m.id]
       if findings.empty?
         ListItem.where(id: list_item_id).destroy_all if list_item_id
       elsif list_item_id
@@ -565,9 +581,48 @@ class Manifestation < ApplicationRecord
       end
     end
 
-    # Left over: texts that have since been unpublished or whitelisted, so were never visited.
-    ListItem.where(id: stale.values).destroy_all
+    drop_unreachable_suspected_typos
+    record_suspected_typos_watermark(watermark)
     Rails.logger.info "update_suspected_typos_list: scanned #{total}, added #{added} new ListItems"
+  end
+
+  # Every text the queue is allowed to hold: published, and not whitelisted by an editor.
+  def self.suspected_typos_reachable
+    whitelisted = ListItem.where(listkey: SUSPECTED_TYPOS_OKAY_LISTKEY, item_type: name).select(:item_id)
+    all_published.where.not(id: whitelisted)
+  end
+
+  def self.suspected_typos_scan_scope(since)
+    scope = suspected_typos_reachable
+            .joins(expression: :work)
+            .select('manifestations.id, manifestations.markdown, works.genre as work_genre')
+    return scope if since.nil?
+
+    # index_manifestations_on_updated_at makes this the cheap half of the job.
+    scope.where(updated_at: since...)
+  end
+
+  # Queue entries an incremental scan will never revisit, because the text left the scanned
+  # set after it was queued: unpublished, or whitelisted outside the report. Deleted texts
+  # take their ListItems with them, through the dependent: :destroy above.
+  def self.drop_unreachable_suspected_typos
+    ListItem.where(listkey: SUSPECTED_TYPOS_LISTKEY, item_type: name)
+            .where.not(item_id: suspected_typos_reachable.select(:id))
+            .destroy_all
+  end
+
+  # nil when no run has been recorded yet, which makes the next run a full one.
+  def self.suspected_typos_scanned_through
+    recorded = ListItem.where(listkey: SUSPECTED_TYPOS_LAST_RUN_LISTKEY).order(:id).pick(:extra)
+    recorded.presence && Time.zone.parse(recorded)
+  end
+
+  # ListItem#item is a required association and this marker belongs to no single record, so
+  # it is the one ListItem written without validation.
+  def self.record_suspected_typos_watermark(watermark)
+    marker = ListItem.where(listkey: SUSPECTED_TYPOS_LAST_RUN_LISTKEY).order(:id).first_or_initialize
+    marker.extra = watermark.iso8601
+    marker.save!(validate: false)
   end
 
   # A compact tally that fits the 255-character `extra` column, e.g. 'digit_in_word:3;final_mid_word:1'.

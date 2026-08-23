@@ -1113,5 +1113,75 @@ describe Manifestation do
         expect(queued?(poem)).to be false
       end
     end
+
+    # These examples run the scan more than once, so they call it directly: `run` is a
+    # memoized subject and would only ever execute the first time.
+    describe 'incremental scanning' do
+      include ActiveSupport::Testing::TimeHelpers
+
+      subject(:scan) { described_class.method(:update_suspected_typos_list) }
+
+      let(:last_run_listkey) { described_class::SUSPECTED_TYPOS_LAST_RUN_LISTKEY }
+      let!(:flagged) { create(:manifestation, genre: :poetry, markdown: typo_text) }
+
+      # Removing the queue entry between runs makes the next run's behaviour visible: the
+      # entry comes back only if the text was actually rescanned.
+      def dequeue(manifestation)
+        ListItem.where(listkey: listkey, item: manifestation).destroy_all
+      end
+
+      it 'records the watermark it scanned through' do
+        scan.call
+        # Recorded to second precision, and rounded down, so a text saved in the same second
+        # is rescanned rather than missed.
+        expect(described_class.suspected_typos_scanned_through).to be_within(5.seconds).of(Time.zone.now)
+      end
+
+      it 'reuses one marker row across runs rather than accumulating them' do
+        scan.call
+        scan.call
+        expect(ListItem.where(listkey: last_run_listkey).count).to eq 1
+      end
+
+      it 'skips a text that has not been modified since the previous run' do
+        # Both runs are moved well clear of the text's own timestamp, so the assertion turns
+        # on the incremental filter rather than on where a sub-second boundary happened to fall.
+        travel(1.minute) { scan.call }
+        dequeue(flagged)
+        travel(2.minutes) { scan.call }
+        expect(queued?(flagged)).to be false
+      end
+
+      it 'rescans a text modified since the previous run' do
+        scan.call
+        dequeue(flagged)
+        travel 1.minute do
+          flagged.touch
+          scan.call
+        end
+        expect(queued?(flagged)).to be true
+      end
+
+      it 'rescans everything when asked for a full run' do
+        scan.call
+        dequeue(flagged)
+        scan.call(full: true)
+        expect(queued?(flagged)).to be true
+      end
+
+      it 'drops the queue entry of a text unpublished since it was queued' do
+        scan.call
+        flagged.update!(status: :unpublished)
+        scan.call
+        expect(queued?(flagged)).to be false
+      end
+
+      it 'drops the queue entry of a text whitelisted since it was queued' do
+        scan.call
+        create(:list_item, listkey: described_class::SUSPECTED_TYPOS_OKAY_LISTKEY, item: flagged)
+        scan.call
+        expect(queued?(flagged)).to be false
+      end
+    end
   end
 end
