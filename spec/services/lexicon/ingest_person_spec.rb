@@ -138,6 +138,41 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when the bio contains tables with rows and cells but no visible content' do
+    # Regression test for 00458.php and friends: a layout-only <table id="table6"> sits between
+    # the bio paragraphs. Pandoc has no Markdown representation for it, so it used to be emitted
+    # as raw HTML in the middle of the migrated bio.
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'סופרת לדוגמה',
+          fname: 'empty_table_in_bio.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/empty_table_in_bio.php')
+        }
+      )
+    end
+
+    it 'omits the empty tables but keeps the surrounding bio and tables that do show something' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      bio = file.lex_entry.lex_item.bio
+      expect(bio).to include('ביוגרפיה קצרה של הסופרת לדוגמה')
+      expect(bio).to include('המשך הביוגרפיה אחרי הטבלה הריקה')
+
+      # Dropped: standalone empty table, and one nested inside a bio <div> whose cells hold
+      # only non-breaking spaces.
+      expect(bio).not_to include('table6')
+      expect(bio).not_to include('table7')
+
+      # Kept: a table with actual text, and one whose only content is an image.
+      expect(bio).to include('שנת פרסום')
+      expect(bio).to include('/lex/portrait.jpg')
+    end
+  end
+
   context 'when life years are split across font elements in the heading table' do
     # tsifroni.php has "(1915" and "─2011)" in separate <font> elements, so the
     # HTML-regex path fails. The fallback must parse years from the cell's text content.
