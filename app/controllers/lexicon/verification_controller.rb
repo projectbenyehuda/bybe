@@ -246,16 +246,22 @@ module Lexicon
 
     # POST /lexicon/verification/:id/mark_verified
     def mark_verified
-      @entry.mark_verified!
-      # Verification is over, so hold on to the lock no longer: leaving it to expire would keep the
-      # entry listed as locked in the queue for up to LOCK_TIMEOUT_IN_SECONDS.
-      @entry.release_lock!
+      begin
+        @entry.mark_verified!
+        # Verification is over, so hold on to the lock no longer: leaving it to expire would keep
+        # the entry listed as locked in the queue for up to LOCK_TIMEOUT_IN_SECONDS.
+        @entry.release_lock!
+      rescue StandardError => e
+        # Publication did not happen, so send the editor back to the workbench to finish up.
+        redirect_to lexicon_verification_path(@entry), alert: e.message
+        return
+      end
+
+      # Past this point the entry is published and unlocked. Nothing that follows may redirect back
+      # to the workbench: that GET would immediately re-acquire the lock we just released.
       report_verification_to_monday
       redirect_to lexicon_entry_path(@entry),
                   notice: I18n.t('lexicon.verification.messages.entry_verified_public')
-    rescue StandardError => e
-      redirect_to lexicon_verification_path(@entry),
-                  alert: e.message
     end
 
     # GET /lexicon/verification/:id/bio_comparison
@@ -422,9 +428,19 @@ module Lexicon
       )
       return if result[:success]
 
-      # flash, not flash.now: the only caller (mark_verified) redirects afterwards.
+      warn_monday_report_failed(result[:error])
+    rescue StandardError => e
+      # MondayClient normalises its own failures into a { success:, error: } hash, so this is
+      # defence in depth: the entry is published and unlocked by now, and no failure in reporting
+      # it may be allowed to change that.
+      Rails.logger.error("Lexicon::MondayMigrationReport raised: #{e.message}")
+      warn_monday_report_failed(e.message)
+    end
+
+    # flash, not flash.now: the only caller (mark_verified) redirects afterwards.
+    def warn_monday_report_failed(error)
       flash[:alert] = # rubocop:disable Rails/ActionControllerFlashBeforeRender
-        I18n.t('lexicon.verification.monday.migration_report_failed', error: result[:error])
+        I18n.t('lexicon.verification.monday.migration_report_failed', error: error)
     end
 
     def record_to_lock

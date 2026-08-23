@@ -79,6 +79,34 @@ RSpec.describe 'POST /lex/verification/:id/mark_verified', type: :request do
       )
       expect(flash[:notice]).to eq(I18n.t('lexicon.verification.messages.entry_verified_public'))
     end
+
+    it 'still releases the lock' do
+      post url
+
+      expect(entry.reload.locked_at).to be_nil
+    end
+  end
+
+  context 'when the Monday post raises' do
+    before do
+      allow(Lexicon::MondayMigrationReport).to receive(:call).and_raise(Net::OpenTimeout, 'execution expired')
+    end
+
+    # The entry is published and unlocked by the time we talk to Monday, so a raise there must not
+    # bounce the editor back to the workbench — that GET would immediately re-acquire the lock.
+    it 'publishes, releases the lock and redirects to the public entry page with a warning' do
+      post url
+
+      entry.reload
+      expect(entry).to be_status_published
+      expect(entry.locked_at).to be_nil
+      expect(entry.locked_by_user).to be_nil
+      expect(response).to redirect_to(lexicon_entry_path(entry))
+      expect(flash[:alert]).to eq(
+        I18n.t('lexicon.verification.monday.migration_report_failed', error: 'execution expired')
+      )
+      expect(flash[:notice]).to eq(I18n.t('lexicon.verification.messages.entry_verified_public'))
+    end
   end
 
   context 'when verification is not complete' do
