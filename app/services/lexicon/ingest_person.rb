@@ -71,7 +71,7 @@ module Lexicon
 
       bio = []
       while next_elem.present? && !header?(next_elem, WORKS_HEADER)
-        bio << next_elem.to_html
+        bio << bio_html(next_elem)
         next_elem = next_elem.next_element
       end
 
@@ -80,12 +80,12 @@ module Lexicon
       if next_elem.nil? && !at_span_level && heading_table.parent.name == 'span'
         next_elem = heading_table.parent.next_element
         while next_elem.present? && !header?(next_elem, WORKS_HEADER)
-          bio << next_elem.to_html
+          bio << bio_html(next_elem)
           next_elem = next_elem.next_element
         end
       end
 
-      lex_person.bio = HtmlToMarkdown.call(bio.join("\n"))
+      lex_person.bio = HtmlToMarkdown.call(bio.compact.join("\n"))
 
       if next_elem.present? && header?(next_elem, WORKS_HEADER)
         Lexicon::ExtractPersonWorks.call(next_elem, lex_person)
@@ -118,6 +118,18 @@ module Lexicon
     end
 
     private
+
+    # HTML of a single bio element, with content-free tables dropped: nil when the element
+    # is itself such a table, otherwise its markup minus any it contains. The element is
+    # copied before pruning, so the document the rest of the ingestion reads stays intact.
+    def bio_html(elem)
+      return nil if content_free_table?(elem)
+      return elem.to_html if elem.css('table').none? { |table| content_free_table?(table) }
+
+      copy = elem.dup
+      copy.css('table').each { |table| table.remove if content_free_table?(table) }
+      copy.to_html
+    end
 
     def link_citations_to_works(lex_person)
       lex_person.citations.each do |citation|
