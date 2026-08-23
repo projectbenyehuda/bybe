@@ -46,10 +46,12 @@ RSpec.describe ApplicationHelper, type: :helper do
       original_committed_at = ENV.fetch('GIT_COMMITTED_AT', nil)
       ENV['GIT_SHA'] = nil
       ENV['GIT_COMMITTED_AT'] = nil
-      example.run
-      ENV['GIT_SHA'] = original_sha
-      ENV['GIT_COMMITTED_AT'] = original_committed_at
-    end
+      begin
+        example.run
+      ensure
+        ENV['GIT_SHA'] = original_sha
+        ENV['GIT_COMMITTED_AT'] = original_committed_at
+      end
   end
 
   # #show_deployment_version? is covered end-to-end, against the real current_user, in
