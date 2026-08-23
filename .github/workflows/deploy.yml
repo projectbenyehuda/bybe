@@ -36,6 +36,12 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.2.0
+      # The commit's own timestamp (not the build's), baked into the image below so the running app
+      # can report which commit it is serving. actions/checkout's shallow clone still carries HEAD's
+      # metadata, so `git log -1` is enough.
+      - name: Collect commit metadata
+        id: commit
+        run: echo "committed_at=$(git log -1 --format=%cI)" >> "$GITHUB_OUTPUT"
       # This step uses [docker/metadata-action](https://github.com/docker/metadata-action#about) to extract tags and
       # labels that will be applied to the specified image. The `id` "meta" allows the output of this step to be
       # referenced in a subsequent step. The `images` value provides the base name for the tags and labels.
@@ -61,6 +67,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            GIT_COMMITTED_AT=${{ steps.commit.outputs.committed_at }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
   deploy-beta:

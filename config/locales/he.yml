@@ -1351,6 +1351,9 @@ he:
   editors: בעריכת
   default_page_title: פרויקט בן־יהודה
   staging_version: 'גרסה: %{version}'
+  deployment_version_title: הגרסה הפרוסה כעת
+  deployment_commit: מזהה קומיט
+  deployment_committed_at: זמן הקומיט
   version_unknown: לא ידועה
   font_size: גודל גופן
   path: נתיב

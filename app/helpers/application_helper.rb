@@ -3,6 +3,8 @@ require 'addressable/uri'
 module ApplicationHelper
   include BybeUtils
 
+  GITHUB_REPO_URL = 'https://github.com/projectbenyehuda/bybe'.freeze
+
   # Renders a link to an authority's TOC page -- except for 'pageless' authorities (e.g. 'anonymous',
   # 'various authors'), whose name is rendered as plain text, because a TOC page for them would falsely
   # suggest hundreds of works by a single author.
@@ -34,23 +36,54 @@ module ApplicationHelper
     (ENV['cache_nonce'] || ENV['CACHE_NONCE']) == 'staging'
   end
 
-  # Best-effort description of the running deployment, for the staging indicator:
-  # deployment timestamp plus the deployed git SHA, when available. Capistrano names
-  # release directories YYYYMMDDHHMMSS (UTC) and writes a REVISION file (holding the
-  # deployed SHA) into them; in development/test neither exists.
-  def deployment_version
-    dir = Rails.root.basename.to_s
-    revision_file = Rails.root.join('REVISION')
-    revision = revision_file.exist? ? revision_file.read.strip : nil
-    time =
-      if dir.match?(/\A\d{14}\z/)
-        Time.find_zone('UTC').strptime(dir, '%Y%m%d%H%M%S')
-      elsif revision.present?
-        revision_file.mtime
-      end
+  # The version indicator names the running build, which is only useful (and only meant to be
+  # visible) to the people who deploy it.
+  def show_deployment_version?
+    current_user.present? && (current_user.editor? || current_user.admin?)
+  end
 
+  # The git SHA of the deployed commit. Container builds bake it in as GIT_SHA (see the Dockerfile);
+  # Capistrano writes it into a REVISION file in the release directory. Neither exists in
+  # development/test, where this is nil.
+  def deployment_sha
+    ENV.fetch('GIT_SHA', nil).presence || revision_file_contents
+  end
+
+  # The deployed SHA as recorded by Capistrano in the release directory's REVISION file, or nil.
+  def revision_file_contents
+    revision_file = Rails.root.join('REVISION')
+    revision_file.exist? ? revision_file.read.strip.presence : nil
+  end
+
+  # Timestamp of the deployed commit, as a Time, or nil when it cannot be determined. Container
+  # builds bake in the commit's own ISO-8601 timestamp; under Capistrano we fall back to the release
+  # directory name (YYYYMMDDHHMMSS, UTC), and then to the mtime of the REVISION file, both of which
+  # describe the deployment rather than the commit.
+  def deployment_time
+    committed_at = ENV.fetch('GIT_COMMITTED_AT', nil).presence
+    return Time.zone.parse(committed_at) if committed_at
+
+    dir = Rails.root.basename.to_s
+    return Time.find_zone('UTC').strptime(dir, '%Y%m%d%H%M%S') if dir.match?(/\A\d{14}\z/)
+
+    revision_file_contents.present? ? Rails.root.join('REVISION').mtime : nil
+  rescue ArgumentError
+    # a malformed stamp must not take down every page it appears on
+    nil
+  end
+
+  # Link to the deployed commit on GitHub, or nil when the SHA is unknown.
+  def deployment_commit_url
+    sha = deployment_sha
+    sha.blank? ? nil : "#{GITHUB_REPO_URL}/commit/#{sha}"
+  end
+
+  # Best-effort one-line description of the running deployment: timestamp plus short SHA.
+  def deployment_version
+    time = deployment_time
+    sha = deployment_sha
     label = time.nil? ? t(:version_unknown) : time.in_time_zone.strftime('%Y-%m-%d %H:%M')
-    revision.blank? ? label : "#{label} (#{revision[0, 8]})"
+    sha.blank? ? label : "#{label} (#{sha[0, 8]})"
   end
 
   def u8(s)
