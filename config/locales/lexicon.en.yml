@@ -141,6 +141,7 @@ en:
         subtitle: List of files
         title_placeholder: Search by title...
         fname_placeholder: Search by filename...
+        stats: "Person entries: %{total} | fully migrated: %{migrated} | still raw: %{raw}"
         entry_status_filter: Entry Status
         my_locked_title: Files locked by me
         locked_by_others_title: Files locked by other editors

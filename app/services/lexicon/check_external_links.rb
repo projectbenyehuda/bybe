@@ -10,7 +10,7 @@ module Lexicon
   #
   # For each link (LexLink or LexCitation.link):
   # - Validates that the target host is not a private/loopback address (SSRF guard)
-  # - Makes an HTTP HEAD request (falls back to GET on 405)
+  # - Makes an HTTP HEAD request (falls back to GET when the server rejects HEAD)
   # - Follows up to MAX_REDIRECTS redirects
   # - Stores the final HTTP status code on the record (nil = check failed)
   # - 4xx/5xx codes indicate a broken link
@@ -18,8 +18,19 @@ module Lexicon
   # Invoked asynchronously via Lexicon::CheckExternalLinksJob after ingestion.
   class CheckExternalLinks < ApplicationService
     MAX_REDIRECTS = 5
-    TIMEOUT_SECONDS = 10
+    TIMEOUT_SECONDS = 15
     REDIRECT_STATUSES = [301, 302, 303, 307, 308].freeze
+
+    # Statuses that commonly mean "this server dislikes HEAD" rather than "this URL is broken".
+    # Plenty of servers reject HEAD with 400/403/501 instead of the correct 405, so we retry
+    # once with GET before believing the link is dead.
+    HEAD_REJECTED_STATUSES = [400, 403, 405, 501].freeze
+
+    # Deliberately does NOT contain the word "link": mod_security's stock bad-bot rules match
+    # /link/ (as in "linkchecker") in the User-Agent and answer 403 to everything. www.text.org.il
+    # does exactly this -- `Project-Ben-Yehuda/1.0 (link-checker; +...)` gets a blanket 403 there
+    # while `Project-Ben-Yehuda/1.0 (+...)` gets 200. Keep us identifiable, just not by that token.
+    USER_AGENT = 'Project-Ben-Yehuda/1.0 (+https://benyehuda.org)'
 
     # RFC1918, loopback, link-local, and IPv6 private ranges to block (SSRF guard)
     PRIVATE_IP_RANGES = [
@@ -108,8 +119,8 @@ module Lexicon
         request = Net::HTTP::Head.new(uri.request_uri, default_headers)
         response = http.request(request)
 
-        # Fall back to GET if HEAD is not allowed
-        if response.code.to_i == 405
+        # Fall back to GET if the server appears to be rejecting the HEAD method itself
+        if HEAD_REJECTED_STATUSES.include?(response.code.to_i)
           request = Net::HTTP::Get.new(uri.request_uri, default_headers)
           response = http.request(request)
         end
@@ -119,7 +130,7 @@ module Lexicon
     end
 
     def default_headers
-      { 'User-Agent' => 'Project-Ben-Yehuda/1.0 (link-checker; +https://benyehuda.org)' }
+      { 'User-Agent' => USER_AGENT }
     end
 
     def parse_uri(url)

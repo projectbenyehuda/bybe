@@ -108,17 +108,82 @@ describe Lexicon::CheckExternalLinks do
     end
   end
 
-  context 'when HEAD returns 405 (Method Not Allowed), falls back to GET' do
-    let!(:link) { create(:lex_link, item: person, url: 'http://example.com/head-not-allowed') }
+  # Many servers reject the HEAD method with something other than the correct 405 -- notably a
+  # bare 403, which is indistinguishable from "broken" unless we retry with GET.
+  describe 'falling back to GET when the server rejects HEAD' do
+    [400, 403, 405, 501].each do |head_status|
+      context "when HEAD returns #{head_status} but GET succeeds" do
+        let!(:link) { create(:lex_link, item: person, url: 'http://example.com/head-rejected') }
 
-    before do
-      stub_request(:head, 'http://example.com/head-not-allowed').to_return(status: 405)
-      stub_request(:get, 'http://example.com/head-not-allowed').to_return(status: 200)
+        before do
+          stub_request(:head, 'http://example.com/head-rejected').to_return(status: head_status)
+          stub_request(:get, 'http://example.com/head-rejected').to_return(status: 200)
+        end
+
+        it 'records 200 and does not mark the link broken' do
+          call
+          expect(link.reload.http_status).to eq(200)
+          expect(link.reload).not_to be_broken
+        end
+      end
     end
 
-    it 'falls back to GET and records 200' do
-      call
-      expect(link.reload.http_status).to eq(200)
+    context 'when both HEAD and GET are refused (genuinely gated or broken)' do
+      let!(:link) { create(:lex_link, item: person, url: 'http://example.com/gated') }
+
+      before do
+        stub_request(:head, 'http://example.com/gated').to_return(status: 403)
+        stub_request(:get, 'http://example.com/gated').to_return(status: 403)
+      end
+
+      it 'records the 403 and marks the link broken' do
+        call
+        expect(link.reload.http_status).to eq(403)
+        expect(link.reload).to be_broken
+      end
+    end
+
+    context 'when HEAD returns a status that is not a HEAD rejection' do
+      let!(:link) { create(:lex_link, item: person, url: 'http://example.com/really-missing') }
+
+      before do
+        stub_request(:head, 'http://example.com/really-missing').to_return(status: 404)
+      end
+
+      it 'does not retry with GET' do
+        call
+        expect(link.reload.http_status).to eq(404)
+        assert_not_requested(:get, 'http://example.com/really-missing')
+      end
+    end
+  end
+
+  # Regression: www.text.org.il's mod_security rules 403 any User-Agent containing "link"
+  # (matching "linkchecker"), which made every link on that host look broken. See #1594.
+  describe 'the User-Agent sent to external servers' do
+    # WebMock's request registry is not reset between examples in this file, so each example
+    # uses its own URL to keep request counts from leaking into the next one.
+    let!(:link) { create(:lex_link, item: person, url: url) }
+
+    before { stub_request(:head, url).to_return(status: 200) }
+
+    context 'when checking a link' do
+      let(:url) { 'http://example.com/ua-no-link-token' }
+
+      it 'sends no User-Agent containing "link", which trips stock bad-bot WAF rules' do
+        call
+        assert_not_requested(:head, url, headers: { 'User-Agent' => /link/i })
+      end
+    end
+
+    context 'when identifying ourselves' do
+      let(:url) { 'http://example.com/ua-identifies-project' }
+
+      it 'names the project and its URL' do
+        call
+        assert_requested(:head, url,
+                         headers: { 'User-Agent' => %r{\AProject-Ben-Yehuda/.*benyehuda\.org} })
+      end
     end
   end
 
