@@ -55,20 +55,29 @@ module LexiconHelper
   end
 
   def render_person_work(work)
-    result = String.new(render_person_work_title(work))
+    parts = [
+      render_person_work_title(work),
+      "(#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
+    ]
 
-    result += " (#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
+    parts += work.linked_people
+                 .sort_by(&:sort_value)
+                 .map { |person| angle_bracketed(render_linked_person(person)) }
 
-    result += work.linked_people
-                  .sort_by(&:sort_value)
-                  .map { |person| "<  #{render_linked_person(person)}  >" }.join(' ')
+    parts += work.comment.to_s.split("\n").compact_blank
+                 .map { |comment| angle_bracketed(render_person_work_comment(comment, work.comment_links)) }
 
-    if work.comment.present?
-      work.comment.split("\n").each do |comment|
-        result += " < #{render_person_work_comment(comment, work.comment_links)} >"
-      end
-    end
-    raw result
+    # every part is separated from the next by exactly one space, so the brackets below never
+    # need one of their own
+    raw parts.join(' ')
+  end
+
+  # Wraps a work comment in angled brackets, with NO space between a bracket and the content it
+  # encloses (the space belongs outside the brackets — see render_person_work).
+  # The brackets are emitted as entities so that a comment beginning or ending with a link can't
+  # produce a "<<a href=" / "</a>>" sequence for the HTML parser to trip over.
+  def angle_bracketed(content)
+    "&lt;#{content.to_s.strip}&gt;"
   end
 
   # Renders a work comment, hyperlinking any text listed in comment_links.
