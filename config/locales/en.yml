@@ -2976,6 +2976,17 @@ en:
   surprise_author: Surprise Author
   surprise_author_in_genre: Surprise Author In Genre
   surprise_me_again: Surprise Me Again
+  suspected_typos_report: Suspected Typos Report
+  suspected_typos_explanation: >-
+    Texts in which automatic checks found shapes that are usually typos. These are guesses,
+    not errors: if a text is in fact correct, mark it as valid and it will not be listed again.
+  suspected_typos_findings: Findings
+  suspected_typo_types:
+    digit_in_word: Digit inside a word
+    final_mid_word: Final letter in the middle of a word
+    nonfinal_at_word_end: Non-final letter at the end of a word
+    unterminated_paragraph: Paragraph ending without punctuation
+  line_number: 'line'
   suspicious_headings_report: Suspicious Headings Report
   suspicious_intellectual_property_report: Suspicious Intellectual Property Report
   suspicious_titles_report: Suspicious Titles Report

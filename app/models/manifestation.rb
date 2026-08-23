@@ -52,6 +52,13 @@ class Manifestation < ApplicationRecord
   SHORT_LENGTH = 1500 # kind of arbitrary...
   LONG_LENGTH = 15_000 # kind of arbitrary...
 
+  # Queue of texts flagged by DetectSuspectedTypos, rebuilt weekly by
+  # .update_suspected_typos_list; `extra` holds a '<type>:<count>;...' tally.
+  SUSPECTED_TYPOS_LISTKEY = 'suspected_typos'
+  # An editor's verdict that a flagged text is in fact correct. Kept in its own list so that
+  # rebuilding the queue never discards it.
+  SUSPECTED_TYPOS_OKAY_LISTKEY = 'suspected_typos_okay'
+
   update_index('manifestations') { self } # update ManifestationsIndex when entity is updated
   update_index('manifestations_autocomplete') { self } # update ManifestationsAutocompleteIndex when entity is updated
 
@@ -522,13 +529,49 @@ class Manifestation < ApplicationRecord
     ids.filter_map { |id| manifestations[id] }
   end
 
+  # Rebuilds the queue of published texts that DetectSuspectedTypos considers worth a human
+  # look, one ListItem per text, with a "<type>:<count>;..." tally in `extra`. Run weekly
+  # from config/recurring.yml and surfaced by AdminController#suspected_typos.
+  #
+  # The pass is a full rebuild rather than an append: a text whose typos have since been
+  # fixed drops off the list by itself, so editors never have to clear an entry by hand. The
+  # only thing that survives a rebuild is the editor's verdict, held separately in the
+  # SUSPECTED_TYPOS_OKAY_LISTKEY whitelist, whose members are not scanned at all.
   def self.update_suspected_typos_list
-    # TODO: implement
-    # code to find probable typos:
-    # - digits within words
-    # - finals within words
-    # - non-final letters that should be finals
-    # - non-title paragraphs ending without period, question mark, exclamation point.
-    # - what else?
+    whitelisted = ListItem.where(listkey: SUSPECTED_TYPOS_OKAY_LISTKEY, item_type: name).select(:item_id)
+    # item_id => list_item_id, so an entry can be updated in place and, once seen, removed
+    # from the hash; whatever is left at the end is stale and gets dropped.
+    stale = ListItem.where(listkey: SUSPECTED_TYPOS_LISTKEY, item_type: name).pluck(:item_id, :id).to_h
+    scope = all_published.where.not(id: whitelisted)
+                         .joins(expression: :work)
+                         .select('manifestations.id, manifestations.markdown, works.genre as work_genre')
+    total = scope.count(:all) # :all, because counting the multi-column custom select is not valid SQL
+    handled = 0
+    added = 0
+
+    scope.find_each(batch_size: 100) do |m|
+      handled += 1
+      Rails.logger.info "update_suspected_typos_list: handled #{handled} of #{total}" if (handled % 500).zero?
+      findings = DetectSuspectedTypos.call(m.markdown, m[:work_genre])
+      list_item_id = stale.delete(m.id)
+      if findings.empty?
+        ListItem.where(id: list_item_id).destroy_all if list_item_id
+      elsif list_item_id
+        ListItem.find(list_item_id).update!(extra: summarize_suspected_typos(findings))
+      else
+        ListItem.create!(listkey: SUSPECTED_TYPOS_LISTKEY, item_id: m.id, item_type: name,
+                         extra: summarize_suspected_typos(findings))
+        added += 1
+      end
+    end
+
+    # Left over: texts that have since been unpublished or whitelisted, so were never visited.
+    ListItem.where(id: stale.values).destroy_all
+    Rails.logger.info "update_suspected_typos_list: scanned #{total}, added #{added} new ListItems"
+  end
+
+  # A compact tally that fits the 255-character `extra` column, e.g. 'digit_in_word:3;final_mid_word:1'.
+  def self.summarize_suspected_typos(findings)
+    findings.group_by { |f| f[:type] }.map { |type, group| "#{type}:#{group.length}" }.join(';')
   end
 end

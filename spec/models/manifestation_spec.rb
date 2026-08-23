@@ -1024,4 +1024,94 @@ describe Manifestation do
       end
     end
   end
+
+  describe '.update_suspected_typos_list' do
+    subject(:run) { described_class.update_suspected_typos_list }
+
+    let(:listkey) { described_class::SUSPECTED_TYPOS_LISTKEY }
+    let(:clean_text) { "שלום עולם, מה שלומך?\n" }
+    let(:typo_text) { "הוא נכנס לבי1ת ויצא\n" }
+
+    def queued?(manifestation)
+      ListItem.exists?(listkey: listkey, item: manifestation)
+    end
+
+    context 'when a published text has suspected typos' do
+      let!(:flagged) { create(:manifestation, genre: :poetry, markdown: typo_text) }
+
+      it 'queues it with a tally of the findings' do
+        expect { run }.to change { queued?(flagged) }.from(false).to(true)
+        expect(ListItem.find_by(listkey: listkey, item: flagged).extra).to eq 'digit_in_word:1'
+      end
+    end
+
+    context 'when a published text is clean' do
+      let!(:clean) { create(:manifestation, genre: :poetry, markdown: clean_text) }
+
+      it 'does not queue it' do
+        run
+        expect(queued?(clean)).to be false
+      end
+    end
+
+    context 'when a queued text has since been fixed' do
+      let!(:fixed) { create(:manifestation, genre: :poetry, markdown: clean_text) }
+      let!(:list_item) { create(:list_item, listkey: listkey, item: fixed, extra: 'digit_in_word:1') }
+
+      it 'drops it from the queue' do
+        expect { run }.to change { ListItem.exists?(list_item.id) }.from(true).to(false)
+      end
+    end
+
+    context 'when a queued text still has typos' do
+      let!(:flagged) { create(:manifestation, genre: :poetry, markdown: typo_text) }
+      let!(:list_item) { create(:list_item, listkey: listkey, item: flagged, extra: 'stale') }
+
+      it 'refreshes the tally in place rather than adding a second entry' do
+        run
+        expect(ListItem.where(listkey: listkey, item: flagged).pluck(:id)).to eq [list_item.id]
+        expect(list_item.reload.extra).to eq 'digit_in_word:1'
+      end
+    end
+
+    context 'when the text has been whitelisted by an editor' do
+      let!(:whitelisted) { create(:manifestation, genre: :poetry, markdown: typo_text) }
+
+      before do
+        create(:list_item, listkey: described_class::SUSPECTED_TYPOS_OKAY_LISTKEY, item: whitelisted)
+      end
+
+      it 'is not queued' do
+        run
+        expect(queued?(whitelisted)).to be false
+      end
+
+      it 'has any pre-existing queue entry dropped' do
+        list_item = create(:list_item, listkey: listkey, item: whitelisted)
+        run
+        expect(ListItem.exists?(list_item.id)).to be false
+      end
+    end
+
+    context 'when the text is not published' do
+      let!(:unpublished) { create(:manifestation, status: :unpublished, genre: :poetry, markdown: typo_text) }
+
+      it 'is not scanned' do
+        run
+        expect(queued?(unpublished)).to be false
+      end
+    end
+
+    context 'when the genre is prose' do
+      let(:sentence) { (['אבגד הוזח טיכל מנסע פצקר שתאב גדהו זחטי'] * 4).join(' ') }
+      let!(:prose) { create(:manifestation, genre: :prose, markdown: "\n#{sentence}\n") }
+      let!(:poem) { create(:manifestation, genre: :poetry, markdown: "\n#{sentence}\n") }
+
+      it 'applies the paragraph check to prose but not to poetry' do
+        run
+        expect(queued?(prose)).to be true
+        expect(queued?(poem)).to be false
+      end
+    end
+  end
 end

@@ -685,6 +685,35 @@ class AdminController < ApplicationController
     Rails.cache.write('report_suspicious_headings', @suspicious.length)
   end
 
+  # Texts queued by Manifestation.update_suspected_typos_list. The queue holds only a tally
+  # per text, so the individual findings are recomputed for the page being displayed - a
+  # page's worth of markdown, not the whole corpus - rather than stored.
+  def suspected_typos
+    queue = ListItem.where(listkey: Manifestation::SUSPECTED_TYPOS_LISTKEY, item_type: 'Manifestation')
+    @total = queue.count
+    @list_items = queue.order(:item_id).page(params[:page]).per(25)
+    by_id = Manifestation.where(id: @list_items.map(&:item_id))
+                         .preload(expression: { work: { involved_authorities: :authority } })
+                         .index_by(&:id)
+    # filter_map, because a queued text may have been destroyed since the queue was built
+    @manifestations = @list_items.filter_map { |li| by_id[li.item_id] }
+    @findings = @manifestations.index_with { |m| DetectSuspectedTypos.call(m.markdown, m.genre) }
+    Rails.cache.write('report_suspected_typos', @total)
+  end
+
+  # Records the editor's verdict that a flagged text is fine, and drops it from the queue so
+  # the report reflects the decision without waiting for the weekly rebuild.
+  def mark_typos_as_okay
+    m = Manifestation.find_by(id: params[:id])
+    if m.present?
+      ListItem.find_or_create_by!(listkey: Manifestation::SUSPECTED_TYPOS_OKAY_LISTKEY, item: m) do |li|
+        li.user = current_user
+      end
+      ListItem.where(listkey: Manifestation::SUSPECTED_TYPOS_LISTKEY, item: m).destroy_all
+    end
+    head :ok
+  end
+
   def slash_in_titles
     whitelisted_ids = ListItem.where(listkey: 'title_slashes_okay').pluck(:item_id, :item_type)
     whitelisted_collections = whitelisted_ids.select { |_, type| type == 'Collection' }.map(&:first)
