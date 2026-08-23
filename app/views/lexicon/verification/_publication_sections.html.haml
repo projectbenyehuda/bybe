@@ -170,7 +170,7 @@
     - else
       %p.text-muted= t('lexicon.verification.sections.no_attachments')
   .section-actions
-    = link_to t('lexicon.verification.migrated.upload_file'), lexicon_entry_attachments_path(entry), class: 'btn btn-sm btn-success'
+    = link_to t('lexicon.verification.migrated.upload_file'), lexicon_entry_attachments_path(entry), class: 'btn btn-sm btn-success', onclick: 'event.preventDefault(); openModal(this.href);'
     %button.btn.btn-sm{class: checklist['attachments']&.dig('verified') ? 'btn-success' : 'btn-outline-success', data: {action: 'click->verification#quickVerify', path: 'attachments'}}
       ✓
       = t('lexicon.verification.migrated.mark_verified')

@@ -37,6 +37,20 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
       expect(doc.css('tr').count).to eq(3)  # one row in header and two rows for attachments
       expect(doc.css('img').count).to eq(1) # only image attachment should have a preview
     end
+
+    context 'when loaded as an AJAX fragment' do
+      subject(:call) { get "/lex/entries/#{lex_entry.id}/attachments", xhr: true }
+
+      it 'renders without a layout' do
+        expect(call).to eq(200)
+        expect(response.body).not_to include('<html')
+      end
+    end
+
+    it 'renders with the layout on direct navigation, so the remote form has its JS assets' do
+      expect(call).to eq(200)
+      expect(response.body).to include('<html')
+    end
   end
 
   describe 'POST /lexicon/entries/<ENTRY_ID>/attachments' do
@@ -70,6 +84,40 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
         expect(response.body).to include(
           "alert('#{I18n.t('lexicon.attachments.create.file_exists', filename: 'lorem_ipsum.png')}');"
         )
+      end
+    end
+
+    # Regression: a non-XHR submit (what a JS-less page does with a remote form) used to raise
+    # ActionController::UnknownFormat and return 406 *after* the file had already been attached.
+    context 'when submitted as a plain HTML form' do
+      subject(:call) { post "/lex/entries/#{lex_entry.id}/attachments", params: { attachment: file } }
+
+      let(:file) do
+        Rack::Test::UploadedFile.new(Rails.root.join('spec/fixtures/files/test_image.jpg'), 'image/jpeg')
+      end
+
+      it 'creates the attachment and redirects back to the panel' do
+        expect { call }.to change { lex_entry.attachments.count }.by(1)
+        expect(response).to redirect_to("/lex/entries/#{lex_entry.id}/attachments")
+
+        expect(attached_filenames).to include('test_image.jpg')
+      end
+
+      context 'when file with the same name already exists' do
+        let!(:image) do
+          lex_entry.attachments.attach(
+            io: Rails.root.join('spec/fixtures/files/test_image.jpg').open,
+            filename: 'test_image.jpg'
+          ).last
+        end
+
+        it 'does not create attachment and sets a flash alert' do
+          expect { call }.not_to(change { lex_entry.attachments.count })
+          expect(response).to redirect_to("/lex/entries/#{lex_entry.id}/attachments")
+          expect(flash[:alert]).to eq(
+            I18n.t('lexicon.attachments.create.file_exists', filename: 'test_image.jpg')
+          )
+        end
       end
     end
   end

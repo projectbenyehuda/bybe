@@ -62,6 +62,18 @@ function reloadContent(tabContent) {
 
 }
 
+// The attachments panel is the #attachments tab pane on the entry edit page, but the same panel is
+// also shown standalone and inside the verification workbench modal, where there is no pane to
+// refresh in place -- reload the page in those cases.
+function reloadAttachmentsPanel() {
+    const pane = $('#attachments');
+    if (pane.length) {
+        reloadContent(pane);
+    } else {
+        reloadPage();
+    }
+}
+
 function openModal(path, onSuccess = null) {
     $('#generalDlg').data('onSuccess', onSuccess);
 
