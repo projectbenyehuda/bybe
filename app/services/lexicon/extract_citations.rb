@@ -5,20 +5,24 @@ module Lexicon
   class ExtractCitations < ApplicationService
     include HtmlUtils
 
+    # Elements that can open the citations section. Older exports always wrapped the bibliography
+    # in a <font> tag, but the newest ones drop that wrapper and put the first <ul> (or a bare
+    # <li>) directly after the header.
+    CITATIONS_START_TAGS = %w(font ul li).freeze
+
     def call(html_doc)
       header = header_element(html_doc)
       return [] if header.nil?
 
-      # The next element should be a 'font' tag containing all citations. Sometimes there could be one or more blank
-      # paragraphs before it, so we skip blank non-font elements. Font elements are always potential
-      # citations-section markers even when their content is empty (e.g. <font color="#FF0000"></font>),
-      # so we must not skip them.
+      # The next element should open the citations section. Sometimes there could be one or more
+      # blank paragraphs before it, so we skip blank elements that cannot open the section. Section
+      # openers are never skipped even when their content is empty (e.g. <font color="#FF0000"></font>).
       citations_node = header.next_element
-      while citations_node.present? && citations_node.name != 'font' && citations_node.text.blank?
+      while citations_node.present? && !citations_start?(citations_node) && citations_node.text.blank?
         citations_node = citations_node.next_element
       end
 
-      return [] if citations_node&.name != 'font'
+      return [] if citations_node.nil? || !citations_start?(citations_node)
 
       html_nodes = [citations_node]
 
@@ -63,6 +67,10 @@ module Lexicon
     end
 
     private
+
+    def citations_start?(elem)
+      CITATIONS_START_TAGS.include?(elem.name)
+    end
 
     def header_element(html_doc)
       header = html_doc.at_css('a[name="Bib."]')
