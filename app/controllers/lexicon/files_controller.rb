@@ -101,10 +101,11 @@ module Lexicon
                                  .where(lex_files: { entrytype: :person })
                                  .group(:status)
                                  .count
+      # Grouping on an enum column keys the result by the enum's labels ('raw'), not by the
+      # integers stored in the column.
       @person_entry_count = counts_by_status.values.sum
-      @raw_person_entry_count = counts_by_status[LexEntry.statuses['raw']] || 0
-      uningested_values = LexEntry.statuses.values_at(*LexEntry::UNINGESTED_STATUSES)
-      uningested_count = counts_by_status.slice(*uningested_values).values.sum
+      @raw_person_entry_count = counts_by_status['raw'].to_i
+      uningested_count = counts_by_status.values_at(*LexEntry::UNINGESTED_STATUSES).compact.sum
       @migrated_person_entry_count = @person_entry_count - uningested_count
       @migrated_person_percentage =
         @person_entry_count.zero? ? 0 : (@migrated_person_entry_count * 100.0 / @person_entry_count).round(1)
