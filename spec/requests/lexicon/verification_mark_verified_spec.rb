@@ -36,6 +36,15 @@ RSpec.describe 'POST /lex/verification/:id/mark_verified', type: :request do
       )
     end
 
+    it 'releases the lock instead of leaving it to expire' do
+      post url
+
+      entry.reload
+      expect(entry.locked_at).to be_nil
+      expect(entry.locked_by_user).to be_nil
+      expect(entry).not_to be_locked
+    end
+
     it 'redirects to the public entry page with a success notice' do
       post url
 
@@ -83,6 +92,14 @@ RSpec.describe 'POST /lex/verification/:id/mark_verified', type: :request do
 
       expect(Lexicon::MondayMigrationReport).not_to have_received(:call)
       expect(entry.reload).not_to be_status_published
+    end
+
+    it 'keeps the lock so the editor can carry on verifying' do
+      post url
+
+      entry.reload
+      expect(entry.locked_by_user).to eq(editor)
+      expect(entry).to be_locked
     end
   end
 end

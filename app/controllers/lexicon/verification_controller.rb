@@ -247,6 +247,9 @@ module Lexicon
     # POST /lexicon/verification/:id/mark_verified
     def mark_verified
       @entry.mark_verified!
+      # Verification is over, so hold on to the lock no longer: leaving it to expire would keep the
+      # entry listed as locked in the queue for up to LOCK_TIMEOUT_IN_SECONDS.
+      @entry.release_lock!
       report_verification_to_monday
       redirect_to lexicon_entry_path(@entry),
                   notice: I18n.t('lexicon.verification.messages.entry_verified_public')
