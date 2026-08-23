@@ -20,6 +20,11 @@ class LexEntry < ApplicationRecord
   # Statuses related to migration process
   MIGRATION_STATUSES = %w(raw migrating error verifying verified escalated).freeze
 
+  # Statuses in which the legacy file has not (yet) been successfully ingested: either
+  # untouched, in flight, or failed. Everything else means the ingestion completed, whatever
+  # the entry's subsequent editorial state.
+  UNINGESTED_STATUSES = %w(raw migrating error).freeze
+
   enum :status, {
     draft: 0,       # entry created but not ready for public access
     published: 1,   # entry approved for public access

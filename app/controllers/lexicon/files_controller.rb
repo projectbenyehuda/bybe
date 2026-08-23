@@ -58,6 +58,8 @@ module Lexicon
                         .preload(:lex_entry)
                         .order(Arel.sql(sort_clause))
                         .page(@page)
+
+      set_person_migration_stats
     end
 
     def migrate
@@ -91,6 +93,17 @@ module Lexicon
     end
 
     private
+
+    # Overall progress of the person-entry migration, shown above the queue. Deliberately
+    # ignores the filters in effect, so the numbers mean the same thing on every visit.
+    def set_person_migration_stats
+      person_entries = LexEntry.joins(:lex_file).where(lex_files: { entrytype: :person })
+      @person_entry_count = person_entries.count
+      @raw_person_entry_count = person_entries.where(status: :raw).count
+      @migrated_person_entry_count = person_entries.where.not(status: LexEntry::UNINGESTED_STATUSES).count
+      @migrated_person_percentage =
+        @person_entry_count.zero? ? 0 : (@migrated_person_entry_count * 100.0 / @person_entry_count).round(1)
+    end
 
     def set_lex_file
       @lex_file = LexFile.find(params[:id])

@@ -2,6 +2,17 @@
   %div{ style: 'margin-top:10px' }
     %h1= t('.title') + ': ' + t('.subtitle')
 
+    .lex-migration-stats.mb-3
+      %p.mb-1
+        = t('.stats',
+            total: number_with_delimiter(@person_entry_count),
+            migrated: number_with_delimiter(@migrated_person_entry_count),
+            raw: number_with_delimiter(@raw_person_entry_count))
+      .progress{ style: 'height: 20px;' }
+        .progress-bar{ role: 'progressbar', style: "width: #{@migrated_person_percentage}%",
+                       aria: { valuenow: @migrated_person_percentage, valuemin: '0', valuemax: '100' } }
+          #{@migrated_person_percentage}%
+
     = form_tag lexicon_files_path, method: :get, id: :filter, class: 'form-inline' do
       = label_tag :entrytype, LexFile.human_attribute_name(:entrytype), class: 'mr-2'
       = select_tag :entrytype,
