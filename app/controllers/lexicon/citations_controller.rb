@@ -63,7 +63,9 @@ module Lexicon
     end
 
     def destroy
+      citation_id = @citation.id
       @citation.destroy!
+      @person.entry&.remove_citation_from_checklist!(citation_id)
     end
 
     def text_links; end

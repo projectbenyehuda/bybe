@@ -370,6 +370,31 @@ describe '/lexicon/citations' do
       expect { call }.to change { person.citations.count }.by(-1)
       expect(call).to eq(200)
     end
+
+    it 'reloads the whole page when not in the entry-edit view' do
+      call
+      expect(response.body).to include('reloadPage()')
+    end
+
+    context 'when the entry is under verification' do
+      let(:entry) { person.entry }
+
+      before { entry.start_verification!('editor@example.com') }
+
+      it 'drops the deleted citation from the verification checklist' do
+        expect { call }
+          .to change { entry.reload.verification_progress.dig('checklist', 'citations', 'items').keys }
+          .from(match_array(citations.map { |c| c.id.to_s }))
+          .to(match_array(citations.drop(1).map { |c| c.id.to_s }))
+      end
+
+      it 'verifies the citations section once only verified citations remain' do
+        citations.drop(1).each { |c| entry.update_checklist_item("citations.items.#{c.id}", true) }
+        expect { call }
+          .to change { entry.reload.verification_progress.dig('checklist', 'citations', 'verified') }
+          .from(false).to(true)
+      end
+    end
   end
 
   describe 'GET /lex/citations/:id/text_links' do
