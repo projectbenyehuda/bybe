@@ -37,6 +37,56 @@ body.staging::before {
   pointer-events: none;
 }
 
+// Deployed build stamp, shown only to editors and admins (ApplicationHelper#show_deployment_version?).
+// Collapsed to a short SHA in the bottom left corner; click expands the full commit and its timestamp.
+// Mutually exclusive with .staging-version-indicator, which occupies the same corner.
+.deployment-version-indicator {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 10000;
+  max-width: 22rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  border-width: 1px 1px 0 0;
+  color: #555;
+  font-size: 11px;
+  line-height: 1.4;
+
+  > summary {
+    padding: 2px 6px;
+    font-family: monospace;
+    cursor: pointer;
+    opacity: 0.5;
+    list-style: none; // suppress the default disclosure triangle
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  &[open] > summary,
+  > summary:hover,
+  > summary:focus {
+    opacity: 1;
+  }
+
+  .deployment-version-details {
+    margin: 0;
+    padding: 4px 6px;
+    border-top: 1px solid #eee;
+
+    dt {
+      font-weight: bold;
+    }
+
+    dd {
+      margin: 0 0 4px;
+      word-break: break-all;
+    }
+  }
+}
+
 // SASS imports for lexicon backend
 @import 'fonts';
 @import 'jquery-ui';

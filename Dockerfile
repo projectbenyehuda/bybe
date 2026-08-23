@@ -48,6 +48,14 @@ COPY --from=builder /app/vendor/bundle       ./vendor/bundle
 COPY --from=builder /usr/local/bundle/config /usr/local/bundle/config
 COPY --from=builder /app/public ./public
 
+# Stamp the deployed commit into the image, for the version indicator (ApplicationHelper#deployment_sha).
+# These change on every commit, so they must stay in the LAST layers of the stage: anything below an
+# ARG/ENV is cache-busted on every build, and the expensive layers above must keep their cache.
+ARG GIT_SHA=
+ARG GIT_COMMITTED_AT=
+ENV GIT_SHA=$GIT_SHA \
+    GIT_COMMITTED_AT=$GIT_COMMITTED_AT
+
 EXPOSE 3000
 
 ENTRYPOINT ["/app/bin/docker-entrypoint"]

@@ -1,0 +1,23 @@
+-#
+  Two mutually exclusive indicators, both pinned to the bottom left corner, so only one may render:
+  a loud banner naming the running version on the staging server (see ApplicationHelper#staging?),
+  and, everywhere else, a small build stamp for editors and admins that expands on click. The latter
+  is a plain <details> element, so it needs no JavaScript.
+- if staging?
+  .staging-version-indicator= t(:staging_version, version: deployment_version)
+- elsif show_deployment_version?
+  %details.deployment-version-indicator{ dir: 'ltr' }
+    %summary{ title: t(:deployment_version_title) }= deployment_sha.to_s[0, 8].presence || t(:version_unknown)
+    %dl.deployment-version-details
+      %dt= t(:deployment_commit)
+      %dd
+        - if deployment_commit_url.present?
+          = link_to deployment_sha, deployment_commit_url, target: '_blank', rel: 'noopener'
+        - else
+          = t(:version_unknown)
+      %dt= t(:deployment_committed_at)
+      %dd
+        - if deployment_time.present?
+          %time{ datetime: deployment_time.iso8601 }= deployment_time.in_time_zone.strftime('%Y-%m-%d %H:%M %Z')
+        - else
+          = t(:version_unknown)

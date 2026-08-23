@@ -38,7 +38,94 @@ RSpec.describe ApplicationHelper, type: :helper do
     end
   end
 
+  # Clears the stamps baked into container images, so the Capistrano fallbacks can be exercised
+  # even on a machine where GIT_SHA happens to be exported.
+  shared_context 'with no baked-in build stamp' do
+    around do |example|
+      original_sha = ENV.fetch('GIT_SHA', nil)
+      original_committed_at = ENV.fetch('GIT_COMMITTED_AT', nil)
+      ENV['GIT_SHA'] = nil
+      ENV['GIT_COMMITTED_AT'] = nil
+      begin
+        example.run
+      ensure
+        ENV['GIT_SHA'] = original_sha
+        ENV['GIT_COMMITTED_AT'] = original_committed_at
+      end
+  end
+
+  # #show_deployment_version? is covered end-to-end, against the real current_user, in
+  # spec/requests/version_indicator_spec.rb -- a helper-spec ActionView::Base has no current_user.
+
+  describe '#deployment_sha' do
+    include_context 'with no baked-in build stamp'
+
+    it 'prefers the SHA baked into the container image' do
+      ENV['GIT_SHA'] = 'cafebabe1234'
+      expect(helper.deployment_sha).to eq 'cafebabe1234'
+    end
+
+    it 'falls back to the REVISION file written by Capistrano' do
+      Dir.mktmpdir do |dir|
+        File.write(File.join(dir, 'REVISION'), "deadbeefcafe\n")
+        allow(Rails).to receive(:root).and_return(Pathname.new(dir))
+        expect(helper.deployment_sha).to eq 'deadbeefcafe'
+      end
+    end
+
+    it 'is nil when neither is present' do
+      Dir.mktmpdir do |dir|
+        allow(Rails).to receive(:root).and_return(Pathname.new(dir))
+        expect(helper.deployment_sha).to be_nil
+      end
+    end
+  end
+
+  describe '#deployment_time' do
+    include_context 'with no baked-in build stamp'
+
+    it 'prefers the commit timestamp baked into the container image' do
+      ENV['GIT_COMMITTED_AT'] = '2026-08-20T14:05:00+03:00'
+      expect(helper.deployment_time).to eq Time.iso8601('2026-08-20T14:05:00+03:00')
+    end
+
+    it 'returns nil rather than raising on a malformed baked-in timestamp' do
+      ENV['GIT_COMMITTED_AT'] = '2026-99-99T99:99:99'
+      expect(helper.deployment_time).to be_nil
+    end
+
+    it 'falls back to the Capistrano release directory name' do
+      allow(Rails).to receive(:root).and_return(Pathname.new('/home/bybe/releases/20260731131500'))
+      expect(helper.deployment_time).to eq Time.find_zone('UTC').local(2026, 7, 31, 13, 15)
+    end
+  end
+
+  describe '#deployment_commit_url' do
+    include_context 'with no baked-in build stamp'
+
+    it 'links to the deployed commit on GitHub' do
+      ENV['GIT_SHA'] = 'cafebabe1234'
+      expect(helper.deployment_commit_url).to eq "#{described_class::GITHUB_REPO_URL}/commit/cafebabe1234"
+    end
+
+    it 'is nil when the SHA is unknown' do
+      Dir.mktmpdir do |dir|
+        allow(Rails).to receive(:root).and_return(Pathname.new(dir))
+        expect(helper.deployment_commit_url).to be_nil
+      end
+    end
+  end
+
   describe '#deployment_version' do
+    include_context 'with no baked-in build stamp'
+
+    it 'reports the commit stamped into the container image' do
+      ENV['GIT_SHA'] = 'cafebabe1234'
+      ENV['GIT_COMMITTED_AT'] = '2026-08-20T14:05:00+03:00'
+      expected = Time.iso8601('2026-08-20T14:05:00+03:00').in_time_zone.strftime('%Y-%m-%d %H:%M')
+      expect(helper.deployment_version).to eq "#{expected} (cafebabe)"
+    end
+
     it 'derives the timestamp from a Capistrano release directory name' do
       allow(Rails).to receive(:root).and_return(Pathname.new('/home/bybe/releases/20260731131500'))
       expected = Time.find_zone('UTC').local(2026, 7, 31, 13, 15).in_time_zone.strftime('%Y-%m-%d %H:%M')
