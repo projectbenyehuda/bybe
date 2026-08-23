@@ -225,6 +225,23 @@ module LexiconHelper
     lex_entry.attachments.reject { |attachment| cited_ids.include?(attachment.id) }
   end
 
+  # Migration problems we detect ourselves, stored on LexFile#error_message as I18n keys.
+  MIGRATION_WARNING_KEYS = [Lexicon::FlagUnmigratedCitations::MESSAGE_KEY].freeze
+
+  # Renders the migration messages recorded on a LexFile. Most of them are exception messages,
+  # stored verbatim in whatever language the exception came in; the warnings we raise ourselves
+  # are stored as I18n keys instead, so that they display in the editor's own locale rather than
+  # the locale the background job happened to run under.
+  # Exception messages routinely quote the source file, so every line is escaped: the queue must
+  # not render markup that came out of a legacy PHP file.
+  def lex_file_error(lex_file)
+    lines = lex_file.error_message.to_s.split("\n").map do |line|
+      MIGRATION_WARNING_KEYS.include?(line) ? t("lexicon.files.migration_warnings.#{line}") : line
+    end
+
+    safe_join(lines, tag.br)
+  end
+
   def grouped_and_ordered_citations(lex_person)
     person_works = lex_person.works.index_by(&:title)
     # we preload data required for citations rendering

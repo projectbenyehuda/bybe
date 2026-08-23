@@ -1,7 +1,7 @@
 - lex_entry = lf.lex_entry
 - redo_eligible = lex_entry.status_draft? || lex_entry.status_verifying? || lex_entry.status_escalated?
 %tr{ id: "lex-file-#{lf.id}" }
-  %td!= lf.error_message&.split("\n")&.join('<br/>')
+  %td= lex_file_error(lf)
   %td= lf.fname.sub('.php', '').sub('/', '')
   %td.lex-file-size= lf.file_size_kb || '—'
   %td= lf.lex_entry.title

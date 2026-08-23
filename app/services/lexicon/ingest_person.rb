@@ -111,6 +111,9 @@ module Lexicon
 
       link_citations_to_works(lex_person)
       attach_backup_files(lex_person)
+      # A bibliography we failed to parse leaves the entry with no citations and no error at all,
+      # so record the discrepancy where the migration queue can show it.
+      FlagUnmigratedCitations.call(@lex_file, lex_person, html_doc.to_html)
       lex_person
     end
 

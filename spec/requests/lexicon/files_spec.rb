@@ -116,6 +116,32 @@ describe '/lexicon/files' do
       end
     end
 
+    context 'with a migration warning recorded on the file' do
+      let(:params) { { entry_statuses: %w(draft) } }
+
+      let!(:flagged_file) do
+        create(:lex_file, :person, status: :ingested, entry_status: :draft,
+                                   error_message: "boom\n#{Lexicon::FlagUnmigratedCitations::MESSAGE_KEY}")
+      end
+
+      it 'translates the warning while leaving exception messages verbatim' do
+        call
+        expect(response.body).to include(
+          I18n.t("lexicon.files.migration_warnings.#{Lexicon::FlagUnmigratedCitations::MESSAGE_KEY}")
+        )
+        expect(response.body).to include('boom')
+        expect(response.body).not_to include(Lexicon::FlagUnmigratedCitations::MESSAGE_KEY)
+        expect(file_ids).to include(flagged_file.id)
+      end
+
+      it 'escapes markup quoted from the source file by an exception message' do
+        flagged_file.update!(error_message: '<script>alert(1)</script>')
+        call
+        expect(response.body).to include('&lt;script&gt;alert(1)&lt;/script&gt;')
+        expect(response.body).not_to include('<script>alert(1)</script>')
+      end
+    end
+
     context 'when entry has verifying status but no lex_item (stuck after NFS error)' do
       let(:params) { { entry_statuses: ['verifying'] } }
 

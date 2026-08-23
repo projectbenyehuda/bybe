@@ -514,4 +514,40 @@ describe Lexicon::IngestPerson do
       end
     end
   end
+
+  describe 'flagging a bibliography that produced no citations' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'ישראלי, ישראל',
+          fname: fixture,
+          full_path: Rails.root.join('spec/fixtures/files/lexicon', fixture)
+        }
+      )
+    end
+
+    context 'when the bibliography layout is not recognised' do
+      # The citations here are nested in a <blockquote>, which ExtractCitations does not treat as
+      # opening the section, so the entry migrates with no citations at all — silently, until now.
+      let(:fixture) { 'unparsable_citations.php' }
+
+      it 'records the loss on the file, where the migration queue shows it' do
+        person = call.lex_item
+        expect(person.citations).to be_empty
+        expect(file.reload.error_message).to eq(Lexicon::FlagUnmigratedCitations::MESSAGE_KEY)
+      end
+    end
+
+    context 'when the bibliography section is genuinely empty' do
+      let(:fixture) { 'j9u_only.php' }
+
+      it 'does not flag the file' do
+        expect(call.lex_item.citations).to be_empty
+        expect(file.reload.error_message).to be_nil
+      end
+    end
+  end
 end
