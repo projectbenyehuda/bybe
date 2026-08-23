@@ -25,13 +25,10 @@ cat << 'EOF'
 
 [ ] 2. git status              (check what changed)
 [ ] 3. git add <files>         (stage code changes)
-[ ] 4. bd sync                 (commit beads changes)
-[ ] 5. git commit -m "..."     (commit code with proper message)
-[ ] 6. bd sync                 (commit any new beads changes)
-[ ] 7. git push -u origin <your-feature-branch>  (push YOUR branch, not master!)
-[ ] 8. gh pr create --title "..." --body "..."   (create Pull Request)
-[ ] 9. bd close <id> --reason "Created PR #XXX"  (close bead AFTER PR created)
-[ ] 10. bd sync                (final sync)
+[ ] 4. git commit -m "..."     (commit code with proper message)
+[ ] 5. git push -u origin <your-feature-branch>  (push YOUR branch, not master!)
+[ ] 6. gh pr create --title "..." --body "..."   (create Pull Request)
+[ ] 7. bd close <id> --reason "Created PR #XXX"  (close bead AFTER PR created)
 ```
 
 ## ⛔ THE MOST IMPORTANT RULE ⛔
@@ -77,9 +74,7 @@ git checkout -b feature/by-6b7-collapse-buttons
 
 # 3. Make changes, then commit
 git add app/views/authors/toc.html.haml
-bd sync
 git commit -m "Implement collapse/expand buttons"
-bd sync
 
 # 4. Push YOUR branch
 git push -u origin feature/by-6b7-collapse-buttons
@@ -89,7 +84,6 @@ gh pr create --title "Implement collapse/expand all buttons" --body "..."
 
 # 6. Close bead
 bd close by-6b7 --reason "Created PR #123"
-bd sync
 ```
 
 EOF

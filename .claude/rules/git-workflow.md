@@ -56,9 +56,7 @@ If you accidentally pushed to master/main:
 3. **Make your changes and commit to YOUR branch:**
    ```bash
    git add <files>
-   bd sync  # sync beads changes
    git commit -m "Your commit message"
-   bd sync  # sync beads changes again
    ```
    - Never run `git commit` while on master/main!
    - Double-check with `git branch --show-current` if unsure
@@ -83,7 +81,6 @@ If you accidentally pushed to master/main:
 6. **Close the bead** after PR is created:
    ```bash
    bd close <bead-id> --reason "Created PR #123"
-   bd sync
    ```
    - Close the bead AFTER creating the PR, not after merge
    - Include the PR number in the close reason
@@ -99,7 +96,6 @@ Before running ANY git command, verify:
 - [ ] Am I on a branch I created in this session? (`git branch --show-current`)
 - [ ] If not, have I created a new feature/fix branch?
 - [ ] Am I about to push to my own branch, not master/main?
-- [ ] Have I run `bd sync` before and after committing?
 - [ ] Will I create a PR with `--base <recorded-base-branch>` after pushing?
 
 **If any answer is NO, do NOT proceed with git push!**
