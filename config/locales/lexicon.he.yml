@@ -149,6 +149,8 @@ he:
         other_title: קבצים אחרים
         migration_item_count: פריטים
         file_size: גודל (ק״ב)
+      migration_warnings:
+        citations_not_migrated: "בקובץ המקור יש מדור מראי מקום, אך אף מראה מקום לא הוסב ממנו. יש להסב מחדש לאחר תיקון בעיית הפענוח."
       migrate:
         success: ההסבה החלה
         title: התחל הסבה

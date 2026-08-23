@@ -7,6 +7,7 @@ module Lexicon
     LAST_UPDATE_RE = /#{LAST_UPDATE_LABEL}:?\s*([^\]\r\n]*)/
 
     def call(lex_file)
+      @lex_file = lex_file
       @lex_entry = lex_file.lex_entry
 
       html_doc = HtmlUtils.parse_file(lex_file.full_path)

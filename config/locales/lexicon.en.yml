@@ -148,6 +148,8 @@ en:
         other_title: Other files
         migration_item_count: Items
         file_size: Size (KB)
+      migration_warnings:
+        citations_not_migrated: "The source file has a bibliography section, but no citation was migrated from it. Redo the migration once the parsing problem is fixed."
       migrate:
         success: Migration queued
         title: Analyze

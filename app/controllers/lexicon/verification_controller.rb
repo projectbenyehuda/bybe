@@ -49,7 +49,7 @@ module Lexicon
       end
 
       @source_content = load_source_php
-      @php_counts = count_php_section_bullets(@source_content)
+      @php_counts = Lexicon::CountPhpSectionBullets.call(@source_content)
       @checklist = @entry.verification_progress['checklist']
       @item = @entry.lex_item # LexPerson or LexPublication
 
@@ -432,40 +432,6 @@ module Lexicon
     # Only public_domain is not copyrighted; all other statuses default to copyrighted.
     def authority_copyrighted?(authority_ip)
       authority_ip != 'public_domain'
-    end
-
-    # Count <li> items in each section of the legacy PHP file.
-    # Sections are delimited by named anchors: Books, Bib., links.
-    # Empty (whitespace-only) list items are excluded to match migration behavior.
-    # Returns a hash with :works, :citations, :links counts (nil if section not found).
-    def count_php_section_bullets(content)
-      return { works: nil, citations: nil, links: nil } if content.blank?
-
-      books_pos = content.index(/name\s*=\s*["']Books["']/i)
-      bib_pos = content.index(/name\s*=\s*["']Bib\.["']/i)
-      links_pos = content.index(/name\s*=\s*["']links["']/i)
-
-      works_count = nil
-      citations_count = nil
-      links_count = nil
-
-      if books_pos
-        works_end = bib_pos || links_pos || content.length
-        works_count = count_nonempty_li(content[books_pos...works_end])
-      end
-
-      if bib_pos
-        citations_end = links_pos || content.length
-        citations_count = count_nonempty_li(content[bib_pos...citations_end])
-      end
-
-      links_count = count_nonempty_li(content[links_pos..]) if links_pos
-
-      { works: works_count, citations: citations_count, links: links_count }
-    end
-
-    def count_nonempty_li(html_fragment)
-      Nokogiri::HTML.fragment(html_fragment).css('li').count { |li| li.text.strip.present? }
     end
 
     def load_source_php

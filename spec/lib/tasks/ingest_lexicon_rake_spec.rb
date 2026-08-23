@@ -59,6 +59,43 @@ RSpec.describe 'ingest_lexicon rake task' do # rubocop:disable RSpec/DescribeCla
     expect(entry.reload.title).to eq(original_title)
   end
 
+  describe 'flag_unmigrated_citations' do
+    let(:flag_task) { Rake::Task['flag_unmigrated_citations'] }
+
+    before { flag_task.reenable }
+
+    # A person entry that migrated with no citations at all, from the given source file.
+    def migrated_person_without_citations(fixture)
+      create(:lex_file, :person, status: :ingested, entry_status: :draft, fname: fixture,
+                                 full_path: fixtures_dir.join(fixture).to_s)
+    end
+
+    it 'flags an entry whose bibliography section produced no citations' do
+      lex_file = migrated_person_without_citations('unparsable_citations.php')
+
+      flag_task.invoke
+
+      expect(lex_file.reload.error_message).to eq(Lexicon::FlagUnmigratedCitations::MESSAGE_KEY)
+    end
+
+    it 'leaves entries whose bibliography section is genuinely empty alone' do
+      lex_file = migrated_person_without_citations('j9u_only.php')
+
+      flag_task.invoke
+
+      expect(lex_file.reload.error_message).to be_nil
+    end
+
+    it 'leaves entries that did migrate citations alone' do
+      lex_file = migrated_person_without_citations('unparsable_citations.php')
+      lex_file.lex_entry.lex_item.citations << build(:lex_citation)
+
+      flag_task.invoke
+
+      expect(lex_file.reload.error_message).to be_nil
+    end
+  end
+
   describe 'fix_lexicon_titles' do
     let(:fix_task) { Rake::Task['fix_lexicon_titles'] }
     let(:source_file) { fixtures_dir.join('00020.php') }

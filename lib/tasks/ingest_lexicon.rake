@@ -211,6 +211,32 @@ task fix_lexicon_titles: :environment do
   puts "Source file still yields a mangled title for entry ids: #{still_mangled.join(', ')}" if still_mangled.any?
 end
 
+desc 'flag already-migrated person entries whose bibliography section produced no citations'
+task flag_unmigrated_citations: :environment do
+  flagged = []
+  missing = []
+
+  # Only entries that migrated to a LexPerson with no citations at all can be affected; every
+  # other person entry is left untouched, so this reads a few dozen files rather than the corpus.
+  LexPerson.left_joins(:citations).where(lex_citations: { id: nil })
+           .includes(entry: :lex_file).find_each do |lex_person|
+    lex_file = lex_person.entry&.lex_file
+    next if lex_file.nil? || !lex_file.entrytype_person?
+
+    path = lex_file.full_path
+    if path.blank? || !File.exist?(path)
+      missing << lex_file.fname
+      next
+    end
+
+    content = Lexicon::HtmlUtils.parse_file(path).to_html
+    flagged << lex_file.fname if Lexicon::FlagUnmigratedCitations.call(lex_file, lex_person, content)
+  end
+
+  puts "#{flagged.size} entries flagged: #{flagged.sort.join(', ')}"
+  puts "No readable source file for: #{missing.sort.join(', ')}" if missing.any?
+end
+
 task reset_lexicon_ingestion: :environment do
   puts 'Wiping Ingested Lexicon Entries...'
   Chewy.strategy(:atomic) do
