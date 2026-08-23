@@ -57,7 +57,7 @@ bd close bd-42 --reason "Completed" --json
 3. **Create feature branch**: See git-workflow.md (NEVER work directly on existing branches!)
 4. **Work on it**: Implement, test, document
 5. **Discover new work?** Create linked issue: `bd create "Found bug" -p 1 --deps discovered-from:<parent-id>`
-6. **Complete**: `bd close <id>` after PR is created (not after merge), then `bd sync`
+6. **Complete**: `bd close <id>` after PR is created (not after merge)
 
 ## Auto-Sync
 
@@ -129,4 +129,3 @@ Run `bd <command> --help` to see all available flags for any command.
 - ✅ Always use `--json` flag for programmatic use
 - ✅ Link discovered work with `discovered-from` dependencies
 - ✅ Store AI planning docs in `history/` directory
-- ✅ Run `bd sync` before and after commits
