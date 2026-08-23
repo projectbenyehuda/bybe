@@ -215,6 +215,7 @@ desc 'flag already-migrated person entries whose bibliography section produced n
 task flag_unmigrated_citations: :environment do
   flagged = []
   missing = []
+  failed = []
 
   # Only entries that migrated to a LexPerson with no citations at all can be affected; every
   # other person entry is left untouched, so this reads a few dozen files rather than the corpus.
@@ -231,10 +232,15 @@ task flag_unmigrated_citations: :environment do
 
     content = Lexicon::HtmlUtils.parse_file(path).to_html
     flagged << lex_file.fname if Lexicon::FlagUnmigratedCitations.call(lex_file, lex_person, content)
+  # One unreadable or undecodable file must not cut the sweep short and hide every candidate
+  # that comes after it.
+  rescue StandardError => e
+    failed << "#{lex_file.fname} (#{e.message})"
   end
 
   puts "#{flagged.size} entries flagged: #{flagged.sort.join(', ')}"
   puts "No readable source file for: #{missing.sort.join(', ')}" if missing.any?
+  puts "Could not be checked: #{failed.sort.join(', ')}" if failed.any?
 end
 
 task reset_lexicon_ingestion: :environment do

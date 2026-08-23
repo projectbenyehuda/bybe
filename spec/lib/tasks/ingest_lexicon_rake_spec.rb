@@ -86,6 +86,18 @@ RSpec.describe 'ingest_lexicon rake task' do # rubocop:disable RSpec/DescribeCla
       expect(lex_file.reload.error_message).to be_nil
     end
 
+    it 'carries on past a file it cannot read' do
+      unreadable = migrated_person_without_citations('00020.php')
+      flaggable = migrated_person_without_citations('unparsable_citations.php')
+      allow(Lexicon::HtmlUtils).to receive(:parse_file).and_call_original
+      allow(Lexicon::HtmlUtils).to receive(:parse_file).with(unreadable.full_path).and_raise(Errno::EACCES)
+
+      flag_task.invoke
+
+      expect(flaggable.reload.error_message).to eq(Lexicon::FlagUnmigratedCitations::MESSAGE_KEY)
+      expect(unreadable.reload.error_message).to be_nil
+    end
+
     it 'leaves entries that did migrate citations alone' do
       lex_file = migrated_person_without_citations('unparsable_citations.php')
       lex_file.lex_entry.lex_item.citations << build(:lex_citation)
