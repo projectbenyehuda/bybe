@@ -72,9 +72,9 @@ module LexiconHelper
     raw parts.join(' ')
   end
 
-  # Wraps a work comment in angled brackets, with NO space between a bracket and the content it
+  # Wraps content in angled brackets, with NO space between a bracket and the content it
   # encloses (the space belongs outside the brackets — see render_person_work).
-  # The brackets are emitted as entities so that a comment beginning or ending with a link can't
+  # The brackets are emitted as entities so that content beginning or ending with a link can't
   # produce a "<<a href=" / "</a>>" sequence for the HTML parser to trip over.
   def angle_bracketed(content)
     "&lt;#{content.to_s.strip}&gt;"
