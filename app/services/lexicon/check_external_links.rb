@@ -18,7 +18,7 @@ module Lexicon
   # Invoked asynchronously via Lexicon::CheckExternalLinksJob after ingestion.
   class CheckExternalLinks < ApplicationService
     MAX_REDIRECTS = 5
-    TIMEOUT_SECONDS = 10
+    TIMEOUT_SECONDS = 15
     REDIRECT_STATUSES = [301, 302, 303, 307, 308].freeze
 
     # RFC1918, loopback, link-local, and IPv6 private ranges to block (SSRF guard)
