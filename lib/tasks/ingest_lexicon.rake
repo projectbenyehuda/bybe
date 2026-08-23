@@ -252,11 +252,18 @@ task recheck_broken_lexicon_links: :environment do
   # would only spend a timeout on. Records already flagged unverifiable need no second look.
   links = LexLink.where(unverifiable: false).where(http_status: 400..)
   citations = LexCitation.where(link_unverifiable: false).where(link_http_status: 400..)
+
+  # Tallied as we go rather than by counting the relations afterwards: rechecking moves rows out
+  # of these scopes (a link that now answers 200, or one we have just flagged unverifiable), so a
+  # trailing relation.count would re-run the query against the mutated rows and under-report.
+  checked_links = 0
+  checked_citations = 0
   reclassified = 0
 
   links.find_each do |link|
     result = checker.check_url(link.url)
     link.update_columns(http_status: result.status, unverifiable: result.unverifiable?, checked_at: Time.current)
+    checked_links += 1
     next unless result.unverifiable?
 
     reclassified += 1
@@ -267,13 +274,15 @@ task recheck_broken_lexicon_links: :environment do
     result = checker.check_url(citation.link)
     citation.update_columns(link_http_status: result.status, link_unverifiable: result.unverifiable?,
                             link_checked_at: Time.current)
+    checked_citations += 1
     next unless result.unverifiable?
 
     reclassified += 1
     puts "LexCitation #{citation.id}: #{citation.link} -> unverifiable (HTTP #{result.status})"
   end
 
-  puts "Rechecked #{links.count} links and #{citations.count} citation links; #{reclassified} now unverifiable"
+  puts "Rechecked #{checked_links} links and #{checked_citations} citation links; " \
+       "#{reclassified} now unverifiable"
 end
 
 task reset_lexicon_ingestion: :environment do
