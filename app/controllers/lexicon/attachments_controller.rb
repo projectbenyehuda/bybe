@@ -17,7 +17,10 @@ module Lexicon
 
     # Returns content of LexEntry attachments panel
     def index
-      render layout: false
+      # Normally loaded as a fragment (entry edit tab pane, verification workbench modal), but the
+      # panel is also reachable by direct navigation, which needs the layout and its JS assets --
+      # without them the remote form below degrades to a plain HTML submit.
+      render layout: request.xhr? ? false : 'lexicon_backend'
     end
 
     def create
@@ -28,6 +31,14 @@ module Lexicon
         @error = t('.file_exists', filename: filename)
       else
         @lex_entry.attachments.attach(file)
+      end
+
+      respond_to do |format|
+        format.js
+        format.html do
+          flash[:alert] = @error if @error.present?
+          redirect_to lexicon_entry_attachments_path(@lex_entry)
+        end
       end
     end
 
