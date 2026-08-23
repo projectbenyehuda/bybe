@@ -91,5 +91,16 @@ describe LexCitation do
 
       it { is_expected.to be false }
     end
+
+    # A bot challenge (Cloudflare) tells us nothing about the link, so "we cannot tell" must not
+    # be shown to editors as "broken". See by-9jz.
+    context 'when the check hit a bot challenge (link_unverifiable)' do
+      subject do
+        build(:lex_citation, link_checked_at: Time.current, link_http_status: 403,
+                             link_unverifiable: true).link_broken?
+      end
+
+      it { is_expected.to be false }
+    end
   end
 end

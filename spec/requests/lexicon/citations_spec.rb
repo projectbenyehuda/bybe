@@ -147,7 +147,7 @@ describe '/lexicon/citations' do
       end
 
       context 'when the new link is accessible' do
-        before { allow(checker).to receive(:check_url).and_return(200) }
+        before { allow(checker).to receive(:check_url).and_return(link_check_result(200)) }
 
         it 'updates link_http_status synchronously' do
           call
@@ -162,7 +162,7 @@ describe '/lexicon/citations' do
       end
 
       context 'when the new link is still broken' do
-        before { allow(checker).to receive(:check_url).and_return(404) }
+        before { allow(checker).to receive(:check_url).and_return(link_check_result(404)) }
 
         it 'stores the new broken status' do
           call
@@ -177,7 +177,7 @@ describe '/lexicon/citations' do
       end
 
       context 'when the link is unreachable (host defunct)' do
-        before { allow(checker).to receive(:check_url).and_return(nil) }
+        before { allow(checker).to receive(:check_url).and_return(link_check_result(nil)) }
 
         it 'stores nil status but records the check time and flags it broken' do
           call
@@ -196,7 +196,7 @@ describe '/lexicon/citations' do
     end
 
     context 'when a broken link is replaced' do
-      let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: 200) }
+      let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: link_check_result(200)) }
       let(:entry) { create(:lex_entry, :person, status: :verifying) }
       let(:person) { entry.lex_item }
       let(:old_link) { 'https://dead.example.com/page' }
@@ -235,7 +235,7 @@ describe '/lexicon/citations' do
       end
 
       context 'when the replacement link is also broken' do
-        let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: 404) }
+        let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: link_check_result(404)) }
 
         it 'still reports the change' do
           call

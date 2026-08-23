@@ -243,6 +243,48 @@ task flag_unmigrated_citations: :environment do
   puts "Could not be checked: #{failed.sort.join(', ')}" if failed.any?
 end
 
+desc 'recheck lexicon links already recorded as broken, so bot-challenged ones become unverifiable'
+task recheck_broken_lexicon_links: :environment do
+  checker = Lexicon::CheckExternalLinks.new
+
+  # Only records with an HTTP status >= 400 are candidates: a bot challenge always comes back as a
+  # real response (hence a status), so a nil status means an unreachable host, which re-checking
+  # would only spend a timeout on. Records already flagged unverifiable need no second look.
+  links = LexLink.where(unverifiable: false).where(http_status: 400..)
+  citations = LexCitation.where(link_unverifiable: false).where(link_http_status: 400..)
+
+  # Tallied as we go rather than by counting the relations afterwards: rechecking moves rows out
+  # of these scopes (a link that now answers 200, or one we have just flagged unverifiable), so a
+  # trailing relation.count would re-run the query against the mutated rows and under-report.
+  checked_links = 0
+  checked_citations = 0
+  reclassified = 0
+
+  links.find_each do |link|
+    result = checker.check_url(link.url)
+    link.update_columns(http_status: result.status, unverifiable: result.unverifiable?, checked_at: Time.current)
+    checked_links += 1
+    next unless result.unverifiable?
+
+    reclassified += 1
+    puts "LexLink #{link.id}: #{link.url} -> unverifiable (HTTP #{result.status})"
+  end
+
+  citations.find_each do |citation|
+    result = checker.check_url(citation.link)
+    citation.update_columns(link_http_status: result.status, link_unverifiable: result.unverifiable?,
+                            link_checked_at: Time.current)
+    checked_citations += 1
+    next unless result.unverifiable?
+
+    reclassified += 1
+    puts "LexCitation #{citation.id}: #{citation.link} -> unverifiable (HTTP #{result.status})"
+  end
+
+  puts "Rechecked #{checked_links} links and #{checked_citations} citation links; " \
+       "#{reclassified} now unverifiable"
+end
+
 task reset_lexicon_ingestion: :environment do
   puts 'Wiping Ingested Lexicon Entries...'
   Chewy.strategy(:atomic) do

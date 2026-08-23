@@ -240,6 +240,9 @@
                   - if citation.link_broken?
                     %span.broken-link-badge= broken_link_badge(citation.link_http_status)
                     = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{citation.link}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
+                  - elsif citation.link_unverifiable?
+                    %span.unverifiable-link-badge{ title: t('lexicon.verification.broken_link.unverifiable_tooltip') }
+                      = t('lexicon.verification.broken_link.unverifiable_badge')
                   %span.text-muted= t('lexicon.verification.sections.citation_link')
                   = link_to citation.link, citation.link, target: '_blank', class: 'citation-link'
                 - if citation.backup_url.present?
@@ -306,6 +309,9 @@
             - if link.broken?
               %span.broken-link-badge= broken_link_badge(link.http_status)
               = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{link.url}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
+            - elsif link.unverifiable?
+              %span.unverifiable-link-badge{ title: t('lexicon.verification.broken_link.unverifiable_tooltip') }
+                = t('lexicon.verification.broken_link.unverifiable_badge')
             = link_to link.url, link.url, target: '_blank'
             - if link.description.present?
               %br

@@ -108,6 +108,89 @@ RSpec.describe 'ingest_lexicon rake task' do # rubocop:disable RSpec/DescribeCla
     end
   end
 
+  describe 'recheck_broken_lexicon_links' do
+    let(:recheck_task) { Rake::Task['recheck_broken_lexicon_links'] }
+    let(:checker) { instance_double(Lexicon::CheckExternalLinks) }
+
+    before do
+      recheck_task.reenable
+      allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+      allow(checker).to receive(:check_url).and_return(link_check_result(200))
+    end
+
+    def broken_link(url)
+      create(:lex_link, url: url, http_status: 403, checked_at: 1.day.ago)
+    end
+
+    def broken_citation_link(url)
+      create(:lex_citation, person: create(:lex_person), link: url,
+                            link_http_status: 403, link_checked_at: 1.day.ago)
+    end
+
+    it 'flags a link whose host now answers with a bot challenge' do
+      link = broken_link('https://www.nli.org.il/he/archives/NNL_ALEPH000000001')
+      allow(checker).to receive(:check_url).and_return(link_check_result(403, unverifiable: true))
+
+      recheck_task.invoke
+
+      expect(link.reload.unverifiable).to be true
+    end
+
+    it 'flags a citation link whose host now answers with a bot challenge' do
+      citation = broken_citation_link('https://www.nli.org.il/he/newspapers/example')
+      allow(checker).to receive(:check_url).and_return(link_check_result(403, unverifiable: true))
+
+      recheck_task.invoke
+
+      expect(citation.reload.link_unverifiable).to be true
+    end
+
+    # Regression: the summary line used to call .count on the two relations after the loops had
+    # already moved rows out of their scopes, so it re-queried the mutated rows and reported far
+    # fewer records than it had actually rechecked -- here, zero of each.
+    it 'reports what it rechecked, not what still matches the scope afterwards' do
+      broken_link('https://recovered.example.com/a')
+      broken_citation_link('https://recovered.example.com/b')
+
+      expect { recheck_task.invoke }
+        .to output(/Rechecked 1 links and 1 citation links; 0 now unverifiable/).to_stdout
+    end
+
+    it 'counts records it reclassified, which have also left the scope' do
+      broken_link('https://www.nli.org.il/he/archives/a')
+      broken_citation_link('https://www.nli.org.il/he/newspapers/b')
+      allow(checker).to receive(:check_url).and_return(link_check_result(403, unverifiable: true))
+
+      expect { recheck_task.invoke }
+        .to output(/Rechecked 1 links and 1 citation links; 2 now unverifiable/).to_stdout
+    end
+
+    it 'skips an unreachable link (nil status) rather than spending a timeout on it' do
+      create(:lex_link, url: 'https://dead.example.com/x', http_status: nil, checked_at: 1.day.ago)
+
+      recheck_task.invoke
+
+      expect(checker).not_to have_received(:check_url)
+    end
+
+    it 'skips links already flagged unverifiable' do
+      create(:lex_link, url: 'https://www.nli.org.il/he/archives/x', http_status: 403,
+                        unverifiable: true, checked_at: 1.day.ago)
+
+      recheck_task.invoke
+
+      expect(checker).not_to have_received(:check_url)
+    end
+
+    it 'clears the flag on a link that now answers normally' do
+      link = broken_link('https://recovered.example.com/a')
+
+      recheck_task.invoke
+
+      expect(link.reload).to have_attributes(http_status: 200, unverifiable: false)
+    end
+  end
+
   describe 'fix_lexicon_titles' do
     let(:fix_task) { Rake::Task['fix_lexicon_titles'] }
     let(:source_file) { fixtures_dir.join('00020.php') }

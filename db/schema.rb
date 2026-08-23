@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_15_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_23_120000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -657,6 +657,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_090000) do
     t.string "link", limit: 1024
     t.datetime "link_checked_at"
     t.integer "link_http_status"
+    t.boolean "link_unverifiable", default: false, null: false
     t.integer "manifestation_id"
     t.text "notes"
     t.string "pages"
@@ -758,6 +759,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_090000) do
     t.bigint "item_id"
     t.string "item_type"
     t.integer "status"
+    t.boolean "unverifiable", default: false, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.string "url"
     t.index ["item_type", "item_id"], name: "index_lex_links_on_item_type_and_item_id"

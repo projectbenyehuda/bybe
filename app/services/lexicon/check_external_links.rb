@@ -14,9 +14,28 @@ module Lexicon
   # - Follows up to MAX_REDIRECTS redirects
   # - Stores the final HTTP status code on the record (nil = check failed)
   # - 4xx/5xx codes indicate a broken link
+  # - Unless the refusal is a bot challenge, in which case the link is flagged unverifiable
+  #   rather than broken (see #challenge_response?)
   #
   # Invoked asynchronously via Lexicon::CheckExternalLinksJob after ingestion.
   class CheckExternalLinks < ApplicationService
+    # Outcome of checking one URL. +unverifiable+ means the host refused us with a bot challenge
+    # we cannot solve, so +status+ says nothing about whether the link actually works.
+    Result = Data.define(:status, :unverifiable) do
+      def self.checked(status, unverifiable: false)
+        new(status: status, unverifiable: unverifiable)
+      end
+
+      # No verdict at all: unreachable host, invalid URL, blocked address, redirect loop.
+      def self.unreachable
+        checked(nil)
+      end
+
+      def unverifiable?
+        unverifiable
+      end
+    end
+
     MAX_REDIRECTS = 5
     TIMEOUT_SECONDS = 15
     REDIRECT_STATUSES = [301, 302, 303, 307, 308].freeze
@@ -31,6 +50,11 @@ module Lexicon
     # does exactly this -- `Project-Ben-Yehuda/1.0 (link-checker; +...)` gets a blanket 403 there
     # while `Project-Ben-Yehuda/1.0 (+...)` gets 200. Keep us identifiable, just not by that token.
     USER_AGENT = 'Project-Ben-Yehuda/1.0 (+https://benyehuda.org)'
+
+    # Cloudflare sets cf-mitigated on a request it blocked (value "challenge" for a managed
+    # challenge). Older/other configurations only give us a 403 with a cloudflare Server header.
+    # Keyed off headers rather than a hostname allowlist so the next gated site is handled too.
+    CHALLENGE_STATUS = 403
 
     # RFC1918, loopback, link-local, and IPv6 private ranges to block (SSRF guard)
     PRIVATE_IP_RANGES = [
@@ -52,9 +76,9 @@ module Lexicon
       check_citation_links(item) if item.is_a?(LexPerson)
     end
 
-    # Check a single URL and return its HTTP status code (or nil on error).
+    # Check a single URL and return a Result.
     def check_url(url)
-      fetch_status(url)
+      fetch_result(url)
     end
 
     private
@@ -63,8 +87,9 @@ module Lexicon
       item.links.find_each do |lex_link|
         next unless external_url?(lex_link.url)
 
-        status = fetch_status(lex_link.url)
-        lex_link.update_columns(http_status: status, checked_at: Time.current)
+        result = fetch_result(lex_link.url)
+        lex_link.update_columns(http_status: result.status, unverifiable: result.unverifiable?,
+                                checked_at: Time.current)
       end
     end
 
@@ -72,8 +97,9 @@ module Lexicon
       person.citations.where.not(link: [nil, '']).find_each do |citation|
         next unless external_url?(citation.link)
 
-        status = fetch_status(citation.link)
-        citation.update_columns(link_http_status: status, link_checked_at: Time.current)
+        result = fetch_result(citation.link)
+        citation.update_columns(link_http_status: result.status, link_unverifiable: result.unverifiable?,
+                                link_checked_at: Time.current)
       end
     end
 
@@ -81,26 +107,26 @@ module Lexicon
       url.to_s.start_with?('http://', 'https://')
     end
 
-    # Returns the final HTTP status code after following redirects, or nil on error.
-    def fetch_status(url)
-      return nil if url.blank?
+    # Returns the Result of the check after following redirects.
+    def fetch_result(url)
+      return Result.unreachable if url.blank?
 
       uri = parse_uri(url)
-      return nil unless uri
-      return nil unless ssrf_safe?(uri)
+      return Result.unreachable unless uri
+      return Result.unreachable unless ssrf_safe?(uri)
 
       follow_redirects(uri, MAX_REDIRECTS)
     rescue StandardError => e
       Rails.logger.warn("Lexicon::CheckExternalLinks: failed to check #{url}: #{e.message}")
-      nil
+      Result.unreachable
     end
 
-    # Errors propagate to fetch_status where they are logged.
+    # Errors propagate to fetch_result where they are logged.
     def follow_redirects(uri, remaining_hops)
-      return nil if remaining_hops <= 0
+      return Result.unreachable if remaining_hops <= 0
 
       response = make_request(uri)
-      return nil unless response
+      return Result.unreachable unless response
 
       status = response.code.to_i
 
@@ -109,7 +135,16 @@ module Lexicon
         return follow_redirects(new_uri, remaining_hops - 1) if new_uri
       end
 
-      status
+      Result.checked(status, unverifiable: challenge_response?(response))
+    end
+
+    # True when the response is a bot challenge rather than a verdict about the URL. We cannot
+    # execute a JS challenge from Net::HTTP (and our datacenter IP scores badly), so "we cannot
+    # tell" is the honest reading of such a refusal -- not "the link is dead".
+    def challenge_response?(response)
+      return true if response['cf-mitigated'].present?
+
+      response.code.to_i == CHALLENGE_STATUS && response['server'].to_s.casecmp?('cloudflare')
     end
 
     def make_request(uri)

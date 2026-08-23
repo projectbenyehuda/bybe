@@ -158,6 +158,135 @@ describe Lexicon::CheckExternalLinks do
     end
   end
 
+  # Link checking runs from a datacenter IP and cannot execute a JS challenge, so a Cloudflare
+  # challenge is a false negative, not a dead link. See by-9jz (www.nli.org.il).
+  describe 'links behind a bot challenge' do
+    let!(:link) { create(:lex_link, item: person, url: url) }
+
+    context 'when the host answers with a Cloudflare managed challenge' do
+      let(:url) { 'http://challenged.example.com/record' }
+      let(:cf_headers) { { 'cf-mitigated' => 'challenge', 'Server' => 'cloudflare' } }
+
+      before do
+        stub_request(:head, url).to_return(status: 403, headers: cf_headers)
+        stub_request(:get, url).to_return(status: 403, headers: cf_headers)
+      end
+
+      it 'flags the link unverifiable and keeps the raw status for diagnostics' do
+        call
+        link.reload
+        expect(link.unverifiable).to be true
+        expect(link.http_status).to eq(403)
+      end
+
+      it 'does not report the link as broken' do
+        call
+        expect(link.reload).not_to be_broken
+      end
+    end
+
+    context 'when Cloudflare 403s without the cf-mitigated header' do
+      let(:url) { 'http://cf-plain-403.example.com/record' }
+
+      before do
+        stub_request(:head, url).to_return(status: 403, headers: { 'Server' => 'cloudflare' })
+        stub_request(:get, url).to_return(status: 403, headers: { 'Server' => 'cloudflare' })
+      end
+
+      it 'still flags the link unverifiable' do
+        call
+        expect(link.reload.unverifiable).to be true
+      end
+    end
+
+    # The point of keying off headers rather than a hostname list is that ordinary refusals from
+    # ordinary servers must keep counting as broken.
+    context 'when a plain 403 arrives without any challenge headers' do
+      let(:url) { 'http://plain-403.example.com/denied' }
+
+      before do
+        stub_request(:head, url).to_return(status: 403)
+        stub_request(:get, url).to_return(status: 403)
+      end
+
+      it 'leaves the link broken and not unverifiable' do
+        call
+        link.reload
+        expect(link.unverifiable).to be false
+        expect(link).to be_broken
+      end
+    end
+
+    context 'when a Cloudflare-fronted host returns an honest 404' do
+      let(:url) { 'http://cf-404.example.com/missing' }
+
+      before do
+        stub_request(:head, url).to_return(status: 404, headers: { 'Server' => 'cloudflare' })
+      end
+
+      it 'is broken, not unverifiable' do
+        call
+        link.reload
+        expect(link.unverifiable).to be false
+        expect(link).to be_broken
+      end
+    end
+
+    context 'when a previously challenged link now answers normally' do
+      let(:url) { 'http://was-challenged.example.com/record' }
+
+      before do
+        link.update_columns(http_status: 403, unverifiable: true, checked_at: 1.day.ago)
+        stub_request(:head, url).to_return(status: 200)
+      end
+
+      it 'clears the unverifiable flag' do
+        call
+        link.reload
+        expect(link.unverifiable).to be false
+        expect(link.http_status).to eq(200)
+      end
+    end
+  end
+
+  describe 'citation links behind a bot challenge' do
+    let(:citation) { create(:lex_citation, person: person, link: 'http://challenged.example.com/cit') }
+
+    before do
+      citation
+      headers = { 'cf-mitigated' => 'challenge', 'Server' => 'cloudflare' }
+      stub_request(:head, 'http://challenged.example.com/cit').to_return(status: 403, headers: headers)
+      stub_request(:get, 'http://challenged.example.com/cit').to_return(status: 403, headers: headers)
+    end
+
+    it 'flags the citation link unverifiable rather than broken' do
+      call
+      citation.reload
+      expect(citation.link_unverifiable).to be true
+      expect(citation).not_to be_link_broken
+    end
+  end
+
+  describe '#check_url' do
+    it 'returns the status and the unverifiable verdict for a challenged URL' do
+      headers = { 'cf-mitigated' => 'challenge', 'Server' => 'cloudflare' }
+      stub_request(:head, 'http://challenged.example.com/one').to_return(status: 403, headers: headers)
+      stub_request(:get, 'http://challenged.example.com/one').to_return(status: 403, headers: headers)
+
+      result = described_class.new.check_url('http://challenged.example.com/one')
+      expect(result.status).to eq(403)
+      expect(result).to be_unverifiable
+    end
+
+    it 'returns a nil status and no verdict for an unreachable URL' do
+      stub_request(:head, 'http://dead.example.com/one').to_raise(Errno::ECONNREFUSED)
+
+      result = described_class.new.check_url('http://dead.example.com/one')
+      expect(result.status).to be_nil
+      expect(result).not_to be_unverifiable
+    end
+  end
+
   # Regression: www.text.org.il's mod_security rules 403 any User-Agent containing "link"
   # (matching "linkchecker"), which made every link on that host look broken. See #1594.
   describe 'the User-Agent sent to external servers' do
