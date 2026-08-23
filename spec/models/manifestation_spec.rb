@@ -1024,4 +1024,164 @@ describe Manifestation do
       end
     end
   end
+
+  describe '.update_suspected_typos_list' do
+    subject(:run) { described_class.update_suspected_typos_list }
+
+    let(:listkey) { described_class::SUSPECTED_TYPOS_LISTKEY }
+    let(:clean_text) { "שלום עולם, מה שלומך?\n" }
+    let(:typo_text) { "הוא נכנס לבי1ת ויצא\n" }
+
+    def queued?(manifestation)
+      ListItem.exists?(listkey: listkey, item: manifestation)
+    end
+
+    context 'when a published text has suspected typos' do
+      let!(:flagged) { create(:manifestation, genre: :poetry, markdown: typo_text) }
+
+      it 'queues it with a tally of the findings' do
+        expect { run }.to change { queued?(flagged) }.from(false).to(true)
+        expect(ListItem.find_by(listkey: listkey, item: flagged).extra).to eq 'digit_in_word:1'
+      end
+    end
+
+    context 'when a published text is clean' do
+      let!(:clean) { create(:manifestation, genre: :poetry, markdown: clean_text) }
+
+      it 'does not queue it' do
+        run
+        expect(queued?(clean)).to be false
+      end
+    end
+
+    context 'when a queued text has since been fixed' do
+      let!(:fixed) { create(:manifestation, genre: :poetry, markdown: clean_text) }
+      let!(:list_item) { create(:list_item, listkey: listkey, item: fixed, extra: 'digit_in_word:1') }
+
+      it 'drops it from the queue' do
+        expect { run }.to change { ListItem.exists?(list_item.id) }.from(true).to(false)
+      end
+    end
+
+    context 'when a queued text still has typos' do
+      let!(:flagged) { create(:manifestation, genre: :poetry, markdown: typo_text) }
+      let!(:list_item) { create(:list_item, listkey: listkey, item: flagged, extra: 'stale') }
+
+      it 'refreshes the tally in place rather than adding a second entry' do
+        run
+        expect(ListItem.where(listkey: listkey, item: flagged).pluck(:id)).to eq [list_item.id]
+        expect(list_item.reload.extra).to eq 'digit_in_word:1'
+      end
+    end
+
+    context 'when the text has been whitelisted by an editor' do
+      let!(:whitelisted) { create(:manifestation, genre: :poetry, markdown: typo_text) }
+
+      before do
+        create(:list_item, listkey: described_class::SUSPECTED_TYPOS_OKAY_LISTKEY, item: whitelisted)
+      end
+
+      it 'is not queued' do
+        run
+        expect(queued?(whitelisted)).to be false
+      end
+
+      it 'has any pre-existing queue entry dropped' do
+        list_item = create(:list_item, listkey: listkey, item: whitelisted)
+        run
+        expect(ListItem.exists?(list_item.id)).to be false
+      end
+    end
+
+    context 'when the text is not published' do
+      let!(:unpublished) { create(:manifestation, status: :unpublished, genre: :poetry, markdown: typo_text) }
+
+      it 'is not scanned' do
+        run
+        expect(queued?(unpublished)).to be false
+      end
+    end
+
+    context 'when the genre is prose' do
+      let(:sentence) { (['אבגד הוזח טיכל מנסע פצקר שתאב גדהו זחטי'] * 4).join(' ') }
+      let!(:prose) { create(:manifestation, genre: :prose, markdown: "\n#{sentence}\n") }
+      let!(:poem) { create(:manifestation, genre: :poetry, markdown: "\n#{sentence}\n") }
+
+      it 'applies the paragraph check to prose but not to poetry' do
+        run
+        expect(queued?(prose)).to be true
+        expect(queued?(poem)).to be false
+      end
+    end
+
+    # These examples run the scan more than once, so they call it directly: `run` is a
+    # memoized subject and would only ever execute the first time.
+    describe 'incremental scanning' do
+      include ActiveSupport::Testing::TimeHelpers
+
+      subject(:scan) { described_class.method(:update_suspected_typos_list) }
+
+      let(:last_run_listkey) { described_class::SUSPECTED_TYPOS_LAST_RUN_LISTKEY }
+      let!(:flagged) { create(:manifestation, genre: :poetry, markdown: typo_text) }
+
+      # Removing the queue entry between runs makes the next run's behaviour visible: the
+      # entry comes back only if the text was actually rescanned.
+      def dequeue(manifestation)
+        ListItem.where(listkey: listkey, item: manifestation).destroy_all
+      end
+
+      it 'records the watermark it scanned through' do
+        scan.call
+        # Recorded to second precision, and rounded down, so a text saved in the same second
+        # is rescanned rather than missed.
+        expect(described_class.suspected_typos_scanned_through).to be_within(5.seconds).of(Time.zone.now)
+      end
+
+      it 'reuses one marker row across runs rather than accumulating them' do
+        scan.call
+        scan.call
+        expect(ListItem.where(listkey: last_run_listkey).count).to eq 1
+      end
+
+      it 'skips a text that has not been modified since the previous run' do
+        # Both runs are moved well clear of the text's own timestamp, so the assertion turns
+        # on the incremental filter rather than on where a sub-second boundary happened to fall.
+        travel(1.minute) { scan.call }
+        dequeue(flagged)
+        travel(2.minutes) { scan.call }
+        expect(queued?(flagged)).to be false
+      end
+
+      it 'rescans a text modified since the previous run' do
+        scan.call
+        dequeue(flagged)
+        travel 1.minute do
+          flagged.touch
+          scan.call
+        end
+        expect(queued?(flagged)).to be true
+      end
+
+      it 'rescans everything when asked for a full run' do
+        scan.call
+        dequeue(flagged)
+        scan.call(full: true)
+        expect(queued?(flagged)).to be true
+      end
+
+      it 'drops the queue entry of a text unpublished since it was queued' do
+        scan.call
+        flagged.update!(status: :unpublished)
+        scan.call
+        expect(queued?(flagged)).to be false
+      end
+
+      it 'drops the queue entry of a text whitelisted since it was queued' do
+        scan.call
+        create(:list_item, listkey: described_class::SUSPECTED_TYPOS_OKAY_LISTKEY, item: flagged)
+        scan.call
+        expect(queued?(flagged)).to be false
+      end
+    end
+  end
 end

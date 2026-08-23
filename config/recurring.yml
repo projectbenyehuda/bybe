@@ -29,11 +29,10 @@ production:
     command: 'Publication.update_publications_that_may_be_done_list'
     # Every Sunday at 2:00AM
     schedule: '0 2 * * 0 Asia/Jerusalem'
-  # Uncomment when method will be implemented
-  #update_suspected_typos_in_manifestations:
-    #command: 'Manifestation.update_suspected_typos_list'
-    # Every Sunday at 2:00AM
-    #schedule: '0 2 * * 0 Asia/Jerusalem'
+  update_suspected_typos_in_manifestations:
+    command: 'Manifestation.update_suspected_typos_list'
+    # Every Saturday at 1:00PM
+    schedule: '0 13 * * 6 Asia/Jerusalem'
   import_dict:
     command: "system('bin/rake', 'dict:import[/export/dict.db,24412]')"
     # Every Tuesday and Friday at 3:00AM

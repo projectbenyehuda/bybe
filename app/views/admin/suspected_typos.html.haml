@@ -1,0 +1,52 @@
+.backend
+  %h2= t(:suspected_typos_report)
+  %p= t(:suspected_typos_explanation)
+
+  %h3 #{t(:total)}: #{@total}
+
+  = paginate @list_items
+
+  %table{ style: 'border-spacing: 10;' }
+    %tr
+      %th= t(:title)
+      %th= t(:author)
+      %th= t(:genre)
+      %th= t(:suspected_typos_findings)
+      %th
+
+    - @manifestations.each do |m|
+      %tr
+        %td= link_to m.title, manifestation_show_path(m.id)
+        %td= m.author_string
+        %td= textify_genre(m.expression.work.genre)
+        %td
+          %ul
+            - @findings[m].each do |finding|
+              %li
+                %b= t("suspected_typo_types.#{finding[:type]}")
+                (#{t(:line_number)} #{finding[:line]}):
+                %code= finding[:text]
+        %td
+          %b= link_to t(:edit_markdown), manifestation_edit_path(m.id)
+          \|
+          = link_to t(:render), url_for(controller: :manifestation, action: :read, id: m.id)
+          \|
+          = link_to t(:mark_as_valid), mark_typos_as_okay_path(m.id),
+                    remote: true, class: 'whitelist_link',
+                    data: { 'done-msg' => t(:confirmed), 'doing-msg' => t(:confirming) }
+
+  = paginate @list_items
+
+:javascript
+  $(document).ready(function() {
+    $('.whitelist_link')
+      .bind("ajax:beforeSend", function(evt, xhr, settings) {
+        $(this).html("<b>" + $(this).data('doing-msg') + "</b>");
+      })
+      .bind("ajax:success", function(evt, data, status, xhr){
+        $(this).html($(this).data('done-msg'));
+        $(this).off('click');
+        $(this).css('pointer-events', 'none').css('cursor', 'default');
+        $(this).css('color', 'black').css('text-decoration', 'none');
+    });
+  });

@@ -758,6 +758,17 @@ he:
   uploaded_directly: הועלה ישירות
   first_author: מחבר (לא מתרגם; אפשר להוסיף אישים אחר-כך, בקטלוג)
   suspicious_headings_report: "דו\"ח כותרות פרקים קרובות זו לזו (לעריכה)"
+  suspected_typos_report: "דו\"ח יצירות החשודות בשגיאות הקלדה"
+  suspected_typos_explanation: >-
+    יצירות שבהן נמצאו, בבדיקה אוטומטית, תבניות המעידות בדרך כלל על שגיאת הקלדה או סריקה.
+    אלה השערות בלבד ולא בהכרח שגיאות: אם הטקסט תקין, סמנו אותו כתקין והוא לא יופיע שוב ברשימה.
+  suspected_typos_findings: ממצאים
+  suspected_typo_types:
+    digit_in_word: ספרה בתוך מילה
+    final_mid_word: אות סופית באמצע מילה
+    nonfinal_at_word_end: אות לא-סופית בסוף מילה
+    unterminated_paragraph: פסקה המסתיימת ללא סימן פיסוק
+  line_number: שורה
   texts_between_dates: יצירות לפי מועד עלייתן
   authority_records_between_dates: יוצרים לפי מועד יצירת היישות
   first_manifestations_between_dates: יוצרים שעלו למאגר (לפי מועד יצירה ראשונה)

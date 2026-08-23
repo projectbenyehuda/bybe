@@ -159,6 +159,9 @@
         = link_to t(:suspicious_headings_report), admin_suspicious_headings_path
         = ' ('+Rails.cache.read('report_suspicious_headings').to_s+')'
       %p
+        = link_to t(:suspected_typos_report), admin_suspected_typos_path
+        (#{Rails.cache.read('report_suspected_typos')})
+      %p
         = link_to t(:similar_titles_report), admin_similar_titles_path
         = ' ('+Rails.cache.read('report_similar_titles').to_s+')'
       %p

@@ -273,6 +273,7 @@ Bybeconv::Application.routes.draw do
   match 'admin/authors_without_works', via: %i(get post)
   get 'admin/incongruous_copyright'
   get 'admin/suspicious_headings'
+  get 'admin/suspected_typos'
   get 'admin/texts_between_dates'
   get 'admin/authority_records_between_dates'
   get 'admin/first_manifestations_between_dates'
@@ -293,6 +294,7 @@ Bybeconv::Application.routes.draw do
   get 'admin/mark_similar_as_valid/:id' => 'admin#mark_similar_as_valid', as: 'mark_similar_as_valid'
   get 'admin/mark_slash_title_as_okay/:item_type/:id' => 'admin#mark_slash_title_as_okay',
       as: 'mark_slash_title_as_okay'
+  get 'admin/mark_typos_as_okay/:id' => 'admin#mark_typos_as_okay', as: 'mark_typos_as_okay'
   get 'admin/translated_from_multiple_languages'
   get 'admin/raw_tocs'
   get 'admin/my_convs/:id' => 'admin#my_convs', as: 'my_convs'
