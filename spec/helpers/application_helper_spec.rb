@@ -52,6 +52,7 @@ RSpec.describe ApplicationHelper, type: :helper do
         ENV['GIT_SHA'] = original_sha
         ENV['GIT_COMMITTED_AT'] = original_committed_at
       end
+    end
   end
 
   # #show_deployment_version? is covered end-to-end, against the real current_user, in
