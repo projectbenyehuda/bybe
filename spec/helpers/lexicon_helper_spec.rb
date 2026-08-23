@@ -176,6 +176,42 @@ RSpec.describe LexiconHelper, type: :helper do
     end
   end
 
+  describe '#render_person_work' do
+    let(:work) do
+      create(:lex_person_work, title: 'ספר הזכרונות', publication_place: 'תל אביב', publisher: 'עם עובד',
+                               publication_date: '1975', title_links: nil)
+    end
+
+    # the rendered text minus the markup, which is what the spacing rule is about
+    def rendered_text(work)
+      Nokogiri::HTML.fragment(helper.render_person_work(work)).text
+    end
+
+    it 'puts no space inside the angled brackets, and one space around them' do
+      create(:lex_linked_person, person_work: work, name: 'דן פגיס', link_type: :editor, person_entry: nil)
+      work.update!(comment: 'כולל אחרית דבר')
+
+      expect(rendered_text(work.reload))
+        .to eq('ספר הזכרונות (תל אביב : עם עובד, 1975) <עריכה דן פגיס> <כולל אחרית דבר>')
+    end
+
+    it 'strips whitespace surrounding the content of the brackets' do
+      work.update!(comment: "  כולל אחרית דבר  \n\n  ובו תצלומים  ")
+
+      expect(rendered_text(work.reload))
+        .to eq('ספר הזכרונות (תל אביב : עם עובד, 1975) <כולל אחרית דבר> <ובו תצלומים>')
+    end
+
+    it 'keeps the brackets outside a link that spans the whole comment' do
+      target = create(:lex_entry, :person, title: 'יגאל שוורץ')
+      work.update!(comment: 'יגאל שוורץ', comment_links: [{ 'text' => 'יגאל שוורץ', 'entry_id' => target.id }])
+
+      result = helper.render_person_work(work.reload)
+      expect(result).to include("&lt;<a href=\"#{lexicon_entry_path(target)}\">יגאל שוורץ</a>&gt;")
+      expect(rendered_text(work)).to end_with(') <יגאל שוורץ>')
+    end
+  end
+
   describe '#render_person_work_comment' do
     let!(:target_entry) { create(:lex_entry, :person, title: 'יגאל שוורץ') }
     let(:comment) { 'כולל אחרית דבר מאת יגאל שוורץ' }
