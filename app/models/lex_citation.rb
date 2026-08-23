@@ -50,8 +50,11 @@ class LexCitation < ApplicationRecord
   # check). link_checked_at distinguishes "checked and dead" from "never checked".
   # Local/relative URLs (e.g. /files/lex/...) are never considered broken — they
   # are served by our own application and cannot be checked via HTTP HEAD.
+  # A link the checker could not get a verdict on (see #link_unverifiable?) is not
+  # broken: we simply do not know, and an editor has to look at it.
   def link_broken?
     return false if link.blank? || !link.start_with?('http://', 'https://')
+    return false if link_unverifiable?
 
     link_checked_at.present? && (link_http_status.nil? || link_http_status >= 400)
   end

@@ -309,6 +309,9 @@ he:
         still_broken: "הקישור עדיין שבור (HTTP %{status})"
         inaccessible: "קישור לא נגיש (לא ניתן לאחזר אותו)"
         internet_archive: "ארכיון האינטרנט"
+        unverifiable_badge: "יש לבדוק ידנית"
+        unverifiable_tooltip: "האתר חוסם בדיקה אוטומטית של קישורים (אתגר Cloudflare), ולכן לא ניתן לדעת אם הקישור תקין. פתחו אותו בדפדפן ובדקו ידנית."
+        unverifiable_toast: "לא ניתן לבדוק את הקישור אוטומטית — פתחו אותו בדפדפן ובדקו ידנית"
       messages:
         progress_saved: ההתקדמות נשמרה בהצלחה
         entry_verified: הערך אומת בהצלחה

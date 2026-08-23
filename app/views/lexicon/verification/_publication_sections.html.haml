@@ -122,6 +122,9 @@
           .link-content{dir: text_dir(link.description.to_s)}
             - if link.broken?
               %span.broken-link-badge= broken_link_badge(link.http_status)
+            - elsif link.unverifiable?
+              %span.unverifiable-link-badge{ title: t('lexicon.verification.broken_link.unverifiable_tooltip') }
+                = t('lexicon.verification.broken_link.unverifiable_badge')
             = link_to link.url, link.url, target: '_blank'
             - if link.description.present?
               %br

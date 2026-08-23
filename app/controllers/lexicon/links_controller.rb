@@ -42,7 +42,9 @@ module Lexicon
         # Re-check the link only when its URL actually changed, so a previously-broken
         # link (e.g. HTTP 403) is re-evaluated instead of keeping its stale status.
         if @link.saved_change_to_url?
-          check_link_synchronously(@link, @link.url, status_column: :http_status, checked_at_column: :checked_at)
+          check_link_synchronously(@link, @link.url, status_column: :http_status,
+                                                     checked_at_column: :checked_at,
+                                                     unverifiable_column: :unverifiable)
           report_broken_link_fix(@link, @item.entry, old_url) if link_was_broken
         end
         return

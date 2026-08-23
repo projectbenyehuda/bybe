@@ -68,7 +68,7 @@ describe '/lexicon/links' do
         # attributes_for changes the URL, which now triggers a synchronous re-check.
         # Stub the network call so this example stays offline.
         allow(Lexicon::CheckExternalLinks).to receive(:new)
-          .and_return(instance_double(Lexicon::CheckExternalLinks, check_url: 200))
+          .and_return(instance_double(Lexicon::CheckExternalLinks, check_url: link_check_result(200)))
       end
 
       it 'updates record' do
@@ -99,7 +99,7 @@ describe '/lexicon/links' do
       end
 
       context 'when the new link is accessible' do
-        before { allow(checker).to receive(:check_url).and_return(200) }
+        before { allow(checker).to receive(:check_url).and_return(link_check_result(200)) }
 
         it 'launches a fresh check and stores the new status' do
           call
@@ -116,7 +116,7 @@ describe '/lexicon/links' do
       end
 
       context 'when the new link is still broken' do
-        before { allow(checker).to receive(:check_url).and_return(404) }
+        before { allow(checker).to receive(:check_url).and_return(link_check_result(404)) }
 
         it 'stores the new broken status' do
           call
@@ -126,7 +126,7 @@ describe '/lexicon/links' do
       end
 
       context 'when the link is unreachable (host defunct)' do
-        before { allow(checker).to receive(:check_url).and_return(nil) }
+        before { allow(checker).to receive(:check_url).and_return(link_check_result(nil)) }
 
         it 'stores nil status but records the check time and flags it broken' do
           call
@@ -136,10 +136,42 @@ describe '/lexicon/links' do
           expect(link).to be_broken
         end
       end
+
+      # A bot challenge is not a verdict, so the editor gets a neutral warning rather than
+      # a red "still broken" toast. See by-9jz.
+      context 'when the new host answers with a bot challenge' do
+        before { allow(checker).to receive(:check_url).and_return(link_check_result(403, unverifiable: true)) }
+
+        it 'flags the link unverifiable instead of broken' do
+          call
+          link.reload
+          expect(link.unverifiable).to be true
+          expect(link.http_status).to eq(403)
+          expect(link).not_to be_broken
+        end
+
+        it 'includes a neutral warning toast in the response' do
+          call
+          expect(response.body).to include('warning')
+          expect(response.body).to include(I18n.t('lexicon.verification.broken_link.unverifiable_toast'))
+        end
+      end
+
+      context 'when a link previously flagged unverifiable is replaced with a working one' do
+        before do
+          link.update_columns(unverifiable: true)
+          allow(checker).to receive(:check_url).and_return(link_check_result(200))
+        end
+
+        it 'clears the unverifiable flag' do
+          call
+          expect(link.reload.unverifiable).to be false
+        end
+      end
     end
 
     context 'when a broken URL is replaced' do
-      let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: 200) }
+      let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: link_check_result(200)) }
       let(:entry) { create(:lex_entry, :person, status: :verifying) }
       let(:old_url) { 'https://dead.example.com/page' }
       let(:link) { create(:lex_link, item: person, description: 'אתר הזיכרון', url: old_url) }
@@ -175,7 +207,7 @@ describe '/lexicon/links' do
       end
 
       context 'when the replacement URL is also broken' do
-        let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: 404) }
+        let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: link_check_result(404)) }
 
         it 'still reports the change' do
           call

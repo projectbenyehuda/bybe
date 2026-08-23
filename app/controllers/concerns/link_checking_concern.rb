@@ -6,8 +6,10 @@
 # Also reports corrections of previously-broken links to Monday (see #report_broken_link_fix).
 #
 # Records differ in their column names, so the caller passes them in:
-#   - LexLink:     status_column: :http_status,      checked_at_column: :checked_at
-#   - LexCitation: status_column: :link_http_status, checked_at_column: :link_checked_at
+#   - LexLink:     status_column: :http_status,      checked_at_column: :checked_at,
+#                  unverifiable_column: :unverifiable
+#   - LexCitation: status_column: :link_http_status, checked_at_column: :link_checked_at,
+#                  unverifiable_column: :link_unverifiable
 module LinkCheckingConcern
   extend ActiveSupport::Concern
 
@@ -16,16 +18,17 @@ module LinkCheckingConcern
   # Re-checks +url+ synchronously and stores the resulting HTTP status on +record+.
   # A blank URL clears the stored status without making a network request.
   # Sets @link_check_performed / @link_toast_type / @link_toast_message for the JS view.
-  def check_link_synchronously(record, url, status_column:, checked_at_column:)
+  def check_link_synchronously(record, url, status_column:, checked_at_column:, unverifiable_column:)
     if url.blank?
-      record.update_columns(status_column => nil, checked_at_column => nil)
+      record.update_columns(status_column => nil, checked_at_column => nil, unverifiable_column => false)
       return
     end
 
-    status = Lexicon::CheckExternalLinks.new.check_url(url)
-    record.update_columns(status_column => status, checked_at_column => Time.current)
+    result = Lexicon::CheckExternalLinks.new.check_url(url)
+    record.update_columns(status_column => result.status, checked_at_column => Time.current,
+                          unverifiable_column => result.unverifiable?)
     @link_check_performed = true
-    @link_toast_type, @link_toast_message = link_toast_for(status)
+    @link_toast_type, @link_toast_message = link_toast_for(result)
     # flash (not flash.now) is intentional: the JS response triggers a full page reload in the
     # verification view, and the toast must survive into the reloaded request.
     flash[:link_check_toast_type] = @link_toast_type
@@ -54,8 +57,11 @@ module LinkCheckingConcern
     @monday_toast_message = t('lexicon.verification.monday.report_error')
   end
 
-  def link_toast_for(status)
-    if status.nil?
+  def link_toast_for(result)
+    status = result.status
+    if result.unverifiable?
+      ['warning', t('lexicon.verification.broken_link.unverifiable_toast')]
+    elsif status.nil?
       ['error', t('lexicon.verification.broken_link.inaccessible')]
     elsif status < 400
       ['success', t('lexicon.verification.broken_link.now_accessible')]

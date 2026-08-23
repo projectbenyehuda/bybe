@@ -39,7 +39,7 @@ RSpec.describe 'External link check feedback on verification page', :js, type: :
   end
 
   context 'when the new link is accessible (HTTP 200)' do
-    let(:check_url_result) { 200 }
+    let(:check_url_result) { link_check_result(200) }
 
     it 'reloads the page and shows a green success toast' do
       visit_verification_page
@@ -64,7 +64,7 @@ RSpec.describe 'External link check feedback on verification page', :js, type: :
   end
 
   context 'when the new link is still broken (HTTP 404)' do
-    let(:check_url_result) { 404 }
+    let(:check_url_result) { link_check_result(404) }
 
     it 'reloads the page and shows a red error toast' do
       visit_verification_page
@@ -85,7 +85,7 @@ RSpec.describe 'External link check feedback on verification page', :js, type: :
   end
 
   context 'when the link is not changed' do
-    let(:check_url_result) { nil }
+    let(:check_url_result) { link_check_result(nil) }
 
     it 'reloads the page without a toast' do
       visit_verification_page

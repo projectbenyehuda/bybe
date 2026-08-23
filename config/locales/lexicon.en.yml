@@ -308,6 +308,9 @@ en:
         still_broken: "Link is still broken (HTTP %{status})"
         inaccessible: "Inaccessible link (could not be retrieved)"
         internet_archive: "Internet Archive"
+        unverifiable_badge: "Verify manually"
+        unverifiable_tooltip: "This site blocks automated link checking (Cloudflare challenge), so we cannot tell whether the link works. Open it in a browser and check it yourself."
+        unverifiable_toast: "The link could not be checked automatically — open it in a browser and check it yourself"
       messages:
         progress_saved: Progress saved successfully
         entry_verified: Entry verified successfully

@@ -15,19 +15,23 @@ module Lexicon
       (hebrew_count.to_f / total) < LTR_HEBREW_RATIO_THRESHOLD ? 'ltr' : nil
     end
 
-    # Returns the CSS classes for a citation card, including broken-link if needed.
+    # Returns the CSS classes for a citation card, including broken-link (or the neutral
+    # unverifiable-link, when the check reached no verdict) if needed.
     def citation_card_css(citation, checklist)
       verified = checklist['citations']&.dig('items', citation.id.to_s, 'verified')
       css = verified ? 'verified' : 'not-verified'
       css += ' broken-link' if citation.link_broken?
+      css += ' unverifiable-link' if citation.link_unverifiable?
       css
     end
 
-    # Returns the CSS classes for a link card, including broken-link if needed.
+    # Returns the CSS classes for a link card, including broken-link (or the neutral
+    # unverifiable-link, when the check reached no verdict) if needed.
     def link_card_css(link, links_checklist)
       verified = links_checklist&.dig('items', link.id.to_s, 'verified')
       css = verified ? 'verified' : 'not-verified'
       css += ' broken-link' if link.broken?
+      css += ' unverifiable-link' if link.unverifiable?
       css
     end
 

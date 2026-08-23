@@ -53,7 +53,8 @@ module Lexicon
       if @citation.save
         if @citation.saved_change_to_link?
           check_link_synchronously(@citation, @citation.link,
-                                   status_column: :link_http_status, checked_at_column: :link_checked_at)
+                                   status_column: :link_http_status, checked_at_column: :link_checked_at,
+                                   unverifiable_column: :link_unverifiable)
           report_broken_link_fix(@citation, @person.entry, old_link) if link_was_broken
         end
         return

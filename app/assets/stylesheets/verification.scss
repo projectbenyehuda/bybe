@@ -394,7 +394,15 @@ body:has(.verification-container) {
     background: #fff5f5;
   }
 
-  .broken-link-badge {
+  // Links we could not get a verdict on (bot challenge) are not failures, so they get a
+  // neutral slate treatment rather than the red of a genuinely broken link.
+  &.unverifiable-link {
+    border-color: #6c757d;
+    background: #f8f9fa;
+  }
+
+  .broken-link-badge,
+  .unverifiable-link-badge {
     display: inline-block;
     font-size: 0.8rem;
     font-weight: 600;
@@ -404,6 +412,13 @@ body:has(.verification-container) {
     border-radius: 4px;
     padding: 0.1rem 0.4rem;
     margin-inline-end: 0.4rem;
+  }
+
+  .unverifiable-link-badge {
+    color: #495057;
+    background: #e9ecef;
+    border-color: #6c757d;
+    cursor: help;
   }
 
   &:hover {
