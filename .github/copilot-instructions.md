@@ -54,7 +54,7 @@ bundle exec pronto run -c origin/<TARGET_BRANCH>
 
 ### Hebrew Text Handling
 - Always consider right-to-left (RTL) text direction
-- When using RMagick for image generation (e.g., book covers), Hebrew text needs `.reverse.center()` to display correctly
+- When rendering Hebrew into a raster image (e.g., book covers), it needs `.reverse.center()` to display correctly
 - Do NOT use `.reverse` for HTML/web rendering - it will break Hebrew text display
 - Be cautious with string operations that might break Hebrew characters or encoding
 - The `html_safe` method is frequently used for rendering Hebrew content
@@ -81,7 +81,7 @@ bundle exec pronto run -c origin/<TARGET_BRANCH>
 ### File Processing
 - Pandoc is used for document conversion to Markdown and ebook formats
 - Handle DOCX files carefully - Pandoc 3.x is required to avoid SmartTag issues
-- ebook generation uses EPUB format with RMagick for cover images
+- ebook generation uses EPUB format, with a textual front page instead of a graphical cover
 
 ## TOC (Table of Contents) Format
 
@@ -111,7 +111,7 @@ Section titles like "שירה" (poetry), "פרוזה" (prose), "מאמרים ו�
 - YAZ and libyaz-dev for the 'zoom' gem (bibliographic workshop)
 - Watir and Selenium for scraping catalog systems
 - libpcap-dev for net-dns2
-- libmagickwand-dev for RMagick
+- libvips-dev for ActiveStorage image variants
 - libmysqlclient-dev for mysql2
 
 ## When Making Changes

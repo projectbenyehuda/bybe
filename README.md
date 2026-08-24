@@ -22,7 +22,7 @@ External (i.e. hosting system) dependencies
 * YAZ and libyaz-dev for the 'zoom' gem for the bibliographic workshop
 * watir and selenium for scraping other catalogue systems
 * libpcap-dev for net-dns2
-* libmagickwand-dev for RMagick
+* libvips-dev for ActiveStorage image variants
 * libmysqlclient-dev for mysql2
 * solid_queue for scheduled jobs (https://github.com/rails/solid_queue)
 * memcached for caching
