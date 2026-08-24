@@ -174,6 +174,32 @@ RSpec.describe LexiconHelper, type: :helper do
         expect(result).to include('כותרת הפרסום')
       end
     end
+
+    context 'when a collection is present' do
+      let(:collection) { create(:collection, title: 'כרך מקוון') }
+
+      before { work.collection = collection }
+
+      it 'links the work title to the collection' do
+        result = helper.render_person_work_title(work)
+        expect(result).to include(collection_path(collection))
+        expect(result).to include('ספר זכרון לאפרת דנון')
+      end
+
+      it 'takes precedence over title_links' do
+        work.title_links = [{ 'text' => 'אפרת דנון', 'entry_id' => 999 }]
+        result = helper.render_person_work_title(work)
+        expect(result).to include(collection_path(collection))
+        expect(Nokogiri::HTML.fragment(result).css('a').size).to eq(1)
+      end
+
+      it 'takes precedence over lex_publication' do
+        work.lex_publication = create(:lex_entry, :publication, title: 'כותרת הפרסום').lex_item
+        result = helper.render_person_work_title(work)
+        expect(result).to include(collection_path(collection))
+        expect(result).not_to include('כותרת הפרסום')
+      end
+    end
   end
 
   describe '#render_person_work' do
