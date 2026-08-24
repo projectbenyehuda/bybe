@@ -480,7 +480,6 @@ GEM
       rack (>= 1.2, < 4)
       snaky_hash (~> 2.0, >= 2.0.5)
       version_gem (~> 1.1, >= 1.1.11)
-    observer (0.1.2)
     octokit (10.0.0)
       faraday (>= 1, < 3)
       sawyer (~> 0.9)
@@ -512,7 +511,6 @@ GEM
       ast (~> 2.4.1)
       racc
     pcaprub (0.13.3)
-    pkg-config (1.6.5)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -639,9 +637,6 @@ GEM
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
     rexml (3.4.4)
-    rmagick (6.1.4)
-      observer (~> 0.1)
-      pkg-config (~> 1.4)
     rmultimarkdown (6.7.0.2)
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
@@ -814,8 +809,6 @@ GEM
       ansi (>= 1.2.2)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    uglifier (4.2.1)
-      execjs (>= 0.3.0, < 3)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
@@ -936,7 +929,6 @@ DEPENDENCIES
   rails-jquery-autocomplete (>= 1.0.5)
   rails-ujs
   responders
-  rmagick
   rmultimarkdown
   rspec-rails
   rspec-sqlimit
@@ -963,7 +955,6 @@ DEPENDENCIES
   sqlite3
   stackprof
   turn (= 0.8.2)
-  uglifier
   vcr
   web-console
   webmock

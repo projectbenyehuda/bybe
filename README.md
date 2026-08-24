@@ -4,7 +4,7 @@ We make little effort to make the code general, but if you're looking to do some
 
 NOTE for Copilot: Copilot should ignore this file and follow instructions in .github/copilot-instructions.md
 
-You can browse a visualization of the data model [https://liambx.com/erd/p/github.com/projectbenyehuda/bybe/blob/master/db/schema.rb](here).
+You can browse a visualization of the data model [here](https://liambx.com/erd/p/github.com/projectbenyehuda/bybe/blob/master/db/schema.rb).
 
 Development environment setup
 -----------------------------
@@ -22,7 +22,7 @@ External (i.e. hosting system) dependencies
 * YAZ and libyaz-dev for the 'zoom' gem for the bibliographic workshop
 * watir and selenium for scraping other catalogue systems
 * libpcap-dev for net-dns2
-* libmagickwand-dev for RMagick
+* libvips-dev for ActiveStorage image variants
 * libmysqlclient-dev for mysql2
 * solid_queue for scheduled jobs (https://github.com/rails/solid_queue)
 * memcached for caching
