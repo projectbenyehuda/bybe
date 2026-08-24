@@ -6,8 +6,9 @@
   %p
     %b= link_to t(:render), url_for(action: :read, id: @m.id)
   %p
-    %b
-      %a.pointer{ 'data-toggle' => 'modal', 'data-target' => '#softDeleteDlg' }= t(:soft_delete_work)
+    -# an href-less <a> is caught by Bootstrap's `a:not([href]):not([tabindex]) { color: inherit }`,
+    -# which outranks the site's `a { color: #660248 }` and renders it black, unlike its siblings above
+    %b= link_to t(:soft_delete_work), '#', data: { toggle: 'modal', target: '#softDeleteDlg' }
   - if @m.deprecated?
     %p.alert.alert-warning#soft-delete-status
       = t(:soft_delete_status_deprecated)
