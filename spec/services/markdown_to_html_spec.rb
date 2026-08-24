@@ -6,46 +6,61 @@ describe MarkdownToHtml do
   describe '#call' do
     context 'when markdown is blank' do
       it 'returns empty string' do
-        result = MarkdownToHtml.call('')
+        result = described_class.call('')
         expect(result).to eq('')
       end
 
       it 'returns empty string for nil' do
-        result = MarkdownToHtml.call(nil)
+        result = described_class.call(nil)
         expect(result).to eq('')
       end
     end
 
     context 'when markdown contains footnotes' do
-      it 'converts first paragraph in footnotes to span' do
+      it 'keeps the footnote body in a paragraph' do
         markdown = "Text with footnote[^1].\n\n[^1]: This is the footnote content."
-        result = MarkdownToHtml.call(markdown)
+        result = described_class.call(markdown)
 
-        expect(result).to include('<span>This is the footnote content.')
-        expect(result).not_to include('<li id="fn:1"><p>This is the footnote content.')
+        expect(result).to include('<p>This is the footnote content.')
+        expect(result).not_to include('<span>This is the footnote content.')
       end
 
       it 'handles multiple footnotes correctly' do
         markdown = "Text with footnotes[^1] and more[^2].\n\n[^1]: First footnote.\n\n[^2]: Second footnote."
-        result = MarkdownToHtml.call(markdown)
+        result = described_class.call(markdown)
 
-        expect(result).to include('<span>First footnote.')
-        expect(result).to include('<span>Second footnote.')
-        expect(result).not_to include('<li id="fn:1"><p>First footnote.')
-        expect(result).not_to include('<li id="fn:2"><p>Second footnote.')
+        expect(result).to include('<p>First footnote.')
+        expect(result).to include('<p>Second footnote.')
+        expect(result).not_to include('<span>First footnote.')
+        expect(result).not_to include('<span>Second footnote.')
       end
 
-      it 'only changes first paragraph in multi-paragraph footnotes' do
+      it 'wraps every paragraph of a multi-paragraph footnote in <p>' do
         markdown = "Text with footnote[^1].\n\n[^1]: First paragraph.\n\n    Second paragraph."
-        result = MarkdownToHtml.call(markdown)
+        result = described_class.call(markdown)
 
-        expect(result).to include('<span>First paragraph.')
+        expect(result).to include('<p>First paragraph.')
         expect(result).to include('<p>Second paragraph.')
+        expect(result).not_to include('<span>')
+      end
+
+      # Regression: the old first-<p>-to-<span> rewrite used a regex without /m, so it only fired
+      # when the whole footnote body sat on a single source line. Footnotes therefore rendered with
+      # inconsistent vertical spacing depending purely on how the markdown happened to be wrapped.
+      it 'renders hard-wrapped and single-line footnote bodies with the same markup' do
+        wrapped = described_class.call("Text[^1].\n\n[^1]: A body that is\nwrapped across lines.")
+        single = described_class.call("Text[^1].\n\n[^1]: A body on one line.")
+
+        expect(wrapped).to include('<li id="fn:1">')
+        expect(wrapped).to match(/<li id="fn:1">\s*<p>A body that is/)
+        expect(single).to match(/<li id="fn:1">\s*<p>A body on one line\./)
+        expect(wrapped).not_to include('<span>')
+        expect(single).not_to include('<span>')
       end
 
       it 'preserves return links in footnotes' do
         markdown = "Text with footnote[^1].\n\n[^1]: Footnote content."
-        result = MarkdownToHtml.call(markdown)
+        result = described_class.call(markdown)
 
         expect(result).to include('class="reversefootnote"')
         expect(result).to include('href="#fnref:1"')
@@ -163,7 +178,7 @@ describe MarkdownToHtml do
     context 'when markdown does not contain footnotes' do
       it 'does not change regular paragraphs' do
         markdown = "# Title\n\nThis is a regular paragraph."
-        result = MarkdownToHtml.call(markdown)
+        result = described_class.call(markdown)
 
         expect(result).to include('<p>This is a regular paragraph.</p>')
       end
@@ -179,7 +194,7 @@ describe MarkdownToHtml do
         # Mock MultiMarkdown to return HTML with figcaption
         allow_any_instance_of(MultiMarkdown).to receive(:to_html).and_return(html_with_figcaption)
 
-        result = MarkdownToHtml.call(markdown)
+        result = described_class.call(markdown)
         expect(result).not_to include('figcaption')
         expect(result).to include('<p>Text content</p>')
       end

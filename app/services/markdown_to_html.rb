@@ -10,10 +10,12 @@ class MarkdownToHtml < ApplicationService
                         .gsub(%r{<figcaption>.*?</figcaption>}, '')
                         .gsub('<table', '<div style="overflow-x:auto;"><table')
                         .gsub('</table>', '</table></div>')
-    html.gsub!(%r{(<li id="fn:\d+"[^>]*>\s*)<p>(.*?)</p>}) do
-      # Change first <p> element in footnotes to <span> to prevent line break
-      "#{::Regexp.last_match(1)}<span>#{::Regexp.last_match(2)}</span>"
-    end
+    # Footnote bodies are left as MultiMarkdown emits them: every paragraph, including the first,
+    # stays a <p>. We used to rewrite the first one to a <span> to keep it on the same line as the
+    # list marker, but that was only needed while `.footnotes ol li` used `list-style-position:
+    # inside`; with the default `outside` the marker already aligns with the paragraph's first line.
+    # Worse, the rewrite only fired when the whole body sat on one source line, so identical
+    # footnotes rendered with different vertical spacing depending on how the markdown was wrapped.
     # Add target="_blank" to external links (not internal anchor links starting with #)
     html.gsub!(/<a\s+([^>]*?)>/) do
       attributes = ::Regexp.last_match(1)
