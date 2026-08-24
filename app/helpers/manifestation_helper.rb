@@ -1,7 +1,10 @@
 module ManifestationHelper
+  # Builds <option> tags for the ddslick image picker (see insert_image.js). Works for any
+  # DownloadLink record — Manifestation and StaticPage keep their images in `images`,
+  # LexEntry in `attachments` — since downloadable_attachments resolves the right association.
   def options_from_images(record)
     # skip any non-image attachments that may have been accidentally uploaded
-    record.images.select(&:variable?).map do |img|
+    record.downloadable_attachments.select(&:variable?).map do |img|
       blob = img.blob
       filename = blob.filename.to_s
       content_tag(

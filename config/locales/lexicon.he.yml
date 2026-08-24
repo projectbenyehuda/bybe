@@ -160,6 +160,10 @@ he:
     header:
       title: לקסיקון הספרות העברית החדשה
       part_of_pby: חלק מפרויקט בן־יהודה
+    shared:
+      insert_image:
+        button: הוסף תמונה
+        hint: "התמונה תיווסף במקום הסמן, ותוצג בצד שמאל כשהטקסט זורם סביבה."
     people:
       create:
         success: נוצרה ישות חדשה

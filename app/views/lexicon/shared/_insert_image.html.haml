@@ -1,0 +1,28 @@
+-#
+  Image picker for the biography editors (the verification workbench's bio modal and the
+  entry-edit properties form). Emits the same shape of tag the migrated entries already carry,
+  so an image inserted by hand floats and wraps like one that came out of the old PHP lexicon.
+  Locals: entry (LexEntry), textarea (CSS selector of the textarea to insert into).
+  A brand-new entry has neither an id nor attachments, so nothing is rendered for it.
+- image_options = entry ? options_from_images(entry) : nil
+- if image_options.present?
+  - picker_id = "lex_insert_image_#{entry.id}"
+  .form-group.lex-insert-image{ id: "#{picker_id}_wrapper" }
+    .d-flex.align-items-center
+      -#
+        Deliberately nameless: this is a UI control, not a value the surrounding form submits.
+        (ddslick replaces the element with a div of the same id, so it never reaches the server.)
+      %select{ id: picker_id }= image_options
+      %button.btn.btn-sm.btn-outline-primary.lex-insert-image-btn.ml-2{ type: 'button' }
+        = t('lexicon.shared.insert_image.button')
+    %small.form-text.text-muted= t('lexicon.shared.insert_image.hint')
+  :javascript
+    (function() {
+      var pickerSelector = '##{picker_id}';
+      $(pickerSelector).ddslick({ width: 320 });
+      $('##{picker_id}_wrapper').on('click', '.lex-insert-image-btn', function(e) {
+        e.preventDefault();
+        insertImageFromDDSlick('#{textarea}', pickerSelector,
+                               { 'data-border': '0', 'data-align': 'left', 'data-hspace': '10' });
+      });
+    })();
