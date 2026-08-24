@@ -809,8 +809,6 @@ GEM
       ansi (>= 1.2.2)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    uglifier (4.2.1)
-      execjs (>= 0.3.0, < 3)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
@@ -957,7 +955,6 @@ DEPENDENCIES
   sqlite3
   stackprof
   turn (= 0.8.2)
-  uglifier
   vcr
   web-console
   webmock
