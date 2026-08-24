@@ -153,6 +153,7 @@ group :test, :development do
   gem 'dotenv-rails'
   gem 'brakeman'
   gem 'factory_bot_rails', '~> 6.2.0'
+  gem 'observer' # for factory_bot, soon leaving stdlib
   gem 'rspec-rails'
   gem 'spring', '4.2.1' # later version yields https://github.com/rails/spring/issues/734
   gem 'spring-commands-rspec'
