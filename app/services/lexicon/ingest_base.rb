@@ -5,6 +5,11 @@ module Lexicon
   class IngestBase < ApplicationService
     LAST_UPDATE_LABEL = 'עודכן לאחרונה'
     LAST_UPDATE_RE = /#{LAST_UPDATE_LABEL}:?\s*([^\]\r\n]*)/
+    LATIN_SCRIPT_RE = /\p{Latin}/
+    # Letters only: the Hebrew block also holds geresh and gershayim, which the legacy files use as
+    # apostrophes inside transliterated English names ("Ya׳akov Rabinowitz").
+    HEBREW_LETTER_RE = /[\p{Hebrew}&&\p{L}]/
+    BOM = "\uFEFF"
 
     def call(lex_file)
       @lex_file = lex_file
@@ -63,12 +68,32 @@ module Lexicon
       date.match?(/\d/) ? date : nil
     end
 
-    # Extract English title from the header table
+    # Extract English title from the header table.
+    #
+    # The name lives in a cell of the very first table, next to the Hebrew one, but the legacy
+    # files are wildly inconsistent about how they mark it: font size 4 or 5, red or blue, the
+    # dir="ltr" attribute on the <p>, on the <td> or missing altogether, and the name itself often
+    # broken across nested <span lang="en-us"> elements or an early-closing <font>. So we take the
+    # whole cell's text instead of matching one specific font tag.
+    #
+    # Choosing the cell: prefer the ones explicitly marked ltr, and fall back to every cell when
+    # none is. Among those we take the first written in Latin script and free of Hebrew letters,
+    # which skips the Hebrew title cell and, in the handful of entries that also show the name in
+    # its original script, the Cyrillic/Hungarian cell that precedes the English one.
     def extract_english_title(html_doc)
-      # Look for table cell with dir="ltr" containing the English title
-      # The pattern is: <td><p align="center" dir="ltr"><font size="5" color="#FF0000">English Name</font></td>
-      english_cell = html_doc.at_css('table td p[dir="ltr"] font[size="5"][color="#FF0000"]')
-      english_cell&.text&.squish
+      header_table = html_doc.at_css('table')
+      return nil if header_table.nil?
+
+      cells = header_table.css('td')
+      ltr_cells = cells.select { |cell| cell['dir'] == 'ltr' || cell.at_css('[dir="ltr"]') }
+      english_cell = (ltr_cells.presence || cells).find do |cell|
+        text = cell.text
+        text.match?(LATIN_SCRIPT_RE) && !text.match?(HEBREW_LETTER_RE)
+      end
+      return nil if english_cell.nil?
+
+      # A few files start the cell with a byte order mark, which squish does not consider space.
+      english_cell.text.delete(BOM).squish.presence
     end
 
     # Extract external identifiers from the footer table
