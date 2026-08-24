@@ -1091,6 +1091,22 @@ en:
   expressions_linked_successfully: Expressions linked successfully
   expressions_link_failed: "Error linking expressions: %{error}"
   manifestation_not_found: Manifestation not found
+  soft_delete_work: Soft-delete this work
+  soft_delete_explanation: Soft-deleting marks this work as deleted and sends anyone who asks for
+    it from now on to another work instead. Its appearances in collections and anthologies, as well
+    as its tags, recommendations and external links, are moved over to that other work. Nothing is
+    erased, and an administrator can undo this in the database.
+  soft_delete_by_title: Redirect to this work (search by title)
+  soft_delete_by_id: 'Or: redirect to this Manifestation ID'
+  soft_delete_id_wins: If you fill in both, the Manifestation ID is the one that counts.
+  soft_delete_confirm: Soft-delete this work and redirect it to the work you selected?
+  soft_delete_succeeded: 'Work soft-deleted; requests for it will now be redirected to Manifestation
+    #%{id}'
+  soft_delete_failed: "Soft-deletion failed: %{error}"
+  soft_delete_same_manifestation: A work cannot be redirected to itself
+  soft_delete_target_deprecated: The chosen work has itself been soft-deleted. Please choose a work
+    that is still available.
+  soft_delete_status_deprecated: 'This work has been soft-deleted. It redirects to: '
   error_loading_preview: Error loading preview
   involved_authorities_label: Involved Authorities
   additional_warning_explanation: 'Here is a note from the editor who identified the

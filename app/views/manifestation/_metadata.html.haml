@@ -16,6 +16,11 @@
       %span.static-btn#originating-task-btn
         %a.pointer.originating-task-btn{ data: { 'manifestation-id': @m.id } }= t(:find_originating_task)
       %span#originating-task-result
+      -# the modal this opens lives in read.html.haml, which print.html.haml does not render
+      - unless @print
+        != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        %span.static-btn#soft-delete-btn
+          %a.pointer{ 'data-toggle' => 'modal', 'data-target' => '#softDeleteDlg' }= t(:soft_delete_work)
     != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
     %span.impressions-count #{number_with_delimiter(@m.impressions_count, delimiter: ',')} #{t(:impressions_count)}
     %br

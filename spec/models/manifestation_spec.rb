@@ -1184,4 +1184,46 @@ describe Manifestation do
       end
     end
   end
+
+  describe '#soft_redirect_destination' do
+    subject(:destination) { deprecated.soft_redirect_destination }
+
+    let(:live) { create(:manifestation) }
+    let(:deprecated) { create(:manifestation, status: :deprecated, soft_redirect: live.id) }
+
+    it 'returns the live manifestation it points at' do
+      expect(destination).to eq(live)
+    end
+
+    it 'is nil when nothing is pointed at' do
+      deprecated.update!(soft_redirect: nil)
+      expect(destination).to be_nil
+    end
+
+    it 'is nil for a manifestation that is not deprecated at all' do
+      expect(live.soft_redirect_destination).to be_nil
+    end
+
+    it 'walks a chain to the first live manifestation' do
+      final = create(:manifestation)
+      live.update!(status: :deprecated, soft_redirect: final.id)
+      expect(destination).to eq(final)
+    end
+
+    it 'is nil when the chain closes into a cycle' do
+      live.update!(status: :deprecated, soft_redirect: deprecated.id)
+      expect(destination).to be_nil
+    end
+
+    it 'gives up rather than walking a chain longer than SOFT_REDIRECT_MAX_HOPS' do
+      links = create_list(:manifestation, described_class::SOFT_REDIRECT_MAX_HOPS + 1, status: :deprecated)
+      previous = deprecated
+      links.each do |link|
+        previous.update!(soft_redirect: link.id)
+        previous = link
+      end
+      previous.update!(soft_redirect: create(:manifestation).id)
+      expect(destination).to be_nil
+    end
+  end
 end
