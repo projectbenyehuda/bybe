@@ -3,6 +3,41 @@
 require 'rails_helper'
 
 describe LexLink do
+  # A Wayback Machine replacement for a dead anchored URL frequently repeats the anchor, which
+  # makes the URL unparseable and so instantly "broken" again. See by-p6e.
+  describe 'trimming a duplicated anchor from the url' do
+    subject(:url) { link.tap(&:validate).url }
+
+    let(:link) { build(:lex_link, url: given_url) }
+
+    context 'when the url repeats the same anchor' do
+      let(:given_url) { 'https://web.archive.org/web/20200101/http://example.com/page#section#section' }
+
+      it 'keeps a single anchor, leaving a parseable URL' do
+        expect(url).to eq 'https://web.archive.org/web/20200101/http://example.com/page#section'
+        expect(URI.parse(url)).to be_a URI::HTTPS
+      end
+    end
+
+    context 'when the url has a single anchor' do
+      let(:given_url) { 'http://example.com/page#section' }
+
+      it { is_expected.to eq given_url }
+    end
+
+    context 'when the url has no anchor' do
+      let(:given_url) { 'http://example.com/page' }
+
+      it { is_expected.to eq given_url }
+    end
+
+    context 'when the repeated anchors differ' do
+      let(:given_url) { 'http://example.com/page#one#two' }
+
+      it { is_expected.to eq given_url }
+    end
+  end
+
   describe '#broken?' do
     subject { build(:lex_link, checked_at: checked_at, http_status: status).broken? }
 

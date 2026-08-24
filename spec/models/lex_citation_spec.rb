@@ -36,6 +36,31 @@ describe LexCitation do
     end
   end
 
+  # A Wayback Machine replacement for a dead anchored URL frequently repeats the anchor, which
+  # makes the URL unparseable and so instantly "broken" again. See by-p6e.
+  describe 'trimming a duplicated anchor from URL fields' do
+    let(:citation) { build(:lex_citation, link: link, backup_url: backup_url) }
+    let(:link) { 'https://web.archive.org/web/20200101/http://example.com/page#section#section' }
+    let(:backup_url) { '/files/lex/7635/doc.pdf#p3#p3' }
+
+    it 'keeps a single anchor in both link and backup_url' do
+      citation.validate
+      expect(citation.link).to eq 'https://web.archive.org/web/20200101/http://example.com/page#section'
+      expect(citation.backup_url).to eq '/files/lex/7635/doc.pdf#p3'
+    end
+
+    context 'when the anchors are not duplicates' do
+      let(:link) { 'http://example.com/page#section' }
+      let(:backup_url) { nil }
+
+      it 'leaves the values alone' do
+        citation.validate
+        expect(citation.link).to eq link
+        expect(citation.backup_url).to be_nil
+      end
+    end
+  end
+
   describe '#link_broken?' do
     subject { build(:lex_citation, link_checked_at: checked_at, link_http_status: status).link_broken? }
 

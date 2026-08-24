@@ -5,6 +5,8 @@
 # citations are not first-order entities in the lexicon. They are single-line references to texts about a lexicon
 # author or a particular lexicon author's publication.
 class LexCitation < ApplicationRecord
+  include TrimsDuplicateUrlAnchor
+
   # mandatory relation to the person on whose page this citation appears
   # (it can be about this person, or about one of his/her works)
   belongs_to :person, class_name: 'LexPerson', inverse_of: :citations, foreign_key: :lex_person_id
@@ -32,6 +34,8 @@ class LexCitation < ApplicationRecord
   before_validation do
     subject&.strip!
     self.subject = nil if subject.blank?
+    self.link = trim_duplicate_url_anchor(link)
+    self.backup_url = trim_duplicate_url_anchor(backup_url)
   end
 
   def subject_title
