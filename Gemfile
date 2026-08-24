@@ -75,7 +75,6 @@ gem 'pandoc-ruby' # for converting to DOCX
 gem 'paper_trail' # for versioning entities
 gem 'project-honeypot2', '>= 0.1.3' # for HTTP:BL service by Project Honeypot
 gem 'responders' # for respond_to at controller level (in api_controller)
-gem 'rmagick' # for generating cover images for EPUBs
 gem 'uglifier'
 # gem 'forty_facets' # for faceted search
 gem 'better_sjr' # ease debugging of server-side JS responses

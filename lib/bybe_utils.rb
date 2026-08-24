@@ -4,7 +4,6 @@ require 'json' # for VIAF AutoSuggest
 require 'hebrew'
 require 'htmlentities'
 require 'gepub'
-require 'rmagick'
 
 include ActionView::Helpers::SanitizeHelper
 
@@ -249,33 +248,11 @@ module BybeUtils
 
     book.page_progression_direction = 'rtl' # Hebrew! :)
 
-    # TODO: fix this -- Hebrew text is not being displayed at all, for some reason
-    # make cover image
-    # canvas = Magick::Image.new(1200, 800) { |img| img.background_color = 'white' }
-    # gc = Magick::Draw.new
-    # gc.gravity = Magick::CenterGravity
-    # gc.pointsize(50)
-    ## gc.font('David CLM')
-    # gc.font('Noto Sans Hebrew')
-    # gc.font_weight(Magick::NormalWeight)
-    # gc.font_style(Magick::NormalStyle)
-    # gc.fill('black')
-    # gc.text(0, 0, title.reverse.center(50))
-    # gc.draw(canvas)
-    # gc.pointsize(30)
-    # gc.text(0, 150, 'פרי עמלם של מתנדבי פרויקט בן־יהודה'.reverse.center(50))
-    # gc.pointsize(20)
-    # gc.text(0, 250, Date.today.to_s + 'מעודכן לתאריך: '.reverse.center(50))
-    # gc.draw(canvas)
-    # cover_file = Tempfile.new(['tmp_cover_' + tmpid, '.png'], 'tmp/')
-    # canvas.write(cover_file.path)
-    # book.add_item('cover.png', content: cover_file.path).cover_image # re-enable when fixed
-
     # add texts
     boilerplate_start = boilerplate(title)
     boilerplate_end = '</body></html>'
 
-    # add front page instead of graphical cover, for now
+    # add a textual front page instead of a graphical cover
     authorities_html = textify_authorities_and_roles(involved_authorities, true) # full URLs for epub
     front_page = boilerplate_start + "<h1>#{title}</h1>\n<p/><h2>#{authorities_html}</h2><p/><p/><p/><p/>מעודכן לתאריך: #{Time.zone.today}<p/><p/>#{I18n.t(:from_pby_and_available_at)} #{purl} <p/><h3><a href='https://benyehuda.org/page/volunteer'>(רוצים לעזור?)</a></h3>" + boilerplate_end
 
@@ -292,10 +269,8 @@ module BybeUtils
         book.add_item((i + 1).to_s + '_text.xhtml').add_content(StringIO.new("#{boilerplate(title)}<h1>#{stitle}</h1>\n#{epub_sanitize_html(processed_sections[i])}#{boilerplate_end}")).toc_text(stitle)
       end
     end
-    # fname = cover_file.path + '.epub'
     fname = "tmp/tmp_epub_#{tmpid}.epub"
     book.generate_epub(fname)
-    # cover_file.close
     return fname
   end
 
