@@ -835,9 +835,13 @@ year = year.tr(GERESH_CHARS, '')
     return ::Regexp.last_match.pre_match + ::Regexp.last_match(1) + ::Regexp.last_match.post_match
   end
 
+  # Tags are stripped BEFORE entities are decoded, and the order matters. strip_tags is backed by
+  # Rails::HTML5::FullSanitizer, whose HTML5 serializer re-escapes its own output (U+00A0 comes back
+  # out as &nbsp;, & as &amp;). Decoding first therefore leaves literal entities in the "plain text"
+  # this returns, which the views then escape again and show to the user as '&nbsp;'.
   def html2txt(buf)
     coder = HTMLEntities.new
-    return strip_tags(coder.decode(buf)).gsub(/<!\[.*?\]>/, '').tr('“”', '""').tr('‘’', "''").strip
+    return coder.decode(strip_tags(buf)).gsub(/<!\[.*?\]>/, '').tr('“”', '""').tr('‘’', "''").strip
   end
 
   def author_surname_and_initials(author_string) # TODO: support multiple authors

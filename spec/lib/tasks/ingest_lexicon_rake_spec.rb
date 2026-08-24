@@ -225,4 +225,56 @@ RSpec.describe 'ingest_lexicon rake task' do # rubocop:disable RSpec/DescribeCla
       expect(entry.reload.title).to eq('כותרת שתוקנה ביד')
     end
   end
+
+  describe 'fix_lexicon_link_descriptions' do
+    let(:decode_task) { Rake::Task['fix_lexicon_link_descriptions'] }
+
+    before { decode_task.reenable }
+
+    def link_described(description)
+      create(:lex_link, url: 'http://www.example.com/story', description: description)
+    end
+
+    it 'decodes &nbsp; baked in by the old html2txt' do
+      link = link_described('סיפור&nbsp;לדוגמה')
+
+      decode_task.invoke
+
+      expect(link.reload.description).to eq("סיפור\u00A0לדוגמה")
+    end
+
+    it 'decodes &amp; baked in by the old html2txt' do
+      link = link_described('דוב &amp; בניו')
+
+      decode_task.invoke
+
+      expect(link.reload.description).to eq('דוב & בניו')
+    end
+
+    # A single gsub pass, rather than decoding &amp; separately, is what keeps this correct: text
+    # that legitimately reads '&lt;' was stored as '&amp;lt;' and must not collapse all the way to '<'.
+    it 'decodes a double-escaped entity only one level' do
+      link = link_described('&amp;lt; is a less-than sign')
+
+      decode_task.invoke
+
+      expect(link.reload.description).to eq('&lt; is a less-than sign')
+    end
+
+    it 'leaves a description with a bare ampersand alone' do
+      link = link_described('דוב & בניו')
+
+      decode_task.invoke
+
+      expect(link.reload.description).to eq('דוב & בניו')
+    end
+
+    it 'leaves an entity-looking string the sanitizer never emits alone' do
+      link = link_described('&copy; 2016')
+
+      decode_task.invoke
+
+      expect(link.reload.description).to eq('&copy; 2016')
+    end
+  end
 end
