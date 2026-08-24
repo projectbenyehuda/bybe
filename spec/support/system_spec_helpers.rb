@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 
 module SystemSpecHelpers
+  # Resize the browser window. Note that the :narrow_viewport tag only picks the Chrome driver
+  # (headless Firefox will not go below 500px wide) -- it does NOT resize anything, and the
+  # before hook in spec/support/capybara.rb sizes every `:js, type: :system` spec to 1400x900.
+  # A spec asserting mobile layout therefore has to call this itself.
+  def resize_window(width, height)
+    page.driver.browser.manage.window.resize_to(width, height)
+  end
+
   # Check if WebDriver is available and configured for system specs with JavaScript
   def webdriver_available?
     return false unless defined?(Capybara::Selenium)

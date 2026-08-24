@@ -35,14 +35,20 @@ describe 'Reading mode icon alignment', :js do
   end
 
   it 'centres the glyph in the desktop reading-mode button' do
-    page.driver.browser.manage.window.resize_to(1400, 900)
+    resize_window(1400, 900)
     visit manifestation_path(manifestation)
 
     expect(page).to have_css('.reading-mode-btn-v02')
     expect(icon_offset_from_button_centre('.reading-mode-btn-v02').abs).to be < 1.5
   end
 
-it 'centres the glyph in the mobile reading-mode icon button', :narrow_viewport do
+  # The mobile button only exists below the 991px breakpoint -- above it the whole
+  # .chapters-and-icons-mobile container is display:none, so this has to narrow the window
+  # before visiting. :narrow_viewport buys the Chrome driver, which is the only one that will
+  # size below 500px; it does not do the resizing.
+  it 'centres the glyph in the mobile reading-mode icon button', :narrow_viewport do
+    resize_window(390, 844)
+    visit manifestation_path(manifestation)
 
     expect(page).to have_css('.reading-mode-icon-btn-v02')
     expect(icon_offset_from_button_centre('.reading-mode-icon-btn-v02').abs).to be < 1.5
