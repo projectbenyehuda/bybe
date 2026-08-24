@@ -213,8 +213,8 @@ describe ManifestationHtmlWithChapters do
       end
 
       it 'preserves the footnote list at the bottom' do
-        expect(result[:html]).to include('<span>Footnote 1')
-        expect(result[:html]).to include('<span>Footnote 2')
+        expect(result[:html]).to include('<p>Footnote 1')
+        expect(result[:html]).to include('<p>Footnote 2')
       end
     end
 
@@ -272,7 +272,7 @@ describe ManifestationHtmlWithChapters do
           <ol>
 
           <li id="fn:1">
-          <span>This is a footnote at the beginning <a href="#fnref:1" title="return to body" class="reversefootnote">&#160;&#8617;&#xfe0e;</a></span>
+          <p>This is a footnote at the beginning <a href="#fnref:1" title="return to body" class="reversefootnote">&#160;&#8617;&#xfe0e;</a></p>
           </li>
 
           </ol>

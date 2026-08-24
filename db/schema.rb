@@ -794,7 +794,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_090000) do
 
   create_table "lex_person_works", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "collection_id"
-    t.string "comment"
+    t.string "comment", limit: 4096
     t.json "comment_links"
     t.datetime "created_at", null: false
     t.bigint "lex_person_id", null: false

@@ -311,6 +311,54 @@ task fix_lexicon_link_descriptions: :environment do
   puts "#{fixed} link descriptions repaired"
 end
 
+desc 'trim the duplicated anchor from lexicon URLs stored before the fix (…/page#sec#sec)'
+task fix_lexicon_duplicate_url_anchors: :environment do
+  # Every URL column the before_validation hooks now guard, with the columns holding the link
+  # checker's verdict about it. backup_url has none -- it usually points at a file we serve
+  # ourselves -- so there is nothing to re-check for it, only the URL itself to repair.
+  # Task-local rather than a top-level constant: rake files get loaded more than once (specs
+  # rake_require them, console/dev reloads re-read them), and a constant would both warn about
+  # being already initialized and leak into the global namespace.
+  targets = [
+    [LexLink, :url, { status: :http_status, unverifiable: :unverifiable, checked_at: :checked_at }],
+    [LexCitation, :link,
+     { status: :link_http_status, unverifiable: :link_unverifiable, checked_at: :link_checked_at }],
+    [LexCitation, :backup_url, nil]
+  ].freeze
+
+  checker = Lexicon::CheckExternalLinks.new
+  fixed = 0
+
+  targets.each do |model, column, check_columns|
+    # `LIKE '%#%#%'` is only a cheap pre-filter for "two or more anchors"; the trim below decides
+    # whether those anchors are in fact identical and anything actually changes. Built through Arel
+    # so the column name is quoted rather than interpolated into SQL.
+    model.where(model.arel_table[column].matches('%#%#%')).find_each do |record|
+      stored = record[column]
+      trimmed = TrimsDuplicateUrlAnchor.trim(stored)
+      next if trimmed == stored
+
+      puts "#{model.name} #{record.id} #{column}: #{stored} -> #{trimmed}"
+      attributes = { column => trimmed }
+
+      # The stored verdict was reached on the unparseable URL, so it says nothing about the trimmed
+      # one: re-check rather than leave a now-repaired link flagged broken. Local paths are left
+      # alone -- the checker has no verdict to offer on a URL we serve ourselves.
+      if check_columns && trimmed.start_with?('http://', 'https://')
+        result = checker.check_url(trimmed)
+        attributes[check_columns[:status]] = result.status
+        attributes[check_columns[:unverifiable]] = result.unverifiable?
+        attributes[check_columns[:checked_at]] = Time.current
+      end
+
+      record.update_columns(attributes)
+      fixed += 1
+    end
+  end
+
+  puts "#{fixed} URLs repaired"
+end
+
 task reset_lexicon_ingestion: :environment do
   puts 'Wiping Ingested Lexicon Entries...'
   Chewy.strategy(:atomic) do
