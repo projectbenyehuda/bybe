@@ -285,6 +285,30 @@ task recheck_broken_lexicon_links: :environment do
        "#{reclassified} now unverifiable"
 end
 
+# The only escapes Rails::HTML5::FullSanitizer emits into a text node, so these are the only
+# entities the old html2txt could have baked into a stored description. Deliberately narrower than a
+# full HTMLEntities.decode, which would also rewrite entity-looking text (&copy; and friends) that
+# no sanitizer put there. A single gsub pass gets the ordering right for free: '&amp;lt;' must come
+# out as the literal text '&lt;', not as '<'.
+SANITIZER_ESCAPES = { '&nbsp;' => "\u00A0", '&lt;' => '<', '&gt;' => '>', '&amp;' => '&' }.freeze
+
+desc 'decode HTML entities baked into LexLink descriptions by the pre-fix html2txt'
+task fix_lexicon_link_descriptions: :environment do
+  fixed = 0
+
+  # `LIKE` is only a cheap pre-filter; the gsub below decides whether anything actually changes.
+  LexLink.where('description LIKE ?', '%&%').find_each do |link|
+    decoded = link.description.gsub(/&(?:nbsp|lt|gt|amp);/) { |entity| SANITIZER_ESCAPES[entity] }
+    next if decoded == link.description
+
+    puts "LexLink #{link.id}: #{link.description.inspect} -> #{decoded.inspect}"
+    link.update_columns(description: decoded)
+    fixed += 1
+  end
+
+  puts "#{fixed} link descriptions repaired"
+end
+
 task reset_lexicon_ingestion: :environment do
   puts 'Wiping Ingested Lexicon Entries...'
   Chewy.strategy(:atomic) do

@@ -227,6 +227,45 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  # Regression: html2txt decoded entities and only then called strip_tags, whose HTML5 sanitizer
+  # re-escapes its own output. Descriptions were stored as '&nbsp;'/'&amp;' and the views, escaping
+  # them once more, showed users the entity text itself.
+  context 'when a link description contains HTML entities' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Test Person',
+          fname: 'links_with_entities.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/links_with_entities.php')
+        }
+      )
+    end
+
+    it 'stores the characters the entities stand for, not the entities' do
+      call
+
+      descriptions = file.lex_entry.lex_item.links.map(&:description)
+      expect(descriptions).to all(satisfy { |d| !d.match?(/&(?:nbsp|amp|lt|gt);/) })
+    end
+
+    it 'decodes &nbsp; to a non-breaking space' do
+      call
+
+      link = file.lex_entry.lex_item.links.find_by(url: 'http://www.example.com/story')
+      expect(link.description).to include("\u00A0")
+    end
+
+    it 'decodes &amp; to an ampersand' do
+      call
+
+      link = file.lex_entry.lex_item.links.find_by(url: 'http://www.example.com/dov')
+      expect(link.description).to include('&').and include('דוב')
+    end
+  end
+
   context 'when the links anchor has a trailing dot (name="links.")' do
     let!(:file) do
       create(
