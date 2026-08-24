@@ -13,16 +13,18 @@
       != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
       %span.static-btn= link_to t(:version_history), manifestation_versions_path(@m.id)
       != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-      %span.static-btn#originating-task-btn
-        %a.pointer.originating-task-btn{ data: { 'manifestation-id': @m.id } }= t(:find_originating_task)
+      -# The two triggers below are scripted, not navigations, but they still need an href: Bootstrap's
+      -# `a:not([href]):not([tabindex]) { color: inherit }` outranks the site's `a { color: #660248 }`
+      -# and would grey them out among the real links above. Both click handlers preventDefault, so the
+      -# '#' never navigates -- read.html.haml's for this one, Bootstrap's modal data-api for the other.
+      - task_opts = { data: { 'manifestation-id': @m.id } }
+      %span.static-btn#originating-task-btn= link_to t(:find_originating_task), '#', task_opts
       %span#originating-task-result
       -# the modal this opens lives in read.html.haml, which print.html.haml does not render
       - unless @print
         != '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-        -# an href-less <a> is caught by Bootstrap's `a:not([href]):not([tabindex]) { color: inherit }`,
-        -# which outranks the site's `a { color: #660248 }` and renders it black, unlike the links above
-        %span.static-btn#soft-delete-btn= link_to t(:soft_delete_work), '#',
-                                                  data: { toggle: 'modal', target: '#softDeleteDlg' }
+        - soft_delete_opts = { data: { toggle: 'modal', target: '#softDeleteDlg' } }
+        %span.static-btn#soft-delete-btn= link_to t(:soft_delete_work), '#', soft_delete_opts
     != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
     %span.impressions-count #{number_with_delimiter(@m.impressions_count, delimiter: ',')} #{t(:impressions_count)}
     %br
