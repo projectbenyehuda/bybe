@@ -41,6 +41,52 @@ describe 'Soft-deleting a Manifestation', :js, type: :system do
     end
   end
 
+  # jQuery UI appends the suggestion menu to <body>, outside the modal, so it lands in the root
+  # stacking context and has to outrank `.modal` there or it is painted behind the dialog it was
+  # opened from. See the `.ui-menu.ui-autocomplete.ui-front` rule in application.scss.
+  context 'when picking the replacement work from the autocomplete inside the modal' do
+    let!(:target) { create(:manifestation, title: 'Zamenhof Replacement Text') }
+
+    before do
+      import_and_await(ManifestationsAutocompleteIndex, [target])
+      login_as(editor)
+      visit manifestation_path(id: manifestation.id)
+    end
+
+    after do
+      Chewy.massacre
+    end
+
+    it 'draws the suggestion menu above the modal rather than behind it' do
+      find('#soft-delete-btn a').click
+      expect(page).to have_css('#softDeleteDlg', visible: :visible)
+      fill_in 'soft_delete_autocomplete', with: 'Zamenhof'
+      expect(page).to have_css('ul.ui-autocomplete li', text: target.title, wait: 5)
+
+      # Stacking order is not observable from the DOM tree, so ask the browser what it actually
+      # paints at the centre of the menu: if the modal wins, that is a modal element, not the menu.
+      topmost_is_the_menu = page.evaluate_script(<<~JS)
+        (function () {
+          var menu = document.querySelector('ul.ui-autocomplete');
+          var box = menu.getBoundingClientRect();
+          var painted = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          return menu.contains(painted);
+        })();
+      JS
+      expect(topmost_is_the_menu).to be true
+    end
+
+    it 'records the picked work as the redirect target' do
+      find('#soft-delete-btn a').click
+      expect(page).to have_css('#softDeleteDlg', visible: :visible)
+      fill_in 'soft_delete_autocomplete', with: 'Zamenhof'
+      find('ul.ui-autocomplete li', text: target.title, wait: 5).click
+
+      field_opts = { type: 'hidden', with: target.id.to_s, visible: :all }
+      expect(page).to have_field('soft_redirect_autocomplete_id', **field_opts)
+    end
+  end
+
   context 'when an editor lacks the edit_catalog bit' do
     it 'does not offer the button' do
       login_as(plain_editor)

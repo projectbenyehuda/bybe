@@ -595,8 +595,12 @@ body.modal-open{
 .flex-break {
   flex-basis: 100%;
 }
+// rails-jquery-autocomplete leaves jQuery UI's `appendTo` at its default, so the suggestion menu is
+// appended to <body>, not to the field's own parent. That puts it in the root stacking context,
+// where it has to outrank `.modal` (3000, above) to be visible over a dialog it was opened from --
+// 1100 only cleared Bootstrap's stock 1050. Keep this above whatever `.modal` is set to.
 .ui-menu.ui-autocomplete.ui-front {
-  z-index: 1100;
+  z-index: 3100;
 }
 
 .ui-state-default{
