@@ -2,9 +2,15 @@
 
 # Link related to lexicon entry
 class LexLink < ApplicationRecord
+  include TrimsDuplicateUrlAnchor
+
   belongs_to :item, polymorphic: true, inverse_of: :links
 
   validates :url, presence: true
+
+  before_validation do
+    self.url = trim_duplicate_url_anchor(url)
+  end
 
   # Returns true if the link was checked and is inaccessible: either it returned
   # a 4xx/5xx status, or the host was unreachable (nil status after a check).
