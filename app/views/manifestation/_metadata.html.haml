@@ -18,7 +18,7 @@
       %span#originating-task-result
       -# the modal this opens lives in read.html.haml, which print.html.haml does not render
       - unless @print
-        != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        != '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
         %span.static-btn#soft-delete-btn
           %a.pointer{ 'data-toggle' => 'modal', 'data-target' => '#softDeleteDlg' }= t(:soft_delete_work)
     != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"

@@ -677,6 +677,8 @@ he:
   soft_delete_failed: "המחיקה הרכה נכשלה: %{error}"
   soft_delete_same_manifestation: לא ניתן להפנות יצירה אל עצמה
   soft_delete_target_deprecated: היצירה שנבחרה נמחקה בעצמה מחיקה רכה. אנא בחרו יצירה שעדיין זמינה.
+  soft_delete_target_not_published: היצירה שנבחרה אינה מפורסמת, ולכן קוראים שיופנו אליה לא יוכלו
+    לראות אותה. אנא בחרו יצירה מפורסמת.
   soft_delete_status_deprecated: 'היצירה הזאת נמחקה מחיקה רכה. היא מפנה אל: '
   error_loading_preview: שגיאה בטעינת הפרטים
   involved_authorities_label: יוצרים מעורבים

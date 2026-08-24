@@ -930,6 +930,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_090000) do
     t.date "start_date"
     t.integer "tasks_project_id"
     t.datetime "updated_at", null: false
+    t.index ["tasks_project_id"], name: "index_projects_on_tasks_project_id", unique: true
   end
 
   create_table "proofs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|

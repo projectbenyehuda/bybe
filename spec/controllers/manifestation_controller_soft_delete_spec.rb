@@ -73,6 +73,16 @@ describe ManifestationController do
       end
     end
 
+    context 'when the target is not published' do
+      let(:target) { create(:manifestation, status: :unpublished) }
+
+      it 'refuses' do
+        perform
+        expect(flash[:alert]).to eq(I18n.t(:soft_delete_failed, error: I18n.t(:soft_delete_target_not_published)))
+        expect(manifestation.reload).to be_published
+      end
+    end
+
     context 'when the user is not an edit_catalog editor' do
       before { session.delete(:user_id) }
 

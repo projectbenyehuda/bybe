@@ -31,9 +31,22 @@ describe SoftDeleteManifestation do
     context 'when the target is itself deprecated' do
       let(:target) { create(:manifestation, status: :deprecated) }
 
-      it 'fails' do
+      it 'fails with the deprecated-target error rather than the unpublished one' do
         expect(result).to eq(success: false, error: I18n.t(:soft_delete_target_deprecated))
         expect(manifestation.reload).to be_published
+      end
+    end
+
+    # A reader sent to one of these would be turned away by set_manifestation, so the redirect
+    # would be useless to exactly the readers it exists for.
+    %i(unpublished nonpd).each do |status|
+      context "when the target is #{status}" do
+        let(:target) { create(:manifestation, status: status) }
+
+        it 'fails' do
+          expect(result).to eq(success: false, error: I18n.t(:soft_delete_target_not_published))
+          expect(manifestation.reload).to be_published
+        end
       end
     end
   end

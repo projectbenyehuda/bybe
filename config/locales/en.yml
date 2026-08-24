@@ -1106,6 +1106,8 @@ en:
   soft_delete_same_manifestation: A work cannot be redirected to itself
   soft_delete_target_deprecated: The chosen work has itself been soft-deleted. Please choose a work
     that is still available.
+  soft_delete_target_not_published: The chosen work is not published, so readers sent to it would
+    not be able to see it. Please choose a published work.
   soft_delete_status_deprecated: 'This work has been soft-deleted. It redirects to: '
   error_loading_preview: Error loading preview
   involved_authorities_label: Involved Authorities

@@ -31,10 +31,15 @@ class SoftDeleteManifestation < ApplicationService
 
   private
 
+  # An unpublished or nonpd target is refused because it would defeat the point: #read forwards the
+  # reader to it, and set_manifestation then turns anyone who is not an editor away with
+  # `work_not_available` -- so the replacement would be invisible to exactly the readers the
+  # redirect exists for.
   def validate(manifestation, target)
     return I18n.t(:manifestation_not_found) if target.nil?
     return I18n.t(:soft_delete_same_manifestation) if target.id == manifestation.id
     return I18n.t(:soft_delete_target_deprecated) if target.deprecated?
+    return I18n.t(:soft_delete_target_not_published) unless target.published?
 
     nil
   end
