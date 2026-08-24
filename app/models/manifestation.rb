@@ -29,6 +29,9 @@ class Manifestation < ApplicationRecord
   has_many :anthology_texts, dependent: :destroy
   has_many_attached :images, dependent: :destroy
   has_many :collection_items, as: :item, dependent: :destroy
+  # Where requests for this Manifestation are sent once it has been soft-deleted (status :deprecated).
+  belongs_to :soft_redirect_target, class_name: 'Manifestation', foreign_key: :soft_redirect,
+                                    inverse_of: false, optional: true
   before_save :update_alternate_titles, if: :title_changed?
   before_save :recalc_cached_people, if: :expression_id_changed?
   before_save :recalc_responsibility_statement, if: :expression_id_changed?
@@ -62,8 +65,27 @@ class Manifestation < ApplicationRecord
   # scanned through. Later runs only look at texts modified since.
   SUSPECTED_TYPOS_LAST_RUN_LISTKEY = 'suspected_typos_last_run'
 
+  # A soft-deletion refuses an already-deprecated target, but a target can be deprecated later on,
+  # leaving a chain to walk. Capped because nothing prevents a chain from closing into a cycle.
+  SOFT_REDIRECT_MAX_HOPS = 5
+
   update_index('manifestations') { self } # update ManifestationsIndex when entity is updated
   update_index('manifestations_autocomplete') { self } # update ManifestationsAutocompleteIndex when entity is updated
+
+  # The Manifestation a request for this (soft-deleted) one should land on: the first live
+  # Manifestation along the soft_redirect chain, or nil if there is none within SOFT_REDIRECT_MAX_HOPS.
+  def soft_redirect_destination
+    seen = [id]
+    current = soft_redirect_target
+    SOFT_REDIRECT_MAX_HOPS.times do
+      return nil if current.nil? || seen.include?(current.id)
+      return current unless current.deprecated?
+
+      seen << current.id
+      current = current.soft_redirect_target
+    end
+    nil
+  end
 
   def involved_authorities
     (expression.involved_authorities + expression.work.involved_authorities).uniq

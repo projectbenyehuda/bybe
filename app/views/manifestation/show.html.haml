@@ -5,6 +5,16 @@
     %b= link_to t(:edit_markdown), manifestation_edit_path(@m.id)
   %p
     %b= link_to t(:render), url_for(action: :read, id: @m.id)
+  %p
+    %b
+      %a.pointer{ 'data-toggle' => 'modal', 'data-target' => '#softDeleteDlg' }= t(:soft_delete_work)
+  - if @m.deprecated?
+    %p.alert.alert-warning#soft-delete-status
+      = t(:soft_delete_status_deprecated)
+      - if @m.soft_redirect_target.present?
+        = link_to @m.soft_redirect_target.title_and_authors, manifestation_show_path(@m.soft_redirect)
+  .modal#softDeleteDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
+    = render partial: 'soft_delete_modal', locals: { manifestation: @m }
   %h1
     != "#{t(:work_details)}: #{@m.title} / #{linkify_people(@w.involved_authorities.map(&:authority))}"
     - if @e.translation

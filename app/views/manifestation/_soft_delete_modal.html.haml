@@ -1,0 +1,26 @@
+.modal-dialog.modal-dialog-centered{ role: 'document' }
+  .modal-content
+    = form_tag manifestation_soft_delete_path(manifestation.id), method: :post do
+      .popup-top
+        %button.btn-small-outline-v02{ type: 'button', 'data-dismiss' => 'modal' }
+          .btn-text-v02
+            %span.right-arrow 2
+            %span= t(:back)
+        .headline-2-v02{ style: 'text-align: center; margin: 0; padding-top: 3px;' }= t(:soft_delete_work)
+      .by-popup-v02
+        .by-card-content-v02
+          %p= t(:soft_delete_explanation)
+          %p
+            %label{ for: 'soft_delete_autocomplete' }= t(:soft_delete_by_title)
+            - ac_opts = { id: 'soft_delete_autocomplete', class: 'form-control',
+                          id_element: '#soft_redirect_autocomplete_id',
+                          data: { noMatchesLabel: t(:no_matches_found) } }
+            = autocomplete_field_tag :soft_delete_autocomplete, '', autocomplete_manifestation_title_path, ac_opts
+            = hidden_field_tag :soft_redirect_autocomplete_id, '', id: 'soft_redirect_autocomplete_id'
+          %p
+            %label{ for: 'soft_redirect_id' }= t(:soft_delete_by_id)
+            = text_field_tag :soft_redirect_id, '', id: 'soft_redirect_id', class: 'form-control', size: 10
+          %p= t(:soft_delete_id_wins)
+          - submit_opts = { class: 'by-button-v02', id: 'soft_delete_submit',
+                            data: { confirm: t(:soft_delete_confirm) } }
+          = submit_tag t(:soft_delete_work), submit_opts

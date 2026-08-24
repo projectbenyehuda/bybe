@@ -10,7 +10,8 @@ class ManifestationController < ApplicationController
   include PaperTrailHelpers
 
   before_action only: %i(list show remove_link edit_metadata add_aboutnesses versions version_diff
-                         restore_version preview_link_expression link_expression add_images remove_image) do |c|
+                         restore_version preview_link_expression link_expression add_images remove_image
+                         soft_delete) do |c|
     c.require_editor('edit_catalog')
   end
   before_action only: %i(edit update) do |c|
@@ -480,7 +481,9 @@ class ManifestationController < ApplicationController
   end
 
   def read
-    if @m.expression.work.genre == 'lexicon' && DictionaryEntry.exists?(manifestation: @m)
+    if @m.deprecated?
+      handle_deprecated_read
+    elsif @m.expression.work.genre == 'lexicon' && DictionaryEntry.exists?(manifestation: @m)
       redirect_to action: 'dict', id: @m.id
     else
       prep_for_read
@@ -770,6 +773,20 @@ class ManifestationController < ApplicationController
       flash[:alert] = t(:expressions_link_failed, error: result[:error])
     end
     redirect_to manifestation_edit_metadata_path(id: @m.id)
+  end
+
+  # Soft-deletes this Manifestation, redirecting future requests for it to another one, identified
+  # either by a literal id or by the autocomplete field. A literal id, when given, wins.
+  def soft_delete
+    @m = Manifestation.find(params[:id])
+    target_id = params[:soft_redirect_id].presence || params[:soft_redirect_autocomplete_id].presence
+    result = SoftDeleteManifestation.call(@m, Manifestation.find_by(id: target_id))
+    if result[:success]
+      flash[:notice] = t(:soft_delete_succeeded, id: target_id)
+    else
+      flash[:alert] = t(:soft_delete_failed, error: result[:error])
+    end
+    redirect_to manifestation_show_path(@m.id)
   end
 
   def chomp_period
@@ -1483,8 +1500,25 @@ class ManifestationController < ApplicationController
     nil
   end
 
+  # A soft-deleted text sends every reader -- editors included -- on to its replacement. If the
+  # chain leads nowhere (no target, or a cycle), there is nothing to show, so fall back to the
+  # same treatment any other unavailable text gets.
+  def handle_deprecated_read
+    destination = @m.soft_redirect_destination
+    if destination.nil?
+      flash.notice = t(:work_not_available)
+      redirect_to '/'
+    else
+      redirect_to url_for(action: :read, id: destination.id)
+    end
+  end
+
   def set_manifestation
     @m = Manifestation.find(params[:id])
+
+    # #read forwards a soft-deleted text to its replacement, so it has to be reached rather than
+    # turned away here by the not-published check below.
+    return if @m.deprecated? && action_name == 'read'
 
     return if @m.published? || current_user&.editor?
 

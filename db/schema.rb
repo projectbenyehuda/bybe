@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_090000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -860,6 +860,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_090000) do
     t.string "responsibility_statement"
     t.boolean "sefaria_linker"
     t.string "series_statement"
+    t.integer "soft_redirect"
     t.string "sort_title"
     t.integer "status"
     t.string "title"
@@ -869,6 +870,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_090000) do
     t.index ["created_at"], name: "index_manifestations_on_created_at"
     t.index ["expression_id"], name: "index_manifestations_on_expression_id"
     t.index ["impressions_count"], name: "index_manifestations_on_impressions_count"
+    t.index ["soft_redirect"], name: "index_manifestations_on_soft_redirect"
     t.index ["sort_title"], name: "index_manifestations_on_sort_title"
     t.index ["status", "sort_title"], name: "index_manifestations_on_status_and_sort_title"
     t.index ["status"], name: "index_manifestations_on_status"

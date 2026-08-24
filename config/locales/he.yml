@@ -665,6 +665,21 @@ he:
   expressions_linked_successfully: הקישור בוצע בהצלחה
   expressions_link_failed: "שגיאה בקישור: %{error}"
   manifestation_not_found: מימוש לא נמצא
+  soft_delete_work: מחיקה רכה של היצירה
+  soft_delete_explanation: מחיקה רכה מסמנת את היצירה הזאת כמחוקה, ומפנה מעתה כל פנייה אליה אל יצירה
+    אחרת. הופעותיה באסופות ובמדפים, וכן התגיות, ההמלצות והקישורים החיצוניים שלה, יועברו ליצירה
+    האחרת. שום דבר אינו נמחק ממש, ומנהל מערכת יכול לבטל את הפעולה במסד הנתונים.
+  soft_delete_by_title: הפניה ליצירה זו (חיפוש לפי שם)
+  soft_delete_by_id: 'או: הפניה למימוש שמספרו'
+  soft_delete_id_wins: אם תמלאו את שני השדות, מספר המימוש הוא הקובע.
+  soft_delete_confirm: למחוק את היצירה מחיקה רכה ולהפנות אותה ליצירה שבחרתם?
+  soft_delete_succeeded: 'היצירה נמחקה מחיקה רכה; מעתה יופנו הפניות אליה אל מימוש מס׳ %{id}'
+  soft_delete_failed: "המחיקה הרכה נכשלה: %{error}"
+  soft_delete_same_manifestation: לא ניתן להפנות יצירה אל עצמה
+  soft_delete_target_deprecated: היצירה שנבחרה נמחקה בעצמה מחיקה רכה. אנא בחרו יצירה שעדיין זמינה.
+  soft_delete_target_not_published: היצירה שנבחרה אינה מפורסמת, ולכן קוראים שיופנו אליה לא יוכלו
+    לראות אותה. אנא בחרו יצירה מפורסמת.
+  soft_delete_status_deprecated: 'היצירה הזאת נמחקה מחיקה רכה. היא מפנה אל: '
   error_loading_preview: שגיאה בטעינת הפרטים
   involved_authorities_label: יוצרים מעורבים
   mistake_important: חשוב לנו שהטקסט יהא מדויק וחף משגיאות
