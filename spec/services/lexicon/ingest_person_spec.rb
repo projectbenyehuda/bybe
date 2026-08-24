@@ -192,6 +192,77 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when the links anchor has a trailing dot (name="links.")' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Test Person',
+          fname: 'links_anchor_with_dot.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/links_anchor_with_dot.php')
+        }
+      )
+    end
+
+    it 'still locates the links section and migrates its links' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.links.map(&:url)).to contain_exactly('http://www.example.com/story')
+    end
+  end
+
+  context 'when the links section carries only a Hebrew heading and no anchor' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Test Person',
+          fname: 'links_heading_without_anchor.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/links_heading_without_anchor.php')
+        }
+      )
+    end
+
+    it 'falls back to the heading and migrates its links' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.links.map(&:url)).to contain_exactly(
+        'http://www.example.com/blog',
+        'http://www.example.com/articles'
+      )
+    end
+  end
+
+  context 'when the entry has no links section at all' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Test Person',
+          fname: 'no_links_section.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/no_links_section.php')
+        }
+      )
+    end
+
+    it 'ingests the entry without links instead of raising' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      expect(file.reload).to be_status_ingested
+      person = file.lex_entry.lex_item
+      expect(person.links).to be_empty
+      expect(person.works.count).to eq(1)
+    end
+  end
+
   context 'when both birthdate and deathdate provided', vcr: { cassette_name: 'lexicon/ingest_person/00024' } do
     let(:file) do
       create(

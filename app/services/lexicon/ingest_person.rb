@@ -8,6 +8,15 @@ module Lexicon
     WORKS_HEADER = 'Books'
     CITATIONS_HEADER = 'Bib.'
 
+    # The links section is normally introduced by an <a name="links"> anchor, but a handful of
+    # legacy files spell the anchor differently (e.g. `name="links."`) or omit it entirely and
+    # carry only the Hebrew "קישורים:" heading. Patterns are tried in order, so the anchor always
+    # wins when present.
+    LINKS_SECTION_PATTERNS = [
+      %r{a name="links[^"]*".*?</ul}m,
+      %r{<font[^>]*>\s*קישורים\s*:?\s*</font>.*?</ul}m
+    ].freeze
+
     # Maps 00000_files logo filenames to Hebrew site names for img tags that lack alt text.
     IMG_LOGO_TEXT = {
       'Ben-Yehuda-s.jpg' => 'פרויקט בן יהודה',
@@ -105,8 +114,7 @@ module Lexicon
 
       # Links are parsed only after the authority is known, so that links pointing at this entry's
       # own authority page on benyehuda.org can be skipped (see #redundant_authority_link?).
-      buf = html_doc.to_html
-      parse_person_links(lex_person, buf[%r{a name="links".*?</ul}m])
+      parse_person_links(lex_person, links_section_html(html_doc.to_html))
       lex_person.save!
 
       link_citations_to_works(lex_person)
@@ -153,7 +161,19 @@ module Lexicon
       end
     end
 
+    # Returns the markup of the links section, or nil when the entry has no links section at all.
+    def links_section_html(buf)
+      LINKS_SECTION_PATTERNS.each do |pattern|
+        section = buf[pattern]
+        return section if section.present?
+      end
+      nil
+    end
+
     def parse_person_links(person, buf)
+      # Entries without a links section at all are legitimate; there is simply nothing to migrate.
+      return if buf.blank?
+
       html_entities_coder = HTMLEntities.new
 
       buf.scan(%r{<li>(.*?)</li>}m).map do |x|
