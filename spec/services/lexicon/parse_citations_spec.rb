@@ -443,4 +443,88 @@ describe Lexicon::ParseCitations do
       expect(result.first.title).to eq('כותרת תקינה')
     end
   end
+
+  # Regression: in files such as 00072.php a citation of an untitled review is written with the
+  # placeholder "[ביקורת]" as the <li>'s only bold content and no author at all. The LLM reads
+  # that bold slot as the author and returns a null title, so the record — publication, pages,
+  # subject and all — used to be dropped silently by the blank-title guard.
+  context 'when the LLM reports a bracketed placeholder as the author of a title-less citation' do
+    let(:html) do
+      <<~HTML
+        <font color="#FF0000">על ״רק צרות״</font>
+        <ul style="margin-top:0in" type="circle">
+        <li> <b>[ביקורת].</b> <u>ספרות ילדים ונוער</u>, כרך י״ד, גל' ב' (1988), עמ' 63־64. </li>
+        </ul>
+      HTML
+    end
+
+    let(:works) do
+      [
+        { title: nil, authors: [{ name: '[ביקורת]', link: nil }],
+          from_publication: 'ספרות ילדים ונוער, כרך י״ד, גל\' ב\' (1988)', pages: '63־64',
+          link: nil, backup_url: nil, notes: nil }
+      ]
+    end
+
+    def stub_llm(works)
+      chat_double = instance_double(RubyLLM::Chat)
+      allow(RubyLLM).to receive(:chat).and_return(chat_double)
+      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+      allow(chat_double).to receive(:ask).and_return(
+        instance_double(RubyLLM::Message, content: { result: [{ subject: 'רק צרות', works: works }] }.to_json)
+      )
+    end
+
+    it 'keeps the citation, promoting the placeholder to its title' do
+      stub_llm(works)
+
+      expect(result.size).to eq(1)
+      expect(result.first).to have_attributes(
+        subject: 'רק צרות',
+        title: '[ביקורת]',
+        pages: '63־64'
+      )
+    end
+
+    it 'does not leave the placeholder behind as an author' do
+      stub_llm(works)
+
+      expect(result.first.authors).to be_empty
+    end
+
+    it 'produces a citation that passes validation' do
+      stub_llm(works)
+
+      citation = result.first
+      citation.person = build(:lex_person)
+      expect(citation).to be_valid
+    end
+
+    it 'leaves a bracketed author accompanying a real title alone' do
+      stub_llm([works.first.merge(title: 'שיחה עם הסופרת', authors: [{ name: '[יעוז, חנה]', link: nil }])])
+
+      expect(result.first.title).to eq('שיחה עם הסופרת')
+      expect(result.first.authors.map(&:name)).to eq(['[יעוז, חנה]'])
+    end
+
+    it 'still skips a title-less citation whose sole author is a real name' do
+      stub_llm([works.first.merge(authors: [{ name: 'ברגסון, גרשון', link: nil }])])
+
+      expect(result).to be_empty
+    end
+
+    it 'still skips a title-less citation carrying more than one author' do
+      stub_llm([works.first.merge(authors: [{ name: '[ביקורת]', link: nil }, { name: 'ברגסון, גרשון', link: nil }])])
+
+      expect(result).to be_empty
+    end
+
+    # A bracketed author that links to a lexicon entry is a real entry reference, not a
+    # placeholder; promoting its name to the title would throw the link away.
+    it 'still skips a title-less citation whose bracketed author carries a link' do
+      stub_llm([works.first.merge(authors: [{ name: '[סדן, דב]', link: '02402.php' }])])
+
+      expect(result).to be_empty
+    end
+  end
 end

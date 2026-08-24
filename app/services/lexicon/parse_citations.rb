@@ -81,6 +81,18 @@ PROMPT
         subject = subject_works['subject']
         subject_works['works'].each.with_index do |work, index|
           title = sanitize_smart_quotes(work['title'])
+          authors = work['authors'] || []
+
+          # A legacy <li> whose only bold content is a bracketed placeholder standing in for a
+          # missing title (e.g. "<b>[ביקורת].</b> <u>ספרות ילדים ונוער</u>, ...") has nothing at
+          # all in its author slot, so the LLM reads the placeholder as the author and returns a
+          # null title. Promote it back to the title rather than discarding a record that still
+          # carries its subject, publication and pages.
+          if title.blank? && placeholder_author?(authors)
+            title = sanitize_smart_quotes(authors.first['name'])
+            authors = []
+          end
+
           if title.blank?
             Rails.logger.warn("ParseCitations: skipping citation with blank title (subject=#{subject.inspect})")
             next
@@ -97,7 +109,7 @@ PROMPT
             seqno: index + 1
           )
 
-          work['authors'].each do |author|
+          authors.each do |author|
             author = citation.authors.build(name: author['name'], link: author['link'])
             update_link(author)
           end
@@ -117,7 +129,22 @@ PROMPT
       result
     end
 
+    # A bracketed descriptor standing where a title belongs, e.g. "[ביקורת]" (review) or
+    # "[מחבר לא מזוהה]" (unidentified author). Kept with its brackets, matching how the same
+    # placeholder is already stored when the <li> does have an author to precede it.
+    PLACEHOLDER_TITLE = /\A\[.+\]\.?\z/m
+
     private
+
+    # True when the work's single author is a bracketed placeholder rather than a real name.
+    # Only consulted once the title is known to be blank, so a bracketed author accompanying a
+    # genuine title (e.g. "[יעוז, חנה]. שיחה עם...") is never disturbed. An author carrying a
+    # link is a real entry reference and is left alone, since promoting it would lose the link.
+    def placeholder_author?(authors)
+      return false unless authors.size == 1
+
+      authors.first['link'].blank? && authors.first['name'].to_s.strip.match?(PLACEHOLDER_TITLE)
+    end
 
     def update_link(author)
       return if author.link.blank?
