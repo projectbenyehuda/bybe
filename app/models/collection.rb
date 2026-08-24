@@ -585,13 +585,6 @@ class Collection < ApplicationRecord
     end
   end
 
-  def before_destroy
-    collection_items.each do |ci|
-      ci.destroy!
-    end
-    CollectionItem.where(item: self).each { |ci| ci.destroy! } # destroy all references to this collection
-  end
-
   def collection_items_by_role(role, authority_id)
     collection_items.select do |ci|
       ci.item.present? && ci.item.involved_authorities_by_role(role).any? do |a|

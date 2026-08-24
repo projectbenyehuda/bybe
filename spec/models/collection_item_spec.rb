@@ -55,6 +55,34 @@ describe CollectionItem do
     end
   end
 
+  describe 'keeping CollectionsIndex#items_count up to date' do
+    let(:collection) { create(:collection, collection_type: :volume) }
+    let(:other_collection) { create(:collection, collection_type: :volume) }
+    let(:manifestation) { create(:manifestation) }
+
+    it 'reindexes the collection when an item is added to it' do
+      collection
+      manifestation
+      expect { collection.append_item(manifestation) }
+        .to update_index(CollectionsIndex).and_reindex(collection, with: { items_count: 1 })
+    end
+
+    it 'reindexes the collection when an item is removed from it' do
+      collection_item = create(:collection_item, collection: collection, item: manifestation)
+      expect { collection_item.destroy! }
+        .to update_index(CollectionsIndex).and_reindex(collection, with: { items_count: 0 })
+    end
+
+    it 'reindexes both collections when an item is moved from one to another' do
+      collection_item = create(:collection_item, collection: collection, item: manifestation)
+      other_collection
+      expect { collection_item.update!(collection: other_collection) }
+        .to update_index(CollectionsIndex)
+        .and_reindex(collection, with: { items_count: 0 })
+        .and_reindex(other_collection, with: { items_count: 1 })
+    end
+  end
+
   describe '#to_html' do
     context 'when item is present' do
       let(:collection_item) { build(:collection_item, item: manifestation) }
