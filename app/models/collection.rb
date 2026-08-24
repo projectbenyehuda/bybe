@@ -16,6 +16,12 @@ class Collection < ApplicationRecord
   before_save :update_alternate_titles, if: :title_changed?
   before_save :clear_cached_credits, if: :credits_changed?
 
+  # A collection contained in other collections is not simply deleted out from under them: its items are first
+  # promoted into each containing collection, in their original order, starting at the position the deleted
+  # collection occupied there. `prepend: true` is essential -- this has to run before the `dependent: :destroy`
+  # on :collection_items (registered when that association is declared, below) destroys those items.
+  before_destroy :promote_items_to_parent_collections, prepend: true
+
   validates :collection_type, presence: true
 
   belongs_to :publication, optional: true
@@ -720,6 +726,40 @@ class Collection < ApplicationRecord
   end
 
   protected
+
+  # see the `before_destroy :promote_items_to_parent_collections` declaration at the top of this class
+  def promote_items_to_parent_collections
+    items = collection_items.to_a
+    return if items.empty?
+
+    links = parent_collection_items.includes(:collection).to_a
+    return if links.empty?
+
+    # this collection may be included in several collections; the original items are moved into the first of
+    # those, and each of the others gets copies, so every containing collection goes on showing them
+    links.drop(1).each do |link|
+      parent = link.collection
+      make_room_for_promoted_items(link, items.size)
+      items.each_with_index do |ci, i|
+        parent.append_collection_item(parent.collection_item_from_anything(ci), link.seqno + i)
+      end
+    end
+
+    first_link = links.first
+    make_room_for_promoted_items(first_link, items.size)
+    items.each_with_index { |ci, i| ci.update!(collection: first_link.collection, seqno: first_link.seqno + i) }
+    collection_items.reset # they are no longer ours, so the `dependent: :destroy` below must not find them
+  end
+
+  # the promoted items take over the single slot the deleted collection occupied in the containing collection,
+  # so whatever followed that slot moves down to make room for the rest of them
+  def make_room_for_promoted_items(link, count)
+    return if count < 2
+
+    CollectionItem.where(collection_id: link.collection_id)
+                  .where(seqno: (link.seqno + 1)..)
+                  .update_all(['seqno = seqno + ?', count - 1])
+  end
 
   def collection_item_from_anything(item)
     # if a string, just create a wrapper item with the string as the alt_title

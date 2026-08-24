@@ -1200,4 +1200,68 @@ expect(html).to include("by-icon-v02\" title=\"#{expected_genre_title}\">t</span
       end
     end
   end
+
+  describe 'destroying a collection' do
+    let(:first_manifestation) { create(:manifestation) }
+    let(:second_manifestation) { create(:manifestation) }
+    let(:sub) do
+      create(:collection, collection_type: :series, manifestations: [first_manifestation, second_manifestation],
+                          title_placeholders: ['ניר'])
+    end
+    let(:before_sub) { create(:manifestation) }
+    let(:after_sub) { create(:manifestation) }
+    let(:parent) do
+      create(:collection, collection_type: :volume).tap do |collection|
+        collection.append_item(before_sub)
+        collection.append_item(sub)
+        collection.append_item(after_sub)
+      end
+    end
+
+    context 'when it is contained in another collection' do
+      before { parent }
+
+      it 'promotes its items into the containing collection, in place of the deleted collection' do
+        promoted = sub.collection_items.to_a
+        expect { sub.destroy! }.to change(described_class, :count).by(-1)
+
+        items = parent.collection_items.reload
+        expect(items.map(&:item)).to eq [before_sub, first_manifestation, second_manifestation, nil, after_sub]
+        expect(items.map(&:alt_title)).to eq [nil, nil, nil, 'ניר', nil]
+        expect(items.map(&:seqno)).to eq items.map(&:seqno).sort.uniq
+        # the very same items were moved, not re-created
+        expect(promoted.map { |ci| ci.reload.collection }).to all(eq(parent))
+      end
+
+      it 'keeps the containing collection manifestations_count intact' do
+        expect { sub.destroy! }.not_to(change { parent.reload.manifestations_count })
+      end
+    end
+
+    context 'when it is contained in more than one collection' do
+      let(:other_parent) { create(:collection, collection_type: :volume) }
+
+      before do
+        parent
+        other_parent.append_item(sub)
+      end
+
+      it 'promotes the items into every containing collection' do
+        sub.destroy!
+
+        expect(parent.collection_items.reload.map(&:item))
+          .to eq [before_sub, first_manifestation, second_manifestation, nil, after_sub]
+        expect(other_parent.collection_items.reload.map(&:item))
+          .to eq [first_manifestation, second_manifestation, nil]
+        expect(other_parent.collection_items.map(&:alt_title)).to eq [nil, nil, 'ניר']
+      end
+    end
+
+    context 'when it is not contained in any collection' do
+      it 'destroys its items' do
+        sub
+        expect { sub.destroy! }.to change(CollectionItem, :count).by(-3)
+      end
+    end
+  end
 end
