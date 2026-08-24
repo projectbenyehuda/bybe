@@ -561,6 +561,38 @@ describe BybeUtils do
 
     it "falls back to 'oth' for unmapped roles" do
       expect(instance.epub_role_from_ia_role('designer')).to eq('oth')
-    end    
+    end
+  end
+
+  describe '#html2txt' do
+    it 'strips tags' do
+      expect(instance.html2txt('<p>hello <b>world</b></p>')).to eq('hello world')
+    end
+
+    # Regression: entities used to be decoded before strip_tags, whose HTML5 sanitizer re-escapes
+    # its own output, so the "plain text" came back with the entities still in it.
+    it 'decodes &nbsp; to a non-breaking space rather than leaving the entity' do
+      expect(instance.html2txt('a&nbsp;b')).to eq("a\u00A0b")
+    end
+
+    it 'decodes &amp; to an ampersand rather than leaving the entity' do
+      expect(instance.html2txt('Dov &amp; Sons')).to eq('Dov & Sons')
+    end
+
+    it 'decodes numeric entities' do
+      expect(instance.html2txt('&#8211; dash')).to eq('– dash')
+    end
+
+    it 'leaves no HTML entities behind when tags and entities are mixed' do
+      expect(instance.html2txt('<b>bold</b>&nbsp;&amp;&nbsp;more')).not_to match(/&(?:nbsp|amp);/)
+    end
+
+    it 'normalizes curly quotes decoded from entities' do
+      expect(instance.html2txt('&ldquo;quoted&rdquo;')).to eq('"quoted"')
+    end
+
+    it 'drops conditional-comment leftovers' do
+      expect(instance.html2txt('<!--[if gte mso 9]><xml><![endif]-->text')).to eq('text')
+    end
   end
 end
