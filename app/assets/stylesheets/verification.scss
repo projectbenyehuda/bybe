@@ -455,6 +455,15 @@ body:has(.verification-container) {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+
+    // Keep the destructive delete button away from edit/verify: those stay packed at the
+    // start of the row, delete is pushed to the opposite edge of the card.
+    // These rows always run left-to-right (the [dir="rtl"] block below sets row-reverse),
+    // so the main-start side is the physical left in both directions, and an auto margin
+    // there absorbs the free space, sending delete to the right edge.
+    .delete-citation, .delete-link {
+      margin-left: auto;
+    }
   }
 }
 
