@@ -621,6 +621,85 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  describe 'English title extraction' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'ישראלי, ישראל',
+          fname: fixture,
+          full_path: Rails.root.join('spec/fixtures/files/lexicon', fixture)
+        }
+      )
+    end
+
+    context 'when the header uses font size 4 rather than 5' do
+      let(:fixture) { 'english_title_font_size_4.php' }
+
+      it 'extracts the English name' do
+        expect(call.english_title).to eq('Zvi Arzi')
+      end
+    end
+
+    context 'when the name is split across a nested span' do
+      let(:fixture) { 'english_title_split_across_spans.php' }
+
+      it 'extracts the whole name rather than the first fragment' do
+        expect(call.english_title).to eq('Jochanan Twersky')
+      end
+    end
+
+    context 'when dir="ltr" sits on the cell rather than the paragraph' do
+      let(:fixture) { 'english_title_dir_on_cell.php' }
+
+      it 'extracts the English name' do
+        expect(call.english_title).to eq('Ilana Aviel')
+      end
+    end
+
+    context 'when the header carries no dir attribute at all' do
+      let(:fixture) { 'english_title_without_dir.php' }
+
+      it 'falls back to the cell written in Latin script' do
+        expect(call.english_title).to eq('Malka Shaked')
+      end
+    end
+
+    context 'when the name also appears in its original, non-Latin script' do
+      let(:fixture) { 'english_title_after_cyrillic.php' }
+
+      it 'skips the Cyrillic cell and takes the Latin one' do
+        expect(call.english_title).to eq('Shimen Shmuel Frug')
+      end
+    end
+
+    context 'when an unmarked Latin-script original name precedes the English one' do
+      let(:fixture) { 'english_title_after_unmarked_original.php' }
+
+      it 'prefers the cell explicitly marked ltr' do
+        expect(call.english_title).to eq('Hannah Senesh')
+      end
+    end
+
+    context 'when the transliteration uses a geresh as an apostrophe' do
+      let(:fixture) { 'english_title_with_geresh.php' }
+
+      it 'does not mistake the geresh for a Hebrew letter' do
+        expect(call.english_title).to eq('Ya׳akov Rabinowitz')
+      end
+    end
+
+    context 'when the header cell holds no English name' do
+      let(:fixture) { 'english_title_absent.php' }
+
+      it 'leaves the English title blank' do
+        expect(call.english_title).to be_nil
+      end
+    end
+  end
+
   describe 'flagging a bibliography that produced no citations' do
     let!(:file) do
       create(
