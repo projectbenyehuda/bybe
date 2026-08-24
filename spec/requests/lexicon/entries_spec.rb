@@ -137,6 +137,18 @@ describe '/lexicon/entries' do
 
         it { is_expected.to eq(200) }
       end
+
+      context 'when a work is associated with a collection' do
+        let(:collection) { create(:collection, title: 'כרך מקוון') }
+        let!(:work) do
+          create(:lex_person_work, person: entry.lex_item, title: 'ספר הזכרונות', collection: collection)
+        end
+
+        it 'links the work title to the collection' do
+          expect(call).to eq(200)
+          expect(response.body).to include(%(<a href="#{collection_path(collection)}">ספר הזכרונות</a>))
+        end
+      end
     end
 
     context 'when entry is a Publication' do

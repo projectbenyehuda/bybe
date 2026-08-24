@@ -39,12 +39,15 @@ module LexiconHelper
   end
 
   # Renders a work title, applying hyperlinks from title_links if present.
-  # When the work has a lex_publication, the whole title links to that publication and
-  # title_links are not applied (nested anchors are invalid HTML).
+  # When the work has a BY Collection or a lex_publication, the whole title links there and
+  # title_links are not applied (nested anchors are invalid HTML). A Collection takes
+  # precedence: it is the actual text on the main site.
   # Returns a plain String (possibly containing HTML) so that render_person_work can
   # safely concatenate further HTML before calling raw() at the end.
   def render_person_work_title(work)
-    if work.lex_publication.present?
+    if work.collection.present?
+      link_to(work.title, collection_path(work.collection))
+    elsif work.lex_publication.present?
       entry = work.lex_publication.entry
       link_to(entry.title, lexicon_entry_path(entry))
     elsif work.title_links.is_a?(Array) && work.title_links.present?
