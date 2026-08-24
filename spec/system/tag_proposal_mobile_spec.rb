@@ -45,10 +45,6 @@ RSpec.describe 'Tag proposal popup on mobile', :js, :narrow_viewport, type: :sys
     resize_window(1400, 1400)
   end
 
-  def resize_window(width, height)
-    page.driver.browser.manage.window.resize_to(width, height)
-  end
-
   def open_tag_popup
     find('#initiate-add-tag').click
     expect(page).to have_css('#add_tagging_tabs > ul > li', count: 2, wait: 5)
