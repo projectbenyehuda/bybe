@@ -8,6 +8,15 @@ class CollectionItem < ApplicationRecord
   validates :seqno, presence: true
   validate :ensure_no_cycle
 
+  # CollectionsIndex indexes items_count as a count of these rows, so every operation that changes it --
+  # adding an item, removing one, or moving one between collections -- has to reindex the collection(s)
+  # involved; a move touches both the collection the item left and the one it joined.
+  update_index('collections') do
+    ids = [collection_id]
+    ids << collection_id_before_last_save if saved_change_to_collection_id?
+    ids.compact.uniq
+  end
+
   # Update manifestations count when collection items are added, removed, or changed
   after_create :update_collection_manifestations_count
   after_destroy :update_collection_manifestations_count
