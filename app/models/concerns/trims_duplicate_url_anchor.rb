@@ -11,17 +11,23 @@
 module TrimsDuplicateUrlAnchor
   extend ActiveSupport::Concern
 
-  private
-
   # 'http://example.com/p#sec#sec' -> 'http://example.com/p#sec'.
   # Only repetitions of one and the same anchor are trimmed: differing fragments are a URL we
   # do not understand, and guessing which one the editor meant would be worse than leaving it.
-  def trim_duplicate_url_anchor(url)
+  # Exposed on the module (not just as an instance method) so the one-off cleanup task for URLs
+  # stored before this fix -- rake fix_lexicon_duplicate_url_anchors -- shares the same rule.
+  def self.trim(url)
     return url if url.blank?
 
     base, *anchors = url.split('#')
     return url if anchors.size < 2 || anchors.uniq.size > 1
 
     "#{base}##{anchors.first}"
+  end
+
+  private
+
+  def trim_duplicate_url_anchor(url)
+    TrimsDuplicateUrlAnchor.trim(url)
   end
 end

@@ -277,4 +277,91 @@ RSpec.describe 'ingest_lexicon rake task' do # rubocop:disable RSpec/DescribeCla
       expect(link.reload.description).to eq('&copy; 2016')
     end
   end
+
+  describe 'fix_lexicon_duplicate_url_anchors' do
+    let(:trim_task) { Rake::Task['fix_lexicon_duplicate_url_anchors'] }
+    let(:checker) { instance_double(Lexicon::CheckExternalLinks) }
+    let(:archived) { 'https://web.archive.org/web/20200101/http://example.com/page#section' }
+
+    before do
+      trim_task.reenable
+      allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+      allow(checker).to receive(:check_url).and_return(link_check_result(200))
+    end
+
+    # The rows this task exists for were written before the before_validation hook, so they have to
+    # be planted past it -- saving a duplicated anchor through the model now trims it on the way in.
+    def stored_link(attributes)
+      create(:lex_link).tap { |link| link.update_columns(attributes) }
+    end
+
+    def stored_citation(attributes)
+      create(:lex_citation, person: create(:lex_person)).tap { |citation| citation.update_columns(attributes) }
+    end
+
+    it 'trims a duplicated anchor from a link url' do
+      link = stored_link(url: "#{archived}#section", http_status: nil, checked_at: 1.day.ago)
+
+      trim_task.invoke
+
+      expect(link.reload.url).to eq archived
+    end
+
+    # Trimming alone would leave the row still displayed as broken: its nil status was recorded
+    # against a URL the checker could not even parse.
+    it 'rechecks the repaired url and stores the fresh verdict' do
+      link = stored_link(url: "#{archived}#section", http_status: nil, checked_at: 1.day.ago)
+
+      trim_task.invoke
+
+      expect(link.reload).to have_attributes(http_status: 200, unverifiable: false)
+    end
+
+    it 'trims a duplicated anchor from a citation link and rechecks it' do
+      citation = stored_citation(link: "#{archived}#section", link_http_status: nil, link_checked_at: 1.day.ago)
+
+      trim_task.invoke
+
+      expect(citation.reload).to have_attributes(link: archived, link_http_status: 200)
+    end
+
+    it 'trims a duplicated anchor from a citation backup_url' do
+      citation = stored_citation(backup_url: '/files/lex/7635/doc.pdf#p3#p3')
+
+      trim_task.invoke
+
+      expect(citation.reload.backup_url).to eq '/files/lex/7635/doc.pdf#p3'
+    end
+
+    it 'does not spend a check on a local path' do
+      stored_link(url: '/files/lex/7635/doc.pdf#p3#p3')
+
+      trim_task.invoke
+
+      expect(checker).not_to have_received(:check_url)
+    end
+
+    it 'leaves a url whose two anchors differ alone' do
+      link = stored_link(url: 'http://example.com/page#one#two')
+
+      trim_task.invoke
+
+      expect(link.reload.url).to eq 'http://example.com/page#one#two'
+    end
+
+    it 'leaves a url with a single anchor alone' do
+      link = stored_link(url: 'http://example.com/page#one')
+
+      trim_task.invoke
+
+      expect(link.reload.url).to eq 'http://example.com/page#one'
+    end
+
+    it 'reports how many URLs it repaired' do
+      stored_link(url: "#{archived}#section")
+      stored_citation(backup_url: '/files/lex/7635/doc.pdf#p3#p3')
+
+      expect { trim_task.invoke }.to output(/2 URLs repaired/).to_stdout
+    end
+  end
 end
