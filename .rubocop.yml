@@ -6,6 +6,7 @@ AllCops:
     - config/boot.rb
     - config/initializers/*
     - config/environments/*
+    - config/puma.rb
     - db/migrate/*
     - db/schema.rb
     - db/queue_schema.rb
