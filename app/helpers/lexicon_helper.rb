@@ -142,11 +142,19 @@ module LexiconHelper
     end
   end
 
+  # Many legacy subjects are already phrased as 'על "שם היצירה"', so wrapping them in the
+  # subject_line template would yield a doubled 'על ״על "שם היצירה"״'. Such subjects are shown
+  # as-is. The quote is required: genuine work titles that merely begin with the word על
+  # (e.g. 'על חכמות דרכים : שירים') still get the wrapper.
+  ALREADY_ABOUT_SUBJECT_RE = /\Aעל\s+["״“”]/
+
   def citations_subject_header(subject_title)
-    if subject_title.present?
-      t('lexicon.citations.header.subject_line', subject: subject_title)
-    else
+    if subject_title.blank?
       t('lexicon.citations.header.general')
+    elsif subject_title.match?(ALREADY_ABOUT_SUBJECT_RE)
+      subject_title
+    else
+      t('lexicon.citations.header.subject_line', subject: subject_title)
     end
   end
 

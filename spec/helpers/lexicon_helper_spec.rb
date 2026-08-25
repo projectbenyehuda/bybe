@@ -307,6 +307,32 @@ RSpec.describe LexiconHelper, type: :helper do
     end
   end
 
+  describe '#citations_subject_header' do
+    it 'wraps a plain work title in the "about" template' do
+      expect(helper.citations_subject_header('שורשי אויר')).to eq('על ״שורשי אויר״')
+    end
+
+    it 'falls back to the general header when there is no subject' do
+      expect(helper.citations_subject_header(nil)).to eq('כללי')
+    end
+
+    it 'shows a subject already phrased as על "..." as-is' do
+      expect(helper.citations_subject_header('על "שורשי אויר"')).to eq('על "שורשי אויר"')
+    end
+
+    it 'shows an already-phrased subject with trailing text as-is' do
+      expect(helper.citations_subject_header('על "כל השירים" (2009)')).to eq('על "כל השירים" (2009)')
+    end
+
+    it 'recognizes Hebrew gershayim as the opening quote' do
+      expect(helper.citations_subject_header('על ״שורשי אויר״')).to eq('על ״שורשי אויר״')
+    end
+
+    it 'still wraps a work title that merely begins with the word על' do
+      expect(helper.citations_subject_header('על חכמות דרכים : שירים')).to eq('על ״על חכמות דרכים : שירים״')
+    end
+  end
+
   describe '#render_citation with text_links' do
     let(:person) { create(:lex_person) }
     let!(:target_entry) { create(:lex_entry, :publication, title: 'שדות ומזוודות') }
