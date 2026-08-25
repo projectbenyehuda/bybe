@@ -88,6 +88,43 @@ describe '/lexicon/person_works' do
       call
       expect(response.body).to include('per-work-edit-form')
     end
+
+    describe 'the collection dropdown' do
+      subject(:collection_options) do
+        call
+        Nokogiri::HTML(response.body).css('#lex_person_work_collection_id option').pluck('value')
+      end
+
+      let(:authority) { create(:authority, name: 'Translated Author') }
+      let(:person) { create(:lex_person, authority: authority) }
+
+      # We only did bibliography work for Hebrew authors, so a translated author's volume has its
+      # Publication filed under the Hebrew translator -- the volume is reachable only through the
+      # authority's involved_authorities.
+      context 'when the authority\'s volume belongs to another authority\'s publication' do
+        let!(:volume) do
+          create(:collection,
+                 collection_type: :volume,
+                 title: 'Volume Filed Under The Translator',
+                 publication: create(:publication, authority: create(:authority)),
+                 authors: [authority])
+        end
+
+        it 'offers the volume' do
+          expect(collection_options).to include(volume.id.to_s)
+        end
+      end
+
+      context 'when the work is already associated with a collection outside the authority\'s volumes' do
+        let!(:stale_collection) { create(:collection, collection_type: :other, title: 'Stale Association') }
+
+        before { work.update!(collection: stale_collection) }
+
+        it 'keeps the current association selectable' do
+          expect(collection_options).to include(stale_collection.id.to_s)
+        end
+      end
+    end
   end
 
   describe 'PATCH /lex/works/:id' do

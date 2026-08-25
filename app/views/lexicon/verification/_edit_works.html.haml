@@ -5,7 +5,8 @@
     %p.text-muted= t('lexicon.verification.sections.no_auto_match_proposals')
   - else
     %p= t('lexicon.verification.sections.auto_match_intro')
-    - @item.works.where(publication_id: nil).where(id: @work_matches.keys).order(:seqno).each do |work|
+    - unmatched = @item.works.where(publication_id: nil, collection_id: nil)
+    - unmatched.where(id: @work_matches.keys).order(:seqno).each do |work|
       - match = @work_matches[work.id]
       - next unless match
 
@@ -13,8 +14,9 @@
         .match-info
           %strong= work.title
           %span.mx-2 →
-          = match[:publication_title]
-          - if match[:collection_title].present?
+          -# A volume of a translated author has no publication of its own to name it by
+          = match[:publication_title] || match[:collection_title]
+          - if match[:publication_title].present? && match[:collection_title].present?
             %span.text-muted
               = t('lexicon.verification.edit.proposed_collection', title: match[:collection_title])
           %span.badge.bg-secondary.ms-2

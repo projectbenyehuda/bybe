@@ -3,8 +3,19 @@
   path = @work.new_record? ? lexicon_person_works_path(@person) : lexicon_work_path(@work)
   authority = @person.authority
   publications = authority&.publications || []
-  collections_by_pub = publications.select(&:volume).index_by(&:id)
-                                   .transform_values { |pub| { id: pub.volume.id, title: pub.volume.title } }
+  # Volumes come from the authority's involved_authorities, not from its publications: we only
+  # did bibliography work for Hebrew authors, so a translated author has no Publication of their
+  # own and their volumes' publications are filed under the Hebrew translator instead.
+  collection_volumes = authority ? authority.volumes.distinct.order(:title).to_a : []
+  # Whatever the work is already associated with stays selectable, so that re-saving the form
+  # cannot silently drop an association made before this list was sourced from involved_authorities.
+  current_collection = @work.collection
+  if current_collection && collection_volumes.none? { |vol| vol.id == current_collection.id }
+    collection_volumes.unshift(current_collection)
+  end
+  collections_by_pub = collection_volumes.select(&:publication_id)
+                                         .index_by(&:publication_id)
+                                         .transform_values { |vol| { id: vol.id, title: vol.title } }
 
 = simple_form_for(@work, url: path, remote: true) do |f|
   = f.error_notification
@@ -30,8 +41,6 @@
                     include_blank: t('lexicon.person_works.form.select_publication'),
                     input_html: { id: 'lex_person_work_publication_id',
                                   data: { collections: collections_by_pub.to_json } }
-    :ruby
-      collection_volumes = authority.publications.joins(:volume).includes(:volume).map(&:volume)
     = f.association :collection,
                     collection: collection_volumes,
                     label_method: :title,

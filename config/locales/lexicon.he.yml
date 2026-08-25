@@ -341,6 +341,7 @@ he:
         person_no_authority: אין ישות מקושרת לאדם זה
         publication_not_in_authority: הפרסום אינו שייך לישות
         collection_not_in_publication: האוסף אינו שייך לפרסום
+        no_match_selected: לא נבחרו פרסום או כרך
         work_not_found: יצירה לא נמצאה
         attachment_not_found: קובץ מצורף לא נמצא
         unknown_error: שגיאה לא ידועה

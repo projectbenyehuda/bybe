@@ -340,6 +340,7 @@ en:
         person_no_authority: Person has no associated authority
         publication_not_in_authority: Publication does not belong to authority
         collection_not_in_publication: Collection does not belong to publication
+        no_match_selected: No publication or volume was selected
         work_not_found: Work not found
         attachment_not_found: Attachment not found
         unknown_error: Unknown error

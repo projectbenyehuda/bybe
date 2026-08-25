@@ -222,7 +222,88 @@ RSpec.describe 'Lexicon::Verification Auto-Matching', type: :request do
       end
     end
 
-    context 'when authority has no publications' do
+    # We only did bibliography work for Hebrew authors, so a translated author has no Publication
+    # of their own: their books are in BYP as volumes they are an involved authority of, with the
+    # Publication (when there is one) filed under the Hebrew translator.
+    context 'when the authority has volumes but no publications of its own' do
+      let(:translator_authority) { create(:authority, name: 'Hebrew Translator') }
+      let!(:translators_publication) do
+        create(:publication,
+               authority: translator_authority,
+               title: 'The Immigrant / translated by Hebrew Translator')
+      end
+      let!(:volume) do
+        create(:collection,
+               collection_type: :volume,
+               title: 'The Immigrant',
+               publication: translators_publication,
+               authors: [authority],
+               translators: [translator_authority])
+      end
+      let!(:work) do
+        create(:lex_person_work, person: person, title: 'The Immigrant', publication_id: nil, collection_id: nil)
+      end
+
+      it 'proposes the volume, without the translator\'s publication' do
+        get "/lex/verification/#{entry.id}/edit_section", params: { section: 'works' }
+
+        expect(response).to have_http_status(:success)
+
+        # Still a proposal only -- nothing is persisted
+        work.reload
+        expect(work.collection_id).to be_nil
+
+        expect(assigns(:work_matches)[work.id]).to include(
+          publication_id: nil,
+          collection_id: volume.id,
+          collection_title: 'The Immigrant',
+          similarity: 100
+        )
+      end
+    end
+
+    context 'when a volume belongs to a publication of the same authority' do
+      let!(:publication) { create(:publication, authority: authority, title: 'Own Book') }
+      let!(:volume) do
+        create(:collection, collection_type: :volume, title: 'Own Book', publication: publication, authors: [authority])
+      end
+      let!(:work) do
+        create(:lex_person_work, person: person, title: 'Own Book', publication_id: nil, collection_id: nil)
+      end
+
+      it 'proposes the publication together with the volume, and proposes each only once' do
+        get "/lex/verification/#{entry.id}/edit_section", params: { section: 'works' }
+
+        expect(response).to have_http_status(:success)
+        expect(assigns(:work_matches)[work.id]).to include(
+          publication_id: publication.id,
+          collection_id: volume.id,
+          similarity: 100
+        )
+      end
+    end
+
+    context 'when a work is already associated with a volume but no publication' do
+      let(:translators_publication) { create(:publication, title: 'Elsewhere') }
+      let!(:volume) do
+        create(:collection,
+               collection_type: :volume, title: 'Already Matched',
+               publication: translators_publication, authors: [authority])
+      end
+      let!(:work) do
+        create(:lex_person_work,
+               person: person, title: 'Already Matched', publication_id: nil, collection_id: volume.id)
+      end
+
+      it 'does not propose a match for it again' do
+        get "/lex/verification/#{entry.id}/edit_section", params: { section: 'works' }
+
+        expect(response).to have_http_status(:success)
+        expect(assigns(:work_matches)[work.id]).to be_nil
+      end
+    end
+
+    context 'when authority has neither publications nor volumes' do
       let(:authority_no_pubs) { create(:authority) }
       let(:person_no_pubs) { create(:lex_person, authority: authority_no_pubs) }
       let(:entry_no_pubs) { create(:lex_entry, lex_item: person_no_pubs, status: :verifying) }
@@ -351,6 +432,59 @@ RSpec.describe 'Lexicon::Verification Auto-Matching', type: :request do
         json = response.parsed_body
         expect(json['success']).to be false
         expect(json['error']).to eq(I18n.t('lexicon.verification.messages.collection_not_in_publication'))
+      end
+    end
+
+    context 'when confirming a volume on its own' do
+      let!(:volume) do
+        create(:collection,
+               collection_type: :volume,
+               title: 'Translated Volume',
+               publication: create(:publication, title: 'Filed Under The Translator'),
+               authors: [authority])
+      end
+
+      it 'persists the volume with no publication' do
+        patch "/lex/verification/#{entry.id}/confirm_work_match",
+              params: { work_id: work.id, publication_id: '', collection_id: volume.id },
+              headers: { 'Accept' => 'application/json' }
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['success']).to be true
+
+        work.reload
+        expect(work.publication_id).to be_nil
+        expect(work.collection_id).to eq(volume.id)
+      end
+    end
+
+    context 'when confirming a volume that is not one of the authority\'s' do
+      let!(:foreign_volume) do
+        create(:collection, collection_type: :volume, title: 'Someone Else\'s Volume', authors: [create(:authority)])
+      end
+
+      it 'returns unprocessable with a translated error' do
+        patch "/lex/verification/#{entry.id}/confirm_work_match",
+              params: { work_id: work.id, publication_id: '', collection_id: foreign_volume.id },
+              headers: { 'Accept' => 'application/json' }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = response.parsed_body
+        expect(json['success']).to be false
+        expect(json['error']).to eq(I18n.t('lexicon.verification.messages.collection_not_in_publication'))
+      end
+    end
+
+    context 'when neither a publication nor a volume is given' do
+      it 'returns unprocessable with a translated error' do
+        patch "/lex/verification/#{entry.id}/confirm_work_match",
+              params: { work_id: work.id, publication_id: '', collection_id: '' },
+              headers: { 'Accept' => 'application/json' }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = response.parsed_body
+        expect(json['success']).to be false
+        expect(json['error']).to eq(I18n.t('lexicon.verification.messages.no_match_selected'))
       end
     end
   end
