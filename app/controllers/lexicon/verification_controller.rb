@@ -503,9 +503,7 @@ module Lexicon
         WorkMatchCandidate.new(title: pub.title, publication: pub, collection: pub.volume)
       end
 
-      already_offered = from_publications.filter_map { |candidate| candidate.collection&.id }.to_set
-      from_volumes = authority.volumes.includes(:publication).reject { |vol| already_offered.include?(vol.id) }
-      from_publications + from_volumes.map do |vol|
+from_volumes = authority.volumes.distinct.includes(:publication).reject { |vol| already_offered.include?(vol.id) }
         # Only propose the volume's publication when it is this authority's own -- confirming a
         # match rejects any other, and a translated author's volume points at the translator's.
         publication = vol.publication if vol.publication&.authority_id == authority.id
