@@ -583,43 +583,22 @@ class HtmlFile < ApplicationRecord
   end
 
   def self.pdf_from_any_html(html_buffer)
-    # Use Rails.root/tmp rather than /tmp so that both this process and chromium
-    # resolve the same real filesystem path. Using /tmp can fail when the Rails
-    # process runs under a systemd unit with PrivateTmp=true (or chromium runs as
-    # a snap), because each process sees a different /tmp namespace.
     tmp_dir = Rails.root.join('tmp').to_s
-    tmpfile = Tempfile.new(['pdf2html__', '.html'], tmp_dir)
+    pdf_tmpfile = Tempfile.new(['html2pdf_out__', '.pdf'], tmp_dir)
+    success = false
     begin
-      tmpfile.write(html_buffer)
-      tmpfile.flush
-      tmpfilename = tmpfile.path
-      pdffilename = "#{tmpfilename}.pdf"
-      # --no-sandbox is required when running as root (e.g. in Docker/CI containers).
-      # For non-root deployments the sandbox is preserved unless CHROME_NO_SANDBOX=1.
-      args = ['chromium', '--headless', '--disable-gpu',
-              "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
-              "file://#{tmpfilename}"]
-      args.insert(1, '--no-sandbox') if Process.uid.zero? || ENV['CHROME_NO_SANDBOX'] == '1'
-      Rails.logger.info("[HtmlFile.pdf_from_any_html] uid=#{Process.uid} sandbox=#{args.include?('--no-sandbox') ? 'off' : 'on'}")
-      Rails.logger.info("[HtmlFile.pdf_from_any_html] Running: #{args.join(' ')}")
-      stdout, stderr, status = Open3.capture3(*args)
-      Rails.logger.info("[HtmlFile.pdf_from_any_html] exit_status=#{status.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}")
-      Rails.logger.info("[HtmlFile.pdf_from_any_html] stdout: #{stdout}") unless stdout.blank?
-      Rails.logger.info("[HtmlFile.pdf_from_any_html] stderr: #{stderr}") unless stderr.blank?
-      unless status.success? && File.exist?(pdffilename)
-        Rails.logger.error(
-          '[HtmlFile.pdf_from_any_html] Chrome PDF generation failed. ' \
-          "exit_status=#{status.exitstatus.inspect} pdf_exists=#{File.exist?(pdffilename)}"
-        )
-        return nil
-      end
+      success = Converters::Html2Pdf.call(html_buffer, pdf_tmpfile)
+      return nil unless success
+
+      pdffilename = pdf_tmpfile.path
+      pdf_tmpfile.close
+      pdffilename
     rescue StandardError => e
       Rails.logger.error("[HtmlFile.pdf_from_any_html] #{e.class}: #{e.message}")
-      return nil
+      nil
     ensure
-      tmpfile.close! # close and unlink the temp HTML file
+      pdf_tmpfile.close! unless success
     end
-    pdffilename
   end
 
   def self.new_since(t) # pass a Time
