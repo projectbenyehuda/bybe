@@ -18,7 +18,7 @@ module Converters
       tmpfile = Tempfile.new(['html2pdf__', '.html'], tmp_dir)
       pdffilename = "#{tmpfile.path}.pdf"
       begin
-        tmpfile.write(html)
+        tmpfile.write(prepare_html(html))
         tmpfile.flush
         args = ['chromium', '--headless', '--disable-gpu',
                 "--print-to-pdf=#{pdffilename}", '--no-pdf-header-footer',
@@ -50,6 +50,22 @@ module Converters
         FileUtils.rm_f(pdffilename)
       end
       true
+    end
+
+    PDF_CSS = '@page {size: A4; margin: 2cm;} img {max-width: 100%; height: auto;}'
+
+    private
+
+    # Wraps an HTML fragment (or full document) in a print-ready full document
+    # with A4 page CSS and ActiveStorage image scaling.
+    def prepare_html(html)
+      html = html.gsub(/<img src=.*?active_storage.*?>/) { |match| "<div style=\"max-width:100%\">#{match}</div>" }
+      if html.include?('</head>')
+        html.sub('</head>', "<style>#{PDF_CSS}</style></head>")
+      else
+        "<!DOCTYPE html><html><head><meta charset='utf-8'><style>#{PDF_CSS}</style></head>" \
+          "<body dir='rtl'>#{html}</body></html>"
+      end
     end
   end
 end

@@ -15,7 +15,7 @@ class MakeFreshDownloadable < ApplicationService
     begin
       case format
       when 'pdf'
-        pdfname = HtmlFile.pdf_from_any_html(HtmlFile.prepare_html_for_pdf(html))
+        pdfname = HtmlFile.pdf_from_any_html(html)
         raise StandardError, "PDF generation failed for #{download_entity.class.name} #{download_entity.id}" \
           if pdfname.nil?
 
