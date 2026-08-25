@@ -8,6 +8,8 @@
     .form-text.text-muted
       = t('lexicon.verification.edit.html_allowed')
 
+  = render 'lexicon/shared/insert_image', entry: @entry, textarea: '#lex_person_bio'
+
   .form-check.mt-3
     = check_box_tag :mark_verified, '1', false, class: 'form-check-input'
     = label_tag :mark_verified, t('lexicon.verification.edit.mark_as_verified'), class: 'form-check-label'

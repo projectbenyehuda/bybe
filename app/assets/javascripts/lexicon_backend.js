@@ -3,6 +3,9 @@
 //= require autocomplete_init
 //= require sortable.min
 //= require verification
+//= require jquery.caret
+//= require jquery.ddslick.min
+//= require insert_image
 //= require bootstrap-rtl-4.2.1.bundle.min
 
 $(function() {

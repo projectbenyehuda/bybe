@@ -22,4 +22,5 @@
   = f.input :birthdate
   = f.input :deathdate
   = f.input :bio, as: :text, input_html: { rows: 20 }
+  = render 'lexicon/shared/insert_image', entry: @lex_person.entry, textarea: '#lex_person_bio'
   = f.button :submit, class: 'btn btn-primary'

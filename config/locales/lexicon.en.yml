@@ -159,6 +159,10 @@ en:
     header:
       title: Lexicon of New Hebrew Literature
       part_of_pby: Part of the Ben-Yehuda Project
+    shared:
+      insert_image:
+        button: Insert image
+        hint: "The image is inserted at the caret, floated to the left with the text wrapping around it."
     people:
       create:
         success: Lexicon Person created
