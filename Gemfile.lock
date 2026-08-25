@@ -153,10 +153,10 @@ GEM
     capistrano-rvm (0.1.2)
       capistrano (~> 3.0)
       sshkit (~> 1.2)
-    capistrano3-puma (7.1.0)
+    capistrano3-puma (8.1.0)
       capistrano (~> 3.7)
       capistrano-bundler
-      puma (>= 6.1, < 8.0)
+      puma (>= 6.1, < 9.0)
     capybara (3.40.0)
       addressable
       matrix
@@ -543,7 +543,7 @@ GEM
       date
       stringio
     public_suffix (7.0.5)
-    puma (7.2.1)
+    puma (8.0.2)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
