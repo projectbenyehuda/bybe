@@ -116,9 +116,9 @@ describe 'Soft-deleting a Manifestation', :js, type: :system do
   end
 
   describe 'undoing a soft-deletion from the backend show page' do
-    # #show is gated on edit_catalog, and the undo button on the deletions bit, so an editor has to
-    # hold both to use it -- and a soft-deleted work has no other page an editor can reach it on,
-    # since #read forwards even editors to the replacement.
+    # #show is reachable to editors holding either edit_catalog or deletions (so a deletions-only editor can
+    # reach the undo button). A soft-deleted work has no other page an editor can reach it on, since
+    # #read forwards even editors to the replacement.
     let(:deleter) { create(:user, :edit_catalog, :deletions) }
 
     before { SoftDeleteManifestation.call(manifestation, target) }
