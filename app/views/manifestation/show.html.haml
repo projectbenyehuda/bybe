@@ -5,17 +5,28 @@
     %b= link_to t(:edit_markdown), manifestation_edit_path(@m.id)
   %p
     %b= link_to t(:render), url_for(action: :read, id: @m.id)
-  %p
-    -# an href-less <a> is caught by Bootstrap's `a:not([href]):not([tabindex]) { color: inherit }`,
-    -# which outranks the site's `a { color: #660248 }` and renders it black, unlike its siblings above
-    %b= link_to t(:soft_delete_work), '#', data: { toggle: 'modal', target: '#softDeleteDlg' }
+  -#
+    A soft-deleted text is offered the undo instead of a second soft-deletion: this page is the
+    only place an editor can still see it, since #read forwards even editors to the replacement.
+  - may_delete = current_user&.has_bit?(:deletions)
+  - if may_delete && @m.deprecated?
+    %p
+      - undo_opts = { method: :post, id: 'undo-soft-delete-btn',
+                      data: { confirm: t(:undo_soft_delete_confirm) } }
+      %b= link_to t(:undo_soft_delete), manifestation_undo_soft_delete_path(@m.id), undo_opts
+  - elsif may_delete
+    %p
+      -# an href-less <a> is caught by Bootstrap's `a:not([href]):not([tabindex]) { color: inherit }`,
+      -# which outranks the site's `a { color: #660248 }` and renders it black, unlike its siblings above
+      %b= link_to t(:soft_delete_work), '#', data: { toggle: 'modal', target: '#softDeleteDlg' }
   - if @m.deprecated?
     %p.alert.alert-warning#soft-delete-status
       = t(:soft_delete_status_deprecated)
       - if @m.soft_redirect_target.present?
         = link_to @m.soft_redirect_target.title_and_authors, manifestation_show_path(@m.soft_redirect)
-  .modal#softDeleteDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
-    = render partial: 'soft_delete_modal', locals: { manifestation: @m }
+  - elsif may_delete
+    .modal#softDeleteDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
+      = render partial: 'soft_delete_modal', locals: { manifestation: @m }
   %h1
     != "#{t(:work_details)}: #{@m.title} / #{linkify_people(@w.involved_authorities.map(&:authority))}"
     - if @e.translation

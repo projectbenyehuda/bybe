@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 describe ManifestationController do
-  let(:editor) { create(:user, :edit_catalog) }
+  let(:editor) { create(:user, :deletions) }
   let(:manifestation) { create(:manifestation) }
   let(:target) { create(:manifestation) }
 
@@ -83,7 +83,7 @@ describe ManifestationController do
       end
     end
 
-    context 'when the user is not an edit_catalog editor' do
+    context 'when nobody is logged in' do
       before { session.delete(:user_id) }
 
       it 'refuses and leaves the manifestation published' do
@@ -93,12 +93,84 @@ describe ManifestationController do
       end
     end
 
-    context 'when the user is an editor without the edit_catalog bit' do
+    context 'when the user is an editor without the deletions bit' do
       let(:editor) { create(:user, editor: true) }
 
       it 'refuses' do
         perform
         expect(manifestation.reload).to be_published
+      end
+    end
+
+    context 'when the user is an edit_catalog editor without the deletions bit' do
+      let(:editor) { create(:user, :edit_catalog) }
+
+      it 'refuses' do
+        perform
+        expect(response).to redirect_to('/')
+        expect(manifestation.reload).to be_published
+      end
+    end
+  end
+
+  describe '#undo_soft_delete' do
+    subject(:perform) { post :undo_soft_delete, params: { id: manifestation.id } }
+
+    let(:tagging) { create(:tagging, taggable: manifestation) }
+
+    before do
+      session[:user_id] = editor.id
+      tagging # referenced here so that it exists before the soft-deletion, which moves it
+      SoftDeleteManifestation.call(manifestation, target)
+    end
+
+    it 'republishes the manifestation and redirects back to its show page' do
+      perform
+      expect(response).to redirect_to(manifestation_show_path(manifestation.id))
+      expect(flash[:notice]).to eq(I18n.t(:undo_soft_delete_succeeded))
+      expect(manifestation.reload).to be_published
+    end
+
+    it 'stops redirecting readers to the former target' do
+      perform
+      get :read, params: { id: manifestation.id }
+      expect(response).to be_successful
+    end
+
+    # The moved associations cannot be told apart from ones the target already had, so undoing
+    # restores visibility only -- see the note on ManifestationController#undo_soft_delete.
+    it 'leaves the tagging the soft-deletion moved on the target' do
+      expect(tagging.reload.taggable).to eq(target)
+      perform
+      expect(tagging.reload.taggable).to eq(target)
+    end
+
+    context 'when the manifestation was not soft-deleted' do
+      before { manifestation.update!(status: :published) }
+
+      it 'refuses and says so' do
+        perform
+        expect(flash[:alert]).to eq(I18n.t(:undo_soft_delete_not_deprecated))
+        expect(manifestation.reload).to be_published
+      end
+    end
+
+    context 'when the manifestation is unpublished rather than soft-deleted' do
+      before { manifestation.update!(status: :unpublished) }
+
+      it 'does not publish it' do
+        perform
+        expect(manifestation.reload).to be_unpublished
+      end
+    end
+
+    context 'when the user is an editor without the deletions bit' do
+      let(:editor) { create(:user, editor: true) }
+
+      it 'refuses and leaves the manifestation soft-deleted' do
+        perform
+        expect(response).to redirect_to('/')
+        expect(manifestation.reload).to be_deprecated
       end
     end
   end

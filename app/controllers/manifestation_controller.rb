@@ -9,10 +9,21 @@ class ManifestationController < ApplicationController
   include KwicConcordanceConcern
   include PaperTrailHelpers
 
-  before_action only: %i(list show remove_link edit_metadata add_aboutnesses versions version_diff
-                         restore_version preview_link_expression link_expression add_images remove_image
-                         soft_delete) do |c|
+  before_action only: %i(list remove_link edit_metadata add_aboutnesses versions version_diff
+                         restore_version preview_link_expression link_expression add_images
+                         remove_image) do |c|
     c.require_editor('edit_catalog')
+  end
+  # Soft-deleting a text, and undoing that, are gated on their own bit rather than on edit_catalog:
+  # they take a text out of (and back into) public view, which is a heavier act than cataloguing.
+  before_action only: %i(soft_delete undo_soft_delete) do |c|
+    c.require_editor('deletions')
+  end
+  # #show also admits the deletions bit, because it is where both of the above land afterwards and
+  # the only page on which a soft-deleted text is reachable at all -- #read forwards even an editor
+  # to the replacement. The individual editing actions the page links to keep their own checks.
+  before_action only: %i(show) do |c|
+    c.require_editor(%w(edit_catalog deletions))
   end
   before_action only: %i(edit update) do |c|
     c.require_editor(%w(edit_catalog conversion_verification handle_proofs))
@@ -785,6 +796,21 @@ class ManifestationController < ApplicationController
       flash[:notice] = t(:soft_delete_succeeded, id: target_id)
     else
       flash[:alert] = t(:soft_delete_failed, error: result[:error])
+    end
+    redirect_to manifestation_show_path(@m.id)
+  end
+
+  # Undoes a soft-deletion by returning the text to public view. Only the status is restored: the
+  # collection items, anthology texts, taggings, recommendations and external links moved to the
+  # redirect target are indistinguishable from the ones that were already there, so they stay put,
+  # and the text does not rejoin any collection it was removed from.
+  def undo_soft_delete
+    @m = Manifestation.find(params[:id])
+    if @m.deprecated?
+      @m.update!(status: :published)
+      flash[:notice] = t(:undo_soft_delete_succeeded)
+    else
+      flash[:alert] = t(:undo_soft_delete_not_deprecated)
     end
     redirect_to manifestation_show_path(@m.id)
   end

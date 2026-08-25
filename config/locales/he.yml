@@ -680,6 +680,11 @@ he:
   soft_delete_target_not_published: היצירה שנבחרה אינה מפורסמת, ולכן קוראים שיופנו אליה לא יוכלו
     לראות אותה. אנא בחרו יצירה מפורסמת.
   soft_delete_status_deprecated: 'היצירה הזאת נמחקה מחיקה רכה. היא מפנה אל: '
+  undo_soft_delete: ביטול המחיקה הרכה
+  undo_soft_delete_confirm: לבטל את המחיקה הרכה ולהחזיר את היצירה לתצוגה פומבית?
+  undo_soft_delete_succeeded: המחיקה הרכה בוטלה והיצירה שבה להיות מפורסמת. שימו לב שתיוגים, המלצות,
+    קישורים ופריטי אוספים שהועברו ליצירה האחרת לא הוחזרו, והיצירה אינה שבה אל האוספים שהוסרה מהם.
+  undo_soft_delete_not_deprecated: היצירה הזאת אינה מחוקה מחיקה רכה.
   error_loading_preview: שגיאה בטעינת הפרטים
   involved_authorities_label: יוצרים מעורבים
   mistake_important: חשוב לנו שהטקסט יהא מדויק וחף משגיאות
@@ -946,6 +951,7 @@ he:
   link_moderation: ניטור קישוריות מהציבור
   edit_lexicon: עריכת הלקסיקון
   batch_editing: עריכה באצווה
+  deletions: מחיקות
   next_milestone: היעד הבא
   my_activity: הפעילות שלי
   similar_to_x: "דומה לפריט: %{x}"

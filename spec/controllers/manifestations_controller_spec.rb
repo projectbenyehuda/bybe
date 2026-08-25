@@ -374,6 +374,20 @@ describe ManifestationController do
       end
 
       it { is_expected.to be_successful }
+
+      # The page carries the soft-delete and undo-soft-delete buttons, so the deletions bit gets in
+      # too -- a soft-deleted text is reachable on no other page.
+      context 'when the editor holds only the deletions bit' do
+        let!(:user) { create(:user, :deletions) }
+
+        it { is_expected.to be_successful }
+      end
+
+      context 'when the editor holds neither bit' do
+        let!(:user) { create(:user, editor: true) }
+
+        it { is_expected.to redirect_to('/') }
+      end
     end
 
     describe '#read' do
