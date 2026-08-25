@@ -93,6 +93,43 @@ RSpec.describe 'Authority TOC lexicon content', type: :request do
     end
   end
 
+  # Reported against benyehuda.org/author/2360 vs. /lex/entries/64: every citation was present on
+  # the TOC, but the sub-section headings of the work-attached ones were not. Grouping by the bare
+  # `subject` column collapsed all three of them into a single empty <h4> (LexCitation validates
+  # `subject` absent whenever `person_work` is set), and the remaining legacy subjects were shown
+  # raw, without the 'על ״...״' wrapper the entry page gives them.
+  describe 'citation sub-section headings' do
+    let(:lex_person) { create(:lex_person) }
+    let(:lex_entry) { create(:lex_entry, :person, status: 'published', lex_item: lex_person) }
+    let(:work_titles) { ['נערת גומי לעוסה', 'חיים כמעט מתוקים', 'פגומות'] }
+    let(:raw_subjects) { ['הנה 6, קונטרס לשירה', 'מעבר לקוני ויליס'] }
+
+    def about_headings(body)
+      Nokogiri::HTML(body).css('#lexicon-about h4').map { |node| node.text.strip }
+    end
+
+    before do
+      work_titles.each_with_index do |title, index|
+        work = create(:lex_person_work, person: lex_person, title: title, seqno: index + 1)
+        create(:lex_citation, person: lex_person, person_work: work)
+      end
+      raw_subjects.each { |subject| create(:lex_citation, person: lex_person, subject: subject) }
+    end
+
+    it 'headlines every sub-section exactly as the entry page does' do
+      call
+      toc_headings = about_headings(response.body)
+
+      get lexicon_entry_path(lex_entry)
+      entry_headings = about_headings(response.body)
+
+      expect(toc_headings).to eq(entry_headings)
+      expect(toc_headings).to eq((work_titles + raw_subjects).map do |subject|
+        I18n.t('lexicon.citations.header.subject_line', subject: subject)
+      end)
+    end
+  end
+
   describe 'empty sections' do
     context 'when the entry has no works, citations, links or identifiers' do
       let(:lex_entry) { create(:lex_entry, :person, status: 'published') }
