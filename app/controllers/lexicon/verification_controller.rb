@@ -17,6 +17,11 @@ module Lexicon
     QUEUE_SORTABLE_COLUMNS = %w(updated_at migration_item_count).freeze
     QUEUE_SORT_DIRECTIONS = %w(asc desc).freeze
 
+    # One thing in BYP a lexicon work can be matched against: a bibliographic Publication, a
+    # volume Collection, or both when they are two faces of the same book. `title` is what the
+    # work's title is compared against.
+    WorkMatchCandidate = Struct.new(:title, :publication, :collection, keyword_init: true)
+
     # GET /lexicon/verification/queue
     def index
       scope = LexEntry.needs_verification.includes(:lex_item, :lex_file)
@@ -152,16 +157,15 @@ module Lexicon
     end
 
     # PATCH /lexicon/verification/:id/confirm_work_match
-    # Confirms an auto-matched publication for a work
+    # Confirms an auto-matched publication and/or volume for a work
     def confirm_work_match
       work_id = params[:work_id].to_i
-      publication_id = params[:publication_id].to_i
-      collection_id = params[:collection_id].to_i if params[:collection_id].present?
+      publication_id = params[:publication_id].presence&.to_i
+      collection_id = params[:collection_id].presence&.to_i
 
       # Find the work and verify it belongs to this entry's person
       work = @entry.lex_item.works.find(work_id)
 
-      # Validate that publication belongs to the person's authority
       person = @entry.lex_item
       if person.authority.blank?
         render json: { success: false, error: I18n.t('lexicon.verification.messages.person_no_authority') },
@@ -169,21 +173,10 @@ module Lexicon
         return
       end
 
-      publication = person.authority.publications.find_by(id: publication_id)
-      unless publication
-        render json: { success: false, error: I18n.t('lexicon.verification.messages.publication_not_in_authority') },
-               status: :unprocessable_content
+      error = work_match_error(person.authority, publication_id, collection_id)
+      if error
+        render json: { success: false, error: error }, status: :unprocessable_content
         return
-      end
-
-      # Validate collection if provided
-      if collection_id.present?
-        collection = Collection.find_by(id: collection_id, publication_id: publication_id)
-        unless collection
-          render json: { success: false, error: I18n.t('lexicon.verification.messages.collection_not_in_publication') },
-                 status: :unprocessable_content
-          return
-        end
       end
 
       # Update the work with the confirmed publication and collection
@@ -499,7 +492,28 @@ module Lexicon
       # rubocop:enable Rails/StrongParametersExpect
     end
 
-    # Auto-match works to publications based on title similarity
+    # Everything of this authority's that a work may be matched to.
+    #
+    # Publications alone are not enough: we only did bibliography work for Hebrew authors, so a
+    # translated author usually has no Publication of their own. Their books are still in BYP as
+    # volumes they are an involved authority of -- with the Publication, if any, filed under the
+    # Hebrew *translator*. Those volumes are reachable only through Authority#volumes.
+    def work_match_candidates(authority)
+      from_publications = authority.publications.includes(:volume).map do |pub|
+        WorkMatchCandidate.new(title: pub.title, publication: pub, collection: pub.volume)
+      end
+
+      already_offered = from_publications.filter_map { |candidate| candidate.collection&.id }.to_set
+      from_volumes = authority.volumes.includes(:publication).reject { |vol| already_offered.include?(vol.id) }
+      from_publications + from_volumes.map do |vol|
+        # Only propose the volume's publication when it is this authority's own -- confirming a
+        # match rejects any other, and a translated author's volume points at the translator's.
+        publication = vol.publication if vol.publication&.authority_id == authority.id
+        WorkMatchCandidate.new(title: vol.title, publication: publication, collection: vol)
+      end
+    end
+
+    # Auto-match works to publications and volumes based on title similarity
     # Returns proposed matches WITHOUT persisting to database
     # Format: { work_id => { publication_id:, publication_title:, collection_id:, collection_title:, similarity: } }
     def auto_match_works_to_publications(person)
@@ -507,35 +521,25 @@ module Lexicon
       authority = person.authority
       return matches unless authority
 
-      # Get all publications associated with the authority, with volume (collection) eager loaded
-      authority_publications = authority.publications.includes(:volume).to_a
-      return matches if authority_publications.empty?
-
-      # Build a map of publication_id => collection for efficient lookup
-      publication_collections = {}
-      authority_publications.each do |pub|
-        publication_collections[pub.id] = pub.volume if pub.volume.present?
-      end
+      candidates = work_match_candidates(authority)
+      return matches if candidates.empty?
 
       # Get authority name for cleaning publication titles
       authority_name = authority.name
 
-      # Only match works that don't already have a publication
-      unmatched_works = person.works.where(publication_id: nil)
+      # Only match works that are not associated with anything in BYP yet
+      unmatched_works = person.works.where(publication_id: nil, collection_id: nil)
 
       unmatched_works.each do |work|
-        best_match = find_best_publication_match(work, authority_publications, authority_name)
+        best_match = find_best_work_match(work, candidates, authority_name)
         next unless best_match
 
-        publication = best_match[:publication]
-        # Get collection from our pre-loaded map (no additional query)
-        collection = publication_collections[publication.id]
-
+        candidate = best_match[:candidate]
         matches[work.id] = {
-          publication_id: publication.id,
-          publication_title: publication.title,
-          collection_id: collection&.id,
-          collection_title: collection&.title,
+          publication_id: candidate.publication&.id,
+          publication_title: candidate.publication&.title,
+          collection_id: candidate.collection&.id,
+          collection_title: candidate.collection&.title,
           similarity: best_match[:similarity]
         }
       end
@@ -546,29 +550,54 @@ module Lexicon
     # Publications of the person's authority that neither belong to an existing work nor appear
     # among the proposed matches: works we have in BYP that are missing from the lexicon entry.
     def publications_absent_from_entry(person, work_matches)
-      person.unmatched_publications.where.not(id: work_matches.values.pluck(:publication_id))
+      person.unmatched_publications.where.not(id: work_matches.values.filter_map { |match| match[:publication_id] })
     end
 
-    # Find the best publication match for a work
-    # Returns { publication: Publication, similarity: Integer } or nil
-    def find_best_publication_match(work, publications, authority_name)
+    # Find the best candidate match for a work
+    # Returns { candidate: WorkMatchCandidate, similarity: Integer } or nil
+    def find_best_work_match(work, candidates, authority_name)
       return nil if work.title.blank?
 
       best_match = nil
       best_similarity = 0
 
-      publications.each do |pub|
-        next if pub.title.blank?
+      candidates.each do |candidate|
+        next if candidate.title.blank?
 
-        similarity = Lexicon::TitleSimilarity.call(work.title, pub.title, ignoring: authority_name)
-        return { publication: pub, similarity: similarity } if similarity == 100
+        similarity = Lexicon::TitleSimilarity.call(work.title, candidate.title, ignoring: authority_name)
+        return { candidate: candidate, similarity: similarity } if similarity == 100
         next unless similarity >= Lexicon::TitleSimilarity::MATCH_THRESHOLD && similarity > best_similarity
 
         best_similarity = similarity
-        best_match = pub
+        best_match = candidate
       end
 
-      best_match ? { publication: best_match, similarity: best_similarity } : nil
+      best_match ? { candidate: best_match, similarity: best_similarity } : nil
+    end
+
+    # Validates a proposed publication/volume pair against the authority.
+    # Returns a translated error message, or nil when the pair is acceptable.
+    def work_match_error(authority, publication_id, collection_id)
+      if publication_id.blank? && collection_id.blank?
+        return I18n.t('lexicon.verification.messages.no_match_selected')
+      end
+
+      if publication_id.present? && !authority.publications.exists?(id: publication_id)
+        return I18n.t('lexicon.verification.messages.publication_not_in_authority')
+      end
+
+      return nil if collection_id.blank?
+
+      # A volume confirmed on its own only has to be the authority's; one confirmed together with
+      # a publication has to be that publication's volume.
+      valid = if publication_id.present?
+                Collection.exists?(id: collection_id, publication_id: publication_id)
+              else
+                authority.volumes.exists?(id: collection_id)
+              end
+      return I18n.t('lexicon.verification.messages.collection_not_in_publication') unless valid
+
+      nil
     end
   end
 end

@@ -675,7 +675,7 @@ function confirmWorkMatch(button) {
         },
         data: {
             work_id: workId,
-            publication_id: publicationId,
+            publication_id: publicationId || '',
             collection_id: collectionId || ''
         },
         success: function(data) {
