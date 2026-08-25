@@ -3,8 +3,9 @@
 require 'rails_helper'
 
 describe 'Soft-deleting a Manifestation', :js, type: :system do
-  let(:editor) { create(:user, :edit_catalog) }
+  let(:editor) { create(:user, :deletions) }
   let(:plain_editor) { create(:user, editor: true) }
+  let(:catalog_editor) { create(:user, :edit_catalog) }
   let!(:manifestation) { create(:manifestation) }
   let!(:target) { create(:manifestation) }
 
@@ -12,7 +13,7 @@ describe 'Soft-deleting a Manifestation', :js, type: :system do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
 
-  context 'when an edit_catalog editor is reading the work' do
+  context 'when an editor holding the deletions bit is reading the work' do
     before do
       login_as(editor)
       visit manifestation_path(id: manifestation.id)
@@ -87,11 +88,21 @@ describe 'Soft-deleting a Manifestation', :js, type: :system do
     end
   end
 
-  context 'when an editor lacks the edit_catalog bit' do
+  context 'when an editor lacks the deletions bit' do
     it 'does not offer the button' do
       login_as(plain_editor)
       visit manifestation_path(id: manifestation.id)
       expect(page).to have_content(manifestation.title)
+      expect(page).to have_no_css('#soft-delete-btn')
+    end
+  end
+
+  # edit_catalog used to be what gated this, so it is worth pinning down that it no longer does.
+  context 'when an editor has edit_catalog but not the deletions bit' do
+    it 'offers the other editor actions but not this one' do
+      login_as(catalog_editor)
+      visit manifestation_path(id: manifestation.id)
+      expect(page).to have_css('#originating-task-btn')
       expect(page).to have_no_css('#soft-delete-btn')
     end
   end
@@ -101,6 +112,43 @@ describe 'Soft-deleting a Manifestation', :js, type: :system do
       visit manifestation_path(id: manifestation.id)
       expect(page).to have_content(manifestation.title)
       expect(page).to have_no_css('#soft-delete-btn')
+    end
+  end
+
+  describe 'undoing a soft-deletion from the backend show page' do
+    # #show is gated on edit_catalog, and the undo button on the deletions bit, so an editor has to
+    # hold both to use it -- and a soft-deleted work has no other page an editor can reach it on,
+    # since #read forwards even editors to the replacement.
+    let(:deleter) { create(:user, :edit_catalog, :deletions) }
+
+    before { SoftDeleteManifestation.call(manifestation, target) }
+
+    it 'republishes the work and stops redirecting readers away from it' do
+      login_as(deleter)
+      visit manifestation_show_path(manifestation.id)
+      expect(page).to have_css('#soft-delete-status')
+      accept_confirm { find('#undo-soft-delete-btn').click }
+
+      expect(page).to have_content(I18n.t(:undo_soft_delete_succeeded))
+      expect(manifestation.reload).to be_published
+
+      visit manifestation_path(id: manifestation.id)
+      expect(page).to have_current_path(manifestation_path(id: manifestation.id))
+      expect(page).to have_content(manifestation.title)
+    end
+
+    it 'is not offered to an editor without the deletions bit' do
+      login_as(catalog_editor)
+      visit manifestation_show_path(manifestation.id)
+      expect(page).to have_css('#soft-delete-status')
+      expect(page).to have_no_css('#undo-soft-delete-btn')
+    end
+
+    it 'is not offered on a work that is not soft-deleted' do
+      login_as(deleter)
+      visit manifestation_show_path(target.id)
+      expect(page).to have_link(I18n.t(:soft_delete_work))
+      expect(page).to have_no_css('#undo-soft-delete-btn')
     end
   end
 end

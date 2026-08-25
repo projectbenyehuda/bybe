@@ -20,11 +20,11 @@
       - task_opts = { data: { 'manifestation-id': @m.id } }
       %span.static-btn#originating-task-btn= link_to t(:find_originating_task), '#', task_opts
       %span#originating-task-result
-      -# the modal this opens lives in read.html.haml, which print.html.haml does not render
-      - unless @print
-        != '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-        - soft_delete_opts = { data: { toggle: 'modal', target: '#softDeleteDlg' } }
-        %span.static-btn#soft-delete-btn= link_to t(:soft_delete_work), '#', soft_delete_opts
+    -# the modal this opens lives in read.html.haml, which print.html.haml does not render
+    - if current_user.has_bit?(:deletions) && !@print
+      != '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+      - soft_delete_opts = { data: { toggle: 'modal', target: '#softDeleteDlg' } }
+      %span.static-btn#soft-delete-btn= link_to t(:soft_delete_work), '#', soft_delete_opts
     != "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
     %span.impressions-count #{number_with_delimiter(@m.impressions_count, delimiter: ',')} #{t(:impressions_count)}
     %br

@@ -1109,6 +1109,12 @@ en:
   soft_delete_target_not_published: The chosen work is not published, so readers sent to it would
     not be able to see it. Please choose a published work.
   soft_delete_status_deprecated: 'This work has been soft-deleted. It redirects to: '
+  undo_soft_delete: Undo the soft-deletion
+  undo_soft_delete_confirm: Undo the soft-deletion and return this work to public view?
+  undo_soft_delete_succeeded: Soft-deletion undone, and the work is published again. Note that tags,
+    recommendations, links and collection items moved to the other work were not moved back, and
+    the work does not rejoin the collections it was removed from.
+  undo_soft_delete_not_deprecated: This work is not soft-deleted.
   error_loading_preview: Error loading preview
   involved_authorities_label: Involved Authorities
   additional_warning_explanation: 'Here is a note from the editor who identified the
@@ -2594,6 +2600,7 @@ en:
   link_moderation: Link Moderation
   edit_lexicon: Edit Lexicon
   batch_editing: Batch Editing
+  deletions: Deletions
   link_type: Link Type
   linked_author: Linked Author
   linked_taggings: Linked Taggings

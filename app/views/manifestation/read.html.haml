@@ -242,7 +242,7 @@
   = render partial: 'bookmark_delete'
 #tagPolicyDlg.modal{'aria-hidden' => 'true', role: 'dialog', tabindex: '-1'}
   = render partial: 'tag_policy', locals: { taggable: @m }
-- if current_user&.has_bit?(:edit_catalog)
+- if current_user&.has_bit?(:deletions)
   .modal#softDeleteDlg{ 'aria-hidden' => 'true', role: 'dialog', tabindex: '-1' }
     = render partial: 'soft_delete_modal', locals: { manifestation: @m }
 -# chapter popup
