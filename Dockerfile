@@ -1,7 +1,7 @@
 FROM ruby:3.3.9-trixie AS base
 
 RUN apt-get update -qq \
-  && apt-get install -y yaz libmariadb3 libcap2 libvips42t64 libyaml-0-2 chromium \
+  && apt-get install -y yaz libmariadb3 libcap2 libvips42t64 libyaml-0-2 chromium libjemalloc2 \
   && wget https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-amd64.deb -O /tmp/pandoc.deb \
   && dpkg -i /tmp/pandoc.deb \
   && apt-get clean \
@@ -28,8 +28,7 @@ ENV RAILS_ENV=production \
 
 FROM base AS builder
 
-RUN apt-get install -y libyaz-dev default-libmysqlclient-dev libpcap-dev libyaml-dev \
-    libvips-dev
+RUN apt-get install -y libyaz-dev default-libmysqlclient-dev libpcap-dev libyaml-dev libvips-dev
 
 RUN bundle install --deployment --without test development --jobs "$(grep -c ^processor /proc/cpuinfo)" \
     && find vendor/bundle/ -path "*/cache/*" -name "*.gem"   -delete \
@@ -55,6 +54,8 @@ ARG GIT_SHA=
 ARG GIT_COMMITTED_AT=
 ENV GIT_SHA=$GIT_SHA \
     GIT_COMMITTED_AT=$GIT_COMMITTED_AT
+
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 
 EXPOSE 3000
 
