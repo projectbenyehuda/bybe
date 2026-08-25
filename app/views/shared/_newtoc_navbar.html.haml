@@ -1,5 +1,7 @@
 - top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
 - first = true
+-# a lexicon section with no content is not rendered, so it gets no line here either
+- lexicon_sections = @lexicon_entry ? lexicon_sections_present(@lexicon_entry.lex_item, @lexicon_entry) : {}
 
 -# Calculate visibility for all roles upfront to share between full and thin navbars
 :ruby
@@ -117,17 +119,26 @@
       .truncate= t(:external_links)
     .book-type
       .truncate= t(:recommendations_for_work)
-  - if @lexicon_entry.present?
+  - if lexicon_sections.any?
     .nav-book-group.lexicon-background-color{ 'data-scroll-target' => '#lexicon-bio' }
       .headline-2-v02= t(:lexicon_content)
-      .book-type.pointer
-        .truncate{ 'data-scroll-target' => '#lexicon-bio' }= t('lexicon.verification.sections.biography')
-      .book-type.pointer
-        .truncate{ 'data-scroll-target' => '#lexicon-works' }= t('lexicon.verification.sections.works_section')
-      .book-type.pointer
-        .truncate{ 'data-scroll-target' => '#lexicon-about' }= t('activerecord.attributes.lex_person.about', gender_suffix: @author.person.female? ? 'ת' : '', gender_letter: @author.gender_letter)
-      .book-type.pointer
-        .truncate{ 'data-scroll-target' => '#lexicon-links' }= t('lexicon.verification.sections.links_section')
+      - if lexicon_sections[:biography]
+        .book-type.pointer
+          .truncate{ 'data-scroll-target' => '#lexicon-bio' }= t('lexicon.verification.sections.biography')
+      - if lexicon_sections[:works]
+        .book-type.pointer
+          .truncate{ 'data-scroll-target' => '#lexicon-works' }= t('lexicon.verification.sections.works_section')
+      - if lexicon_sections[:about]
+        - about_label = t('activerecord.attributes.lex_person.about', gender_suffix: @author.person.female? ? 'ת' : '', gender_letter: @author.gender_letter)
+        .book-type.pointer
+          .truncate{ 'data-scroll-target' => '#lexicon-about' }= about_label
+      - if lexicon_sections[:links]
+        .book-type.pointer
+          .truncate{ 'data-scroll-target' => '#lexicon-links' }= t('lexicon.verification.sections.links_section')
+      - if lexicon_sections[:authority_control]
+        - authority_control_label = t('lexicon.verification.sections.authority_control_section')
+        .book-type.pointer
+          .truncate{ 'data-scroll-target' => '#lexicon-authority-control' }= authority_control_label
 
 %nav.book-nav-thin.by-card-v02
   .side-nav-in-page
@@ -138,7 +149,7 @@
       .headline-2-v02= t("toc_by_role.headers.#{role}", gender_letter: @author.gender_letter)
   .nav-books.pointer{ 'data-scroll-target' => '#author-whats-new-bg' }
     .headline-2-v02= t(:additional_content)
-  - if @lexicon_entry.present?
+  - if lexicon_sections.any?
     .nav-books.lexicon-background-color.pointer{ 'data-scroll-target' => '#lexicon-bio' }
       .headline-2-v02= t(:lexicon_content)
 

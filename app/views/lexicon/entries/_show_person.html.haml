@@ -6,6 +6,8 @@
       .col.side-menu-area
         = render partial: 'navbar'
       .col
+        -# empty sections are omitted entirely, here and in the navbar that scrolls to them
+        - sections = lexicon_sections_present(lex_person, @lex_entry)
         = render layout: 'lexicon/header' do
           .lexicon-author-details
             - if @lex_entry.profile_image.present?
@@ -25,36 +27,40 @@
           -#
             a div, not a p: the bio is multi-paragraph HTML, and a <p> wrapper would be
             auto-closed by the parser, leaving the paragraphs outside #lexicon-biography
-          #lexicon-biography!= MarkdownToHtml.call(bio_for_display(lex_person.bio, @lex_entry))
-        #lexicon-works
-          = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
-            - LexPersonWork.work_types.each_key do |work_type|
-              - works_of_type = lex_person.works.select { |work| work.work_type == work_type }
-              - next if works_of_type.empty?
+          - if sections[:biography]
+            #lexicon-biography!= MarkdownToHtml.call(bio_for_display(lex_person.bio, @lex_entry))
+        - if sections[:works]
+          #lexicon-works
+            = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
+              - LexPersonWork.work_types.each_key do |work_type|
+                - works_of_type = lex_person.works.select { |work| work.work_type == work_type }
+                - next if works_of_type.empty?
 
-              - if work_type != 'original'
-                %h4= LexPersonWork.human_enum_name(:work_type, work_type)
-              %ul
-                - works_of_type.sort_by(&:seqno).each do |work|
-                  %li!= render_person_work(work)
+                - if work_type != 'original'
+                  %h4= LexPersonWork.human_enum_name(:work_type, work_type)
+                %ul
+                  - works_of_type.sort_by(&:seqno).each do |work|
+                    %li!= render_person_work(work)
 
-        #lexicon-about
-          = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
-            - grouped_and_ordered_citations(lex_person).each do |subject, list|
-              - if subject.present?
-                %h4= citations_subject_header(subject)
-              %ul
-                - list.each do |c|
-                  - cit_text = render_citation(c)
-                  %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
-        #lexicon-links
-          = render partial: 'links', locals: { links: lex_person.links }
-        - identifier_html = render_external_identifiers(@lex_entry.external_identifiers)
-        - if identifier_html
+        - if sections[:about]
+          #lexicon-about
+            = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
+              - grouped_and_ordered_citations(lex_person).each do |subject, list|
+                - if subject.present?
+                  %h4= citations_subject_header(subject)
+                %ul
+                  - list.each do |c|
+                    - cit_text = render_citation(c)
+                    %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
+        - if sections[:links]
+          #lexicon-links
+            = render partial: 'links', locals: { links: lex_person.links }
+        - if sections[:authority_control]
           #lexicon-authority-control
             = render layout: 'lexicon/block', locals: { title: t('lexicon.entries.show_person.authority_identifiers') } do
               .lexicon-authority-identifiers
-                = identifier_html
+                = render_external_identifiers(@lex_entry.external_identifiers)
+        = render partial: 'last_updated', locals: { lex_entry: @lex_entry }
 
   .col-12.col-lg-4
     .row

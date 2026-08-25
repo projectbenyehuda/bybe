@@ -1,0 +1,7 @@
+-# only the date ingested from the legacy PHP file counts as a manual update
+  (the migration itself does not), so show nothing when it is absent
+- if lex_entry.date_of_manual_update.present?
+  -# empty paragraph: spacing between the last card and the line below it
+  %p
+  .lexicon-last-updated
+    = t('lexicon.entries.show.last_updated', date: lex_entry.date_of_manual_update)
