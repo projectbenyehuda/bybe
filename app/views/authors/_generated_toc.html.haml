@@ -21,39 +21,58 @@
                          authority_id: @author.id,
                          editable: false,
                          nonce: role }
-  - if @lexicon_entry.present?
-    - lex_person = @lexicon_entry.lex_item # TODO: generalize for other lex_item types
+  - lex_person = @lexicon_entry&.lex_item # TODO: generalize for other lex_item types
+  -# empty sections are omitted entirely, here and in the navbar that scrolls to them; with
+     every section empty there is no lexicon content to introduce, so the heading goes too
+  - lexicon_sections = lex_person ? lexicon_sections_present(lex_person, @lexicon_entry) : {}
+  - if lexicon_sections.any?
     .headline-books
       = t('lexicon.header.title')
       .lexicon-logo
       = image_tag 'osu-logo.jpg', class: 'osu-partner-logo', alt: 'OSU'
     .peach2-lexicon
-      .by-card-v02
-        #lexicon-bio
-        .by-card-content-v02
-          -# a div, not a p: see lexicon/entries/_show_person
-          #lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
-      #lexicon-works
-        = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
-          - LexPersonWork.work_types.each_key do |work_type|
-            - works_of_type = lex_person.works.select { |work| work.work_type == work_type }
-            - next if works_of_type.empty?
+      -# anchor for the navbar's lexicon group: kept outside the biography card so that it still
+         marks the top of the lexicon block when the entry has no biography
+      #lexicon-bio
+      - if lexicon_sections[:biography]
+        .by-card-v02
+          .by-card-content-v02
+            -# a div, not a p: see lexicon/entries/_show_person.
+               NOT bio_for_display: that strips the entry's portrait from the bio text because
+               LexEntry#show renders it separately in .lexicon-author-details. This view has no
+               such block, so the inline <img> is the only copy of the portrait and must stay.
+            #lexicon-biography!= MarkdownToHtml.call(lex_person.bio)
+      - if lexicon_sections[:works]
+        #lexicon-works
+          = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
+            - LexPersonWork.work_types.each_key do |work_type|
+              - works_of_type = lex_person.works.select { |work| work.work_type == work_type }
+              - next if works_of_type.empty?
 
-            - if work_type != 'original'
-              %h4= LexPersonWork.human_enum_name(:work_type, work_type)
-            %ul
-              - works_of_type.sort_by(&:seqno).each do |work|
-                %li!= render_person_work(work)
-      #lexicon-about
-        = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
-          - lex_person.citations.group_by(&:subject).each do |subject, list|
-            %h4= subject
-            %ul
-              - list.each do |c|
-                - cit_text = render_citation(c)
-                %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
-      #lexicon-links
-        = render partial: 'lexicon/entries/links', locals: { links: lex_person.links }
+              - if work_type != 'original'
+                %h4= LexPersonWork.human_enum_name(:work_type, work_type)
+              %ul
+                - works_of_type.sort_by(&:seqno).each do |work|
+                  %li!= render_person_work(work)
+      - if lexicon_sections[:about]
+        #lexicon-about
+          = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
+            - grouped_and_ordered_citations(lex_person).each do |subject, list|
+              - if subject.present?
+                %h4= citations_subject_header(subject)
+              %ul
+                - list.each do |c|
+                  - cit_text = render_citation(c)
+                  %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
+      - if lexicon_sections[:links]
+        #lexicon-links
+          = render partial: 'lexicon/entries/links', locals: { links: lex_person.links }
+      - if lexicon_sections[:authority_control]
+        #lexicon-authority-control
+          = render layout: 'lexicon/block', locals: { title: t('lexicon.entries.show_person.authority_identifiers') } do
+            .lexicon-authority-identifiers
+              = render_external_identifiers(@lexicon_entry.external_identifiers)
+      = render partial: 'lexicon/entries/last_updated', locals: { lex_entry: @lexicon_entry }
 
   .by-card-v02#text-volunteers-desktop
     .by-card-header-v02

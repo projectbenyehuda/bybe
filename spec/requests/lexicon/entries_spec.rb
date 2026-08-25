@@ -157,6 +157,76 @@ describe '/lexicon/entries' do
       it { is_expected.to eq(200) }
     end
 
+    describe 'empty sections' do
+      context 'when a Person entry has no works, citations, links or identifiers' do
+        let(:entry) { create(:lex_entry, :person, status: :published) }
+
+        it 'omits those cards' do
+          expect(call).to eq(200)
+          expect(response.body).not_to include('id="lexicon-works"')
+          expect(response.body).not_to include('id="lexicon-about"')
+          expect(response.body).not_to include('id="lexicon-links"')
+          expect(response.body).not_to include('id="lexicon-authority-control"')
+        end
+
+        it 'omits their navbar lines, keeping only the biography' do
+          expect(call).to eq(200)
+          expect(response.body).to include('data-scroll-target="#lexicon-biography"')
+          expect(response.body).not_to include('data-scroll-target="#lexicon-works"')
+          expect(response.body).not_to include('data-scroll-target="#lexicon-about"')
+          expect(response.body).not_to include('data-scroll-target="#lexicon-links"')
+        end
+      end
+
+      context 'when a Person entry has works, citations and links' do
+        let(:entry) { create(:lex_entry, :person, status: :published) }
+
+        before do
+          create(:lex_person_work, person: entry.lex_item)
+          create(:lex_citation, person: entry.lex_item)
+          create(:lex_link, item: entry.lex_item)
+        end
+
+        it 'shows those cards and their navbar lines' do
+          expect(call).to eq(200)
+          expect(response.body).to include('id="lexicon-works"')
+          expect(response.body).to include('id="lexicon-about"')
+          expect(response.body).to include('id="lexicon-links"')
+          expect(response.body).to include('data-scroll-target="#lexicon-works"')
+          expect(response.body).to include('data-scroll-target="#lexicon-about"')
+          expect(response.body).to include('data-scroll-target="#lexicon-links"')
+        end
+      end
+
+      context 'when a Person entry has no biography' do
+        let(:entry) { create(:lex_entry, :person, status: :published, lex_item: create(:lex_person, bio: nil)) }
+
+        let(:active_works_link) { '<a aria-selected="true" class="nav-link active" href="#" id="works_button">' }
+
+        before { create(:lex_person_work, person: entry.lex_item) }
+
+        it 'omits the biography and starts the navbar on the first surviving section' do
+          expect(call).to eq(200)
+          expect(response.body).not_to include('id="lexicon-biography"')
+          expect(response.body).not_to include('data-scroll-target="#lexicon-biography"')
+          expect(response.body).to include(active_works_link)
+        end
+      end
+
+      context 'when a Publication entry has no table of contents' do
+        let(:entry) do
+          create(:lex_entry, :publication, status: :published, lex_item: create(:lex_publication, toc: nil))
+        end
+
+        it 'omits the toc card and its navbar line' do
+          expect(call).to eq(200)
+          expect(response.body).to include('id="lexicon-description"')
+          expect(response.body).not_to include('id="lexicon-toc"')
+          expect(response.body).not_to include('data-scroll-target="#lexicon-toc"')
+        end
+      end
+    end
+
     describe 'last updated line' do
       context 'when the legacy PHP file carried a manual update date' do
         let(:entry) { create(:lex_entry, :person, status: :published, date_of_manual_update: '12 ביולי 2023') }

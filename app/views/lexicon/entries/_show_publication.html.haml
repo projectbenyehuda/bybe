@@ -4,13 +4,19 @@
       .col.side-menu-area
         = render partial: 'navbar'
       .col
-        #lexicon-description
-          = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:description) } do
-            != MarkdownToHtml.call(lex_publication.description)
-        #lexicon-toc
-          = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:toc) } do
-            != MarkdownToHtml.call(lex_publication.toc)
-        #lexicon-links
-          = render partial: 'links', locals: { links: lex_publication.links }
+        -# empty sections are omitted entirely, here and in the navbar that scrolls to them
+        - sections = lexicon_sections_present(lex_publication, @lex_entry)
+        - if sections[:description]
+          #lexicon-description
+            = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:description) } do
+              != MarkdownToHtml.call(lex_publication.description)
+        - if sections[:toc]
+          #lexicon-toc
+            = render layout: 'lexicon/block', locals: { title: LexPublication.human_attribute_name(:toc) } do
+              != MarkdownToHtml.call(lex_publication.toc)
+        - if sections[:links]
+          #lexicon-links
+            = render partial: 'links', locals: { links: lex_publication.links }
+        = render partial: 'last_updated', locals: { lex_entry: @lex_entry }
   .col-12.col-lg-4
     = render partial: 'lexicon/shared/images', locals: { entry: lex_publication.entry }

@@ -2,47 +2,57 @@
 
 - lex_item = @lex_entry.lex_item
 - is_person = lex_item.is_a?(LexPerson)
+-# a section with no content is not rendered, so it gets no line here either
+- sections = lexicon_sections_present(lex_item, @lex_entry)
+- first_section = sections.keys.first
 
 %nav.navbar#genrenav
   %ul.navbar-nav.flex-column.by-card-v02#genre-nav{ 'aria-orientation' => 'vertical' }
     - if is_person
-      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-biography' }
-        %a.nav-link.active#translations_button{ 'aria-selected' => 'true', href: '#' }
-          .side-menu-icon
-          .side-menu-name= t('lexicon.verification.sections.biography')
-      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-works' }
-        %a.nav-link#works_button{ 'aria-selected' => 'false', href: '#' }
-          .side-menu-icon
-          .side-menu-name= t('lexicon.verification.sections.works_section')
-      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-about' }
-        - about_title = t('activerecord.attributes.lex_person.about',
-                          gender_suffix: lex_item.female? ? 'ת' : '',
-                          gender_letter: lex_item.gender_letter)
-        %a.nav-link#about_author_button{ 'aria-selected' => 'false', href: '#' }
-          .side-menu-icon
-          .side-menu-name= about_title
-      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
-        %a.nav-link#links_button{ 'aria-selected' => 'false', href: '#' }
-          .side-menu-icon
-          .side-menu-name= t('lexicon.verification.sections.links_section')
-      - if @lex_entry.external_identifiers.present?
+      - if sections[:biography]
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-biography' }
+          %a.nav-link#translations_button{ lexicon_nav_link_attributes(:biography, first_section) }
+            .side-menu-icon
+            .side-menu-name= t('lexicon.verification.sections.biography')
+      - if sections[:works]
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-works' }
+          %a.nav-link#works_button{ lexicon_nav_link_attributes(:works, first_section) }
+            .side-menu-icon
+            .side-menu-name= t('lexicon.verification.sections.works_section')
+      - if sections[:about]
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-about' }
+          - about_title = t('activerecord.attributes.lex_person.about',
+                            gender_suffix: lex_item.female? ? 'ת' : '',
+                            gender_letter: lex_item.gender_letter)
+          %a.nav-link#about_author_button{ lexicon_nav_link_attributes(:about, first_section) }
+            .side-menu-icon
+            .side-menu-name= about_title
+      - if sections[:links]
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
+          %a.nav-link#links_button{ lexicon_nav_link_attributes(:links, first_section) }
+            .side-menu-icon
+            .side-menu-name= t('lexicon.verification.sections.links_section')
+      - if sections[:authority_control]
         %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-authority-control' }
-          %a.nav-link#authority_control_button{ 'aria-selected' => 'false', href: '#' }
+          %a.nav-link#authority_control_button{ lexicon_nav_link_attributes(:authority_control, first_section) }
             .side-menu-icon
             .side-menu-name= t('lexicon.verification.sections.authority_control_section')
     - else
-      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-description' }
-        %a.nav-link.active{ 'aria-selected' => 'true', href: '#' }
-          .side-menu-icon
-          .side-menu-name= t('lexicon.verification.sections.description_section')
-      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-toc' }
-        %a.nav-link{ 'aria-selected' => 'false', href: '#' }
-          .side-menu-icon
-          .side-menu-name= t('lexicon.verification.sections.toc_section')
-      %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
-        %a.nav-link{ 'aria-selected' => 'false', href: '#' }
-          .side-menu-icon
-          .side-menu-name= t('lexicon.verification.sections.links_section')
+      - if sections[:description]
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-description' }
+          %a.nav-link{ lexicon_nav_link_attributes(:description, first_section) }
+            .side-menu-icon
+            .side-menu-name= t('lexicon.verification.sections.description_section')
+      - if sections[:toc]
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-toc' }
+          %a.nav-link{ lexicon_nav_link_attributes(:toc, first_section) }
+            .side-menu-icon
+            .side-menu-name= t('lexicon.verification.sections.toc_section')
+      - if sections[:links]
+        %li.nav-item.pointer{ 'data-scroll-target' => '#lexicon-links' }
+          %a.nav-link{ lexicon_nav_link_attributes(:links, first_section) }
+            .side-menu-icon
+            .side-menu-name= t('lexicon.verification.sections.links_section')
 
 
 :javascript

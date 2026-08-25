@@ -197,6 +197,36 @@ module LexiconHelper
     raw pairs.join(' | ') if pairs.any?
   end
 
+  # Which of an entry's lexicon sections actually have content, in display order.
+  #
+  # A section with nothing in it is omitted entirely rather than shown as an empty card, so the
+  # cards and the navbar lines that scroll to them must agree on what "empty" means. Four views
+  # share this: the entry page and its navbar (lexicon/entries/_show_person, _show_publication,
+  # _navbar) and the Authority TOC and its navbar (authors/_generated_toc, shared/_newtoc_navbar).
+  #
+  # Insertion order is the display order, so `.keys.first` is the topmost visible section --
+  # which is what the navbars mark active and scroll to by default.
+  def lexicon_sections_present(lex_item, lex_entry)
+    if lex_item.is_a?(LexPerson)
+      { biography: lex_item.bio.present?,
+        works: lex_item.works.any?,
+        about: lex_item.citations.any?,
+        links: lex_item.links.any?,
+        authority_control: render_external_identifiers(lex_entry.external_identifiers).present? }
+    else
+      { description: lex_item.description.present?,
+        toc: lex_item.toc.present?,
+        links: lex_item.links.any? }
+    end.select { |_section, present| present }
+  end
+
+  # Attributes for one link in the lexicon entry navbar. Sections are omitted when empty, so
+  # which one starts out active depends on the entry: it is whichever is shown first.
+  def lexicon_nav_link_attributes(section, first_section)
+    active = section == first_section
+    { class: ('active' if active), 'aria-selected' => active.to_s, href: '#' }
+  end
+
   # Returns bio text with any <img> tag whose src contains the profile image filename removed.
   # Call this before passing bio to MarkdownToHtml to avoid showing the profile image twice.
   def bio_for_display(bio_text, lex_entry)
