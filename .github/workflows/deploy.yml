@@ -84,7 +84,7 @@ jobs:
          username: ${{ secrets.BETA_SSH_USER }}
          password: ${{ secrets.BETA_SSH_PASSWORD }}
          port: 22
-         script: ./update_services.sh bybe-staging web
+         script: ./update_services.sh bybe-staging web solid_queue
   deploy-production:
     needs: build-and-push-image
     if: github.ref_name == 'production'
@@ -97,4 +97,4 @@ jobs:
          username: ${{ secrets.PRODUCTION_SSH_USER }}
          password: ${{ secrets.PRODUCTION_SSH_PASSWORD }}
          port: 22
-         script: ./update_services.sh bybe-production web
+         script: ./update_services.sh bybe-production web solid_queue
