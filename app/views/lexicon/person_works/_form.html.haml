@@ -6,7 +6,7 @@
   # Volumes come from the authority's involved_authorities, not from its publications: we only
   # did bibliography work for Hebrew authors, so a translated author has no Publication of their
   # own and their volumes' publications are filed under the Hebrew translator instead.
-  collection_volumes = authority ? authority.volumes.order(:title).to_a : []
+  collection_volumes = authority ? authority.volumes.distinct.order(:title).to_a : []
   # Whatever the work is already associated with stays selectable, so that re-saving the form
   # cannot silently drop an association made before this list was sourced from involved_authorities.
   current_collection = @work.collection
