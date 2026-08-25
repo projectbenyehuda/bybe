@@ -570,21 +570,12 @@ class HtmlFile < ApplicationRecord
 
   def self.pdf_from_any_html(html_buffer)
     tmp_dir = Rails.root.join('tmp').to_s
-    pdf_tmpfile = Tempfile.new(['html2pdf_out__', '.pdf'], tmp_dir)
-    success = false
-    begin
-      success = Converters::Html2Pdf.call(html_buffer, pdf_tmpfile)
-      return nil unless success
+    tmpfile = Tempfile.new(['html2pdf_out__', '.pdf'], tmp_dir)
+    pdffilename = tmpfile.path
+    tmpfile.close!
+    return nil unless Converters::Html2Pdf.call(html_buffer, pdffilename)
 
-      pdffilename = pdf_tmpfile.path
-      pdf_tmpfile.close
-      pdffilename
-    rescue StandardError => e
-      Rails.logger.error("[HtmlFile.pdf_from_any_html] #{e.class}: #{e.message}")
-      nil
-    ensure
-      pdf_tmpfile.close! unless success
-    end
+    pdffilename
   end
 
   def self.new_since(t) # pass a Time

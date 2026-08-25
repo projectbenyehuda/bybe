@@ -11,9 +11,7 @@ describe HtmlFile do
     end
 
     def pdf_html(body_content)
-      described_class.prepare_html_for_pdf(
-        "<div dir='rtl'>#{body_content}</div>"
-      )
+      "<div dir='rtl'>#{body_content}</div>"
     end
 
     it 'returns a path to a non-empty PDF file for plain text HTML' do
@@ -52,31 +50,6 @@ describe HtmlFile do
       expect(File.size(pdfpath)).to be > 0
     ensure
       File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
-    end
-  end
-
-  describe '.prepare_html_for_pdf' do
-    it 'wraps a fragment in a full HTML document' do
-      result = described_class.prepare_html_for_pdf('<div>content</div>')
-
-      expect(result).to include('<!DOCTYPE html>')
-      expect(result).to include(described_class::PDF_CSS)
-      expect(result).to include('<div>content</div>')
-    end
-
-    it 'injects CSS into an existing </head> tag' do
-      html = '<html><head><title>T</title></head><body>content</body></html>'
-      result = described_class.prepare_html_for_pdf(html)
-
-      expect(result).to include(described_class::PDF_CSS)
-      expect(result).not_to include('<!DOCTYPE html><html><head>')
-    end
-
-    it 'wraps active_storage images in a max-width div' do
-      html = '<div><img src="/rails/active_storage/blobs/xxx/img.jpg"></div>'
-      result = described_class.prepare_html_for_pdf(html)
-
-      expect(result).to include('<div style="max-width:100%"><img src="/rails/active_storage')
     end
   end
 

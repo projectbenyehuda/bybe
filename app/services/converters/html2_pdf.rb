@@ -5,11 +5,11 @@ require 'open3'
 module Converters
   # Converts HTML string to PDF using the Chromium browser.
   class Html2Pdf < ApplicationService
-    # Converts HTML to PDF using the Chromium browser. Result is written to the output_file.
+    # Converts HTML to PDF using the Chromium browser. Result is saved to output_path.
     # @param html [String] The HTML content to convert
-    # @param output_file [File] file representing the output PDF file (must be open in write mode)
+    # @param output_path [String] path where the resulting PDF file should be saved
     # @return [Boolean] true on success, false on failure
-    def call(html, output_file)
+    def call(html, output_path)
       # Use Rails.root/tmp rather than /tmp so that both this process and chromium
       # resolve the same real filesystem path. Using /tmp can fail when the Rails
       # process runs under a systemd unit with PrivateTmp=true (or chromium runs as
@@ -39,9 +39,7 @@ module Converters
           )
           return false
         end
-        output_file.binmode
-        output_file.write(File.binread(pdffilename))
-        output_file.flush
+        FileUtils.mv(pdffilename, output_path)
       rescue StandardError => e
         Rails.logger.error("[Converters::Html2Pdf] #{e.class}: #{e.message}")
         return false
