@@ -503,12 +503,18 @@ module Lexicon
         WorkMatchCandidate.new(title: pub.title, publication: pub, collection: pub.volume)
       end
 
-from_volumes = authority.volumes.distinct.includes(:publication).reject { |vol| already_offered.include?(vol.id) }
+      # A volume reachable through a publication of this authority is already offered with it
+      already_offered = from_publications.filter_map { |candidate| candidate.collection&.id }.to_set
+      unoffered_volumes = authority.volumes.distinct.includes(:publication)
+                                   .reject { |vol| already_offered.include?(vol.id) }
+      from_volumes = unoffered_volumes.map do |vol|
         # Only propose the volume's publication when it is this authority's own -- confirming a
         # match rejects any other, and a translated author's volume points at the translator's.
         publication = vol.publication if vol.publication&.authority_id == authority.id
         WorkMatchCandidate.new(title: vol.title, publication: publication, collection: vol)
       end
+
+      from_publications + from_volumes
     end
 
     # Auto-match works to publications and volumes based on title similarity
