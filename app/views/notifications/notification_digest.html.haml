@@ -3,9 +3,14 @@
 
   %p= t(:notification_digest_intro)
 
-  - @notifications.each do |notification|
+  - @notifications.each do |notification, occurrences|
     %hr
     = render_notification(notification)
+    = notification_repetition_notice(occurrences)
+
+  - if @omitted_count.positive?
+    %hr
+    %p= t(:notification_digest_omitted, count: @omitted_count)
 
   %hr
 

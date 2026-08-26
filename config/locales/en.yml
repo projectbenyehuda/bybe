@@ -898,6 +898,12 @@ en:
   notification_digest_intro: Here is a summary of the notifications we have collected
     for you
   notification_render_error: Error rendering notification
+  notification_repeated: "(this notification arrived %{count} times)"
+  notification_digest_omitted:
+    one: And one more notification not shown here, to keep this message a reasonable
+      size.
+    other: And %{count} more notifications not shown here, to keep this message a reasonable
+      size.
   dictionary_entries: Dictionary Entries
   works: Works
   volumes: Volumes

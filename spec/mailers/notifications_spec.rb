@@ -135,4 +135,66 @@ RSpec.describe Notifications, type: :mailer do
       end
     end
   end
+
+  # by-cnh.7: the digest used to render every buffered row in full, so a repetitive or long-
+  # accumulated buffer produced a wall of near-identical blocks, or an email too big to deliver.
+  describe '#notification_digest' do
+    subject(:mail) { described_class.notification_digest(user.email, notifications) }
+
+    let(:user) { create(:user) }
+    let(:tag) { create(:tag, creator: user) }
+
+    context 'with the same notification buffered several times' do
+      let(:notifications) { create_list(:pending_notification, 3, recipient_email: user.email, args: [tag]) }
+
+      it 'renders the notification once' do
+        expect(mail.body.encoded.scan(tag.name).size).to eq(1)
+      end
+
+      it 'says how many times it arrived' do
+        expect(mail.body.encoded).to include(ERB::Util.html_escape(I18n.t(:notification_repeated, count: 3)))
+      end
+    end
+
+    context 'with distinct notifications of the same type' do
+      let(:other_tag) { create(:tag, creator: user) }
+      let(:notifications) do
+        [create(:pending_notification, recipient_email: user.email, args: [tag]),
+         create(:pending_notification, recipient_email: user.email, args: [other_tag])]
+      end
+
+      it 'renders both, since they are two different things to report' do
+        expect(mail.body.encoded).to include(tag.name).and include(other_tag.name)
+      end
+
+      it 'does not claim either one repeated' do
+        expect(mail.body.encoded).not_to include(ERB::Util.html_escape(I18n.t(:notification_repeated, count: 2)))
+      end
+    end
+
+    context 'with more distinct notifications than the cap' do
+      let(:notifications) do
+        Array.new(Notifications::MAX_DIGEST_ITEMS + 3) do
+          create(:pending_notification, recipient_email: user.email, args: [create(:tag, creator: user)])
+        end
+      end
+
+      it 'renders only up to the cap' do
+        rendered = notifications.first(Notifications::MAX_DIGEST_ITEMS).map { |n| n.mailer_args.first.name }
+        expect(rendered.count { |name| mail.body.encoded.include?(name) }).to eq(Notifications::MAX_DIGEST_ITEMS)
+      end
+
+      it 'summarises the remainder as a count' do
+        expect(mail.body.encoded).to include(ERB::Util.html_escape(I18n.t(:notification_digest_omitted, count: 3)))
+      end
+    end
+
+    context 'with fewer notifications than the cap' do
+      let(:notifications) { [create(:pending_notification, recipient_email: user.email, args: [tag])] }
+
+      it 'says nothing about omitted notifications' do
+        expect(mail.body.encoded).not_to include(ERB::Util.html_escape(I18n.t(:notification_digest_omitted, count: 1)))
+      end
+    end
+  end
 end

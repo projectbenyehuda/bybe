@@ -15,6 +15,14 @@ module NotificationsHelper
     content_tag(:p, t(:notification_render_error))
   end
 
+  # An exact duplicate is folded away by PendingNotification.collapse; this is the line that tells
+  # the recipient it happened. Nothing to say when the notification arrived only once.
+  def notification_repetition_notice(occurrences)
+    return if occurrences < 2
+
+    tag.p(t(:notification_repeated, count: occurrences))
+  end
+
   # Generate email footer with preferences link for registered users
   def email_footer_html(recipient_email = nil)
     base_footer = t(:email_footer_html)

@@ -1,6 +1,9 @@
 class Notifications < ActionMailer::Base
   default from: "editor@benyehuda.org" # TODO: un-hardcode
 
+  # How many distinct notifications a digest renders in full before summarising the rest as a count.
+  MAX_DIGEST_ITEMS = 30
+
   # Send or queue notification based on recipient's email preferences
   def self.send_or_queue(method_name, recipient_email, *args)
     NotificationService.call(
@@ -179,7 +182,12 @@ class Notifications < ActionMailer::Base
   #   he.notifications.notification_digest.subject
   def notification_digest(recipient_email, notifications)
     @greeting = t(:hello_anon)
-    @notifications = notifications
+    collapsed = PendingNotification.collapse(notifications)
+    # A recipient who accumulated hundreds of rows would otherwise get a multi-megabyte email that
+    # their provider may truncate or reject outright, costing them the whole digest rather than
+    # its tail.
+    @notifications = collapsed.first(MAX_DIGEST_ITEMS)
+    @omitted_count = collapsed.drop(MAX_DIGEST_ITEMS).sum(&:last)
     @recipient_email = recipient_email
     mail to: recipient_email
   end
