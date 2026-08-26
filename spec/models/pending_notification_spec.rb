@@ -60,8 +60,7 @@ RSpec.describe PendingNotification, type: :model do
 
   # by-cnh.7: the digest used to render every buffered row in full, however repetitive.
   describe '.collapse' do
-    # Named explicitly to stay off the factory's Faker::Lorem.unique.word pool, which is only 249
-    # words wide for the whole suite and is never reset.
+    # Named explicitly so the two tags are told apart at a glance in a failure message.
     let(:tag) { create(:tag, name: 'collapse-tag-alpha') }
     let(:other_tag) { create(:tag, name: 'collapse-tag-beta') }
 
