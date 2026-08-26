@@ -52,7 +52,7 @@ module Lexicon
           :description,
           :toc,
           :az_navbar,
-          { entry_attributes: %i(title other_designation date_of_manual_update) }
+          { entry_attributes: %i(title english_title other_designation date_of_manual_update) }
         ]
       )
     end
