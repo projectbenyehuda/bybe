@@ -19,6 +19,15 @@ describe Tag do
     expect(build(:tag)).to be_valid
   end
 
+  # by-7lw: the factory used to draw names from Faker::Lorem.unique.word, a finite 249-word pool,
+  # so past that many tags every create(:tag) in the process raised RetryLimitExceeded. 300 is
+  # deliberately over that old ceiling.
+  it 'generates factory tag names from an unbounded pool' do
+    creator = create(:user) # shared, so this measures name generation and not user creation
+    names = Array.new(300) { build(:tag, creator: creator).name }
+    expect(names.uniq.size).to eq 300
+  end
+
   it 'finds tags by creator' do
     u = create(:user)
     i = 0

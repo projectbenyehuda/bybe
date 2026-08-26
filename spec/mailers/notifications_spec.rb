@@ -142,10 +142,8 @@ RSpec.describe Notifications, type: :mailer do
     subject(:mail) { described_class.notification_digest(user.email, notifications) }
 
     let(:user) { create(:user) }
-    # Named explicitly rather than via the factory's Faker::Lorem.unique.word default. That pool
-    # holds 249 words for the whole suite and is never reset, so the cap example below -- which
-    # needs MAX_DIGEST_ITEMS + 3 distinct tags -- would drain it and take unrelated specs down with
-    # it. The names only have to be distinguishable in the rendered body.
+    # Named explicitly so the body assertions below search for a string that is obviously this
+    # tag; the names only have to be distinguishable from one another in the rendered body.
     let(:tag) { create(:tag, name: 'digest-tag-alpha', creator: user) }
 
     context 'with the same notification buffered several times' do
