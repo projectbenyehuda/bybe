@@ -19,6 +19,11 @@ class SendNotificationDigest < ApplicationService
     end
 
     drain(recipient_email)
+  rescue ActiveRecord::RecordNotUnique => e
+    # Expected, not a failure: another run raced us to this recipient's watermark. Both runs had
+    # already delivered by then, so nothing is lost -- see DigestDelivery.record!. Logged at info so
+    # it does not page anyone.
+    Rails.logger.info("Digest for #{recipient_email} raced a concurrent run: #{e.message}")
   rescue StandardError => e
     # Deliberate: on a failed delivery the rows stay buffered and the next run retries them. Do not
     # "fix" this into a delete-always -- that would silently lose the recipient's notifications.

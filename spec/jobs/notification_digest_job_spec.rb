@@ -197,6 +197,21 @@ describe NotificationDigestJob do
         expect { described_class.new.perform('daily') }.not_to change(PendingNotification, :count)
       end
 
+      # Losing the watermark race is the expected outcome of two runs overlapping, not a fault, and
+      # must not page anyone.
+      it 'logs a lost watermark race at info rather than error' do
+        allow(Notifications).to receive(:notification_digest)
+          .and_return(instance_double(ActionMailer::MessageDelivery, deliver_now: true))
+        allow(DigestDelivery).to receive(:record!).and_raise(ActiveRecord::RecordNotUnique, 'raced')
+        allow(Rails.logger).to receive(:info)
+        allow(Rails.logger).to receive(:error)
+
+        described_class.new.perform('daily')
+
+        expect(Rails.logger).to have_received(:info).with(/raced a concurrent run/)
+        expect(Rails.logger).not_to have_received(:error)
+      end
+
       it 'keeps the notifications buffered when delivery fails' do
         allow(Notifications).to receive(:notification_digest).and_raise(Net::SMTPServerBusy, 'busy')
 

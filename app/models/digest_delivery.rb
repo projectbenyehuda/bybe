@@ -14,8 +14,10 @@ class DigestDelivery < ApplicationRecord
   end
 
   # Two jobs racing on the same recipient will both pass sent_within? and one will lose here on the
-  # unique index. That is deliberate: the loser's transaction rolls back, so its rows stay buffered
-  # and are retried, rather than being dropped.
+  # unique index. That is the accepted outcome, not a promise that the loser's rows survive its
+  # rollback -- the winner has very likely deleted them already. What holds in every interleaving is
+  # that both racers delivered before reaching this point, so the recipient sees a duplicate digest
+  # (the failure direction we want) and no notification is dropped unsent.
   def self.record!(recipient_email, sent_at = Time.current)
     delivery = find_or_initialize_by(recipient_email: recipient_email)
     delivery.last_digest_sent_at = sent_at
