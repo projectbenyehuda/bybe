@@ -12,11 +12,13 @@ RSpec.describe 'Biography image in the verification workbench', type: :request d
   let(:image_path) { entry.download_path('portrait.jpg') }
 
   before do
-    entry.attachments.attach(
-      io: Rails.root.join('spec/fixtures/files/test_image.jpg').open('rb'),
-      filename: 'portrait.jpg',
-      content_type: 'image/jpeg'
-    )
+    File.open(Rails.root.join('spec/fixtures/files/test_image.jpg'), 'rb') do |io|
+      entry.attachments.attach(
+        io: io,
+        filename: 'portrait.jpg',
+        content_type: 'image/jpeg'
+      )
+    end
     entry.update!(profile_image_id: entry.attachments.first.id)
     person.update!(bio: %(<img src="#{image_path}" data-align="left" />\n\nביוגרפיה קצרה.))
   end
