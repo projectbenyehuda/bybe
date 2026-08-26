@@ -12,7 +12,7 @@ describe '/lexicon/publications' do
   let(:valid_publication_attributes) { attributes_for(:lex_publication).except('created_at', 'updated_at', 'id') }
 
   let(:valid_attributes) do
-    valid_publication_attributes.merge(entry_attributes: { title: 'Test (test)' })
+    valid_publication_attributes.merge(entry_attributes: { title: 'Test (test)', english_title: 'Test Publication' })
   end
 
   let(:invalid_attributes) do
@@ -40,6 +40,7 @@ describe '/lexicon/publications' do
         expect(lex_publication).to have_attributes(valid_publication_attributes)
         expect(lex_publication.entry).to have_attributes(
           title: 'Test (test)',
+          english_title: 'Test Publication',
           status: 'draft',
           sort_title: 'תתתת_Test test'
         )
@@ -58,9 +59,14 @@ describe '/lexicon/publications' do
   end
 
   describe 'GET /edit' do
-    subject { get "/lex/publications/#{lex_publication.id}/edit" }
+    subject(:call) { get "/lex/publications/#{lex_publication.id}/edit" }
 
     it { is_expected.to eq(200) }
+
+    it 'renders an editable english_title field' do
+      call
+      expect(response.body).to include('lex_publication[entry_attributes][english_title]')
+    end
   end
 
   describe 'PATCH /update' do
@@ -73,6 +79,7 @@ describe '/lexicon/publications' do
       expect(lex_publication.reload).to have_attributes(valid_publication_attributes)
       expect(lex_publication.entry).to have_attributes(
         title: 'Test (test)',
+        english_title: 'Test Publication',
         sort_title: 'תתתת_Test test'
       )
     end

@@ -16,7 +16,7 @@ describe '/lexicon/people' do
   end
 
   let(:valid_attributes) do
-    valid_person_attributes.merge(entry_attributes: { title: 'Test (test)' })
+    valid_person_attributes.merge(entry_attributes: { title: 'Test (test)', english_title: 'Test Person' })
   end
 
   let(:invalid_attributes) do
@@ -42,7 +42,11 @@ describe '/lexicon/people' do
         lex_person = LexPerson.order(id: :desc).first
         expect(call).to eq(200)
         expect(lex_person).to have_attributes(valid_person_attributes)
-        expect(lex_person.entry).to have_attributes(title: 'Test (test)', sort_title: 'תתתת_Test test')
+        expect(lex_person.entry).to have_attributes(
+          title: 'Test (test)',
+          english_title: 'Test Person',
+          sort_title: 'תתתת_Test test'
+        )
         expect(flash.notice).to eq(I18n.t('lexicon.people.create.success'))
       end
     end
@@ -58,9 +62,14 @@ describe '/lexicon/people' do
   end
 
   describe 'GET /edit' do
-    subject { get "/lex/people/#{lex_person.id}/edit" }
+    subject(:call) { get "/lex/people/#{lex_person.id}/edit" }
 
     it { is_expected.to eq(200) }
+
+    it 'renders an editable english_title field' do
+      call
+      expect(response.body).to include('lex_person[entry_attributes][english_title]')
+    end
   end
 
   describe 'PATCH /update' do
@@ -69,7 +78,11 @@ describe '/lexicon/people' do
     it 'updates the record' do
       expect(call).to eq(200)
       expect(lex_person.reload).to have_attributes(valid_person_attributes)
-      expect(lex_person.entry).to have_attributes(title: 'Test (test)', sort_title: 'תתתת_Test test')
+      expect(lex_person.entry).to have_attributes(
+        title: 'Test (test)',
+        english_title: 'Test Person',
+        sort_title: 'תתתת_Test test'
+      )
     end
   end
 end
