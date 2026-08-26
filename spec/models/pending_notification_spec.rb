@@ -60,8 +60,10 @@ RSpec.describe PendingNotification, type: :model do
 
   # by-cnh.7: the digest used to render every buffered row in full, however repetitive.
   describe '.collapse' do
-    let(:tag) { create(:tag) }
-    let(:other_tag) { create(:tag) }
+    # Named explicitly to stay off the factory's Faker::Lorem.unique.word pool, which is only 249
+    # words wide for the whole suite and is never reset.
+    let(:tag) { create(:tag, name: 'collapse-tag-alpha') }
+    let(:other_tag) { create(:tag, name: 'collapse-tag-beta') }
 
     it 'folds identical notifications into one entry carrying the count' do
       duplicates = create_list(:pending_notification, 3, args: [tag])

@@ -142,7 +142,11 @@ RSpec.describe Notifications, type: :mailer do
     subject(:mail) { described_class.notification_digest(user.email, notifications) }
 
     let(:user) { create(:user) }
-    let(:tag) { create(:tag, creator: user) }
+    # Named explicitly rather than via the factory's Faker::Lorem.unique.word default. That pool
+    # holds 249 words for the whole suite and is never reset, so the cap example below -- which
+    # needs MAX_DIGEST_ITEMS + 3 distinct tags -- would drain it and take unrelated specs down with
+    # it. The names only have to be distinguishable in the rendered body.
+    let(:tag) { create(:tag, name: 'digest-tag-alpha', creator: user) }
 
     context 'with the same notification buffered several times' do
       let(:notifications) { create_list(:pending_notification, 3, recipient_email: user.email, args: [tag]) }
@@ -157,7 +161,7 @@ RSpec.describe Notifications, type: :mailer do
     end
 
     context 'with distinct notifications of the same type' do
-      let(:other_tag) { create(:tag, creator: user) }
+      let(:other_tag) { create(:tag, name: 'digest-tag-beta', creator: user) }
       let(:notifications) do
         [create(:pending_notification, recipient_email: user.email, args: [tag]),
          create(:pending_notification, recipient_email: user.email, args: [other_tag])]
@@ -174,8 +178,11 @@ RSpec.describe Notifications, type: :mailer do
 
     context 'with more distinct notifications than the cap' do
       let(:notifications) do
-        Array.new(Notifications::MAX_DIGEST_ITEMS + 3) do
-          create(:pending_notification, recipient_email: user.email, args: [create(:tag, creator: user)])
+        # Zero-padded so that no name is a substring of another ('...-01' vs '...-010'), which the
+        # substring search below would otherwise miscount.
+        Array.new(Notifications::MAX_DIGEST_ITEMS + 3) do |i|
+          capped_tag = create(:tag, name: format('digest-capped-tag-%02d', i), creator: user)
+          create(:pending_notification, recipient_email: user.email, args: [capped_tag])
         end
       end
 
