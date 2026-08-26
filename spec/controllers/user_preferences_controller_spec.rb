@@ -54,6 +54,34 @@ RSpec.describe UserPreferencesController, type: :controller do
         end
       end
 
+      # by-cnh.4: leaving a throttled frequency used to strand whatever was already buffered, since
+      # NotificationDigestJob only ever visits users whose current preference is daily or weekly.
+      context 'when leaving a throttled frequency with notifications already buffered' do
+        let!(:buffered) { create_list(:pending_notification, 2, recipient_email: user.email) }
+
+        before do
+          base_user.set_preference(:email_frequency, 'daily')
+          ActionMailer::Base.deliveries.clear
+        end
+
+        it 'flushes the buffer when switching to unlimited' do
+          expect { patch :update, params: { email_frequency: 'unlimited' } }
+            .to change(PendingNotification, :count).by(-2)
+          expect(ActionMailer::Base.deliveries.last.to).to eq([user.email])
+        end
+
+        it 'discards the buffer, silently, when switching to none' do
+          expect { patch :update, params: { email_frequency: 'none' } }
+            .to change(PendingNotification, :count).by(-2)
+          expect(ActionMailer::Base.deliveries).to be_empty
+        end
+
+        it 'leaves the buffer alone when switching between throttled frequencies' do
+          expect { patch :update, params: { email_frequency: 'weekly' } }
+            .not_to change(PendingNotification, :count)
+        end
+      end
+
       context 'with invalid email_frequency' do
         it 'does not update the preference' do
           original_value = base_user.get_preference(:email_frequency)

@@ -2,9 +2,14 @@
 
 # ActiveJob to send digest emails for users with daily/weekly email frequency preferences
 class NotificationDigestJob < ApplicationJob
+  # How recently a recipient must have received a digest for this run to skip them. Deliberately a
+  # little shorter than the nominal period, so that ordinary scheduler jitter -- a run firing a few
+  # seconds earlier than the previous one did -- cannot swallow a whole period's digest.
+  MIN_INTERVAL_BETWEEN_DIGESTS = { 'daily' => 23.hours, 'weekly' => 6.days }.freeze
+
   def perform(frequency)
     # Validate frequency parameter
-    unless %w(daily weekly).include?(frequency)
+    unless MIN_INTERVAL_BETWEEN_DIGESTS.key?(frequency)
       Rails.logger.error("Invalid frequency: #{frequency}")
       return
     end
@@ -21,40 +26,8 @@ class NotificationDigestJob < ApplicationJob
       email = base_user.user&.email
       next if email.blank?
 
-      send_digest_for_user(email)
+      SendNotificationDigest.call(recipient_email: email,
+                                  min_interval: MIN_INTERVAL_BETWEEN_DIGESTS.fetch(frequency))
     end
-  end
-
-  private
-
-  # Drains everything currently buffered for the recipient, regardless of age: the once-per-period
-  # guarantee comes from the schedule in config/recurring.yml, not from an age filter. Filtering by
-  # age here only bought a full extra period of delivery latency.
-  def send_digest_for_user(email)
-    pending = PendingNotification.for_recipient(email).to_a
-
-    return if pending.empty?
-
-    renderable, unresolvable = pending.partition(&:resolvable?)
-
-    # A notification referring to a since-deleted record can never render. Drop it, so that it does
-    # not fail again on every subsequent run and block this recipient's other notifications.
-    delete_notifications(unresolvable)
-
-    return if renderable.empty?
-
-    # Send digest email
-    Notifications.notification_digest(email, renderable).deliver_now
-
-    # Delete the notifications after sending
-    delete_notifications(renderable)
-  rescue StandardError => e
-    Rails.logger.error("Failed to send digest for #{email}: #{e.message}")
-  end
-
-  def delete_notifications(notifications)
-    return if notifications.empty?
-
-    PendingNotification.where(id: notifications.map(&:id)).delete_all
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_090000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -378,6 +378,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_090000) do
     t.datetime "updated_at", precision: nil, null: false
     t.index ["from_entry_id"], name: "index_dictionary_links_on_from_entry_id"
     t.index ["to_entry_id"], name: "index_dictionary_links_on_to_entry_id"
+  end
+
+  create_table "digest_deliveries", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "last_digest_sent_at", null: false
+    t.string "recipient_email", null: false
+    t.index ["recipient_email"], name: "index_digest_deliveries_on_recipient_email", unique: true
   end
 
   create_table "downloadables", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
