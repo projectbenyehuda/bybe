@@ -7,7 +7,9 @@ describe NotificationService do
   let!(:base_user) { create(:base_user, user: user) }
   let(:mailer_class) { Notifications }
   let(:mailer_method) { :tag_approved }
-  let(:tag) { double('Tag', creator: user) }
+  # A real record, not a double: the whole point of the buffer is that models survive the round trip
+  # through the database, and a double never exercises that.
+  let(:tag) { create(:tag, creator: user) }
   let(:args) { [tag] }
 
   describe '#call' do
@@ -20,7 +22,7 @@ describe NotificationService do
         mail_double = double('mail', deliver_now: true)
         expect(mailer_class).to receive(:tag_approved).with(tag).and_return(mail_double)
         expect(mail_double).to receive(:deliver_now)
-        
+
         described_class.call(
           mailer_class: mailer_class,
           mailer_method: mailer_method,
@@ -57,6 +59,32 @@ describe NotificationService do
         notification = PendingNotification.last
         expect(notification.recipient_email).to eq(user.email)
         expect(notification.notification_type).to eq('Notifications#tag_approved')
+      end
+
+      # Regression test for the JSON-serialization defect: model arguments used to be dumped to
+      # plain attribute hashes, so the mailer replay in the digest got a Hash where it expected a
+      # record and every notification rendered as an error placeholder.
+      it 'round-trips model arguments back into records' do
+        described_class.call(
+          mailer_class: mailer_class,
+          mailer_method: mailer_method,
+          recipient_email: user.email,
+          args: args
+        )
+
+        notification = PendingNotification.last.reload
+        expect(notification.mailer_args).to eq([tag])
+      end
+
+      it 'raises at queue time on an argument it cannot serialize' do
+        expect do
+          described_class.call(
+            mailer_class: mailer_class,
+            mailer_method: mailer_method,
+            recipient_email: user.email,
+            args: [Object.new]
+          )
+        end.to raise_error(ActiveJob::SerializationError)
       end
     end
 
@@ -102,7 +130,7 @@ describe NotificationService do
         mail_double = double('mail', deliver_now: true)
         expect(mailer_class).to receive(:tag_approved).with(tag).and_return(mail_double)
         expect(mail_double).to receive(:deliver_now)
-        
+
         described_class.call(
           mailer_class: mailer_class,
           mailer_method: mailer_method,
