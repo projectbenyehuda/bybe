@@ -6,10 +6,9 @@ module NotificationsHelper
     data = notification.notification_data
     mailer_class = data['mailer_class'].constantize
     mailer_method = data['mailer_method'].to_sym
-    args = data['args']
 
     # Create the mailer and render its content
-    mailer = mailer_class.public_send(mailer_method, *args)
+    mailer = mailer_class.public_send(mailer_method, *notification.mailer_args)
     mailer.body.to_s.html_safe
   rescue StandardError => e
     Rails.logger.error("Failed to render notification #{notification.id}: #{e.message}")

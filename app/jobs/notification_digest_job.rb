@@ -9,14 +9,6 @@ class NotificationDigestJob < ApplicationJob
       return
     end
 
-    # Calculate the cutoff time based on frequency
-    cutoff_time = case frequency
-                  when 'daily'
-                    1.day.ago
-                  when 'weekly'
-                    1.week.ago
-                  end
-
     # Get all users with this email frequency preference
     preferences_join = 'INNER JOIN base_user_preferences ' \
                        'ON base_user_preferences.base_user_id = base_users.id'
@@ -29,23 +21,40 @@ class NotificationDigestJob < ApplicationJob
       email = base_user.user&.email
       next if email.blank?
 
-      send_digest_for_user(email, cutoff_time)
+      send_digest_for_user(email)
     end
   end
 
   private
 
-  def send_digest_for_user(email, cutoff_time)
-    notifications = PendingNotification.for_recipient(email).older_than(cutoff_time)
+  # Drains everything currently buffered for the recipient, regardless of age: the once-per-period
+  # guarantee comes from the schedule in config/recurring.yml, not from an age filter. Filtering by
+  # age here only bought a full extra period of delivery latency.
+  def send_digest_for_user(email)
+    pending = PendingNotification.for_recipient(email).to_a
 
-    return if notifications.empty?
+    return if pending.empty?
+
+    renderable, unresolvable = pending.partition(&:resolvable?)
+
+    # A notification referring to a since-deleted record can never render. Drop it, so that it does
+    # not fail again on every subsequent run and block this recipient's other notifications.
+    delete_notifications(unresolvable)
+
+    return if renderable.empty?
 
     # Send digest email
-    Notifications.notification_digest(email, notifications).deliver_now
+    Notifications.notification_digest(email, renderable).deliver_now
 
     # Delete the notifications after sending
-    notifications.destroy_all
+    delete_notifications(renderable)
   rescue StandardError => e
     Rails.logger.error("Failed to send digest for #{email}: #{e.message}")
+  end
+
+  def delete_notifications(notifications)
+    return if notifications.empty?
+
+    PendingNotification.where(id: notifications.map(&:id)).delete_all
   end
 end

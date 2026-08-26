@@ -5,19 +5,19 @@ require 'rails_helper'
 RSpec.describe PendingNotification, type: :model do
   describe 'validations' do
     it 'validates presence of recipient_email' do
-      notification = PendingNotification.new(notification_type: 'test', notification_data: {})
+      notification = described_class.new(notification_type: 'test', notification_data: {})
       expect(notification).not_to be_valid
       # expect(notification.errors[:recipient_email]).to include("can't be blank")
     end
 
     it 'validates presence of notification_type' do
-      notification = PendingNotification.new(recipient_email: 'test@example.com', notification_data: {})
+      notification = described_class.new(recipient_email: 'test@example.com', notification_data: {})
       expect(notification).not_to be_valid
       # expect(notification.errors[:notification_type]).to include("can't be blank")
     end
 
     it 'validates presence of notification_data' do
-      notification = PendingNotification.new(recipient_email: 'test@example.com', notification_type: 'test')
+      notification = described_class.new(recipient_email: 'test@example.com', notification_type: 'test')
       expect(notification).not_to be_valid
       # expect(notification.errors[:notification_data]).to include("can't be blank")
     end
@@ -55,6 +55,34 @@ RSpec.describe PendingNotification, type: :model do
         expect(result['user1@example.com'].count).to eq(3)
         expect(result['user2@example.com'].count).to eq(3)
       end
+    end
+  end
+
+  describe '#mailer_args' do
+    let(:tag) { create(:tag) }
+    let(:notification) { create(:pending_notification, args: [tag, 'a note', nil]).reload }
+
+    it 'resolves stored references back into records, preserving the other arguments' do
+      expect(notification.mailer_args).to eq([tag, 'a note', nil])
+    end
+
+    it 'raises when a referenced record has been deleted' do
+      tag.destroy!
+      expect { notification.mailer_args }.to raise_error(ActiveJob::DeserializationError)
+    end
+  end
+
+  describe '#resolvable?' do
+    let(:tag) { create(:tag) }
+    let(:notification) { create(:pending_notification, args: [tag]).reload }
+
+    it 'is true while every referenced record still exists' do
+      expect(notification).to be_resolvable
+    end
+
+    it 'is false once a referenced record has been deleted' do
+      tag.destroy!
+      expect(notification).not_to be_resolvable
     end
   end
 end

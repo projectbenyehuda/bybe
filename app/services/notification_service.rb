@@ -25,7 +25,15 @@ class NotificationService < ApplicationService
       queue_notification(
         recipient_email: recipient_email,
         notification_type: "#{mailer_class.name}##{mailer_method}",
-        notification_data: { mailer_class: mailer_class.name, mailer_method: mailer_method.to_s, args: args }
+        notification_data: {
+          'mailer_class' => mailer_class.name,
+          'mailer_method' => mailer_method.to_s,
+          # GlobalID-based serialization (the same one ActiveJob uses for job arguments), so that
+          # ActiveRecord arguments survive the round trip through the buffer table instead of being
+          # flattened into plain hashes by the JSON coder. Raises ActiveJob::SerializationError here,
+          # at the call site, rather than silently producing an unrenderable notification.
+          'args' => ActiveJob::Arguments.serialize(args)
+        }
       )
     end
   end
