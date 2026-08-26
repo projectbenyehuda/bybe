@@ -161,7 +161,7 @@ module LexiconHelper
   EXTERNAL_IDENTIFIER_URLS = {
     'lc' => ->(id) { "https://id.loc.gov/authorities/#{id}" },
     'viaf' => ->(id) { "https://viaf.org/viaf/#{id}" },
-    'nli' => ->(id) { "http://uli.nli.org.il/authorities/#{id}" },
+    'nli' => ->(id) { "https://www.nli.org.il/he/authorities/#{id}" },
     'wikidata' => ->(id) { "https://www.wikidata.org/wiki/#{id}" },
     'openlibrary' => ->(id) { "https://openlibrary.org/authors/#{id}" }
   }.freeze
