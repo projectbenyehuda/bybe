@@ -15,6 +15,9 @@ class UserPreferencesController < ApplicationController
 
     if BaseUser::EMAIL_FREQUENCY_OPTIONS.include?(email_frequency)
       @base_user.set_preference(:email_frequency, email_frequency)
+      # Anything buffered under the old frequency would otherwise never be visited by
+      # NotificationDigestJob again, and would be silently lost.
+      ResolveBufferedNotifications.call(recipient_email: current_user.email, new_frequency: email_frequency)
       flash[:notice] = t(:preferences_updated)
       redirect_to edit_user_preferences_path
     else

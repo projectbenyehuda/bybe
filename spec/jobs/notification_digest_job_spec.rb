@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 describe NotificationDigestJob do
+  include ActiveSupport::Testing::TimeHelpers
+
   let(:user) { create(:user, email: 'test@example.com') }
   let!(:base_user) { create(:base_user, user: user) }
 
@@ -136,6 +138,95 @@ describe NotificationDigestJob do
         expect do
           described_class.new.perform('daily')
         end.to change(PendingNotification, :count).by(-2)
+      end
+    end
+
+    # by-cnh.3: the once-per-period promise must hold per recipient, not merely because
+    # config/recurring.yml happens to fire the job once a day.
+    context 'when the job runs more than once' do
+      let(:mail_double) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
+
+      before do
+        allow(Notifications).to receive(:notification_digest).and_return(mail_double)
+        create(:pending_notification, recipient_email: user.email)
+      end
+
+      it 'sends exactly one email for two runs inside the same period' do
+        described_class.new.perform('daily')
+        create(:pending_notification, recipient_email: user.email)
+        described_class.new.perform('daily')
+
+        expect(Notifications).to have_received(:notification_digest).once
+      end
+
+      it 'leaves the notifications queued since the suppressed run buffered for next time' do
+        described_class.new.perform('daily')
+        create(:pending_notification, recipient_email: user.email)
+
+        expect { described_class.new.perform('daily') }.not_to change(PendingNotification, :count)
+      end
+
+      it 'sends again once the period has elapsed' do
+        described_class.new.perform('daily')
+        create(:pending_notification, recipient_email: user.email)
+        travel(25.hours) { described_class.new.perform('daily') }
+
+        expect(Notifications).to have_received(:notification_digest).twice
+      end
+
+      it 'holds the weekly recipient for a week, not a day' do
+        base_user.set_preference(:email_frequency, 'weekly')
+        described_class.new.perform('weekly')
+        create(:pending_notification, recipient_email: user.email)
+        travel(2.days) { described_class.new.perform('weekly') }
+
+        expect(Notifications).to have_received(:notification_digest).once
+      end
+    end
+
+    # by-cnh.6: the drain and the watermark write must stand or fall together, and a failed
+    # delivery must keep its rows for the next run.
+    context 'when part of the drain fails' do
+      let!(:notification) { create(:pending_notification, recipient_email: user.email) }
+
+      it 'keeps the notifications buffered when the watermark write fails' do
+        allow(Notifications).to receive(:notification_digest)
+          .and_return(instance_double(ActionMailer::MessageDelivery, deliver_now: true))
+        allow(DigestDelivery).to receive(:record!).and_raise(ActiveRecord::RecordNotUnique, 'raced')
+
+        expect { described_class.new.perform('daily') }.not_to change(PendingNotification, :count)
+      end
+
+      # Losing the watermark race is the expected outcome of two runs overlapping, not a fault, and
+      # must not page anyone.
+      it 'logs a lost watermark race at info rather than error' do
+        allow(Notifications).to receive(:notification_digest)
+          .and_return(instance_double(ActionMailer::MessageDelivery, deliver_now: true))
+        allow(DigestDelivery).to receive(:record!).and_raise(ActiveRecord::RecordNotUnique, 'raced')
+        allow(Rails.logger).to receive(:info)
+        allow(Rails.logger).to receive(:error)
+
+        described_class.new.perform('daily')
+
+        expect(Rails.logger).to have_received(:info).with(/raced a concurrent run/)
+        expect(Rails.logger).not_to have_received(:error)
+      end
+
+      it 'keeps the notifications buffered when delivery fails' do
+        allow(Notifications).to receive(:notification_digest).and_raise(Net::SMTPServerBusy, 'busy')
+
+        expect { described_class.new.perform('daily') }.not_to change(PendingNotification, :count)
+        expect(DigestDelivery.sent_within?(user.email, 23.hours)).to be false
+      end
+
+      it 'does not leave the recipient permanently skipped after a failed delivery' do
+        allow(Notifications).to receive(:notification_digest).and_raise(Net::SMTPServerBusy, 'busy')
+        described_class.new.perform('daily')
+
+        mail_double = instance_double(ActionMailer::MessageDelivery, deliver_now: true)
+        allow(Notifications).to receive(:notification_digest).and_return(mail_double)
+
+        expect { described_class.new.perform('daily') }.to change(PendingNotification, :count).by(-1)
       end
     end
   end

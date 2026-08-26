@@ -25,6 +25,10 @@ production:
     args: ['daily']
     # Every day at 9:00AM
     schedule: '0 9 * * * Asia/Jerusalem'
+  purge_stale_buffered_notifications:
+    command: 'PurgeStaleBufferedNotifications.call'
+    # Every Wednesday at 2:20AM
+    schedule: '20 2 * * 3 Asia/Jerusalem'
   update_publications_that_may_be_done:
     command: 'Publication.update_publications_that_may_be_done_list'
     # Every Sunday at 2:00AM

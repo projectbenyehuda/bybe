@@ -14,6 +14,17 @@ class PendingNotification < ApplicationRecord
     all.group_by(&:recipient_email)
   end
 
+  # Collapses exact duplicates into [notification, occurrences] pairs, preserving order.
+  #
+  # Exact means same type *and* same payload. Grouping on the type alone would be lossy: two
+  # different tags approved are both 'Notifications#tag_approved' but are two different things to
+  # tell the recipient about. Only a repeat of the identical notification -- a moderator
+  # batch-processing the same suggestion, a re-approval -- is noise worth folding away.
+  def self.collapse(notifications)
+    notifications.group_by { |n| [n.notification_type, n.notification_data] }
+                 .map { |_payload, occurrences| [occurrences.first, occurrences.size] }
+  end
+
   # The stored mailer arguments, with GlobalID references resolved back into records.
   # Raises ActiveJob::DeserializationError when a referenced record no longer exists.
   def mailer_args

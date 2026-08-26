@@ -58,6 +58,37 @@ RSpec.describe PendingNotification, type: :model do
     end
   end
 
+  # by-cnh.7: the digest used to render every buffered row in full, however repetitive.
+  describe '.collapse' do
+    # Named explicitly to stay off the factory's Faker::Lorem.unique.word pool, which is only 249
+    # words wide for the whole suite and is never reset.
+    let(:tag) { create(:tag, name: 'collapse-tag-alpha') }
+    let(:other_tag) { create(:tag, name: 'collapse-tag-beta') }
+
+    it 'folds identical notifications into one entry carrying the count' do
+      duplicates = create_list(:pending_notification, 3, args: [tag])
+
+      expect(described_class.collapse(duplicates)).to eq([[duplicates.first, 3]])
+    end
+
+    # Grouping on the type alone would silently drop content: two tags approved are two things to
+    # tell the recipient about, not one thing said twice.
+    it 'keeps same-type notifications with different payloads apart' do
+      first = create(:pending_notification, args: [tag])
+      second = create(:pending_notification, args: [other_tag])
+
+      expect(described_class.collapse([first, second])).to eq([[first, 1], [second, 1]])
+    end
+
+    it 'preserves the order of first appearance' do
+      first = create(:pending_notification, args: [tag])
+      second = create(:pending_notification, args: [other_tag])
+      third = create(:pending_notification, args: [tag])
+
+      expect(described_class.collapse([first, second, third])).to eq([[first, 2], [second, 1]])
+    end
+  end
+
   describe '#mailer_args' do
     let(:tag) { create(:tag) }
     let(:notification) { create(:pending_notification, args: [tag, 'a note', nil]).reload }
