@@ -125,7 +125,12 @@
           = t('lexicon.verification.sections.compare_button')
         %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
     - if item.bio.present?
-      .bio-content!= MarkdownToHtml.call(bio_for_display(item.bio, entry))
+      -#
+        Deliberately NOT bio_for_display, unlike LexEntry#show: that strips any <img> pointing at
+        the entry's profile image, because the show page renders the portrait separately in
+        .lexicon-author-details. Here the editor needs to see the bio exactly as stored -- an image
+        they just inserted with the picker must not silently vanish from this preview.
+      .bio-content!= MarkdownToHtml.call(item.bio)
     - else
       %p.text-muted= t('lexicon.verification.sections.no_biography')
   .section-actions
