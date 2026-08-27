@@ -1,0 +1,82 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+RSpec.describe 'LexPersonWork publication/collection pickers in edit modal', :js, type: :system do
+  before do
+    skip 'WebDriver not available or misconfigured' unless webdriver_available?
+    login_as_lexicon_editor
+  end
+
+  let!(:authority) { create(:authority, name: 'Test Author') }
+  let!(:person) { create(:lex_person, authority: authority, birthdate: '1970', gender: :female) }
+
+  let!(:entry) do
+    create(:lex_entry, title: 'Test Author', lex_item: person, status: :draft)
+  end
+
+  let!(:lex_file) do
+    file_path = Rails.root.join('tmp/test_pub_coll_author.php')
+    File.write(file_path, '<html><body><h1>Test Author</h1></body></html>')
+    create(:lex_file,
+           lex_entry: entry,
+           fname: 'test_pub_coll_author.php',
+           full_path: file_path.to_s,
+           status: :ingested,
+           entrytype: :person)
+  end
+
+  # A publication of the authority that has no volume of its own.
+  let!(:publication) { create(:publication, authority: authority, title: 'Bibliography Entry') }
+
+  let!(:work) { create(:lex_person_work, person: person, work_type: :original, title: 'Some Work') }
+
+  after { FileUtils.rm_f(Rails.root.join('tmp/test_pub_coll_author.php')) }
+
+  # Opens the per-work edit modal from the entry edit page's Works tab.
+  def open_work_edit_modal
+    visit "/lex/entries/#{entry.id}/edit"
+    find('#works_tab').click
+    expect(page).to have_css('#works .edit-person-work', wait: 10)
+    find("#work_#{work.id} .edit-person-work").click
+    expect(page).to have_css('#generalDlg.show', wait: 5)
+  end
+
+  context 'when the chosen collection is not linked to any publication' do
+    let!(:unlinked_volume) do
+      create(:collection, collection_type: :volume, title: 'Unlinked Volume', publication: nil,
+                          authors: [authority])
+    end
+
+    it 'keeps the collection selected after a publication is chosen, so both can be saved' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        select 'Unlinked Volume', from: 'lex_person_work_collection_id'
+        select 'Bibliography Entry', from: 'lex_person_work_publication_id'
+
+        expect(page).to have_select('lex_person_work_collection_id', selected: 'Unlinked Volume')
+      end
+    end
+  end
+
+  context 'when the chosen collection belongs to a different publication' do
+    let!(:other_volume) do
+      create(:collection, collection_type: :volume, title: 'Volume Of Another Publication',
+                          publication: create(:publication, authority: create(:authority)),
+                          authors: [authority])
+    end
+
+    it 'clears the collection, since that pairing cannot be saved' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        select 'Volume Of Another Publication', from: 'lex_person_work_collection_id'
+        select 'Bibliography Entry', from: 'lex_person_work_publication_id'
+
+        expect(page).to have_select('lex_person_work_collection_id',
+                                    selected: I18n.t('lexicon.person_works.form.select_collection'))
+      end
+    end
+  end
+end
