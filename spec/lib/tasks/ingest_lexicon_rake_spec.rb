@@ -5,7 +5,7 @@ require 'rake'
 require 'fileutils'
 require 'tmpdir'
 
-RSpec.describe 'ingest_lexicon rake task' do # rubocop:disable RSpec/DescribeClass
+RSpec.describe 'ingest_lexicon rake task' do
   before(:all) do
     Rake.application.rake_require 'tasks/ingest_lexicon'
     Rake::Task.define_task(:environment)
