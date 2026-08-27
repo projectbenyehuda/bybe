@@ -294,6 +294,12 @@ describe '/lexicon/person_works' do
     it 'returns 200' do
       expect(get("/lex/works/#{work.id}/title_links", xhr: true)).to eq(200)
     end
+
+    it 'calls the link target a lexicon entry, not a dictionary entry' do
+      get "/lex/works/#{work.id}/title_links", xhr: true
+      expect(response.body).to include('ערך בלקסיקון')
+      expect(response.body).not_to include('ערך במילון')
+    end
   end
 
   describe 'POST /lex/works/:id/add_title_link' do
