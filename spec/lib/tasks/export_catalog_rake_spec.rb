@@ -4,7 +4,7 @@ require 'rails_helper'
 require 'rake'
 require 'tempfile'
 
-RSpec.describe 'export_catalog rake task' do # rubocop:disable RSpec/DescribeClass
+RSpec.describe 'export_catalog rake task' do
   before(:all) do
     Rake.application.rake_require 'tasks/export_catalog'
     Rake::Task.define_task(:environment)

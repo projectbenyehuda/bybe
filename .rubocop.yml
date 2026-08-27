@@ -102,6 +102,11 @@ Rails/TimeZone:
 RSpec/BeforeAfterAll:
   Enabled: false
 
+RSpec/DescribeClass:
+  # Rake tasks are not classes, so their specs have nothing to name here.
+  Exclude:
+    - 'spec/lib/tasks/**/*_spec.rb'
+
 RSpec/ExampleLength:
   Max: 30
 
