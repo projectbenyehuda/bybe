@@ -7,7 +7,9 @@ describe Lexicon::ParseCitations do
 
   # `sent` collects the HTML actually handed to the LLM, so specs can assert on it. Each
   # successive request is answered with the next of `groups` — the batched path issues one
-  # request per subject heading, so one group per heading.
+  # request per subject heading, so one group per heading. A request beyond the groups stubbed
+  # raises rather than answering with nothing, so a spec cannot pass while the code issues more
+  # requests than it expects.
   def stub_llm_groups(groups, sent = [])
     chat_double = instance_double(RubyLLM::Chat)
     allow(RubyLLM).to receive(:chat).and_return(chat_double)
@@ -15,7 +17,9 @@ describe Lexicon::ParseCitations do
     pending = groups.dup
     allow(chat_double).to receive(:ask) do |html_arg|
       sent << html_arg
-      instance_double(RubyLLM::Message, content: { result: [pending.shift].compact }.to_json)
+      raise "unexpected LLM request ##{sent.size}: only #{groups.size} group(s) stubbed" if pending.empty?
+
+      instance_double(RubyLLM::Message, content: { result: [pending.shift] }.to_json)
     end
   end
 
@@ -567,6 +571,15 @@ describe Lexicon::ParseCitations do
       (1..count).map { |i| "<b>מחבר, שם.</b> #{title_for(heading, i)}. עיתון, 2024, עמ' #{i}." }
     end
 
+    # `sections` is { heading => citation count } throughout; each heading gets its own titles.
+    def items_for(sections)
+      sections.to_h { |heading, count| [heading, plain_items(heading, count)] }
+    end
+
+    def titles_for(sections)
+      sections.flat_map { |heading, count| (1..count).map { |i| title_for(heading, i) } }
+    end
+
     def work(title, **overrides)
       { title: title, authors: [], from_publication: 'עיתון, 2024', pages: '1',
         link: nil, backup_url: nil, notes: nil }.merge(overrides)
@@ -576,30 +589,35 @@ describe Lexicon::ParseCitations do
       { subject: heading, works: (1..count).map { |i| work(title_for(heading, i)) } }
     end
 
+    def groups_for(sections)
+      sections.map { |heading, count| group(heading, count) }
+    end
+
     def li_texts(batch_html)
       Nokogiri::HTML::DocumentFragment.parse(batch_html).css('li').map { |li| li.text.squish }
     end
 
     context 'when the bibliography is within the single-request threshold' do
       let(:sections) { { 'על השירה' => 40, 'על הפרוזה' => 40, 'על המחזות' => 40 } }
-      let(:html) { bibliography_html(sections.transform_values { |count| plain_items('על השירה', count) }) }
+      let(:html) { bibliography_html(items_for(sections)) }
 
       it 'issues exactly one request, carrying the whole section' do
         sent = []
-        stub_llm_capturing(group('על השירה', 40)[:works], sent)
+        stub_llm_capturing(titles_for(sections).map { |title| work(title) }, sent)
 
-        described_class.call(html)
+        result = described_class.call(html)
 
         expect(sent.size).to eq(1)
         expect(li_texts(sent.first).size).to eq(120)
+        expect(result.map(&:title)).to eq(titles_for(sections))
       end
     end
 
     context 'when the bibliography exceeds the threshold' do
       let(:sections) { { 'על השירה' => 50, 'על הפרוזה' => 50, 'על המחזות' => 30 } }
-      let(:html) { bibliography_html(sections.to_h { |heading, count| [heading, plain_items(heading, count)] }) }
-      let(:groups) { sections.map { |heading, count| group(heading, count) } }
-      let(:all_titles) { sections.flat_map { |heading, count| (1..count).map { |i| title_for(heading, i) } } }
+      let(:html) { bibliography_html(items_for(sections)) }
+      let(:groups) { groups_for(sections) }
+      let(:all_titles) { titles_for(sections) }
 
       it 'issues one request per subject heading' do
         sent = []
@@ -656,9 +674,9 @@ describe Lexicon::ParseCitations do
     # so both have to find citations that were parsed by a request other than the first.
     context 'when an asterisk link sits in a later batch' do
       let(:sections) { { 'על השירה' => 60, 'על הפרוזה' => 60, 'על המחזות' => 10 } }
-      let(:groups) { sections.map { |heading, count| group(heading, count) } }
+      let(:groups) { groups_for(sections) }
       let(:html) do
-        items = sections.to_h { |heading, count| [heading, plain_items(heading, count)] }
+        items = items_for(sections)
         items['על המחזות'][6] += ' <a href="/files/lex/5013/00022200.pdf">*</a>'
         bibliography_html(items)
       end
@@ -674,9 +692,9 @@ describe Lexicon::ParseCitations do
 
     context 'when inline links sit in citations of different batches' do
       let(:sections) { { 'על השירה' => 60, 'על הפרוזה' => 60, 'על המחזות' => 10 } }
-      let(:groups) { sections.map { |heading, count| group(heading, count) } }
+      let(:groups) { groups_for(sections) }
       let(:html) do
-        items = sections.to_h { |heading, count| [heading, plain_items(heading, count)] }
+        items = items_for(sections)
         items['על השירה'][0] += ' <a href="https://example.com/first">כתב-עת ראשון</a>'
         items['על המחזות'][0] += ' <a href="https://example.com/last">כתב-עת אחרון</a>'
         bibliography_html(items)
@@ -697,7 +715,7 @@ describe Lexicon::ParseCitations do
     # by batching. Rather than drop it, fall back to the single request.
     context 'when a bare <li> sits outside any list' do
       let(:html) do
-        "#{bibliography_html('על השירה' => plain_items('על השירה', 121))}\n<li>ציטוט יתום ארוך דיו</li>"
+        "#{bibliography_html(items_for('על השירה' => 121))}\n<li>ציטוט יתום ארוך דיו</li>"
       end
 
       it 'falls back to a single request' do
@@ -741,9 +759,7 @@ describe Lexicon::ParseCitations do
       end
 
       let(:html) do
-        bibliography_html('על השירה' => plain_items('על השירה', 60),
-                          'על הפרוזה' => plain_items('על הפרוזה', 60),
-                          'על הספרים' => [nested_item])
+        bibliography_html(items_for('על השירה' => 60, 'על הפרוזה' => 60).merge('על הספרים' => [nested_item]))
       end
 
       let(:groups) do
