@@ -2,6 +2,13 @@ ul.lex {
   list-style-type:disc;
 }
 
+/* Sub-headings within an entry: the work-type headings in the works section and the
+   citation-subject headings in the about section. The base .by-card-content-v02 h4 rule
+   sets no top margin, so each heading sits flush against the list above it. */
+.lexicon-entry-show h4 {
+  margin-top: 20px;
+}
+
 /* Biography images (entry show page and the migration verification workbench).
    Entries migrated from the old PHP lexicon carry the legacy HTML `align` and
    `hspace` attributes as data-align/data-hspace. Without a float such an image

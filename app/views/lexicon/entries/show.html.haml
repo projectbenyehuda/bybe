@@ -1,4 +1,7 @@
-.peach2-lexicon.proofable{ data: { item_id: @lex_entry.id, item_type: 'LexEntry' } }
+-#
+  .lexicon-entry-show scopes entry-page styling (see lexicon.scss). .peach2-lexicon
+  is shared with the entry list and the author TOC, so it is too broad a hook.
+.peach2-lexicon.proofable.lexicon-entry-show{ data: { item_id: @lex_entry.id, item_type: 'LexEntry' } }
   - lex_item = @lex_entry.lex_item
   - if lex_item.is_a?(LexPerson)
     = render partial: 'show_person', locals: { lex_person: lex_item }

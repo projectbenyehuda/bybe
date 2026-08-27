@@ -51,7 +51,11 @@
                 %ul
                   - list.each do |c|
                     - cit_text = render_citation(c)
-                    %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
+                    -# A Latin-script citation is isolated in a <bdi dir="ltr"> rather than
+                       given direction: ltr on the <li> itself: the latter flips the list
+                       marker to the left edge, away from its text and out of line with the
+                       bullets of the surrounding Hebrew citations.
+                    %li= cit_text.gsub('עמ\'', '').any_hebrew? ? cit_text : tag.bdi(cit_text, dir: 'ltr')
         - if sections[:links]
           #lexicon-links
             = render partial: 'links', locals: { links: lex_person.links }
