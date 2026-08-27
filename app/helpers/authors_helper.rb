@@ -110,4 +110,29 @@ module AuthorsHelper
   def count_toc_nodes_manifestations(nodes, role, authority_id, involved_on_collection_level)
     nodes.sum { |node| node.count_manifestations(role, authority_id, involved_on_collection_level) }
   end
+
+  # Splits an authority's top-level TOC nodes into the three sections a role's TOC block is made
+  # of. Single source of truth for "which sections does this role have", shared by the TOC body
+  # (authors/_toc_by_role), the in-page navbar (shared/_newtoc_navbar) and the controller's count
+  # calculation, so the three cannot drift apart on which roles they show.
+  #
+  # Note this is deliberately about node PRESENCE, not manifestation counts: an unpublished
+  # manifestation is still rendered (unlinked) in the TOC while counting as 0, so a role can
+  # legitimately have sections to show and a total count of zero.
+  def toc_role_sections(top_nodes, role, authority_id)
+    collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
+                                .sort_by(&:sort_term)
+    work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
+                          .sort_by(&:sort_term)
+    uncollected = work_level.detect { |node| node.collection.uncollected? }
+    work_level -= [uncollected] if uncollected.present?
+
+    { collection_level: collection_level, work_level: work_level, uncollected: uncollected }
+  end
+
+  # Whether a role has any TOC content at all, i.e. whether its heading should be rendered
+  def toc_role_present?(sections)
+    sections[:collection_level].present? || sections[:work_level].present? ||
+      sections[:uncollected].present?
+  end
 end
