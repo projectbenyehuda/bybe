@@ -194,6 +194,143 @@ Any time you navigate upward via `parent_collections` (or `parent_collection_ite
 
 ---
 
+## `attribute_changed?` Is Always False After a Successful Save
+
+**Date Discovered:** 2026-08-27
+**Time Spent Debugging:** the bug itself shipped silently and went unnoticed for an unknown period; it was found only by investigating a user-reported symptom (see below), not by anyone debugging the controller
+**Affected Rails Version:** Rails 8.1.3 (true since Rails 5.2)
+
+### Symptoms
+
+A conditional that reads perfectly well never fires, and there is no error, no log line, and no failing test:
+
+```ruby
+if @author.update(authority_params)   # ← saves here
+  ...
+  if @author.status_changed? && @author.status == 'published'   # ← ALWAYS false
+    @author.publish!                  # ← dead code, never runs
+  end
+end
+```
+
+The observable damage is downstream and arbitrarily far away. In this case, publishing an
+authority from the edit form silently did none of what `publish!` does: no `published_at`
+stamp, none of the pending works published, and no `newest_authors` / `homepage_authors`
+cache invalidation.
+
+The symptom that eventually surfaced was a **sorting** complaint: `/authors` sorted by upload
+date (newest first) topped out at a stale date and never showed recent authors. 41% of
+published authorities (1,155 of 2,789) had ended up with `published_at = NULL`, and because
+Elasticsearch omits a null field and sorts **missing values last** on a `desc` sort, those
+authorities were not mis-ordered — they were *invisible* at the top of the list. Nothing about
+that symptom points at a controller conditional.
+
+### Root Cause
+
+`ActiveModel::Dirty` tracks changes to an **unsaved** record. A successful save clears them and
+moves them to the `saved_change_to_*` family. So after `save` / `update` / `update!` returns:
+
+| Method | Before save | After a successful save |
+| --- | --- | --- |
+| `status_changed?` | `true` | **`false`** |
+| `status_was` | old value | **current value** |
+| `changes` | populated | **`{}`** |
+| `saved_change_to_status?` | `false` | `true` |
+| `status_previously_changed?` | `false` | `true` |
+| `saved_change_to_status` | `nil` | `[old, new]` |
+
+Verified on this codebase:
+
+```ruby
+a.update(status: :published)
+a.status_changed?            # => false
+a.saved_change_to_status?    # => true
+```
+
+The trap is that the `*_changed?` form is the one everybody reaches for, it is valid Ruby, it is
+valid on the model, and in a `before_save` callback it is exactly right. It is wrong **only**
+after the write has already happened — which is precisely where controllers tend to put
+"and now do the follow-up work" logic.
+
+### Solution
+
+After a save, use the past-tense API:
+
+```ruby
+if @author.saved_change_to_status? && @author.published?
+  @author.publish!
+end
+```
+
+Better still, move the logic into the model where the present-tense API is correct, so no
+caller can forget:
+
+```ruby
+before_save :stamp_published_at, if: -> { status_changed? && published? }
+```
+
+Both were applied here (PR #1642): the controller guard was corrected, *and* the stamping moved
+into an `Authority` `before_save` callback so that every publishing path — ingestion, direct
+status edit, `published!`, seeds — gets it.
+
+### Which Form Belongs Where
+
+```ruby
+# BEFORE the write — present tense is correct:
+before_validation { ... if status_changed? }
+before_save :do_thing, if: :status_changed?
+
+# AFTER the write — past tense is required:
+after_save    :do_thing, if: :saved_change_to_status?
+after_commit  :do_thing, if: :saved_change_to_status?
+controller:   if @record.saved_change_to_status?
+
+# Inside an after_* callback, `status_changed?` is ALSO false. Same trap.
+```
+
+### Testing
+
+A spec that only asserts the *record* ends up correct will pass against the bug, because the
+record's own attributes are set by the `update` itself. To catch this you must assert on the
+**side effects** that live behind the conditional:
+
+```ruby
+it 'publishes the pending works' do
+  request
+  expect(pending_work.reload).to be_published    # fails against the buggy guard
+end
+
+it 'busts the newest-authors caches' do
+  allow(Rails.cache).to receive(:delete)
+  request
+  expect(Rails.cache).to have_received(:delete).with('newest_authors')
+end
+```
+
+Always confirm a regression spec actually fails against the original code before you trust it.
+Here, a third example asserting `published_at` was stamped passed *either way*, because the new
+model callback covered it — only the two side-effect examples above proved the controller fix.
+
+Note that `config.cache_store = :null_store` in the test environment makes a
+`Rails.cache.write` → `read` round-trip pass vacuously; assert on the `delete` message instead.
+
+### Prevention
+
+- Grep for candidates periodically:
+  `grep -rn "_changed?" app/controllers/ | grep -v "saved_change_to\|previously_changed"`.
+  This surfaces call sites to *review*, not bugs to fix on sight — the deciding question is
+  whether the record has already been saved on that path. As of 2026-08-27 the only hits are
+  `lexicon/person_works_controller.rb:113` and `lexicon/citations_controller.rb:110`, and both
+  are **correct**: they check `attribute_changed?(:seqno)` on an in-memory assignment *before*
+  saving, to skip a pointless write. Don't "fix" those.
+- In a code review, treat `if record.foo_changed?` **inside** a successful-save branch as a
+  defect on sight. That is the unambiguous case.
+- Prefer putting post-save consequences in model callbacks over controllers.
+- Watch for a mixed idiom in one method as a tell: the `authors#update` action used the correct
+  `period_previously_changed?` nine lines above the broken `status_changed?`.
+
+---
+
 ## Template for Future Gotchas
 
 When adding new entries, include:
