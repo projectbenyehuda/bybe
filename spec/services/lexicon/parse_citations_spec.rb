@@ -5,6 +5,25 @@ require 'rails_helper'
 describe Lexicon::ParseCitations do
   subject(:result) { described_class.call(html) }
 
+  # `sent` collects the HTML actually handed to the LLM, so specs can assert on it. Each
+  # successive request is answered with the next of `groups` — the batched path issues one
+  # request per subject heading, so one group per heading.
+  def stub_llm_groups(groups, sent = [])
+    chat_double = instance_double(RubyLLM::Chat)
+    allow(RubyLLM).to receive(:chat).and_return(chat_double)
+    allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
+    pending = groups.dup
+    allow(chat_double).to receive(:ask) do |html_arg|
+      sent << html_arg
+      instance_double(RubyLLM::Message, content: { result: [pending.shift].compact }.to_json)
+    end
+  end
+
+  # The single-request form: the one request is answered with a single unnamed group of `works`.
+  def stub_llm_capturing(works, sent = [])
+    stub_llm_groups([{ subject: nil, works: works }], sent)
+  end
+
   context 'when html is provided', vcr: { cassette_name: 'lexicon/parse_citations/00024_snippet' } do
     let(:html) do
       <<~HTML
@@ -321,17 +340,6 @@ describe Lexicon::ParseCitations do
       ]
     end
 
-    # `sent` collects the HTML actually handed to the LLM, so specs can assert on it.
-    def stub_llm_capturing(works, sent = [])
-      chat_double = instance_double(RubyLLM::Chat)
-      allow(RubyLLM).to receive(:chat).and_return(chat_double)
-      allow(chat_double).to receive_messages(with_instructions: chat_double, with_params: chat_double)
-      allow(chat_double).to receive(:ask) do |html_arg|
-        sent << html_arg
-        instance_double(RubyLLM::Message, content: { result: [{ subject: nil, works: works }] }.to_json)
-      end
-    end
-
     it 'assigns backup_url only to the nested citation the asterisk belongs to' do
       stub_llm_capturing(works)
 
@@ -525,6 +533,247 @@ describe Lexicon::ParseCitations do
       stub_llm([works.first.merge(authors: [{ name: '[סדן, דב]', link: '02402.php' }])])
 
       expect(result).to be_empty
+    end
+  end
+
+  # Regression: a bibliography too long for one model response (00540.php has 202 records) came
+  # back with every subject header but only the first work or two of the later groups, so most of
+  # it was lost. Past the threshold the section is split at its subject headings, one request per
+  # heading, and the results aggregated.
+  describe 'batching a long bibliography' do
+    # The shape legacy pages use: an empty <ul> separator and an <hr> between sections, with the
+    # subject in a <font> immediately before its list.
+    def bibliography_html(sections)
+      sections.map do |heading, items|
+        <<~HTML
+          <font color="#FF0000"></font>
+          <ul style="MARGIN-TOP: 0in" type="disc"></ul>
+          <hr>
+          <font color="#FF0000">#{heading}</font>
+          <ul style="MARGIN-TOP: 0in" type="disc">
+          #{items.map { |item| "<li>#{item}</li>" }.join("\n")}
+          </ul>
+        HTML
+      end.join("\n")
+    end
+
+    # Numbered so each title is unique and comfortably longer than the eight characters the
+    # title-containment fallback in match_by_text requires.
+    def title_for(heading, index)
+      "כותרת ייחודית #{heading} מספר #{index}"
+    end
+
+    def plain_items(heading, count)
+      (1..count).map { |i| "<b>מחבר, שם.</b> #{title_for(heading, i)}. עיתון, 2024, עמ' #{i}." }
+    end
+
+    def work(title, **overrides)
+      { title: title, authors: [], from_publication: 'עיתון, 2024', pages: '1',
+        link: nil, backup_url: nil, notes: nil }.merge(overrides)
+    end
+
+    def group(heading, count)
+      { subject: heading, works: (1..count).map { |i| work(title_for(heading, i)) } }
+    end
+
+    def li_texts(batch_html)
+      Nokogiri::HTML::DocumentFragment.parse(batch_html).css('li').map { |li| li.text.squish }
+    end
+
+    context 'when the bibliography is within the single-request threshold' do
+      let(:sections) { { 'על השירה' => 40, 'על הפרוזה' => 40, 'על המחזות' => 40 } }
+      let(:html) { bibliography_html(sections.transform_values { |count| plain_items('על השירה', count) }) }
+
+      it 'issues exactly one request, carrying the whole section' do
+        sent = []
+        stub_llm_capturing(group('על השירה', 40)[:works], sent)
+
+        described_class.call(html)
+
+        expect(sent.size).to eq(1)
+        expect(li_texts(sent.first).size).to eq(120)
+      end
+    end
+
+    context 'when the bibliography exceeds the threshold' do
+      let(:sections) { { 'על השירה' => 50, 'על הפרוזה' => 50, 'על המחזות' => 30 } }
+      let(:html) { bibliography_html(sections.to_h { |heading, count| [heading, plain_items(heading, count)] }) }
+      let(:groups) { sections.map { |heading, count| group(heading, count) } }
+      let(:all_titles) { sections.flat_map { |heading, count| (1..count).map { |i| title_for(heading, i) } } }
+
+      it 'issues one request per subject heading' do
+        sent = []
+        stub_llm_groups(groups, sent)
+
+        described_class.call(html)
+
+        expect(sent.size).to eq(3)
+      end
+
+      it 'sends each heading only its own citations, with none dropped or duplicated' do
+        sent = []
+        stub_llm_groups(groups, sent)
+
+        described_class.call(html)
+
+        batches = sent.map { |batch| li_texts(batch) }
+        expect(batches.map(&:size)).to eq([50, 50, 30])
+        expect(batches.flatten.uniq.size).to eq(130)
+        expect(sent.first).to include(title_for('על השירה', 1))
+        expect(sent.first).not_to include('על הפרוזה')
+      end
+
+      it 'returns the citations of every batch, in batch order' do
+        stub_llm_groups(groups)
+
+        expect(result.map(&:title)).to eq(all_titles)
+      end
+
+      it 'carries each batch subject onto its citations' do
+        stub_llm_groups(groups)
+
+        expect(result.map(&:subject).tally).to eq('על השירה' => 50, 'על הפרוזה' => 50, 'על המחזות' => 30)
+      end
+
+      it 'restarts seqno within each subject' do
+        stub_llm_groups(groups)
+
+        expect(result.map(&:seqno)).to eq([*1..50, *1..50, *1..30])
+      end
+
+      it 'skips a blank-titled citation without disturbing the other batches' do
+        blanked = groups.dup
+        blanked[1] = { subject: 'על הפרוזה',
+                       works: groups[1][:works].map.with_index { |w, i| i == 3 ? w.merge(title: nil) : w } }
+        stub_llm_groups(blanked)
+
+        expect(result.size).to eq(129)
+        expect(result.map(&:subject).tally['על הפרוזה']).to eq(49)
+      end
+    end
+
+    # recover_backup_urls and assign_text_links run once over the aggregate rather than per batch,
+    # so both have to find citations that were parsed by a request other than the first.
+    context 'when an asterisk link sits in a later batch' do
+      let(:sections) { { 'על השירה' => 60, 'על הפרוזה' => 60, 'על המחזות' => 10 } }
+      let(:groups) { sections.map { |heading, count| group(heading, count) } }
+      let(:html) do
+        items = sections.to_h { |heading, count| [heading, plain_items(heading, count)] }
+        items['על המחזות'][6] += ' <a href="/files/lex/5013/00022200.pdf">*</a>'
+        bibliography_html(items)
+      end
+
+      it 'recovers backup_url for the citation in that batch' do
+        stub_llm_groups(groups)
+
+        expect(result.size).to eq(130)
+        expect(result.select(&:backup_url).map(&:title)).to eq([title_for('על המחזות', 7)])
+        expect(result.find(&:backup_url).backup_url).to eq('/files/lex/5013/00022200.pdf')
+      end
+    end
+
+    context 'when inline links sit in citations of different batches' do
+      let(:sections) { { 'על השירה' => 60, 'על הפרוזה' => 60, 'על המחזות' => 10 } }
+      let(:groups) { sections.map { |heading, count| group(heading, count) } }
+      let(:html) do
+        items = sections.to_h { |heading, count| [heading, plain_items(heading, count)] }
+        items['על השירה'][0] += ' <a href="https://example.com/first">כתב-עת ראשון</a>'
+        items['על המחזות'][0] += ' <a href="https://example.com/last">כתב-עת אחרון</a>'
+        bibliography_html(items)
+      end
+
+      it 'assigns each text link to the citation it came from' do
+        stub_llm_groups(groups)
+
+        expect(result.find { |c| c.title == title_for('על השירה', 1) }.text_links)
+          .to eq([{ 'url' => 'https://example.com/first', 'text' => 'כתב-עת ראשון' }])
+        expect(result.find { |c| c.title == title_for('על המחזות', 1) }.text_links)
+          .to eq([{ 'url' => 'https://example.com/last', 'text' => 'כתב-עת אחרון' }])
+        expect(result.count { |c| c.text_links.present? }).to eq(2)
+      end
+    end
+
+    # ExtractCitations admits a bare <li>, which belongs to no subject list and so would be lost
+    # by batching. Rather than drop it, fall back to the single request.
+    context 'when a bare <li> sits outside any list' do
+      let(:html) do
+        "#{bibliography_html('על השירה' => plain_items('על השירה', 121))}\n<li>ציטוט יתום ארוך דיו</li>"
+      end
+
+      it 'falls back to a single request' do
+        sent = []
+        stub_llm_capturing(group('על השירה', 121)[:works], sent)
+
+        described_class.call(html)
+
+        expect(sent.size).to eq(1)
+        expect(sent.first).to include('ציטוט יתום ארוך דיו')
+      end
+    end
+
+    context 'when the bibliography has no list at all' do
+      let(:html) { (1..121).map { |i| "<li>כותרת ייחודית מספר #{i}</li>" }.join("\n") }
+
+      it 'falls back to a single request' do
+        sent = []
+        stub_llm_capturing([work('כותרת ייחודית מספר 1')], sent)
+
+        described_class.call(html)
+
+        expect(sent.size).to eq(1)
+        expect(li_texts(sent.first).size).to eq(121)
+      end
+    end
+
+    # A sub-list of citations nested inside the <li> of the work they are about (00156.php) must
+    # travel with that <li>, not become a batch of its own.
+    context 'when a citation contains a nested sub-list' do
+      let(:nested_item) do
+        <<~HTML.squish
+          <b>גרץ, נורית.</b> <b>על דעת עצמו</b> (תל־אביב : עם עובד, 2008)
+          <font color="#FF0000">על הספר:</font>
+          <ul>
+            <li><b>גלסנר, אריק.</b> כותרת ייחודית מקוננת ראשונה. מעריב, 2008, עמ' 28.</li>
+            <li><b>Keydar, Renana.</b> כותרת ייחודית מקוננת שנייה. Jewish social studies, 2012, pp. 212-224.
+              <a href="/files/lex/5181/00156200.pdf">*</a></li>
+          </ul>
+        HTML
+      end
+
+      let(:html) do
+        bibliography_html('על השירה' => plain_items('על השירה', 60),
+                          'על הפרוזה' => plain_items('על הפרוזה', 60),
+                          'על הספרים' => [nested_item])
+      end
+
+      let(:groups) do
+        [group('על השירה', 60), group('על הפרוזה', 60),
+         { subject: 'על הספרים',
+           works: [work('על דעת עצמו'), work('כותרת ייחודית מקוננת ראשונה'), work('כותרת ייחודית מקוננת שנייה')] }]
+      end
+
+      it 'keeps the outer <li> and its nested citations in one batch' do
+        sent = []
+        stub_llm_groups(groups, sent)
+
+        result = described_class.call(html)
+
+        expect(sent.size).to eq(3)
+        expect(li_texts(sent.last).size).to eq(3)
+        expect(result.select(&:backup_url).map(&:title)).to eq(['כותרת ייחודית מקוננת שנייה'])
+      end
+
+      it 'still tags data-file-link on the nested <li> only' do
+        sent = []
+        stub_llm_groups(groups, sent)
+
+        described_class.call(html)
+
+        tagged = Nokogiri::HTML::DocumentFragment.parse(sent.last).css('li[data-file-link]')
+        expect(tagged.size).to eq(1)
+        expect(tagged.first.css('li')).to be_empty
+        expect(tagged.first.text).to include('Keydar, Renana')
+      end
     end
   end
 end
