@@ -141,11 +141,20 @@
 
       publicationSelect.addEventListener('change', function() {
         const publicationId = this.value;
+        const volume = publicationId ? collectionsData[publicationId] : null;
 
-        if (publicationId && collectionsData[publicationId]) {
-          const collection = collectionsData[publicationId];
-          collectionSelect.value = collection.id;
-        } else {
+        if (volume) {
+          collectionSelect.value = volume.id;
+          return;
+        }
+
+        // The chosen publication has no volume of its own. A collection that is not linked to any
+        // publication stays selected -- saving will link the two. Only a collection belonging to
+        // some *other* publication is dropped, since that pairing cannot be saved.
+        const belongsToAnotherPublication = Object.keys(collectionsData).some(function(pubId) {
+          return String(collectionsData[pubId].id) === collectionSelect.value;
+        });
+        if (belongsToAnotherPublication) {
           collectionSelect.value = '';
         }
       });

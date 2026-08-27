@@ -73,6 +73,18 @@ describe '/lexicon/person_works' do
         expect(work.publication).to eq(publication)
         expect(work.collection).to eq(collection)
       end
+
+      context 'when the chosen collection is not linked to any publication' do
+        let(:collection) { create(:collection, publication: nil) }
+
+        it 'links the collection to the publication rather than erroring out' do
+          expect { call }.to change { person.works.count }.by(1)
+          expect(call).to eq(200)
+
+          expect(LexPersonWork.last).to have_attributes(publication: publication, collection: collection)
+          expect(collection.reload.publication).to eq publication
+        end
+      end
     end
   end
 
@@ -172,6 +184,28 @@ describe '/lexicon/person_works' do
         work.reload
         expect(work.publication).to eq(publication)
         expect(work.collection).to eq(collection)
+      end
+
+      context 'when the chosen collection is not linked to any publication' do
+        let(:collection) { create(:collection, publication: nil) }
+
+        it 'links the collection to the publication rather than erroring out' do
+          expect(call).to eq(200)
+
+          expect(work.reload).to have_attributes(publication: publication, collection: collection)
+          expect(collection.reload.publication).to eq publication
+        end
+      end
+
+      context 'when the chosen collection belongs to a different publication' do
+        let(:other_publication) { create(:publication, authority: authority) }
+        let(:collection) { create(:collection, publication: other_publication) }
+
+        it 're-renders the edit form and leaves the collection alone' do
+          expect(call).to eq(422)
+          expect(call).to render_template(:edit)
+          expect(collection.reload.publication).to eq other_publication
+        end
       end
     end
 
