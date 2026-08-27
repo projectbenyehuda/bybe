@@ -910,6 +910,13 @@ describe Authority do
       expect(authority.reload.published_at).to be_present
     end
 
+    it 'does not override an explicitly supplied published_at on publish transition' do
+      explicit_time = Time.zone.parse('2012-05-06 07:08:09')
+      authority = create(:authority, status: :unpublished, published_at: nil)
+      authority.update!(status: :published, published_at: explicit_time)
+      expect(authority.reload.published_at).to eq(explicit_time)
+    end
+
     it 'leaves published_at alone when a published authority is edited' do
       authority = create(:authority, status: :published)
       expect { authority.update!(name: 'New Name') }.not_to(change { authority.reload.published_at })
