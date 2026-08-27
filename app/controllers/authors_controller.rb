@@ -398,7 +398,7 @@ class AuthorsController < ApplicationController
                      .select { |e| e.language == 'he' } # we have few translations from Hebrew to other languages
           (o + t).uniq.each { |e| e.update(period: @author.person.period) }
         end
-        if @author.status_changed? && @author.status == 'published'
+        if @author.saved_change_to_status? && @author.published?
           @author.publish!
           Rails.cache.delete('newest_authors') # force cache refresh
           Rails.cache.delete('homepage_authors')

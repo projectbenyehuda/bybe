@@ -884,6 +884,59 @@ describe Authority do
     end
   end
 
+  # published_at backs the 'upload date' sort on /authors (AuthoritiesIndex#pby_publication_date).
+  # It used to be written only inside #publish!, so authorities published by any other route kept a
+  # NULL and, since Elasticsearch sorts missing values last, never surfaced under 'newest first'.
+  describe 'published_at stamping' do
+    it 'stamps published_at when an unpublished authority is published directly' do
+      authority = create(:authority, status: :unpublished, published_at: nil)
+      expect { authority.update!(status: :published) }
+        .to change { authority.reload.published_at }.from(nil).to(be_present)
+    end
+
+    it 'stamps published_at when an awaiting_first authority is published' do
+      authority = create(:authority, status: :awaiting_first, published_at: nil)
+      authority.published!
+      expect(authority.reload.published_at).to be_present
+    end
+
+    it 'stamps published_at on an authority created as published' do
+      expect(create(:authority, status: :published).published_at).to be_present
+    end
+
+    it 'stamps published_at via #publish!' do
+      authority = create(:authority, status: :unpublished, published_at: nil)
+      Chewy.strategy(:atomic) { authority.publish! }
+      expect(authority.reload.published_at).to be_present
+    end
+
+    it 'does not override an explicitly supplied published_at on publish transition' do
+      explicit_time = Time.zone.parse('2012-05-06 07:08:09')
+      authority = create(:authority, status: :unpublished, published_at: nil)
+      authority.update!(status: :published, published_at: explicit_time)
+      expect(authority.reload.published_at).to eq(explicit_time)
+    end
+
+    it 'leaves published_at alone when a published authority is edited' do
+      authority = create(:authority, status: :published)
+      expect { authority.update!(name: 'New Name') }.not_to(change { authority.reload.published_at })
+    end
+
+    it 'leaves published_at alone when an authority is unpublished' do
+      authority = create(:authority, status: :published)
+      expect { authority.update!(status: :unpublished) }.not_to(change { authority.reload.published_at })
+    end
+
+    # Deliberate: publish! also back-dates the works' created_at to now so they resurface in
+    # whatsnew, so a re-published authority is likewise treated as newly available.
+    it 're-stamps published_at when a previously published authority is published again' do
+      authority = create(:authority, status: :published, published_at: 2.years.ago)
+      authority.update!(status: :unpublished)
+      expect { authority.update!(status: :published) }
+        .to change { authority.reload.published_at.to_date }.to(Time.zone.today)
+    end
+  end
+
   # This number is shown to readers as 'N authors in the project' and labels a link to the
   # authorities list, so it must count exactly what that list shows.
   describe '.cached_count' do
