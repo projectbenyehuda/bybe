@@ -19,6 +19,10 @@ he:
   unclassified: לא זוהה סוג הערך
   galron_entries: ערכים בלקסיקון הספרות העברית החדשה
   lexicon:
+    # Shown in parentheses after an entry's title to tell identically-titled entries apart
+    entry_types:
+      person: אדם
+      publication: כותר
     layout:
       entries: ערכי הלקסיקון
       files: קבצים להסבה

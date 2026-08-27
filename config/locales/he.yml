@@ -2622,11 +2622,11 @@ he:
         title: עריכת קישור
     text_links:
       text_placeholder: טקסט שיהפוך לקישור
-      target_entry: ערך במילון
+      target_entry: ערך בלקסיקון
       target_url: כתובת יעד (URL)
-      entry_placeholder: חיפוש ערך במילון...
+      entry_placeholder: חיפוש ערך בלקסיקון...
       url_placeholder: "https://example.com/page.html"
-      target_hint: יש למלא יעד אחד בלבד – ערך במילון או כתובת URL.
+      target_hint: יש למלא יעד אחד בלבד – ערך בלקסיקון או כתובת URL.
       entry_not_found: ערך לא נמצא
       text_not_found: הטקסט אינו מופיע כאן
   lex_issues:

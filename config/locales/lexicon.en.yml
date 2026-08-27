@@ -18,6 +18,10 @@ en:
   classified: Classified
   unclassified: Unclassified
   lexicon:
+    # Shown in parentheses after an entry's title to tell identically-titled entries apart
+    entry_types:
+      person: Person
+      publication: Publication
     layout:
       entries: Entries
       files: Files

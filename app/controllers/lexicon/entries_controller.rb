@@ -22,7 +22,7 @@ module Lexicon
         %i(title),
         filter: filter
       )
-      render json: json_for_autocomplete(items, :title)
+      render json: autocomplete_json(items)
     end
 
     # GET /lex_entries or /lex_entries.json
@@ -154,6 +154,17 @@ scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
     end
 
     private
+
+    # Several entries can share a title (e.g. a person and a book both named "נתן אלתרמן"), so the
+    # suggestion menu appends the entry type: "נתן אלתרמן (אדם)". Only the label carries the type —
+    # the value inserted into the field stays the bare title, since callers such as the citation
+    # author and linked person forms store it verbatim as the displayed name.
+    def autocomplete_json(items)
+      json_for_autocomplete(items, :title, [:entry_type]).each do |item|
+        entry_type = item.delete(:entry_type)
+        item[:label] = "#{item[:label]} (#{t("lexicon.entry_types.#{entry_type}")})" if entry_type.present?
+      end
+    end
 
     # Use callbacks to share common setup or constraints between actions.
     def set_lex_entry
