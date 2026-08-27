@@ -27,7 +27,10 @@
   - lexicon_sections = lex_person ? lexicon_sections_present(lex_person, @lexicon_entry) : {}
   - if lexicon_sections.any?
     .headline-books
-      = t('lexicon.header.title')
+      -# wrapper so the credit line stacks under the title instead of becoming a flex sibling
+      %div
+        = t('lexicon.header.title')
+        .lexicon-editor-credit= t('lexicon.header.editor_credit')
       .lexicon-logo
       = image_tag 'osu-logo.jpg', class: 'osu-partner-logo', alt: 'OSU'
     .peach2-lexicon

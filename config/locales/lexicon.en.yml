@@ -25,7 +25,7 @@ en:
     layout:
       entries: Entries
       files: Files
-      title: New Hebrew Lexicon - Management UI
+      title: New Hebrew Lexicon (%{credit}) - Management UI
     entries:
       destroy:
         success: Lexicon Entry deleted
@@ -162,6 +162,7 @@ en:
         confirm: "Redoing the migration will discard all corrections and manual changes made to this entry. Continue?"
     header:
       title: Lexicon of New Hebrew Literature
+      editor_credit: 'Editor: Dr. Joseph Galron-Goldschläger'
       part_of_pby: Part of the Ben-Yehuda Project
     shared:
       insert_image:

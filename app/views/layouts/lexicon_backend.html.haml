@@ -20,7 +20,7 @@
             = msg
 
       %nav.navbar-expand-md.navbar-light.bg-light
-        %a.navbar-brand{ href: lexicon_root_path }= t('lexicon.layout.title')
+        %a.navbar-brand{ href: lexicon_root_path }= t('lexicon.layout.title', credit: t('lexicon.header.editor_credit'))
         %button.navbar-toggler{ type: :button,
                                 data: { toggle: :collapse, target: '#navbarNavAltMarkup' },
                                 aria: { controls: 'navbarNavAltMarkup', expanded: false, label: 'Toggle navigation' } }

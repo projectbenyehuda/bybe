@@ -70,6 +70,16 @@ ul.lex {
   width: auto;
 }
 
+/* Credit line under the lexicon title (entry page, entry list, author TOC).
+   Plain text, a step smaller than the .headline-1-v02 title above it, and
+   inheriting the title's colour so it reads as part of the same heading block. */
+.lexicon-editor-credit {
+  font-size: 12pt;
+  line-height: 14pt;
+  font-weight: normal;
+  margin-bottom: 4px;
+}
+
 /* Make the link in the lexicon entry header a flex container so the
    lexicon brand text and the OSU logo sit side-by-side */
 .lexicon-entry-header > a {
