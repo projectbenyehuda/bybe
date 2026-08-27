@@ -94,7 +94,7 @@ RSpec.describe LexiconHelper, type: :helper do
     it 'renders NLI identifier with correct URL' do
       result = helper.render_external_identifiers({ 'nli' => '000123456' })
       expect(result).to include('NLI –')
-      expect(result).to include('http://uli.nli.org.il/authorities/000123456')
+      expect(result).to include('https://www.nli.org.il/he/authorities/000123456')
     end
 
     it 'renders Wikidata identifier with correct URL' do

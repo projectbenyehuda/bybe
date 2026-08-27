@@ -66,10 +66,45 @@ module Lexicon
   ```
 PROMPT
 
+    # Above this many <li> a whole bibliography no longer fits in one model response: the model
+    # emits every subject header but only the first work or two of the later groups, silently
+    # losing most of the citations (00540.php: 202 items in, ~66 out). Beyond the threshold the
+    # section is split at its subject headings and one request is issued per heading.
+    MAX_SINGLE_REQUEST_CITATIONS = 120
+
     def call(html)
       Rails.logger.info('Parsing citations HTML with LLM API started.')
       @source_items = []
+      # Preprocessing, and the two recovery passes below, deliberately run over the whole section
+      # rather than per batch: @source_items must stay complete, and the "assign each citation at
+      # most once" bookkeeping must see every citation, for aggregation to be safe.
       html = preprocess_source_items(html)
+      batches = split_into_batches(html)
+      Rails.logger.info("Parsing citations in #{batches.size} request(s).")
+      result = batches.flat_map { |batch| parse_batch(batch) }
+
+      # The LLM is unreliable at copying data-file-link into backup_url, so we
+      # recover it deterministically from the asterisk links we captured.
+      recover_backup_urls(result)
+      # The LLM only reports one link per citation, so inline links sitting in other parts of the
+      # record (typically the publication the citation appeared in) are recovered separately.
+      assign_text_links(result)
+
+      Rails.logger.info('Parsing citations complete.')
+      result
+    end
+
+    # A bracketed descriptor standing where a title belongs, e.g. "[ביקורת]" (review) or
+    # "[מחבר לא מזוהה]" (unidentified author). Kept with its brackets, matching how the same
+    # placeholder is already stored when the <li> does have an author to precede it.
+    PLACEHOLDER_TITLE = /\A\[.+\]\.?\z/m
+
+    private
+
+    # Parses one request's worth of HTML into LexCitations. A batch that comes back unparseable
+    # raises, aborting the entry exactly as a bad single request does today — a silently partial
+    # bibliography is the bug being fixed here.
+    def parse_batch(html)
       chat = RubyLLM.chat(model: 'gpt-4.1-mini')
       chat.with_instructions(SYSTEM_PROMPT).with_params(response_format: { type: :json_object })
 
@@ -118,23 +153,50 @@ PROMPT
         end
       end
 
-      # The LLM is unreliable at copying data-file-link into backup_url, so we
-      # recover it deterministically from the asterisk links we captured.
-      recover_backup_urls(result)
-      # The LLM only reports one link per citation, so inline links sitting in other parts of the
-      # record (typically the publication the citation appeared in) are recovered separately.
-      assign_text_links(result)
-
-      Rails.logger.info('Parsing citations complete.')
       result
     end
 
-    # A bracketed descriptor standing where a title belongs, e.g. "[ביקורת]" (review) or
-    # "[מחבר לא מזוהה]" (unidentified author). Kept with its brackets, matching how the same
-    # placeholder is already stored when the <li> does have an author to precede it.
-    PLACEHOLDER_TITLE = /\A\[.+\]\.?\z/m
+    # Splits the section into the HTML of one request per subject heading, or returns it whole
+    # when a single request can be trusted with it.
+    def split_into_batches(html)
+      doc = Nokogiri::HTML::DocumentFragment.parse(html)
+      total = doc.css('li').size
+      return [html] if total <= MAX_SINGLE_REQUEST_CITATIONS
 
-    private
+      batches = subject_batches(doc)
+      # Batching must never lose a citation the single request would have kept: a bare <li>
+      # outside any <ul> belongs to no batch, and ExtractCitations does admit such markup.
+      return [html] unless batches.any? && batches.sum { |batch| batch[:count] } == total
+
+      batches.pluck(:html)
+    end
+
+    # One batch per non-empty top-level list, its heading nodes prepended. Lists nested inside an
+    # <li> are left out: they are sub-citations of the work that contains them and must travel
+    # with it (see the 00156.php regression).
+    def subject_batches(doc)
+      lists = doc.css('ul').reject { |list| list.ancestors('li').any? }
+      lists.filter_map do |list|
+        count = list.css('li').size
+        next if count.zero?
+
+        { html: (heading_nodes_for(list, lists) << list).map(&:to_html).join("\n"), count: count }
+      end
+    end
+
+    # The subject of a list is written in the nodes just before it (typically a <font>), so those
+    # travel with it. Walks back to the previous top-level list — including the empty <ul></ul>
+    # separators legacy pages put between sections, which is precisely why empty lists are kept in
+    # `lists` — skipping blank filler such as <hr> and <font></font> on the way.
+    def heading_nodes_for(list, lists)
+      nodes = []
+      node = list.previous_element
+      while node.present? && lists.exclude?(node)
+        nodes.unshift(node) if node.text.present?
+        node = node.previous_element
+      end
+      nodes
+    end
 
     # True when the work's single author is a bracketed placeholder rather than a real name.
     # Only consulted once the title is known to be blank, so a bracketed author accompanying a
