@@ -767,6 +767,39 @@ describe AuthorsController do
           end
         end
 
+        # Regression: this branch used to guard on status_changed?, which Rails resets to false as
+        # soon as the update succeeds, so publishing an authority from the edit form silently
+        # skipped publish! — leaving published_at NULL and the 'newest authors' caches stale.
+        context 'when the status is changed to published' do
+          let(:status) { :unpublished }
+          let(:new_period) { period }
+          let(:authority_params) do
+            authority_attributes.merge(status: 'published', person_attributes: person_attributes)
+          end
+
+          let!(:pending_work) { create(:manifestation, author: author, status: :unpublished) }
+
+          before { author.update_columns(published_at: nil) }
+
+          it 'stamps published_at' do
+            expect(request).to redirect_to authors_show_path(id: author.id)
+            expect(author.reload.published_at).to be_present
+          end
+
+          it 'publishes the pending works' do
+            request
+            expect(pending_work.reload).to be_published
+          end
+
+          # The test env uses a null_store, so a write/read round-trip would pass vacuously.
+          it 'busts the newest-authors caches' do
+            allow(Rails.cache).to receive(:delete)
+            request
+            expect(Rails.cache).to have_received(:delete).with('newest_authors')
+            expect(Rails.cache).to have_received(:delete).with('homepage_authors')
+          end
+        end
+
         context 'when corporate_body' do
           let(:author) { create(:authority, :corporate_body) }
 

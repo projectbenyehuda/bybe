@@ -109,6 +109,9 @@ class Authority < ApplicationRecord
 
   before_save :update_other_designation, if: :name_changed?
   before_save :normalize_sort_name
+  # published_at drives the 'upload date' sort on /authors (via AuthoritiesIndex#pby_publication_date),
+  # so it must be stamped no matter which code path publishes the authority, not just Authority#publish!
+  before_save :stamp_published_at, if: -> { status_changed? && published? }
   before_save :sort_legacy_credits, if: :legacy_credits_changed?
   # editing the manual credits changes the merged list, so the cache must go (cf. Collection)
   before_save :clear_cached_credits, if: :legacy_credits_changed?
@@ -547,8 +550,7 @@ class Authority < ApplicationRecord
       m.created_at = Time.zone.now
       m.published!
     end
-    self.published_at = Time.zone.now
-    published! # finally, set this person to published
+    published! # finally, set this person to published (stamp_published_at fires on the transition)
   end
 
   def publish_if_first!
@@ -556,6 +558,14 @@ class Authority < ApplicationRecord
   end
 
   protected
+
+  # Records when the authority became visible on the site. Re-publishing after a spell of being
+  # unpublished deliberately re-stamps, matching publish!'s treatment of the works themselves,
+  # which are back-dated to now so they resurface in whatsnew. An explicit published_at supplied in
+  # the same save wins, so imports and backfills can set a historical date.
+  def stamp_published_at
+    self.published_at = Time.zone.now unless published_at_changed?
+  end
 
   def placeholder_image_url
     if person.present?
