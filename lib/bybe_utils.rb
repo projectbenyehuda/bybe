@@ -662,6 +662,8 @@ year = year.tr(GERESH_CHARS, '')
       return I18n.t(:aramaic)
     when 'zh'
       return I18n.t(:chinese)
+    when 'ja'
+      return I18n.t(:japanese)
     when 'pl'
       return I18n.t(:polish)
     when 'ro'
@@ -966,7 +968,7 @@ year = year.tr(GERESH_CHARS, '')
 
   def get_langs
     return %w(he en fr de ru yi pl ar el la grc hu cs da no sv nl it pt fa fi
-              is es ro arc lad zh ka bg sa ta sux egy unk)
+              is es ro arc lad zh ja ka bg sa ta sux egy unk)
   end
 
   def get_genres_by_row(row) # just one row at a time

@@ -1751,11 +1751,7 @@ en:
   item: Item
   item_type: Item Type
   items: Items
-  ? |-
-    japane
-
-    se
-  : Japanese
+  japanese: Japanese
   kovetz: Collection
   kudos: Thank You!
   label: Label
