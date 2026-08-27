@@ -772,26 +772,18 @@ class AuthorsController < ApplicationController
     InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
       top_nodes = toc_tree.top_level_nodes
 
-      involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
-                                              .sort_by(&:sort_term)
-      involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
-                                        .sort_by(&:sort_term)
-      uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
-      involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+      sections = helpers.toc_role_sections(top_nodes, role, authority_id)
+      uncollected_node = sections[:uncollected]
 
-      collection_level_count = involved_on_collection_level.sum do |node|
+      collection_level_count = sections[:collection_level].sum do |node|
         node.count_manifestations(role, authority_id, true)
       end
 
-      work_level_count = involved_on_work_level.sum do |node|
+      work_level_count = sections[:work_level].sum do |node|
         node.count_manifestations(role, authority_id, false)
       end
 
-      uncollected_count = if uncollected_node&.visible?(role, authority_id, false)
-                            uncollected_node.count_manifestations(role, authority_id, false)
-                          else
-                            0
-                          end
+      uncollected_count = uncollected_node ? uncollected_node.count_manifestations(role, authority_id, false) : 0
 
       total_count = collection_level_count + work_level_count + uncollected_count
 

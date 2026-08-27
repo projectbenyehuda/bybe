@@ -1,18 +1,16 @@
 :ruby
-  involved_on_collection_level = top_nodes.select { |node| node.visible?(role, authority_id, true) }
-                                          .sort_by(&:sort_term)
-  involved_on_work_level = top_nodes.select { |node| node.visible?(role, authority_id, false) }
-                                    .sort_by(&:sort_term)
-  uncollected_node = involved_on_work_level.detect { |node| node.collection.uncollected? }
-  involved_on_work_level -= [uncollected_node] if uncollected_node.present?
+  sections = toc_role_sections(top_nodes, role, authority_id)
+  involved_on_collection_level = sections[:collection_level]
+  involved_on_work_level = sections[:work_level]
+  uncollected_node = sections[:uncollected]
 
   # Calculate counts for each section
   collection_level_count = count_toc_nodes_manifestations(involved_on_collection_level, role, authority_id, true)
   work_level_count = count_toc_nodes_manifestations(involved_on_work_level, role, authority_id, false)
-  uncollected_count = uncollected_node&.visible?(role, authority_id, false) ? uncollected_node.count_manifestations(role, authority_id, false) : 0
+  uncollected_count = uncollected_node ? uncollected_node.count_manifestations(role, authority_id, false) : 0
   total_count = collection_level_count + work_level_count + uncollected_count
 
-- if involved_on_collection_level.present? || involved_on_work_level.present? || (uncollected_node.present? && !uncollected_node.visible?(role, authority_id, false))
+- if toc_role_present?(sections)
   .headline-books
     = title
     - if total_count > 0
@@ -39,7 +37,7 @@
                 locals: { role: role, authority_id: authority_id, editable: editable,
                           nonce: "#{nonce}-work-level", uncollected: false,
                           involved_on_collection_level: false }
-  - if uncollected_node&.visible?(role, authority_id, false)
+  - if uncollected_node.present?
     %div{ id: "works-#{role}-uncollected", role: 'tabpanel' }
       .headline-2-v02
         = t('toc_by_role.uncollected_works')
