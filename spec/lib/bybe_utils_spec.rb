@@ -458,6 +458,27 @@ describe BybeUtils do
     end
   end
 
+  describe '#textify_lang' do
+    it 'names Japanese in Hebrew' do
+      I18n.with_locale(:he) { expect(instance.textify_lang('ja')).to eq('יפנית') }
+    end
+
+    it 'names Japanese in English' do
+      I18n.with_locale(:en) { expect(instance.textify_lang('ja')).to eq('Japanese') }
+    end
+
+    it 'names every supported language, save the explicit unknown code' do
+      unnamed = (instance.get_langs - ['unk']).select { |iso| instance.textify_lang(iso) == I18n.t(:unknown) }
+      expect(unnamed).to be_empty
+    end
+  end
+
+  describe '#get_langs' do
+    it "includes Japanese ('ja')" do
+      expect(instance.get_langs).to include('ja')
+    end
+  end
+
   describe '#orig_lang_label' do
     context 'when original language is unknown' do
       it 'returns the unknown-language I18n string for nil' do
