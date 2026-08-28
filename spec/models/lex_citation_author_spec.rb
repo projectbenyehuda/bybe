@@ -3,6 +3,30 @@
 require 'rails_helper'
 
 describe LexCitationAuthor do
+  describe '#display_name' do
+    subject(:display_name) { author.display_name }
+
+    let(:lex_person) { create(:lex_entry, :person).lex_item }
+    let(:citation) { build(:lex_citation, person: lex_person) }
+    let(:entry) { create(:lex_entry, :person, title: 'תלמה אדמון (1949)') }
+
+    context 'when a legacy name is present (migrated author)' do
+      let(:author) { build(:lex_citation_author, citation: citation, entry: entry, name: 'אדמון, ת.', link: nil) }
+
+      it 'prefers the stored name' do
+        expect(display_name).to eq('אדמון, ת.')
+      end
+    end
+
+    context 'when only an entry is present (manually added author)' do
+      let(:author) { build(:lex_citation_author, citation: citation, entry: entry, name: nil, link: nil) }
+
+      it 'displays the entry title surname-first, like migrated authors' do
+        expect(display_name).to eq('אדמון, תלמה')
+      end
+    end
+  end
+
   describe 'validations' do
     subject(:result) { author.valid? }
 

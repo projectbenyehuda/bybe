@@ -67,6 +67,25 @@ class LexEntry < ApplicationRecord
     end
   end
 
+  # Person entries are titled given-name first, optionally followed by life years —
+  # "תלמה אדמון (1949)". Bibliographies list authors surname first, which is the form the
+  # legacy lexicon stored in LexCitationAuthor#name ("אדמון, תלמה"); this derives the same
+  # form for authors that carry no name of their own, so migrated and manually added
+  # citation authors display alike.
+  # Non-person entries and titles with nothing to invert are returned unchanged.
+  def surname_first_title
+    return title unless entry_type == :person
+
+    # a trailing parenthetical containing a digit is life years, not part of the name
+    name = title.sub(/\s*[(\[][^)\]]*\d[^)\]]*[)\]]\z/, '').strip
+    name = title if name.blank?
+
+    parts = name.split(/\s+/)
+    return name if parts.size < 2
+
+    "#{parts.pop}, #{parts.join(' ')}"
+  end
+
   # Instance-level counterpart of the needs_verification scope: is this entry still
   # going through migration verification (as opposed to published/deprecated)?
   def needs_verification?

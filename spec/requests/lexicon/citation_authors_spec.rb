@@ -14,9 +14,21 @@ describe '/lexicon/citation_authors' do
   let(:invalid_attrs) { { name: '' } }
 
   describe 'GET /lexicon/citations/:citation_id/authors' do
-    subject { get "/lex/citations/#{citation.id}/authors" }
+    subject(:call) { get "/lex/citations/#{citation.id}/authors" }
 
     it { is_expected.to eq(200) }
+
+    context 'with an author added by picking an entry, carrying no name of its own' do
+      before do
+        entry = create(:lex_entry, :person, title: 'תלמה אדמון (1949)')
+        citation.authors.create!(entry: entry, name: nil, link: nil)
+      end
+
+      it 'lists the author surname-first, as migrated authors are listed' do
+        call
+        expect(response.body).to include('אדמון, תלמה')
+      end
+    end
   end
 
   describe 'POST /lexicon/citations/:citation_id/authors' do
