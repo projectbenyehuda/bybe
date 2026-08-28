@@ -29,6 +29,32 @@ describe '/lexicon/citation_authors' do
         expect(response.body).to include('אדמון, תלמה')
       end
     end
+
+    context 'with many entry-only authors' do
+      # Deriving a display name reaches into the entry (and, for an entry still awaiting
+      # ingestion, its lex_file), so the action has to preload both or it pays a query per
+      # author. Compare one author against ten: a constant gap means the preloads hold.
+      def create_authors(count)
+        count.times do
+          file = create(:lex_file, :person, entry_status: :raw)
+          citation.authors.create!(entry: file.lex_entry, name: nil, link: nil)
+        end
+      end
+
+      it 'does not issue more queries as authors are added' do
+        # not the memoized `call` subject: each request has to actually be issued
+        request_authors = -> { get "/lex/citations/#{citation.id}/authors" }
+
+        create_authors(1)
+        request_authors.call # warm up: the first request of the example costs one extra query
+        baseline = count_queries(&request_authors)
+
+        citation.authors.destroy_all
+        create_authors(10)
+
+        expect(count_queries(&request_authors)).to eq(baseline)
+      end
+    end
   end
 
   describe 'POST /lexicon/citations/:citation_id/authors' do
