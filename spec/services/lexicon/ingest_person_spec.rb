@@ -138,6 +138,88 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when the works and bibliography are wrapped in a blockquote' do
+    # Regression test for 00067.php and ~370 siblings: the Books header sits inside a
+    # <blockquote>, so walking the heading table's siblings never reached it and the whole
+    # works + bibliography block was migrated as biography text, with no works at all.
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'סופרת לדוגמה',
+          fname: 'works_in_blockquote.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/works_in_blockquote.php')
+        }
+      )
+    end
+
+    it 'migrates the works and leaves them out of the bio' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.works.map(&:title)).to contain_exactly('ספר ראשון : שירים', 'ספר שני : פרוזה')
+      expect(person.bio).to include('ביוגרפיה קצרה')
+      expect(person.bio).not_to include('ספריה:')
+      expect(person.bio).not_to include('ספר ראשון')
+      expect(person.bio).not_to include('על המחברת ויצירתה')
+    end
+  end
+
+  context 'when the heading table is wrapped in a paragraph the works section is outside of' do
+    # Regression test for 00696.php and friends: the heading table ends up inside a <p> of its
+    # own, so the walk ran out of siblings before reaching any bio at all - the entry migrated
+    # with an empty bio and no works.
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'סופר לדוגמה',
+          fname: 'works_outside_heading_wrapper.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/works_outside_heading_wrapper.php')
+        }
+      )
+    end
+
+    it 'migrates both the bio and the works' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.bio).to include('ביוגרפיה קצרה')
+      expect(person.bio).not_to include('ספריו:')
+      expect(person.works.map(&:title)).to contain_exactly('ספר ראשון : שירים', 'ספר שני : פרוזה')
+    end
+  end
+
+  context 'when the works header anchor lost its <p>/<font> wrapper' do
+    # Regression test for 00146.php and 01778.php: an unbalanced </font></p> in the source
+    # leaves a bare <a name="Books"> that the p/font-only header check never recognised.
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'סופרת לדוגמה',
+          fname: 'works_header_without_wrapper.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/works_header_without_wrapper.php')
+        }
+      )
+    end
+
+    it 'treats the bare anchor as the works header' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      person = file.lex_entry.lex_item
+      expect(person.bio).to include('ביוגרפיה קצרה')
+      expect(person.bio).not_to include('ספריה:')
+      expect(person.works.map(&:title)).to contain_exactly('ספר ראשון : שירים', 'ספר שני : פרוזה')
+    end
+  end
+
   context 'when the bio contains tables with rows and cells but no visible content' do
     # Regression test for 00458.php and friends: a layout-only <table id="table6"> sits between
     # the bio paragraphs. Pandoc has no Markdown representation for it, so it used to be emitted

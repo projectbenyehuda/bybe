@@ -5,9 +5,6 @@ module Lexicon
   class IngestPerson < IngestBase
     include HtmlUtils
 
-    WORKS_HEADER = 'Books'
-    CITATIONS_HEADER = 'Bib.'
-
     # The links section is normally introduced by an <a name="links"> anchor, but a handful of
     # legacy files spell the anchor differently (e.g. `name="links."`) or omit it entirely and
     # carry only the Hebrew "קישורים:" heading. Patterns are tried in order, so the anchor always
@@ -64,41 +61,14 @@ module Lexicon
         end
       end
 
-      # Bio content may be inside a wrapping span (as siblings of the heading table),
-      # or outside the span (as siblings of the span itself). We first iterate table
-      # siblings; if exhausted, we fall through to span siblings to find remaining bio
-      # and the works header.
-      next_elem = heading_table.next_element
-      at_span_level = false
-
-      # When the table has no siblings inside its wrapping span, jump directly
-      # to the span's siblings where bio content lives.
-      if next_elem.nil? && heading_table.parent.name == 'span'
-        next_elem = heading_table.parent.next_element
-        at_span_level = true
-      end
-
-      bio = []
-      while next_elem.present? && !header?(next_elem, WORKS_HEADER)
-        bio << bio_html(next_elem)
-        next_elem = next_elem.next_element
-      end
-
-      # Bio was inside the wrapping span but the works header is outside it.
-      # Continue from span siblings to find the works header.
-      if next_elem.nil? && !at_span_level && heading_table.parent.name == 'span'
-        next_elem = heading_table.parent.next_element
-        while next_elem.present? && !header?(next_elem, WORKS_HEADER)
-          bio << bio_html(next_elem)
-          next_elem = next_elem.next_element
-        end
-      end
-
+      # Bio content is whatever lies between the heading table and the first section header,
+      # across whatever nesting the file happens to use (a wrapping <span dir="rtl"> around the
+      # heading, a <blockquote> around the sections, both, or neither).
+      bio = bio_elements(heading_table).map { |elem| bio_html(elem) }
       lex_person.bio = HtmlToMarkdown.call(bio.compact.join("\n"))
 
-      if next_elem.present? && header?(next_elem, WORKS_HEADER)
-        Lexicon::ExtractPersonWorks.call(next_elem, lex_person)
-      end
+      works_header = works_header_element(html_doc)
+      Lexicon::ExtractPersonWorks.call(works_header, lex_person) if works_header.present?
 
       lex_person.gender = @female ? :female : :male
 
