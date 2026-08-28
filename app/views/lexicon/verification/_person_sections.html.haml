@@ -210,7 +210,7 @@
     - all_citations = item.citations.includes(authors: :entry)
     - cit_size = all_citations.size
     -# Resolved once for the whole section: which plaintext authors have an existing person entry
-    -# to offer a match against (see LexCitationAuthor.matchable_names).
+      to offer a match against (see LexCitationAuthor.matchable_names).
     - matchable_author_names = LexCitationAuthor.matchable_names(all_citations.flat_map(&:authors))
     - if php_counts[:citations] && php_counts[:citations] != cit_size
       .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}

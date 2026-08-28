@@ -35,8 +35,10 @@ class LexCitationAuthor < ApplicationRecord
   # The normalized names (downcased) of those among `authors` that are not linked to an entry yet
   # and for which at least one person-type LexEntry is titled exactly that. Resolved in a single
   # query, so a citation-heavy verification page costs one lookup rather than one per author.
+  # Linked authors are recognised by their foreign key rather than by #entry, so the count stays
+  # one whether or not the caller preloaded the association.
   def self.matchable_names(authors)
-    names = authors.reject { |author| author.entry.present? }
+    names = authors.select { |author| author.lex_entry_id.nil? }
                    .filter_map(&:normalized_name)
                    .uniq
     return Set.new if names.empty?

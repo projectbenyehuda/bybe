@@ -168,6 +168,22 @@ describe LexCitationAuthor do
       end
     end
 
+    context 'when the authors were loaded without preloading their entries' do
+      let(:linked_entry) { create(:lex_entry, :person, title: 'חיים נחמן ביאליק') }
+      let(:authors) { LexCitationAuthor.where(lex_citation_id: citation.id).to_a }
+
+      before do
+        create(:lex_entry, :person, title: 'גילי איזיקוביץ')
+        author_named('איזיקוביץ, גילי')
+        create(:lex_citation_author, citation: citation, entry: linked_entry, name: 'ביאליק, חיים נחמן', link: nil)
+      end
+
+      it 'recognises the linked author by its foreign key, without loading the association' do
+        expect(matches).to contain_exactly('גילי איזיקוביץ')
+        expect(authors.map { |author| author.association(:entry).loaded? }).to all(be false)
+      end
+    end
+
     context 'with several authors' do
       before do
         create(:lex_entry, :person, title: 'גילי איזיקוביץ')

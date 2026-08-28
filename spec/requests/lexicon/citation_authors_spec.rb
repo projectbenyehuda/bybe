@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe '/lexicon/citation_authors' do
+describe '/lex/citation_authors' do
   before do
     login_as_lexicon_editor
   end
@@ -13,13 +13,13 @@ describe '/lexicon/citation_authors' do
 
   let(:invalid_attrs) { { name: '' } }
 
-  describe 'GET /lexicon/citations/:citation_id/authors' do
+  describe 'GET /lex/citations/:citation_id/authors' do
     subject { get "/lex/citations/#{citation.id}/authors" }
 
     it { is_expected.to eq(200) }
   end
 
-  describe 'POST /lexicon/citations/:citation_id/authors' do
+  describe 'POST /lex/citations/:citation_id/authors' do
     subject(:call) { post "/lex/citations/#{citation.id}/authors", params: { lex_citation_author: attrs }, xhr: true }
 
     context 'with valid params' do
@@ -60,7 +60,7 @@ describe '/lexicon/citation_authors' do
     end
   end
 
-  describe 'GET /lexicon/citation_authors/:id/match' do
+  describe 'GET /lex/citation_authors/:id/match' do
     subject(:call) { get "/lex/citation_authors/#{author.id}/match" }
 
     let!(:citation) { create(:lex_citation, person: person, authors_count: 0) }
@@ -72,7 +72,7 @@ describe '/lexicon/citation_authors' do
     end
   end
 
-  describe 'PATCH /lexicon/citation_authors/:id' do
+  describe 'PATCH /lex/citation_authors/:id' do
     subject(:call) do
       patch "/lex/citation_authors/#{author.id}",
             params: { lex_citation_author: { name: 'גילי איזיקוביץ', lex_entry_id: entry_id } },
@@ -142,7 +142,7 @@ describe '/lexicon/citation_authors' do
     end
   end
 
-  describe 'DELETE /lexicon/citation_authors/:id' do
+  describe 'DELETE /lex/citation_authors/:id' do
     subject(:call) { delete "/lex/citation_authors/#{author.id}", xhr: true }
 
     it 'destroys the requested author' do
