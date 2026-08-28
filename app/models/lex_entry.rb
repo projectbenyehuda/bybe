@@ -54,11 +54,16 @@ class LexEntry < ApplicationRecord
   scope :main, -> { where(main: true) }
 
   # SQL counterpart of `#entry_type == :person`: entries backed by a LexPerson item, plus entries
-  # not migrated yet whose legacy file is a person file.
+  # still awaiting ingestion -- no lex_item yet -- whose legacy file is a person file. The
+  # lex_item_type IS NULL half matters: #entry_type only consults the file when the column is
+  # unset, so an entry carrying a LexPublication is a publication whatever its file says.
   scope :person_type, lambda {
     left_joins(:lex_file)
       .where(lex_item_type: 'LexPerson')
-      .or(LexEntry.left_joins(:lex_file).where(lex_files: { entrytype: LexFile.entrytypes[:person] }))
+      .or(
+        LexEntry.left_joins(:lex_file)
+                .where(lex_item_type: nil, lex_files: { entrytype: LexFile.entrytypes[:person] })
+      )
   }
 
   update_index('lex_entries') { self }
@@ -67,12 +72,40 @@ class LexEntry < ApplicationRecord
   # Returns the entry type for autocomplete and display purposes.
   # Returns :person if the entry is backed by a LexPerson item or a person-type LexFile.
   # Returns :publication if the entry is backed by a LexPublication item or a text-type LexFile.
+  # Decided from the lex_item_type column rather than from the lex_item record itself, so that
+  # callers rendering a list of entries do not pay a query per row to load the polymorphic
+  # association; only entries still awaiting ingestion fall back to their lex_file.
   def entry_type
-    if lex_item.is_a?(LexPerson) || lex_file&.entrytype_person?
+    case lex_item_type
+    when 'LexPerson'
       :person
-    elsif lex_item.is_a?(LexPublication) || lex_file&.entrytype_text?
+    when 'LexPublication'
       :publication
+    when nil
+      return :person if lex_file&.entrytype_person?
+
+      :publication if lex_file&.entrytype_text?
     end
+  end
+
+  # Person entries are titled given-name first, optionally followed by life years —
+  # "תלמה אדמון (1949)". Bibliographies list authors surname first, which is the form the
+  # legacy lexicon stored in LexCitationAuthor#name ("אדמון, תלמה"); this derives the same
+  # form for authors that carry no name of their own, so migrated and manually added
+  # citation authors display alike.
+  # Titles of non-person entries are returned untouched. A title with only one word left to
+  # it has no surname to move, so it comes back with just the life years stripped.
+  def surname_first_title
+    return title unless entry_type == :person
+
+    # a trailing parenthetical containing a digit is life years, not part of the name
+    name = title.sub(/\s*[(\[][^)\]]*\d[^)\]]*[)\]]\z/, '').strip
+    name = title if name.blank?
+
+    parts = name.split(/\s+/)
+    return name if parts.size < 2
+
+    "#{parts.pop}, #{parts.join(' ')}"
   end
 
   # Instance-level counterpart of the needs_verification scope: is this entry still

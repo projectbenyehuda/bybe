@@ -3,6 +3,30 @@
 require 'rails_helper'
 
 describe LexCitationAuthor do
+  describe '#display_name' do
+    subject(:display_name) { author.display_name }
+
+    let(:lex_person) { create(:lex_entry, :person).lex_item }
+    let(:citation) { build(:lex_citation, person: lex_person) }
+    let(:entry) { create(:lex_entry, :person, title: 'תלמה אדמון (1949)') }
+
+    context 'when a legacy name is present (migrated author)' do
+      let(:author) { build(:lex_citation_author, citation: citation, entry: entry, name: 'אדמון, ת.', link: nil) }
+
+      it 'prefers the stored name' do
+        expect(display_name).to eq('אדמון, ת.')
+      end
+    end
+
+    context 'when only an entry is present (manually added author)' do
+      let(:author) { build(:lex_citation_author, citation: citation, entry: entry, name: nil, link: nil) }
+
+      it 'displays the entry title surname-first, like migrated authors' do
+        expect(display_name).to eq('אדמון, תלמה')
+      end
+    end
+  end
+
   describe 'validations' do
     subject(:result) { author.valid? }
 
@@ -170,7 +194,7 @@ describe LexCitationAuthor do
 
     context 'when the authors were loaded without preloading their entries' do
       let(:linked_entry) { create(:lex_entry, :person, title: 'חיים נחמן ביאליק') }
-      let(:authors) { LexCitationAuthor.where(lex_citation_id: citation.id).to_a }
+      let(:authors) { described_class.where(lex_citation_id: citation.id).to_a }
 
       before do
         create(:lex_entry, :person, title: 'גילי איזיקוביץ')
@@ -178,9 +202,10 @@ describe LexCitationAuthor do
         create(:lex_citation_author, citation: citation, entry: linked_entry, name: 'ביאליק, חיים נחמן', link: nil)
       end
 
-      it 'recognises the linked author by its foreign key, without loading the association' do
+      it 'recognises the linked author by its foreign key, still in one query' do
+        authors # load them up front, so only the lookup's own query is counted
+        expect(count_queries { matches }).to eq(1)
         expect(matches).to contain_exactly('גילי איזיקוביץ')
-        expect(authors.map { |author| author.association(:entry).loaded? }).to all(be false)
       end
     end
 

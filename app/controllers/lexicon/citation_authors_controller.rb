@@ -15,7 +15,9 @@ module Lexicon
     layout false
 
     def index
-      @authors = @citation.authors.preload(:entry).sort_by(&:display_name)
+      # lex_file too: an author with no name of its own derives its display name from the
+      # entry (see LexEntry#surname_first_title), which consults the file of a not-yet-ingested entry
+      @authors = @citation.authors.preload(entry: :lex_file).sort_by(&:display_name)
     end
 
     def create

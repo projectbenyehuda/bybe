@@ -207,7 +207,7 @@
       - total_count = checklist['citations']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
-    - all_citations = item.citations.includes(authors: :entry)
+    - all_citations = item.citations.includes(authors: { entry: :lex_file })
     - cit_size = all_citations.size
     -# Resolved once for the whole section: which plaintext authors have an existing person entry
       to offer a match against (see LexCitationAuthor.matchable_names).

@@ -11,8 +11,10 @@ class LexCitationAuthor < ApplicationRecord
   validates :link, absence: { message: :link_with_entry_error }, if: -> { entry.present? }
   validate :entry_must_be_person, if: -> { entry.present? }
 
+  # Migrated authors carry the legacy surname-first name; manually added ones have only an
+  # entry, whose title is given-name first, so it has to be inverted to match.
   def display_name
-    name.presence || entry&.title
+    name.presence || entry&.surname_first_title
   end
 
   # The name to look an existing entry up by (see .normalize_name).
