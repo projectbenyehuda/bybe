@@ -8,13 +8,6 @@ RSpec.describe 'Manifestation snippets', type: :request do
   let!(:poem) { create(:manifestation, title: 'Alpha Poem', markdown: 'The opening line of the Alpha poem.') }
   let!(:story) { create(:manifestation, title: 'Beta Story', markdown: 'The opening line of the Beta story.') }
 
-  def count_queries(&)
-    count = 0
-    counter = ->(*, payload) { count += 1 unless payload[:cached] || payload[:name] == 'SCHEMA' }
-    ActiveSupport::Notifications.subscribed(counter, 'sql.active_record', &)
-    count
-  end
-
   it 'returns the rendered card of every requested work, keyed by id' do
     get manifestation_snippets_path, params: { ids: [poem.id, story.id].join(',') }
 

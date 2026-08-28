@@ -207,7 +207,7 @@
       - total_count = checklist['citations']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
-    - all_citations = item.citations.includes(authors: :entry)
+    - all_citations = item.citations.includes(authors: { entry: :lex_file })
     - cit_size = all_citations.size
     - if php_counts[:citations] && php_counts[:citations] != cit_size
       .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}

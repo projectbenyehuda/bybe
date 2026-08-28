@@ -29,6 +29,76 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '#entry_type' do
+    context 'when backed by a lex_item' do
+      it 'reports the item type without loading the polymorphic association' do
+        expect(create(:lex_entry, :person).entry_type).to eq(:person)
+        expect(create(:lex_entry, :publication).entry_type).to eq(:publication)
+      end
+    end
+
+    context 'when the entry is still awaiting ingestion and has no lex_item' do
+      it 'falls back to the legacy file type' do
+        expect(create(:lex_file, :person, entry_status: :raw).lex_entry.entry_type).to eq(:person)
+        expect(create(:lex_file, :publication, entry_status: :raw).lex_entry.entry_type).to eq(:publication)
+      end
+    end
+
+    context 'when the entry has neither a lex_item nor a lex_file' do
+      it { expect(build(:lex_entry, lex_item: nil).entry_type).to be_nil }
+    end
+  end
+
+  describe '#surname_first_title' do
+    subject(:surname_first_title) { entry.surname_first_title }
+
+    let(:entry) { build(:lex_entry, :person, title: title) }
+
+    context 'with a given-name-first person title' do
+      let(:title) { 'תלמה אדמון' }
+
+      it { is_expected.to eq('אדמון, תלמה') }
+    end
+
+    context 'with a trailing life-years parenthetical' do
+      let(:title) { 'אהוד בן־עזר (1936)' }
+
+      it 'drops the life years, which are not part of the name' do
+        expect(surname_first_title).to eq('בן־עזר, אהוד')
+      end
+    end
+
+    context 'with a multi-part given name' do
+      let(:title) { 'סיגל נאור פרלמן' }
+
+      it 'treats only the last token as the surname' do
+        expect(surname_first_title).to eq('פרלמן, סיגל נאור')
+      end
+    end
+
+    context 'with a latin-script title' do
+      let(:title) { 'Dana Olmert' }
+
+      it { is_expected.to eq('Olmert, Dana') }
+    end
+
+    context 'with a single-word title' do
+      let(:title) { 'רש״י (1040–1105)' }
+
+      it 'has nothing to invert and only drops the life years' do
+        expect(surname_first_title).to eq('רש״י')
+      end
+    end
+
+    context 'with a non-person entry' do
+      let(:entry) { build(:lex_entry, :publication, title: 'כתובים') }
+
+      it 'returns the title unchanged' do
+        expect(surname_first_title).to eq('כתובים')
+      end
+    end
+  end
+
   describe 'works verification' do
     let(:person) { create(:lex_person) }
     let(:entry) { create(:lex_entry, lex_item: person) }

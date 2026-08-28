@@ -294,8 +294,10 @@ module LexiconHelper
 
   def grouped_and_ordered_citations(lex_person)
     person_works = lex_person.works.index_by(&:title)
-    # we preload data required for citations rendering
-    grouped_citations = lex_person.citations.preload(authors: :entry)
+    # we preload data required for citations rendering, down to the entry's lex_file:
+    # an author with no name of its own derives its display name from the entry (see
+    # LexEntry#surname_first_title), which consults the file of a not-yet-ingested entry
+    grouped_citations = lex_person.citations.preload(authors: { entry: :lex_file })
                                   .group_by(&:subject_title).sort_by do |subject_title, _entries|
       work = person_works[subject_title] if subject_title.present?
       # sort General (empty subject) first, then titles associated with Person Works, then custom titles
