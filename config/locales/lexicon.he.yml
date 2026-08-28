@@ -33,6 +33,7 @@ he:
       edit:
         title: עריכת רשומת לקסיקון
         properties: מאפיינים
+        external_identifiers: מזהים חיצוניים
         attachments: קבצים מצורפים
         citations: מראי מקום
         works: יצירות
@@ -107,6 +108,9 @@ he:
         size: גודל
         preview: תצוגה מקדימה
         copy_link: העתקת קישור ללוח
+    external_identifiers:
+      update:
+        success: המזהים החיצוניים נשמרו
     citation_authors:
       form:
         add_author: הוספת יוצר/ת

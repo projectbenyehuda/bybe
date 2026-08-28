@@ -1,0 +1,10 @@
+-#
+  data-type=script makes rails-ujs ask for text/javascript, so the PATCH renders (and the browser
+  runs) update.js.erb rather than falling through to a 204 with no template.
+= form_with url: lexicon_entry_external_identifiers_path(@lex_entry), method: :patch, local: false,
+            html: { id: :external_identifiers_form, data: { type: :script } } do |f|
+  %p.text-muted= t('lexicon.verification.edit.external_identifiers.instructions')
+  -# Filled in by update.js.erb with the outcome of the save
+  #external_identifiers_status
+  = render 'lexicon/entries/external_identifiers_form', entry: @lex_entry
+  = f.submit t(:save), class: 'btn btn-primary'

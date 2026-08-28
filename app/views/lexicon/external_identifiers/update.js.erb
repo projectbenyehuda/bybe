@@ -1,0 +1,9 @@
+<%# The fields already show exactly what was stored (blank means "removed"), so there is nothing
+    to reload -- only the outcome needs reporting.
+    raw(): .js.erb templates are HTML-escaped like any other, which would turn to_json's quotes
+    into &quot; and make this a syntax error. %>
+$('#external_identifiers_status').html(
+  $('<div class="alert"></div>')
+    .addClass(<%= raw((@success ? 'alert-success' : 'alert-danger').to_json) %>)
+    .text(<%= raw((@success ? t('.success') : @lex_entry.errors.full_messages.join(', ')).to_json) %>)
+);
