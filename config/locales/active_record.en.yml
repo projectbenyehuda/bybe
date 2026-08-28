@@ -66,6 +66,8 @@ en:
               link_with_entry_error: link can only be specified if we don't have a Lexicon entry for author
             entry:
               not_a_person: must be a Person entry
+            lex_entry_id:
+              entry_not_found: please pick an existing entry from the suggestion list
         lex_linked_person:
           attributes:
             person_entry:

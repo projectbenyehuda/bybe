@@ -46,12 +46,17 @@ module Lexicon
     # An entry-linked author may not also carry a link, so any leftover link is dropped -- the same
     # thing ParseCitations#update_link does when it links an author during ingestion.
     def update
-      @author.assign_attributes(lex_entry_id: match_params[:lex_entry_id].presence, link: nil)
+      # The record is looked up rather than the id assigned straight through, so a submission naming
+      # an entry that does not exist is rejected here. Two ordinary cases reach this: the
+      # autocomplete clears its hidden id field as soon as the editor edits the text, and the
+      # autocomplete index can still offer an entry that has since been deleted (a stale document
+      # outlives the row it described, since the index is only pruned when a destroy runs through
+      # the model). Without the lookup the second case sails past validation -- `entry` is nil, so
+      # `entry_must_be_person` never runs -- and fails on the lex_entries foreign key with a 500.
+      @author.assign_attributes(entry: LexEntry.find_by(id: match_params[:lex_entry_id]), link: nil)
 
-      if @author.lex_entry_id.blank?
-        # The autocomplete clears its hidden id field as soon as the editor edits the text, so a
-        # submission with free text and no selected entry is an ordinary mistake, not an attack.
-        @author.errors.add(:lex_entry_id, :blank)
+      if @author.entry.nil?
+        @author.errors.add(:lex_entry_id, :entry_not_found)
       elsif @author.save
         return head :ok
       end

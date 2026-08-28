@@ -118,6 +118,19 @@ describe '/lexicon/citation_authors' do
       end
     end
 
+    # The autocomplete index is only pruned when a destroy runs through the model, so it can still
+    # offer an entry whose row is gone. Picking one must not reach the lex_entries foreign key.
+    context 'when the selected entry no longer exists' do
+      let!(:author) { create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: nil) }
+      let(:entry_id) { matched_entry.id.tap { matched_entry.destroy! } }
+
+      it 're-renders the modal instead of failing on the foreign key' do
+        expect(call).to eq(422)
+        expect(author.reload.entry).to be_nil
+        expect(author.name).to eq('איזיקוביץ, גילי')
+      end
+    end
+
     context 'when the selected entry is not a person' do
       let!(:author) { create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: nil) }
       let(:matched_entry) { create(:lex_entry, :publication, title: 'גילי איזיקוביץ') }
