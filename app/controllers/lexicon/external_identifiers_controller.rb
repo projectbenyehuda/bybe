@@ -24,6 +24,16 @@ module Lexicon
 
     def update
       @success = @lex_entry.update(external_identifiers: submitted_identifiers)
+
+      respond_to do |format|
+        format.js
+        # What a JS-less page does with a remote form. Without this the submit is processed as
+        # HTML, finds no update.html template, and blows up *after* the column has been written.
+        format.html do
+          flash[:alert] = @lex_entry.errors.full_messages.to_sentence unless @success
+          redirect_to lexicon_entry_external_identifiers_path(@lex_entry)
+        end
+      end
     end
 
     private
@@ -34,9 +44,11 @@ module Lexicon
 
     # Blank values remove the identifier, and an entry with no identifiers left stores NULL rather
     # than an empty hash -- the same treatment the verification workbench gives this form.
+    #
+    # A request with no external_identifiers key at all is not "clear them": every field posts, even
+    # when empty, so its absence means a malformed request. Let expect raise ParameterMissing (400)
+    # rather than silently wiping the column.
     def submitted_identifiers
-      return nil unless params.key?(:external_identifiers)
-
       params.expect(external_identifiers: LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys.map(&:to_sym))
             .to_h
             .compact_blank

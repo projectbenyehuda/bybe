@@ -92,6 +92,34 @@ describe '/lexicon/entries/<ENTRY_ID>/external_identifiers', type: :request do
         expect(lex_entry.reload.external_identifiers).to eq('viaf' => '12345678')
       end
     end
+
+    # Every field posts even when empty, so a request with no external_identifiers key at all is
+    # malformed rather than a request to clear them -- it must not wipe the column.
+    context 'when the external_identifiers param is missing entirely' do
+      subject(:call) { patch "/lex/entries/#{lex_entry.id}/external_identifiers", xhr: true }
+
+      it 'is a bad request and leaves the stored identifiers alone' do
+        expect { call }.not_to(change { lex_entry.reload.external_identifiers })
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+
+    # Regression guard, mirroring Lexicon::AttachmentsController#create: a non-XHR submit (what a
+    # JS-less page does with a remote form) used to render no template and error out *after* the
+    # write had already happened.
+    context 'when submitted as a plain HTML form' do
+      subject(:call) do
+        patch "/lex/entries/#{lex_entry.id}/external_identifiers", params: { external_identifiers: submitted }
+      end
+
+      let(:submitted) { { viaf: '99999999', lc: 'n87654321' } }
+
+      it 'stores the identifiers and redirects back to the panel' do
+        call
+        expect(response).to redirect_to("/lex/entries/#{lex_entry.id}/external_identifiers")
+        expect(lex_entry.reload.external_identifiers).to eq('viaf' => '99999999', 'lc' => 'n87654321')
+      end
+    end
   end
 
   describe 'access control' do

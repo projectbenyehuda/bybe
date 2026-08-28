@@ -19,8 +19,10 @@ RSpec.describe 'Lexicon entry edit – authority control tab', :js, type: :syste
     login_as_lexicon_editor
     visit edit_lexicon_entry_path(entry)
     click_link I18n.t('lexicon.entries.edit.external_identifiers')
-    # The pane is loaded lazily on first click; wait it out before touching any field.
-    page.has_field?('external_identifiers[viaf]', with: '12345678', wait: 10)
+    # The pane is loaded lazily on first click; wait it out before touching any field. find_field
+    # rather than an expectation because RSpec forbids expect in a hook -- it still waits, and
+    # still fails loudly (Capybara::ElementNotFound) if the pane never arrives.
+    page.find_field('external_identifiers[viaf]', with: '12345678', wait: 10)
   end
 
   it 'shows a field per identifier key, pre-filled with the stored values' do
