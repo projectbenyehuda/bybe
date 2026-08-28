@@ -1523,6 +1523,9 @@ p.by-genre-name-v02.headline-2-v02 {
 .sticky-fold {
 	flex-wrap: wrap;
 
+	/* for the fade in/out of .sticky-fold-away, below */
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+
 	/* The sort label + <select> share a <p>; both need to be shrinkable, or the
 	 * select's widest option sets an un-shrinkable min-content width. */
 	p {
@@ -1547,6 +1550,16 @@ p.by-genre-name-v02.headline-2-v02 {
 		.toc-flat-action {
 			display: flex;
 		}
+	}
+
+	/* Out of the way once the reader has scrolled into the lexicon block, whose
+	 * content none of the bar's actions apply to. Set by the scroll handler in
+	 * authors/toc. visibility, not display: the bar's box sits in the flow above
+	 * the works list, so removing it would shift the whole page under the reader
+	 * while the bar itself is stuck far below its own place in the flow. */
+	&.sticky-fold-away {
+		visibility: hidden;
+		opacity: 0;
 	}
 }
 
