@@ -53,6 +53,19 @@ class LexEntry < ApplicationRecord
   # reachable via internal links from another entry.
   scope :main, -> { where(main: true) }
 
+  # SQL counterpart of `#entry_type == :person`: entries backed by a LexPerson item, plus entries
+  # still awaiting ingestion -- no lex_item yet -- whose legacy file is a person file. The
+  # lex_item_type IS NULL half matters: #entry_type only consults the file when the column is
+  # unset, so an entry carrying a LexPublication is a publication whatever its file says.
+  scope :person_type, lambda {
+    left_joins(:lex_file)
+      .where(lex_item_type: 'LexPerson')
+      .or(
+        LexEntry.left_joins(:lex_file)
+                .where(lex_item_type: nil, lex_files: { entrytype: LexFile.entrytypes[:person] })
+      )
+  }
+
   update_index('lex_entries') { self }
   update_index('lex_entries_autocomplete') { self }
 

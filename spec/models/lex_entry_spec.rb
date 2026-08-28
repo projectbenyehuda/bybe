@@ -49,6 +49,23 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '.person_type' do
+    # The scope is the SQL counterpart of #entry_type == :person, and the two are written in
+    # different languages against the same rule -- so assert they agree across every shape rather
+    # than restating the rule a second time.
+    it 'selects exactly the entries #entry_type calls a person' do
+      create(:lex_entry, :person)
+      create(:lex_entry, :publication)
+      create(:lex_file, :person, entry_status: :raw)
+      create(:lex_file, :publication, entry_status: :raw)
+      # a lex_item outranks the legacy file, so this one is a publication despite its person file
+      create(:lex_file, :person).lex_entry.update!(lex_item: create(:lex_publication))
+
+      expect(described_class.person_type)
+        .to match_array(described_class.all.select { |entry| entry.entry_type == :person })
+    end
+  end
+
   describe '#surname_first_title' do
     subject(:surname_first_title) { entry.surname_first_title }
 

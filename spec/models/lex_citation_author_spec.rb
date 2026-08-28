@@ -100,4 +100,138 @@ describe LexCitationAuthor do
       end
     end
   end
+
+  describe '.normalize_name' do
+    subject { described_class.normalize_name(name) }
+
+    context 'when the name is in "lastname, firstname" form' do
+      let(:name) { 'איזיקוביץ, גילי' }
+
+      it { is_expected.to eq('גילי איזיקוביץ') }
+    end
+
+    context 'when the surname is followed by several given names' do
+      let(:name) { 'ביאליק, חיים נחמן' }
+
+      it { is_expected.to eq('חיים נחמן ביאליק') }
+    end
+
+    context 'when the name has no comma' do
+      let(:name) { 'מירה הרשקו' }
+
+      it { is_expected.to eq('מירה הרשקו') }
+    end
+
+    context 'when the name has a trailing comma and nothing after it' do
+      let(:name) { 'ביאליק,' }
+
+      it { is_expected.to eq('ביאליק') }
+    end
+
+    context 'when the name carries stray whitespace' do
+      let(:name) { "  איזיקוביץ,\n גילי  " }
+
+      it { is_expected.to eq('גילי איזיקוביץ') }
+    end
+
+    context 'when the name is blank' do
+      let(:name) { '' }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '.matchable_names' do
+    subject(:matches) { described_class.matchable_names(authors) }
+
+    let(:lex_person) { create(:lex_entry, :person).lex_item }
+    let(:citation) { create(:lex_citation, person: lex_person, authors_count: 0) }
+
+    def author_named(name)
+      create(:lex_citation_author, citation: citation, name: name, link: nil)
+    end
+
+    context 'when a person entry is titled exactly like the normalized name' do
+      before { create(:lex_entry, :person, title: 'גילי איזיקוביץ') }
+
+      let(:authors) { [author_named('איזיקוביץ, גילי')] }
+
+      it { is_expected.to contain_exactly('גילי איזיקוביץ') }
+    end
+
+    context 'when the only entry with that title is a publication' do
+      before { create(:lex_entry, :publication, title: 'גילי איזיקוביץ') }
+
+      let(:authors) { [author_named('איזיקוביץ, גילי')] }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when the entry is a not-yet-migrated person file' do
+      before { create(:lex_file, :person, entry_status: :raw, title: 'גילי איזיקוביץ') }
+
+      let(:authors) { [author_named('איזיקוביץ, גילי')] }
+
+      it { is_expected.to contain_exactly('גילי איזיקוביץ') }
+    end
+
+    context 'when no entry carries that title' do
+      let(:authors) { [author_named('איזיקוביץ, גילי')] }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when the author is already linked to an entry' do
+      let(:entry) { create(:lex_entry, :person, title: 'גילי איזיקוביץ') }
+      let(:authors) do
+        [create(:lex_citation_author, citation: citation, entry: entry, name: 'איזיקוביץ, גילי', link: nil)]
+      end
+
+      it 'does not offer a match for it' do
+        expect(matches).to be_empty
+      end
+    end
+
+    context 'when the authors were loaded without preloading their entries' do
+      let(:linked_entry) { create(:lex_entry, :person, title: 'חיים נחמן ביאליק') }
+      let(:authors) { described_class.where(lex_citation_id: citation.id).to_a }
+
+      before do
+        create(:lex_entry, :person, title: 'גילי איזיקוביץ')
+        author_named('איזיקוביץ, גילי')
+        create(:lex_citation_author, citation: citation, entry: linked_entry, name: 'ביאליק, חיים נחמן', link: nil)
+      end
+
+      it 'recognises the linked author by its foreign key, still in one query' do
+        authors # load them up front, so only the lookup's own query is counted
+        expect(count_queries { matches }).to eq(1)
+        expect(matches).to contain_exactly('גילי איזיקוביץ')
+      end
+    end
+
+    context 'with several authors' do
+      before do
+        create(:lex_entry, :person, title: 'גילי איזיקוביץ')
+        create(:lex_entry, :person, title: 'חיים נחמן ביאליק')
+      end
+
+      let(:authors) do
+        [author_named('איזיקוביץ, גילי'), author_named('ביאליק, חיים נחמן'), author_named('לא, קיים')]
+      end
+
+      it 'reports only the names an entry exists for' do
+        expect(matches).to contain_exactly('גילי איזיקוביץ', 'חיים נחמן ביאליק')
+      end
+    end
+
+    context 'with no authors at all' do
+      let(:authors) { [] }
+
+      it 'returns an empty set without hitting the database' do
+        allow(LexEntry).to receive(:person_type)
+        expect(matches).to be_empty
+        expect(LexEntry).not_to have_received(:person_type)
+      end
+    end
+  end
 end

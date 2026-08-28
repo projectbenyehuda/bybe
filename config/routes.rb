@@ -88,7 +88,11 @@ Bybeconv::Application.routes.draw do
       end
     end
 
-    resources :citation_authors, only: %i(update destroy)
+    resources :citation_authors, only: %i(update destroy) do
+      member do
+        get :match
+      end
+    end
     resources :linked_people, only: %i(destroy) do
       member do
         post :reorder

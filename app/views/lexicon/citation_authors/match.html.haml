@@ -1,0 +1,25 @@
+%h1= t('.title')
+%p.text-muted
+  = t('.imported_name')
+  %strong{ dir: text_dir(@author.name.to_s) }= @author.name
+= simple_form_for @author, url: lexicon_citation_author_path(@author), method: :patch, remote: true do |f|
+  = f.hidden_field :lex_entry_id
+  = f.input :name,
+            label: t('.entry_label'),
+            id_element: '#lex_citation_author_lex_entry_id',
+            url: autocomplete_lexicon_entries_path(entry_type: :person),
+            input_html: { value: @author.normalized_name },
+            as: :autocomplete
+  -# display validation errors for :entry and :lex_entry_id together since they are related
+  .text-danger
+    = f.error :entry
+    = f.error :lex_entry_id
+  %p.text-muted.small= t('.name_kept_notice')
+  = f.submit t('.confirm'), class: 'btn btn-primary'
+  %button.btn.btn-secondary.ms-1{ type: 'button', onclick: 'closeModal();' }= t(:cancel)
+-# fix to make autocomplete menu the same width as the input field (Consider moving this layout js?)
+:javascript
+  $.ui.autocomplete.prototype._resizeMenu = function () {
+    const ul = this.menu.element;
+    ul.outerWidth(this.element.outerWidth());
+  }

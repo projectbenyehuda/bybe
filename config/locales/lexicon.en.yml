@@ -113,6 +113,12 @@ en:
     citation_authors:
       form:
         add_author: Add author
+      match:
+        title: Match to an existing entry
+        imported_name: 'Name as imported:'
+        entry_label: Lexicon entry (person)
+        name_kept_notice: The imported name is kept as-is; only the link to the entry is added.
+        confirm: Confirm match
     citations:
       header:
         subject_line: About "%{subject}"
