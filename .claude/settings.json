@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "auto",
     "allow": [],
     "deny": [
       "Bash(gh pr view:*)",
