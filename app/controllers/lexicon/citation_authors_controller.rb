@@ -9,7 +9,7 @@ module Lexicon
       require_editor('edit_lexicon')
     end
     before_action :set_citation, only: %i(index create)
-    before_action :set_author, only: %i(destroy)
+    before_action :set_author, only: %i(match update destroy)
     before_action :try_to_lock_record
 
     layout false
@@ -37,6 +37,28 @@ module Lexicon
       render status: status
     end
 
+    # Modal offering to link a plaintext author imported from a legacy PHP file to an existing
+    # person entry, pre-filled with the name the match was found by (see LexCitationAuthor.normalize_name).
+    def match; end
+
+    # Links the author to the chosen person entry. The imported name is deliberately left untouched,
+    # so the citation keeps displaying it as "lastname, firstname" exactly as the legacy file had it.
+    # An entry-linked author may not also carry a link, so any leftover link is dropped -- the same
+    # thing ParseCitations#update_link does when it links an author during ingestion.
+    def update
+      @author.assign_attributes(lex_entry_id: match_params[:lex_entry_id].presence, link: nil)
+
+      if @author.lex_entry_id.blank?
+        # The autocomplete clears its hidden id field as soon as the editor edits the text, so a
+        # submission with free text and no selected entry is an ordinary mistake, not an attack.
+        @author.errors.add(:lex_entry_id, :blank)
+      elsif @author.save
+        return head :ok
+      end
+
+      render :match, status: :unprocessable_content
+    end
+
     def destroy
       @author.destroy!
     end
@@ -45,6 +67,12 @@ module Lexicon
 
     def author_params
       params.expect(lex_citation_author: %i(name link lex_entry_id))
+    end
+
+    # Only the entry reference is accepted: the modal's autocomplete box also submits the title the
+    # editor searched by, but the imported name must survive the match unchanged.
+    def match_params
+      params.expect(lex_citation_author: %i(lex_entry_id))
     end
 
     def set_citation

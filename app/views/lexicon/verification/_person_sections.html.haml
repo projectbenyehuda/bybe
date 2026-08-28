@@ -209,6 +209,9 @@
   .section-content
     - all_citations = item.citations.includes(authors: :entry)
     - cit_size = all_citations.size
+    -# Resolved once for the whole section: which plaintext authors have an existing person entry
+    -# to offer a match against (see LexCitationAuthor.matchable_names).
+    - matchable_author_names = LexCitationAuthor.matchable_names(all_citations.flat_map(&:authors))
     - if php_counts[:citations] && php_counts[:citations] != cit_size
       .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
         = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:citations], migrated_count: cit_size)
@@ -226,7 +229,7 @@
                   %br
                   %span.text-muted
                     #{citation.authors.count > 1 ? t(:authors) : t(:author)}:
-                    = safe_join(citation.authors.map { |a| a.entry ? link_to(a.display_name, lexicon_entry_path(a.entry)) : a.display_name }, ', ')
+                    = citation_authors_for_verification(citation, matchable_author_names)
                 - if citation.from_publication.present?
                   %br
                   %span.text-muted

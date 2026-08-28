@@ -53,6 +53,14 @@ class LexEntry < ApplicationRecord
   # reachable via internal links from another entry.
   scope :main, -> { where(main: true) }
 
+  # SQL counterpart of `#entry_type == :person`: entries backed by a LexPerson item, plus entries
+  # not migrated yet whose legacy file is a person file.
+  scope :person_type, lambda {
+    left_joins(:lex_file)
+      .where(lex_item_type: 'LexPerson')
+      .or(LexEntry.left_joins(:lex_file).where(lex_files: { entrytype: LexFile.entrytypes[:person] }))
+  }
+
   update_index('lex_entries') { self }
   update_index('lex_entries_autocomplete') { self }
 

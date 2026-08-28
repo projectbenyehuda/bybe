@@ -60,6 +60,75 @@ describe '/lexicon/citation_authors' do
     end
   end
 
+  describe 'GET /lexicon/citation_authors/:id/match' do
+    subject(:call) { get "/lex/citation_authors/#{author.id}/match" }
+
+    let!(:citation) { create(:lex_citation, person: person, authors_count: 0) }
+    let!(:author) { create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: nil) }
+
+    it 'renders the match modal pre-filled with the normalized name' do
+      expect(call).to eq(200)
+      expect(response.body).to include('גילי איזיקוביץ')
+    end
+  end
+
+  describe 'PATCH /lexicon/citation_authors/:id' do
+    subject(:call) do
+      patch "/lex/citation_authors/#{author.id}",
+            params: { lex_citation_author: { name: 'גילי איזיקוביץ', lex_entry_id: entry_id } },
+            xhr: true
+    end
+
+    let!(:citation) { create(:lex_citation, person: person, authors_count: 0) }
+    let(:matched_entry) { create(:lex_entry, :person, title: 'גילי איזיקוביץ') }
+    let(:entry_id) { matched_entry.id }
+
+    context 'with a plaintext author' do
+      let!(:author) { create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: nil) }
+
+      it 'links the entry without rewriting the imported name' do
+        expect(call).to eq(200)
+        expect(author.reload.entry).to eq(matched_entry)
+        expect(author.name).to eq('איזיקוביץ, גילי')
+        expect(author.display_name).to eq('איזיקוביץ, גילי')
+      end
+    end
+
+    context 'when the author still carries a legacy link' do
+      let!(:author) do
+        create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: 'http://example.com/gili')
+      end
+
+      it 'drops the link, which may not coexist with an entry' do
+        expect(call).to eq(200)
+        expect(author.reload.entry).to eq(matched_entry)
+        expect(author.link).to be_nil
+        expect(author.name).to eq('איזיקוביץ, גילי')
+      end
+    end
+
+    context 'when no entry was selected in the autocomplete' do
+      let!(:author) { create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: nil) }
+      let(:entry_id) { '' }
+
+      it 're-renders the modal and leaves the author untouched' do
+        expect(call).to eq(422)
+        expect(author.reload.entry).to be_nil
+        expect(author.name).to eq('איזיקוביץ, גילי')
+      end
+    end
+
+    context 'when the selected entry is not a person' do
+      let!(:author) { create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: nil) }
+      let(:matched_entry) { create(:lex_entry, :publication, title: 'גילי איזיקוביץ') }
+
+      it 're-renders the modal and leaves the author untouched' do
+        expect(call).to eq(422)
+        expect(author.reload.entry).to be_nil
+      end
+    end
+  end
+
   describe 'DELETE /lexicon/citation_authors/:id' do
     subject(:call) { delete "/lex/citation_authors/#{author.id}", xhr: true }
 

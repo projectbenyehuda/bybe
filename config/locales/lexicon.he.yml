@@ -114,6 +114,12 @@ he:
     citation_authors:
       form:
         add_author: הוספת יוצר/ת
+      match:
+        title: התאמה לערך קיים
+        imported_name: 'השם כפי שיובא:'
+        entry_label: ערך לקסיקון (אדם)
+        name_kept_notice: השם המיובא יישמר כלשונו; רק הקישור לערך יתווסף.
+        confirm: אישור ההתאמה
     citations:
       header:
         subject_line: על ״%{subject}״
