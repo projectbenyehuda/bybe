@@ -105,6 +105,8 @@ Bybeconv::Application.routes.draw do
       end
       resources :attachments, only: %i(index create destroy)
       resources :links, shallow: true, except: %i(show)
+      # Authority control identifiers: a single JSON column on the entry, hence a singular resource
+      resource :external_identifiers, only: %i(show update)
     end
 
     # Verification workbench

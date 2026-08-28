@@ -32,6 +32,7 @@ en:
       edit:
         title: Edit Lexicon Entry
         properties: Properties
+        external_identifiers: Authority Control Identifiers
         attachments: Attachments
         citations: Citations
         works: Works
@@ -106,6 +107,9 @@ en:
         size: Size
         preview: Preview
         copy_link: Copy link to clipboard
+    external_identifiers:
+      update:
+        success: Authority control identifiers saved
     citation_authors:
       form:
         add_author: Add author

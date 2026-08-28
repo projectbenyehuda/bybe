@@ -10,6 +10,10 @@
   %li.nav-item
     %a.nav-link#properties_tab{ href: '#', data: { toggle: :tab, target: '#properties' } }= t('.properties')
   %li.nav-item
+    -# haml-lint:disable LineLength
+    %a.nav-link#external_identifiers_tab{ href: '#', data: { toggle: :tab, target: '#external_identifiers' } }= t('.external_identifiers')
+    -# haml-lint:enable LineLength
+  %li.nav-item
     %a.nav-link#attachments_tab{ href: '#', data: { toggle: :tab, target: '#attachments' } }= t('.attachments')
   - if @lex_entry.lex_item.is_a?(LexPerson)
     %li.nav-item
@@ -21,6 +25,7 @@
 
 .tab-content
   .tab-pane.fade#properties{ data: { load_url: @edit_properties_path } }
+  .tab-pane.fade#external_identifiers{ data: { load_url: lexicon_entry_external_identifiers_path(@lex_entry) } }
   .tab-pane.fade#attachments{ data: { load_url: lexicon_entry_attachments_path(@lex_entry) } }
   - if @lex_entry.lex_item.is_a?(LexPerson)
     .tab-pane.fade#citations{ data: { load_url: lexicon_person_citations_path(@lex_entry.lex_item) } }
