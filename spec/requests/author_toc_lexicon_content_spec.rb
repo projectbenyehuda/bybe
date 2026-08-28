@@ -154,7 +154,10 @@ RSpec.describe 'Authority TOC lexicon content', type: :request do
       # not part of the lexicon block and stays
       it 'drops the lexicon heading and the whole navbar group' do
         call
-        expect(response.body).not_to include('peach2-lexicon')
+        # parsed rather than substring-matched: the page's inline script names .peach2-lexicon in
+        # a selector (the sticky TOC bar steps aside once the reader is into the lexicon block),
+        # so only the rendered DOM can say whether the block itself is on the page
+        expect(Nokogiri::HTML(response.body).css('.peach2-lexicon')).to be_empty
         expect(response.body).not_to include('lexicon-background-color')
         expect(response.body).not_to include('id="lexicon-bio"')
       end
