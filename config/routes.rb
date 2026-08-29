@@ -192,6 +192,7 @@ Bybeconv::Application.routes.draw do
 
   resources :collections, only: %i(show create update destroy) do
     get 'manage'
+    get 'readmode'
     post 'download'
     get 'print'
     get 'kwic'

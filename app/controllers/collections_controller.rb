@@ -9,29 +9,12 @@ class CollectionsController < ApplicationController
   include KwicConcordanceConcern
   include FilteringAndPaginationConcern
 
-  before_action :require_editor, except: %i(browse show download print kwic kwic_download pby_volumes)
-  before_action :set_collection, only: %i(show update destroy)
+  before_action :require_editor, except: %i(browse show readmode download print kwic kwic_download pby_volumes)
+  before_action :set_collection, only: %i(show readmode update destroy)
+  before_action :redirect_unviewable_collection, only: %i(show readmode)
 
   # GET /collections/1 or /collections/1.json
   def show
-    # Sub-volume/sub-issue collections (type 'series') and uncollected-works collections should
-    # never be the focus of a Collection#show view. Redirect them to a more appropriate target
-    # (to prevent URL-hacking or stale links to sub-collections). If there is no suitable target
-    # (e.g. an orphan series with no volume/issue ancestor), fall through and render normally.
-    if @collection.series?
-      parent = @collection.parent_volume_or_isssue
-      if parent.present?
-        redirect_to collection_path(parent.id, q: params[:q])
-        return
-      end
-    elsif @collection.uncollected?
-      authority = Authority.find_by(uncollected_works_collection_id: @collection.id)
-      if authority.present?
-        redirect_to authority_path(authority)
-        return
-      end
-    end
-
     data = FetchCollection.call(@collection)
 
     if data.all_manifestations.size == 1
@@ -55,6 +38,18 @@ class CollectionsController < ApplicationController
     prep_for_show
     track_view(@collection)
     prep_user_content(:collection) # user anthologies, bookmarks
+  end
+
+  # GET /collections/1/readmode - distraction-free reading of the collection's texts
+  def readmode
+    @readmode = true
+    @page_title = "#{@collection.title} - #{t(:default_page_title)}"
+    prep_for_show
+    # [label, anchor index] pairs for the reading-mode item selector, indented by nesting level
+    @rm_items = @htmls.reject { |item| item[0].blank? }.map do |item|
+      title, _ias, _html, _is_curated, _genre, index, _ci, nesting_level = item
+      [('– ' * nesting_level) + title, index]
+    end
   end
 
   # GET /pby_volumes
@@ -605,8 +600,24 @@ class CollectionsController < ApplicationController
   private
 
   # Use callbacks to share common setup or constraints between actions.
+  # Member routes (show, update, destroy) carry :id; nested ones (readmode) carry :collection_id.
   def set_collection
-    @collection = Collection.find(params[:id])
+    @collection = Collection.find(params[:id] || params[:collection_id])
+  end
+
+  # Sub-volume/sub-issue collections (type 'series') and uncollected-works collections should never
+  # be the focus of a Collection#show or #readmode view, so send them somewhere more appropriate
+  # (guarding against URL-hacking and stale links to sub-collections). If there is no suitable
+  # target -- e.g. an orphan series with no volume/issue ancestor -- fall through and render
+  # normally. Redirecting here halts the before_action chain, so the action never runs.
+  def redirect_unviewable_collection
+    if @collection.series?
+      parent = @collection.parent_volume_or_isssue
+      redirect_to collection_path(parent.id, q: params[:q]) if parent.present?
+    elsif @collection.uncollected?
+      authority = Authority.find_by(uncollected_works_collection_id: @collection.id)
+      redirect_to authority_path(authority) if authority.present?
+    end
   end
 
   # Only allow a list of trusted parameters through.
@@ -715,7 +726,28 @@ class CollectionsController < ApplicationController
     else
       build_htmls_recursively(@collection.collection_items, parent_authorities, 0, counter)
     end
+    set_effective_authorities
     set_collection_metadata
+  end
+
+  # Per-item authors and translators worth naming next to an item's title, i.e. those that differ
+  # from the collection-level ones. Keyed by item title, for the show and readmode views.
+  def set_effective_authorities
+    collection_author_ids = @collection.authors.map(&:id)
+    collection_translator_ids = @collection.translators.map(&:id)
+    @effective_authors = {}
+    @effective_translators = {}
+    @htmls.each do |title, ias, *_rest|
+      authors = authorities_by_role(ias, 'author').reject { |a| collection_author_ids.include?(a.id) }
+      @effective_authors[title] = authors.map(&:name).join(', ') if authors.present?
+
+      translators = authorities_by_role(ias, 'translator').reject { |a| collection_translator_ids.include?(a.id) }
+      @effective_translators[title] = translators.map(&:name).join(', ') if translators.present?
+    end
+  end
+
+  def authorities_by_role(involved_authorities, role)
+    involved_authorities.select { |ia| ia.role == role }.map(&:authority)
   end
 
   def set_collection_metadata

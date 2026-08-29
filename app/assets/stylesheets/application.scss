@@ -151,10 +151,6 @@ body.staging::before {
   margin-left: 25px;
 
 }
-#chapters {
-  width: -webkit-fill-available;
-  width: -moz-available;
-}
 .anthology-badge{
   cursor: pointer;
 }
@@ -1349,6 +1345,124 @@ p.by-genre-name-v02.headline-2-v02 {
 .reading-mode-btn-v02 .by-icon-v02,
 .reading-mode-icon-btn-v02 .by-icon-v02 {
   line-height: 26px;
+}
+
+/* The horizontal half of the same problem, on the icon-only (mobile) button:
+   .by-icon-v02's box is 26px wide but the glyph's inline box is only 18px, and
+   the RTL page's inherited text-align:right pinned it to the right edge, so it
+   sat 4px right of centre in its purple square. The desktop button is left out
+   deliberately -- there the glyph is one item in a row beside its label, and
+   centring it inside its box would only open a gap between the two. */
+.reading-mode-icon-btn-v02 .by-icon-v02 {
+  text-align: center;
+}
+
+/* Reading-mode control panel. BY_styles_General.css sizes it at 210px, which is
+   narrower than most chapter and collection-item titles, so the navigator below
+   had nowhere to put them. Pinning it 10px from the viewport edge (it was 7.5%,
+   and 30px below 1280px) buys back most of what the extra width costs the
+   reading column. Between 992px -- where the panel first appears -- and 1280px
+   there is not enough room for the full width, so it stays narrower there. */
+.rm-control-panel {
+  width: 280px;
+  left: 10px;
+}
+
+@media (max-width: 1279px) {
+  .rm-control-panel {
+    width: 240px;
+  }
+}
+
+/* The work page's reading mode clears the fixed control panel only by accident,
+   via the 25%-wide decorative .work-side-color strip down the left of its text
+   card. Collection#readmode renders the plain item cards of Collection#show,
+   which have no such strip, so reserve the panel's own footprint here: its 10px
+   offset plus its width at each breakpoint, plus a gutter. Below 992px the
+   panel is hidden altogether and the text may use the full width. */
+@media (min-width: 992px) and (max-width: 1279px) {
+  #collection-readmode .text-page-content {
+    padding-left: 270px;
+  }
+}
+
+@media (min-width: 1280px) {
+  #collection-readmode .text-page-content {
+    padding-left: 310px;
+  }
+}
+
+/* The navigator itself (shared/_readmode_nav): [prev] [dropdown] [next] on one
+   row, with the dropdown taking whatever width is left. */
+.rm-nav {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.rm-nav .rm-nav-step {
+  width: auto; /* .chapterbutton is width:100%, which would stack the three controls */
+  flex: 0 0 auto;
+  line-height: 26px;
+  color: #660248;
+}
+
+.rm-nav-dropdown {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0; /* let the flex item shrink below its content width, so labels wrap */
+}
+
+.rm-nav-current {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 2px 6px;
+  border: solid 1px #d9cdd5;
+  border-radius: 3px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.rm-nav-current-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.rm-nav .dropdown-arrow {
+  flex: 0 0 auto;
+  float: none; /* .dropdown-arrow floats left; in this flex row that would drop it out of line */
+  margin-right: 0;
+}
+
+/* .by-dropdown-content-v02 is white-space:nowrap, which is exactly what we are
+   fixing here: let long titles wrap, and cap the list's height so a long table
+   of contents scrolls rather than running off the screen. */
+.rm-nav-list {
+  right: 0;
+  left: 0;
+  white-space: normal;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.rm-nav-list.open {
+  display: block;
+}
+
+.rm-nav-item {
+  margin: 0;
+  padding: 6px 12px;
+  overflow-wrap: break-word;
+}
+
+.rm-nav-item:hover {
+  background-color: #d9cdd5;
+}
+
+.rm-nav-item.current {
+  font-weight: bold;
 }
 
 .share-name {

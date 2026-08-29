@@ -1,0 +1,60 @@
+-# distraction-free reading mode for a collection. Companion of manifestation/readmode.html.haml
+- rm_data = { collection_url: collection_path(@collection), no_next_item: t(:no_next_item),
+              no_prev_item: t(:no_prev_item) }
+.reading-mode#collection-readmode{ data: rm_data }
+  .container-fluid#content
+    .row.text-page-content
+      .col-12.col-lg-8
+        .logo-for-print
+          %img.logoBY-v02{ alt: t(:logo), src: '/assets/logo-byp-mobile.svg' }
+        .by-card-v02.rm-control-panel
+          .rm-control-top
+            .rm-logo
+              %img.logoBY-v02{ alt: t(:logo), src: '/assets/logo-byp.svg' }
+            %a.collapse-expand-icon{ href: collection_path(@collection), title: t(:leave_readmode_tt) }
+              %span.by-icon-v02 .
+          .rm-control-info
+            .headline-2-v02.work-name-top{ style: 'margin-right:0px' }= @collection.title
+            - if @collection.authors.present?
+              .headline-3-v02
+                != @collection.authors.map { |a| authority_link(a) }.join(', ')
+            - collection_editors = @collection.editors(true)
+            - if collection_editors.present?
+              .headline-3-v02
+                = t('involved_authority.abstract_roles.editor') + ': '
+                != collection_editors.map { |a| authority_link(a) }.join(', ')
+            - if @collection.translators.present?
+              .headline-3-v02
+                = t('involved_authority.abstract_roles.translator') + ': '
+                != @collection.translators.map { |a| authority_link(a) }.join(', ')
+            - nav_items = @rm_items.map { |label, index| [label, "collitem_text_#{index}"] }
+            = render partial: 'shared/readmode_nav',
+                     locals: { items: nav_items, field_label: t(:table_of_contents) + ':',
+                               no_next: t(:no_next_item), no_prev: t(:no_prev_item) }
+            .rm-field-label= t(:location_in_work)
+            .progress-outside
+              .progress-inside.progress-bar
+            .progress-number= '0%'
+          .rm-control-icons
+            - proof_btn_style = 'background-color:unset; border-color: transparent; box-shadow:unset; padding-top:2px;'
+            .linkcolor.pointer#found_mistake{ title: t(:report_error_tt) }
+              %button.error-found-btn.by-icon-v02.pointer{ style: proof_btn_style } g
+            .linkcolor.pointer{ 'data-toggle' => 'modal', 'data-target' => '#shareDlg', title: t(:share_tt) }
+              %span.by-icon-v02 U
+        .by-card-v02.rm-control-panel-mobile
+          .rm-logo
+            %img.logoBY-v02{ alt: '', src: '/assets/logo-byp.svg' }
+          .progress-area
+            .progress-outside
+              .progress-inside.progress-bar
+              .progress-handle
+            .progress-number= '0%'
+          .rm-control-left
+            %a.collapse-expand-icon{ href: collection_path(@collection), title: t(:leave_readmode_tt) }
+              %span.by-icon-v02 .
+        .row
+          .col.work-side-menu-area
+          .col
+            = render partial: 'coll_texts'
+/ found mistake popup
+= render partial: 'shared/proof'
