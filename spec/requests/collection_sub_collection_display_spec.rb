@@ -49,6 +49,21 @@ RSpec.describe 'Collection show - sub-collection headings', type: :request do
     expect(header.at_css('img.subcollection-cover-image')).to be_nil
   end
 
+  it 'loads the sub-collection images without a query per sub-collection' do
+    attach_cover(sub_collection)
+    one_sub = count_queries_matching(/active_storage/) { get collection_path(parent_collection) }
+
+    parent_of_many = Chewy.strategy(:atomic) do
+      subs = create_list(:collection, 3, collection_type: :volume,
+                                         manifestations: create_list(:manifestation, 2, status: :published))
+      subs.each { |sub| attach_cover(sub) }
+      create(:collection, collection_type: :other, included_collections: subs)
+    end
+    many_subs = count_queries_matching(/active_storage/) { get collection_path(parent_of_many) }
+
+    expect(many_subs).to eq(one_sub)
+  end
+
   context 'when the sub-collection has no subtitle' do
     let(:sub_collection) do
       Chewy.strategy(:atomic) do
