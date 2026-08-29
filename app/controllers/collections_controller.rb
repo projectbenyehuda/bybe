@@ -61,6 +61,22 @@ class CollectionsController < ApplicationController
   def readmode
     @readmode = true
     @collection = Collection.find(params[:collection_id])
+
+    # Match Collection#show guards: series/uncollected collections should not be directly viewed.
+    if @collection.series?
+      parent = @collection.parent_volume_or_isssue
+      if parent.present?
+        redirect_to collection_path(parent.id, q: params[:q])
+        return
+      end
+    elsif @collection.uncollected?
+      authority = Authority.find_by(uncollected_works_collection_id: @collection.id)
+      if authority.present?
+        redirect_to authority_path(authority)
+        return
+      end
+    end
+
     @page_title = "#{@collection.title} - #{t(:default_page_title)}"
     prep_for_show
     # [label, anchor index] pairs for the reading-mode item selector, indented by nesting level
