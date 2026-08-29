@@ -50,11 +50,12 @@ RSpec.describe 'Collection reading mode', type: :request do
       expect(doc.at_css("meta[name='robots'][content='noindex']")).to be_present
     end
 
-    it 'lists the collection items in the reading-mode item selector' do
+    it 'lists the collection items in the reading-mode navigator, anchored to their texts' do
       get collection_readmode_path(collection)
 
-      options = Nokogiri::HTML(response.body).css('select#collitem option')
-      expect(options.map(&:text)).to eq(['First Text', 'Second Text'])
+      items = Nokogiri::HTML(response.body).css('#rm_nav_list .rm-nav-item')
+      expect(items.map(&:text)).to eq(['First Text', 'Second Text'])
+      expect(items.map { |i| i['data-anchor'] }).to eq(%w(collitem_text_1 collitem_text_2))
     end
 
     it 'is reachable by anonymous visitors' do

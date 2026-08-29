@@ -27,13 +27,10 @@
               .headline-3-v02
                 = t('involved_authority.abstract_roles.translator') + ': '
                 != @collection.translators.map { |a| authority_link(a) }.join(', ')
-            - if @rm_items.many?
-              .rm-field-label= t(:table_of_contents) + ':'
-              %button.plainbutton.chapterbutton#prev_collitem= '('
-              %select#collitem{ name: 'collitem' }
-                - @rm_items.each do |label, index|
-                  %option{ value: index }= label
-              %button.plainbutton.chapterbutton#next_collitem= ')'
+            - nav_items = @rm_items.map { |label, index| [label, "collitem_text_#{index}"] }
+            = render partial: 'shared/readmode_nav',
+                     locals: { items: nav_items, field_label: t(:table_of_contents) + ':',
+                               no_next: t(:no_next_item), no_prev: t(:no_prev_item) }
             .rm-field-label= t(:location_in_work)
             .progress-outside
               .progress-inside.progress-bar

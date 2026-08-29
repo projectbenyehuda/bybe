@@ -56,12 +56,10 @@ RSpec.describe 'Collection reading mode', :js, type: :system do
       expect(page).to have_no_css('header')
     end
 
-    it 'scrolls to the chosen item and offers a way back to the collection page' do
+    # The item navigator itself is covered in spec/system/readmode_nav_spec.rb
+    it 'offers a way back to the collection page' do
       visit collection_readmode_path(collection)
-      expect(page).to have_css('select#collitem', wait: 10)
-
-      find('select#collitem').select('Second Text')
-      expect(wait_until_scrolled(wait: 10)).to be > 0
+      expect(page).to have_css('.rm-control-panel a.collapse-expand-icon', wait: 10)
 
       find('.rm-control-panel a.collapse-expand-icon').click
       expect(page).to have_current_path(collection_path(collection), wait: 10)

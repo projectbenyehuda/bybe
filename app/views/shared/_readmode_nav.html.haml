@@ -1,0 +1,20 @@
+-#
+  The reading-mode control panel's item navigator, shared by Manifestation#readmode (chapters) and
+  Collection#readmode (collection items). `items` is an array of [label, anchor name] pairs; the
+  anchor name is the `name` of an %a already present in the text body. `no_next`/`no_prev` are the
+  messages shown when there is nothing to step to.
+
+  This is a list of divs rather than a <select> because a <select>'s options cannot wrap in any
+  browser, and titles are routinely wider than the control panel.
+- if items.many?
+  .rm-field-label= field_label
+  .rm-nav#rm_nav{ data: { no_next: no_next, no_prev: no_prev } }
+    %button.plainbutton.chapterbutton.rm-nav-step#prev_rm_item{ type: 'button', title: t(:to_previous_item) }= '('
+    .rm-nav-dropdown
+      .rm-nav-current#rm_nav_current{ tabindex: 0 }
+        %span.rm-nav-current-label= items.first.first
+        %span.dropdown-arrow )
+      .by-dropdown-content-v02.rm-nav-list#rm_nav_list
+        - items.each do |label, anchor|
+          %p.pointer.linkcolor.rm-nav-item{ data: { anchor: anchor } }= label
+    %button.plainbutton.chapterbutton.rm-nav-step#next_rm_item{ type: 'button', title: t(:to_next_item) }= ')'

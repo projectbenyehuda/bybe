@@ -46,12 +46,10 @@
               .headline-3-v02
                 = "#{t('involved_authority.abstract_roles.other')}: "
                 != @others.map { |t| authority_link(t) }.join(', ')
-            .rm-field-label &#x5E4;&#x5E8;&#x5E7;:
-            %button.plainbutton.chapterbutton#prev_chapter= '('
-            %select#chapters{name: 'chapters'}
-              - @chapters.each do |ch|
-                %option{value: ch[1]}= ch[0]
-            %button.plainbutton.chapterbutton#next_chapter= ')'
+            - nav_items = @chapters.map { |ch| [ch[0], "ch#{ch[1]}"] }
+            = render partial: 'shared/readmode_nav',
+                     locals: { items: nav_items, field_label: t(:chapter) + ':',
+                               no_next: t(:no_next_chapter), no_prev: t(:no_prev_chapter) }
             .rm-field-label= t(:location_in_work)
             .progress-outside
               .progress-inside.progress-bar
@@ -135,65 +133,4 @@
         window.location.href = '#{url_for(action: :read, id: @m.id)}';
       }
     });
-    if(#{@chapters.length} > 1) {
-      $('#chapters').change(function(e) {
-        anchor = $('a[name=ch'+$(this).val()+']');
-        $('html, body').animate({
-          scrollTop: $(anchor).offset().top - 20
-        }, 0);
-        $('#actualtext').focus({preventScroll: true});
-      });
-      function get_first_visible_chapter() {
-        chs = $('a[name*=ch');
-        first = null;
-        chs.each(function(){
-          if($(this).offset().top > $(window).scrollTop() && $(this).offset().top < ($(window).scrollTop() +$(window).innerHeight())) { 
-            first = this; 
-            return false;
-          }
-        });
-        if(first == null) {
-          first = chs[0];
-        }
-        return first;
-      };
-      $('#next_chapter').click(function(){
-        first = get_first_visible_chapter();
-        cur = $('#chapters').find('option[value='+$(first).attr('name').replace('ch','')+']');
-        if(cur.length == 0) {
-          alert('no current chapter?!');
-        } else {
-          nextch = cur.next();
-          if(nextch.length == 0) {
-            alert("#{t(:no_next_chapter)}");
-          } else {
-            $('#chapters').val($(nextch[0]).val());
-            anch = $('a[name=ch'+$(nextch[0]).val()+']');
-            $('html, body').animate({
-              scrollTop: $(anch).offset().top - 20
-            }, 0);
-            $('#actualtext').focus({preventScroll: true});
-          }
-        }
-      });
-      $('#prev_chapter').click(function(){
-        first = get_first_visible_chapter();
-        cur = $('#chapters').find('option[value='+$(first).attr('name').replace('ch','')+']');
-        if(cur.length == 0) {
-          alert('no current chapter?!');
-        } else {
-          prevch = cur.prev();
-          if(prevch.length == 0) {
-            alert("#{t(:no_prev_chapter)}");
-          } else {
-            $('#chapters').val($(prevch[0]).val());
-            anch = $('a[name=ch'+$(prevch[0]).val()+']');
-            $('html, body').animate({
-              scrollTop: $(anch).offset().top - 20
-            }, 0);
-            $('#actualtext').focus({preventScroll: true});
-          }
-        }
-      });  
-    }
   });
