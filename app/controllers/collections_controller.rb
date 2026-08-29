@@ -10,28 +10,11 @@ class CollectionsController < ApplicationController
   include FilteringAndPaginationConcern
 
   before_action :require_editor, except: %i(browse show readmode download print kwic kwic_download pby_volumes)
-  before_action :set_collection, only: %i(show update destroy)
+  before_action :set_collection, only: %i(show readmode update destroy)
+  before_action :redirect_unviewable_collection, only: %i(show readmode)
 
   # GET /collections/1 or /collections/1.json
   def show
-    # Sub-volume/sub-issue collections (type 'series') and uncollected-works collections should
-    # never be the focus of a Collection#show view. Redirect them to a more appropriate target
-    # (to prevent URL-hacking or stale links to sub-collections). If there is no suitable target
-    # (e.g. an orphan series with no volume/issue ancestor), fall through and render normally.
-    if @collection.series?
-      parent = @collection.parent_volume_or_isssue
-      if parent.present?
-        redirect_to collection_path(parent.id, q: params[:q])
-        return
-      end
-    elsif @collection.uncollected?
-      authority = Authority.find_by(uncollected_works_collection_id: @collection.id)
-      if authority.present?
-        redirect_to authority_path(authority)
-        return
-      end
-    end
-
     data = FetchCollection.call(@collection)
 
     if data.all_manifestations.size == 1
@@ -60,23 +43,6 @@ class CollectionsController < ApplicationController
   # GET /collections/1/readmode - distraction-free reading of the collection's texts
   def readmode
     @readmode = true
-    @collection = Collection.find(params[:collection_id])
-
-    # Match Collection#show guards: series/uncollected collections should not be directly viewed.
-    if @collection.series?
-      parent = @collection.parent_volume_or_isssue
-      if parent.present?
-        redirect_to collection_path(parent.id, q: params[:q])
-        return
-      end
-    elsif @collection.uncollected?
-      authority = Authority.find_by(uncollected_works_collection_id: @collection.id)
-      if authority.present?
-        redirect_to authority_path(authority)
-        return
-      end
-    end
-
     @page_title = "#{@collection.title} - #{t(:default_page_title)}"
     prep_for_show
     # [label, anchor index] pairs for the reading-mode item selector, indented by nesting level
@@ -634,8 +600,24 @@ class CollectionsController < ApplicationController
   private
 
   # Use callbacks to share common setup or constraints between actions.
+  # Member routes (show, update, destroy) carry :id; nested ones (readmode) carry :collection_id.
   def set_collection
-    @collection = Collection.find(params[:id])
+    @collection = Collection.find(params[:id] || params[:collection_id])
+  end
+
+  # Sub-volume/sub-issue collections (type 'series') and uncollected-works collections should never
+  # be the focus of a Collection#show or #readmode view, so send them somewhere more appropriate
+  # (guarding against URL-hacking and stale links to sub-collections). If there is no suitable
+  # target -- e.g. an orphan series with no volume/issue ancestor -- fall through and render
+  # normally. Redirecting here halts the before_action chain, so the action never runs.
+  def redirect_unviewable_collection
+    if @collection.series?
+      parent = @collection.parent_volume_or_isssue
+      redirect_to collection_path(parent.id, q: params[:q]) if parent.present?
+    elsif @collection.uncollected?
+      authority = Authority.find_by(uncollected_works_collection_id: @collection.id)
+      redirect_to authority_path(authority) if authority.present?
+    end
   end
 
   # Only allow a list of trusted parameters through.

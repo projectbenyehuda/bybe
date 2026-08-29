@@ -55,12 +55,41 @@ RSpec.describe 'Collection reading mode', type: :request do
 
       items = Nokogiri::HTML(response.body).css('#rm_nav_list .rm-nav-item')
       expect(items.map(&:text)).to eq(['First Text', 'Second Text'])
-      expect(items.map { |i| i['data-anchor'] }).to eq(%w(collitem_text_1 collitem_text_2))
+      expect(items.pluck('data-anchor')).to eq(%w(collitem_text_1 collitem_text_2))
     end
 
     it 'is reachable by anonymous visitors' do
       get collection_readmode_path(collection)
       expect(response).to have_http_status(:success)
+    end
+
+    # Same redirect_unviewable_collection guard Collection#show runs: neither view should be the
+    # focus of a sub-collection or an uncollected-works collection.
+    context 'when the collection should not be viewed directly' do
+      it 'sends a series to its volume ancestor' do
+        volume = create(:collection, collection_type: :volume)
+        series = create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+        volume.append_item(series)
+
+        get collection_readmode_path(series)
+        expect(response).to redirect_to collection_path(volume.id)
+      end
+
+      it 'sends an uncollected-works collection to its authority' do
+        uncollected = create(:collection, :uncollected)
+        authority = create(:authority)
+        authority.update!(uncollected_works_collection: uncollected)
+
+        get collection_readmode_path(uncollected)
+        expect(response).to redirect_to authority_path(authority)
+      end
+
+      it 'renders normally for a series with no volume/issue ancestor' do
+        orphan = create(:collection, collection_type: :series, manifestations: create_list(:manifestation, 2))
+
+        get collection_readmode_path(orphan)
+        expect(response).to have_http_status(:success)
+      end
     end
   end
 
