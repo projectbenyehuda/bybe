@@ -726,8 +726,24 @@ class CollectionsController < ApplicationController
     else
       build_htmls_recursively(@collection.collection_items, parent_authorities, 0, counter)
     end
+    preload_sub_collection_images
     set_effective_authorities
     set_collection_metadata
+  end
+
+  # Sub-collection headings show the sub-collection's own image, so load all those attachments in
+  # one go rather than a query per sub-collection.
+  def preload_sub_collection_images
+    sub_collections = @htmls.filter_map do |entry|
+      ci = entry[6] # the CollectionItem of the tuples built above
+      ci.item if ci.item_type == 'Collection' && ci.item.present?
+    end
+    return if sub_collections.empty?
+
+    ActiveRecord::Associations::Preloader.new(
+      records: sub_collections,
+      associations: [{ cover_image_attachment: :blob }, { logo_image_attachment: :blob }]
+    ).call
   end
 
   # Per-item authors and translators worth naming next to an item's title, i.e. those that differ

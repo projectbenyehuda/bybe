@@ -10,6 +10,7 @@
       This is a sub-collection header, rendered with full detail. Its anchor is stable (keyed by
       sub-collection id) so search results and deep links can jump here.
     %a{ name: "collection_#{ci.item_id}" }
+    - sub_collection = ci.item
     .by-card-v02.proofable{ card_attrs }
       .by-card-header-v02
         .by-icon-v02
@@ -18,10 +19,13 @@
           - link = collapsed_text.present? ? url_for(collapsed_text) : url_for_collection_item(ci)
           - glyph_genre = collapsed_text.present? ? collapsed_text.genre : genre
           %span.by-icon-v02{ title: textify_genre(glyph_genre) }= glyph_for_genre(glyph_genre)
+          -# RLM character to help with LTR elements in title. Fixes #664
+          - heading = '‏' + title
+          - heading += ": #{sub_collection.subtitle}" if sub_collection&.subtitle.present?
           - if link.present?
-            = link_to '‏' + title, link # RLM character to help with LTR elements in title. Fixes #664
+            = link_to heading, link
           - else
-            = '‏' + title # RLM character to help with LTR elements in title. Fixes #664
+            = heading
           - if title_footnote.present?
             != ' ' + title_footnote
         -# Show all authorities with their roles (already filtered)
@@ -40,6 +44,11 @@
           %p
             = t(:translated_by)
             != translators.map { |a| authority_link(a) }.join(', ')
+        -# the sub-collection's own image, under the heading and above the header's bottom rule
+        - cover = sub_collection&.cover_image&.attached? ? sub_collection.cover_image : sub_collection&.logo_image
+        - if cover&.attached?
+          - src = cover.variable? ? cover.variant(resize_to_fit: [200, nil]) : cover
+          %img.subcollection-cover-image{ src: url_for(src), alt: title }
   - else
     -# This is a manifestation or other content item
     .by-card-v02.proofable{ card_attrs }
