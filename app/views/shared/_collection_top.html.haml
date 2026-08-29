@@ -4,6 +4,9 @@
   .top-space
   - aus = @collection.authors_string
   - eds = @collection.editors_string(true)
+  - rm_path = collection_readmode_path(@collection.id)
+  - rm_tooltip = { title: t(:readmode_tt), 'data-selector' => 'true', 'data-placement' => 'top',
+                   'data-toggle' => 'tooltip', 'data-delay' => { show: 200, hide: 100 } }
 
   .work-page-top
     .work-page-top-info-card
@@ -41,9 +44,10 @@
             = select_tag 'collitem', options_for_select(@htmls.reject{|x| x[0].blank?}.map{ |title, authors, html, is_curated, genre, i, ci, nesting_level, parent_authorities| [("– " * nesting_level) + strip_coll_prefix.call(title), i] }, 0), class: 'dropdown-v02', id: 'collitem_dropdown', style: 'width: 100%;'
 
           .work-page-top-icons-desktop
-            %button.btn-small-outline-v02.btn-text-v02.reading-mode-btn-v02{href: "#"}
-              %span.by-icon-v02= '/'
-              = t(:reading_mode)
+            %a.white{ href: rm_path }
+              %button.btn-small-outline-v02.btn-text-v02.reading-mode-btn-v02{ rm_tooltip }
+                %span.by-icon-v02= '/'
+                = t(:reading_mode)
             .top-left-icons-group
               .icons-group-v02
                 .by-icon-v02.pointer.linkcolor.bookmark-status.notyet
@@ -52,6 +56,8 @@
                   .by-icon-v02.pointer.linkcolor.download{ data: { 'downloadable-id' => @collection.id, toggle: :modal, target: '#downloadDlg' } }= 3
           .chapters-and-icons-mobile
             .work-page-top-icons-mobile
+              %a.btn-small-outline-v02.btn-text-v02.reading-mode-icon-btn-v02{ href: rm_path, title: t(:readmode_tt) }
+                %span.by-icon-v02 /
               .top-left-icons-group
                 .icons-group-v02
                   .by-icon-v02.pointer.linkcolor.bookmark-status.notyet

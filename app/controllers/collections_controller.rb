@@ -9,7 +9,7 @@ class CollectionsController < ApplicationController
   include KwicConcordanceConcern
   include FilteringAndPaginationConcern
 
-  before_action :require_editor, except: %i(browse show download print kwic kwic_download pby_volumes)
+  before_action :require_editor, except: %i(browse show readmode download print kwic kwic_download pby_volumes)
   before_action :set_collection, only: %i(show update destroy)
 
   # GET /collections/1 or /collections/1.json
@@ -55,6 +55,19 @@ class CollectionsController < ApplicationController
     prep_for_show
     track_view(@collection)
     prep_user_content(:collection) # user anthologies, bookmarks
+  end
+
+  # GET /collections/1/readmode - distraction-free reading of the collection's texts
+  def readmode
+    @readmode = true
+    @collection = Collection.find(params[:collection_id])
+    @page_title = "#{@collection.title} - #{t(:default_page_title)}"
+    prep_for_show
+    # [label, anchor index] pairs for the reading-mode item selector, indented by nesting level
+    @rm_items = @htmls.reject { |item| item[0].blank? }.map do |item|
+      title, _ias, _html, _is_curated, _genre, index, _ci, nesting_level = item
+      [('– ' * nesting_level) + title, index]
+    end
   end
 
   # GET /pby_volumes
@@ -715,7 +728,28 @@ class CollectionsController < ApplicationController
     else
       build_htmls_recursively(@collection.collection_items, parent_authorities, 0, counter)
     end
+    set_effective_authorities
     set_collection_metadata
+  end
+
+  # Per-item authors and translators worth naming next to an item's title, i.e. those that differ
+  # from the collection-level ones. Keyed by item title, for the show and readmode views.
+  def set_effective_authorities
+    collection_author_ids = @collection.authors.map(&:id)
+    collection_translator_ids = @collection.translators.map(&:id)
+    @effective_authors = {}
+    @effective_translators = {}
+    @htmls.each do |title, ias, *_rest|
+      authors = authorities_by_role(ias, 'author').reject { |a| collection_author_ids.include?(a.id) }
+      @effective_authors[title] = authors.map(&:name).join(', ') if authors.present?
+
+      translators = authorities_by_role(ias, 'translator').reject { |a| collection_translator_ids.include?(a.id) }
+      @effective_translators[title] = translators.map(&:name).join(', ') if translators.present?
+    end
+  end
+
+  def authorities_by_role(involved_authorities, role)
+    involved_authorities.select { |ia| ia.role == role }.map(&:authority)
   end
 
   def set_collection_metadata

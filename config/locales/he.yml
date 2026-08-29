@@ -1181,6 +1181,8 @@ he:
   anth_add_curated_tt: "הוספת טקסט מלווה מטעמך כגון שער, הערות, שיעורי בית, וכו'"
   no_next_chapter: אין פרק נוסף
   no_prev_chapter: אין פרק קודם
+  no_next_item: אין פריט נוסף
+  no_prev_item: אין פריט קודם
   facebook_url: https://www.facebook.com/projectbenyehuda/
   latest_youtube: קטעי וידאו אחרונים בערוץ היו-טיוב
   youtube_url: https://www.youtube.com/user/ProjectBenYehuda/

@@ -1,0 +1,70 @@
+-# The collection's items, rendered as text cards. Shared by Collection#show and Collection#readmode.
+- @htmls.each do |title, ias, html, _is_curated, genre, i, ci, nesting_level, _parent_authorities, title_footnote|
+  %a{ name: "collitem_text_#{i}" }
+  - card_attrs = { data: { item_id: ci.item_id, item_type: ci.item_type } }
+  - card_attrs[:style] = "margin-right: #{nesting_level * 10}px;" if nesting_level > 0
+  -# a sub-collection whose whole ToC is a single text is collapsed into it: heading only (#1488)
+  - collapsed_text = @collapsed_texts[ci.id]
+  - if collapsed_text.present? || (html.nil? && ci.item_type == 'Collection')
+    -#
+      This is a sub-collection header, rendered with full detail. Its anchor is stable (keyed by
+      sub-collection id) so search results and deep links can jump here.
+    %a{ name: "collection_#{ci.item_id}" }
+    .by-card-v02.proofable{ card_attrs }
+      .by-card-header-v02
+        .by-icon-v02
+        .headline-1-v02
+          -# a collapsed heading takes over the link and genre glyph of the text it stands for
+          - link = collapsed_text.present? ? url_for(collapsed_text) : url_for_collection_item(ci)
+          - glyph_genre = collapsed_text.present? ? collapsed_text.genre : genre
+          %span.by-icon-v02{ title: textify_genre(glyph_genre) }= glyph_for_genre(glyph_genre)
+          - if link.present?
+            = link_to '‏' + title, link # RLM character to help with LTR elements in title. Fixes #664
+          - else
+            = '‏' + title # RLM character to help with LTR elements in title. Fixes #664
+          - if title_footnote.present?
+            != ' ' + title_footnote
+        -# Show all authorities with their roles (already filtered)
+        - authors = ias.select { |ia| ia.role == 'author' }.map(&:authority)
+        - if authors.present?
+          %p
+            = t(:by)
+            != authors.map { |a| authority_link(a) }.join(', ')
+        - editors = ias.select { |ia| ia.role == 'editor' }.map(&:authority)
+        - if editors.present?
+          %p
+            = t(:edited_by)
+            != editors.map { |a| authority_link(a) }.join(', ')
+        - translators = ias.select { |ia| ia.role == 'translator' }.map(&:authority)
+        - if translators.present?
+          %p
+            = t(:translated_by)
+            != translators.map { |a| authority_link(a) }.join(', ')
+  - else
+    -# This is a manifestation or other content item
+    .by-card-v02.proofable{ card_attrs }
+      - if title.present?
+        .by-card-header-v02
+          .by-icon-v02
+          .headline-1-v02
+            - link = url_for_collection_item(ci)
+            - tstr = @effective_authors[title].present? ? "#{title} / #{@effective_authors[title]}" : title
+            - if link.present?
+              %span.by-icon-v02{ title: textify_genre(genre) }= glyph_for_genre(genre)
+              = link_to '‏' + tstr, link # RLM character to help with LTR elements in title. Fixes #664
+            - else
+              = '‏' + tstr # RLM character to help with LTR elements in title. Fixes #664
+            - if title_footnote.present?
+              != ' ' + title_footnote
+            - if @effective_translators[title].present?
+              %p
+                #{t(:translated_by)} #{@effective_translators[title]}
+                - if ci.item_type == 'Manifestation' && ci.item&.expression&.work.present?
+                  = " (#{orig_lang_label(ci.item.expression.work.orig_lang)})"
+        - if ci.item_type == 'Manifestation' && ci.item.present?
+          - item_ip = ci.item.expression.intellectual_property
+          .metadata{ style: 'padding-top: 4px;' }
+            .ip-statement
+              = render partial: 'shared/intellectual_property', locals: { intellectual_property: item_ip }
+      .by-card-content-v02.textcard#actualtext
+        != convert_internal_links_to_relative(request.base_url, html, request.path)
