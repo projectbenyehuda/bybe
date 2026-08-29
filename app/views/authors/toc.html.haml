@@ -377,6 +377,33 @@
         $('.sticky-fold').toggleClass('flat-mode', flat);
       };
 
+      // The action bar acts on the works list, and (for authors with a lexicon
+      // entry) the lexicon block sits below that list. Once the reader is into
+      // the lexicon -- its first card past the middle of the viewport -- the bar
+      // has nothing on screen left to act on, so it gets out of the way, and
+      // comes back when the reader scrolls up to the works again.
+      // The card is looked up on each check rather than held on to: a re-sort
+      // rebuilds #browse_mainlist, replacing the lexicon block or (in the flat
+      // sorts) dropping it entirely, in which case the bar simply stays put.
+      function syncStickyFoldForLexicon() {
+        var card = document.querySelector('.peach2-lexicon .by-card-v02');
+        var in_lexicon = card !== null &&
+                         card.getBoundingClientRect().top < window.innerHeight / 2;
+        $('.sticky-fold').toggleClass('sticky-fold-away', in_lexicon);
+      }
+      // Coalesced into a frame: the check reads layout, and the author page of a
+      // prolific author is a very long scroll.
+      var stickyFoldPending = false;
+      $(window).on('scroll resize', function() {
+        if (stickyFoldPending) { return; }
+        stickyFoldPending = true;
+        window.requestAnimationFrame(function() {
+          stickyFoldPending = false;
+          syncStickyFoldForLexicon();
+        });
+      });
+      syncStickyFoldForLexicon();
+
       // The Collapse all / Expand all buttons reflect the list's current state:
       // whichever action would still change something is the primary (filled)
       // button, and the one that would be a no-op is greyed out and disabled.
