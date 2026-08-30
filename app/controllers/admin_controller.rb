@@ -8,6 +8,11 @@ PROGRESS_SERIES = [5, 10, 25, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1
 class AdminController < ApplicationController
   include PaperTrailHelpers
 
+  # #similar_titles considers two works similar when they share a cached_people and the leading
+  # SIMILAR_TITLE_PREFIX_LENGTH characters of their title.
+  SIMILAR_TITLE_PREFIX_LENGTH = 9
+  SIMILAR_TITLES_PER_PAGE = 50
+
   before_action :require_editor
   before_action :obtain_tagging_lock,
                 only: %i(approve_tag approve_tag_and_next reject_tag escalate_tag reject_tag_and_next merge_tag
@@ -152,23 +157,21 @@ class AdminController < ApplicationController
   end
 
   def similar_titles
-    prefixes = {}
-    @similarities = {}
     whitelisted_ids = ListItem.where(listkey: 'similar_title_whitelist', item_type: 'Manifestation').pluck(:item_id)
-    Manifestation.select(:id, :title, :cached_people).where.not(id: whitelisted_ids).find_each do |m|
-      prefix = [m.cached_people, m.title[0..(m.title.length > 8 ? 8 : -1)]]
-      if prefixes[prefix].nil?
-        prefixes[prefix] = [m]
-      else
-        prefixes[prefix] << m
-      end
-    end
-    prefixes.each_pair do |k, v|
-      next if v.length < 2
-
-      @similarities[k] = v.sort_by(&:title)
-    end
-    Rails.cache.write('report_similar_titles', @similarities.keys.length)
+    # The grouping is done by the database rather than by scanning every manifestation into a Ruby
+    # hash, so that only the groups on the requested page have to be materialized.
+    people_sql, prefix_sql = similar_title_group_sql
+    group_keys = Manifestation.where.not(id: whitelisted_ids)
+                              .where.not(title: nil)
+                              .group(people_sql, prefix_sql)
+                              .having('COUNT(*) > 1')
+                              .order(people_sql, prefix_sql)
+                              .pluck(people_sql, prefix_sql)
+    @total = group_keys.length
+    @groups = Kaminari.paginate_array(group_keys).page(params[:page]).per(SIMILAR_TITLES_PER_PAGE)
+    @similarities = works_in_similar_title_groups(@groups, whitelisted_ids)
+    @containment_chains = containment_chains_by_manifestation_id(@similarities.values.flatten.map(&:id))
+    Rails.cache.write('report_similar_titles', @total)
   end
 
   def mark_similar_as_valid
@@ -1588,6 +1591,86 @@ class AdminController < ApplicationController
   end
 
   private
+
+  # The [people, title prefix] pair that #similar_titles groups on, as SQL.  MySQL's LEFT() counts
+  # characters, like String#[].  The RTRIMs matter: manifestations is utf8mb4_bin, a PAD SPACE
+  # collation, so the database already ignores trailing spaces when grouping -- trimming makes the
+  # values it hands back canonical, so #similar_title_key can reproduce them in Ruby.
+  def similar_title_group_sql
+    [Arel.sql('RTRIM(cached_people)'), Arel.sql("RTRIM(LEFT(title, #{SIMILAR_TITLE_PREFIX_LENGTH}))")]
+  end
+
+  # The same pair, computed in Ruby.  Must agree with #similar_title_group_sql, or a group's works
+  # would end up split across two keys below.
+  def similar_title_key(manifestation)
+    [rtrim_spaces(manifestation.cached_people), rtrim_spaces(manifestation.title[0, SIMILAR_TITLE_PREFIX_LENGTH])]
+  end
+
+  def rtrim_spaces(str)
+    str&.sub(/ +\z/, '')
+  end
+
+  # Loads the manifestations belonging to the given [people, title prefix] groups, regrouped under
+  # the same keys.  The people are compared with MySQL's NULL-safe `<=>`, since works with no
+  # involved authorities share a NULL that GROUP BY treats as a group of its own.
+  def works_in_similar_title_groups(group_keys, whitelisted_ids)
+    return {} if group_keys.empty?
+
+    people_sql, prefix_sql = similar_title_group_sql
+    condition = group_keys.map { "(#{people_sql} <=> ? AND #{prefix_sql} = ?)" }.join(' OR ')
+    Manifestation.select(:id, :title, :cached_people, :created_at)
+                 .where.not(id: whitelisted_ids)
+                 .where(condition, *group_keys.flatten(1))
+                 .to_a
+                 .group_by { |m| similar_title_key(m) }
+                 .transform_values { |works| works.sort_by(&:title) }
+  end
+
+  # Maps manifestation id => containment chains of the collections containing it, innermost first:
+  # ['B', 'A'] for a work in collection B which is itself inside collection A.  The system-managed
+  # 'uncollected' collections are skipped: belonging only to one of those means the work is in no
+  # real collection, which the report renders as such.  The chains are sorted, so that a work in
+  # several collections -- or a collection reachable by several paths -- reads the same on every run
+  # rather than in whatever order the rows came back in.
+  def containment_chains_by_manifestation_id(manifestation_ids)
+    direct = CollectionItem.joins(:collection)
+                           .where(item_type: 'Manifestation', item_id: manifestation_ids)
+                           .where.not(collections: { collection_type: Collection.collection_types[:uncollected] })
+                           .pluck(:item_id, :collection_id)
+    parents = collection_parents_map(direct.map(&:last).uniq)
+    titles = Collection.where(id: parents.keys).pluck(:id, :title).to_h
+    direct.each_with_object({}) do |(manifestation_id, collection_id), chains|
+      (chains[manifestation_id] ||= []).concat(containment_chains(collection_id, parents, titles))
+    end.transform_values { |chains| chains.uniq.sort }
+  end
+
+  # Bulk-loads the collection => parent collection ids edges for the given collections and everything
+  # above them, one query per level of the tree rather than one per node.
+  def collection_parents_map(collection_ids)
+    parents = {}
+    frontier = collection_ids
+    until frontier.empty?
+      frontier.each { |id| parents[id] = [] }
+      edges = CollectionItem.where(item_type: 'Collection', item_id: frontier).pluck(:item_id, :collection_id)
+      edges.each { |child_id, parent_id| parents[child_id] << parent_id }
+      frontier = edges.map(&:last).uniq - parents.keys
+    end
+    parents.transform_values(&:uniq)
+  end
+
+  # Every root-ward title path from the given collection, innermost first.  A collection included in
+  # several parents yields one chain per path; `seen` guards against a cycle looping forever.
+  def containment_chains(collection_id, parents, titles, seen = [])
+    return [] if seen.include?(collection_id)
+
+    title = titles[collection_id].presence || "##{collection_id}"
+    ancestors = parents[collection_id].to_a.flat_map do |parent_id|
+      containment_chains(parent_id, parents, titles, seen + [collection_id])
+    end
+    return [[title]] if ancestors.empty?
+
+    ancestors.map { |chain| [title] + chain }
+  end
 
   # Both report dates are optional, and a malformed one should fall back to the default rather than blow up
   def parse_report_date(value, default)

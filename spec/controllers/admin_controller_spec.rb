@@ -1259,6 +1259,8 @@ describe AdminController do
   describe '#similar_titles' do
     subject(:call) { get :similar_titles }
 
+    render_views
+
     include_context 'Admin user logged in'
 
     # Use the same author and orig_lang='he' (no translator) to ensure identical cached_people
@@ -1293,6 +1295,96 @@ describe AdminController do
         call
         all_similar_works = assigns(:similarities).values.flatten
         expect(all_similar_works).not_to include(man1)
+      end
+    end
+
+    describe 'containing collections' do
+      let!(:volume) { create(:collection, collection_type: :volume, title: 'כרך ראשון', manifestations: [man1]) }
+      let!(:series) { create(:collection, collection_type: :series, title: 'סדרה שנייה', manifestations: [man1]) }
+      let!(:uncollected) { create(:collection, :uncollected, title: 'שלא כונסו', manifestations: [man2]) }
+
+      it 'maps each manifestation to the collections containing it, in a stable order' do
+        call
+        # sorted, so the column doesn't reshuffle between runs: 'כרך ראשון' sorts before 'סדרה שנייה'
+        expect(assigns(:containment_chains)[man1.id]).to eq([[volume.title], [series.title]])
+      end
+
+      it 'ignores system-managed uncollected collections' do
+        call
+        expect(assigns(:containment_chains)[man2.id]).to be_nil
+      end
+
+      it 'renders the collection titles and the uncollected label' do
+        call
+        expect(response.body).to include(volume.title, series.title, I18n.t(:collection_type_uncollected))
+      end
+
+      context 'when a containing collection is itself contained in another' do
+        let!(:outer) do
+          create(:collection, collection_type: :volume_series, title: 'סדרת כרכים',
+                              included_collections: [volume])
+        end
+        let!(:outermost) do
+          create(:collection, collection_type: :other, title: 'החיצוני ביותר', included_collections: [outer])
+        end
+
+        it 'walks the containment tree, innermost collection first' do
+          call
+          expect(assigns(:containment_chains)[man1.id])
+            .to include([volume.title, outer.title, outermost.title])
+        end
+
+        it 'renders each chain joined by the containment label' do
+          call
+          expect(response.body)
+            .to include("#{volume.title} #{I18n.t(:contained_within)} #{outer.title} " \
+                        "#{I18n.t(:contained_within)} #{outermost.title}")
+        end
+
+        context 'when the inner collection has several parents' do
+          let!(:other_parent) do
+            create(:collection, collection_type: :other, title: 'הורה נוסף', included_collections: [volume])
+          end
+
+          it 'yields one chain per path up the tree, in a stable order' do
+            call
+            expect(assigns(:containment_chains)[man1.id])
+              .to eq([[volume.title, other_parent.title],
+                      [volume.title, outer.title, outermost.title],
+                      [series.title]])
+          end
+        end
+      end
+    end
+
+    it 'exposes the upload date of each work' do
+      man2.update!(created_at: man1.created_at - 3.days)
+      call
+      expect(response.body).to include(man1.created_at.to_date.strftime('%d-%m-%Y'),
+                                       man2.created_at.to_date.strftime('%d-%m-%Y'))
+    end
+
+    describe 'pagination' do
+      subject(:call) { get :similar_titles, params: { page: 2 } }
+
+      # man1/man2 form one group and these two form a second; with one group per page, and groups
+      # ordered by title prefix, the ת group is the one on the second page.
+      let!(:other_pair) do
+        Array.new(2) { create(:manifestation, title: 'תרגומים ראשונים', author: shared_author, orig_lang: 'he') }
+      end
+
+      before { stub_const('AdminController::SIMILAR_TITLES_PER_PAGE', 1) }
+
+      it 'counts every group but renders only the requested page' do
+        call
+        expect(assigns(:total)).to eq(2)
+        expect(assigns(:groups).size).to eq(1)
+        expect(assigns(:similarities).values.flatten).to match_array(other_pair)
+      end
+
+      it 'writes the total group count to the cache, not the page size' do
+        call
+        expect(Rails.cache).to have_received(:write).with('report_similar_titles', 2)
       end
     end
   end
