@@ -204,7 +204,7 @@ class LexEntry < ApplicationRecord
     verified = 0
 
     # Count top-level items (excluding collections)
-    %w(title life_years bio description toc az_navbar
+    %w(title life_years bio description toc az_navbar citation_subjects
        external_identifiers attachments date_of_manual_update).each do |key|
       next unless checklist[key]
 
@@ -358,6 +358,30 @@ class LexEntry < ApplicationRecord
     end
   end
 
+  # The citation-headings section may only be marked verified once the editor has actually looked
+  # at the auto-match proposals — the whole point of the section is that a heading left unresolved
+  # hides its citations from the public work page. An entry with no heading left to resolve has
+  # nothing to look at, so it is verifiable straight away.
+  def citation_subjects_verifiable?
+    return true unless lex_item.is_a?(LexPerson) && lex_item.unresolved_citation_subjects?
+
+    verification_progress&.dig('citation_subjects_auto_match_opened') == true
+  end
+
+  # Records that the citation-headings auto-match modal has been opened at least once. Kept beside
+  # the checklist rather than inside it: update_checklist_item replaces a section's hash wholesale,
+  # which would drop the flag the moment the section is verified.
+  def mark_citation_subjects_auto_match_opened!
+    return if verification_progress.blank? || verification_progress['citation_subjects_auto_match_opened']
+
+    with_lock do
+      progress = verification_progress.deep_dup
+      progress['citation_subjects_auto_match_opened'] = true
+      progress['last_updated_at'] = Time.current.iso8601
+      update!(verification_progress: progress)
+    end
+  end
+
   private
 
   # Drop one item from a collection section of the checklist. `auto_verify_when_empty` controls what
@@ -441,6 +465,10 @@ class LexEntry < ApplicationRecord
                          {}
                        end
       checklist['citations'] = { 'verified' => false, 'items' => citation_items }
+
+      # Citation subject headings (מראי מקום: כותרות) — matching each legacy heading to the work
+      # it names, so its citations reach that work's public citations card.
+      checklist['citation_subjects'] = { 'verified' => false, 'notes' => '' }
 
     when 'LexPublication'
       checklist['title'] = { 'verified' => false, 'notes' => '' }

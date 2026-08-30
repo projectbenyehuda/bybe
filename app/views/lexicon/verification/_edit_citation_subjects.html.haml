@@ -1,0 +1,53 @@
+-# haml-lint:disable LineLength
+- confirm_url = lexicon_confirm_citation_subject_verification_path(@entry)
+- works = @item.works.sort_by(&:title)
+-# Headings are Hebrew, so they cannot serve as DOM ids; number them instead.
+- row_ids = @citation_subject_proposals.each_with_index.to_h { |proposal, index| [proposal.subject, "subject-row-#{index}"] }
+- proposed, unmatched = @citation_subject_proposals.partition(&:proposed?)
+.auto-match-citation-subjects-modal
+  %h4= t('lexicon.verification.sections.auto_match_citation_subjects_heading')
+
+  - if @citation_subject_proposals.blank?
+    %p.text-muted= t('lexicon.verification.sections.no_citation_subjects')
+  - else
+    - if proposed.present?
+      %p= t('lexicon.verification.sections.auto_match_citation_subjects_intro')
+      - proposed.each do |proposal|
+        .match-row.citation-subject-match.border-bottom.py-2.d-flex.justify-content-between.align-items-start{ id: row_ids[proposal.subject] }
+          .match-info{ dir: text_dir(proposal.subject) }
+            %strong= proposal.subject
+            %span.badge.bg-light.text-dark.ms-1= t('lexicon.verification.sections.citation_subject_count', count: proposal.citations.size)
+            %span.mx-2 →
+            - if proposal.generic
+              %em= t('lexicon.verification.sections.citation_subject_general')
+            - else
+              = proposal.work.title
+              %span.badge.bg-secondary.ms-2
+                #{proposal.similarity}%
+          .match-actions.ms-3
+            %button.btn.btn-sm.btn-success.confirm-citation-subject{ type: 'button', data: { subject: proposal.subject, 'work-id': proposal.work&.id, 'confirm-url': confirm_url } }
+              = t('lexicon.verification.edit.confirm_match')
+
+    -# Headings no work fits well enough, or that two works fit equally well: the editor picks.
+    - if unmatched.present?
+      %hr
+      %h5= t('lexicon.verification.sections.unmatched_citation_subjects_heading')
+      %p.text-muted= t('lexicon.verification.sections.unmatched_citation_subjects_intro')
+      - unmatched.each do |proposal|
+        .match-row.citation-subject-unmatched.border-bottom.py-2.d-flex.justify-content-between.align-items-start{ id: row_ids[proposal.subject] }
+          .match-info{ dir: text_dir(proposal.subject) }
+            %strong= proposal.subject
+            %span.badge.bg-light.text-dark.ms-1= t('lexicon.verification.sections.citation_subject_count', count: proposal.citations.size)
+            - if proposal.ambiguous
+              %span.badge.bg-warning.text-dark.ms-1= t('lexicon.verification.sections.citation_subject_ambiguous')
+          .match-actions.ms-3.d-flex.align-items-center
+            = select_tag 'work_id',
+                         options_from_collection_for_select(works, :id, :title),
+                         include_blank: t('lexicon.verification.sections.citation_subject_general'),
+                         class: 'form-control form-control-sm citation-subject-work-select me-2'
+            %button.btn.btn-sm.btn-primary.confirm-citation-subject{ type: 'button', data: { subject: proposal.subject, 'confirm-url': confirm_url } }
+              = t('lexicon.verification.sections.citation_subject_assign')
+
+  .text-end.mt-3
+    %button.btn.btn-secondary{ type: 'button', onclick: "$('#generalDlg').modal('hide')" }
+      = t('lexicon.verification.sections.close')

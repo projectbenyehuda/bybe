@@ -62,4 +62,23 @@ class LexPerson < ApplicationRecord
     cits = cits.reject { |c| c.id == exclude_citation_id } if exclude_citation_id.present?
     cits.map(&:seqno).compact.max || 0
   end
+
+  # Whether any citation still carries a legacy subject heading, i.e. is not reachable from the
+  # work it is about (see Lexicon::MatchCitationSubjects).
+  def unresolved_citation_subjects?
+    citations.where.not(subject: nil).exists?
+  end
+
+  # Resolves one legacy citation subject heading: every citation still carrying it is pointed at
+  # `work` (or left general, when it is nil) and loses the heading string. The two go together --
+  # LexCitation validates the subject away once a person_work is present.
+  #
+  # @param subject [String] the heading as stored on the citations
+  # @param work [LexPersonWork, nil] the work the heading names, or nil for a general heading
+  # @return [Integer] how many citations were resolved
+  def link_citations_with_subject!(subject, work)
+    resolved = citations.where(subject: subject).to_a
+    resolved.each { |citation| citation.update!(person_work: work, subject: nil) }
+    resolved.size
+  end
 end

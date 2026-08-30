@@ -656,6 +656,58 @@ function reloadScrollingToSection(sectionId) {
     location.reload();
 }
 
+// Opening the citation-headings dialog is what unlocks marking that section verified. The server
+// records it when it serves the dialog; this releases the button without waiting for a reload.
+$(document).on('click', '#citation-subjects-auto-match-btn', function() {
+    $('#section-citation-subjects [data-path="citation_subjects"]')
+        .prop('disabled', false)
+        .removeAttr('title');
+});
+
+// Resolve one legacy citation subject heading, from either list in the citation-headings modal:
+// the proposals (work carried on the button) or the manual rows (work chosen in the row's select,
+// where the blank option means "general heading, not about a work").
+$(document).on('click', '.confirm-citation-subject', function() {
+    var $btn = $(this);
+    var $row = $btn.closest('.match-row');
+    var $select = $row.find('.citation-subject-work-select');
+    var workId = $select.length ? $select.val() : $btn.data('work-id');
+
+    $btn.prop('disabled', true);
+
+    $.ajax({
+        url: $btn.data('confirm-url'),
+        type: 'PATCH',
+        dataType: 'json',
+        headers: {
+            'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            subject: $btn.data('subject'),
+            work_id: workId || ''
+        },
+        success: function(data) {
+            // Keep the modal open so the editor can work through the remaining headings.
+            $row.addClass('text-muted');
+            $row.find('.match-actions').html(
+                $('<span>', { 'class': 'text-success font-weight-bold', text: '✓ ' + (data.message || '') })
+            );
+            showToast(data.message);
+            // Refresh the citations sections once, when the editor closes the modal.
+            $('#generalDlg')
+                .off('hidden.bs.modal.citationsubject')
+                .one('hidden.bs.modal.citationsubject', function() {
+                    reloadScrollingToSection('section-citation-subjects');
+                });
+        },
+        error: function(xhr) {
+            $btn.prop('disabled', false);
+            var err = (xhr.responseJSON && xhr.responseJSON.error) || 'Error confirming match';
+            showToast(err);
+        }
+    });
+});
+
 // Confirm an auto-matched work-to-publication proposal
 function confirmWorkMatch(button) {
     var $btn = $(button);

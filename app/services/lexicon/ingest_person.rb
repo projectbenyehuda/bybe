@@ -109,21 +109,12 @@ module Lexicon
       copy.to_html
     end
 
+    # Links the citation subject headings whose work is beyond doubt. Everything else -- a heading
+    # naming no work, naming one only approximately, or fitting two works equally well -- is left
+    # for an editor to resolve in the verification workbench's citation-headings section.
     def link_citations_to_works(lex_person)
-      lex_person.citations.each do |citation|
-        subject = citation.subject
-
-        next if subject.blank?
-
-        # For now, we're only checking for an exact title match
-        # We can also consider using more advanced matching techniques if needed to handle typos, etc.
-        work = lex_person.works.detect { |w| w.title == subject }
-
-        next if work.nil?
-
-        citation.person_work = work
-        citation.subject = nil # clear the subject since it's now linked to PersonWork
-        citation.save!
+      MatchCitationSubjects.call(lex_person).select(&:certain?).each do |proposal|
+        lex_person.link_citations_with_subject!(proposal.subject, proposal.work)
       end
     end
 

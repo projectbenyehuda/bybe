@@ -199,6 +199,7 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         # Simulate user clicking quickVerify on every section (title path covers life_years)
         patch url, params: { path: 'title', verified: 'true' }, as: :json
         patch url, params: { path: 'bio', verified: 'true' }, as: :json
+        patch url, params: { path: 'citation_subjects', verified: 'true' }, as: :json
         patch url, params: { path: 'external_identifiers', verified: 'true' }, as: :json
         patch url, params: { path: 'attachments', verified: 'true' }, as: :json
         patch url, params: { path: 'date_of_manual_update', verified: 'true' }, as: :json

@@ -272,7 +272,36 @@
   .section-actions
     = link_to t('lexicon.verification.migrated.add_citation'), new_lexicon_person_citation_path(item), class: 'btn btn-sm btn-success', onclick: "event.preventDefault(); openModal(this.href);"
 
--# Section 5: External Identifiers
+-#
+  Section 5: Citation subject headings (כותרות מראי מקום)
+  Each legacy heading has to end up either linked to the work it names or cleared as a general
+  heading; until then its citations show up on no work page at all.
+.section.verification-section{ id: 'section-citation-subjects', class: checklist['citation_subjects']&.dig('verified') ? 'verified' : 'not-verified' }
+  .section-header
+    .section-title-group
+      %h5= t('lexicon.verification.sections.citation_subjects_section')
+      .verification-badge{ class: checklist['citation_subjects']&.dig('verified') ? 'verified' : 'not-verified' }
+        = checklist['citation_subjects']&.dig('verified') ? '✓ ' + t('lexicon.verification.migrated.verified') : t('lexicon.verification.migrated.not_verified')
+    %button.btn.btn-sm.btn-outline-secondary#citation-subjects-auto-match-btn{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'citation_subjects')}', function() { reloadScrollingToSection('section-citation-subjects'); })" }
+      = t('lexicon.verification.sections.auto_match_citation_subjects_btn')
+  .section-content
+    - unresolved_subjects = item.citations.where.not(subject: nil).group(:subject).count
+    - if unresolved_subjects.any?
+      %p= t('lexicon.verification.sections.citation_subjects_intro')
+      %ul.unresolved-citation-subjects
+        - unresolved_subjects.sort.each do |subject, count|
+          %li{ dir: text_dir(subject) }
+            = subject
+            %span.badge.bg-light.text-dark.ms-1= t('lexicon.verification.sections.citation_subject_count', count: count)
+    - else
+      %p.text-muted= t('lexicon.verification.sections.no_citation_subjects')
+  .section-actions
+    - subjects_verifiable = entry.citation_subjects_verifiable?
+    %button.btn.btn-sm{ class: checklist['citation_subjects']&.dig('verified') ? 'btn-success' : 'btn-outline-success', disabled: !subjects_verifiable, title: subjects_verifiable ? nil : t('lexicon.verification.messages.citation_subjects_unopened'), data: { action: 'click->verification#quickVerify', path: 'citation_subjects' } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')
+
+-# Section 6: External Identifiers
 .section.verification-section{ id: 'section-external-identifiers', class: checklist['external_identifiers']&.dig('verified') ? 'verified' : 'not-verified' }
   .section-header
     %h5= t('lexicon.verification.sections.external_identifiers_section')
@@ -296,7 +325,7 @@
       ✓
       = t('lexicon.verification.migrated.mark_verified')
 
--# Section 6: Links
+-# Section 7: Links
 .section.verification-section{id: 'section-links', class: checklist['links']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
     %h5= t('lexicon.verification.sections.links_section')
@@ -340,7 +369,7 @@
       ✓
       = t('lexicon.verification.migrated.mark_verified')
 
--# Section 7: Attachments
+-# Section 8: Attachments
 .section.verification-section{id: 'section-attachments', class: checklist['attachments']&.dig('verified') ? 'verified' : 'not-verified'}
   .section-header
     %h5= t('lexicon.verification.sections.attachments_section')
@@ -378,7 +407,7 @@
       ✓
       = t('lexicon.verification.migrated.mark_verified')
 
--# Section 8: Date of Manual Update
+-# Section 9: Date of Manual Update
 .section.verification-section{ id: 'section-date-of-manual-update', class: checklist['date_of_manual_update']&.dig('verified') ? 'verified' : 'not-verified' }
   .section-header
     %h5= t('lexicon.verification.sections.date_of_manual_update_section')
