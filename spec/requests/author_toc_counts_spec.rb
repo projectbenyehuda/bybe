@@ -57,7 +57,7 @@ RSpec.describe 'Authority TOC counts', type: :request do
   end
 
   it 'shows the same total in the navbar' do
-    navbar = response.body[response.body.index('book-nav-full')...response.body.index('mobile-navbar-backdrop')]
+    navbar = navbar_fragment(response.body)
     expect(navbar).to include(" (#{author.cached_works_count})")
     expect(navbar).not_to include(' (4)')
   end

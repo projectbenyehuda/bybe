@@ -287,9 +287,9 @@ describe Authority do
       end
 
       it 'uses the correct cache key' do
-        cache_key = "au_#{authority.id}_genre_stats"
-        expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 12.hours).and_call_original
+        allow(Rails.cache).to receive(:fetch).and_call_original
         authority.cached_genre_stats
+        expect(Rails.cache).to have_received(:fetch).with("au_#{authority.id}_genre_stats_v2", expires_in: 12.hours)
       end
     end
 
@@ -491,15 +491,16 @@ describe Authority do
       end
 
       it 'caches the result' do
-        # First call
-        first_result = authority.cached_collections_count
-        expect(first_result).to eq 3
+        allow(Rails.cache).to receive(:fetch).and_call_original
 
-        # Second call should return cached result
-        expect(Rails.cache).to receive(:fetch).with("au_#{authority.id}_counted_collections_count",
-                                                    expires_in: 12.hours).and_call_original
+        first_result = authority.cached_collections_count
         second_result = authority.cached_collections_count
+
+        expect(first_result).to eq 3
         expect(second_result).to eq first_result
+        # Both calls go through the cache; only the first one runs the query behind it
+        expect(Rails.cache).to have_received(:fetch)
+          .with("au_#{authority.id}_counted_collections_count", expires_in: 12.hours).twice
       end
     end
 

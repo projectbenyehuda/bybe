@@ -328,8 +328,12 @@ class Authority < ApplicationRecord
   # 12h TTL, matching cached_works_count, cached_collections_count and the author page's TOC
   # fragment: the four are rendered side by side, so a longer TTL here let the genre chips drift
   # out of step with the works figure they add up to.
+  # NOTE: cache key deliberately versioned. A TTL is stamped on the entry when it is written, so
+  # shortening it here would not touch entries already written under the old 24h expiry -- they
+  # would keep drifting for up to another 24h after deploy, which is what this change is meant
+  # to stop.
   def cached_genre_stats
-    Rails.cache.fetch("au_#{id}_genre_stats", expires_in: 12.hours) do
+    Rails.cache.fetch("au_#{id}_genre_stats_v2", expires_in: 12.hours) do
       genre_stats
     end
   end
