@@ -327,6 +327,8 @@ en:
         unmatched_citation_subjects_heading: "Headings without a match"
         unmatched_citation_subjects_intro: "No work was matched to these headings. Pick a work, or leave the selection blank to mark the heading as a general one, not about a particular work."
         citation_subject_general: "General (not about a particular work)"
+        citation_group_linked: "Linked to a work"
+        citation_group_unlinked: "Heading not linked"
         citation_subject_assign: "Assign"
         citation_subject_ambiguous: "More than one work fits"
         citation_subject_count:
