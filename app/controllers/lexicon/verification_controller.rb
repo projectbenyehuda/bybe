@@ -180,6 +180,7 @@ module Lexicon
       end
 
       # Update the work with the confirmed publication and collection
+      publication_id, collection_id = complete_work_match_pair(person.authority, publication_id, collection_id)
       work.update!(
         publication_id: publication_id,
         collection_id: collection_id
@@ -497,7 +498,9 @@ module Lexicon
     # Publications alone are not enough: we only did bibliography work for Hebrew authors, so a
     # translated author usually has no Publication of their own. Their books are still in BYP as
     # volumes they are an involved authority of -- with the Publication, if any, filed under the
-    # Hebrew *translator*. Those volumes are reachable only through Authority#volumes.
+    # Hebrew *translator*. Those volumes are reachable only through Authority#volumes_including_series,
+    # which also picks up the volumes of a multi-volume work that records its authorship once on the
+    # containing volume_series, leaving each member volume without involved_authorities of its own.
     def work_match_candidates(authority)
       from_publications = authority.publications.includes(:volume).map do |pub|
         WorkMatchCandidate.new(title: pub.title, publication: pub, collection: pub.volume)
@@ -505,7 +508,7 @@ module Lexicon
 
       # A volume reachable through a publication of this authority is already offered with it
       already_offered = from_publications.filter_map { |candidate| candidate.collection&.id }.to_set
-      unoffered_volumes = authority.volumes.distinct.includes(:publication)
+      unoffered_volumes = authority.volumes_including_series.includes(:publication)
                                    .reject { |vol| already_offered.include?(vol.id) }
       from_volumes = unoffered_volumes.map do |vol|
         # Only propose the volume's publication when it is this authority's own -- confirming a
@@ -593,15 +596,32 @@ module Lexicon
       return nil if collection_id.blank?
 
       # A volume confirmed on its own only has to be the authority's; one confirmed together with
-      # a publication has to be that publication's volume.
+      # a publication has to be that publication's volume. The authority's volumes are taken the
+      # same way work_match_candidates offers them, so confirm cannot reject its own proposal.
       valid = if publication_id.present?
                 Collection.exists?(id: collection_id, publication_id: publication_id)
               else
-                authority.volumes.exists?(id: collection_id)
+                authority.volumes_including_series.exists?(id: collection_id)
               end
       return I18n.t('lexicon.verification.messages.collection_not_in_publication') unless valid
 
       nil
+    end
+
+    # A publication and a volume that are already linked to each other in BYP describe one book, so
+    # confirming either side confirms both -- the editor approved the book, not one of its records.
+    # Run this only on an already-validated pair: it fills in a missing side, never overrides a
+    # named one, and never fills in a publication that is not this authority's own (a translated
+    # author's volume points at the translator's publication, which confirm would reject).
+    def complete_work_match_pair(authority, publication_id, collection_id)
+      if publication_id.blank? && collection_id.present?
+        linked = Collection.where(id: collection_id).pick(:publication_id)
+        publication_id = linked if linked.present? && authority.publications.exists?(id: linked)
+      elsif publication_id.present? && collection_id.blank?
+        collection_id = Collection.where(publication_id: publication_id, collection_type: 'volume').pick(:id)
+      end
+
+      [publication_id, collection_id]
     end
   end
 end

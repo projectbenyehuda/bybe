@@ -42,6 +42,55 @@ RSpec.describe 'LexPersonWork publication/collection pickers in edit modal', :js
     expect(page).to have_css('#generalDlg.show', wait: 5)
   end
 
+  # A publication and its volume are two records describing one book, so naming either one in the
+  # form fills in the other. The editor should only have to pick the book once.
+  context 'when a publication and a volume are linked to each other' do
+    let!(:linked_volume) do
+      create(:collection, collection_type: :volume, title: 'Linked Volume',
+                          publication: publication, authors: [authority])
+    end
+
+    it 'selects the volume when its publication is chosen' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        select 'Bibliography Entry', from: 'lex_person_work_publication_id'
+
+        expect(page).to have_select('lex_person_work_collection_id', selected: 'Linked Volume')
+      end
+    end
+
+    it 'selects the publication when its volume is chosen' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        select 'Linked Volume', from: 'lex_person_work_collection_id'
+
+        expect(page).to have_select('lex_person_work_publication_id', selected: 'Bibliography Entry')
+      end
+    end
+  end
+
+  context 'when the chosen volume belongs to another authority\'s publication' do
+    let!(:translators_volume) do
+      create(:collection, collection_type: :volume, title: 'Translated Volume',
+                          publication: create(:publication, authority: create(:authority), title: 'Not Offered'),
+                          authors: [authority])
+    end
+
+    it 'leaves the publication picker alone, since that publication is not offered' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        select 'Translated Volume', from: 'lex_person_work_collection_id'
+
+        expect(page).to have_select('lex_person_work_collection_id', selected: 'Translated Volume')
+        expect(page).to have_select('lex_person_work_publication_id',
+                                    selected: I18n.t('lexicon.person_works.form.select_publication'))
+      end
+    end
+  end
+
   context 'when the chosen collection is not linked to any publication' do
     let!(:unlinked_volume) do
       create(:collection, collection_type: :volume, title: 'Unlinked Volume', publication: nil,
