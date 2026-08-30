@@ -31,14 +31,6 @@
           %input{type: 'checkbox', checked: checklist['works']&.dig('verified'), disabled: true, data: {path: 'works', 'section-id': 'section-works'}}
           = t('lexicon.verification.checklist.person.works')
 
-      -# Citation subject headings
-      %li.checklist-item
-        %label
-          -# haml-lint:disable LineLength
-          %input{ type: 'checkbox', checked: checklist['citation_subjects']&.dig('verified'), disabled: true, data: { path: 'citation_subjects', 'section-id': 'section-citation-subjects' } }
-          -# haml-lint:enable LineLength
-          = t('lexicon.verification.checklist.person.citation_subjects')
-
       -# Citations (מראי מקום)
       %li.checklist-item
         %label
@@ -56,6 +48,14 @@
                 %label
                   %input{type: 'checkbox', checked: citation_check['verified'], disabled: true, data: {path: "citations.items.#{citation_id}", 'section-id': "citation-#{citation_id}"}}
                   = truncate(citation.title, length: 40)
+
+      -# Citation subject headings
+      %li.checklist-item
+        %label
+          -# haml-lint:disable LineLength
+          %input{ type: 'checkbox', checked: checklist['citation_subjects']&.dig('verified'), disabled: true, data: { path: 'citation_subjects', 'section-id': 'section-citation-subjects' } }
+          -# haml-lint:enable LineLength
+          = t('lexicon.verification.checklist.person.citation_subjects')
 
     - elsif item.is_a?(LexPublication)
       -# Title
