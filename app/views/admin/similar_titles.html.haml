@@ -6,15 +6,22 @@
     %tr
       %th= t(:title)
       %th= t(:works)
+      %th= t(:collections)
+      %th= t(:upload_date)
       %th= t(:actions)
 
     - @similarities.each_pair do |title, works|
       - works.each do |m|
+        - collection_titles = @collection_titles[m.id]
         %tr
           %td
             %b= title[1]
           %td
             = link_to("#{m.title} #{t(:by)} #{m.cached_people}", manifestation_show_path(m.id))
+          %td
+            = collection_titles.present? ? collection_titles.join(', ') : t(:collection_type_uncollected)
+          %td
+            = m.created_at.to_date.strftime('%d-%m-%Y')
           %td
             = link_to t(:edit_metadata), manifestation_edit_metadata_path(m.id)
             = ' | '

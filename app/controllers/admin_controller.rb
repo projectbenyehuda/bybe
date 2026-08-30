@@ -155,7 +155,7 @@ class AdminController < ApplicationController
     prefixes = {}
     @similarities = {}
     whitelisted_ids = ListItem.where(listkey: 'similar_title_whitelist', item_type: 'Manifestation').pluck(:item_id)
-    Manifestation.select(:id, :title, :cached_people).where.not(id: whitelisted_ids).find_each do |m|
+    Manifestation.select(:id, :title, :cached_people, :created_at).where.not(id: whitelisted_ids).find_each do |m|
       prefix = [m.cached_people, m.title[0..(m.title.length > 8 ? 8 : -1)]]
       if prefixes[prefix].nil?
         prefixes[prefix] = [m]
@@ -168,6 +168,7 @@ class AdminController < ApplicationController
 
       @similarities[k] = v.sort_by(&:title)
     end
+    @collection_titles = collection_titles_by_manifestation_id(@similarities.values.flatten.map(&:id))
     Rails.cache.write('report_similar_titles', @similarities.keys.length)
   end
 
@@ -1588,6 +1589,18 @@ class AdminController < ApplicationController
   end
 
   private
+
+  # Maps manifestation id => titles of the collections directly containing it.  The system-managed
+  # 'uncollected' collections are skipped: belonging only to one of those means the work is in no
+  # real collection, which the report renders as such.
+  def collection_titles_by_manifestation_id(manifestation_ids)
+    CollectionItem.joins(:collection)
+                  .where(item_type: 'Manifestation', item_id: manifestation_ids)
+                  .where.not(collections: { collection_type: Collection.collection_types[:uncollected] })
+                  .pluck(:item_id, 'collections.title')
+                  .group_by(&:first)
+                  .transform_values { |pairs| pairs.filter_map(&:last).uniq }
+  end
 
   # Both report dates are optional, and a malformed one should fall back to the default rather than blow up
   def parse_report_date(value, default)

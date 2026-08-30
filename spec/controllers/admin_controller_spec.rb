@@ -1259,6 +1259,8 @@ describe AdminController do
   describe '#similar_titles' do
     subject(:call) { get :similar_titles }
 
+    render_views
+
     include_context 'Admin user logged in'
 
     # Use the same author and orig_lang='he' (no translator) to ensure identical cached_people
@@ -1294,6 +1296,32 @@ describe AdminController do
         all_similar_works = assigns(:similarities).values.flatten
         expect(all_similar_works).not_to include(man1)
       end
+    end
+
+    describe 'containing collections' do
+      let!(:volume) { create(:collection, collection_type: :volume, title: 'כרך ראשון', manifestations: [man1]) }
+      let!(:series) { create(:collection, collection_type: :series, title: 'סדרה שנייה', manifestations: [man1]) }
+      let!(:uncollected) { create(:collection, :uncollected, title: 'שלא כונסו', manifestations: [man2]) }
+
+      it 'maps each manifestation to the titles of the collections containing it' do
+        call
+        expect(assigns(:collection_titles)[man1.id]).to contain_exactly(volume.title, series.title)
+      end
+
+      it 'ignores system-managed uncollected collections' do
+        call
+        expect(assigns(:collection_titles)[man2.id]).to be_nil
+      end
+
+      it 'renders the collection titles and the uncollected label' do
+        call
+        expect(response.body).to include(volume.title, series.title, I18n.t(:collection_type_uncollected))
+      end
+    end
+
+    it 'exposes the upload date of each work' do
+      call
+      expect(response.body).to include(man1.created_at.to_date.strftime('%d-%m-%Y'))
     end
   end
 
