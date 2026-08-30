@@ -131,9 +131,12 @@ describe AuthorsHelper do
       let(:role) { :translator }
       let(:involved_on_collection_level) { true }
 
-      it 'returns correct count' do
-        # Should count translated_manifestations (2 items)
-        expect(result).to eq(translated_manifestations.count)
+      it 'returns 0, since the authority is credited on the collection but not on the works' do
+        # translated_manifestations deliberately carry no translator involvement of their own (see
+        # the shared context): the authority is a translator of the *collection* only. Those works
+        # are still listed in the TOC, but they are not counted, so this figure keeps agreeing with
+        # the metadata card's 'works in the project', which counts direct involvements only.
+        expect(result).to eq(0)
       end
     end
 

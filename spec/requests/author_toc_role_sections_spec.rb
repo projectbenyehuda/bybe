@@ -86,9 +86,4 @@ RSpec.describe 'Authority TOC role sections', type: :request do
       expect(response.body).to include('<span class="count-badge"> (1)</span>')
     end
   end
-
-  # The in-page navbar, without the TOC body that follows it
-  def navbar_fragment(body)
-    body[body.index('book-nav-full')...body.index('mobile-navbar-backdrop')]
-  end
 end

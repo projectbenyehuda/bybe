@@ -287,9 +287,9 @@ describe Authority do
       end
 
       it 'uses the correct cache key' do
-        cache_key = "au_#{authority.id}_genre_stats"
-        expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 24.hours).and_call_original
+        allow(Rails.cache).to receive(:fetch).and_call_original
         authority.cached_genre_stats
+        expect(Rails.cache).to have_received(:fetch).with("au_#{authority.id}_genre_stats_v2", expires_in: 12.hours)
       end
     end
 
@@ -455,10 +455,10 @@ describe Authority do
       before do
         Rails.cache.clear
 
-        # Create collections where authority is involved in various roles
-        collection1 = create(:collection)
-        collection2 = create(:collection)
-        collection3 = create(:collection)
+        # Create collections of countable types where authority is involved in various roles
+        collection1 = create(:collection, collection_type: :volume)
+        collection2 = create(:collection, collection_type: :periodical)
+        collection3 = create(:collection, collection_type: :periodical_issue)
 
         # Add authority to collections through involved_authorities
         create(:involved_authority, authority: authority, item: collection1, role: :author)
@@ -466,21 +466,41 @@ describe Authority do
         create(:involved_authority, authority: authority, item: collection3, role: :translator)
 
         # Create a collection without this authority (should not be counted)
-        create(:collection)
+        create(:collection, collection_type: :volume)
       end
 
       it { is_expected.to eq 3 }
 
-      it 'caches the result' do
-        # First call
-        first_result = authority.cached_collections_count
-        expect(first_result).to eq 3
+      # Collection types the reader never sees as a title of their own: a `series` is a section
+      # inside a volume, so counting it made the author page advertise more titles than its TOC
+      # shows volume cards (benyehuda.org/author/1024 said 4 titles over 2 volumes).
+      context 'when the authority is also involved in collections of non-title types' do
+        before do
+          %i(series volume_series other).each do |collection_type|
+            uncountable = create(:collection, collection_type: collection_type)
+            create(:involved_authority, authority: authority, item: uncountable, role: :author)
+          end
+          Rails.cache.clear
+        end
 
-        # Second call should return cached result
-        expect(Rails.cache).to receive(:fetch).with("au_#{authority.id}_collections_count",
-                                                    expires_in: 12.hours).and_call_original
+        it { is_expected.to eq 3 }
+
+        it 'only counts types that actually exist in the enum' do
+          expect(Collection.collection_types.keys).to include(*Authority::COUNTED_COLLECTION_TYPES.map(&:to_s))
+        end
+      end
+
+      it 'caches the result' do
+        allow(Rails.cache).to receive(:fetch).and_call_original
+
+        first_result = authority.cached_collections_count
         second_result = authority.cached_collections_count
+
+        expect(first_result).to eq 3
         expect(second_result).to eq first_result
+        # Both calls go through the cache; only the first one runs the query behind it
+        expect(Rails.cache).to have_received(:fetch)
+          .with("au_#{authority.id}_counted_collections_count", expires_in: 12.hours).twice
       end
     end
 

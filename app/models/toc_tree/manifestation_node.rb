@@ -33,16 +33,46 @@ module TocTree
 
       return involved_in_parent if involved_on_collection_level
 
-      involvement_check = @manifestation.involved_authorities_by_role(role).any? { |a| a.id == authority_id }
-      return involvement_check && !involved_in_parent
+      return directly_involved?(role, authority_id) && !involved_in_parent
     end
 
-    # Count manifestations (1 if visible and published, 0 otherwise)
+    # Count manifestations (1 if visible, published and the authority's own, 0 otherwise).
+    #
+    # Visibility is deliberately broader than countability: a volume authored by X also *lists*
+    # a preface someone else wrote, because the reader browsing that volume wants to see it. But
+    # such a work is not one of X's, so it must not inflate the counts the author page shows
+    # beside the metadata card's 'works in the project' figure, which counts direct involvements
+    # only. Hence the extra involvement check here, which is what keeps the two in agreement.
     def count_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
       return 0 unless visible?(role, authority_id, involved_on_collection_level, parent_collection)
       return 0 unless @manifestation.status == 'published'
+      return 0 unless directly_involved?(role, authority_id)
 
       1
+    end
+
+    private
+
+    # Whether the authority is involved in this work itself (as opposed to merely in a collection
+    # containing it) with the given role.
+    #
+    # Deliberately reads the involved_authorities rows rather than going through
+    # Manifestation#involved_authorities_by_role, which materialises and name-sorts Authority
+    # objects just to answer a membership question. This runs for every work in the TOC, once per
+    # role, so it is memoized too. The preloads in GenerateTocTree cover both associations walked
+    # here, so this issues no queries.
+    def directly_involved?(role, authority_id)
+      role = role.to_s
+      raise "Unknown role #{role}" unless InvolvedAuthority.roles.key?(role)
+
+      @directly_involved ||= {}
+      key = "#{role}_#{authority_id}"
+      return @directly_involved[key] if @directly_involved.key?(key)
+
+      expression = @manifestation.expression
+      @directly_involved[key] = [expression, expression.work].any? do |record|
+        record.involved_authorities.any? { |ia| ia.role == role && ia.authority_id == authority_id }
+      end
     end
   end
 end

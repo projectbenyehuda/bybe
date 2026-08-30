@@ -8,6 +8,12 @@ class Authority < ApplicationRecord
   WIKIDATA_URI_PATTERN = %r{\Ahttps://wikidata.org/wiki/Q[0-9]+\z}
   PBY_AUTHORITY_ID = 3358
 
+  # Collection types that count as a title ('כותר') for the figure the author page advertises.
+  # Deliberately excludes `series` and `volume_series` -- those are structural groupings *inside* a
+  # title (e.g. the two sub-volumes of a multi-volume work), and the TOC never presents them as
+  # titles of their own -- as well as `other` and the system `uncollected` collection.
+  COUNTED_COLLECTION_TYPES = %i(volume periodical periodical_issue).freeze
+
   update_index('authorities') { self } # update AuthoritiesIndex when entity is updated
   update_index('authorities_autocomplete') { self }
 
@@ -319,8 +325,15 @@ class Authority < ApplicationRecord
       .count
   end
 
+  # 12h TTL, matching cached_works_count, cached_collections_count and the author page's TOC
+  # fragment: the four are rendered side by side, so a longer TTL here let the genre chips drift
+  # out of step with the works figure they add up to.
+  # NOTE: cache key deliberately versioned. A TTL is stamped on the entry when it is written, so
+  # shortening it here would not touch entries already written under the old 24h expiry -- they
+  # would keep drifting for up to another 24h after deploy, which is what this change is meant
+  # to stop.
   def cached_genre_stats
-    Rails.cache.fetch("au_#{id}_genre_stats", expires_in: 24.hours) do
+    Rails.cache.fetch("au_#{id}_genre_stats_v2", expires_in: 12.hours) do
       genre_stats
     end
   end
@@ -365,9 +378,19 @@ class Authority < ApplicationRecord
     Rails.cache.delete("au_#{id}_work_count")
   end
 
+  # The number of titles we advertise to readers on the author page. It must count what the TOC
+  # actually presents as a title, so it is limited to COUNTED_COLLECTION_TYPES: a plain
+  # collections.count also counted the `series` sub-collections nested inside a title, which the
+  # reader only ever sees as sections *within* a volume card.
+  def counted_collections_count
+    collections.where(collection_type: COUNTED_COLLECTION_TYPES).count
+  end
+
+  # NOTE: cache key deliberately renamed from 'au_<id>_collections_count', so deployments pick up
+  # the corrected figure immediately instead of serving the old, inflated one until the TTL expires.
   def cached_collections_count
-    Rails.cache.fetch("au_#{id}_collections_count", expires_in: 12.hours) do
-      collections.count
+    Rails.cache.fetch("au_#{id}_counted_collections_count", expires_in: 12.hours) do
+      counted_collections_count
     end
   end
 
