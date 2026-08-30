@@ -223,7 +223,9 @@ describe 'Lexicon Verification Workbench' do
 
       within('.verification-migrated') do
         within('#section-citations') do
-          expect(page).to have_content('Citation Author')
+          # An author carrying only an entry reference is listed surname-first, like the
+          # migrated ones that store their name that way (see LexEntry#surname_first_title).
+          expect(page).to have_content('Author, Citation')
         end
       end
     end
