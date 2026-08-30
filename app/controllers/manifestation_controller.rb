@@ -513,6 +513,7 @@ class ManifestationController < ApplicationController
       @total_recs = @my_pending_recs.size + @app_recs.size
 
       @links = @m.external_links.group_by(&:linktype)
+      @lex_citations = @m.sole_containing_volume&.lex_citations&.includes(:authors, :manifestation) || []
 
       @header_partial = 'manifestation/work_top'
       @works_about = @w.works_about
