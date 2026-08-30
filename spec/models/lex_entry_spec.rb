@@ -456,6 +456,61 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe 'citation subject headings verification' do
+    let(:person) { create(:lex_person) }
+    let(:entry) { create(:lex_entry, lex_item: person) }
+
+    describe '#build_checklist' do
+      it 'includes citation_subjects in the checklist for LexPerson entries' do
+        entry.start_verification!('test@example.com')
+
+        expect(entry.verification_progress.dig('checklist', 'citation_subjects'))
+          .to eq({ 'verified' => false, 'notes' => '' })
+      end
+
+      it 'omits citation_subjects for LexPublication entries' do
+        pub_entry = create(:lex_entry, :publication)
+        pub_entry.start_verification!('test@example.com')
+
+        expect(pub_entry.verification_progress['checklist']).not_to have_key('citation_subjects')
+      end
+    end
+
+    describe '#verification_percentage' do
+      before { entry.start_verification!('test@example.com') }
+
+      it 'counts the citation_subjects section towards the total' do
+        expect { entry.update_checklist_item('citation_subjects', true, '') }
+          .to change(entry, :verification_percentage).by_at_least(1)
+      end
+    end
+
+    describe '#citation_subjects_verifiable?' do
+      before { entry.start_verification!('test@example.com') }
+
+      context 'with an unresolved heading' do
+        before { create(:lex_citation, person: person, subject: 'על "אור פרא"') }
+
+        it 'is false until the auto-match dialog has been opened' do
+          expect(entry).not_to be_citation_subjects_verifiable
+          entry.mark_citation_subjects_auto_match_opened!
+          expect(entry).to be_citation_subjects_verifiable
+        end
+
+        it 'keeps the flag when the section is later marked verified' do
+          entry.mark_citation_subjects_auto_match_opened!
+          entry.update_checklist_item('citation_subjects', true, '')
+
+          expect(entry.reload).to be_citation_subjects_verifiable
+        end
+      end
+
+      it 'is true when no heading is left to resolve' do
+        expect(entry).to be_citation_subjects_verifiable
+      end
+    end
+  end
+
   describe 'external_identifiers verification' do
     let(:person) { create(:lex_person) }
     let(:entry) { create(:lex_entry, lex_item: person) }

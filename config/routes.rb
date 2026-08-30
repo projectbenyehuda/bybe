@@ -125,6 +125,8 @@ Bybeconv::Application.routes.draw do
       patch ':id/set_profile_image', to: 'verification#set_profile_image', as: :set_profile_image_verification
       delete ':id/remove_attachment', to: 'verification#remove_attachment', as: :remove_attachment_verification
       patch ':id/confirm_work_match', to: 'verification#confirm_work_match', as: :confirm_work_match_verification
+      patch ':id/confirm_citation_subject', to: 'verification#confirm_citation_subject',
+                                            as: :confirm_citation_subject_verification
       post ':id/mark_verified', to: 'verification#mark_verified', as: :mark_verified_verification
       get ':id/bio_comparison', to: 'verification#bio_comparison', as: :bio_comparison_verification
       get ':id/escalate_form', to: 'verification#escalate_form', as: :escalate_form_verification

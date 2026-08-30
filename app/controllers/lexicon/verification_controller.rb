@@ -115,6 +115,14 @@ module Lexicon
       verified = ['true', true].include?(params[:verified])
       notes = params[:notes] || ''
 
+      # The citation-headings section is only verifiable once its auto-match modal has been seen;
+      # the button is disabled until then, so this is here to stop a hand-made request.
+      if path == 'citation_subjects' && verified && !@entry.citation_subjects_verifiable?
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.citation_subjects_unopened') },
+               status: :unprocessable_content
+        return
+      end
+
       # Special handling: when marking entire works section as verified,
       # also mark all individual works as verified
       if path == 'works' && verified && @entry.lex_item_type == 'LexPerson'
@@ -189,6 +197,32 @@ module Lexicon
       render json: {
         success: true,
         message: I18n.t('lexicon.verification.messages.work_match_confirmed')
+      }
+    rescue ActiveRecord::RecordNotFound
+      render json: { success: false, error: I18n.t('lexicon.verification.messages.work_not_found') }, status: :not_found
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+
+    # PATCH /lexicon/verification/:id/confirm_citation_subject
+    # Resolves one legacy citation subject heading: points every citation under it at the given
+    # work, or -- with a blank work_id -- clears the heading as a general one about the person.
+    def confirm_citation_subject
+      person = @entry.lex_item
+      subject = params[:subject].to_s
+      unless person.is_a?(LexPerson) && subject.present?
+        render json: { success: false, error: I18n.t('lexicon.verification.messages.subject_not_found') },
+               status: :unprocessable_content
+        return
+      end
+
+      work = person.works.find(params[:work_id]) if params[:work_id].present?
+      count = person.link_citations_with_subject!(subject, work)
+
+      render json: {
+        success: true,
+        count: count,
+        message: I18n.t('lexicon.verification.messages.citation_subject_linked', count: count)
       }
     rescue ActiveRecord::RecordNotFound
       render json: { success: false, error: I18n.t('lexicon.verification.messages.work_not_found') }, status: :not_found
@@ -332,6 +366,12 @@ module Lexicon
       if @section == 'works' && @item.is_a?(LexPerson) && @item.authority.present?
         @work_matches = auto_match_works_to_publications(@item)
         @unmatched_publications = publications_absent_from_entry(@item, @work_matches)
+      end
+
+      if @section == 'citation_subjects' && @item.is_a?(LexPerson)
+        @citation_subject_proposals = Lexicon::MatchCitationSubjects.call(@item)
+        # Opening the modal is what unlocks marking the section verified, so record it here.
+        @entry.mark_citation_subjects_auto_match_opened!
       end
 
       render partial: "lexicon/verification/edit_#{@section}"

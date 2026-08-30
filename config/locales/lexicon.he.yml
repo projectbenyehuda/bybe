@@ -243,6 +243,7 @@ he:
           bio: ביוגרפיה
           works: יצירות
           citations: מראי מקום
+          citation_subjects: כותרות מראי מקום
           links: קישוריוֹת
           attachments: קבצים מצורפים
           external_identifiers: מזהים חיצוניים
@@ -318,6 +319,20 @@ he:
         work_from_collection: "משויך לכותר:"
         unmatched_publications_heading: "פרסומים שאינם בערך הלקסיקון"
         unmatched_publications_intro: "הפרסומים הבאים משויכים לרשומת הסמכות אך אינם מותאמים לאף יצירה בערך הלקסיקון:"
+        citation_subjects_section: כותרות מראי מקום
+        citation_subjects_intro: "הכותרות הבאות עדיין אינן מקושרות ליצירה. מראי המקום שתחתיהן אינם מוצגים בשום עמוד יצירה. לחצו על ״התאמה אוטומטית״ כדי לקשר אותן."
+        no_citation_subjects: "(אין כותרות מראי מקום שממתינות לטיפול)"
+        auto_match_citation_subjects_btn: "התאמה אוטומטית של כותרות מראי מקום"
+        auto_match_citation_subjects_heading: "התאמה אוטומטית של כותרות מראי מקום ליצירות"
+        auto_match_citation_subjects_intro: "הכותרות הבאות הותאמו אוטומטית ליצירות על בסיס דמיון בכותרת. אישור כותרת מקשר את כל מראי המקום שתחתיה ליצירה."
+        unmatched_citation_subjects_heading: "כותרות ללא התאמה"
+        unmatched_citation_subjects_intro: "לכותרות הבאות לא נמצאה יצירה מתאימה. בחרו יצירה, או השאירו ריק כדי לסמן שהכותרת כללית ואינה עוסקת ביצירה מסוימת."
+        citation_subject_general: "כללי (לא על יצירה מסוימת)"
+        citation_subject_assign: "שיוך"
+        citation_subject_ambiguous: "יותר מיצירה אחת מתאימה"
+        citation_subject_count:
+          one: "מראה מקום אחד"
+          other: "%{count} מראי מקום"
       bio_comparison:
         title: "השוואת ביוגרפיה"
         note: "שני הטקסטים מוצגים ללא תגי HTML וללא סימני פיסוק, ולכן אינם ניתנים לעריכה כאן. מילים שונות מודגשות בצבע. לתיקון אי-התאמה, סגרו חלון זה ולחצו על ״עריכה״ בלוח הביוגרפיה."
@@ -358,6 +373,11 @@ he:
         collection_not_in_publication: האוסף אינו שייך לפרסום
         no_match_selected: לא נבחרו פרסום או כרך
         work_not_found: יצירה לא נמצאה
+        subject_not_found: כותרת מראי המקום לא נמצאה
+        citation_subjects_unopened: יש לפתוח תחילה את חלון ההתאמה האוטומטית של כותרות מראי המקום
+        citation_subject_linked:
+          one: מראה מקום אחד קושר
+          other: "%{count} מראי מקום קושרו"
         attachment_not_found: קובץ מצורף לא נמצא
         unknown_error: שגיאה לא ידועה
         error_updating_work_verification: שגיאה בעדכון אימות יצירה
