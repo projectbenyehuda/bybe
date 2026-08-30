@@ -37,6 +37,12 @@ class Collection < ApplicationRecord
 
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings, class_name: 'Tag'
+
+  # Lexicon works whose edition this collection is; :nullify because a FK constraint would otherwise
+  # block destroying the collection, and the lexicon work itself outlives the BYP edition of it.
+  has_many :lex_person_works, dependent: :nullify
+  # Citations *about* the lexicon work(s) this collection realizes -- shown in a sidebar card on show
+  has_many :lex_citations, through: :lex_person_works, source: :citations_about
   # TODO: implement
   #  has_many :likings, as: :likeable, dependent: :destroy
   #  has_many :likers, through: :likings, class_name: 'User'
@@ -691,13 +697,6 @@ class Collection < ApplicationRecord
 
   def parent_collections
     parent_collection_items.map(&:collection)
-  end
-
-  # Get LexCitations for this collection via Publication -> LexPersonWork -> LexCitation chain
-  def lex_citations
-    return [] if publication.blank?
-
-    publication.lex_citations.includes(:authors, :manifestation)
   end
 
   # update status of ALL manifestations included in this collection, including in nested collections
