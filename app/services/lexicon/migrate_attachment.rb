@@ -3,7 +3,10 @@
 module Lexicon
   # Service used to migrate attachments referenced on legacy lexicon pages into Ben Yehuda project
   class MigrateAttachment < ApplicationService
-    LEXICON_FILES_REGEX = %r{\A(?<file_id>\d+)(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png)(#(?<anchor>.*))?\z}
+    # Case-insensitive: the legacy pages are inconsistent about extension case, and an .JPG that
+    # failed to match here used to be left as a relative path pointing nowhere (87 refs across the
+    # corpus). bmp is in the list for the same reason -- Word-exported pages embed a few (22 refs).
+    LEXICON_FILES_REGEX = %r{\A(?<file_id>\d+)(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png|bmp)(#(?<anchor>.*))?\z}i
 
     def call(src, lex_entry)
       # removing website prefix if provided (legacy files should use relative paths only but who knows...)
