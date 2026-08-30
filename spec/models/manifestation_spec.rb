@@ -933,30 +933,67 @@ describe Manifestation do
     end
   end
 
-  describe '#sole_containing_collection' do
+  describe '#sole_containing_volume' do
     let(:manifestation) { create(:manifestation) }
 
-    it 'returns the collection when the manifestation is its only item' do
+    it 'returns the volume when the manifestation is its only item' do
       volume = create(:collection, collection_type: :volume)
       create(:collection_item, collection: volume, item: manifestation)
       manifestation.reload
-      expect(manifestation.sole_containing_collection).to eq(volume)
+      expect(manifestation.sole_containing_volume).to eq(volume)
     end
 
-    it 'returns nil when the collection holds other items too' do
+    it 'returns nil when the volume holds other texts too' do
       volume = create(:collection, collection_type: :volume)
       create(:collection_item, collection: volume, item: manifestation)
       create(:collection_item, collection: volume, item: create(:manifestation))
       manifestation.reload
-      expect(manifestation.sole_containing_collection).to be_nil
+      expect(manifestation.sole_containing_volume).to be_nil
     end
 
     it 'returns nil when the manifestation is in no collection at all' do
-      expect(manifestation.sole_containing_collection).to be_nil
+      expect(manifestation.sole_containing_volume).to be_nil
     end
 
-    it 'skips a multi-item collection in favour of one the manifestation is alone in' do
-      crowded = create(:collection, collection_type: :series)
+    # The gate has to be counted over the flattened tree, exactly as CollectionsController#show
+    # counts it before redirecting to the single text -- otherwise the volume page redirects here
+    # and its citations become unreachable.
+    it 'returns the volume when it holds the manifestation through a series' do
+      volume = create(:collection, collection_type: :volume)
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: volume, item: series)
+      create(:collection_item, collection: series, item: manifestation)
+      manifestation.reload
+      expect(manifestation.sole_containing_volume).to eq(volume)
+    end
+
+    it 'returns nil when the series under the volume holds another text as well' do
+      volume = create(:collection, collection_type: :volume)
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: volume, item: series)
+      create(:collection_item, collection: series, item: manifestation)
+      create(:collection_item, collection: series, item: create(:manifestation))
+      manifestation.reload
+      expect(manifestation.sole_containing_volume).to be_nil
+    end
+
+    # A series is a grouping *inside* a title, not a title of its own, so it never answers here.
+    it 'returns nil for a single-item series with no volume above it' do
+      series = create(:collection, collection_type: :series)
+      create(:collection_item, collection: series, item: manifestation)
+      manifestation.reload
+      expect(manifestation.sole_containing_volume).to be_nil
+    end
+
+    it 'returns nil for a single-item collection of type other' do
+      other = create(:collection, collection_type: :other)
+      create(:collection_item, collection: other, item: manifestation)
+      manifestation.reload
+      expect(manifestation.sole_containing_volume).to be_nil
+    end
+
+    it 'skips a multi-text volume in favour of one the manifestation is alone in' do
+      crowded = create(:collection, collection_type: :volume)
       create(:collection_item, collection: crowded, item: manifestation)
       create(:collection_item, collection: crowded, item: create(:manifestation))
 
@@ -964,7 +1001,7 @@ describe Manifestation do
       create(:collection_item, collection: alone, item: manifestation)
 
       manifestation.reload
-      expect(manifestation.sole_containing_collection).to eq(alone)
+      expect(manifestation.sole_containing_volume).to eq(alone)
     end
   end
 

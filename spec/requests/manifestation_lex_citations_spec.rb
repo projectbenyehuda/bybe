@@ -38,6 +38,24 @@ RSpec.describe 'Manifestation LexCitations', type: :request do
       end
     end
 
+    # The volume page redirects to this text (CollectionsController#show redirects when a collection
+    # flattens to one manifestation), so if the card did not appear here it would appear nowhere.
+    context 'when the volume holds the manifestation through a series' do
+      before do
+        series = create(:collection, collection_type: :series)
+        create(:collection_item, collection: volume, item: series)
+        create(:collection_item, collection: series, item: manifestation)
+      end
+
+      it 'displays the citations card' do
+        get manifestation_path(manifestation)
+
+        expect(response).to be_successful
+        expect(assigns(:lex_citations)).to include(lex_citation)
+        expect(response.body).to include('Test Citation')
+      end
+    end
+
     context 'when the volume holds other texts as well' do
       before do
         create(:collection_item, collection: volume, item: manifestation)

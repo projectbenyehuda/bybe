@@ -202,14 +202,22 @@ class Manifestation < ApplicationRecord
     return ret.flatten
   end
 
-  # The collection this manifestation is the only item of, if there is one.
+  # The volume this manifestation is the entire content of, if there is one.
   #
   # A one-text volume simply *is* that text, so what the lexicon says about the book (see
-  # Collection#lex_citations) belongs on the text's own page too. A volume holding several texts is
-  # not any one of them, and its citations stay on the collection page.
-  def sole_containing_collection
-    collection_items.includes(collection: :collection_items).map(&:collection).compact
-                    .find { |collection| collection.collection_items.size == 1 }
+  # Collection#lex_citations) belongs on the text's own page too. The gate mirrors
+  # CollectionsController#show, which redirects to the single text whenever a collection flattens to
+  # exactly one manifestation: such a collection never renders its own page, so its citations would
+  # be unreachable if they were not shown here.
+  #
+  # Both halves of that have to be counted the same way #show counts them, i.e. over the *flattened*
+  # tree -- a volume holding one series holding one text still redirects. #volumes does that walk,
+  # and answers with the title-bearing container (volume or periodical_issue), never with the
+  # `series` that is merely a grouping inside it.
+  def sole_containing_volume
+    volumes.uniq.find do |volume|
+      volume.flatten_items.one? { |ci| ci.item_type == 'Manifestation' && ci.item.present? }
+    end
   end
 
   # Check if manifestation is contained in any collection of type 'volume',
