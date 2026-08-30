@@ -42,6 +42,55 @@ RSpec.describe 'LexPersonWork publication/collection pickers in edit modal', :js
     expect(page).to have_css('#generalDlg.show', wait: 5)
   end
 
+  # A publication and its volume are two records describing one book, so naming either one in the
+  # form fills in the other. The editor should only have to pick the book once.
+  context 'when a publication and a volume are linked to each other' do
+    let!(:linked_volume) do
+      create(:collection, collection_type: :volume, title: 'Linked Volume',
+                          publication: publication, authors: [authority])
+    end
+
+    it 'selects the volume when its publication is chosen' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        select 'Bibliography Entry', from: 'lex_person_work_publication_id'
+
+        expect(page).to have_select('lex_person_work_collection_id', selected: 'Linked Volume')
+      end
+    end
+
+    it 'selects the publication when its volume is chosen' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        select 'Linked Volume', from: 'lex_person_work_collection_id'
+
+        expect(page).to have_select('lex_person_work_publication_id', selected: 'Bibliography Entry')
+      end
+    end
+  end
+
+  context 'when the chosen volume belongs to another authority\'s publication' do
+    let!(:translators_volume) do
+      create(:collection, collection_type: :volume, title: 'Translated Volume',
+                          publication: create(:publication, authority: create(:authority), title: 'Not Offered'),
+                          authors: [authority])
+    end
+
+    it 'leaves the publication picker alone, since that publication is not offered' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        select 'Translated Volume', from: 'lex_person_work_collection_id'
+
+        expect(page).to have_select('lex_person_work_collection_id', selected: 'Translated Volume')
+        expect(page).to have_select('lex_person_work_publication_id',
+                                    selected: I18n.t('lexicon.person_works.form.select_publication'))
+      end
+    end
+  end
+
   context 'when the chosen collection is not linked to any publication' do
     let!(:unlinked_volume) do
       create(:collection, collection_type: :volume, title: 'Unlinked Volume', publication: nil,
@@ -56,6 +105,38 @@ RSpec.describe 'LexPersonWork publication/collection pickers in edit modal', :js
         select 'Bibliography Entry', from: 'lex_person_work_publication_id'
 
         expect(page).to have_select('lex_person_work_collection_id', selected: 'Unlinked Volume')
+      end
+    end
+  end
+
+  context 'when a volume is credited to the authority only through its volume_series' do
+    let!(:series_volume) do
+      create(:collection, collection_type: :volume, title: 'Volume In A Series', publication: nil, authors: [])
+    end
+
+    before do
+      create(:collection, collection_type: :volume_series, title: 'The Trilogy',
+                          authors: [authority], included_collections: [series_volume])
+    end
+
+    it 'offers the volume even though it has no involved_authorities of its own' do
+      expect(series_volume.involved_authorities).to be_empty
+
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        expect(page).to have_select('lex_person_work_collection_id', with_options: ['Volume In A Series'])
+        select 'Volume In A Series', from: 'lex_person_work_collection_id'
+        expect(page).to have_select('lex_person_work_collection_id', selected: 'Volume In A Series')
+      end
+    end
+
+    it 'does not offer the volume_series itself, which is not a volume' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        expect(page).to have_select('lex_person_work_collection_id', with_options: ['Volume In A Series'])
+        expect(page).to have_no_select('lex_person_work_collection_id', with_options: ['The Trilogy'])
       end
     end
   end

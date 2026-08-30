@@ -194,6 +194,21 @@ class Authority < ApplicationRecord
     Collection.joins(:involved_authorities).where(collection_type: 'volume', involved_authorities: { authority_id: id })
   end
 
+  # #volumes, plus the volumes contained in any volume_series associated with this authority.
+  # A multi-volume work often records the authorship once, on the series, leaving the individual
+  # volumes with no involved_authorities of their own -- those volumes are this authority's just
+  # as much, and are invisible to #volumes because it inner-joins involved_authorities.
+  # Only direct members of the series are collected; a series nested inside a series is not walked.
+  def volumes_including_series
+    series_ids = Collection.joins(:involved_authorities)
+                           .where(collection_type: 'volume_series', involved_authorities: { authority_id: id })
+                           .select(:id)
+    in_series_ids = CollectionItem.where(collection_id: series_ids, item_type: 'Collection').select(:item_id)
+
+    volumes_scope = Collection.where(collection_type: 'volume')
+    volumes_scope.where(id: volumes.select(:id)).or(volumes_scope.where(id: in_series_ids))
+  end
+
   # return all manifestation IDs that are included in collections (useful for migrating legacy TOCs)
   def collected_manifestation_ids
     ids = published_manifestations.pluck(:id)
