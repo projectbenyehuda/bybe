@@ -1629,7 +1629,9 @@ class AdminController < ApplicationController
   # Maps manifestation id => containment chains of the collections containing it, innermost first:
   # ['B', 'A'] for a work in collection B which is itself inside collection A.  The system-managed
   # 'uncollected' collections are skipped: belonging only to one of those means the work is in no
-  # real collection, which the report renders as such.
+  # real collection, which the report renders as such.  The chains are sorted, so that a work in
+  # several collections -- or a collection reachable by several paths -- reads the same on every run
+  # rather than in whatever order the rows came back in.
   def containment_chains_by_manifestation_id(manifestation_ids)
     direct = CollectionItem.joins(:collection)
                            .where(item_type: 'Manifestation', item_id: manifestation_ids)
@@ -1639,7 +1641,7 @@ class AdminController < ApplicationController
     titles = Collection.where(id: parents.keys).pluck(:id, :title).to_h
     direct.each_with_object({}) do |(manifestation_id, collection_id), chains|
       (chains[manifestation_id] ||= []).concat(containment_chains(collection_id, parents, titles))
-    end.transform_values(&:uniq)
+    end.transform_values { |chains| chains.uniq.sort }
   end
 
   # Bulk-loads the collection => parent collection ids edges for the given collections and everything

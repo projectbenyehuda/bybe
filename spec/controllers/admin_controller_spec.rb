@@ -1303,9 +1303,10 @@ describe AdminController do
       let!(:series) { create(:collection, collection_type: :series, title: 'סדרה שנייה', manifestations: [man1]) }
       let!(:uncollected) { create(:collection, :uncollected, title: 'שלא כונסו', manifestations: [man2]) }
 
-      it 'maps each manifestation to the collections containing it' do
+      it 'maps each manifestation to the collections containing it, in a stable order' do
         call
-        expect(assigns(:containment_chains)[man1.id]).to contain_exactly([volume.title], [series.title])
+        # sorted, so the column doesn't reshuffle between runs: 'כרך ראשון' sorts before 'סדרה שנייה'
+        expect(assigns(:containment_chains)[man1.id]).to eq([[volume.title], [series.title]])
       end
 
       it 'ignores system-managed uncollected collections' do
@@ -1345,18 +1346,22 @@ describe AdminController do
             create(:collection, collection_type: :other, title: 'הורה נוסף', included_collections: [volume])
           end
 
-          it 'yields one chain per path up the tree' do
+          it 'yields one chain per path up the tree, in a stable order' do
             call
             expect(assigns(:containment_chains)[man1.id])
-              .to include([volume.title, outer.title, outermost.title], [volume.title, other_parent.title])
+              .to eq([[volume.title, other_parent.title],
+                      [volume.title, outer.title, outermost.title],
+                      [series.title]])
           end
         end
       end
     end
 
     it 'exposes the upload date of each work' do
+      man2.update!(created_at: man1.created_at - 3.days)
       call
-      expect(response.body).to include(man1.created_at.to_date.strftime('%d-%m-%Y'))
+      expect(response.body).to include(man1.created_at.to_date.strftime('%d-%m-%Y'),
+                                       man2.created_at.to_date.strftime('%d-%m-%Y'))
     end
 
     describe 'pagination' do
