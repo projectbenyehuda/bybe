@@ -70,5 +70,15 @@ RSpec.describe 'Collection show - intellectual property display', type: :request
       expect(item_cards_text).to include(I18n.t('intellectual_property.public_domain'))
       expect(item_cards_text).to include(I18n.t('intellectual_property.copyrighted'))
     end
+
+    it 'renders the IP statement inside the card header, above the header rule' do
+      get collection_path(collection)
+      doc = Nokogiri::HTML(response.body)
+      headers_text = doc.css('.proofable .by-card-header-v02 .ip-statement').map(&:text).join
+      expect(headers_text).to include(I18n.t('intellectual_property.public_domain'))
+      expect(headers_text).to include(I18n.t('intellectual_property.copyrighted'))
+      # no item metadata may sit between the header and the card body
+      expect(doc.css('.proofable > .metadata')).to be_empty
+    end
   end
 end

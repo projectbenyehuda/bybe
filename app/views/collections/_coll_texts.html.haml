@@ -70,10 +70,11 @@
                 #{t(:translated_by)} #{@effective_translators[title]}
                 - if ci.item_type == 'Manifestation' && ci.item&.expression&.work.present?
                   = " (#{orig_lang_label(ci.item.expression.work.orig_lang)})"
-        - if ci.item_type == 'Manifestation' && ci.item.present?
-          - item_ip = ci.item.expression.intellectual_property
-          .metadata{ style: 'padding-top: 4px;' }
-            .ip-statement
-              = render partial: 'shared/intellectual_property', locals: { intellectual_property: item_ip }
+          -# item metadata belongs in the header, above the header's bottom rule
+          - if ci.item_type == 'Manifestation' && ci.item.present?
+            - item_ip = ci.item.expression.intellectual_property
+            .metadata{ style: 'padding-top: 4px;' }
+              .ip-statement
+                = render partial: 'shared/intellectual_property', locals: { intellectual_property: item_ip }
       .by-card-content-v02.textcard#actualtext
         != convert_internal_links_to_relative(request.base_url, html, request.path)
