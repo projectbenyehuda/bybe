@@ -328,6 +328,8 @@ he:
         unmatched_citation_subjects_heading: "כותרות ללא התאמה"
         unmatched_citation_subjects_intro: "לכותרות הבאות לא נמצאה יצירה מתאימה. בחרו יצירה, או השאירו ריק כדי לסמן שהכותרת כללית ואינה עוסקת ביצירה מסוימת."
         citation_subject_general: "כללי (לא על יצירה מסוימת)"
+        citation_group_linked: "מקושר ליצירה"
+        citation_group_unlinked: "כותרת לא מקושרת"
         citation_subject_assign: "שיוך"
         citation_subject_ambiguous: "יותר מיצירה אחת מתאימה"
         citation_subject_count:

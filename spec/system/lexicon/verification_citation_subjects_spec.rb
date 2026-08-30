@@ -44,6 +44,19 @@ describe 'Verification citation subject headings section', :js do
     end
   end
 
+  it 'badges each citations group by whether its heading is linked to a work yet' do
+    create(:lex_citation, person: person, person_work: work, subject: nil)
+    visit "/lex/verification/#{entry.id}"
+
+    within '#section-citations' do
+      linked = find('.subject-header', text: work.title)
+      expect(linked).to have_content(I18n.t('lexicon.verification.sections.citation_group_linked'))
+
+      unlinked = find('.subject-header', text: 'רשימות מבית המרזח')
+      expect(unlinked).to have_content(I18n.t('lexicon.verification.sections.citation_group_unlinked'))
+    end
+  end
+
   it 'refuses to mark the section verified before the modal has been opened' do
     visit "/lex/verification/#{entry.id}"
 
