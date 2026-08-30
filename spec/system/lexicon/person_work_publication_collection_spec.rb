@@ -60,6 +60,38 @@ RSpec.describe 'LexPersonWork publication/collection pickers in edit modal', :js
     end
   end
 
+  context 'when a volume is credited to the authority only through its volume_series' do
+    let!(:series_volume) do
+      create(:collection, collection_type: :volume, title: 'Volume In A Series', publication: nil, authors: [])
+    end
+
+    before do
+      create(:collection, collection_type: :volume_series, title: 'The Trilogy',
+                          authors: [authority], included_collections: [series_volume])
+    end
+
+    it 'offers the volume even though it has no involved_authorities of its own' do
+      expect(series_volume.involved_authorities).to be_empty
+
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        expect(page).to have_select('lex_person_work_collection_id', with_options: ['Volume In A Series'])
+        select 'Volume In A Series', from: 'lex_person_work_collection_id'
+        expect(page).to have_select('lex_person_work_collection_id', selected: 'Volume In A Series')
+      end
+    end
+
+    it 'does not offer the volume_series itself, which is not a volume' do
+      open_work_edit_modal
+
+      within '#generalDlg' do
+        expect(page).to have_select('lex_person_work_collection_id', with_options: ['Volume In A Series'])
+        expect(page).to have_no_select('lex_person_work_collection_id', with_options: ['The Trilogy'])
+      end
+    end
+  end
+
   context 'when the chosen collection belongs to a different publication' do
     let!(:other_volume) do
       create(:collection, collection_type: :volume, title: 'Volume Of Another Publication',
