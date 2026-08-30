@@ -37,12 +37,27 @@ module TocTree
       return involvement_check && !involved_in_parent
     end
 
-    # Count manifestations (1 if visible and published, 0 otherwise)
+    # Count manifestations (1 if visible, published and the authority's own, 0 otherwise).
+    #
+    # Visibility is deliberately broader than countability: a volume authored by X also *lists*
+    # a preface someone else wrote, because the reader browsing that volume wants to see it. But
+    # such a work is not one of X's, so it must not inflate the counts the author page shows
+    # beside the metadata card's 'works in the project' figure, which counts direct involvements
+    # only. Hence the extra involvement check here, which is what keeps the two in agreement.
     def count_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
       return 0 unless visible?(role, authority_id, involved_on_collection_level, parent_collection)
       return 0 unless @manifestation.status == 'published'
+      return 0 unless directly_involved?(role, authority_id)
 
       1
+    end
+
+    private
+
+    # Whether the authority is involved in this work itself (as opposed to merely in a collection
+    # containing it) with the given role.
+    def directly_involved?(role, authority_id)
+      @manifestation.involved_authorities_by_role(role).any? { |a| a.id == authority_id }
     end
   end
 end

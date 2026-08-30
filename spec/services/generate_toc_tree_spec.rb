@@ -73,10 +73,19 @@ describe GenerateTocTree do
       end
 
       it 'counts manifestations recursively in nested structure' do
-        # Count all manifestations where authority is involved as translator at collection level
+        # nested_edited_collection sits under top_level_collection_with_nested_collections, and its
+        # manifestations do carry the authority as editor, so the recursive sum reaches them.
+        total_edited = top_level_with_nested_node.count_manifestations(:editor, authority.id, true)
+        expect(total_edited).to eq(edited_manifestations.count)
+      end
+
+      it 'does not count works the authority is only involved in through the collection' do
+        # translated_manifestations have no translator involvement of their own (see the shared
+        # context) -- the authority is a translator of nested_translated_collection only. They are
+        # still rendered in the TOC, but counting them would push these badges above the metadata
+        # card's 'works in the project' figure, which counts direct involvements only.
         total_translated = top_level_with_nested_node.count_manifestations(:translator, authority.id, true)
-        # Should include manifestations in nested_translated_collection (2 items)
-        expect(total_translated).to eq(translated_manifestations.count)
+        expect(total_translated).to eq(0)
       end
 
       it 'returns 0 for invisible manifestations' do
@@ -99,6 +108,32 @@ describe GenerateTocTree do
         count = manifestation_node.count_manifestations(:author, authority.id, false)
         expect(count).to eq(0)
       end
+    end
+  end
+
+  # Reproduces benyehuda.org/author/1024: the metadata card said 36 works while the TOC badge said
+  # 38, because the two prefaces other people contributed to Alon's volumes were counted as his.
+  context "when the authority's own volume also holds a work by somebody else" do
+    let(:uncollected_collection) { create(:collection, :uncollected) }
+    let(:other_authority) { create(:authority) }
+    let!(:volume) { create(:collection, collection_type: :volume, authors: [authority]) }
+    let!(:own_works) { create_list(:manifestation, 3, author: authority, collections: [volume]) }
+    let!(:foreign_preface) { create(:manifestation, author: other_authority, collections: [volume]) }
+
+    let(:volume_node) { find_collection_node(result, volume) }
+
+    it 'still lists the foreign work in the TOC' do
+      listed = volume_node.children_by_role(:author, authority.id, true).map(&:id)
+      expect(listed).to include("manifestation:#{foreign_preface.id}")
+    end
+
+    it 'counts only the works the authority is actually involved in' do
+      expect(volume_node.count_manifestations(:author, authority.id, true)).to eq(own_works.count)
+    end
+
+    it "agrees with the authority's published works count" do
+      expect(volume_node.count_manifestations(:author, authority.id, true))
+        .to eq(authority.published_manifestations.count)
     end
   end
 

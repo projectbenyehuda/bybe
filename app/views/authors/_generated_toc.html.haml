@@ -10,7 +10,11 @@
     .f_circleG#frotateG_07
     .f_circleG#frotateG_08
 .mainlist#browse_mainlist
-  = cache_unless current_user&.editor?, @author, expires_in: 12.hours do
+  -# The count badges below are computed in TocTree::ManifestationNode, which the template digest
+     does not track, so the cache key carries an explicit version: bump it whenever the counting
+     rules change, or a deploy keeps serving the old figures here (while the uncached navbar
+     beside them already shows the new ones) until the TTL expires.
+  = cache_unless current_user&.editor?, [@author, 'toc-counts-v2'], expires_in: 12.hours do
     :ruby
     - top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
     - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
