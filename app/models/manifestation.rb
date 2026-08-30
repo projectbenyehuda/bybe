@@ -202,6 +202,16 @@ class Manifestation < ApplicationRecord
     return ret.flatten
   end
 
+  # The collection this manifestation is the only item of, if there is one.
+  #
+  # A one-text volume simply *is* that text, so what the lexicon says about the book (see
+  # Collection#lex_citations) belongs on the text's own page too. A volume holding several texts is
+  # not any one of them, and its citations stay on the collection page.
+  def sole_containing_collection
+    collection_items.includes(collection: :collection_items).map(&:collection).compact
+                    .find { |collection| collection.collection_items.size == 1 }
+  end
+
   # Check if manifestation is contained in any collection of type 'volume',
   # directly or through any parent collection in the tree
   def in_volume?

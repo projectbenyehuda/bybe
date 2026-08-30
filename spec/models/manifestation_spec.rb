@@ -933,6 +933,41 @@ describe Manifestation do
     end
   end
 
+  describe '#sole_containing_collection' do
+    let(:manifestation) { create(:manifestation) }
+
+    it 'returns the collection when the manifestation is its only item' do
+      volume = create(:collection, collection_type: :volume)
+      create(:collection_item, collection: volume, item: manifestation)
+      manifestation.reload
+      expect(manifestation.sole_containing_collection).to eq(volume)
+    end
+
+    it 'returns nil when the collection holds other items too' do
+      volume = create(:collection, collection_type: :volume)
+      create(:collection_item, collection: volume, item: manifestation)
+      create(:collection_item, collection: volume, item: create(:manifestation))
+      manifestation.reload
+      expect(manifestation.sole_containing_collection).to be_nil
+    end
+
+    it 'returns nil when the manifestation is in no collection at all' do
+      expect(manifestation.sole_containing_collection).to be_nil
+    end
+
+    it 'skips a multi-item collection in favour of one the manifestation is alone in' do
+      crowded = create(:collection, collection_type: :series)
+      create(:collection_item, collection: crowded, item: manifestation)
+      create(:collection_item, collection: crowded, item: create(:manifestation))
+
+      alone = create(:collection, collection_type: :volume)
+      create(:collection_item, collection: alone, item: manifestation)
+
+      manifestation.reload
+      expect(manifestation.sole_containing_collection).to eq(alone)
+    end
+  end
+
   describe '.popular_works' do
     let!(:manifestation1) { create(:manifestation) }
     let!(:manifestation2) { create(:manifestation) }
