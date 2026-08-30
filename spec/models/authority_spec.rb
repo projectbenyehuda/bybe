@@ -869,6 +869,80 @@ describe Authority do
         expect(authority.reload.sort_name).to eq('חנה לאה')
       end
     end
+
+    describe '#volumes_including_series' do
+      subject(:result) { authority.volumes_including_series }
+
+      let(:authority) { create(:authority) }
+
+      context 'with a volume the authority is directly involved in' do
+        let!(:own_volume) { create(:collection, collection_type: :volume, authors: [authority]) }
+
+        it 'includes it, as #volumes does' do
+          expect(result).to contain_exactly(own_volume)
+        end
+      end
+
+      context 'with a volume that only its containing volume_series credits the authority for' do
+        let(:series_volume) { create(:collection, collection_type: :volume, authors: []) }
+        let!(:series) do
+          create(:collection, collection_type: :volume_series, authors: [authority],
+                              included_collections: [series_volume])
+        end
+
+        it 'includes the volume even though it has no involved_authorities of its own' do
+          expect(series_volume.involved_authorities).to be_empty
+          expect(result).to contain_exactly(series_volume)
+        end
+
+        it 'is exactly what #volumes misses' do
+          expect(authority.volumes).to be_empty
+        end
+
+        it 'does not include the volume_series itself' do
+          expect(result).not_to include(series)
+        end
+      end
+
+      context 'when a volume is both directly credited and inside a credited series' do
+        let(:volume) { create(:collection, collection_type: :volume, authors: [authority]) }
+
+        before do
+          create(:collection, collection_type: :volume_series, authors: [authority],
+                              included_collections: [volume])
+        end
+
+        it 'returns it once' do
+          expect(result.to_a).to contain_exactly(volume)
+        end
+      end
+
+      context 'with a volume_series belonging to a different authority' do
+        let(:other_volume) { create(:collection, collection_type: :volume, authors: []) }
+
+        before do
+          create(:collection, collection_type: :volume_series, authors: [create(:authority)],
+                              included_collections: [other_volume])
+        end
+
+        it 'does not include that series\' volumes' do
+          expect(result).to be_empty
+        end
+      end
+
+      context 'with a non-volume collection inside a credited volume_series' do
+        let(:nested_series) { create(:collection, collection_type: :series, authors: []) }
+
+        before do
+          create(:collection, collection_type: :volume_series, authors: [authority],
+                              included_collections: [nested_series])
+        end
+
+        it 'excludes it, since only volumes are selectable' do
+          expect(result).to be_empty
+        end
+      end
+    end
   end
 
   describe 'scopes' do

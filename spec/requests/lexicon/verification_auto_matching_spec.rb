@@ -262,6 +262,46 @@ RSpec.describe 'Lexicon::Verification Auto-Matching', type: :request do
       end
     end
 
+    # A multi-volume work records its authorship once, on the containing volume_series, leaving the
+    # member volumes with no involved_authorities of their own. Shulamit Hareven's "שונא הנסים"
+    # (collection 4944, inside volume_series "צמאון: שלישיית המדבר") is the case that prompted this.
+    context 'when a volume is credited to the authority only through its volume_series' do
+      let!(:series_volume) do
+        create(:collection, collection_type: :volume, title: 'The Miracle Hater', publication: nil, authors: [])
+      end
+      let!(:work) do
+        create(:lex_person_work, person: person, title: 'The Miracle Hater', publication_id: nil, collection_id: nil)
+      end
+
+      before do
+        create(:collection, collection_type: :volume_series, title: 'The Desert Trilogy',
+                            authors: [authority], included_collections: [series_volume])
+      end
+
+      it 'proposes the volume even though it has no involved_authorities of its own' do
+        expect(series_volume.involved_authorities).to be_empty
+
+        get "/lex/verification/#{entry.id}/edit_section", params: { section: 'works' }
+
+        expect(response).to have_http_status(:success)
+        expect(assigns(:work_matches)[work.id]).to include(
+          publication_id: nil,
+          collection_id: series_volume.id,
+          collection_title: 'The Miracle Hater',
+          similarity: 100
+        )
+      end
+
+      it 'accepts that same volume when the proposal is confirmed' do
+        patch "/lex/verification/#{entry.id}/confirm_work_match",
+              params: { work_id: work.id, collection_id: series_volume.id }
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['success']).to be true
+        expect(work.reload.collection_id).to eq(series_volume.id)
+      end
+    end
+
     context 'when a volume belongs to a publication of the same authority' do
       let!(:publication) { create(:publication, authority: authority, title: 'Own Book') }
       let!(:volume) do
@@ -280,6 +320,62 @@ RSpec.describe 'Lexicon::Verification Auto-Matching', type: :request do
           collection_id: volume.id,
           similarity: 100
         )
+      end
+    end
+
+    # A publication and its volume are one book. Confirming either side confirms both, so the work
+    # never comes out of the workbench half-matched.
+    describe 'confirming a match that names only one side of a linked publication/volume pair' do
+      let!(:publication) { create(:publication, authority: authority, title: 'Own Book') }
+      let!(:volume) do
+        create(:collection, collection_type: :volume, title: 'Own Book', publication: publication, authors: [authority])
+      end
+      let!(:work) do
+        create(:lex_person_work, person: person, title: 'Own Book', publication_id: nil, collection_id: nil)
+      end
+
+      it 'fills in the volume when only the publication is confirmed' do
+        patch "/lex/verification/#{entry.id}/confirm_work_match",
+              params: { work_id: work.id, publication_id: publication.id }
+
+        expect(response).to have_http_status(:success)
+        expect(work.reload).to have_attributes(publication_id: publication.id, collection_id: volume.id)
+      end
+
+      it 'fills in the publication when only the volume is confirmed' do
+        patch "/lex/verification/#{entry.id}/confirm_work_match",
+              params: { work_id: work.id, collection_id: volume.id }
+
+        expect(response).to have_http_status(:success)
+        expect(work.reload).to have_attributes(publication_id: publication.id, collection_id: volume.id)
+      end
+
+      context 'when the volume is filed under another authority\'s publication' do
+        let(:translators_publication) { create(:publication, authority: create(:authority), title: 'Translated') }
+        let!(:translated_volume) do
+          create(:collection, collection_type: :volume, title: 'Translated',
+                              publication: translators_publication, authors: [authority])
+        end
+
+        it 'confirms the volume alone, since confirm would reject that publication' do
+          patch "/lex/verification/#{entry.id}/confirm_work_match",
+                params: { work_id: work.id, collection_id: translated_volume.id }
+
+          expect(response).to have_http_status(:success)
+          expect(work.reload).to have_attributes(publication_id: nil, collection_id: translated_volume.id)
+        end
+      end
+
+      context 'when the publication has no volume' do
+        let!(:volumeless_publication) { create(:publication, authority: authority, title: 'No Volume') }
+
+        it 'confirms the publication alone' do
+          patch "/lex/verification/#{entry.id}/confirm_work_match",
+                params: { work_id: work.id, publication_id: volumeless_publication.id }
+
+          expect(response).to have_http_status(:success)
+          expect(work.reload).to have_attributes(publication_id: volumeless_publication.id, collection_id: nil)
+        end
       end
     end
 

@@ -6,7 +6,9 @@
   # Volumes come from the authority's involved_authorities, not from its publications: we only
   # did bibliography work for Hebrew authors, so a translated author has no Publication of their
   # own and their volumes' publications are filed under the Hebrew translator instead.
-  collection_volumes = authority ? authority.volumes.distinct.order(:title).to_a : []
+  # ...including the volumes of the authority's volume_series, which frequently carry no
+  # involved_authorities of their own -- see Authority#volumes_including_series.
+  collection_volumes = authority ? authority.volumes_including_series.order(:title).to_a : []
   # Whatever the work is already associated with stays selectable, so that re-saving the form
   # cannot silently drop an association made before this list was sourced from involved_authorities.
   current_collection = @work.collection
@@ -151,12 +153,36 @@
         // The chosen publication has no volume of its own. A collection that is not linked to any
         // publication stays selected -- saving will link the two. Only a collection belonging to
         // some *other* publication is dropped, since that pairing cannot be saved.
-        const belongsToAnotherPublication = Object.keys(collectionsData).some(function(pubId) {
-          return String(collectionsData[pubId].id) === collectionSelect.value;
-        });
+        const belongsToAnotherPublication = publicationOf(collectionSelect.value) !== null;
         if (belongsToAnotherPublication) {
           collectionSelect.value = '';
         }
       });
+
+      // ...and the same in reverse: picking a volume selects the publication it is already linked
+      // to. The two records describe one book, so the editor should only have to name it once.
+      collectionSelect.addEventListener('change', function() {
+        const publicationId = publicationOf(this.value);
+        if (publicationId === null) {
+          return;
+        }
+        // Only publications of this authority are offered; a volume filed under someone else's
+        // publication (a translator's, typically) leaves the publication picker alone.
+        if (publicationSelect.querySelector('option[value="' + publicationId + '"]')) {
+          publicationSelect.value = publicationId;
+        }
+      });
+
+      // The id of the publication the given collection is linked to, or null if it is linked to none.
+      // Assigning .value programmatically fires no 'change' event, so the two handlers cannot loop.
+      function publicationOf(collectionId) {
+        if (!collectionId) {
+          return null;
+        }
+        const found = Object.keys(collectionsData).find(function(pubId) {
+          return String(collectionsData[pubId].id) === String(collectionId);
+        });
+        return found === undefined ? null : found;
+      }
     }
   })();
