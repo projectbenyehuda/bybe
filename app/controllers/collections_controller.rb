@@ -27,7 +27,7 @@ class CollectionsController < ApplicationController
     @print_url = url_for(action: :print, collection_id: @collection.id)
     @pagetype = :collection
     @taggings = @collection.taggings
-    @lex_citations = @collection.lex_citations
+    @lex_citations = @collection.lex_citations.includes(:authors, :manifestation)
     # Prev/next volume navigation when this volume sits inside a volume_series
     @volume_series_nav = FindSeriesVolumeSiblings.call(@collection) if @collection.volume?
 
