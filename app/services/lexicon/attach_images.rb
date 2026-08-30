@@ -8,6 +8,8 @@ module Lexicon
       html_doc.css('img').each do |img|
         src = img['src']
 
+        next if src.blank?
+
         # Handling for files shared between number of entries
         # They're stored in public/lex folder instead of ActiveStorage
         if src.start_with?('00000_files/')
@@ -15,10 +17,9 @@ module Lexicon
           next
         end
 
-        new_src = MigrateAttachment.call(src, lex_entry)
-        if new_src.present?
-          img['src'] = new_src
-        end
+        # An image we could not migrate keeps a relative legacy path, which a browser resolves
+        # against whatever page it is rendered on; send it back to the old site instead.
+        img['src'] = MigrateAttachment.call(src, lex_entry).presence || ProcessLinks.absolutize(src)
       end
     end
   end

@@ -91,6 +91,34 @@ describe Lexicon::MigrateAttachment do
     end
   end
 
+  # The legacy pages are inconsistent about extension case, and Word-exported ones embed bitmaps.
+  # Both used to fall through the regex and be left as relative paths pointing nowhere.
+  context 'when the extension is uppercase', vcr: { cassette_name: 'lexicon/migrate_attachment/00017-image001' } do
+    let!(:lex_file) { create(:lex_file, fname: '00017.php') }
+
+    let(:src) { '00017-files/image001.JPG' }
+
+    it 'attaches the resource and returns path to it' do
+      entry = lex_file.lex_entry
+      expect { call }.to change { entry.attachments.count }.by(1)
+                                                           .and change { entry.legacy_links.count }.by(1)
+      expect(call).to eq("/files/lex/#{entry.id}/image001.JPG")
+    end
+  end
+
+  context 'when the file is a bitmap', vcr: { cassette_name: 'lexicon/migrate_attachment/00025-image002' } do
+    let!(:lex_file) { create(:lex_file, fname: '00025.php') }
+
+    let(:src) { '00025_files/image002.bmp' }
+
+    it 'attaches the resource and returns path to it' do
+      entry = lex_file.lex_entry
+      expect { call }.to change { entry.attachments.count }.by(1)
+                                                           .and change { entry.legacy_links.count }.by(1)
+      expect(call).to eq("/files/lex/#{entry.id}/image002.bmp")
+    end
+  end
+
   context 'when global url pointing to resource outside of lexicon is provided' do
     let(:src) { 'https://www.gnu.org/graphics/heckert_gnu.png' }
 

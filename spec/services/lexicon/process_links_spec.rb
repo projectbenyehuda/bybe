@@ -17,6 +17,10 @@ describe Lexicon::ProcessLinks do
         <li><a id="link_7" href="12345.php#תווית">Existing Lexicon Page with an Anchor</a></li>
         <li><a id="link_8" href="98765.php">Missing Lexicon Page</a></li>
         <li><a id="link_9" href="index.htm">Lexicon root page</a></li>
+        <li><a id="link_10" href="98765.php#no5-6">Missing Lexicon Page with an Anchor</a></li>
+        <li><a id="link_11" href="456_files/missing.pdf">Attachment we failed to download</a></li>
+        <li><a id="link_12" href="file:///C:/tmp/scan.pdf">Link with a non-http scheme</a></li>
+        <li><a id="link_13" href="/lex/entries/17">Link already rooted at this site</a></li>
       </ul>
     HTML
   end
@@ -29,11 +33,17 @@ describe Lexicon::ProcessLinks do
   let(:lex_entry) { build(:lex_entry) }
 
   before do
+    # Every other href reaches MigrateAttachment, which recognises none of them and returns nil
+    # without touching the network.
+    allow(Lexicon::MigrateAttachment).to receive(:call).and_call_original
+
     # stubbing attachment migration
     allow(Lexicon::MigrateAttachment).to receive(:call).with('123_files/test.pdf', lex_entry)
                                                        .and_return('new_attachment_link')
 
-    allow(Lexicon::MigrateAttachment).to receive(:call).with('https://google.com', lex_entry).and_call_original
+    # a download that 404s on the old site: MigrateAttachment logs the failure and returns nil
+    allow(Lexicon::MigrateAttachment).to receive(:call).with('456_files/missing.pdf', lex_entry).and_return(nil)
+
     call
   end
 
@@ -45,7 +55,12 @@ describe Lexicon::ProcessLinks do
     expect(html_doc.at_css('#link_5')['href']).to eq('/lexicon/hbe/hbe00898.php')
     expect(html_doc.at_css('#link_6')['href']).to eq("/lex/entries/#{existing_lex_entry.id}")
     expect(html_doc.at_css('#link_7')['href']).to eq("/lex/entries/#{existing_lex_entry.id}#תווית")
-    expect(html_doc.at_css('#link_8')['href']).to eq('98765.php') # not changed as there is no matching lexicon entry
+    # no matching lexicon entry, so the link is sent back to the old site rather than left relative
+    expect(html_doc.at_css('#link_8')['href']).to eq('https://benyehuda.org/lexicon/98765.php')
     expect(html_doc.at_css('#link_9')['href']).to eq('/lex')
+    expect(html_doc.at_css('#link_10')['href']).to eq('https://benyehuda.org/lexicon/98765.php#no5-6')
+    expect(html_doc.at_css('#link_11')['href']).to eq('https://benyehuda.org/lexicon/456_files/missing.pdf')
+    expect(html_doc.at_css('#link_12')['href']).to eq('file:///C:/tmp/scan.pdf')
+    expect(html_doc.at_css('#link_13')['href']).to eq('/lex/entries/17')
   end
 end

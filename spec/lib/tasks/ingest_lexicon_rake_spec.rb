@@ -364,4 +364,68 @@ RSpec.describe 'ingest_lexicon rake task' do
       expect { trim_task.invoke }.to output(/2 URLs repaired/).to_stdout
     end
   end
+
+  describe 'fix_lexicon_relative_legacy_urls' do
+    let(:absolutize_task) { Rake::Task['fix_lexicon_relative_legacy_urls'] }
+    let(:checker) { instance_double(Lexicon::CheckExternalLinks) }
+    let(:citation) { create(:lex_citation, person: create(:lex_person)) }
+
+    before do
+      absolutize_task.reenable
+      allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+      allow(checker).to receive(:check_url).and_return(link_check_result(404))
+    end
+
+    it 'points a citation link at the old lexicon site and records the fresh verdict' do
+      citation.update_columns(link: '99995-files/99995019/99995019-384-19-21.pdf', link_http_status: nil)
+
+      absolutize_task.invoke
+
+      expect(citation.reload).to have_attributes(
+        link: 'https://benyehuda.org/lexicon/99995-files/99995019/99995019-384-19-21.pdf',
+        link_http_status: 404
+      )
+    end
+
+    it 'keeps the anchor of a relative lexicon page link' do
+      citation.update_columns(link: '99995020-84.php#no5-6')
+
+      absolutize_task.invoke
+
+      expect(citation.reload.link).to eq 'https://benyehuda.org/lexicon/99995020-84.php#no5-6'
+    end
+
+    it 'repairs a lex link url' do
+      link = create(:lex_link).tap { |l| l.update_columns(url: '00460_files/yona_wallachs1.pps') }
+
+      absolutize_task.invoke
+
+      expect(link.reload.url).to eq 'https://benyehuda.org/lexicon/00460_files/yona_wallachs1.pps'
+    end
+
+    it 'repairs a citation author link, which has no verdict to record' do
+      author = create(:lex_citation_author, citation: citation).tap { |a| a.update_columns(link: '98765.php') }
+
+      absolutize_task.invoke
+
+      expect(author.reload.link).to eq 'https://benyehuda.org/lexicon/98765.php'
+      expect(checker).not_to have_received(:check_url)
+    end
+
+    it 'leaves absolute and site-rooted urls alone' do
+      link = create(:lex_link).tap { |l| l.update_columns(url: 'https://example.com/page') }
+      citation.update_columns(backup_url: '/files/lex/7635/doc.pdf')
+
+      absolutize_task.invoke
+
+      expect(link.reload.url).to eq 'https://example.com/page'
+      expect(citation.reload.backup_url).to eq '/files/lex/7635/doc.pdf'
+    end
+
+    it 'reports how many URLs it repaired' do
+      citation.update_columns(link: '98765.php')
+
+      expect { absolutize_task.invoke }.to output(/1 URLs repaired/).to_stdout
+    end
+  end
 end
