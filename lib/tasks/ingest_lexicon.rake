@@ -359,6 +359,54 @@ task fix_lexicon_duplicate_url_anchors: :environment do
   puts "#{fixed} URLs repaired"
 end
 
+desc 'point relative legacy URLs stored before the fix back at the old lexicon site'
+task fix_lexicon_relative_legacy_urls: :environment do
+  # Values ProcessLinks used to leave alone when it could not resolve them, and which a browser
+  # therefore resolves against whatever page they are rendered on. Every URL column fed from the
+  # processed HTML; lex_citation_authors.link has no link-checker columns of its own, so there is
+  # nothing to re-check for it, only the URL itself to repair.
+  # Task-local rather than a top-level constant: rake files get loaded more than once (specs
+  # rake_require them, console/dev reloads re-read them), and a constant would both warn about
+  # being already initialized and leak into the global namespace.
+  targets = [
+    [LexLink, :url, { status: :http_status, unverifiable: :unverifiable, checked_at: :checked_at }],
+    [LexCitation, :link,
+     { status: :link_http_status, unverifiable: :link_unverifiable, checked_at: :link_checked_at }],
+    [LexCitation, :backup_url, nil],
+    [LexCitationAuthor, :link, nil]
+  ].freeze
+
+  checker = Lexicon::CheckExternalLinks.new
+  fixed = 0
+
+  targets.each do |model, column, check_columns|
+    model.where.not(column => [nil, '']).find_each do |record|
+      stored = record[column]
+      absolute = Lexicon::ProcessLinks.absolutize(stored)
+      next if absolute == stored
+
+      puts "#{model.name} #{record.id} #{column}: #{stored} -> #{absolute}"
+      attributes = { column => absolute }
+
+      # The stored verdict is always "no verdict" here -- the checker has nothing to say about a
+      # relative path -- and the recheck task only revisits records already recorded as broken, so
+      # these would never be looked at again. Now that the URL is checkable, check it: a legacy
+      # link that 404s upstream is exactly what the verification workbench needs to flag.
+      if check_columns
+        result = checker.check_url(absolute)
+        attributes[check_columns[:status]] = result.status
+        attributes[check_columns[:unverifiable]] = result.unverifiable?
+        attributes[check_columns[:checked_at]] = Time.current
+      end
+
+      record.update_columns(attributes)
+      fixed += 1
+    end
+  end
+
+  puts "#{fixed} URLs repaired"
+end
+
 task reset_lexicon_ingestion: :environment do
   puts 'Wiping Ingested Lexicon Entries...'
   Chewy.strategy(:atomic) do
