@@ -28,8 +28,19 @@ module Lexicon
 
       index = 0
       work_type = 'original'
-      while next_elem.present? && !header?(next_elem)
-        header_line = next_elem.text.strip
+      while next_elem.present? && !works_section_end?(next_elem)
+        # Legacy files re-open a <span dir="rtl"> before each work type and never close it, so
+        # Nokogiri nests the list that follows inside it. Step in rather than walking past it,
+        # which would drop every work of that type (00104.php's translations).
+        if next_elem.name == 'span'
+          next_elem = next_elem.first_element_child
+          next
+        end
+
+        # squish, not strip: legacy files hard-wrap a header across two source lines
+        # ("ספרים \r\nבתרגומו:" in 01741.php), and the embedded newline hides it from
+        # WORK_TYPE_HEADERS, filing the whole section as original works.
+        header_line = next_elem.text.squish
         if %w(p font).include?(next_elem.name)
           work_type = WORK_TYPE_HEADERS.keys.detect do |wt|
             WORK_TYPE_HEADERS[wt].include?(header_line) ||

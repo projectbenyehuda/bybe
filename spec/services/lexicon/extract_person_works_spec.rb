@@ -226,6 +226,61 @@ describe Lexicon::ExtractPersonWorks do
     end
   end
 
+  context 'when a work-type sub-header carries a duplicate of the Books anchor' do
+    # Mirrors 00104.php, where the 'תרגומיה:' sub-header was built by copying the works header's
+    # markup, anchor and all, and an unclosed <span dir="rtl"> was re-opened before its list --
+    # so Nokogiri nests the translations one level deeper than the originals. The walk used to
+    # stop at the duplicate anchor, losing all twelve translations.
+    let(:html) do
+      <<~HTML
+        <font size="4" color="#0000FF">ספריה<a name="Books">:</a></font>
+        <span dir="rtl">
+          <ul>
+            <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+          </ul>
+          <font size="4" color="#0000FF">תרגומיה<a name="Books">:</a></font>
+          <span dir="rtl">
+            <ul>
+              <li>הכומר מטור / אונורה דה בלזאק (ירושלים : כרמל, 1999)</li>
+              <li>נואה נואה : מסע לטהיטי / פול גוגן (רמת השרון : אסיה, 2007)</li>
+            </ul>
+            <font size="4" color="#0000FF"><a name="Bib.">על המחברת ויצירתה:</a></font>
+      HTML
+    end
+
+    it 'keeps parsing past the duplicate anchor and classifies the works as translated' do
+      expect(lex_person.works.select(&:work_type_original?).map(&:title)).to eq(['ספר מקורי'])
+      expect(lex_person.works.select(&:work_type_translated?).map(&:title))
+        .to eq(['הכומר מטור / אונורה דה בלזאק', 'נואה נואה : מסע לטהיטי / פול גוגן'])
+    end
+
+    it 'still stops at the citations header' do
+      expect(result.at_css('a[name="Bib."]')).to be_present
+    end
+  end
+
+  context 'when a work-type header is hard-wrapped across two source lines' do
+    # Mirrors 01741.php: the newline inside the header text hid it from WORK_TYPE_HEADERS,
+    # so all 43 translations below it were filed as original works.
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <ul>
+          <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+        </ul>
+        <p>ספרים \r
+        בתרגומו:</p>
+        <ul>
+          <li>ספר מתורגם (תל אביב : הוצאה, 2010)</li>
+        </ul>
+      HTML
+    end
+
+    it 'recognizes the header despite the embedded newline' do
+      expect(lex_person.works.select(&:work_type_translated?).map(&:title)).to eq(['ספר מתורגם'])
+    end
+  end
+
   context 'when citations header appears inside the works span (malformed)' do
     let(:html) do
       <<~HTML

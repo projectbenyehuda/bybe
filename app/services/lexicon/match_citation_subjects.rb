@@ -26,6 +26,13 @@ module Lexicon
     # ('אור פרא' vs 'אור פרא : שירים'), so both sides are also compared without it.
     SUBTITLE_SEPARATOR = /\s+:\s/
 
+    # A heading about a translation names the work in quotes and then credits the work's own
+    # author, whom the catalogue title does not put there: 'על "הכומר מטור" לאונורה דה בלזאק'
+    # against 'הכומר מטור / אונורה דה בלזאק'. The credit drags the score below the threshold, so
+    # the quoted span is compared on its own as well. Greedy on purpose: a Hebrew title can carry
+    # a gershayim of its own ('69.99 ש"ח'), and only the outermost pair delimits the title.
+    QUOTED_TITLE = /"(.+)"/
+
     Proposal = Struct.new(:subject, :citations, :work, :similarity, :generic, :ambiguous,
                           keyword_init: true) do
       # Good enough to apply without an editor looking at it: one work, identical once normalized.
@@ -76,9 +83,11 @@ module Lexicon
     end
 
     # Both with and without the "about" prefix: a work of its own may be titled "על ...", and
-    # stripping the prefix there would be stripping part of the title.
+    # stripping the prefix there would be stripping part of the title. The quoted span, when the
+    # heading has one, is tried as a third reading of the same heading.
     def subject_variants(subject)
-      [subject, subject.sub(ABOUT_PREFIX, '')].uniq.flat_map { |variant| title_variants(variant) }.uniq
+      [subject, subject.sub(ABOUT_PREFIX, ''), subject[QUOTED_TITLE, 1]]
+        .compact_blank.uniq.flat_map { |variant| title_variants(variant) }.uniq
     end
 
     def title_variants(title)
