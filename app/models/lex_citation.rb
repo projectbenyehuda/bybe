@@ -16,6 +16,13 @@ class LexCitation < ApplicationRecord
              class_name: 'LexPersonWork', inverse_of: :citations_about,
              foreign_key: :lex_person_work_id, optional: true
 
+  # optional sub-heading this citation sits under within the general (about-the-person) citations,
+  # e.g. ספרים or מאמרים. Mutually exclusive with person_work: a citation about a work is already
+  # grouped by that work.
+  belongs_to :citation_group,
+             class_name: 'LexCitationGroup', inverse_of: :citations,
+             foreign_key: :lex_citation_group_id, optional: true
+
   belongs_to :manifestation, optional: true # manifestation representing this citation (if present in BYP)
 
   has_many :authors, class_name: 'LexCitationAuthor', inverse_of: :citation, dependent: :destroy
@@ -25,6 +32,8 @@ class LexCitation < ApplicationRecord
   validates :title, presence: true
 
   validate :person_work_belongs_to_same_person
+  validate :citation_group_belongs_to_same_person
+  validate :citation_group_only_on_general_citation
 
   # Subject is a string title of the work this citation is about (if any) and filled during parsing of legacy PHP files.
   # We should replace all subjects with person_work references where possible, and then clear the subject field.
@@ -40,6 +49,33 @@ class LexCitation < ApplicationRecord
 
   def subject_title
     return person_work&.title || subject
+  end
+
+  # Prefix marking a group token as naming a LexCitationGroup rather than a subject title.
+  HEADING_TOKEN_PREFIX = 'heading:'
+
+  # The full shape of such a token. Matching the prefix alone would not do: a work title or a
+  # legacy subject heading is a group token in its own right, and one reading 'heading:whatever'
+  # would be taken for a sub-heading it is not.
+  HEADING_TOKEN_RE = /\A#{HEADING_TOKEN_PREFIX}(\d+)\z/
+
+  # The id of the LexCitationGroup a group token names, or nil when it names anything else.
+  def self.heading_token_group_id(group_token)
+    group_token.to_s[HEADING_TOKEN_RE, 1]&.to_i
+  end
+
+  # Stable identifier of the heading this citation is displayed under: the key the citation lists
+  # are grouped by, and the name a group goes by in the reordering endpoint.
+  #
+  # A general sub-heading is identified by id rather than by its title, because a person may well
+  # have a work titled 'מאמרים' too, and keying both on the bare title would silently merge the
+  # two groups. Work citations and citations still carrying a legacy subject heading do keep
+  # sharing a key when their titles agree -- that is what lets a half-resolved bibliography show
+  # one heading rather than two identical ones.
+  def group_token
+    return "#{HEADING_TOKEN_PREFIX}#{lex_citation_group_id}" if lex_citation_group_id.present?
+
+    subject_title
   end
 
   # The displayed prose that text_links pairs are matched against (see
@@ -70,5 +106,20 @@ class LexCitation < ApplicationRecord
     return if person_work.lex_person_id == lex_person_id
 
     errors.add(:person_work, :belongs_to_different_person)
+  end
+
+  def citation_group_belongs_to_same_person
+    return if citation_group.nil?
+    return if citation_group.lex_person_id == lex_person_id
+
+    errors.add(:citation_group, :belongs_to_different_person)
+  end
+
+  # A general sub-heading buckets citations about the person. A citation about one of the person's
+  # works belongs under that work instead, so the two groupings can never both apply.
+  def citation_group_only_on_general_citation
+    return if citation_group.nil? || person_work.nil?
+
+    errors.add(:citation_group, :not_on_work_citation)
   end
 end

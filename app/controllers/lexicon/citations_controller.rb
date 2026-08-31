@@ -26,8 +26,8 @@ module Lexicon
     def create
       @citation = @person.citations.build(lex_citation_params)
 
-      # Assign seqno as the last position in the subject_title group
-      @citation.seqno = @person.max_citation_seqno_by_subject_title(@citation.subject_title) + 1
+      # Assign seqno as the last position in the heading's group
+      @citation.seqno = @person.max_citation_seqno_by_group_token(@citation.group_token) + 1
 
       return if @citation.save
 
@@ -37,16 +37,16 @@ module Lexicon
     def edit; end
 
     def update
-      old_subject_title = @citation.subject_title
+      old_group_token = @citation.group_token
       # Captured before assign_attributes: link_broken? must be evaluated against the stored link
       link_was_broken = @citation.link_broken?
       old_link = @citation.link
       @citation.assign_attributes(lex_citation_params)
-      new_subject_title = @citation.subject_title
+      new_group_token = @citation.group_token
 
-      # If subject_title changed, move item to the bottom of new subject_title group
-      if new_subject_title != old_subject_title
-        max_seqno = @person.max_citation_seqno_by_subject_title(new_subject_title, exclude_citation_id: @citation.id)
+      # If the heading changed, move item to the bottom of the new group
+      if new_group_token != old_group_token
+        max_seqno = @person.max_citation_seqno_by_group_token(new_group_token, exclude_citation_id: @citation.id)
         @citation.seqno = max_seqno + 1
       end
 
@@ -79,41 +79,89 @@ module Lexicon
       remove_text_link_from(@citation, :text_links)
     end
 
+    # Repositions a citation within its heading's group, or -- when to_group_token names a
+    # different one -- moves it to a position in that group. Only the general buckets (the
+    # ungrouped citations and the general sub-headings) can be dragged between: moving a citation
+    # under a work changes what it is about, which is the edit form's business, not a drag's.
     def reorder
       new_index = params.fetch(:new_index).to_i # zero-based
       old_index = params.fetch(:old_index).to_i # zero-based
-      subject_title = params[:subject_title]
+      from_token = params[:group_token].presence
+      to_token = params.key?(:to_group_token) ? params[:to_group_token].presence : from_token
 
-      if @citation.subject_title != subject_title
-        render plain: "subject_title mismatch, actual: '#{@citation.subject_title}', got: '#{subject_title}'",
+      if @citation.group_token != from_token
+        render plain: "group_token mismatch, actual: '#{@citation.group_token}', got: '#{from_token}'",
                status: :bad_request
         return
       end
 
-      # Get all citations for the same person and subject_title
-      citations = @person.citations_by_subject_title(subject_title).sort_by(&:seqno)
-
-      real_old_index = citations.index(@citation)
+      source = @person.citations_by_group_token(from_token).sort_by(&:seqno)
+      real_old_index = source.index(@citation)
       if old_index != real_old_index
         render plain: "old_index mismatch, actual: #{real_old_index}, got: #{old_index}", status: :bad_request
         return
       end
 
-      return head :ok if old_index == new_index
+      return head :ok if from_token == to_token && old_index == new_index
 
-      citations.delete_at(old_index)
-      citations.insert(new_index, @citation)
+      source.delete_at(old_index)
 
-      # Reassign seqno values
-      citations.each_with_index do |c, index|
-        c.seqno = index + 1
-        c.save(validate: false) if c.attribute_changed?(:seqno)
+      if from_token == to_token
+        target = source
+      else
+        # Both ends have to be general buckets. Dragging a citation out of a work's list would
+        # leave it both about a work and under a general sub-heading, which LexCitation forbids --
+        # and renumber saves without validating, so nothing downstream would catch it.
+        return unless general_bucket?(from_token) && general_bucket?(to_token)
+
+        target_group = resolve_general_group(to_token)
+        return if performed?
+
+        # Read the target list before reassigning: @citation is a separate instance from the copy
+        # @person.citations holds, so the list would otherwise contain it twice.
+        target = @person.citations_by_group_token(to_token).sort_by(&:seqno)
+        @citation.citation_group = target_group
+        renumber(source)
       end
+
+      target.insert(new_index.clamp(0, target.size), @citation)
+      renumber(target)
 
       head :ok
     end
 
     private
+
+    # Whether a token names one of the general buckets a citation may be dragged in or out of:
+    # the ungrouped general citations, or a general sub-heading. A work's list, and a heading still
+    # carrying an unresolved legacy subject, are not -- and a work titled 'heading:something' must
+    # not pass for one either, hence the exact 'heading:<id>' match. Renders the refusal itself.
+    def general_bucket?(token)
+      return true if token.nil? || LexCitation.heading_token_group_id(token).present?
+
+      render plain: "'#{token}' is not a general citation heading", status: :bad_request
+      false
+    end
+
+    # The LexCitationGroup a drag target token names, or nil for the ungrouped general citations.
+    # Renders an error (leaving #performed? true) when it names no heading of this person.
+    def resolve_general_group(token)
+      return nil if token.nil?
+
+      group = @person.citation_groups.find_by(id: LexCitation.heading_token_group_id(token))
+      render plain: "unknown citation group '#{token}'", status: :bad_request if group.nil?
+      group
+    end
+
+    # Writes 1..n into the seqno of a group's citations. Saves any citation with a pending change,
+    # not only a changed seqno: a citation dragged into another group keeps its position number as
+    # often as not, and its new lex_citation_group_id still has to be written.
+    def renumber(citations)
+      citations.each_with_index do |citation, index|
+        citation.seqno = index + 1
+        citation.save(validate: false) if citation.changed?
+      end
+    end
 
     def set_person
       @person = LexPerson.find(params[:person_id])
@@ -132,7 +180,7 @@ module Lexicon
     # Only allow a list of trusted parameters through.
     def lex_citation_params
       params.expect(lex_citation: %i(title from_publication pages link backup_url manifestation_id subject
-                                     lex_person_work_id notes))
+                                     lex_person_work_id lex_citation_group_id notes))
     end
   end
 end

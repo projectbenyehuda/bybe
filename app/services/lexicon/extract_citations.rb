@@ -11,8 +11,18 @@ module Lexicon
     CITATIONS_START_TAGS = %w(font ul li).freeze
 
     def call(html_doc)
+      html = section_html(html_doc)
+      return [] if html.nil?
+
+      Lexicon::ParseCitations.call(html)
+    end
+
+    # The raw HTML of the bibliography section, or nil when the file has none. Split out of #call so
+    # that the section can be re-read without paying for an LLM parse -- see
+    # Lexicon::RecoverCitationHeadings, which needs the sub-headings the parse throws away.
+    def section_html(html_doc)
       header = header_element(html_doc)
-      return [] if header.nil?
+      return nil if header.nil?
 
       # The next element should open the citations section. Sometimes there could be one or more
       # blank paragraphs before it, so we skip blank elements that cannot open the section. Section
@@ -22,7 +32,7 @@ module Lexicon
         citations_node = citations_node.next_element
       end
 
-      return [] if citations_node.nil? || !citations_start?(citations_node)
+      return nil if citations_node.nil? || !citations_start?(citations_node)
 
       html_nodes = [citations_node]
 
@@ -63,7 +73,7 @@ module Lexicon
       # sections (e.g. Links block, so we cannot simply remove it)
       # header.remove
       # citations_node.remove
-      Lexicon::ParseCitations.call(html)
+      html
     end
 
     private

@@ -333,6 +333,66 @@ RSpec.describe LexiconHelper, type: :helper do
     end
   end
 
+  describe '#grouped_and_ordered_citations' do
+    let(:person) { create(:lex_person) }
+    let!(:work) { create(:lex_person_work, person: person, title: 'שיחות אינטימיות', seqno: 1) }
+    let!(:books) { create(:lex_citation_group, person: person, title: 'ספרים', seqno: 1) }
+    let!(:articles) { create(:lex_citation_group, person: person, title: 'מאמרים', seqno: 2) }
+
+    let!(:plain) { create(:lex_citation, person: person, seqno: 1) }
+    let!(:book) { create(:lex_citation, person: person, citation_group: books, seqno: 1) }
+    let!(:article) { create(:lex_citation, person: person, citation_group: articles, seqno: 1) }
+    let!(:about_work) { create(:lex_citation, person: person, person_work: work, seqno: 1) }
+    let!(:unresolved) { create(:lex_citation, person: person, subject: 'על ״ספר אחר״', seqno: 1) }
+
+    let(:groups) { helper.grouped_and_ordered_citations(person) }
+
+    it 'orders the general citations first, then the works, then unresolved legacy headings' do
+      expect(groups.keys.map(&:kind)).to eq(%i(general heading heading work subject))
+      expect(groups.values).to eq([[plain], [book], [article], [about_work], [unresolved]])
+    end
+
+    it 'orders the general sub-headings by the editor\'s own order, not alphabetically' do
+      articles.update!(seqno: 0)
+      expect(helper.grouped_and_ordered_citations(person).keys.filter_map { |h| h.title if h.editable? })
+        .to eq(%w(מאמרים ספרים))
+    end
+
+    it 'shows a general sub-heading verbatim and a work heading in the "about" template' do
+      heading, work_heading = groups.keys.values_at(1, 3)
+      expect(helper.citations_heading_text(heading)).to eq('ספרים')
+      expect(helper.citations_heading_text(work_heading)).to eq('על ״שיחות אינטימיות״')
+    end
+
+    # A person may have both a work and a general sub-heading called 'מאמרים'; keying the groups on
+    # the bare title would silently merge their citations into one list.
+    it 'keeps a sub-heading and a same-titled work apart' do
+      work.update!(title: 'מאמרים')
+      keys = helper.grouped_and_ordered_citations(person).keys.select { |h| h.title == 'מאמרים' }
+      expect(keys.map(&:kind)).to contain_exactly(:heading, :work)
+    end
+
+    # A work title is a group token in its own right, so one that happens to read like a
+    # sub-heading token must not be taken for one -- matching the 'heading:' prefix alone would
+    # have parsed an id of 0 and emptied the work's citations into the general bucket.
+    it 'does not mistake a work titled like a sub-heading token for a sub-heading' do
+      work.update!(title: 'heading:foo')
+
+      heading = groups.keys.find { |h| h.title == 'heading:foo' }
+      expect(heading.kind).to eq(:work)
+      expect(groups[heading]).to eq([about_work])
+    end
+
+    it 'does not mistake a legacy subject naming a real group id for that group' do
+      unresolved.update!(subject: "heading:#{books.id}")
+
+      heading = groups.keys.find { |h| h.title == "heading:#{books.id}" }
+      expect(heading.kind).to eq(:subject)
+      expect(groups[heading]).to eq([unresolved])
+      expect(groups.keys.count { |h| h.kind == :heading }).to eq(2)
+    end
+  end
+
   describe '#render_citation with text_links' do
     let(:person) { create(:lex_person) }
     let!(:target_entry) { create(:lex_entry, :publication, title: 'שדות ומזוודות') }

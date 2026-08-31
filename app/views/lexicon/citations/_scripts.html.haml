@@ -1,0 +1,92 @@
+-# Behaviour of the citations tab: the citation modals, and adding, renaming, removing, reordering
+  and filling the general sub-headings (see LexCitationGroup).
+:javascript
+  $('.edit-citation').click(function(e) {
+    e.preventDefault();
+    const citationId = $(this).data('id');
+    openModal(`/lex/citations/${citationId}/edit`);
+  });
+  $('a.add-citation').click(function() {
+    openModal('/lex/people/#{@person.id}/citations/new');
+  });
+
+  const citationsPane = $('#citations');
+
+  const headingActionFailed = '#{j t('lexicon.citations.index.heading_action_failed')}';
+
+  function citationGroupRequest(url, method, data) {
+    return $.ajax({
+      url: url,
+      method: method,
+      headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+      data: data,
+      error: function(xhr) {
+        alert(headingActionFailed + '\n' + (xhr.responseText || ('Status ' + xhr.status)));
+        reloadContent(citationsPane);
+      }
+    }).done(function() { reloadContent(citationsPane); });
+  }
+
+  $('a.add-citation-group').click(function(e) {
+    e.preventDefault();
+    const title = prompt('#{j t('lexicon.citations.index.heading_name_prompt')}');
+    if (!title) { return; }
+    citationGroupRequest('/lex/people/#{@person.id}/citation_groups', 'POST',
+                         { lex_citation_group: { title: title } });
+  });
+
+  $('.rename-citation-group').click(function(e) {
+    e.preventDefault();
+    const title = prompt('#{j t('lexicon.citations.index.heading_name_prompt')}', $(this).data('title'));
+    if (!title) { return; }
+    citationGroupRequest(`/lex/citation_groups/${$(this).data('id')}`, 'PATCH',
+                         { lex_citation_group: { title: title } });
+  });
+
+  $('.delete-citation-group').click(function(e) {
+    e.preventDefault();
+    if (!confirm('#{j t('lexicon.citations.index.delete_heading_confirm')}')) { return; }
+    citationGroupRequest(`/lex/citation_groups/${$(this).data('id')}`, 'DELETE', {});
+  });
+
+  // Citations: reorder within a heading, and drag between the general buckets.
+  document.querySelectorAll('ul.citations-group').forEach(function(list) {
+    Sortable.create(list, {
+      handle: '.drag-handle',
+      animation: 150,
+      // Only the general buckets accept citations from elsewhere; every other list is closed.
+      group: list.dataset.general === 'true' ? 'general-citations' : ('work-' + list.dataset.groupToken),
+      onEnd: function(evt) {
+        const fromToken = evt.from.dataset.groupToken || '';
+        const toToken = evt.to.dataset.groupToken || '';
+        const moved = fromToken !== toToken;
+        if (evt.newIndex === evt.oldIndex && !moved) { return; }
+        $.post({
+          url: `/lex/citations/${evt.item.dataset.citationId}/reorder`,
+          data: {
+            new_index: evt.newIndex,
+            old_index: evt.oldIndex,
+            group_token: fromToken,
+            to_group_token: toToken
+          },
+          error: function(xhr, _status, _error) {
+            const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+            alert('#{j t('lexicon.citations.index.reordering_failed')}\n' + errorMsg);
+            reloadContent(citationsPane);
+          }
+        }).done(function() { if (moved) { reloadContent(citationsPane); } });
+      }
+    });
+  });
+
+  // Headings: reorder the general sub-headings among themselves.
+  Sortable.create(document.getElementById('citation-headings'), {
+    handle: '.heading-drag-handle',
+    draggable: '.citation-heading-block',
+    animation: 150,
+    onEnd: function(evt) {
+      if (evt.newIndex === evt.oldIndex) { return; }
+      citationGroupRequest(`/lex/citation_groups/${evt.item.dataset.groupId}/reorder`, 'POST',
+                           { new_index: evt.newIndex });
+    }
+  });

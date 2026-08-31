@@ -1,0 +1,13 @@
+-# One heading's citations. group_token identifies the heading to the reorder endpoint (nil for
+  the ungrouped general citations); general says whether citations may be dragged in from
+  elsewhere.
+%ul.citations-group{ class: css_class, data: { group_token: group_token, general: general } }
+  - citations.each do |c|
+    %li{ data: { citation_id: c.id } }
+      %span.drag-handle{ title: t('lexicon.citations.index.drag_to_reorder'), style: 'cursor: move;' }
+        %span.handle ☰
+      = raw render_citation(c)
+      = link_to t(:edit), nil, class: 'edit-citation', data: { id: c.id }
+      = link_to t(:delete),
+                lexicon_citation_path(c),
+                remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-citation'

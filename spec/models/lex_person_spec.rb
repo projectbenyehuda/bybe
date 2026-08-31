@@ -71,43 +71,53 @@ describe LexPerson do
     end
   end
 
-  describe '.citations_by_subject_title' do
-    subject(:result) { person.citations_by_subject_title(subject_title) }
+  describe '.citations_by_group_token' do
+    subject(:result) { person.citations_by_group_token(group_token) }
 
     let(:person) { create(:lex_person) }
     let(:work_1) { create(:lex_person_work, person: person, title: 'Work A') }
     let(:work_2) { create(:lex_person_work, person: person, title: 'Work B') }
+    let(:group) { create(:lex_citation_group, person: person, title: 'Work B') }
     let!(:citation_1) { create(:lex_citation, person: person, person_work: work_1) }
     let!(:citation_2) { create(:lex_citation, person: person, person_work: work_2) }
     let!(:citation_3) { create(:lex_citation, person: person, subject: 'Work B', person_work: nil) }
     let!(:citation_general) { create(:lex_citation, person: person, subject: nil, person_work: nil) }
+    let!(:citation_grouped) { create(:lex_citation, person: person, citation_group: group) }
 
-    context 'when subject_title matches person_work title' do
-      let(:subject_title) { 'Work A' }
+    context 'when the token is a person_work title' do
+      let(:group_token) { 'Work A' }
 
       it 'returns citations with the given title from person_work' do
         expect(result).to eq([citation_1])
       end
     end
 
-    context 'when subject_title matches both person_work title and subject field' do
-      let(:subject_title) { 'Work B' }
+    context 'when the token matches both a person_work title and a legacy subject' do
+      let(:group_token) { 'Work B' }
 
-      it 'returns citations with the given subject_title from person_work and subject field' do
+      it 'returns the citations of both, which display under one heading' do
         expect(result).to contain_exactly(citation_2, citation_3)
       end
     end
 
-    context 'when subject_title is a nil' do
-      let(:subject_title) { nil }
+    context 'when the token is nil' do
+      let(:group_token) { nil }
 
-      it 'returns general citations not tied to specific work' do
+      it 'returns general citations tied neither to a work nor to a sub-heading' do
         expect(result).to eq([citation_general])
       end
     end
 
-    context 'when subject_title is not found in any citation' do
-      let(:subject_title) { 'Bambarbia Kirgudu' }
+    context 'when the token names a general sub-heading' do
+      let(:group_token) { "heading:#{group.id}" }
+
+      it 'returns only that sub-heading\'s citations, not the same-titled work\'s' do
+        expect(result).to eq([citation_grouped])
+      end
+    end
+
+    context 'when the token is not found in any citation' do
+      let(:group_token) { 'Bambarbia Kirgudu' }
 
       it 'returns empty array' do
         expect(result).to eq([])
@@ -132,9 +142,9 @@ describe LexPerson do
     end
   end
 
-  describe '.max_citation_seqno_by_subject_title' do
+  describe '.max_citation_seqno_by_group_token' do
     subject(:result) do
-      person.max_citation_seqno_by_subject_title(subject_title, exclude_citation_id: exclude_citation_id)
+      person.max_citation_seqno_by_group_token(group_token, exclude_citation_id: exclude_citation_id)
     end
 
     let(:person) { create(:lex_person) }
@@ -144,8 +154,8 @@ describe LexPerson do
     let!(:citation_a_2) { create(:lex_citation, person: person, subject: 'Work A', seqno: 2) }
     let!(:citation_a_3) { create(:lex_citation, person: person, subject: 'Work A', seqno: 4) }
 
-    context 'when there are citations with the given subject_title' do
-      let(:subject_title) { 'Work A' }
+    context 'when there are citations with the given token' do
+      let(:group_token) { 'Work A' }
 
       it 'returns the maximum seqno among those citations' do
         expect(result).to eq(4)
@@ -168,16 +178,16 @@ describe LexPerson do
       end
     end
 
-    context 'when given subject_title has no citations' do
-      let(:subject_title) { 'Work X' }
+    context 'when the given token has no citations' do
+      let(:group_token) { 'Work X' }
 
       it 'returns 0' do
         expect(result).to eq(0)
       end
     end
 
-    context 'when nil subject_title is passed' do
-      let(:subject_title) { nil }
+    context 'when a nil token is passed' do
+      let(:group_token) { nil }
 
       context 'when there are general citations' do
         let!(:general_citation_1) { create(:lex_citation, person: person, seqno: 1) }
@@ -192,6 +202,34 @@ describe LexPerson do
           expect(result).to eq(0)
         end
       end
+    end
+  end
+
+  describe '#group_citations_with_subject!' do
+    subject(:call) { person.group_citations_with_subject!('ספרים:', 'ספרים') }
+
+    let(:person) { create(:lex_person) }
+    let!(:citation_1) { create(:lex_citation, person: person, subject: 'ספרים:', seqno: 1) }
+    let!(:citation_2) { create(:lex_citation, person: person, subject: 'ספרים:', seqno: 2) }
+    let!(:other) { create(:lex_citation, person: person, subject: 'מאמרים', seqno: 1) }
+
+    it 'moves every citation under the heading into a sub-heading of that name' do
+      expect(call).to eq(2)
+      group = person.citation_groups.sole
+      expect(group.title).to eq('ספרים')
+      expect(group.citations).to contain_exactly(citation_1, citation_2)
+    end
+
+    it 'clears the legacy subject of the citations it groups, leaving the others alone' do
+      call
+      expect(citation_1.reload.subject).to be_nil
+      expect(other.reload.subject).to eq('מאמרים')
+    end
+
+    it 'reuses an existing sub-heading of the same name' do
+      group = create(:lex_citation_group, person: person, title: 'ספרים')
+      expect { call }.not_to change(LexCitationGroup, :count)
+      expect(citation_1.reload.citation_group).to eq(group)
     end
   end
 end

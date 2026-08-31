@@ -196,6 +196,20 @@ describe '/lexicon/entries' do
           expect(response.body).to include('data-scroll-target="#lexicon-about"')
           expect(response.body).to include('data-scroll-target="#lexicon-links"')
         end
+
+        # The general citations come first, ungrouped ones then each sub-heading, and only then the
+        # citations about a work. See LexCitationGroup and LexiconHelper#grouped_and_ordered_citations.
+        it 'headlines a general sub-heading verbatim, above the work headings' do
+          person = entry.lex_item
+          group = create(:lex_citation_group, person: person, title: 'ספרים')
+          create(:lex_citation, person: person, citation_group: group, title: 'מונוגרפיה על היוצר')
+          work = create(:lex_person_work, person: person, title: 'ספר הזכרונות')
+          create(:lex_citation, person: person, person_work: work, title: 'מאמר על הספר')
+
+          call
+          headings = rendered.all('#lexicon-about h4').map(&:text)
+          expect(headings).to eq(['ספרים', I18n.t('lexicon.citations.header.subject_line', subject: 'ספר הזכרונות')])
+        end
       end
 
       context 'when a Person entry has no biography' do

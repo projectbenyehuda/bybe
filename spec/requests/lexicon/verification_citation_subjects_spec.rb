@@ -33,6 +33,7 @@ RSpec.describe 'Lexicon::Verification citation subject headings', type: :request
 
   describe 'PATCH /lex/verification/:id/confirm_citation_subject' do
     let!(:citations) { create_list(:lex_citation, 2, person: person, subject: 'על "אור פרא"') }
+    let!(:books) { create_list(:lex_citation, 2, person: person, subject: 'ספרים:') }
 
     it 'links every citation under the heading to the work and clears the heading' do
       patch "/lex/verification/#{entry.id}/confirm_citation_subject",
@@ -51,6 +52,19 @@ RSpec.describe 'Lexicon::Verification citation subject headings', type: :request
       expect(response).to have_http_status(:success)
       expect(citations.map { |c| c.reload.person_work }).to all(be_nil)
       expect(citations.map { |c| c.reload.subject }).to all(be_nil)
+    end
+
+    # The third resolution: neither a work nor discarded, but kept as a named sub-heading of the
+    # general citations. See LexCitationGroup.
+    it 'keeps a heading confirmed as a general sub-heading, under its own name' do
+      patch "/lex/verification/#{entry.id}/confirm_citation_subject",
+            params: { subject: 'ספרים:', work_id: Lexicon::VerificationController::GENERAL_HEADING_WORK_ID }
+
+      expect(response).to have_http_status(:success)
+      group = person.citation_groups.sole
+      expect(group.title).to eq 'ספרים'
+      expect(group.citations).to match_array(books)
+      expect(books.map { |c| c.reload.subject }).to all(be_nil)
     end
 
     it 'leaves the citations alone when the work belongs to someone else' do
