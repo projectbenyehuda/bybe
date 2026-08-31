@@ -10,6 +10,16 @@ module TestHelpers
   end
   # rubocop:enable RSpec/AnyInstance
 
+  # The last response's body as a Capybara node, so that a request spec can assert on selectors
+  # (`expect(rendered).to have_css(...)`) instead of grepping the raw HTML string. Asserting on a
+  # selector proves the markup was rendered where it belongs; a bare `body.include?('text')` also
+  # passes when the text happens to appear somewhere else entirely.
+  # Note this is Capybara::Node::Simple, not a session: it is a snapshot with no waiting behaviour,
+  # which is exactly right for a request spec (there is no JavaScript and nothing to wait for).
+  def rendered
+    Capybara.string(response.body)
+  end
+
   BROWSER_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120'
 
   # Ahoy.track_bots is false and the default controller-spec user agent ('Rails Testing') is

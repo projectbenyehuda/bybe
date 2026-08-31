@@ -22,10 +22,6 @@ RSpec.describe 'Author TOC filters (server-rendered)', type: :request do
     create(:recommendation, manifestation: poem, status: :approved)
   end
 
-  def rendered
-    Capybara.string(response.body)
-  end
-
   it 'renders the hidden filters pane with dynamic genre and language options' do
     get authority_path(author)
     expect(response).to have_http_status(:ok)

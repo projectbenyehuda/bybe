@@ -35,7 +35,12 @@ RSpec.describe 'Collection LexCitations', type: :request do
       it 'credits the lexicon editor in the card header' do
         get collection_path(collection)
 
-        expect(response.body).to include(I18n.t('lexicon.header.editor_credit'))
+        # scoped to the header carrying the citations headline, so this cannot be satisfied by a
+        # credit rendered by some other card, or anywhere else on the page
+        header = rendered.find('.by-card-header-left-v02',
+                               text: I18n.t(:lex_citations_about_collection), visible: :all)
+        expect(header).to have_css('.lexicon-editor-credit',
+                                   text: I18n.t('lexicon.header.editor_credit'), visible: :all)
       end
     end
 
@@ -74,7 +79,7 @@ RSpec.describe 'Collection LexCitations', type: :request do
       it 'does not credit the lexicon editor' do
         get collection_path(collection)
 
-        expect(response.body).not_to include(I18n.t('lexicon.header.editor_credit'))
+        expect(rendered).to have_no_css('.lexicon-editor-credit', visible: :all)
       end
     end
 
