@@ -36,6 +36,17 @@ RSpec.describe 'Manifestation LexCitations', type: :request do
         expect(response.body).to include('Test Citation')
         expect(response.body).to include('Test Publication')
       end
+
+      it 'credits the lexicon editor in the card header' do
+        get manifestation_path(manifestation)
+
+        # scoped to the header carrying the citations headline, so this cannot be satisfied by a
+        # credit rendered by some other card, or anywhere else on the page
+        header = rendered.find('.by-card-header-left-v02',
+                               text: I18n.t(:lex_citations_about_collection), visible: :all)
+        expect(header).to have_css('.lexicon-editor-credit',
+                                   text: I18n.t('lexicon.header.editor_credit'), visible: :all)
+      end
     end
 
     # The volume page redirects to this text (CollectionsController#show redirects when a collection
@@ -88,6 +99,13 @@ RSpec.describe 'Manifestation LexCitations', type: :request do
         get manifestation_path(manifestation)
 
         expect(response.body).not_to include(I18n.t(:lex_citations_about_collection))
+      end
+
+      # the credit belongs to the card, so with no card there is nothing to credit
+      it 'does not credit the lexicon editor' do
+        get manifestation_path(manifestation)
+
+        expect(rendered).to have_no_css('.lexicon-editor-credit', visible: :all)
       end
     end
 
