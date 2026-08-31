@@ -54,6 +54,16 @@ class LexCitation < ApplicationRecord
   # Prefix marking a group token as naming a LexCitationGroup rather than a subject title.
   HEADING_TOKEN_PREFIX = 'heading:'
 
+  # The full shape of such a token. Matching the prefix alone would not do: a work title or a
+  # legacy subject heading is a group token in its own right, and one reading 'heading:whatever'
+  # would be taken for a sub-heading it is not.
+  HEADING_TOKEN_RE = /\A#{HEADING_TOKEN_PREFIX}(\d+)\z/
+
+  # The id of the LexCitationGroup a group token names, or nil when it names anything else.
+  def self.heading_token_group_id(group_token)
+    group_token.to_s[HEADING_TOKEN_RE, 1]&.to_i
+  end
+
   # Stable identifier of the heading this citation is displayed under: the key the citation lists
   # are grouped by, and the name a group goes by in the reordering endpoint.
   #

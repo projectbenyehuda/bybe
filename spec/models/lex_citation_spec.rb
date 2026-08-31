@@ -96,6 +96,19 @@ describe LexCitation do
     end
   end
 
+  describe '.heading_token_group_id' do
+    it 'reads the id out of a sub-heading token' do
+      expect(described_class.heading_token_group_id('heading:42')).to eq(42)
+    end
+
+    # A work title and a legacy subject are group tokens in their own right, so only the exact
+    # shape counts: a prefix test would parse an id of 0 out of these and take them for headings.
+    it 'is nil for anything that is not exactly heading:<id>' do
+      ['heading:foo', 'heading:', 'heading:12x', ' heading:12', 'על ״ספרים״', nil]
+        .each { |token| expect(described_class.heading_token_group_id(token)).to be_nil }
+    end
+  end
+
   # A Wayback Machine replacement for a dead anchored URL frequently repeats the anchor, which
   # makes the URL unparseable and so instantly "broken" again. See by-p6e.
   describe 'trimming a duplicated anchor from URL fields' do

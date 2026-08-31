@@ -371,6 +371,26 @@ RSpec.describe LexiconHelper, type: :helper do
       keys = helper.grouped_and_ordered_citations(person).keys.select { |h| h.title == 'מאמרים' }
       expect(keys.map(&:kind)).to contain_exactly(:heading, :work)
     end
+
+    # A work title is a group token in its own right, so one that happens to read like a
+    # sub-heading token must not be taken for one -- matching the 'heading:' prefix alone would
+    # have parsed an id of 0 and emptied the work's citations into the general bucket.
+    it 'does not mistake a work titled like a sub-heading token for a sub-heading' do
+      work.update!(title: 'heading:foo')
+
+      heading = groups.keys.find { |h| h.title == 'heading:foo' }
+      expect(heading.kind).to eq(:work)
+      expect(groups[heading]).to eq([about_work])
+    end
+
+    it 'does not mistake a legacy subject naming a real group id for that group' do
+      unresolved.update!(subject: "heading:#{books.id}")
+
+      heading = groups.keys.find { |h| h.title == "heading:#{books.id}" }
+      expect(heading.kind).to eq(:subject)
+      expect(groups[heading]).to eq([unresolved])
+      expect(groups.keys.count { |h| h.kind == :heading }).to eq(2)
+    end
   end
 
   describe '#render_citation with text_links' do

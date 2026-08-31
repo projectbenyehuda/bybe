@@ -620,6 +620,21 @@ describe '/lexicon/citations' do
         expect(about_work.person_work).to eq(work)
       end
 
+      # 'heading:<id>' is only a sub-heading token in that exact shape. Matching the prefix alone
+      # would let a work titled 'heading:foo' pass the general-bucket guard.
+      it 'refuses to move a citation out of a work titled like a sub-heading token' do
+        odd_work = create(:lex_person_work, person: person, title: 'heading:foo')
+        about_work = create(:lex_citation, person: person, person_work: odd_work, seqno: 1)
+
+        post "/lex/citations/#{about_work.id}/reorder",
+             params: { new_index: 0, old_index: 0, group_token: 'heading:foo', to_group_token: '' },
+             xhr: true
+
+        expect(response).to have_http_status(:bad_request)
+        expect(response.body).to eq("'heading:foo' is not a general citation heading")
+        expect(about_work.reload.person_work).to eq(odd_work)
+      end
+
       it 'refuses a sub-heading belonging to another person' do
         other_group = create(:lex_citation_group, person: create(:lex_entry, :person).lex_item)
         post "/lex/citations/#{general_2.id}/reorder",

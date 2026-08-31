@@ -134,9 +134,10 @@ module Lexicon
 
     # Whether a token names one of the general buckets a citation may be dragged in or out of:
     # the ungrouped general citations, or a general sub-heading. A work's list, and a heading still
-    # carrying an unresolved legacy subject, are not. Renders the refusal itself.
+    # carrying an unresolved legacy subject, are not -- and a work titled 'heading:something' must
+    # not pass for one either, hence the exact 'heading:<id>' match. Renders the refusal itself.
     def general_bucket?(token)
-      return true if token.nil? || token.start_with?(LexCitation::HEADING_TOKEN_PREFIX)
+      return true if token.nil? || LexCitation.heading_token_group_id(token).present?
 
       render plain: "'#{token}' is not a general citation heading", status: :bad_request
       false
@@ -147,8 +148,7 @@ module Lexicon
     def resolve_general_group(token)
       return nil if token.nil?
 
-      group_id = token.delete_prefix(LexCitation::HEADING_TOKEN_PREFIX).to_i
-      group = @person.citation_groups.find_by(id: group_id)
+      group = @person.citation_groups.find_by(id: LexCitation.heading_token_group_id(token))
       render plain: "unknown citation group '#{token}'", status: :bad_request if group.nil?
       group
     end
