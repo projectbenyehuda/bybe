@@ -60,6 +60,9 @@
             %b= link_to attrs['title'], manifestation_path(attrs['id'], q: @search.query)
             = " / #{attrs['author_string']}"
             = " (#{textify_genre(attrs['genre'])})"
+            - containment = containing_collections_label(@containing_volumes[attrs['id'].to_i])
+            - if containment.present?
+              = " #{containment}"
             - unless result.tags.empty?
               %br
               %div{style: 'line-height: 2.2;'}
