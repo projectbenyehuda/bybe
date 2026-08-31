@@ -198,7 +198,10 @@
         - if @lex_citations.any?
           .by-card-v02.left-side-card-v02
             .by-card-header-left-v02
-              %span.headline-1-v02= t(:lex_citations_about_collection)
+              -# wrapper so the credit line stacks under the title instead of becoming a flex sibling
+              %div
+                %span.headline-1-v02= t(:lex_citations_about_collection)
+                .lexicon-editor-credit= t('lexicon.header.editor_credit')
             .by-card-content-v02
               %ul
                 - @lex_citations.each do |citation|
