@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_120001) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -309,16 +309,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_090000) do
     t.string "pub_year"
     t.integer "publication_id"
     t.string "publisher_line", limit: 2048
-    t.string "sort_title"
+    t.string "sort_title", limit: 2048
     t.string "subtitle"
     t.boolean "suppress_download_and_print", default: false, null: false
-    t.string "title", limit: 1024
+    t.string "title", limit: 2048
     t.integer "toc_id"
     t.integer "toc_strategy"
     t.datetime "updated_at", null: false
     t.index ["inception_year"], name: "index_collections_on_inception_year"
     t.index ["publication_id"], name: "index_collections_on_publication_id"
-    t.index ["sort_title"], name: "index_collections_on_sort_title"
+    t.index ["sort_title"], name: "index_collections_on_sort_title", length: 255
     t.index ["toc_id"], name: "index_collections_on_toc_id"
   end
 
