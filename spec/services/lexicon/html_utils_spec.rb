@@ -106,4 +106,24 @@ describe Lexicon::HtmlUtils do
       end
     end
   end
+
+  describe '#works_section_end?' do
+    subject(:helper) { Class.new { include Lexicon::HtmlUtils }.new }
+
+    def element(html)
+      Nokogiri::HTML::DocumentFragment.parse(html).first_element_child
+    end
+
+    it 'is true for a header opening another section' do
+      expect(helper).to be_works_section_end(element('<font><a name="Bib.">על המחבר:</a></font>'))
+    end
+
+    it 'is false for a work-type sub-header repeating the works anchor' do
+      expect(helper).not_to be_works_section_end(element('<font>תרגומיה<a name="Books">:</a></font>'))
+    end
+
+    it 'is false for an element that is not a header at all' do
+      expect(helper).not_to be_works_section_end(element('<ul><li>ספר</li></ul>'))
+    end
+  end
 end

@@ -69,6 +69,36 @@ describe Lexicon::MatchCitationSubjects do
     end
   end
 
+  describe 'a heading crediting the translated work’s own author' do
+    # 00104.php's headings, e.g. 'על "הכומר מטור" לאונורה דה בלזאק'. The credit is not part of
+    # the title, and used to drag the score below the threshold, leaving the heading unresolved.
+    let(:subject_heading) { 'על "הכומר מטור" לאונורה דה בלזאק' }
+
+    before do
+      add_work('הכומר מטור / אונורה דה בלזאק ; אחרית דבר, אלישבע רוזן')
+      add_citation(subject_heading)
+    end
+
+    it 'proposes the work with certainty, matching on the quoted title alone' do
+      expect(proposal_for(subject_heading)).to have_attributes(work: person.works.first, similarity: 100,
+                                                               certain?: true)
+    end
+  end
+
+  describe 'a heading whose quoted title contains a gershayim of its own' do
+    let(:subject_heading) { 'על "69.99 ש"ח" לפרדריק בגבדה' }
+
+    before do
+      add_work('69.99 ש"ח : רומן / פרדריק בגבדה')
+      add_citation(subject_heading)
+    end
+
+    it 'takes the outermost pair of quotes as the title, not the innermost' do
+      expect(proposal_for(subject_heading)).to have_attributes(work: person.works.first, similarity: 100,
+                                                               certain?: true)
+    end
+  end
+
   describe 'a generic bucket heading' do
     before do
       add_work('שונא הנסים')

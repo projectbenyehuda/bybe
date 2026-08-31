@@ -47,6 +47,18 @@ module Lexicon
       end
     end
 
+    # Whether +elem+ ends the works section, i.e. opens a section other than the works.
+    #
+    # A handful of legacy files built the sub-header of a further work type by copying the works
+    # header's markup wholesale, duplicate a[name="Books"] anchor and all (00104.php's
+    # 'תרגומיה:', 01741.php's 'ספרים בתרגומו:'). A repeated Books anchor therefore opens another
+    # kind of work, not another section, and stopping at it drops every work below it.
+    def works_section_end?(elem)
+      return false unless header?(elem)
+
+      elem.at_css('a[name]')['name'] != WORKS_ANCHOR
+    end
+
     # Some legacy files carry layout-only tables: rows and cells, but nothing to show.
     # Pandoc keeps them as raw HTML, so they survive migration as markup noise.
     def content_free_table?(elem)
