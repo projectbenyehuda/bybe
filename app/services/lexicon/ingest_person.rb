@@ -109,13 +109,14 @@ module Lexicon
       copy.to_html
     end
 
-    # Links the citation subject headings whose work is beyond doubt. Everything else -- a heading
-    # naming no work, naming one only approximately, or fitting two works equally well -- is left
-    # for an editor to resolve in the verification workbench's citation-headings section.
+    # Resolves the citation subject headings that are beyond doubt: those naming exactly one work,
+    # and the recognized general categories (ספרים, מאמרים, ...), which become general sub-headings
+    # keeping their name. Everything else -- a heading naming no work, naming one only
+    # approximately, or fitting two works equally well -- is left for an editor to resolve in the
+    # verification workbench's citation-headings section.
     def link_citations_to_works(lex_person)
-      MatchCitationSubjects.call(lex_person).select(&:certain?).each do |proposal|
-        lex_person.link_citations_with_subject!(proposal.subject, proposal.work)
-      end
+      MatchCitationSubjects.call(lex_person).select(&:certain?).sort_by(&:source_position)
+                           .each { |proposal| proposal.apply!(lex_person) }
     end
 
     def attach_backup_files(lex_person)

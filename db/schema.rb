@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_120001) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_090001) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -654,10 +654,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_120001) do
     t.index ["lex_entry_id"], name: "index_lex_citation_authors_on_lex_entry_id"
   end
 
+  create_table "lex_citation_groups", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "lex_person_id", null: false
+    t.integer "seqno", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lex_person_id", "title"], name: "index_lex_citation_groups_on_person_and_title", unique: true
+    t.index ["lex_person_id"], name: "index_lex_citation_groups_on_lex_person_id"
+  end
+
   create_table "lex_citations", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.string "backup_url", limit: 1024
     t.datetime "created_at", precision: nil, null: false
     t.string "from_publication"
+    t.bigint "lex_citation_group_id"
     t.bigint "lex_person_id", null: false
     t.bigint "lex_person_work_id"
     t.string "link", limit: 1024
@@ -672,6 +683,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_120001) do
     t.json "text_links"
     t.string "title"
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["lex_citation_group_id"], name: "index_lex_citations_on_lex_citation_group_id"
     t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
     t.index ["lex_person_work_id"], name: "index_lex_citations_on_lex_person_work_id"
     t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
@@ -1251,6 +1263,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_120001) do
   add_foreign_key "involved_authorities", "authorities"
   add_foreign_key "lex_citation_authors", "lex_citations"
   add_foreign_key "lex_citation_authors", "lex_entries"
+  add_foreign_key "lex_citation_groups", "lex_people"
+  add_foreign_key "lex_citations", "lex_citation_groups"
   add_foreign_key "lex_citations", "lex_people"
   add_foreign_key "lex_citations", "lex_person_works"
   add_foreign_key "lex_citations", "manifestations"

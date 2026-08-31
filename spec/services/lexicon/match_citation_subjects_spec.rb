@@ -105,9 +105,40 @@ describe Lexicon::MatchCitationSubjects do
       add_citation('מאמרים')
     end
 
-    it 'proposes clearing it without a work' do
-      expect(proposal_for('מאמרים')).to have_attributes(generic: true, work: nil, certain?: false,
-                                                        proposed?: true)
+    it 'proposes keeping it as a general sub-heading, with certainty' do
+      expect(proposal_for('מאמרים')).to have_attributes(generic: true, work: nil, certain?: true,
+                                                        proposed?: true, heading_title: 'מאמרים')
+    end
+
+    it 'applies as a sub-heading of the general citations' do
+      proposal_for('מאמרים').apply!(person)
+      group = person.citation_groups.sole
+      expect(group.title).to eq('מאמרים')
+      expect(group.citations.count).to eq(1)
+    end
+  end
+
+  # About half the legacy files write the heading with a trailing colon; it is layout punctuation,
+  # not part of the name, and used to keep the heading from being recognized as generic at all.
+  describe 'a generic bucket heading written with a trailing colon' do
+    before do
+      add_citation('ספרים:')
+    end
+
+    it 'is recognized, and drops the colon from the sub-heading name' do
+      expect(proposal_for('ספרים:')).to have_attributes(generic: true, certain?: true, heading_title: 'ספרים')
+    end
+  end
+
+  describe 'the general categories beyond ספרים and מאמרים' do
+    before do
+      add_citation('ספרי יובל')
+      add_citation('ביבליוגרפיה:')
+    end
+
+    it 'recognizes them too' do
+      expect(proposal_for('ספרי יובל')).to have_attributes(generic: true, heading_title: 'ספרי יובל')
+      expect(proposal_for('ביבליוגרפיה:')).to have_attributes(generic: true, heading_title: 'ביבליוגרפיה')
     end
   end
 

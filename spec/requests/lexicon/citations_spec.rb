@@ -471,12 +471,13 @@ describe '/lexicon/citations' do
   describe 'POST /lex/citations/:id/reorder' do
     subject(:call) do
       post "/lex/citations/#{citation_to_move.id}/reorder",
-           params: { new_index: new_index, old_index: old_index, subject_title: subject_title },
+           params: { new_index: new_index, old_index: old_index, group_token: group_token }.merge(extra_params),
            xhr: true
     end
 
     let(:work) { create(:lex_person_work, person: person, title: 'Test Work') }
-    let(:subject_title) { work.title }
+    let(:group_token) { work.title }
+    let(:extra_params) { {} }
 
     let!(:citation_1) { create(:lex_citation, person: person, person_work: work, seqno: 2) }
     let!(:citation_2) { create(:lex_citation, person: person, person_work: work, seqno: 3) }
@@ -524,23 +525,23 @@ describe '/lexicon/citations' do
       end
     end
 
-    context 'when subject_title does not match' do
+    context 'when group_token does not match' do
       let(:citation_to_move) { other_citation }
       let(:old_index) { 0 }
       let(:new_index) { 1 }
 
       it 'fails with bad request' do
         expect(call).to eq(400)
-        expect(response.body).to eq("subject_title mismatch, actual: '#{other_work.title}', got: '#{work.title}'")
+        expect(response.body).to eq("group_token mismatch, actual: '#{other_work.title}', got: '#{work.title}'")
       end
     end
 
     context 'when using subject string instead of person_work' do
-      let(:subject_title) { 'Subject String' }
+      let(:group_token) { 'Subject String' }
 
-      let!(:citation_1) { create(:lex_citation, person: person, subject: subject_title, seqno: 1) }
-      let!(:citation_2) { create(:lex_citation, person: person, subject: subject_title, seqno: 2) }
-      let!(:citation_3) { create(:lex_citation, person: person, subject: subject_title, seqno: 3) }
+      let!(:citation_1) { create(:lex_citation, person: person, subject: group_token, seqno: 1) }
+      let!(:citation_2) { create(:lex_citation, person: person, subject: group_token, seqno: 2) }
+      let!(:citation_3) { create(:lex_citation, person: person, subject: group_token, seqno: 3) }
 
       let(:citation_to_move) { citation_1 }
       let(:old_index) { 0 }
@@ -549,9 +550,85 @@ describe '/lexicon/citations' do
       it 'reorders citations correctly' do
         expect(call).to eq(200)
 
-        reordered = person.reload.citations.select { |c| c.subject == subject_title }.sort_by(&:seqno)
+        reordered = person.reload.citations.select { |c| c.subject == group_token }.sort_by(&:seqno)
         expect(reordered.map(&:id)).to eq([citation_2.id, citation_3.id, citation_1.id])
         expect(reordered.map(&:seqno)).to eq((1..3).to_a)
+      end
+    end
+
+    # Dragging a citation from one general bucket into another (see LexCitationGroup).
+    context 'when moving a citation to another general bucket' do
+      let(:group) { create(:lex_citation_group, person: person, title: 'ספרים') }
+      let!(:general_1) { create(:lex_citation, person: person, seqno: 1) }
+      let!(:general_2) { create(:lex_citation, person: person, seqno: 2) }
+      let!(:grouped) { create_list(:lex_citation, 2, person: person, citation_group: group) }
+
+      let(:citation_to_move) { general_2 }
+      let(:group_token) { '' }
+      let(:extra_params) { { to_group_token: "heading:#{group.id}" } }
+      let(:old_index) { 1 }
+      let(:new_index) { 1 }
+
+      it 'files it under the target sub-heading at the requested position' do
+        expect(call).to eq(200)
+
+        expect(general_2.reload.citation_group).to eq(group)
+        expect(group.citations.order(:seqno).map(&:id)).to eq([grouped.first.id, general_2.id, grouped.last.id])
+        expect(group.citations.order(:seqno).map(&:seqno)).to eq((1..3).to_a)
+      end
+
+      it 'renumbers the bucket the citation left, leaving no gap where it was' do
+        call
+        remaining = person.reload.citations_by_group_token(nil).sort_by(&:seqno)
+        expect(remaining).not_to include(general_2)
+        expect(remaining.map(&:seqno)).to eq((1..remaining.size).to_a)
+      end
+
+      it 'moves a citation back out of a sub-heading into the ungrouped general list' do
+        post "/lex/citations/#{grouped.first.id}/reorder",
+             params: { new_index: 0, old_index: 0, group_token: "heading:#{group.id}", to_group_token: '' },
+             xhr: true
+
+        expect(response).to have_http_status(:ok)
+        expect(grouped.first.reload.citation_group).to be_nil
+        general = person.reload.citations_by_group_token(nil).sort_by(&:seqno)
+        expect(general.first).to eq(grouped.first)
+        expect(general.map(&:seqno)).to eq((1..general.size).to_a)
+      end
+
+      # A drag can only rearrange the general buckets; what a citation is about is set on its form.
+      it 'refuses to move a citation under a work' do
+        post "/lex/citations/#{general_2.id}/reorder",
+             params: { new_index: 0, old_index: 1, group_token: '', to_group_token: work.title },
+             xhr: true
+
+        expect(response).to have_http_status(:bad_request)
+        expect(general_2.reload.person_work).to be_nil
+      end
+
+      # Dragging out of a work's list would leave the citation both about a work and under a
+      # general sub-heading, which LexCitation forbids -- and renumber saves without validating.
+      it 'refuses to move a citation out of a work\'s list' do
+        about_work = create(:lex_citation, person: person, person_work: work, seqno: 1)
+        post "/lex/citations/#{about_work.id}/reorder",
+             params: { new_index: 0, old_index: 0, group_token: work.title,
+                       to_group_token: "heading:#{group.id}" },
+             xhr: true
+
+        expect(response).to have_http_status(:bad_request)
+        expect(about_work.reload.citation_group).to be_nil
+        expect(about_work.person_work).to eq(work)
+      end
+
+      it 'refuses a sub-heading belonging to another person' do
+        other_group = create(:lex_citation_group, person: create(:lex_entry, :person).lex_item)
+        post "/lex/citations/#{general_2.id}/reorder",
+             params: { new_index: 0, old_index: 1, group_token: '',
+                       to_group_token: "heading:#{other_group.id}" },
+             xhr: true
+
+        expect(response).to have_http_status(:bad_request)
+        expect(general_2.reload.citation_group).to be_nil
       end
     end
   end

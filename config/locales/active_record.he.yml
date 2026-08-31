@@ -22,6 +22,7 @@ he:
       ingestible: ההעלאה
       lex_citation: מראה מקום על אדם או חיבור
       lex_citation_author: מחבר/ת מראה המקום
+      lex_citation_group: כותרת משנה של מראי מקום כלליים
       lex_entry: ערך בלקסיקון
       lex_linked_person: ישות מקושרת
       lex_person: אדם בלקסיקון
@@ -60,6 +61,9 @@ he:
               taken: היצירה הנוכחית כבר מופיעה במקראה הזאת.
         lex_citation:
           attributes:
+            citation_group:
+              belongs_to_different_person: חייב להשתייך לאותו יוצר כמו מראה המקום
+              not_on_work_citation: לא ניתן לשייך כותרת משנה כללית למראה מקום העוסק באחד מחיבורי היוצר
             person_work:
               belongs_to_different_person: חייב להשתייך לאותו יוצר כמו מראה המקום
             subject:
@@ -143,12 +147,15 @@ he:
         authors: מחברים
         backup_file: קובץ גיבוי
         backup_url: כתובת גיבוי
+        citation_group: כותרת משנה כללית
         from_publication: מתוך החיבור
         notes: הקשר והערות
         pages: עמודים
         person_work: חיבור
         subject: נושא
         link: קישורית
+      lex_citation_group:
+        title: כותרת משנה
       lex_file:
         error_message: הודעות שגיאה
         entrytype: סוג הערך

@@ -158,6 +158,31 @@ module LexiconHelper
     end
   end
 
+  # One heading of a person's citation list, as produced by #grouped_and_ordered_citations.
+  #
+  # +kind+ tells apart the three things a heading can be, which are worded differently: :general
+  # (the citations about the person carrying no sub-heading), :heading (a general sub-heading such
+  # as ספרים -- a category, shown verbatim), and :subject (a work the citations are about, shown
+  # as 'על ״...״'). +token+ is LexCitation#group_token, the key the citations were grouped by.
+  CitationHeading = Struct.new(:kind, :token, :title) do
+    def general?
+      kind == :general
+    end
+
+    # Whether an editor may rename, delete and reorder this heading (see LexCitationGroup).
+    def editable?
+      kind == :heading
+    end
+  end
+
+  # The wording of a heading. A general sub-heading names a category of writing about the person,
+  # not a work, so it is shown as it stands rather than run through the 'על ״...״' template.
+  def citations_heading_text(heading)
+    return heading.title if heading.editable?
+
+    citations_subject_header(heading.title)
+  end
+
   EXTERNAL_IDENTIFIER_URLS = {
     'lc' => ->(id) { "https://id.loc.gov/authorities/#{id}" },
     'viaf' => ->(id) { "https://viaf.org/viaf/#{id}" },
@@ -292,36 +317,55 @@ module LexiconHelper
     safe_join(lines, tag.br)
   end
 
+  # A person's citations grouped under their headings, in display order.
+  #
+  # @return [Hash{CitationHeading => Array<LexCitation>}] each group's citations sorted by seqno.
+  #   The general citations come first -- the ungrouped ones, then each general sub-heading in the
+  #   editor's order -- followed by the citations about the person's works in work order, and
+  #   finally any heading still carrying an unresolved legacy subject.
   def grouped_and_ordered_citations(lex_person)
     person_works = lex_person.works.index_by(&:title)
+    groups = lex_person.citation_groups.index_by(&:id)
     # we preload data required for citations rendering, down to the entry's lex_file:
     # an author with no name of its own derives its display name from the entry (see
     # LexEntry#surname_first_title), which consults the file of a not-yet-ingested entry
     grouped_citations = lex_person.citations.preload(authors: { entry: :lex_file })
-                                  .group_by(&:subject_title).sort_by do |subject_title, _entries|
-      work = person_works[subject_title] if subject_title.present?
-      # sort General (empty subject) first, then titles associated with Person Works, then custom titles
-      ord = if subject_title.nil?
-              0 # general citations without subject first
-            elsif work.present?
-              1 # then citations associated with existing works
-            else
-              2 # then citations with manually entered subject
-            end
-      [
-        ord,
-        work&.seqno || 1_000_000,
-        subject_title || '' # if we use custom subject-title not linked to work, sort them by subject_title
-      ]
-    end
+                                  .group_by { |c| citation_heading(c.group_token, person_works, groups) }
+                                  .sort_by { |heading, _entries| heading_order(heading, person_works, groups) }
+                                  .to_h
 
-    grouped_citations = grouped_citations.to_h
-
-    # sort all citations inside subject_title groups by seqno
+    # sort all citations inside heading groups by seqno
     grouped_citations.each_value do |entries|
       entries.sort_by! { |citation| [citation.seqno, citation.id] }
     end
 
     grouped_citations
+  end
+
+  private
+
+  # Builds the CitationHeading a group token stands for. A token naming a group that has since been
+  # deleted cannot occur -- the association nullifies its citations' lex_citation_group_id -- but a
+  # stale in-memory citation could still carry one, so fall back to the general heading.
+  def citation_heading(token, person_works, groups)
+    if token.nil?
+      CitationHeading.new(:general, nil, nil)
+    elsif token.start_with?(LexCitation::HEADING_TOKEN_PREFIX)
+      group = groups[token.delete_prefix(LexCitation::HEADING_TOKEN_PREFIX).to_i]
+      group.nil? ? CitationHeading.new(:general, nil, nil) : CitationHeading.new(:heading, token, group.title)
+    else
+      CitationHeading.new(person_works.key?(token) ? :work : :subject, token, token)
+    end
+  end
+
+  # General citations first (ungrouped, then the sub-headings in the editor's order), then the
+  # citations about works in work order, then headings still carrying an unresolved legacy subject.
+  def heading_order(heading, person_works, groups)
+    case heading.kind
+    when :general then [0, 0, '']
+    when :heading then [1, groups[heading.token.delete_prefix(LexCitation::HEADING_TOKEN_PREFIX).to_i].seqno, '']
+    when :work then [2, person_works[heading.title].seqno, '']
+    else [3, 0, heading.title]
+    end
   end
 end

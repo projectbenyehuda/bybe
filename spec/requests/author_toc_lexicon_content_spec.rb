@@ -228,5 +228,17 @@ RSpec.describe 'Authority TOC lexicon content', type: :request do
       expect(response.body).to include(I18n.t('lexicon.citations.header.subject_line', subject: 'נושא ידני'))
       expect(response.body).not_to include('<h4></h4>')
     end
+
+    # A general sub-heading names a kind of writing about the person, so it is shown as it stands
+    # rather than wrapped in the 'על ״...״' template a work title gets. See LexCitationGroup.
+    it 'headlines a general sub-heading verbatim, with its citations under it' do
+      group = create(:lex_citation_group, person: lex_person, title: 'ספרים')
+      create(:lex_citation, person: lex_person, citation_group: group, title: 'מונוגרפיה על היוצר')
+
+      call
+      expect(rendered).to have_css('#lexicon-about h4', text: 'ספרים')
+      expect(response.body).not_to include(I18n.t('lexicon.citations.header.subject_line', subject: 'ספרים'))
+      expect(rendered).to have_css('#lexicon-about li', text: 'מונוגרפיה על היוצר')
+    end
   end
 end

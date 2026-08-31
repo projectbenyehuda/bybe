@@ -7,6 +7,15 @@
                   label_method: :title,
                   selected: @citation.person_work&.id,
                   include_blank: true
+  -# Only offered when the person has sub-headings to choose from; they are created from the
+     citations list. A citation about a work is grouped by that work instead, hence the hint.
+  - if @person.citation_groups.any?
+    = f.association :citation_group,
+                    collection: @person.citation_groups,
+                    label_method: :title,
+                    selected: @citation.citation_group&.id,
+                    include_blank: true,
+                    hint: t('.citation_group_hint')
   = f.input :title
   = f.input :from_publication
   = f.input :pages

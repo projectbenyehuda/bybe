@@ -64,9 +64,9 @@
       - if lexicon_sections[:about]
         #lexicon-about
           = render layout: 'lexicon/block', locals: { title: t('activerecord.attributes.lex_person.about', gender_suffix: lex_person.female? ? 'ת' : '', gender_letter: lex_person.gender_letter) } do
-            - grouped_and_ordered_citations(lex_person).each do |subject, list|
-              - if subject.present?
-                %h4= citations_subject_header(subject)
+            - grouped_and_ordered_citations(lex_person).each do |heading, list|
+              - unless heading.general?
+                %h4= citations_heading_text(heading)
               %ul
                 - list.each do |c|
                   - cit_text = render_citation(c)

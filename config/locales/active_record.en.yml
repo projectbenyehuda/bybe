@@ -22,6 +22,7 @@ en:
       ingestible: Ingestible
       lex_citation: Citation of Lexicon Entry
       lex_citation_author: Citation Author
+      lex_citation_group: General citation sub-heading
       lex_entry: Lexicon Entry
       lex_linked_person: Associated Person
       lex_person: Lexicon Person
@@ -56,6 +57,9 @@ en:
               taken: Text is already in the anthology
         lex_citation:
           attributes:
+            citation_group:
+              belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
+              not_on_work_citation: cannot be set on a citation that is about one of the person's works
             person_work:
               belongs_to_different_person: must belong to the same Lexicon Person as the Citation itself
             subject:
@@ -137,10 +141,13 @@ en:
         authors: Authors
         backup_file: Backup File
         backup_url: Backup URL
+        citation_group: General sub-heading
         from_publication: From Publication
         notes: Context notes
         pages: Pages
         person_work: Work
+      lex_citation_group:
+        title: Sub-heading
       lex_file:
         error_message: Error message
         entrytype: Entry type

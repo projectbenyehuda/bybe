@@ -236,7 +236,7 @@
       - total_count = checklist['citations']&.dig('items')&.size || 0
       = "#{verified_count}/#{total_count} " + t('lexicon.verification.migrated.verified')
   .section-content
-    - all_citations = item.citations.includes(:person_work, authors: { entry: :lex_file })
+    - all_citations = item.citations.includes(:person_work, :citation_group, authors: { entry: :lex_file })
     - cit_size = all_citations.size
     -# Resolved once for the whole section: which plaintext authors have an existing person entry
       to offer a match against (see LexCitationAuthor.matchable_names).
@@ -246,16 +246,20 @@
         = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:citations], migrated_count: cit_size)
         %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
     - if all_citations.any?
-      - all_citations.group_by(&:subject_title).each do |subject, citations|
+      - all_citations.group_by(&:group_token).each do |group_token, citations|
         .citation-group.mb-3
           -#
-            A group's heading is the work's title once it is linked, and the legacy string until then --
-            two states that look alike, so say which is which (see the citation-headings section above).
+            A group's heading is the work's title once it is linked, a general sub-heading's own
+            name once it is one, and the legacy string until it is either -- states that look alike,
+            so say which is which (see the citation-headings section above).
+          - group = citations.first.citation_group
           %h6.subject-header
-            = subject.presence || t('lexicon.citations.header.general')
+            = group&.title || group_token.presence || t('lexicon.citations.header.general')
             - if citations.first.person_work.present?
               %span.badge.bg-success.ms-1= t('lexicon.verification.sections.citation_group_linked')
-            - elsif subject.present?
+            - elsif group.present?
+              %span.badge.bg-success.ms-1= t('lexicon.verification.sections.citation_group_heading')
+            - elsif group_token.present?
               %span.badge.bg-warning.text-dark.ms-1= t('lexicon.verification.sections.citation_group_unlinked')
           - citations.each do |citation|
             .citation-card{ id: "citation-#{citation.id}", class: citation_card_css(citation, checklist) }

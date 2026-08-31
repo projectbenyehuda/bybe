@@ -125,10 +125,16 @@ en:
         general: General
       index:
         add_citation: Add Citation
+        add_heading: Add sub-heading
         drag_to_reorder: Drag to reorder
+        drag_heading_to_reorder: Drag to reorder sub-headings
+        heading_name_prompt: 'Sub-heading name (e.g. ספרים, מאמרים, ספרי יובל):'
+        delete_heading_confirm: Remove this sub-heading? Its citations move back to the general list.
+        heading_action_failed: Sub-heading action failed
         reordering_failed: Reordering failed
       form:
         save_before_adding_authors: Please save the citation before adding authors
+        citation_group_hint: Only applies to general citations about the person, not to citations about a particular work
     linked_people:
       index:
         drag_to_reorder: Drag to reorder
@@ -327,7 +333,10 @@ en:
         unmatched_citation_subjects_heading: "Headings without a match"
         unmatched_citation_subjects_intro: "No work was matched to these headings. Pick a work, or leave the selection blank to mark the heading as a general one, not about a particular work."
         citation_subject_general: "General (not about a particular work)"
+        citation_subject_keep_heading: "Keep as a general sub-heading"
+        citation_subject_heading: "general sub-heading \"%{title}\""
         citation_group_linked: "Linked to a work"
+        citation_group_heading: "General sub-heading"
         citation_group_unlinked: "Heading not linked"
         citation_subject_assign: "Assign"
         citation_subject_ambiguous: "More than one work fits"

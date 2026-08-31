@@ -204,9 +204,14 @@ module Lexicon
       render json: { success: false, error: e.message }, status: :unprocessable_content
     end
 
+    # The work_id standing for "this heading is a sub-heading of the general citations", rather
+    # than the title of one of the person's works. See LexCitationGroup.
+    GENERAL_HEADING_WORK_ID = 'heading'
+
     # PATCH /lexicon/verification/:id/confirm_citation_subject
     # Resolves one legacy citation subject heading: points every citation under it at the given
-    # work, or -- with a blank work_id -- clears the heading as a general one about the person.
+    # work, keeps it as a general sub-heading, or -- with a blank work_id -- drops it, leaving its
+    # citations as plain general ones about the person.
     def confirm_citation_subject
       person = @entry.lex_item
       subject = params[:subject].to_s
@@ -216,8 +221,12 @@ module Lexicon
         return
       end
 
-      work = person.works.find(params[:work_id]) if params[:work_id].present?
-      count = person.link_citations_with_subject!(subject, work)
+      count = if params[:work_id] == GENERAL_HEADING_WORK_ID
+                person.group_citations_with_subject!(subject, Lexicon::MatchCitationSubjects.normalize_subject(subject))
+              else
+                work = person.works.find(params[:work_id]) if params[:work_id].present?
+                person.link_citations_with_subject!(subject, work)
+              end
 
       render json: {
         success: true,

@@ -65,6 +65,10 @@ Bybeconv::Application.routes.draw do
     match 'admin', to: 'entries#index', as: :lex_backend, via: %i(get post)
 
     resources :people, only: %i(edit update new create) do
+      # Sub-headings of the general citations (ספרים, מאמרים, ...) -- see LexCitationGroup
+      resources :citation_groups, shallow: true, only: %i(create update destroy) do
+        post :reorder, on: :member
+      end
       resources :citations, shallow: true, except: %i(show) do
         post :reorder, on: :member
         resources :authors, controller: 'citation_authors', only: %i(index create)

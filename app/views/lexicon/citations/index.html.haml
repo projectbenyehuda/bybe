@@ -1,54 +1,37 @@
+- groups = grouped_and_ordered_citations(@person)
+-# Keyed by token so an empty sub-heading -- one an editor has just added, or emptied by
+  dragging -- still gets rendered: the grouped hash only has a key where there is a citation
+  to put under it.
+- by_token = groups.transform_keys(&:token)
+- work_headings = groups.reject { |heading, _| heading.general? || heading.editable? }
 %a.btn.btn-primary.add-citation= t('.add_citation')
-- grouped_and_ordered_citations(@person).each do |subject_title, entries|
-  %h4= citations_subject_header(subject_title)
-  %ul.citations-group{ data: { subject_title: subject_title } }
-    - entries.each do |c|
-      %li{ data: { citation_id: c.id } }
-        %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
-          %span.handle ☰
-        = raw render_citation(c)
-        = link_to t(:edit), nil, class: 'edit-citation', data: { id: c.id }
-        = link_to t(:delete),
-                  lexicon_citation_path(c),
-                  remote: true, data: { confirm: t(:are_you_sure) }, method: :delete, class: 'delete-citation'
+%a.btn.btn-outline-primary.ms-2.add-citation-group= t('.add_heading')
 
-:javascript
-  $('.edit-citation').click(function(e) {
-    e.preventDefault();
-    const citationId = $(this).data('id');
-    openModal(`/lex/citations/${citationId}/edit`);
-  });
-  $('a.add-citation').click(function() {
-    openModal('/lex/people/#{@person.id}/citations/new');
-  });
+-# The general buckets -- the ungrouped citations and every general sub-heading -- share one
+  Sortable group, so a citation can be dragged from any of them into any other. The ungrouped
+  bucket is rendered even when empty, so that a citation can always be dragged back out of a
+  sub-heading. Work headings stay closed: moving a citation under a work changes what it is
+  about, and that belongs in the citation's own edit form.
+%h4= t('lexicon.citations.header.general')
+= render partial: 'citation_list',
+         locals: { citations: by_token[nil] || [], group_token: nil, general: true, css_class: 'ungrouped-citations' }
 
-  // Initialize Sortable for each subject_title table
-  document.querySelectorAll('ul.citations-group').forEach(function(list) {
-    const subjectTitle = list.dataset.subjectTitle;
-    Sortable.create(
-      list,
-      {
-        handle: '.drag-handle',
-        animation: 150,
-        onEnd: function(evt) {
-          const oldIndex = evt.oldIndex; // zero-based
-          const newIndex = evt.newIndex; // zero-based
-          if (newIndex !== oldIndex) {
-            $.post({
-              url: `/lex/citations/${evt.item.dataset.citationId}/reorder`,
-              data: {
-                new_index: newIndex,
-                old_index: oldIndex,
-                subject_title: subjectTitle
-              },
-              error: function(xhr, _status, _error) {
-                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
-                alert('#{t('.reordering_failed')}\n' + errorMsg);
-                reloadContent($('#citations'));
-              }
-            });
-          }
-        }
-      }
-    );
-  });
+#citation-headings
+  - @person.citation_groups.each do |group|
+    - token = "#{LexCitation::HEADING_TOKEN_PREFIX}#{group.id}"
+    .citation-heading-block{ data: { group_id: group.id } }
+      %h4
+        %span.heading-drag-handle{ title: t('.drag_heading_to_reorder'), style: 'cursor: move;' } ☰
+        %span.heading-title= group.title
+        = link_to t(:edit), nil, class: 'rename-citation-group ms-2 small',
+                                 data: { id: group.id, title: group.title }
+        = link_to t(:delete), nil, class: 'delete-citation-group ms-2 small', data: { id: group.id }
+      = render partial: 'citation_list',
+               locals: { citations: by_token[token] || [], group_token: token, general: true, css_class: nil }
+
+- work_headings.each do |heading, entries|
+  %h4= citations_heading_text(heading)
+  = render partial: 'citation_list',
+           locals: { citations: entries, group_token: heading.token, general: false, css_class: nil }
+
+= render 'scripts'
