@@ -1128,6 +1128,15 @@ small p{
 }
 .work-content{
   scroll-snap-type: y mandatory;
+  /* .work-area is a flex container and .work-content is a `flex: 1` item
+     (BY_styles_General.css). A flex item's automatic minimum size is its
+     min-content width, so a text containing a wide element -- e.g. the
+     `<div style="overflow-x:auto">`-wrapped tables MarkdownToHtml emits --
+     blows the column out past the surrounding .by-card-v02, and the body text
+     lays out at that inflated width, spilling over the card edge into the
+     gutter. min-width: 0 lets the column shrink to the space actually
+     available, so the wrapper scrolls the table instead. */
+  min-width: 0;
 }
 
 .hidden {
