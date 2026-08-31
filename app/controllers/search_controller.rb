@@ -29,6 +29,7 @@ class SearchController < ApplicationController
       page = (params[:page] || 1).to_i
       @offset = (page - 1) * Kaminari.config.default_per_page
       @total = @results.count
+      @containing_volumes = containing_volumes_for(@results)
 
       track_event('search', { term: @searchterm, page: page })
     rescue # Faraday::Error::ConnectionFailed => e
@@ -41,6 +42,18 @@ class SearchController < ApplicationController
   end
 
   protected
+
+  # Manifestation hits are shown with the volume/periodical issue they sit in, but ManifestationsIndex
+  # doesn't carry the containing collection's title or pub_year, so look them up in the DB for the
+  # single page of results being rendered. Returns { manifestation_id => [Collection, ...] }.
+  def containing_volumes_for(results)
+    ids = results.to_a.select { |r| r.instance_of?(ManifestationsIndex) }.map { |r| r.attributes['id'].to_i }
+    return {} if ids.empty?
+
+    Manifestation.where(id: ids)
+                 .includes(collection_items: :collection)
+                 .to_h { |m| [m.id, m.volumes.uniq] }
+  end
 
   def sanitize_term(term)
     term = term.gsub(/(\S)"(\S)/, '\1\2').gsub('׳', "'").gsub('״', '"')

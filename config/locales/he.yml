@@ -1043,6 +1043,7 @@ he:
   manifestations: מימושים
   collections: כותרים
   contained_within: בתוך
+  contained_in: 'בתוך: %{titles}'
   dictionary_entries: ערכים מילוניים
   volumes: כותרים
   x_volumes: "%{x} כותרים"
