@@ -9,12 +9,13 @@ describe Collection do
     expect { build(:collection, collection_type: 'made_up') }.to raise_error(ArgumentError)
   end
 
-  it 'stores a title longer than 1024 characters, and the sort_title derived from it' do
-    long_title = 'א' * 1500
-    collection = create(:collection, title: long_title)
-    expect(collection.reload.title).to eq(long_title)
-    expect(collection.sort_title).to eq(long_title)
-  end
+it 'stores a title longer than 1024 characters, and the sort_title derived from it' do
+  long_title = 'א' * 1500
+  collection = create(:collection, title: long_title, sort_title: nil)
+  collection.reload
+  expect(collection.title).to eq(long_title)
+  expect(collection.sort_title).to eq(long_title)
+end
 
   it 'strips leading/trailing whitespace from a manually-set sort_title on save' do
     collection = create(:collection, title: 'כותרת', sort_title: '  זבל  ')
