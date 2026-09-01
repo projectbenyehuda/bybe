@@ -1,313 +1,332 @@
-class InitSchema < ActiveRecord::Migration[7.0]
+class InitSchema < ActiveRecord::Migration[8.0]
   def up
     create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "work_id"
-      t.integer "user_id"
-      t.integer "status"
-      t.integer "wikidata_qid"
       t.integer "aboutable_id"
       t.string "aboutable_type"
       t.datetime "created_at", precision: nil, null: false
+      t.integer "status"
       t.datetime "updated_at", precision: nil, null: false
+      t.integer "user_id"
       t.string "wikidata_label"
+      t.integer "wikidata_qid"
+      t.integer "work_id"
       t.index ["aboutable_type", "aboutable_id"], name: "index_aboutnesses_on_aboutable_type_and_aboutable_id"
       t.index ["user_id"], name: "index_aboutnesses_on_user_id"
       t.index ["wikidata_qid"], name: "index_aboutnesses_on_wikidata_qid"
       t.index ["work_id"], name: "index_aboutnesses_on_work_id"
     end
     create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "name", null: false
-      t.string "record_type", null: false
-      t.bigint "record_id", null: false
       t.bigint "blob_id", null: false
       t.datetime "created_at", precision: nil, null: false
+      t.string "name", null: false
+      t.bigint "record_id", null: false
+      t.string "record_type", null: false
       t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
       t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
     end
     create_table "active_storage_blobs", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "key", null: false
-      t.string "filename", null: false
-      t.string "content_type"
-      t.text "metadata"
       t.bigint "byte_size", null: false
-      t.string "checksum", null: false
+      t.string "checksum"
+      t.string "content_type"
       t.datetime "created_at", precision: nil, null: false
+      t.string "filename", null: false
+      t.string "key", null: false
+      t.text "metadata"
+      t.string "service_name", null: false
       t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
     end
+    create_table "active_storage_variant_records", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.bigint "blob_id", null: false
+      t.string "variation_digest", null: false
+      t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+    end
     create_table "ahoy_events", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.bigint "visit_id"
-      t.bigint "user_id"
+      t.virtual "item_id", type: :integer, as: "json_unquote(json_extract(`properties`,_utf8mb4'$.id'))"
+      t.virtual "item_type", type: :string, limit: 50, as: "json_unquote(json_extract(`properties`,_utf8mb4'$.type'))"
       t.string "name"
       t.json "properties"
       t.datetime "time", precision: nil
+      t.bigint "user_id"
+      t.bigint "visit_id"
       t.index ["name", "time"], name: "index_ahoy_events_on_name_and_time"
+      t.index ["time", "name", "item_type", "item_id"], name: "index_ahoy_events_on_time_and_name_and_item_type_and_item_id"
       t.index ["user_id"], name: "index_ahoy_events_on_user_id"
       t.index ["visit_id"], name: "index_ahoy_events_on_visit_id"
     end
     create_table "ahoy_visits", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "visit_token"
-      t.string "visitor_token"
-      t.bigint "user_id"
-      t.string "ip"
-      t.text "user_agent"
-      t.text "referrer"
-      t.string "referring_domain"
-      t.text "landing_page"
+      t.string "app_version"
       t.string "browser"
-      t.string "os"
-      t.string "device_type"
-      t.string "country"
-      t.string "region"
       t.string "city"
+      t.string "country"
+      t.string "device_type"
+      t.string "ip"
+      t.text "landing_page"
       t.float "latitude"
       t.float "longitude"
-      t.string "utm_source"
-      t.string "utm_medium"
-      t.string "utm_term"
-      t.string "utm_content"
-      t.string "utm_campaign"
-      t.string "app_version"
+      t.string "os"
       t.string "os_version"
       t.string "platform"
+      t.text "referrer"
+      t.string "referring_domain"
+      t.string "region"
       t.datetime "started_at", precision: nil
+      t.text "user_agent"
+      t.bigint "user_id"
+      t.string "utm_campaign"
+      t.string "utm_content"
+      t.string "utm_medium"
+      t.string "utm_source"
+      t.string "utm_term"
+      t.string "visit_token"
+      t.string "visitor_token"
       t.index ["user_id"], name: "index_ahoy_visits_on_user_id"
       t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
     end
     create_table "anthologies", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.integer "user_id"
       t.integer "access"
       t.integer "cached_page_count"
-      t.text "sequence", size: :medium
       t.datetime "created_at", precision: nil, null: false
+      t.integer "impressions_count", default: 0
+      t.text "sequence", size: :medium
+      t.string "title"
       t.datetime "updated_at", precision: nil, null: false
+      t.integer "user_id"
       t.index ["user_id"], name: "index_anthologies_on_user_id"
     end
     create_table "anthology_texts", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.text "body", size: :medium
       t.bigint "anthology_id"
-      t.integer "manifestation_id"
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
+      t.text "body", size: :medium
       t.integer "cached_page_count"
+      t.datetime "created_at", precision: nil, null: false
+      t.integer "manifestation_id"
+      t.string "title"
+      t.datetime "updated_at", precision: nil, null: false
+      t.index ["anthology_id", "manifestation_id"], name: "index_anthology_texts_on_anthology_id_and_manifestation_id", unique: true
       t.index ["anthology_id"], name: "index_anthology_texts_on_anthology_id"
       t.index ["manifestation_id"], name: "index_anthology_texts_on_manifestation_id"
     end
     create_table "api_keys", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "email"
+      t.datetime "created_at", precision: nil, null: false
       t.string "description"
+      t.string "email"
       t.string "key"
       t.integer "status"
-      t.datetime "created_at", precision: nil, null: false
       t.datetime "updated_at", precision: nil, null: false
       t.index ["email"], name: "index_api_keys_on_email", unique: true
       t.index ["key"], name: "index_api_keys_on_key", unique: true
     end
     create_table "authorities", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "name"
-      t.string "other_designation", limit: 1024
-      t.string "country"
+      t.boolean "bib_done"
+      t.string "blog_category_url"
+      t.text "cached_credits"
       t.text "comment", size: :medium
+      t.integer "corporate_body_id"
+      t.string "country"
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
-      t.string "viaf_id"
+      t.boolean "do_not_feature", default: false, null: false
+      t.integer "impressions_count"
+      t.integer "intellectual_property", null: false
+      t.timestamp "kwic_generation_started_at"
+      t.text "legacy_credits"
+      t.integer "legacy_toc_id"
+      t.string "name"
       t.string "nli_id"
-      t.integer "toc_id"
-      t.text "wikipedia_snippet", size: :medium
-      t.string "wikipedia_url", limit: 1024
-      t.string "profile_image_file_name"
+      t.string "other_designation", limit: 1024
+      t.boolean "pageless", default: false, null: false
+      t.integer "person_id"
       t.string "profile_image_content_type"
+      t.string "profile_image_file_name"
       t.integer "profile_image_file_size"
       t.datetime "profile_image_updated_at", precision: nil
-      t.integer "impressions_count"
-      t.string "blog_category_url"
-      t.boolean "bib_done"
+      t.datetime "published_at", precision: nil
       t.string "sort_name"
       t.integer "status"
-      t.datetime "published_at", precision: nil
-      t.integer "intellectual_property", null: false
-      t.string "wikidata_uri"
-      t.integer "person_id"
-      t.integer "corporate_body_id"
-      t.integer "root_collection_id"
+      t.integer "toc_id"
       t.integer "uncollected_works_collection_id"
-      t.integer "legacy_toc_id"
-      t.text "legacy_credits"
-      t.text "cached_credits"
+      t.datetime "updated_at", precision: nil, null: false
+      t.string "viaf_id"
+      t.string "wikidata_uri"
+      t.text "wikipedia_snippet", size: :medium
+      t.string "wikipedia_url", limit: 1024
       t.index ["corporate_body_id"], name: "index_authorities_on_corporate_body_id", unique: true
       t.index ["impressions_count"], name: "index_authorities_on_impressions_count"
       t.index ["intellectual_property"], name: "index_authorities_on_intellectual_property"
       t.index ["name"], name: "index_authorities_on_name"
       t.index ["person_id"], name: "index_authorities_on_person_id", unique: true
-      t.index ["root_collection_id"], name: "index_authorities_on_root_collection_id"
       t.index ["sort_name"], name: "index_authorities_on_sort_name"
       t.index ["status", "published_at"], name: "index_authorities_on_status_and_published_at"
       t.index ["toc_id"], name: "people_toc_id_fk"
       t.index ["uncollected_works_collection_id"], name: "index_authorities_on_uncollected_works_collection_id", unique: true
     end
     create_table "base_user_preferences", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.bigint "base_user_id", null: false
       t.string "name", null: false
       t.string "value"
-      t.bigint "base_user_id", null: false
       t.index ["base_user_id"], name: "index_base_user_preferences_on_base_user_id"
     end
     create_table "base_users", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "user_id"
       t.string "session_id"
+      t.integer "user_id"
       t.index ["session_id"], name: "index_base_users_on_session_id", unique: true
       t.index ["user_id"], name: "index_base_users_on_user_id", unique: true
     end
     create_table "bib_sources", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.integer "source_type"
-      t.string "url"
-      t.integer "port"
       t.string "api_key"
       t.text "comments"
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
-      t.integer "status"
       t.string "institution"
       t.string "item_pattern", limit: 2048
-      t.string "vid"
+      t.integer "port"
       t.string "scope"
+      t.integer "source_type"
+      t.integer "status"
+      t.string "title"
+      t.datetime "updated_at", precision: nil, null: false
+      t.string "url"
+      t.string "vid"
     end
     create_table "blazer_audits", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.bigint "user_id"
+      t.datetime "created_at", precision: nil
+      t.string "data_source"
       t.bigint "query_id"
       t.text "statement"
-      t.string "data_source"
-      t.datetime "created_at", precision: nil
+      t.bigint "user_id"
       t.index ["query_id"], name: "index_blazer_audits_on_query_id"
       t.index ["user_id"], name: "index_blazer_audits_on_user_id"
     end
     create_table "blazer_checks", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.bigint "creator_id"
-      t.bigint "query_id"
-      t.string "state"
-      t.string "schedule"
-      t.text "emails"
-      t.text "slack_channels"
       t.string "check_type"
-      t.text "message"
-      t.datetime "last_run_at", precision: nil
       t.datetime "created_at", precision: nil, null: false
+      t.bigint "creator_id"
+      t.text "emails"
+      t.datetime "last_run_at", precision: nil
+      t.text "message"
+      t.bigint "query_id"
+      t.string "schedule"
+      t.text "slack_channels"
+      t.string "state"
       t.datetime "updated_at", precision: nil, null: false
       t.index ["creator_id"], name: "index_blazer_checks_on_creator_id"
       t.index ["query_id"], name: "index_blazer_checks_on_query_id"
     end
     create_table "blazer_dashboard_queries", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.bigint "dashboard_id"
-      t.bigint "query_id"
-      t.integer "position"
       t.datetime "created_at", precision: nil, null: false
+      t.bigint "dashboard_id"
+      t.integer "position"
+      t.bigint "query_id"
       t.datetime "updated_at", precision: nil, null: false
       t.index ["dashboard_id"], name: "index_blazer_dashboard_queries_on_dashboard_id"
       t.index ["query_id"], name: "index_blazer_dashboard_queries_on_query_id"
     end
     create_table "blazer_dashboards", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", precision: nil, null: false
       t.bigint "creator_id"
       t.string "name"
-      t.datetime "created_at", precision: nil, null: false
       t.datetime "updated_at", precision: nil, null: false
       t.index ["creator_id"], name: "index_blazer_dashboards_on_creator_id"
     end
     create_table "blazer_queries", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.bigint "creator_id"
-      t.string "name"
-      t.text "description"
-      t.text "statement"
-      t.string "data_source"
-      t.string "status"
       t.datetime "created_at", precision: nil, null: false
+      t.bigint "creator_id"
+      t.string "data_source"
+      t.text "description"
+      t.string "name"
+      t.text "statement"
+      t.string "status"
       t.datetime "updated_at", precision: nil, null: false
       t.index ["creator_id"], name: "index_blazer_queries_on_creator_id"
     end
     create_table "bookmarks", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "manifestation_id"
+      t.bigint "base_user_id", null: false
       t.string "bookmark_p"
       t.datetime "created_at", precision: nil, null: false
+      t.integer "manifestation_id"
       t.datetime "updated_at", precision: nil, null: false
-      t.bigint "base_user_id", null: false
       t.index ["base_user_id", "manifestation_id"], name: "index_bookmarks_on_base_user_id_and_manifestation_id", unique: true
       t.index ["base_user_id"], name: "index_bookmarks_on_base_user_id"
       t.index ["manifestation_id"], name: "index_bookmarks_on_manifestation_id"
     end
     create_table "collection_items", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.string "alt_title", limit: 2048
       t.integer "collection_id"
-      t.string "alt_title"
       t.text "context"
-      t.integer "seqno"
-      t.string "item_type"
-      t.bigint "item_id"
-      t.text "markdown"
       t.datetime "created_at", null: false
-      t.datetime "updated_at", null: false
+      t.bigint "item_id"
+      t.string "item_type"
+      t.text "markdown"
       t.boolean "paratext"
+      t.integer "seqno"
+      t.datetime "updated_at", null: false
       t.index ["collection_id"], name: "index_collection_items_on_collection_id"
       t.index ["item_type", "item_id"], name: "index_collection_items_on_item"
     end
     create_table "collections", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title", limit: 1024
-      t.string "sort_title"
-      t.string "subtitle"
-      t.string "issn"
+      t.string "alternate_titles", limit: 1024
+      t.text "cached_credits"
       t.integer "collection_type"
+      t.text "cover_text"
+      t.datetime "created_at", null: false
+      t.text "credits"
+      t.text "description"
+      t.integer "impressions_count", default: 0
       t.string "inception"
       t.integer "inception_year"
+      t.string "issn"
+      t.timestamp "kwic_generation_started_at"
+      t.integer "manifestations_count", default: 0, null: false
+      t.integer "normalized_pub_year"
+      t.string "pub_year"
       t.integer "publication_id"
+      t.string "publisher_line", limit: 2048
+      t.string "sort_title", limit: 2048
+      t.string "subtitle"
+      t.boolean "suppress_download_and_print", default: false, null: false
+      t.string "title", limit: 2048
       t.integer "toc_id"
       t.integer "toc_strategy"
-      t.datetime "created_at", null: false
       t.datetime "updated_at", null: false
-      t.string "publisher_line"
-      t.string "pub_year"
-      t.integer "normalized_pub_year"
-      t.text "credits"
-      t.text "cached_credits"
       t.index ["inception_year"], name: "index_collections_on_inception_year"
       t.index ["publication_id"], name: "index_collections_on_publication_id"
-      t.index ["sort_title"], name: "index_collections_on_sort_title"
+      t.index ["sort_title"], name: "index_collections_on_sort_title", length: 255
       t.index ["toc_id"], name: "index_collections_on_toc_id"
     end
     create_table "corporate_bodies", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "inception"
-      t.integer "inception_year"
       t.string "dissolution"
       t.integer "dissolution_year"
+      t.string "inception"
+      t.integer "inception_year"
       t.string "location"
     end
     create_table "delayed_jobs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "priority", default: 0, null: false
       t.integer "attempts", default: 0, null: false
+      t.datetime "created_at", precision: nil
+      t.datetime "failed_at", precision: nil
       t.text "handler", null: false
       t.text "last_error"
-      t.datetime "run_at", precision: nil
       t.datetime "locked_at", precision: nil
-      t.datetime "failed_at", precision: nil
       t.string "locked_by"
+      t.integer "priority", default: 0, null: false
       t.string "queue"
-      t.datetime "created_at", precision: nil
+      t.datetime "run_at", precision: nil
       t.datetime "updated_at", precision: nil
       t.index ["priority", "run_at"], name: "delayed_jobs_priority"
     end
     create_table "dictionary_aliases", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.bigint "dictionary_entry_id"
       t.string "alias"
       t.datetime "created_at", precision: nil, null: false
+      t.bigint "dictionary_entry_id"
       t.datetime "updated_at", precision: nil, null: false
       t.index ["dictionary_entry_id"], name: "index_dictionary_aliases_on_dictionary_entry_id"
     end
     create_table "dictionary_entries", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "manifestation_id"
-      t.integer "sequential_number"
+      t.datetime "created_at", precision: nil, null: false
       t.string "defhead"
       t.text "deftext", size: :medium
-      t.integer "source_def_id"
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
+      t.integer "manifestation_id"
+      t.integer "sequential_number"
       t.string "sort_defhead"
+      t.integer "source_def_id"
+      t.datetime "updated_at", precision: nil, null: false
       t.index ["defhead"], name: "index_dictionary_entries_on_defhead"
       t.index ["manifestation_id", "sequential_number"], name: "manif_and_seqno_index"
       t.index ["manifestation_id"], name: "index_dictionary_entries_on_manifestation_id"
@@ -316,39 +335,46 @@ class InitSchema < ActiveRecord::Migration[7.0]
       t.index ["source_def_id"], name: "index_dictionary_entries_on_source_def_id"
     end
     create_table "dictionary_links", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.bigint "from_entry_id"
-      t.bigint "to_entry_id"
-      t.integer "linktype"
       t.datetime "created_at", precision: nil, null: false
+      t.bigint "from_entry_id"
+      t.integer "linktype"
+      t.bigint "to_entry_id"
       t.datetime "updated_at", precision: nil, null: false
       t.index ["from_entry_id"], name: "index_dictionary_links_on_from_entry_id"
       t.index ["to_entry_id"], name: "index_dictionary_links_on_to_entry_id"
     end
+    create_table "digest_deliveries", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "last_digest_sent_at", null: false
+      t.string "recipient_email", null: false
+      t.index ["recipient_email"], name: "index_digest_deliveries_on_recipient_email", unique: true
+    end
     create_table "downloadables", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "object_type"
-      t.bigint "object_id"
-      t.integer "doctype"
-      t.integer "status"
       t.datetime "created_at", precision: nil, null: false
+      t.integer "doctype"
+      t.bigint "object_id"
+      t.string "object_type"
+      t.integer "status"
       t.datetime "updated_at", precision: nil, null: false
       t.index ["object_type", "object_id"], name: "index_downloadables_on_object_type_and_object_id"
     end
     create_table "expressions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.string "form"
-      t.string "date"
-      t.string "language"
       t.text "comment", size: :medium
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
       t.date "copyright_expiration"
-      t.boolean "translation"
-      t.string "source_edition"
-      t.integer "period"
-      t.string "normalized_pub_date"
-      t.string "normalized_creation_date"
-      t.integer "work_id", null: false
+      t.datetime "created_at", precision: nil, null: false
+      t.string "date"
+      t.string "first_publication_date"
+      t.string "form"
       t.integer "intellectual_property", null: false
+      t.string "language"
+      t.string "normalized_creation_date"
+      t.string "normalized_first_publication_date"
+      t.string "normalized_pub_date"
+      t.integer "period"
+      t.string "source_edition"
+      t.string "title"
+      t.boolean "translation"
+      t.datetime "updated_at", precision: nil, null: false
+      t.integer "work_id", null: false
       t.index ["intellectual_property"], name: "index_expressions_on_intellectual_property"
       t.index ["normalized_creation_date"], name: "index_expressions_on_normalized_creation_date"
       t.index ["normalized_pub_date"], name: "index_expressions_on_normalized_pub_date"
@@ -356,114 +382,117 @@ class InitSchema < ActiveRecord::Migration[7.0]
       t.index ["work_id"], name: "index_expressions_on_work_id"
     end
     create_table "external_links", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "url", limit: 2048
-      t.integer "linktype"
-      t.integer "status"
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
       t.string "description"
       t.integer "linkable_id", null: false
       t.string "linkable_type", null: false
+      t.integer "linktype"
+      t.string "proposer_email"
+      t.integer "proposer_id"
+      t.integer "status"
+      t.datetime "updated_at", precision: nil, null: false
+      t.string "url", limit: 2048
       t.index ["linkable_type", "linkable_id"], name: "index_external_links_on_linkable_type_and_linkable_id"
+      t.index ["proposer_id"], name: "index_external_links_on_proposer_id"
     end
     create_table "featured_author_features", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", precision: nil, null: false
+      t.integer "featured_author_id"
       t.datetime "fromdate", precision: nil
       t.datetime "todate", precision: nil
-      t.integer "featured_author_id"
-      t.datetime "created_at", precision: nil, null: false
       t.datetime "updated_at", precision: nil, null: false
       t.index ["featured_author_id"], name: "index_featured_author_features_on_featured_author_id"
     end
     create_table "featured_authors", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.integer "user_id"
-      t.integer "person_id"
       t.text "body"
       t.datetime "created_at", precision: nil, null: false
+      t.integer "person_id"
+      t.string "title"
       t.datetime "updated_at", precision: nil, null: false
+      t.integer "user_id"
       t.index ["person_id"], name: "index_featured_authors_on_person_id"
       t.index ["user_id"], name: "index_featured_authors_on_user_id"
     end
     create_table "featured_content_features", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", precision: nil, null: false
       t.integer "featured_content_id"
       t.datetime "fromdate", precision: nil
       t.datetime "todate", precision: nil
-      t.datetime "created_at", precision: nil, null: false
       t.datetime "updated_at", precision: nil, null: false
       t.index ["featured_content_id"], name: "index_featured_content_features_on_featured_content_id"
     end
     create_table "featured_contents", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.integer "manifestation_id"
       t.integer "authority_id"
       t.text "body"
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
       t.string "external_link"
+      t.integer "manifestation_id"
+      t.string "title"
+      t.datetime "updated_at", precision: nil, null: false
       t.integer "user_id"
       t.index ["authority_id"], name: "index_featured_contents_on_authority_id"
       t.index ["manifestation_id"], name: "index_featured_contents_on_manifestation_id"
       t.index ["user_id"], name: "index_featured_contents_on_user_id"
     end
     create_table "holdings", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "publication_id"
-      t.string "source_id", limit: 1024
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
-      t.integer "status"
-      t.string "scan_url", limit: 2048
       t.integer "bib_source_id"
+      t.datetime "created_at", precision: nil, null: false
       t.string "location"
+      t.integer "publication_id"
+      t.string "scan_url", limit: 2048
+      t.string "source_id", limit: 1024
+      t.integer "status"
+      t.datetime "updated_at", precision: nil, null: false
       t.index ["bib_source_id"], name: "index_holdings_on_bib_source_id"
       t.index ["publication_id"], name: "index_holdings_on_publication_id"
     end
     create_table "html_dirs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "path"
       t.string "author"
       t.datetime "created_at", precision: nil
-      t.datetime "updated_at", precision: nil
       t.boolean "need_resequence"
-      t.boolean "public_domain"
+      t.string "path"
       t.integer "person_id"
+      t.boolean "public_domain"
+      t.datetime "updated_at", precision: nil
     end
     create_table "html_files", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "path"
-      t.string "url"
-      t.string "status"
-      t.string "problem"
-      t.datetime "created_at", precision: nil
-      t.datetime "updated_at", precision: nil
-      t.boolean "tables"
-      t.boolean "footnotes"
-      t.boolean "images"
-      t.string "nikkud"
-      t.boolean "line_numbers"
-      t.string "indentation"
-      t.string "headings"
-      t.string "orig_mtime"
-      t.string "orig_ctime"
-      t.boolean "stripped_nikkud"
-      t.string "orig_lang"
-      t.string "year_published"
-      t.string "orig_year_published"
-      t.integer "seqno"
-      t.string "orig_author"
-      t.string "orig_author_url"
-      t.integer "author_id"
-      t.string "genre"
-      t.boolean "paras_condensed", default: false
-      t.integer "translator_id"
       t.integer "assignee_id"
+      t.integer "author_id"
       t.text "comments"
-      t.string "title"
-      t.string "doc_file_name"
+      t.datetime "created_at", precision: nil
       t.string "doc_content_type"
+      t.string "doc_file_name"
       t.integer "doc_file_size"
       t.datetime "doc_updated_at", precision: nil
+      t.boolean "footnotes"
+      t.string "genre"
+      t.string "headings"
+      t.boolean "images"
+      t.string "indentation"
+      t.boolean "line_numbers"
       t.text "markdown", size: :long
-      t.string "publisher"
+      t.string "nikkud"
+      t.string "orig_author"
+      t.string "orig_author_url"
+      t.string "orig_ctime"
+      t.string "orig_lang"
+      t.string "orig_mtime"
+      t.string "orig_year_published"
+      t.boolean "paras_condensed", default: false
+      t.string "path"
+      t.string "problem"
       t.string "pub_link"
       t.string "pub_link_text"
+      t.string "publisher"
+      t.integer "seqno"
+      t.string "status"
+      t.boolean "stripped_nikkud"
+      t.boolean "tables"
+      t.string "title"
+      t.integer "translator_id"
+      t.datetime "updated_at", precision: nil
+      t.string "url"
+      t.string "year_published"
       t.index ["assignee_id"], name: "index_html_files_on_assignee_id"
       t.index ["path"], name: "index_html_files_on_path"
       t.index ["status"], name: "index_html_files_on_status"
@@ -471,112 +500,277 @@ class InitSchema < ActiveRecord::Migration[7.0]
     end
     create_table "html_files_manifestations", id: false, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
       t.integer "html_file_id"
       t.integer "manifestation_id"
+      t.datetime "updated_at", precision: nil, null: false
       t.index ["html_file_id"], name: "index_html_files_manifestations_on_html_file_id"
       t.index ["manifestation_id"], name: "index_html_files_manifestations_on_manifestation_id"
     end
-    create_table "impressions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "impressionable_type"
-      t.integer "impressionable_id"
-      t.integer "user_id"
-      t.string "controller_name"
-      t.string "action_name"
-      t.string "view_name"
-      t.string "request_hash"
-      t.string "ip_address"
-      t.string "session_hash"
-      t.text "message", size: :medium
-      t.text "referrer", size: :medium
-      t.text "params", size: :medium
-      t.datetime "created_at", precision: nil
-      t.datetime "updated_at", precision: nil
-      t.index ["controller_name", "action_name", "ip_address"], name: "controlleraction_ip_index"
-      t.index ["controller_name", "action_name", "request_hash"], name: "controlleraction_request_index"
-      t.index ["controller_name", "action_name", "session_hash"], name: "controlleraction_session_index"
-      t.index ["impressionable_type", "impressionable_id", "ip_address"], name: "poly_ip_index"
-      t.index ["impressionable_type", "impressionable_id", "params"], name: "poly_params_request_index", length: { params: 255 }
-      t.index ["impressionable_type", "impressionable_id", "request_hash"], name: "poly_request_index"
-      t.index ["impressionable_type", "impressionable_id", "session_hash"], name: "poly_session_index"
-      t.index ["impressionable_type", "impressionable_id", "updated_at"], name: "for_compaction"
-      t.index ["impressionable_type", "message", "impressionable_id"], name: "impressionable_type_message_index", length: { message: 255 }
-      t.index ["updated_at"], name: "index_impressions_on_updated_at"
-      t.index ["user_id"], name: "index_impressions_on_user_id"
-    end
     create_table "ingestibles", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.integer "status"
-      t.integer "scenario"
-      t.text "default_authorities"
-      t.text "metadata"
-      t.text "comments"
-      t.text "markdown", size: :long
-      t.integer "user_id"
-      t.text "problem", size: :medium
-      t.string "orig_lang"
-      t.string "year_published"
-      t.string "genre"
-      t.string "publisher"
-      t.string "pub_link", limit: 2048
-      t.string "pub_link_text", limit: 1024
       t.boolean "attach_photos", default: false, null: false
-      t.boolean "no_volume", default: false, null: false
-      t.text "toc_buffer"
-      t.integer "volume_id"
-      t.text "works_buffer", size: :long
-      t.datetime "markdown_updated_at", precision: nil
-      t.datetime "works_buffer_updated_at", precision: nil
+      t.text "collection_authorities"
+      t.text "comments"
       t.datetime "created_at", null: false
-      t.datetime "updated_at", null: false
-      t.integer "locked_by_user_id"
+      t.text "credits"
+      t.text "default_authorities"
+      t.string "genre"
+      t.text "ingested_changes"
+      t.string "intellectual_property"
+      t.integer "last_editor_id"
       t.timestamp "locked_at"
+      t.integer "locked_by_user_id"
+      t.text "markdown", size: :long
+      t.datetime "markdown_updated_at", precision: nil
+      t.text "metadata"
+      t.boolean "no_volume", default: false, null: false
+      t.string "orig_lang"
+      t.string "originating_task"
+      t.integer "periodical_id"
+      t.text "problem", size: :medium
+      t.bigint "project_id"
       t.string "prospective_volume_id"
       t.string "prospective_volume_title"
-      t.integer "periodical_id"
-      t.string "intellectual_property"
-      t.text "ingested_changes"
-      t.text "credits"
-      t.string "originating_task"
+      t.string "pub_link", limit: 2048
+      t.string "pub_link_text", limit: 1024
+      t.string "publisher"
+      t.integer "scenario"
+      t.integer "status"
+      t.integer "tasks_project_id"
+      t.text "textarea_cache", size: :medium
+      t.string "title"
+      t.text "toc_buffer"
+      t.datetime "updated_at", null: false
+      t.integer "user_id"
+      t.integer "volume_id"
+      t.text "works_buffer", size: :long
+      t.datetime "works_buffer_updated_at", precision: nil
+      t.string "year_published"
+      t.index ["last_editor_id"], name: "index_ingestibles_on_last_editor_id"
       t.index ["locked_by_user_id"], name: "index_ingestibles_on_locked_by_user_id"
       t.index ["originating_task"], name: "index_ingestibles_on_originating_task"
+      t.index ["project_id"], name: "index_ingestibles_on_project_id"
       t.index ["status"], name: "index_ingestibles_on_status"
+      t.index ["tasks_project_id"], name: "index_ingestibles_on_tasks_project_id"
       t.index ["title"], name: "index_ingestibles_on_title"
       t.index ["user_id"], name: "index_ingestibles_on_user_id"
       t.index ["volume_id"], name: "index_ingestibles_on_volume_id"
     end
     create_table "involved_authorities", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
       t.integer "authority_id", null: false
-      t.integer "role", null: false
       t.datetime "created_at", null: false
-      t.datetime "updated_at", null: false
-      t.string "item_type", null: false
       t.integer "item_id", null: false
+      t.string "item_type", null: false
+      t.integer "role", null: false
+      t.datetime "updated_at", null: false
       t.index ["authority_id", "item_id", "item_type", "role"], name: "index_involved_authority_uniq", unique: true
       t.index ["authority_id"], name: "index_involved_authorities_on_authority_id"
       t.index ["item_type", "item_id"], name: "index_involved_authorities_on_item"
     end
     create_table "legacy_recommendations", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "from"
       t.string "about"
-      t.string "what"
-      t.boolean "subscribe"
-      t.string "status"
-      t.integer "resolved_by"
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
+      t.string "from"
       t.integer "html_file_id"
-      t.integer "recommended_by"
       t.integer "manifestation_id"
+      t.integer "recommended_by"
+      t.integer "resolved_by"
+      t.string "status"
+      t.boolean "subscribe"
+      t.datetime "updated_at", precision: nil, null: false
+      t.string "what"
+    end
+    create_table "legacy_urls", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", null: false
+      t.string "description"
+      t.string "from_url", null: false
+      t.integer "target_id"
+      t.string "target_type"
+      t.datetime "updated_at", null: false
+      t.index ["from_url"], name: "index_legacy_urls_on_from_url", unique: true
+      t.index ["target_type", "target_id"], name: "index_legacy_urls_on_target_type_and_target_id"
+    end
+    create_table "lex_citation_authors", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", null: false
+      t.bigint "lex_citation_id", null: false
+      t.bigint "lex_entry_id"
+      t.string "link", limit: 1024
+      t.string "name"
+      t.datetime "updated_at", null: false
+      t.index ["lex_citation_id", "lex_entry_id"], name: "index_lex_citation_authors_on_lex_citation_id_and_lex_entry_id", unique: true
+      t.index ["lex_citation_id"], name: "index_lex_citation_authors_on_lex_citation_id"
+      t.index ["lex_entry_id"], name: "index_lex_citation_authors_on_lex_entry_id"
+    end
+    create_table "lex_citations", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.string "backup_url", limit: 1024
+      t.datetime "created_at", precision: nil, null: false
+      t.string "from_publication"
+      t.bigint "lex_person_id", null: false
+      t.bigint "lex_person_work_id"
+      t.string "link", limit: 1024
+      t.datetime "link_checked_at"
+      t.integer "link_http_status"
+      t.boolean "link_unverifiable", default: false, null: false
+      t.integer "manifestation_id"
+      t.text "notes"
+      t.string "pages"
+      t.integer "seqno", null: false
+      t.string "subject"
+      t.json "text_links"
+      t.string "title"
+      t.datetime "updated_at", precision: nil, null: false
+      t.index ["lex_person_id"], name: "index_lex_citations_on_lex_person_id"
+      t.index ["lex_person_work_id"], name: "index_lex_citations_on_lex_person_work_id"
+      t.index ["manifestation_id"], name: "index_lex_citations_on_manifestation_id"
+      t.index ["title"], name: "index_lex_citations_on_title"
+    end
+    create_table "lex_entries", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", precision: nil, null: false
+      t.string "date_of_manual_update"
+      t.string "english_title"
+      t.json "external_identifiers"
+      t.integer "last_editor_id"
+      t.bigint "lex_item_id"
+      t.string "lex_item_type"
+      t.timestamp "locked_at"
+      t.integer "locked_by_user_id"
+      t.boolean "main", default: true, null: false
+      t.integer "migration_item_count"
+      t.string "other_designation", limit: 1024
+      t.bigint "profile_image_id"
+      t.string "sort_title"
+      t.integer "status"
+      t.string "title", limit: 1024
+      t.datetime "updated_at", precision: nil, null: false
+      t.json "verification_progress"
+      t.index ["last_editor_id"], name: "index_lex_entries_on_last_editor_id"
+      t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
+      t.index ["locked_by_user_id"], name: "index_lex_entries_on_locked_by_user_id"
+      t.index ["migration_item_count"], name: "index_lex_entries_on_migration_item_count"
+      t.index ["profile_image_id"], name: "index_lex_entries_on_profile_image_id"
+      t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
+      t.index ["status"], name: "index_lex_entries_on_status"
+      t.index ["title"], name: "index_lex_entries_on_title", length: 191
+    end
+    create_table "lex_files", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.text "comments"
+      t.datetime "created_at", precision: nil, null: false
+      t.integer "entrytype"
+      t.text "error_message"
+      t.string "fname"
+      t.string "full_path"
+      t.bigint "lex_entry_id", null: false
+      t.integer "status"
+      t.datetime "updated_at", precision: nil, null: false
+      t.index ["entrytype"], name: "index_lex_files_on_entrytype"
+      t.index ["fname"], name: "index_lex_files_on_fname", unique: true
+      t.index ["lex_entry_id"], name: "index_lex_files_on_lex_entry_id", unique: true
+      t.index ["status"], name: "index_lex_files_on_status"
+    end
+    create_table "lex_issues", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", precision: nil, null: false
+      t.string "issue"
+      t.bigint "lex_publication_id"
+      t.integer "seq_num"
+      t.string "subtitle"
+      t.text "toc"
+      t.datetime "updated_at", precision: nil, null: false
+      t.string "volume"
+      t.index ["lex_publication_id"], name: "index_lex_issues_on_lex_publication_id"
+      t.index ["seq_num"], name: "index_lex_issues_on_seq_num"
+      t.index ["subtitle"], name: "index_lex_issues_on_subtitle"
+    end
+    create_table "lex_legacy_links", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.bigint "lex_entry_id", null: false
+      t.string "new_path", null: false
+      t.string "old_path", null: false
+      t.index ["lex_entry_id"], name: "index_lex_legacy_links_on_lex_entry_id"
+      t.index ["old_path"], name: "index_lex_legacy_links_on_old_path", unique: true
+    end
+    create_table "lex_linked_people", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", null: false
+      t.bigint "lex_person_work_id", null: false
+      t.integer "link_type", null: false
+      t.string "name", null: false
+      t.bigint "person_lex_entry_id"
+      t.integer "seqno", null: false
+      t.datetime "updated_at", null: false
+      t.index ["lex_person_work_id"], name: "index_lex_linked_people_on_lex_person_work_id"
+      t.index ["person_lex_entry_id"], name: "index_lex_linked_people_on_person_lex_entry_id"
+    end
+    create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "checked_at"
+      t.datetime "created_at", precision: nil, null: false
+      t.string "description"
+      t.integer "http_status"
+      t.bigint "item_id"
+      t.string "item_type"
+      t.integer "status"
+      t.boolean "unverifiable", default: false, null: false
+      t.datetime "updated_at", precision: nil, null: false
+      t.string "url"
+      t.index ["item_type", "item_id"], name: "index_lex_links_on_item_type_and_item_id"
+    end
+    create_table "lex_people", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.string "aliases"
+      t.integer "authority_id"
+      t.text "bio", size: :medium
+      t.string "birthdate"
+      t.boolean "copyrighted"
+      t.datetime "created_at", precision: nil, null: false
+      t.string "deathdate"
+      t.integer "gender", default: 0
+      t.datetime "updated_at", precision: nil, null: false
+      t.index ["aliases"], name: "index_lex_people_on_aliases"
+      t.index ["authority_id"], name: "index_lex_people_on_authority_id"
+      t.index ["birthdate"], name: "index_lex_people_on_birthdate"
+      t.index ["copyrighted"], name: "index_lex_people_on_copyrighted"
+      t.index ["deathdate"], name: "index_lex_people_on_deathdate"
+    end
+    create_table "lex_people_items", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", precision: nil, null: false
+      t.bigint "item_id"
+      t.string "item_type"
+      t.bigint "lex_person_id"
+      t.datetime "updated_at", precision: nil, null: false
+      t.index ["item_type", "item_id"], name: "index_lex_people_items_on_item_type_and_item_id"
+      t.index ["lex_person_id"], name: "index_lex_people_items_on_lex_person_id"
+    end
+    create_table "lex_person_works", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.integer "collection_id"
+      t.string "comment", limit: 4096
+      t.json "comment_links"
+      t.datetime "created_at", null: false
+      t.bigint "lex_person_id", null: false
+      t.bigint "lex_publication_id"
+      t.string "publication_date"
+      t.integer "publication_id"
+      t.string "publication_place"
+      t.string "publisher"
+      t.integer "seqno", null: false
+      t.string "title", limit: 500, null: false
+      t.json "title_links"
+      t.datetime "updated_at", null: false
+      t.integer "work_type", null: false
+      t.index ["collection_id"], name: "index_lex_person_works_on_collection_id"
+      t.index ["lex_person_id"], name: "index_lex_person_works_on_lex_person_id"
+      t.index ["lex_publication_id"], name: "index_lex_person_works_on_lex_publication_id"
+      t.index ["publication_id"], name: "index_lex_person_works_on_publication_id"
+    end
+    create_table "lex_publications", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.boolean "az_navbar"
+      t.datetime "created_at", precision: nil, null: false
+      t.text "description"
+      t.text "toc"
+      t.datetime "updated_at", precision: nil, null: false
     end
     create_table "list_items", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "user_id"
-      t.string "listkey"
+      t.datetime "created_at", precision: nil, null: false
+      t.string "extra"
       t.integer "item_id"
       t.string "item_type"
-      t.datetime "created_at", precision: nil, null: false
+      t.string "listkey"
       t.datetime "updated_at", precision: nil, null: false
-      t.string "extra"
+      t.integer "user_id"
       t.index ["item_type", "item_id"], name: "index_list_items_on_item_type_and_item_id"
       t.index ["listkey", "item_id"], name: "index_list_items_on_listkey_and_item_id"
       t.index ["listkey", "updated_at"], name: "index_list_items_on_listkey_and_updated_at"
@@ -585,182 +779,237 @@ class InitSchema < ActiveRecord::Migration[7.0]
       t.index ["user_id"], name: "index_list_items_on_user_id"
     end
     create_table "manifestations", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.string "responsibility_statement"
-      t.string "edition"
-      t.string "identifier"
-      t.string "medium"
-      t.string "publisher"
-      t.string "publication_place"
-      t.string "publication_date"
-      t.string "series_statement"
-      t.text "comment", size: :medium
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
-      t.text "markdown", size: :medium
-      t.text "cached_people"
-      t.integer "impressions_count"
+      t.string "alternate_titles", limit: 1024
       t.text "cached_heading_lines"
-      t.boolean "conversion_verified"
+      t.text "cached_people"
+      t.text "comment", size: :medium
       t.integer "conv_counter"
-      t.integer "status"
-      t.string "sort_title"
-      t.boolean "sefaria_linker"
-      t.integer "expression_id", null: false
-      t.string "alternate_titles", limit: 512
+      t.boolean "conversion_verified"
+      t.datetime "created_at", precision: nil, null: false
       t.text "credits"
+      t.string "edition"
+      t.boolean "exclude_from_index", default: false, null: false
+      t.integer "expression_id", null: false
+      t.string "identifier"
+      t.integer "impressions_count"
+      t.text "markdown", size: :medium
+      t.string "medium"
+      t.string "publication_date"
+      t.string "publication_place"
+      t.string "publisher"
+      t.string "responsibility_statement"
+      t.boolean "sefaria_linker"
+      t.string "series_statement"
+      t.integer "soft_redirect"
+      t.string "sort_title"
+      t.integer "status"
+      t.string "title"
+      t.datetime "updated_at", precision: nil, null: false
+      t.integer "word_count"
       t.index ["conv_counter"], name: "index_manifestations_on_conv_counter"
       t.index ["created_at"], name: "index_manifestations_on_created_at"
       t.index ["expression_id"], name: "index_manifestations_on_expression_id"
       t.index ["impressions_count"], name: "index_manifestations_on_impressions_count"
+      t.index ["soft_redirect"], name: "index_manifestations_on_soft_redirect"
       t.index ["sort_title"], name: "index_manifestations_on_sort_title"
       t.index ["status", "sort_title"], name: "index_manifestations_on_status_and_sort_title"
       t.index ["status"], name: "index_manifestations_on_status"
+      t.index ["title"], name: "index_manifestations_on_title"
       t.index ["updated_at"], name: "index_manifestations_on_updated_at"
     end
     create_table "news_items", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.string "body"
+      t.datetime "created_at", precision: nil, null: false
+      t.boolean "double"
       t.integer "itemtype"
-      t.string "title"
       t.boolean "pinned"
       t.datetime "relevance", precision: nil
-      t.string "body"
-      t.string "url"
-      t.boolean "double"
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
       t.string "thumbnail_url"
+      t.string "title"
+      t.datetime "updated_at", precision: nil, null: false
+      t.string "url"
       t.index ["relevance"], name: "index_news_items_on_relevance"
     end
+    create_table "pending_notifications", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", null: false
+      t.text "notification_data"
+      t.string "notification_type", null: false
+      t.string "recipient_email", null: false
+      t.index ["recipient_email", "created_at"], name: "index_pending_notifications_on_recipient_email_and_created_at"
+      t.index ["recipient_email"], name: "index_pending_notifications_on_recipient_email"
+    end
     create_table "people", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "period"
       t.string "birthdate"
       t.string "deathdate"
       t.integer "gender"
+      t.integer "period"
     end
     create_table "periods", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "name"
       t.text "comments", size: :medium
-      t.string "wikipedia_url"
       t.datetime "created_at", precision: nil, null: false
+      t.string "name"
       t.datetime "updated_at", precision: nil, null: false
+      t.string "wikipedia_url"
+    end
+    create_table "projects", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.text "comments"
+      t.string "contact_person_email"
+      t.string "contact_person_name"
+      t.string "contact_person_phone"
+      t.datetime "created_at", null: false
+      t.string "default_external_link"
+      t.string "default_link_description"
+      t.text "description"
+      t.date "end_date"
+      t.string "name"
+      t.date "start_date"
+      t.integer "tasks_project_id"
+      t.datetime "updated_at", null: false
+      t.index ["tasks_project_id"], name: "index_projects_on_tasks_project_id", unique: true
     end
     create_table "proofs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "from"
       t.string "about"
-      t.text "what", size: :medium
-      t.boolean "subscribe"
-      t.string "status"
       t.datetime "created_at", precision: nil
-      t.datetime "updated_at", precision: nil
-      t.integer "html_file_id"
-      t.integer "resolved_by"
+      t.string "from"
       t.text "highlight", size: :medium
+      t.integer "item_id", null: false
+      t.string "item_type", null: false
       t.integer "reported_by"
-      t.integer "manifestation_id"
-      t.index ["html_file_id"], name: "proofs_html_file_id_fk"
-      t.index ["manifestation_id"], name: "proofs_manifestation_id_fk"
+      t.integer "resolved_by"
+      t.string "status"
+      t.boolean "subscribe"
+      t.datetime "updated_at", precision: nil
+      t.text "what", size: :medium
+      t.index ["item_id", "item_type", "status"], name: "index_proofs_on_item_id_and_item_type_and_status"
+      t.index ["item_type"], name: "index_proofs_on_item_type"
       t.index ["resolved_by"], name: "proofs_resolved_by_fk"
       t.index ["status", "created_at"], name: "index_proofs_on_status_and_created_at"
-      t.index ["status", "manifestation_id"], name: "index_proofs_on_status_and_manifestation_id"
     end
     create_table "publications", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title", limit: 1024
-      t.string "publisher_line"
       t.string "author_line", limit: 1024
-      t.text "notes"
-      t.string "source_id", limit: 1024
       t.integer "authority_id"
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
-      t.integer "status"
-      t.string "pub_year"
-      t.string "language"
       t.integer "bib_source_id"
+      t.datetime "created_at", precision: nil, null: false
+      t.string "language"
+      t.text "notes"
+      t.string "pub_year"
+      t.string "publisher_line"
+      t.string "source_id", limit: 1024
+      t.integer "status"
       t.integer "task_id"
+      t.string "title", limit: 1024
+      t.datetime "updated_at", precision: nil, null: false
       t.index ["authority_id"], name: "index_publications_on_authority_id"
       t.index ["bib_source_id"], name: "index_publications_on_bib_source_id"
       t.index ["task_id"], name: "index_publications_on_task_id"
+      t.index ["title"], name: "index_publications_on_title", length: 200
     end
     create_table "reading_lists", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.integer "user_id"
       t.integer "access"
       t.datetime "created_at", precision: nil, null: false
+      t.string "title"
       t.datetime "updated_at", precision: nil, null: false
+      t.integer "user_id"
       t.index ["user_id"], name: "index_reading_lists_on_user_id"
     end
     create_table "recommendations", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.text "body"
-      t.integer "user_id"
       t.integer "approved_by"
-      t.integer "status"
-      t.integer "manifestation_id"
+      t.text "body"
       t.datetime "created_at", precision: nil, null: false
+      t.integer "manifestation_id"
+      t.integer "status"
       t.datetime "updated_at", precision: nil, null: false
+      t.integer "user_id"
       t.index ["approved_by"], name: "recommendations_approved_by_fk"
       t.index ["manifestation_id", "status"], name: "index_recommendations_on_manifestation_id_and_status"
       t.index ["manifestation_id"], name: "index_recommendations_on_manifestation_id"
       t.index ["user_id"], name: "index_recommendations_on_user_id"
     end
+    create_table "saved_selection_items", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", null: false
+      t.integer "item_id", null: false
+      t.string "item_type", null: false
+      t.integer "saved_selection_id", null: false
+      t.datetime "updated_at", null: false
+      t.index ["item_type", "item_id"], name: "index_saved_selection_items_on_item_type_and_item_id"
+      t.index ["saved_selection_id"], name: "index_saved_selection_items_on_saved_selection_id"
+    end
+    create_table "saved_selections", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.datetime "created_at", null: false
+      t.date "delete_after", null: false
+      t.string "name", null: false
+      t.boolean "shared", default: false, null: false
+      t.datetime "updated_at", null: false
+      t.integer "user_id", null: false
+      t.index ["delete_after"], name: "index_saved_selections_on_delete_after"
+      t.index ["user_id"], name: "index_saved_selections_on_user_id"
+    end
     create_table "sessions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "session_id", null: false
-      t.text "data", size: :medium
       t.datetime "created_at", precision: nil
+      t.text "data", size: :medium
+      t.string "session_id", null: false
       t.datetime "updated_at", precision: nil
       t.index ["session_id"], name: "index_sessions_on_session_id"
       t.index ["updated_at"], name: "index_sessions_on_updated_at"
     end
     create_table "sitenotices", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
       t.text "body"
-      t.datetime "fromdate", precision: nil
-      t.datetime "todate", precision: nil
-      t.integer "status"
       t.datetime "created_at", precision: nil, null: false
+      t.datetime "fromdate", precision: nil
+      t.integer "status"
+      t.datetime "todate", precision: nil
       t.datetime "updated_at", precision: nil, null: false
       t.index ["fromdate"], name: "index_sitenotices_on_fromdate"
       t.index ["status"], name: "index_sitenotices_on_status"
       t.index ["todate"], name: "index_sitenotices_on_todate"
     end
     create_table "static_pages", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.text "body", size: :medium
+      t.datetime "created_at", precision: nil, null: false
+      t.boolean "ltr"
+      t.integer "mode"
+      t.integer "status"
       t.string "tag"
       t.string "title"
-      t.text "body", size: :medium
-      t.integer "status"
-      t.integer "mode"
-      t.datetime "created_at", precision: nil, null: false
       t.datetime "updated_at", precision: nil, null: false
-      t.boolean "ltr"
     end
     create_table "tag_names", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "tag_id"
-      t.string "name"
       t.datetime "created_at", null: false
+      t.string "name"
+      t.integer "tag_id"
       t.datetime "updated_at", null: false
       t.index ["name"], name: "index_tag_names_on_name", unique: true
       t.index ["tag_id"], name: "index_tag_names_on_tag_id"
     end
     create_table "taggings", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "tag_id"
-      t.integer "taggable_id"
-      t.integer "status"
-      t.integer "suggested_by"
       t.integer "approved_by"
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
+      t.integer "status"
+      t.integer "suggested_by"
+      t.integer "tag_id"
+      t.integer "taggable_id"
       t.string "taggable_type"
+      t.datetime "updated_at", precision: nil, null: false
+      t.index ["approved_by", "status"], name: "index_taggings_on_approved_by_and_status"
       t.index ["approved_by"], name: "taggings_approved_by_fk"
+      t.index ["status", "created_at"], name: "index_taggings_on_status_and_created_at"
+      t.index ["status"], name: "index_taggings_on_status"
+      t.index ["suggested_by", "status", "created_at"], name: "index_taggings_on_suggested_by_status_created_at"
       t.index ["suggested_by"], name: "taggings_suggested_by_fk"
+      t.index ["tag_id", "status"], name: "index_taggings_on_tag_id_and_status"
+      t.index ["tag_id", "taggable_id", "taggable_type"], name: "index_taggings_on_tag_and_taggable"
       t.index ["tag_id"], name: "taggings_tag_id_fk"
       t.index ["taggable_id", "taggable_type"], name: "index_taggings_on_taggable_id_and_taggable_type"
     end
     create_table "tags", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
+      t.integer "approved_taggings_count", default: 0, null: false
+      t.integer "approver_id"
+      t.datetime "created_at", precision: nil, null: false
+      t.integer "created_by"
       t.string "name"
       t.integer "status"
-      t.integer "created_by"
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
-      t.integer "approver_id"
       t.integer "taggings_count"
+      t.datetime "updated_at", precision: nil, null: false
       t.string "wikidata_qid"
       t.index ["approver_id"], name: "index_tags_on_approver_id"
       t.index ["created_by"], name: "tags_created_by_fk"
@@ -768,72 +1017,74 @@ class InitSchema < ActiveRecord::Migration[7.0]
       t.index ["wikidata_qid"], name: "index_tags_on_wikidata_qid"
     end
     create_table "tocs", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.text "toc", size: :medium
+      t.text "cached_toc", size: :medium
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
       t.text "credit_section"
       t.integer "status"
-      t.text "cached_toc", size: :medium
+      t.text "toc", size: :medium
+      t.datetime "updated_at", precision: nil, null: false
     end
     create_table "user_blocks", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "user_id"
-      t.string "context"
-      t.datetime "expires_at", precision: nil
       t.integer "blocker_id"
-      t.string "reason"
-      t.datetime "created_at", null: false
-      t.datetime "updated_at", null: false
-      t.string "context_item_type"
+      t.string "context"
       t.bigint "context_item_id"
+      t.string "context_item_type"
+      t.datetime "created_at", null: false
+      t.datetime "expires_at", precision: nil
+      t.string "reason"
+      t.datetime "updated_at", null: false
+      t.integer "user_id"
       t.index ["context"], name: "index_user_blocks_on_context"
       t.index ["context_item_type", "context_item_id"], name: "index_user_blocks_on_context_item"
       t.index ["user_id"], name: "index_user_blocks_on_user_id"
     end
     create_table "users", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "name"
-      t.string "email"
-      t.string "provider"
-      t.string "uid"
-      t.string "oauth_token"
-      t.datetime "oauth_expires_at", precision: nil
       t.boolean "admin"
-      t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
-      t.boolean "editor"
-      t.string "avatar_file_name"
       t.string "avatar_content_type"
+      t.string "avatar_file_name"
       t.integer "avatar_file_size"
       t.datetime "avatar_updated_at", precision: nil
-      t.string "tasks_api_key"
+      t.datetime "created_at", precision: nil, null: false
       t.boolean "crowdsourcer"
+      t.boolean "editor"
+      t.string "email"
+      t.string "name"
+      t.datetime "oauth_expires_at", precision: nil
+      t.string "oauth_token", limit: 4096
+      t.string "provider"
+      t.string "tasks_api_key"
+      t.string "uid"
+      t.datetime "updated_at", precision: nil, null: false
       t.date "warned_on"
     end
     create_table "versions", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "item_type", null: false
-      t.integer "item_id", null: false
-      t.string "event", null: false
-      t.string "whodunnit"
-      t.text "object", size: :long
       t.datetime "created_at", precision: nil
+      t.string "event", null: false
+      t.integer "item_id", null: false
+      t.string "item_type", null: false
+      t.text "object", size: :long
+      t.json "object_changes"
+      t.string "whodunnit"
+      t.index ["item_type", "created_at"], name: "index_versions_on_item_type_and_created_at"
       t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
     end
     create_table "volunteer_profile_features", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "volunteer_profile_id"
+      t.datetime "created_at", precision: nil, null: false
       t.datetime "fromdate", precision: nil
       t.datetime "todate", precision: nil
-      t.datetime "created_at", precision: nil, null: false
       t.datetime "updated_at", precision: nil, null: false
+      t.integer "volunteer_profile_id"
       t.index ["volunteer_profile_id"], name: "index_volunteer_profile_features_on_volunteer_profile_id"
     end
     create_table "volunteer_profiles", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "name"
-      t.text "bio"
       t.text "about"
-      t.string "profile_image_file_name"
+      t.text "bio"
+      t.datetime "created_at", precision: nil, null: false
+      t.string "name"
       t.string "profile_image_content_type"
+      t.string "profile_image_file_name"
       t.integer "profile_image_file_size"
       t.datetime "profile_image_updated_at", precision: nil
-      t.datetime "created_at", precision: nil, null: false
       t.datetime "updated_at", precision: nil, null: false
     end
     create_table "work_likes", id: false, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
@@ -843,37 +1094,38 @@ class InitSchema < ActiveRecord::Migration[7.0]
       t.index ["user_id", "manifestation_id"], name: "index_work_likes_on_user_id_and_manifestation_id"
     end
     create_table "works", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.string "title"
-      t.string "form"
-      t.string "date"
       t.text "comment", size: :medium
       t.datetime "created_at", precision: nil, null: false
-      t.datetime "updated_at", precision: nil, null: false
+      t.string "date"
+      t.string "form"
       t.string "genre"
+      t.string "normalized_creation_date"
+      t.string "normalized_pub_date"
       t.string "orig_lang"
       t.string "origlang_title"
-      t.string "normalized_pub_date"
-      t.string "normalized_creation_date"
       t.boolean "primary", null: false
+      t.string "title"
+      t.datetime "updated_at", precision: nil, null: false
       t.index ["normalized_creation_date"], name: "index_works_on_normalized_creation_date"
       t.index ["normalized_pub_date"], name: "index_works_on_normalized_pub_date"
     end
     create_table "year_totals", charset: "utf8mb4", collation: "utf8mb4_bin" do |t|
-      t.integer "total"
-      t.integer "year"
-      t.string "item_type"
-      t.bigint "item_id"
       t.datetime "created_at", precision: nil, null: false
+      t.string "event"
+      t.bigint "item_id"
+      t.string "item_type"
+      t.integer "total"
       t.datetime "updated_at", precision: nil, null: false
-      t.index ["item_type", "item_id", "year"], name: "index_year_total_by_year", unique: true
+      t.integer "year"
+      t.index ["item_id", "item_type", "year", "event"], name: "index_year_totals_on_item_id_and_item_type_and_year_and_event", unique: true
       t.index ["item_type", "item_id"], name: "index_year_totals_on_item_type_and_item_id"
     end
     add_foreign_key "aboutnesses", "users"
     add_foreign_key "aboutnesses", "works"
+    add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
     add_foreign_key "anthologies", "users"
     add_foreign_key "anthology_texts", "anthologies"
     add_foreign_key "anthology_texts", "manifestations"
-    add_foreign_key "authorities", "collections", column: "root_collection_id"
     add_foreign_key "authorities", "collections", column: "uncollected_works_collection_id"
     add_foreign_key "authorities", "corporate_bodies"
     add_foreign_key "authorities", "people"
@@ -900,12 +1152,31 @@ class InitSchema < ActiveRecord::Migration[7.0]
     add_foreign_key "holdings", "bib_sources"
     add_foreign_key "holdings", "publications"
     add_foreign_key "ingestibles", "collections", column: "volume_id"
+    add_foreign_key "ingestibles", "projects"
+    add_foreign_key "ingestibles", "users", column: "last_editor_id"
     add_foreign_key "ingestibles", "users", column: "locked_by_user_id"
     add_foreign_key "involved_authorities", "authorities"
+    add_foreign_key "lex_citation_authors", "lex_citations"
+    add_foreign_key "lex_citation_authors", "lex_entries"
+    add_foreign_key "lex_citations", "lex_people"
+    add_foreign_key "lex_citations", "lex_person_works"
+    add_foreign_key "lex_citations", "manifestations"
+    add_foreign_key "lex_entries", "active_storage_attachments", column: "profile_image_id", on_delete: :nullify
+    add_foreign_key "lex_entries", "users", column: "last_editor_id"
+    add_foreign_key "lex_entries", "users", column: "locked_by_user_id"
+    add_foreign_key "lex_files", "lex_entries"
+    add_foreign_key "lex_issues", "lex_publications"
+    add_foreign_key "lex_legacy_links", "lex_entries"
+    add_foreign_key "lex_linked_people", "lex_entries", column: "person_lex_entry_id"
+    add_foreign_key "lex_linked_people", "lex_person_works"
+    add_foreign_key "lex_people", "authorities"
+    add_foreign_key "lex_people_items", "lex_people"
+    add_foreign_key "lex_person_works", "collections"
+    add_foreign_key "lex_person_works", "lex_people"
+    add_foreign_key "lex_person_works", "lex_publications"
+    add_foreign_key "lex_person_works", "publications"
     add_foreign_key "list_items", "users"
     add_foreign_key "manifestations", "expressions"
-    add_foreign_key "proofs", "html_files", name: "proofs_html_file_id_fk"
-    add_foreign_key "proofs", "manifestations", name: "proofs_manifestation_id_fk"
     add_foreign_key "proofs", "users", column: "resolved_by", name: "proofs_resolved_by_fk"
     add_foreign_key "publications", "authorities"
     add_foreign_key "publications", "bib_sources"
