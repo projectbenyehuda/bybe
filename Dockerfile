@@ -2,11 +2,11 @@ FROM ruby:3.3.9-trixie AS base
 
 RUN apt-get update -qq \
   && apt-get install -y yaz libmariadb3 libcap2 libvips42t64 libyaml-0-2 chromium libjemalloc2 \
+    libopengl0 libxcb-cursor0 \
   && wget https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-amd64.deb -O /tmp/pandoc.deb \
   && dpkg -i /tmp/pandoc.deb \
   && apt-get clean \
-  && wget https://bybedev.s3.us-east-1.amazonaws.com/stuff/kindlegen-2.9.tar.bz2 -O /tmp/kindlegen.tar.bz2 \
-  && tar xfj /tmp/kindlegen.tar.bz2 -C /usr/bin \
+  && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin version=9.14.0 \
   && rm -rf /tmp/* /var/tmp/*
 
 WORKDIR /app
