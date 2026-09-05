@@ -78,14 +78,7 @@ class MakeFreshDownloadable < ApplicationService
         begin
           # TODO: figure out how not to go through epub
           epubname = make_epub_from_single_html(html, download_entity, author_string)
-          mobiname = epubname[(epubname.rindex('/') + 1)..-6] + '.mobi'
-
-          # kindlegen returns status 1 if there were warnings and 2 if there were critical errors
-          _stdout, _stderr, status = Open3.capture3('kindlegen', epubname, '-c1', '-o', mobiname)
-          if status.exitstatus > 1
-            raise "Kindlegen conversion failed for EPUB #{epubname}"
-          end
-          mobiname = epubname[0..-6] + '.mobi'
+          mobiname = Converters::EpubToMobi.call(epubname)
           dl.stored_file.attach(io: File.open(mobiname), filename: filename)
           File.delete(epubname) # delete temporary generated EPUB
           File.delete(mobiname) # delete temporary generated MOBI
