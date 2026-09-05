@@ -7,7 +7,7 @@ module Converters
     def call(epub_filename)
       mobi_filename = epub_filename.gsub(/epub$/, 'mobi')
 
-      unless system('ebook-convert', epub_filename,  mobi_filename)
+      unless system('ebook-convert', epub_filename, mobi_filename)
         raise "ebook-convert failed: #{epub_filename} -> #{mobi_filename}"
       end
 
