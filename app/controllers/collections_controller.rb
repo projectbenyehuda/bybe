@@ -666,7 +666,7 @@ class CollectionsController < ApplicationController
       send_data epub_content, filename: filename, type: 'application/epub+zip', disposition: 'attachment'
     when 'mobi'
       epubname = make_epub_from_single_html(html, @collection, author_string)
-      mobiname = mobiname = Converters::EpubToMobi.call(epubname)
+      mobiname = Converters::EpubToMobi.call(epubname)
 
       mobi_content = File.binread(mobiname)
       File.delete(epubname)
