@@ -109,7 +109,7 @@ display order via `ROLES_PRESENTATION_ORDER`.
 - **FetchCollection**: preloads all manifestations + nested collections for a
   collection (avoids N+1; traverses children and parents).
 - **MakeFreshDownloadable**: HTML → format (PDF wkhtmltopdf; DOCX/ODT PandocRuby;
-  EPUB gepub; MOBI kindlegen); caches as Downloadable. **GetFreshManifestationDownloadable**
+  EPUB gepub; MOBI ebook-convert); caches as Downloadable. **GetFreshManifestationDownloadable**
   regenerates when stale/missing.
 - **SearchManifestations**: Elasticsearch query builder (languages, genres,
   periods, tags, authors, translations vs originals). **ElasticsearchAutocomplete**:
