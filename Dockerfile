@@ -6,7 +6,8 @@ RUN apt-get update -qq \
   && wget https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-amd64.deb -O /tmp/pandoc.deb \
   && dpkg -i /tmp/pandoc.deb \
   && apt-get clean \
-  && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin version=9.14.0 \
+  && wget -nv https://download.calibre-ebook.com/linux-installer.sh -O /tmp/calibre-installer.sh \
+  && sh /tmp/calibre-installer.sh version=9.14.0 \
   && rm -rf /tmp/* /var/tmp/*
 
 WORKDIR /app
