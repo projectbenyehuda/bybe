@@ -609,6 +609,26 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '#redo_migration_allowed?' do
+    it 'is true for the routinely eligible statuses, plus published' do
+      %i(draft verifying escalated published).each do |status|
+        file = create(:lex_file, :person, entry_status: status)
+        expect(file.lex_entry.redo_migration_allowed?).to be(true)
+      end
+    end
+
+    it 'is false for entries in other statuses even with a lex_file' do
+      %i(raw migrating error verified).each do |status|
+        file = create(:lex_file, :person, entry_status: status)
+        expect(file.lex_entry.redo_migration_allowed?).to be(false)
+      end
+    end
+
+    it 'is false for a published entry with no lex_file' do
+      expect(create(:lex_entry, status: :published).redo_migration_allowed?).to be(false)
+    end
+  end
+
   describe '#last_content_update' do
     let(:person) { create(:lex_person) }
     let(:entry) { create(:lex_entry, lex_item: person) }

@@ -1,5 +1,5 @@
 - lex_entry = lf.lex_entry
-- redo_eligible = lex_entry.status_draft? || lex_entry.status_verifying? || lex_entry.status_escalated?
+- redo_eligible = lex_entry.redo_migration_eligible?
 %tr{ id: "lex-file-#{lf.id}" }
   %td= lex_file_error(lf)
   %td= lf.fname.sub('.php', '').sub('/', '')
@@ -15,6 +15,12 @@
       %span= LexEntry.human_enum_name(:status, lex_entry.status)
     - elsif lex_entry.status_published?
       = link_to t(:show), lexicon_entry_path(lex_entry)
+      -#
+        Re-migrating a published entry is rare and destroys everything added since the original
+        migration, hence the danger styling and its own, much starker confirmation.
+      = link_to t('lexicon.files.redo_migrate.title'), redo_migration_lexicon_file_path(lf),
+                remote: true, method: :post, class: 'btn btn-sm btn-danger ms-1',
+                data: { confirm: t('lexicon.files.redo_migrate.published_confirm') }
     - elsif lex_entry.lex_item.present? && !lex_entry.status_error?
       = link_to t('lexicon.verification.queue.actions.start_or_continue'),
                 lexicon_verification_path(lex_entry),

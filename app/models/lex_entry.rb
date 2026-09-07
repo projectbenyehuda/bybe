@@ -136,6 +136,16 @@ class LexEntry < ApplicationRecord
     lex_file.present? && (status_draft? || status_verifying? || status_escalated?)
   end
 
+  # A published entry may also be re-migrated, but that is a rare and thoroughly destructive
+  # operation: everything editors added or corrected since the original migration is lost, and
+  # the entry falls back to `raw`, leaving the public site until it is verified and published
+  # again. Deliberately kept apart from #redo_migration_eligible? so that the routine
+  # verification-queue redo never picks up published entries; only the files queue offers this,
+  # behind its own confirmation.
+  def redo_migration_allowed?
+    redo_migration_eligible? || (lex_file.present? && status_published?)
+  end
+
   # Should be called if we want to re-ingest the lex file
   def reset_ingestion!
     return if lex_file.nil? # Should not be called for entries without lex_file
