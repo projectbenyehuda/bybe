@@ -9,13 +9,13 @@ describe Converters::EpubToMobi do
     context 'when file exists and valid' do
       let(:epub_filename) { Rails.root.join('spec/fixtures/files/converters/sample.epub').to_s }
 
+      after do
+        File.delete(epub_filename.gsub(/epub$/, 'mobi'))
+      end
+
       it 'creates a mobi file with the same name' do
         expect(result).to eq(Rails.root.join('spec/fixtures/files/converters/sample.mobi').to_s)
         expect(File.exist?(result)).to be true
-      end
-
-      after do
-        File.delete(epub_filename.gsub(/epub$/, 'mobi'))
       end
     end
 
