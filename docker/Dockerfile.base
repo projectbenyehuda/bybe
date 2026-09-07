@@ -5,12 +5,18 @@ ADD https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-amd64.d
 RUN apt-get update -qq \
     && apt-get install -y curl cmake git yaz libyaz-dev \
        mysql-client libmysqlclient-dev libpcap-dev libyaml-dev libvips-dev \
+       libjemalloc2 libegl1 libopengl0 libxcb-cursor0 \
     && dpkg -i /tmp/pandoc.deb
 
-# Ubuntu uses snap for chromium, but snap doesn't work in docker, so we need to install chromium from PPA
+RUN curl -fsSL https://download.calibre-ebook.com/linux-installer.sh -o /tmp/calibre-installer.sh \
+    && sh /tmp/calibre-installer.sh version=9.14.0
+
+# Ubuntu uses snap for chromium, but snap doesn't works in docker, so we need to install chromium from PPA
 RUN apt-get install -y software-properties-common \
     && add-apt-repository -y ppa:xtradeb/apps \
     && apt-get update -qq \
     && apt-get install -y chromium \
     && apt-get clean \
     && rm -rf /tmp/* /var/tmp/*
+
+ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
