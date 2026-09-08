@@ -26,12 +26,37 @@ RSpec.describe 'General citation sub-headings', :js, type: :system do
     all('#citation-headings .citation-heading-block .heading-title').map(&:text)
   end
 
+  # SortableJS registers itself on the element, so Sortable.get is a direct check that the pane's
+  # inline script ran and wired up dragging on the DOM currently on the page.
+  def sortables_wired?
+    page.evaluate_script(<<~JS)
+      (function() {
+        var list = document.querySelector('#citations ul.citations-group');
+        var headings = document.getElementById('citation-headings');
+        return !!(window.Sortable && list && headings && Sortable.get(list) && Sortable.get(headings));
+      })()
+    JS
+  end
+
   it 'adds a sub-heading from the citations tab' do
     open_citations_tab
     accept_prompt(with: 'ספרים') { find('a.add-citation-group').click }
 
     expect(page).to have_css('#citation-headings .citation-heading-block', text: 'ספרים', wait: 5)
     expect(person.citation_groups.reload.map(&:title)).to eq(['ספרים'])
+  end
+
+  # The pane reloads itself after every heading action and after a citation is dragged between
+  # buckets, re-running its inline script. The script must survive being run more than once, or
+  # dragging silently dies for the rest of the visit.
+  it 'keeps dragging wired up after the pane reloads itself' do
+    open_citations_tab
+    expect(sortables_wired?).to be true
+
+    accept_prompt(with: 'ספרים') { find('a.add-citation-group').click }
+    expect(page).to have_css('#citation-headings .citation-heading-block', text: 'ספרים', wait: 5)
+
+    expect(sortables_wired?).to be true
   end
 
   context 'with an existing sub-heading' do
