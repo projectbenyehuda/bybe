@@ -53,6 +53,11 @@ class LexEntry < ApplicationRecord
   # reachable via internal links from another entry.
   scope :main, -> { where(main: true) }
 
+  # The entries the public lexicon index lists, and the ones a visitor can actually reach:
+  # published entries, plus entries whose migration has not completed -- those are still served,
+  # by redirecting to their legacy PHP file. Draft and deprecated entries are editor-only.
+  scope :publicly_listed, -> { main.where(status: MIGRATION_STATUSES + %w(published)) }
+
   # SQL counterpart of `#entry_type == :person`: entries backed by a LexPerson item, plus entries
   # still awaiting ingestion -- no lex_item yet -- whose legacy file is a person file. The
   # lex_item_type IS NULL half matters: #entry_type only consults the file when the column is
@@ -184,9 +189,11 @@ class LexEntry < ApplicationRecord
     end
   end
 
-  def self.cached_published_count
-    Rails.cache.fetch('lex_entry_published_count', expires_in: 24.hours) do
-      LexEntry.where(status: :published).count
+  # Number shown in the site menu next to the lexicon link. Counts every entry a visitor can
+  # reach, not just the migrated ones -- unmigrated entries are served from the legacy PHP files.
+  def self.cached_public_count
+    Rails.cache.fetch('lex_entry_public_count', expires_in: 24.hours) do
+      publicly_listed.count
     end
   end
 

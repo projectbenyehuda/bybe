@@ -67,10 +67,9 @@ scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
       @person_filters_active = @genders.any? || @birth_year_from.present? || @birth_year_to.present? ||
                                @death_year_from.present? || @death_year_to.present?
 
-      # Start with base scope
-      # We render all not-completed migrations (they will be redirected to old site) plus published entries.
-      # Only main entries are listed; secondary entries are reachable via internal links only.
-      @lex_entries = LexEntry.main.includes(:lex_item).where(status: LexEntry::MIGRATION_STATUSES + %w(published))
+      # Start with base scope: published entries plus not-completed migrations (which get
+      # redirected to the old site); see LexEntry.publicly_listed.
+      @lex_entries = LexEntry.publicly_listed.includes(:lex_item)
 
       # Calculate gender facets (before applying gender filter)
       @gender_facet = calculate_gender_facets
