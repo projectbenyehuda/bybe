@@ -1,6 +1,5 @@
 -# Behaviour of the citations tab: the citation modals, and adding, renaming, removing, reordering
   and filling the general sub-headings (see LexCitationGroup).
-  .
   Everything below lives inside an IIFE because the pane reloads itself in place (reloadContent)
   after every heading action and after a citation is dragged between buckets, which re-runs this
   script in the global scope. At top level, a repeated `const` is a SyntaxError that aborts the

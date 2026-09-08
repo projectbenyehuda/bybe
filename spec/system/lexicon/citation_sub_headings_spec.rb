@@ -29,10 +29,13 @@ RSpec.describe 'General citation sub-headings', :js, type: :system do
   # SortableJS registers itself on the element, so Sortable.get is a direct check that the pane's
   # inline script ran and wired up dragging on the DOM currently on the page.
   def sortables_wired?
-    page.evaluate_script(
-      "!!Sortable.get(document.querySelector('#citations ul.citations-group')) && " \
-      "!!Sortable.get(document.getElementById('citation-headings'))"
-    )
+    page.evaluate_script(<<~JS)
+      (function() {
+        var list = document.querySelector('#citations ul.citations-group');
+        var headings = document.getElementById('citation-headings');
+        return !!(window.Sortable && list && headings && Sortable.get(list) && Sortable.get(headings));
+      })()
+    JS
   end
 
   it 'adds a sub-heading from the citations tab' do
