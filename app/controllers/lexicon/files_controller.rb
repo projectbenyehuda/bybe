@@ -82,7 +82,7 @@ module Lexicon
 
     def redo_migration
       lex_entry = @lex_file.lex_entry
-      return unless lex_entry.redo_migration_eligible?
+      return unless lex_entry.redo_migration_allowed?
 
       lex_entry.reset_ingestion!
       @lex_file.reload

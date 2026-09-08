@@ -176,6 +176,7 @@ en:
       redo_migrate:
         title: Redo migration
         confirm: "Redoing the migration will discard all corrections and manual changes made to this entry. Continue?"
+        published_confirm: "WARNING: this entry is already published! Redoing the migration will destroy all of the entry's data, including anything added or corrected since the previous migration and every URL that was fixed. The entry will be removed from the public site and returned to 'awaiting migration', and will have to be verified and published again. This cannot be undone. Continue?"
     header:
       title: Lexicon of New Hebrew Literature
       editor_credit: 'Editor: Dr. Joseph Galron-Goldschläger'

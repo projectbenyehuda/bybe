@@ -160,6 +160,34 @@ describe '/lexicon/files' do
       end
     end
 
+    context 'when the entry is already published' do
+      let(:params) { { entry_statuses: %w(published) } }
+
+      let!(:published_file) { create(:lex_file, :person, status: :ingested, entry_status: :published) }
+
+      it 'offers a redo_migration button in danger styling, next to the show link' do
+        call
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(lexicon_entry_path(published_file.lex_entry))
+
+        doc = Nokogiri::HTML(response.body)
+        redo_link = doc.at_css("a[href='#{redo_migration_lexicon_file_path(published_file)}']")
+        expect(redo_link).to be_present
+        expect(redo_link['class']).to include('btn-danger')
+        expect(redo_link['data-method']).to eq('post')
+      end
+
+      it 'warns in the confirmation that all post-migration data and corrected URLs are destroyed' do
+        call
+        expect(response.body).to include(
+          ERB::Util.html_escape(I18n.t('lexicon.files.redo_migrate.published_confirm'))
+        )
+        expect(response.body).not_to include(
+          ERB::Util.html_escape(I18n.t('lexicon.files.redo_migrate.confirm'))
+        )
+      end
+    end
+
     context 'when filtering applied' do
       context 'when filtering by title' do
         let!(:file1) do
@@ -483,8 +511,22 @@ describe '/lexicon/files' do
       end
     end
 
-    context 'when entry_status is not draft, verifying, or escalated' do
-      let(:entry_status) { LexEntry.statuses.keys.find { |status| %w(draft verifying escalated).exclude?(status) } }
+    context 'when entry_status is published' do
+      let(:entry_status) { :published }
+
+      it 'resets the lex_item, queues the job, and sets entry status to migrating' do
+        expect { call }.to have_enqueued_job(Lexicon::IngestFile).with(file.id)
+        expect(call).to eq(200)
+        expect(file.lex_entry.reload.status).to eq('migrating')
+        expect(file.lex_entry.lex_item).to be_nil
+        expect(file.reload.status).to eq('classified')
+      end
+    end
+
+    context 'when entry_status is not one from which a redo is allowed' do
+      let(:entry_status) do
+        LexEntry.statuses.keys.find { |status| %w(draft verifying escalated published).exclude?(status) }
+      end
 
       it 'does not queue job and simply re-renders tr' do
         expect { call }.not_to have_enqueued_job(Lexicon::IngestFile)
