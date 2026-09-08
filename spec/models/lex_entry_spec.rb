@@ -66,6 +66,37 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '.publicly_listed' do
+    # Unmigrated entries are reachable too -- /lex/entries/:id redirects them to their legacy PHP
+    # file -- so they belong in the public listing (and in the menu count derived from it) exactly
+    # like published ones. Only editor-facing entries are left out.
+    let!(:published) { create(:lex_entry, status: :published) }
+    let!(:unmigrated) { create(:lex_file, :person, entry_status: :raw).lex_entry }
+    let!(:verifying) { create(:lex_entry, status: :verifying) }
+
+    it 'includes published entries and entries whose migration has not completed' do
+      expect(described_class.publicly_listed).to contain_exactly(published, unmigrated, verifying)
+    end
+
+    it 'excludes draft, deprecated and secondary entries' do
+      create(:lex_entry, status: :draft)
+      create(:lex_entry, status: :deprecated)
+      create(:lex_entry, status: :published, main: false)
+
+      expect(described_class.publicly_listed).to contain_exactly(published, unmigrated, verifying)
+    end
+  end
+
+  describe '.cached_public_count' do
+    it 'counts unmigrated entries alongside published ones' do
+      create(:lex_entry, status: :published)
+      create(:lex_file, :person, entry_status: :raw)
+      create(:lex_entry, status: :draft)
+
+      expect(described_class.cached_public_count).to eq 2
+    end
+  end
+
   describe '#surname_first_title' do
     subject(:surname_first_title) { entry.surname_first_title }
 
