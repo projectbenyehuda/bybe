@@ -1495,6 +1495,24 @@ p.by-genre-name-v02.headline-2-v02 {
   white-space: nowrap;
 }
 
+/* The same 18px-glyph-in-a-26px-CLS-box problem as the author page card and the
+   reading-mode buttons above: the shekel glyph sat against the top of the
+   button's white background instead of on its centre line, ~4px above the
+   label beside it. Centre the glyph in its box. */
+.donation-btn-v02 .by-icon-v02 {
+  line-height: 26px;
+}
+
+/* The top-bar button had only ~5px of slack around its label at 122px. Alef is
+   loaded from Google Fonts in weight 400 only, so the bold label is synthesised
+   by the browser, and macOS emboldens wider than Linux/Windows does -- enough
+   to eat that slack and, on a stylesheet predating the nowrap rule above, wrap
+   the label. Give the label room to spare here; the narrower mobile donation
+   buttons keep the 122px above. */
+#donev_top_bar .donation-btn-v02 {
+  min-width: 132px;
+}
+
 /* Tag-proposal popup: the mode toggle (suggest / pick from full list) and the
    tag-suggestion heuristic strip. Both are Bootstrap tab navs, and Bootstrap's
    .nav / .nav-link class names collide with the side-menu rules in
