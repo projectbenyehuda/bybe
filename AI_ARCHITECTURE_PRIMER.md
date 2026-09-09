@@ -76,7 +76,7 @@ display order via `ROLES_PRESENTATION_ORDER`.
   (draft/ingested/failed/awaiting_authorities). DOCX via ActiveStorage → Pandoc → markdown.
 - **Downloadable** (`downloadable.rb`): generated format in ActiveStorage;
   polymorphic to Manifestation|Anthology|Collection; doctypes
-  pdf/html/docx/epub/mobi/txt/odt/kwic.
+  pdf/html/docx/epub/txt/odt/kwic.
 - **Anthology** (`anthology.rb`): user-curated text set (priv/unlisted/pub).
 - **Tag/Tagging** (`tag.rb`,`tagging.rb`): crowdsourced tags
   (pending/approved/rejected/semiapproved/escalated); taggable is Authority,
