@@ -6,22 +6,27 @@ require 'rails_helper'
 # button -- sized by a fixed min-width -- wrapped there while looking fine
 # elsewhere. The label is now pinned to a single line regardless of metrics.
 RSpec.describe 'Top-bar donation button', :js, type: :system do
-  # Measures the button against its own contents: the label's own width comes
-  # from a Range over the text node, since it is an anonymous flex item with no
+  # Measures the button against its own contents. "Slack" is how much of the
+  # button's content box the icon and label do not occupy, taken as the span
+  # from the leftmost to the rightmost of their client rects -- which already
+  # accounts for the flex gap between them, so nothing here has to parse
+  # `column-gap` (it computes to the keyword `normal` when no gap applies).
+  # The label needs a Range because it is an anonymous flex item, with no
   # element of its own to measure.
   let(:measure_button_js) do
     <<~JS
       (function () {
         var btn = document.querySelector('.donation-area-v02 .donation-btn-v02');
         var cs = getComputedStyle(btn);
-        var icon = btn.querySelector('.by-icon-v02');
-        var labelWidth = 0;
+        var rects = [btn.querySelector('.by-icon-v02').getBoundingClientRect()];
         btn.childNodes.forEach(function (node) {
           if (node.nodeType !== Node.TEXT_NODE || !node.textContent.trim()) return;
           var range = document.createRange();
           range.selectNodeContents(node);
-          labelWidth += range.getBoundingClientRect().width;
+          rects.push(range.getBoundingClientRect());
         });
+        var occupied = Math.max.apply(null, rects.map(function (r) { return r.right; })) -
+          Math.min.apply(null, rects.map(function (r) { return r.left; }));
         var contentWidth = btn.clientWidth -
           parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
         return {
@@ -30,8 +35,7 @@ RSpec.describe 'Top-bar donation button', :js, type: :system do
           height: btn.getBoundingClientRect().height,
           scrollWidth: btn.scrollWidth,
           clientWidth: btn.clientWidth,
-          slack: contentWidth - labelWidth -
-            icon.getBoundingClientRect().width - parseFloat(cs.columnGap || 0)
+          slack: contentWidth - occupied
         };
       })()
     JS
