@@ -630,7 +630,7 @@ class CollectionsController < ApplicationController
   # Generate and send file directly without caching (for selective downloads)
   def send_generated_file(format, filename, html, author_string)
     # Convert images to absolute URLs for formats that need them
-    html = images_to_absolute_url(html) unless %w[epub mobi].include?(format)
+    html = images_to_absolute_url(html) unless format == 'epub'
 
     case format
     when 'pdf'
