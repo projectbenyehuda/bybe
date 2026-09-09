@@ -76,7 +76,7 @@ display order via `ROLES_PRESENTATION_ORDER`.
   (draft/ingested/failed/awaiting_authorities). DOCX via ActiveStorage → Pandoc → markdown.
 - **Downloadable** (`downloadable.rb`): generated format in ActiveStorage;
   polymorphic to Manifestation|Anthology|Collection; doctypes
-  pdf/html/docx/epub/mobi/txt/odt/kwic.
+  pdf/html/docx/epub/txt/odt/kwic.
 - **Anthology** (`anthology.rb`): user-curated text set (priv/unlisted/pub).
 - **Tag/Tagging** (`tag.rb`,`tagging.rb`): crowdsourced tags
   (pending/approved/rejected/semiapproved/escalated); taggable is Authority,
@@ -109,7 +109,7 @@ display order via `ROLES_PRESENTATION_ORDER`.
 - **FetchCollection**: preloads all manifestations + nested collections for a
   collection (avoids N+1; traverses children and parents).
 - **MakeFreshDownloadable**: HTML → format (PDF wkhtmltopdf; DOCX/ODT PandocRuby;
-  EPUB gepub; MOBI kindlegen); caches as Downloadable. **GetFreshManifestationDownloadable**
+  EPUB gepub); caches as Downloadable. **GetFreshManifestationDownloadable**
   regenerates when stale/missing.
 - **SearchManifestations**: Elasticsearch query builder (languages, genres,
   periods, tags, authors, translations vs originals). **ElasticsearchAutocomplete**:

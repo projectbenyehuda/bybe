@@ -5,8 +5,6 @@ RUN apt-get update -qq \
   && wget https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-amd64.deb -O /tmp/pandoc.deb \
   && dpkg -i /tmp/pandoc.deb \
   && apt-get clean \
-  && wget https://bybedev.s3.us-east-1.amazonaws.com/stuff/kindlegen-2.9.tar.bz2 -O /tmp/kindlegen.tar.bz2 \
-  && tar xfj /tmp/kindlegen.tar.bz2 -C /usr/bin \
   && rm -rf /tmp/* /var/tmp/*
 
 WORKDIR /app

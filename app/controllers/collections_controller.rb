@@ -630,7 +630,7 @@ class CollectionsController < ApplicationController
   # Generate and send file directly without caching (for selective downloads)
   def send_generated_file(format, filename, html, author_string)
     # Convert images to absolute URLs for formats that need them
-    html = images_to_absolute_url(html) unless %w[epub mobi].include?(format)
+    html = images_to_absolute_url(html) unless format == 'epub'
 
     case format
     when 'pdf'
@@ -664,18 +664,6 @@ class CollectionsController < ApplicationController
       epub_content = File.binread(epubname)
       File.delete(epubname)
       send_data epub_content, filename: filename, type: 'application/epub+zip', disposition: 'attachment'
-    when 'mobi'
-      epubname = make_epub_from_single_html(html, @collection, author_string)
-      mobiname = epubname[epubname.rindex('/') + 1..-6] + '.mobi'
-      unless system('kindlegen', epubname, '-c1', '-o', mobiname)
-        raise "Kindlegen conversion failed for EPUB #{epubname}"
-      end
-      mobiname = epubname[0..-6] + '.mobi'
-      # Read file content before deleting
-      mobi_content = File.binread(mobiname)
-      File.delete(epubname)
-      File.delete(mobiname)
-      send_data mobi_content, filename: filename, type: 'application/x-mobipocket-ebook', disposition: 'attachment'
     else
       raise ArgumentError, "Unrecognized format: #{format}"
     end

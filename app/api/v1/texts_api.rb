@@ -15,13 +15,12 @@ module V1
             `enriched` returns all metadata as well as tags, recommendations, external links, and aboutnesses
         DESC
 
-        optional :file_format, type: String, default: 'html', values: %w(html txt pdf epub mobi docx odt), desc: <<~DESC
+        optional :file_format, type: String, default: 'html', values: %w(html txt pdf epub docx odt), desc: <<~DESC
           desired text format for download link:
             `html` for HTML,
             `txt` for plain text without any formatting,
             `pdf` for PDF,
             `epub` for EPUB,
-            `mobi` for MOBI,
             `docx` for DOCX,
             `odt` for LibreOffice ODT'
         DESC
