@@ -58,10 +58,12 @@ module LexiconHelper
   end
 
   def render_person_work(work)
-    parts = [
-      render_person_work_title(work),
-      "(#{work.publication_place} : #{work.publisher}, #{work.publication_date})"
-    ]
+    parts = [render_person_work_title(work)]
+
+    # Works whose bibliographic details are part of the title leave these fields empty; showing
+    # the bare punctuation of an empty parenthetical would be noise.
+    details = format_publication_details(work)
+    parts << "(#{details})" if details.present?
 
     parts += work.linked_people
                  .sort_by(&:sort_value)
@@ -132,14 +134,11 @@ module LexiconHelper
     end
   end
 
+  # "place : publisher, date", with any blank field — and the punctuation that would introduce it —
+  # left out entirely. Returns nil when all three are blank.
   def format_publication_details(work)
-    place = work.publication_place.presence
-    rest = [work.publisher, work.publication_date].compact_blank.join(', ')
-    if place
-      rest.present? ? "#{place}: #{rest}" : place
-    else
-      rest.presence
-    end
+    place_and_publisher = [work.publication_place, work.publisher].compact_blank.join(' : ')
+    [place_and_publisher, work.publication_date].compact_blank.join(', ').presence
   end
 
   # Many legacy subjects are already phrased as 'על "שם היצירה"', so wrapping them in the
