@@ -228,6 +228,25 @@ RSpec.describe LexiconHelper, type: :helper do
         .to eq('ספר הזכרונות (תל אביב : עם עובד, 1975) <כולל אחרית דבר> <ובו תצלומים>')
     end
 
+    # Works whose bibliographic details are embedded in the title leave these fields empty; the
+    # parenthetical must then disappear altogether rather than render as "( : , )". See issue #1700.
+    it 'omits the parenthetical entirely when no publication details are present' do
+      work.update!(publication_place: nil, publisher: nil, publication_date: nil)
+
+      expect(rendered_text(work.reload)).to eq('ספר הזכרונות')
+    end
+
+    it 'omits the punctuation of the blank fields when only some details are present' do
+      work.update!(publication_place: nil, publisher: nil)
+      expect(rendered_text(work.reload)).to eq('ספר הזכרונות (1975)')
+
+      work.update!(publisher: 'עם עובד', publication_date: nil)
+      expect(rendered_text(work.reload)).to eq('ספר הזכרונות (עם עובד)')
+
+      work.update!(publication_place: 'תל אביב', publisher: nil, publication_date: '1975')
+      expect(rendered_text(work.reload)).to eq('ספר הזכרונות (תל אביב, 1975)')
+    end
+
     it 'keeps the brackets outside a link that spans the whole comment' do
       target = create(:lex_entry, :person, title: 'יגאל שוורץ')
       work.update!(comment: 'יגאל שוורץ', comment_links: [{ 'text' => 'יגאל שוורץ', 'entry_id' => target.id }])
