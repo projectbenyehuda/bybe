@@ -128,15 +128,24 @@ scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
     end
 
     def update
-      if @lex_entry.update(lex_entry_params)
-        render json: { success: true, status: @lex_entry.status }
-      else
-        render json: { success: false, errors: @lex_entry.errors.full_messages }, status: :unprocessable_entity
+      # Chewy's root strategy is :bypass (see config/initializers/chewy.rb), so without this
+      # the lex_entries / lex_entries_autocomplete docs never pick up the new title.
+      Chewy.strategy(:atomic) do
+        if @lex_entry.update(lex_entry_params)
+          render json: { success: true, status: @lex_entry.status }
+        else
+          render json: { success: false, errors: @lex_entry.errors.full_messages }, status: :unprocessable_entity
+        end
       end
     end
 
     def destroy
-      @lex_entry.destroy
+      # Chewy's root strategy is :bypass (see config/initializers/chewy.rb), so without this
+      # the lex_entries / lex_entries_autocomplete docs are never removed, leaving stale
+      # autocomplete suggestions for entries that no longer exist. See by-0ys.
+      Chewy.strategy(:atomic) do
+        @lex_entry.destroy
+      end
       redirect_to lexicon_entries_url, alert: t('.success')
     end
 

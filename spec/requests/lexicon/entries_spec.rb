@@ -289,5 +289,57 @@ describe '/lexicon/entries' do
         expect(flash.alert).to eq(I18n.t('lexicon.entries.destroy.success'))
       end
     end
+
+    # Chewy's root strategy is :bypass (see config/initializers/chewy.rb), so a plain
+    # `@lex_entry.destroy` outside an explicit strategy leaves the ES doc behind, and the
+    # deleted entry keeps showing up in autocomplete suggestions. See by-0ys.
+    context 'with a synced ES autocomplete index' do
+      let!(:entry) { create(:lex_entry, :person) }
+
+      before do
+        Chewy.massacre
+        import_and_await(LexEntriesAutocompleteIndex, LexEntry.all)
+      end
+
+      after { Chewy.massacre }
+
+      it 'removes the doc for the destroyed entry' do
+        expect(LexEntriesAutocompleteIndex.filter(term: { id: entry.id }).first).to be_present
+        call
+        expect(LexEntriesAutocompleteIndex.filter(term: { id: entry.id }).first).to be_nil
+      end
+    end
+  end
+
+  describe 'PATCH /update' do
+    subject(:call) { patch "/lex/entries/#{entry.id}", params: { lex_entry: { title: 'New Title' } } }
+
+    before do
+      login_as_lexicon_editor
+    end
+
+    let!(:entry) { create(:lex_entry, :person, title: 'Old Title') }
+
+    it 'updates the title' do
+      call
+      expect(entry.reload.title).to eq('New Title')
+    end
+
+    # Chewy's root strategy is :bypass (see config/initializers/chewy.rb), so a plain
+    # `@lex_entry.update` outside an explicit strategy leaves the ES doc with the stale
+    # title, and autocomplete keeps suggesting the entry under its old name. See by-0ys.
+    context 'with a synced ES autocomplete index' do
+      before do
+        Chewy.massacre
+        import_and_await(LexEntriesAutocompleteIndex, LexEntry.all)
+      end
+
+      after { Chewy.massacre }
+
+      it 'refreshes the doc with the new title' do
+        call
+        expect(LexEntriesAutocompleteIndex.filter(term: { id: entry.id }).first.title).to eq('New Title')
+      end
+    end
   end
 end
