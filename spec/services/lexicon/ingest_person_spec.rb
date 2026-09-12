@@ -418,6 +418,29 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  context 'when the entry has no heading table at all (by-0x4)' do
+    let!(:file) do
+      create(
+        :lex_file,
+        {
+          entrytype: :person,
+          status: :classified,
+          title: 'Test Person',
+          fname: 'no_heading_table.php',
+          full_path: Rails.root.join('spec/fixtures/files/lexicon/no_heading_table.php')
+        }
+      )
+    end
+
+    it 'ingests a blank-dated entry instead of raising on nil.to_html' do
+      expect { call }.to change(LexPerson, :count).by(1)
+
+      expect(file.reload).to be_status_ingested
+      person = file.lex_entry.lex_item
+      expect(person).to have_attributes(birthdate: nil, deathdate: nil)
+    end
+  end
+
   context 'when both birthdate and deathdate provided', vcr: { cassette_name: 'lexicon/ingest_person/00024' } do
     let(:file) do
       create(

@@ -40,10 +40,13 @@ module Lexicon
 
       lex_person.authority = Lexicon::ExtractAuthority.call(html_doc)
 
+      # A handful of files (e.g. dead "No Access" stubs) carry no heading table at all: the
+      # entry is left with no name/dates, but ingestion still produces a draft an editor can
+      # review rather than crashing and losing the file entirely.
       heading_table = html_doc.at_css('table[width="100%"]')
-      heading_table_html = heading_table.to_html
       # Match both patterns: (YYYY) and (YYYY-YYYY); handles maqaf, en-dash, hyphen
-      if (match = heading_table_html.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:[-–־](\d{4}))?\)\s*</font>}))
+      if heading_table.present? &&
+         (match = heading_table.to_html.match(%r{<font size="4"[^>]*>\s*\((\d{4})(?:[-–־](\d{4}))?\)\s*</font>}))
         lex_person.birthdate = match[1]
         lex_person.deathdate = match[2]
       end
