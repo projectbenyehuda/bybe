@@ -48,6 +48,16 @@ class LexCitationAuthor < ApplicationRecord
     LexEntry.person_type.where(title: names).pluck(:title).to_set(&:downcase)
   end
 
+  # The person-type entry whose title matches this author's normalized name (see
+  # .matchable_names), so the match modal can resolve an id to pre-select rather than just a
+  # display string. Comparison is case-insensitive to match .matchable_names, since lex_entries.title
+  # uses a case-sensitive (utf8mb4_bin) collation.
+  def matching_entry
+    return nil if normalized_name.blank?
+
+    LexEntry.person_type.where('LOWER(title) = ?', normalized_name.downcase).first
+  end
+
   private
 
   def entry_must_be_person

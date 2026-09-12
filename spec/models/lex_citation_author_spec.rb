@@ -234,4 +234,37 @@ describe LexCitationAuthor do
       end
     end
   end
+
+  describe '#matching_entry' do
+    subject(:matching_entry) { author.matching_entry }
+
+    let(:lex_person) { create(:lex_entry, :person).lex_item }
+    let(:citation) { create(:lex_citation, person: lex_person, authors_count: 0) }
+    let(:author) { create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: nil) }
+
+    context 'when a person entry is titled exactly like the normalized name' do
+      let!(:entry) { create(:lex_entry, :person, title: 'גילי איזיקוביץ') }
+
+      it { is_expected.to eq(entry) }
+    end
+
+    context 'when the entry title differs only by case' do
+      let!(:entry) { create(:lex_entry, :person, title: 'Gili Izikovich') }
+      let(:author) { create(:lex_citation_author, citation: citation, name: 'izikovich, gili', link: nil) }
+
+      it 'matches case-insensitively' do
+        expect(matching_entry).to eq(entry)
+      end
+    end
+
+    context 'when the only entry with that title is a publication' do
+      before { create(:lex_entry, :publication, title: 'גילי איזיקוביץ') }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when no entry carries that title' do
+      it { is_expected.to be_nil }
+    end
+  end
 end
