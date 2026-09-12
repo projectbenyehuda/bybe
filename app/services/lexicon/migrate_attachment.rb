@@ -53,6 +53,7 @@ module Lexicon
         file_entry.attachments.reload
 
         file_entry.attachments.attach(io: uri.open, filename: filename)
+        file_entry.clear_redirect_urls_cache
         new_path = file_entry.download_path(filename)
         link = file_entry.legacy_links.create!(old_path: src, new_path: new_path)
       end

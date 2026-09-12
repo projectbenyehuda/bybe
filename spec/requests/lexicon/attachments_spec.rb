@@ -70,6 +70,18 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
       expect(attached_filenames).to eq(%w(image.png lorem.pdf lorem_ipsum.png))
     end
 
+    # Regression: FilesController caches the entry's filename->URL map for 2h, including the
+    # case of zero attachments, so a stale cache made newly attached files 404 until the TTL
+    # expired.
+    it 'clears the cached redirect URLs so newly attached files are immediately reachable' do
+      cache_key = DownloadLink.redirect_urls_cache_key(LexEntry, lex_entry.id)
+      Rails.cache.write(cache_key, { 'stale.png' => 'http://stale-url' })
+
+      call
+
+      expect(Rails.cache.read(cache_key)).to be_nil
+    end
+
     context 'when file with the same name already exists' do
       let!(:image) do
         lex_entry.attachments.attach(
@@ -130,6 +142,15 @@ describe '/lexicon/entries/<ENTRY_ID>/attachments' do
       expect(call).to eq(200)
 
       expect(attached_filenames).to eq(%w(image.png))
+    end
+
+    it 'clears the cached redirect URLs so the removed file stops being served' do
+      cache_key = DownloadLink.redirect_urls_cache_key(LexEntry, lex_entry.id)
+      Rails.cache.write(cache_key, { 'lorem.pdf' => 'http://stale-url' })
+
+      call
+
+      expect(Rails.cache.read(cache_key)).to be_nil
     end
   end
 end
