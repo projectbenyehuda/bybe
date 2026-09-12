@@ -113,6 +113,14 @@ describe '/lexicon/links' do
           expect(response.body).to include('showToast')
           expect(response.body).to include('success')
         end
+
+        # .js.erb is HTML-escaped like any other ERB template, so an unwrapped to_json call
+        # turns its quotes into `&quot;` and makes the whole response script a JS syntax
+        # error -- the toast (and the sessionStorage fallback) then silently never appear.
+        it 'does not HTML-escape the JSON passed to showToast' do
+          call
+          expect(response.body).not_to include('&quot;')
+        end
       end
 
       context 'when the new link is still broken' do
