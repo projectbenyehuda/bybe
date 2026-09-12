@@ -364,7 +364,11 @@ describe AdminController do
       expect(authors.length).to eq 1
       expect(authors[0][0]).to eq author
       expect(authors[0][1]).to match_array %w(he ru de)
-      expect(authors[0][2]).to eq({ 'he' => hebrew_works, 'ru' => russian_works, 'de' => german_works })
+      manifestations_by_lang = authors[0][2]
+      expect(manifestations_by_lang.keys).to match_array %w(he ru de)
+      expect(manifestations_by_lang['he']).to match_array hebrew_works
+      expect(manifestations_by_lang['ru']).to match_array russian_works
+      expect(manifestations_by_lang['de']).to match_array german_works
     end
   end
 
