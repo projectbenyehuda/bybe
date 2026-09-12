@@ -962,16 +962,15 @@ class AdminController < ApplicationController
     @sn.status = (sn_params[:status] == '1' ? :enabled : :disabled)
     @sn.fromdate = Date.new(params[:fromdate][:year].to_i, params[:fromdate][:month].to_i, params[:fromdate][:day].to_i)
     @sn.todate = Date.new(params[:todate][:year].to_i, params[:todate][:month].to_i, params[:todate][:day].to_i)
-    if @sn.nil?
-      flash[:error] = I18n.t(:no_such_item)
-      redirect_to url_for(action: :index)
-    elsif @sn.save
-      Sitenotice.clear_cache
-      flash[:notice] = I18n.t(:updated_successfully)
-      redirect_to action: :sitenotice_show, id: @sn.id
-    else
-      format.html { render action: 'sitenotice_edit' }
-      format.json { render json: @sn.errors, status: :unprocessable_content }
+    respond_to do |format|
+      if @sn.save
+        Sitenotice.clear_cache
+        format.html { redirect_to url_for(action: :sitenotice_show, id: @sn.id), notice: t(:updated_successfully) }
+        format.json { render json: @sn, status: :ok, location: @sn }
+      else
+        format.html { render action: 'sitenotice_edit' }
+        format.json { render json: @sn.errors, status: :unprocessable_content }
+      end
     end
   end
 
