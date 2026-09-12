@@ -1472,4 +1472,36 @@ describe AdminController do
       end
     end
   end
+
+  describe '#sitenotice_update' do
+    subject(:call) do
+      patch :sitenotice_update, params: {
+        id: sitenotice.id,
+        sitenotice: { body: body, status: '1' },
+        fromdate: { year: '2026', month: '1', day: '1' },
+        todate: { year: '2026', month: '2', day: '1' }
+      }
+    end
+
+    include_context 'when editor logged in'
+
+    let(:sitenotice) { create(:sitenotice) }
+
+    context 'with valid params' do
+      let(:body) { 'updated notice body' }
+
+      it 'saves and redirects to sitenotice_show' do
+        expect(call).to redirect_to(action: :sitenotice_show, id: sitenotice.id)
+        expect(sitenotice.reload.body).to eq('updated notice body')
+      end
+    end
+
+    context 'with invalid params (blank body)' do
+      let(:body) { '' }
+
+      it 're-renders the edit form instead of raising' do
+        expect(call).to render_template(:sitenotice_edit)
+      end
+    end
+  end
 end
