@@ -108,6 +108,26 @@ describe '/lex/citation_authors' do
       expect(call).to eq(200)
       expect(response.body).to include('גילי איזיקוביץ')
     end
+
+    def hidden_lex_entry_id_value(body)
+      Nokogiri::HTML(body).at_css('#lex_citation_author_lex_entry_id')['value']
+    end
+
+    context 'when a person entry is titled exactly like the normalized name' do
+      let!(:matching_entry) { create(:lex_entry, :person, title: 'גילי איזיקוביץ') }
+
+      it 'pre-fills the hidden entry id, so confirming without touching the dropdown still submits it' do
+        expect(call).to eq(200)
+        expect(hidden_lex_entry_id_value(response.body)).to eq(matching_entry.id.to_s)
+      end
+    end
+
+    context 'when no entry matches the normalized name' do
+      it 'leaves the hidden entry id blank' do
+        expect(call).to eq(200)
+        expect(hidden_lex_entry_id_value(response.body)).to be_blank
+      end
+    end
   end
 
   describe 'PATCH /lex/citation_authors/:id' do

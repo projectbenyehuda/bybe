@@ -3,7 +3,7 @@
   = t('.imported_name')
   %strong{ dir: text_dir(@author.name.to_s) }= @author.name
 = simple_form_for @author, url: lexicon_citation_author_path(@author), method: :patch, remote: true do |f|
-  = f.hidden_field :lex_entry_id
+  = f.hidden_field :lex_entry_id, value: @matching_entry&.id
   = f.input :name,
             label: t('.entry_label'),
             id_element: '#lex_citation_author_lex_entry_id',

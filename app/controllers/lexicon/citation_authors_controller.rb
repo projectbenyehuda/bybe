@@ -40,8 +40,12 @@ module Lexicon
     end
 
     # Modal offering to link a plaintext author imported from a legacy PHP file to an existing
-    # person entry, pre-filled with the name the match was found by (see LexCitationAuthor.normalize_name).
-    def match; end
+    # person entry, pre-filled with the name the match was found by (see LexCitationAuthor.normalize_name)
+    # and the entry id it resolves to, so confirming immediately submits a valid match instead of
+    # requiring the editor to reselect it from the autocomplete dropdown themselves.
+    def match
+      @matching_entry = @author.matching_entry
+    end
 
     # Links the author to the chosen person entry. The imported name is deliberately left untouched,
     # so the citation keeps displaying it as "lastname, firstname" exactly as the legacy file had it.
