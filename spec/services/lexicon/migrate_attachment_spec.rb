@@ -46,6 +46,17 @@ describe Lexicon::MigrateAttachment do
         expect(link.new_path).to eq("/files/lex/#{lex_entry.id}/image002.jpg")
         expect(call).to eq link.new_path
       end
+
+      # Regression: FilesController caches the entry's filename->URL map for 2h, so a stale
+      # cache made the newly migrated attachment 404 until the TTL expired.
+      it 'clears the cached redirect URLs so the migrated file is immediately reachable' do
+        cache_key = DownloadLink.redirect_urls_cache_key(LexEntry, lex_entry.id)
+        Rails.cache.write(cache_key, { 'stale.png' => 'http://stale-url' })
+
+        call
+
+        expect(Rails.cache.read(cache_key)).to be_nil
+      end
     end
 
     context 'when LegacyLink for the same path already exists' do

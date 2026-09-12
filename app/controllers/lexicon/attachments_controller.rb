@@ -31,6 +31,7 @@ module Lexicon
         @error = t('.file_exists', filename: filename)
       else
         @lex_entry.attachments.attach(file)
+        @lex_entry.clear_redirect_urls_cache
       end
 
       respond_to do |format|
@@ -44,6 +45,7 @@ module Lexicon
 
     def destroy
       @lex_entry.attachments.find_by(blob_id: params[:id]).purge
+      @lex_entry.clear_redirect_urls_cache
     end
 
     private
