@@ -13,6 +13,10 @@ describe '/lex/citation_authors' do
 
   let(:invalid_attrs) { { name: '' } }
 
+  def hidden_lex_entry_id_value(body)
+    Nokogiri::HTML(body).at_css('#lex_citation_author_lex_entry_id')['value']
+  end
+
   describe 'GET /lex/citations/:citation_id/authors' do
     subject(:call) { get "/lex/citations/#{citation.id}/authors" }
 
@@ -109,10 +113,6 @@ describe '/lex/citation_authors' do
       expect(response.body).to include('גילי איזיקוביץ')
     end
 
-    def hidden_lex_entry_id_value(body)
-      Nokogiri::HTML(body).at_css('#lex_citation_author_lex_entry_id')['value']
-    end
-
     context 'when a person entry is titled exactly like the normalized name' do
       let!(:matching_entry) { create(:lex_entry, :person, title: 'גילי איזיקוביץ') }
 
@@ -196,6 +196,11 @@ describe '/lex/citation_authors' do
       it 're-renders the modal and leaves the author untouched' do
         expect(call).to eq(422)
         expect(author.reload.entry).to be_nil
+      end
+
+      it 'keeps the submitted id in the hidden field instead of blanking it' do
+        call
+        expect(hidden_lex_entry_id_value(response.body)).to eq(matched_entry.id.to_s)
       end
     end
   end

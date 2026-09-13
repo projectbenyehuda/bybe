@@ -50,12 +50,14 @@ class LexCitationAuthor < ApplicationRecord
 
   # The person-type entry whose title matches this author's normalized name (see
   # .matchable_names), so the match modal can resolve an id to pre-select rather than just a
-  # display string. Comparison is case-insensitive to match .matchable_names, since lex_entries.title
-  # uses a case-sensitive (utf8mb4_bin) collation.
+  # display string. Comparison is case-insensitive since lex_entries.title uses a case-sensitive
+  # (utf8mb4_bin) collation. Titles are not unique, so this only resolves an id when exactly one
+  # entry qualifies -- picking arbitrarily among several would risk pre-filling the wrong one.
   def matching_entry
     return nil if normalized_name.blank?
 
-    LexEntry.person_type.where('LOWER(title) = ?', normalized_name.downcase).first
+    candidates = LexEntry.person_type.where('LOWER(title) = ?', normalized_name.downcase).limit(2).to_a
+    candidates.first if candidates.one?
   end
 
   private

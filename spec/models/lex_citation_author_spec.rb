@@ -263,6 +263,19 @@ describe LexCitationAuthor do
       it { is_expected.to be_nil }
     end
 
+    context 'when two person entries share the title as case variants' do
+      before do
+        create(:lex_entry, :person, title: 'Gili Izikovich')
+        create(:lex_entry, :person, title: 'GILI IZIKOVICH')
+      end
+
+      let(:author) { create(:lex_citation_author, citation: citation, name: 'izikovich, gili', link: nil) }
+
+      it 'refuses to guess between them' do
+        expect(matching_entry).to be_nil
+      end
+    end
+
     context 'when no entry carries that title' do
       it { is_expected.to be_nil }
     end
