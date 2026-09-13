@@ -60,6 +60,24 @@ RSpec.describe 'Matching an imported citation author to an existing entry', :js,
       expect(author.name).to eq('איזיקוביץ, גילי')
     end
 
+    it 'links the author when confirming immediately, without reselecting from the dropdown' do
+      visit lexicon_verification_path(entry)
+
+      within("#citation-#{citation.id}") { click_button match_button_label }
+      expect(page).to have_css('#generalDlg', visible: :visible)
+
+      # The dropdown already shows the right name; click confirm straight away
+      expect(page).to have_field('lex_citation_author_name', with: 'גילי איזיקוביץ')
+      click_button I18n.t('lexicon.citation_authors.match.confirm')
+
+      within("#citation-#{citation.id}") do
+        expect(page).to have_link('איזיקוביץ, גילי', href: lexicon_entry_path(matching_entry), wait: 8)
+        expect(page).to have_no_button(match_button_label)
+      end
+
+      expect(author.reload.entry).to eq(matching_entry)
+    end
+
     it 'leaves the author alone when the modal is closed without confirming' do
       visit lexicon_verification_path(entry)
 
