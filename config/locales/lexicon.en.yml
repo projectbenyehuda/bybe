@@ -101,6 +101,7 @@ en:
     attachments:
       create:
         file_exists: "A file with this name already exists: %{filename}"
+        file_missing: Please select a file to upload
       index:
         attach_new_file: Attach new file
         filename: Filename

@@ -29,7 +29,7 @@
     .col-sm-2
       = label_tag :attachment, t('.attach_new_file')
     .col-sm-2
-      = file_field_tag :attachment
+      = file_field_tag :attachment, required: true
     .col-sm-1
       = submit_tag t(:upload), class: 'btn btn-primary', id: :submit_new_attachment
 
