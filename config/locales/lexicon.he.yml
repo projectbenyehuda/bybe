@@ -102,6 +102,7 @@ he:
     attachments:
       create:
         file_exists: "קובץ בשם זה כבר קיים: %{filename}"
+        file_missing: נא לבחור קובץ להעלאה
       index:
         attach_new_file: צרף קובץ חדש
         filename: שם הקובץ
