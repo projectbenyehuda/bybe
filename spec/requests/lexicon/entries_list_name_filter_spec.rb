@@ -77,4 +77,20 @@ describe '/lex/entries/list name filter' do
       expect(titles_listed).to be_empty
     end
   end
+
+  # A query of nothing but strippable marks normalizes to '', and '%%' as a LIKE pattern would
+  # match every entry -- so the filter would silently behave as though nothing had been typed.
+  context 'when the query is nothing but marks the normalizer strips' do
+    let(:name_filter) { '־' }
+
+    it 'matches nothing rather than everything' do
+      expect(titles_listed).to be_empty
+    end
+  end
+
+  context 'when the query is nothing but gershayim' do
+    let(:name_filter) { '״' }
+
+    it { is_expected.to be_empty }
+  end
 end

@@ -714,7 +714,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_143000) do
     t.index ["lex_item_type", "lex_item_id"], name: "index_lex_entries_on_lex_item_type_and_lex_item_id", unique: true
     t.index ["locked_by_user_id"], name: "index_lex_entries_on_locked_by_user_id"
     t.index ["migration_item_count"], name: "index_lex_entries_on_migration_item_count"
-    t.index ["normalized_title"], name: "index_lex_entries_on_normalized_title", length: 191
     t.index ["profile_image_id"], name: "index_lex_entries_on_profile_image_id"
     t.index ["sort_title"], name: "index_lex_entries_on_sort_title"
     t.index ["status"], name: "index_lex_entries_on_status"

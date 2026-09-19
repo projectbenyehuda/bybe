@@ -27,16 +27,13 @@ module Lexicon
 
     # GET /lex_entries or /lex_entries.json
     def index
-scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
+      scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
 
       # Filter by status if provided
       scope = scope.where(status: params[:status]) if params[:status].present?
 
       # Filter by title substring if provided (ignoring case, punctuation and pointing)
-      if params[:title].present?
-        scope = scope.where('lex_entries.normalized_title LIKE ?',
-                            "%#{Lexicon::NormalizeSearchText.call(params[:title])}%")
-      end
+      scope = filter_by_name(scope, params[:title]) if params[:title].present?
 
       # Separate currently-locked entries into their own sections (mine vs. others') and exclude
       # them from the main paginated list to avoid showing the same entry twice.
@@ -191,13 +188,20 @@ scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
     # types "בן ציון בן משה", "אמונה אלון" or "כץ" finds "בן־ציון בן־משה", "אמונה אֵלון" and
     # "כ״ץ" without having to reproduce their punctuation or pointing. Normalizing the filter
     # the same way keeps it working for a visitor who does type them.
-    def filter_by_name(scope)
-      scope.where('lex_entries.normalized_title LIKE ?', "%#{Lexicon::NormalizeSearchText.call(@name_filter)}%")
+    #
+    # A query made of nothing but marks the normalizer strips ("־", "״") comes back empty, and
+    # an empty LIKE pattern would match every entry -- the opposite of what whoever typed it
+    # asked for -- so such a query matches nothing instead.
+    def filter_by_name(scope, query)
+      normalized = Lexicon::NormalizeSearchText.call(query)
+      return scope.none if normalized.blank?
+
+      scope.where('lex_entries.normalized_title LIKE ?', "%#{normalized}%")
     end
 
     def apply_filters(scope)
       # Name substring filter
-      scope = filter_by_name(scope) if @name_filter.present?
+      scope = filter_by_name(scope, @name_filter) if @name_filter.present?
 
       # If person filters active, only show LexPerson entries
       if @person_filters_active
@@ -301,7 +305,7 @@ scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
                       .joins('INNER JOIN lex_people ON lex_entries.lex_item_id = lex_people.id')
 
       # Apply name filter
-      scope = filter_by_name(scope) if @name_filter.present?
+      scope = filter_by_name(scope, @name_filter) if @name_filter.present?
 
       # Apply birth year filters
       if @birth_year_from.present? || @birth_year_to.present?
