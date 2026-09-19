@@ -52,4 +52,40 @@ describe '/lex/entries/autocomplete' do
       expect(suggestions.pluck('label')).to eq(['נתן אלתרמן (אדם)'])
     end
   end
+
+  # An editor typing a name into a lookup field should not have to reproduce the pointing or
+  # the punctuation of the entry they are reaching for. See Lexicon::NormalizeSearchText.
+  describe 'punctuation- and diacritic-insensitive suggestions' do
+    let!(:person) { create(:lex_entry, :person, title: title) }
+    let!(:publication) { create(:lex_entry, :publication, title: 'ספר אחר') }
+    let(:labels) { suggestions.pluck('value') }
+
+    context 'with niqqud in the title' do
+      let(:title) { 'אמונה אֵלון' }
+      let(:params) { { term: 'אמונה אלון' } }
+
+      it { expect(labels).to contain_exactly title }
+    end
+
+    context 'with a maqaf in the title' do
+      let(:title) { 'בן־ציון בן־משה' }
+      let(:params) { { term: 'בן ציון' } }
+
+      it { expect(labels).to contain_exactly title }
+    end
+
+    context 'with gershayim in the title' do
+      let(:title) { 'יואב כ״ץ' }
+      let(:params) { { term: 'יואב כץ' } }
+
+      it { expect(labels).to contain_exactly title }
+    end
+
+    context 'when the editor does type the punctuation' do
+      let(:title) { 'יואב כ״ץ' }
+      let(:params) { { term: 'יואב כ״ץ' } }
+
+      it { expect(labels).to contain_exactly title }
+    end
+  end
 end
