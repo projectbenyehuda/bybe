@@ -32,8 +32,11 @@ scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
       # Filter by status if provided
       scope = scope.where(status: params[:status]) if params[:status].present?
 
-      # Filter by title substring if provided (case-insensitive)
-      scope = scope.where('LOWER(title) LIKE LOWER(?)', "%#{params[:title]}%") if params[:title].present?
+      # Filter by title substring if provided (ignoring case, punctuation and pointing)
+      if params[:title].present?
+        scope = scope.where('lex_entries.normalized_title LIKE ?',
+                            "%#{Lexicon::NormalizeSearchText.call(params[:title])}%")
+      end
 
       # Separate currently-locked entries into their own sections (mine vs. others') and exclude
       # them from the main paginated list to avoid showing the same entry twice.
@@ -184,11 +187,17 @@ scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
       params.expect(lex_entry: %i(title status lex_person_id lex_publication_id))
     end
 
+    # Matches against the normalized title rather than the title itself, so that a visitor who
+    # types "בן ציון בן משה", "אמונה אלון" or "כץ" finds "בן־ציון בן־משה", "אמונה אֵלון" and
+    # "כ״ץ" without having to reproduce their punctuation or pointing. Normalizing the filter
+    # the same way keeps it working for a visitor who does type them.
+    def filter_by_name(scope)
+      scope.where('lex_entries.normalized_title LIKE ?', "%#{Lexicon::NormalizeSearchText.call(@name_filter)}%")
+    end
+
     def apply_filters(scope)
       # Name substring filter
-      if @name_filter.present?
-        scope = scope.where('lex_entries.title LIKE ?', "%#{@name_filter}%")
-      end
+      scope = filter_by_name(scope) if @name_filter.present?
 
       # If person filters active, only show LexPerson entries
       if @person_filters_active
@@ -292,9 +301,7 @@ scope = LexEntry.where.not(lex_item: nil).includes(:lex_item)
                       .joins('INNER JOIN lex_people ON lex_entries.lex_item_id = lex_people.id')
 
       # Apply name filter
-      if @name_filter.present?
-        scope = scope.where('LOWER(lex_entries.title) LIKE LOWER(?)', "%#{@name_filter}%")
-      end
+      scope = filter_by_name(scope) if @name_filter.present?
 
       # Apply birth year filters
       if @birth_year_from.present? || @birth_year_to.present?

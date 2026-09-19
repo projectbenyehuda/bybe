@@ -74,6 +74,11 @@ class LexEntry < ApplicationRecord
   update_index('lex_entries') { self }
   update_index('lex_entries_autocomplete') { self }
 
+  # The form the lexicon's name filters compare against, kept in step with the title it derives
+  # from. before_save rather than before_validation, so that SortedTitle has already stripped
+  # the stray nbsps that arrive with bibliographic data.
+  before_save :update_normalized_title, if: :title_changed?
+
   # Returns the entry type for autocomplete and display purposes.
   # Returns :person if the entry is backed by a LexPerson item or a person-type LexFile.
   # Returns :publication if the entry is backed by a LexPublication item or a text-type LexFile.
@@ -400,6 +405,10 @@ class LexEntry < ApplicationRecord
   end
 
   private
+
+  def update_normalized_title
+    self.normalized_title = Lexicon::NormalizeSearchText.call(title)
+  end
 
   # Drop one item from a collection section of the checklist. `auto_verify_when_empty` controls what
   # happens once the section runs dry: works re-derive their verified flag from the database (so an

@@ -747,6 +747,27 @@ RSpec.describe LexEntry, type: :model do
     end
   end
 
+  describe '#normalized_title' do
+    it 'is derived from the title on create' do
+      entry = create(:lex_entry, title: 'בן־ציון כ״ץ (1875–1958)')
+
+      expect(entry.reload.normalized_title).to eq 'בן ציון כץ (1875 1958)'
+    end
+
+    it 'is re-derived when the title changes' do
+      entry = create(:lex_entry, title: 'אמונה אלון')
+      entry.update!(title: 'אמונה אֵלון')
+
+      expect(entry.reload.normalized_title).to eq 'אמונה אלון'
+    end
+
+    it 'is left alone when some other attribute changes' do
+      entry = create(:lex_entry, title: 'יואב כ״ץ')
+      expect { entry.update!(other_designation: 'alias') }
+        .not_to(change { entry.reload.normalized_title })
+    end
+  end
+
   describe '#other_designation' do
     it 'can be read and written' do
       entry = create(:lex_entry, other_designation: 'alias1; alias2')
