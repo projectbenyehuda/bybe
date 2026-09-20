@@ -81,6 +81,58 @@ RSpec.describe 'Linking a plaintext citation author to a URL', :js, type: :syste
     end
   end
 
+  describe 'when adding a new author from the citation edit modal' do
+    # Chewy indices are not rolled back with the database, so entries imported for the
+    # autocomplete would otherwise pile up across examples.
+    after { Chewy.massacre }
+
+    def open_add_author_form
+      visit "/lex/entries/#{entry.id}/edit"
+      click_link_or_button I18n.t('lexicon.entries.edit.citations')
+      expect(page).to have_css('#citations ul.citations-group', wait: 5)
+
+      find('a.edit-citation').click
+      expect(page).to have_css('#generalDlg.show', wait: 5)
+      expect(page).to have_field('lex_citation_author_link', wait: 5)
+    end
+
+    it 'stores a URL given alongside a plaintext name' do
+      open_add_author_form
+
+      fill_in 'lex_citation_author_name', with: 'שפירא, חוה'
+      fill_in 'lex_citation_author_link', with: 'https://example.com/hava'
+      click_button I18n.t('lexicon.citation_authors.form.add_author')
+
+      expect(page).to have_css('#authors-list a[href="https://example.com/hava"]',
+                               text: 'שפירא, חוה', wait: 5)
+      expect(citation.authors.reload.find_by(name: 'שפירא, חוה').link).to eq('https://example.com/hava')
+    end
+
+    context 'when an entry is picked from the autocomplete' do
+      let!(:author_entry) { create(:lex_entry, :person, title: 'גילי איזיקוביץ') }
+
+      before { import_and_await(LexEntriesAutocompleteIndex, [author_entry]) }
+
+      it 'disables and empties the URL field, and gives it back when the pick is abandoned' do
+        open_add_author_form
+
+        fill_in 'lex_citation_author_link', with: 'https://example.com/gili'
+        expect(page).to have_field('lex_citation_author_link', disabled: false)
+
+        fill_in 'lex_citation_author_name', with: 'גילי'
+        expect(page).to have_css('ul.ui-autocomplete li', text: author_entry.title, wait: 5)
+        find('ul.ui-autocomplete li', text: author_entry.title).click
+
+        # An entry-linked author may not carry a link as well, so the URL typed earlier goes too
+        expect(page).to have_field('lex_citation_author_link', disabled: true, with: '')
+
+        # Typing over the selected title abandons the entry, and the URL field comes back
+        fill_in 'lex_citation_author_name', with: 'גילי א'
+        expect(page).to have_field('lex_citation_author_link', disabled: false)
+      end
+    end
+  end
+
   describe "from the entry editor's citations tab" do
     def open_citation_edit_modal
       visit "/lex/entries/#{entry.id}/edit"

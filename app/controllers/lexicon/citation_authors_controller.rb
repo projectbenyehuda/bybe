@@ -28,7 +28,10 @@ module Lexicon
         @author.name = nil
       end
 
-      unless @author.save
+      @author.link = @author.link.to_s.strip.presence
+
+      # invalid_link? short-circuits the save, which would otherwise reset the error it just added
+      if invalid_link?(@author) || !@author.save
         # resetting value of possibly selected lex_entry_id if record is invalid (probaly non-unique value)
         @author.lex_entry_id = nil
         status = :unprocessable_content
@@ -77,20 +80,10 @@ module Lexicon
     def edit_link; end
 
     def update_link
-      link = link_params[:link].to_s.strip
-
-      # The same allowlist TextLinksConcern applies to a text link's url: the value is rendered
-      # straight into an href (see LexiconHelper#render_citation_author), so anything not
-      # known-inert is refused rather than sanitized. It is checked here rather than as a model
-      # validation because ingestion stores legacy relative hrefs such as '00563.php'
-      # (see ParseCitations#update_link), which would then fail to save.
-      if link.present? && !link.match?(Lexicon::TextLinkExtraction::ALLOWED_URL_PATTERN)
-        @author.errors.add(:link, :invalid_url)
-        return render_link_errors
-      end
-
       # Submitting an empty field clears the link, which is how an editor removes one.
-      @author.link = link.presence
+      @author.link = link_params[:link].to_s.strip.presence
+
+      return render_link_errors if invalid_link?(@author)
       return head :ok if @author.save
 
       render_link_errors
@@ -101,6 +94,21 @@ module Lexicon
     end
 
     private
+
+    # Whether the author's link has to be refused, recording why on the author when it does.
+    #
+    # The same allowlist TextLinksConcern applies to a text link's url: the value is rendered
+    # straight into an href (see LexiconHelper#render_citation_author), so anything not
+    # known-inert is refused rather than sanitized. It is checked here rather than as a model
+    # validation because ingestion stores legacy relative hrefs such as '00563.php'
+    # (see ParseCitations#update_link), which a validation would then refuse to save.
+    def invalid_link?(author)
+      return false if author.link.blank?
+      return false if author.link.match?(Lexicon::TextLinkExtraction::ALLOWED_URL_PATTERN)
+
+      author.errors.add(:link, :invalid_url)
+      true
+    end
 
     # The two callers want different things back: the modal (which sends no Accept preference)
     # re-renders itself from the returned HTML, while the inline editor of the authors list has

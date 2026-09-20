@@ -1,4 +1,4 @@
-=simple_form_for author, url: lexicon_citation_authors_path(citation), remote: true do |f|
+= simple_form_for author, url: lexicon_citation_authors_path(citation), remote: true do |f|
   .row
     = f.hidden_field :lex_entry_id
     .col-sm-8
@@ -11,6 +11,16 @@
     .col-sm-2
       = f.submit t('.add_author'), class: 'btn btn-primary'
   .row
+    -#
+      A URL is an alternative to a lexicon entry, never an addition to one: an entry-linked author
+      already links to its entry, and LexCitationAuthor refuses one carrying both. The field is
+      therefore disabled for as long as an entry is selected above.
+    .col-sm-10
+      = f.input :link,
+                label: t('lexicon.citation_authors.edit_link.link_label'),
+                placeholder: t('lexicon.text_links.url_placeholder'),
+                input_html: { dir: 'ltr' }
+  .row
     .col-sm-12
       -# display validation errors for :entry and :lex_entry_id together since they are related
       .text-danger
@@ -22,3 +32,20 @@
     const ul = this.menu.element;
     ul.outerWidth(this.element.outerWidth());
   }
+
+  // Keeps the URL field in step with the entry selection: the autocomplete fires `change` on its
+  // hidden id field both when an entry is picked and when typing over the selected title abandons
+  // it again (its own keyup.clearId handler), so that one event covers both directions.
+  //
+  // Delegated from `document` rather than bound to the field itself: this partial is injected by
+  // $('#authors-list').load(), and its script has been observed running before the fields it names
+  // are in the DOM, in which case a direct bind silently attaches to nothing. The namespace lets a
+  // reload replace the handler rather than stack another one on top.
+  $(document).off('change.authorLinkSync')
+             .on('change.authorLinkSync', '#lex_citation_author_lex_entry_id', function() {
+    const linkField = $('#lex_citation_author_link');
+    const hasEntry = !!$(this).val();
+    // An entry-linked author may carry no link, so a URL typed before the pick goes with it
+    if (hasEntry) { linkField.val(''); }
+    linkField.prop('disabled', hasEntry);
+  });

@@ -100,6 +100,35 @@ describe '/lex/citation_authors' do
         expect(response).to have_http_status(:unprocessable_content)
       end
     end
+
+    context 'with a link of a scheme that could execute script' do
+      let(:attrs) { { name: 'איזיקוביץ, גילי', link: 'javascript:alert(1)' } }
+
+      it 'refuses it, as the update_link endpoint does' do
+        expect { call }.not_to change(LexCitationAuthor, :count)
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+
+    context 'with a link padded with whitespace' do
+      let(:attrs) { { name: 'איזיקוביץ, גילי', link: '  http://example.com/gili  ' } }
+
+      it 'stores the trimmed URL' do
+        expect { call }.to change(LexCitationAuthor, :count).by(1)
+        expect(LexCitationAuthor.order(id: :desc).first.link).to eq('http://example.com/gili')
+      end
+    end
+
+    # The form disables the URL field while an entry is selected, so this is only reachable by a
+    # client that ignores it -- the model refuses the pair either way.
+    context 'when both a link and an entry are submitted' do
+      let(:attrs) { { lex_entry_id: create(:lex_entry, :person).id, link: 'http://example.com/gili' } }
+
+      it 'refuses the pair' do
+        expect { call }.not_to change(LexCitationAuthor, :count)
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
   end
 
   describe 'GET /lex/citation_authors/:id/match' do
