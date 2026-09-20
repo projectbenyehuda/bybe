@@ -1,0 +1,15 @@
+%h1= t('.title')
+%p.text-muted
+  = t('.author_name')
+  %strong{ dir: text_dir(@author.display_name.to_s) }= @author.display_name
+= simple_form_for @author,
+                  url: update_link_lexicon_citation_author_path(@author),
+                  method: :patch,
+                  remote: true do |f|
+  = f.input :link,
+            label: t('.link_label'),
+            placeholder: t('lexicon.text_links.url_placeholder'),
+            input_html: { dir: 'ltr' }
+  %p.text-muted.small= t('.clear_hint')
+  = f.submit t(:save), class: 'btn btn-primary'
+  %button.btn.btn-secondary.ms-1{ type: 'button', onclick: 'closeModal();' }= t(:cancel)

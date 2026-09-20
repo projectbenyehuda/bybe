@@ -9,7 +9,7 @@ module Lexicon
       require_editor('edit_lexicon')
     end
     before_action :set_citation, only: %i(index create)
-    before_action :set_author, only: %i(match update destroy)
+    before_action :set_author, only: %i(match update edit_link update_link destroy)
     before_action :try_to_lock_record
 
     layout false
@@ -70,11 +70,48 @@ module Lexicon
       render :match, status: :unprocessable_content
     end
 
+    # Modal for pointing a plaintext author -- one with no lexicon entry of its own -- at an
+    # arbitrary URL, the counterpart of #match for the authors no entry can be found for. An
+    # entry-linked author already links to that entry and may not carry a link as well, so the
+    # views only offer this for entry-less ones; the model validation is the backstop.
+    def edit_link; end
+
+    def update_link
+      link = link_params[:link].to_s.strip
+
+      # The same allowlist TextLinksConcern applies to a text link's url: the value is rendered
+      # straight into an href (see LexiconHelper#render_citation_author), so anything not
+      # known-inert is refused rather than sanitized. It is checked here rather than as a model
+      # validation because ingestion stores legacy relative hrefs such as '00563.php'
+      # (see ParseCitations#update_link), which would then fail to save.
+      if link.present? && !link.match?(Lexicon::TextLinkExtraction::ALLOWED_URL_PATTERN)
+        @author.errors.add(:link, :invalid_url)
+        return render_link_errors
+      end
+
+      # Submitting an empty field clears the link, which is how an editor removes one.
+      @author.link = link.presence
+      return head :ok if @author.save
+
+      render_link_errors
+    end
+
     def destroy
       @author.destroy!
     end
 
     private
+
+    # The two callers want different things back: the modal (which sends no Accept preference)
+    # re-renders itself from the returned HTML, while the inline editor of the authors list has
+    # no modal to re-render and asks for text/plain so it can report the reason as it stands.
+    # html is declared first so that the modal's */* lands on it.
+    def render_link_errors
+      respond_to do |format|
+        format.html { render :edit_link, status: :unprocessable_content }
+        format.text { render plain: @author.errors.full_messages.join("\n"), status: :unprocessable_content }
+      end
+    end
 
     def author_params
       params.expect(lex_citation_author: %i(name link lex_entry_id))
@@ -84,6 +121,10 @@ module Lexicon
     # editor searched by, but the imported name must survive the match unchanged.
     def match_params
       params.expect(lex_citation_author: %i(lex_entry_id))
+    end
+
+    def link_params
+      params.expect(lex_citation_author: %i(link))
     end
 
     def set_citation

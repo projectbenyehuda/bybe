@@ -68,6 +68,7 @@ en:
           attributes:
             link:
               link_with_entry_error: link can only be specified if we don't have a Lexicon entry for author
+              invalid_url: 'must be an http(s) URL, a mailto: address, or a path on this site'
             entry:
               not_a_person: must be a Person entry
             lex_entry_id:

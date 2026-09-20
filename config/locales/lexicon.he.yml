@@ -121,6 +121,14 @@ he:
         entry_label: ערך לקסיקון (אדם)
         name_kept_notice: השם המיובא יישמר כלשונו; רק הקישור לערך יתווסף.
         confirm: אישור ההתאמה
+      edit_link:
+        title: קישור המחבר/ת לכתובת
+        author_name: 'שם המחבר/ת:'
+        link_label: כתובת (URL)
+        add: הוספת כתובת
+        edit: עריכת הכתובת
+        clear_hint: השארת השדה ריק תסיר את הקישור.
+        save_failed: שמירת הכתובת נכשלה
     citations:
       header:
         subject_line: על ״%{subject}״
