@@ -80,4 +80,41 @@ RSpec.describe 'LexCitation text links in the verification workbench', :js, type
     expect(citation.reload.text_links).to include({ 'text' => 'תזות על הדרמה העברית',
                                                     'url' => 'http://example.com/theses' })
   end
+
+  describe 'choosing between an entry and a URL as the link target' do
+    # Chewy indices are not rolled back with the database, so entries imported for the
+    # autocomplete would otherwise pile up across examples.
+    after { Chewy.massacre }
+
+    before { import_and_await(LexEntriesAutocompleteIndex, [target_entry]) }
+
+    it 'clears the one target when the other is set' do
+      visit "/lex/verification/#{entry.id}"
+
+      within "#citation-#{citation.id}" do
+        click_button I18n.t('lexicon.verification.migrated.edit')
+      end
+
+      expect(page).to have_css('#generalDlg.show', wait: 5)
+
+      within '#generalDlg' do
+        expect(page).to have_field('text_link_url', wait: 5)
+
+        fill_in 'text_link_url', with: 'http://example.com/theses'
+        fill_in 'text_link_entry_autocomplete', with: 'שדות'
+      end
+      # the autocomplete menu is appended to <body>, outside the modal
+      find('ul.ui-autocomplete li', text: 'שדות ומזוודות', wait: 5).click
+
+      within '#generalDlg' do
+        expect(page).to have_field('text_link_url', with: '')
+        expect(page).to have_field('text_link_entry_id', type: :hidden, with: target_entry.id.to_s)
+
+        fill_in 'text_link_url', with: 'http://example.com/other'
+
+        expect(page).to have_field('text_link_entry_autocomplete', with: '')
+        expect(page).to have_field('text_link_entry_id', type: :hidden, with: '')
+      end
+    end
+  end
 end
