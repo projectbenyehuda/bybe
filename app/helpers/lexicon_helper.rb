@@ -14,9 +14,10 @@ module LexiconHelper
                   link_to(lex_citation.title, lex_citation.link, target: '_blank', rel: 'noopener noreferrer')
                 end
     publication_bit = apply_text_links(lex_citation.from_publication, links)
+    notes_bit = " (#{apply_text_links(lex_citation.notes, links)})" if lex_citation.notes.present?
 
     raw "#{author_bit}, #{title_bit}, " \
-        "<u>#{publication_bit}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}"
+        "<u>#{publication_bit}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}#{notes_bit}"
   end
 
   def render_citation_author(author)

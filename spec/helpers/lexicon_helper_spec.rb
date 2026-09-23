@@ -326,6 +326,44 @@ RSpec.describe LexiconHelper, type: :helper do
     end
   end
 
+  describe '#render_citation' do
+    let(:citation) do
+      build(:lex_citation, authors_count: 0, title: 'אביב מוקדם', from_publication: 'הפועל הצעיר',
+                           pages: '12', link: nil, notes: notes, text_links: text_links)
+    end
+    let(:text_links) { [] }
+
+    context 'when the citation has notes' do
+      let(:notes) { 'צבי שץ והקבוצה האינטימית' }
+
+      it 'appends them in parentheses after the pages' do
+        expect(helper.render_citation(citation)).to end_with("עמ' 12 (צבי שץ והקבוצה האינטימית)")
+      end
+
+      context 'when a text link matches only the notes' do
+        let(:text_links) { [{ 'text' => 'צבי שץ', 'url' => 'http://example.com/shatz' }] }
+
+        it 'links the text inside the notes' do
+          expect(helper.render_citation(citation))
+            .to include('(<a target="_blank" rel="noopener noreferrer" href="http://example.com/shatz">צבי שץ</a>')
+        end
+      end
+
+      it 'escapes them' do
+        citation.notes = '<script>x</script>'
+        expect(helper.render_citation(citation)).to include('(&lt;script&gt;x&lt;/script&gt;)')
+      end
+    end
+
+    context 'when the citation has no notes' do
+      let(:notes) { nil }
+
+      it 'adds no parentheses' do
+        expect(helper.render_citation(citation)).to end_with("עמ' 12")
+      end
+    end
+  end
+
   describe '#citations_subject_header' do
     it 'wraps a plain work title in the "about" template' do
       expect(helper.citations_subject_header('שורשי אויר')).to eq('על ״שורשי אויר״')
