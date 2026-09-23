@@ -85,10 +85,10 @@ gem 'momentjs-rails' # for date picker in filters
 gem 'ahoy_matey' # for recording events
 gem 'blazer' # for exploring Ahoy events
 
-gem 'grape', '~> 3.1'
-gem 'grape-entity', '~> 1.0.1'
-gem 'grape-swagger', '~> 2.1.2'
-gem 'grape-swagger-entity', '~> 0.6.2'
+gem 'grape', '~> 3.1.0'
+gem 'grape-entity', '~> 1.0.4'
+gem 'grape-swagger', '~> 2.2.0'
+gem 'grape-swagger-entity', '~> 0.7.1'
 
 gem 'puma'
 gem 'rack-attack' # control misbehaving clients
