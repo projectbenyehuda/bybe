@@ -9,6 +9,14 @@ ul.lex {
   margin-top: 20px;
 }
 
+/* A mostly-Latin citation (rendered with dir="ltr") reads left-to-right from the left edge.
+   Its list marker then hangs off the left of the <li>, where the RTL list has no padding,
+   so give it the same room the Hebrew items get on the right. */
+.lexicon-entry-show #lexicon-about li[dir="ltr"] {
+  text-align: left;
+  margin-left: 40px;
+}
+
 /* Biography images (entry show page and the migration verification workbench).
    Entries migrated from the old PHP lexicon carry the legacy HTML `align` and
    `hspace` attributes as data-align/data-hspace. Without a float such an image
