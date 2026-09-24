@@ -27,15 +27,19 @@ module Lexicon
 
     # The authors of a citation as shown on its verification card. An author already linked to a
     # lexicon entry renders as a link to it; a plaintext author imported from a legacy PHP file
-    # renders as text, followed by a button offering to link it whenever a person entry titled
-    # exactly like its normalized name exists. `matchable_names` comes from
-    # LexCitationAuthor.matchable_names, resolved once for the whole page.
+    # renders as its own URL when it carries one and as text otherwise, followed by a button
+    # offering to match it to a person entry titled exactly like its normalized name whenever one
+    # exists, and by a button for pointing it at an arbitrary URL instead. `matchable_names` comes
+    # from LexCitationAuthor.matchable_names, resolved once for the whole page.
     def citation_authors_for_verification(citation, matchable_names)
       parts = citation.authors.map do |author|
         next link_to(author.display_name, lexicon_entry_path(author.entry)) if author.entry.present?
-        next author.display_name unless matchable_names.include?(author.normalized_name&.downcase)
 
-        safe_join([author.display_name, citation_author_match_button(author)], ' ')
+        bits = [citation_author_name_for_verification(author)]
+        bits << citation_author_match_button(author) if matchable_names.include?(author.normalized_name&.downcase)
+        bits << citation_author_link_button(author)
+
+        safe_join(bits, ' ')
       end
 
       safe_join(parts, ', ')
@@ -103,6 +107,25 @@ module Lexicon
                  type: 'button',
                  class: 'btn btn-sm btn-outline-primary py-0 px-1 match-citation-author',
                  onclick: "openModal('#{match_lexicon_citation_author_path(author)}', function() { reloadPage(); })"
+    end
+
+    # A plaintext author's name, as a link to its own URL when it has one. Matches how the entry
+    # page renders it (see LexiconHelper#render_citation_author), so that a URL just set from the
+    # card is visibly in effect.
+    def citation_author_name_for_verification(author)
+      return author.display_name if author.link.blank?
+
+      link_to(author.display_name, author.link, target: '_blank', rel: 'noopener noreferrer')
+    end
+
+    # Opens the modal for pointing a plaintext citation author at an arbitrary URL, reloading the
+    # page on confirmation so the card re-renders the author with (or without) its new link.
+    def citation_author_link_button(author)
+      label = author.link.present? ? 'edit' : 'add'
+      button_tag t("lexicon.citation_authors.edit_link.#{label}"),
+                 type: 'button',
+                 class: 'btn btn-sm btn-outline-secondary py-0 px-1 edit-citation-author-link',
+                 onclick: "openModal('#{edit_link_lexicon_citation_author_path(author)}', function() { reloadPage(); })"
     end
 
     # Diffy emits a trailing empty <li> when one side has more lines than the

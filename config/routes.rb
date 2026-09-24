@@ -95,6 +95,9 @@ Bybeconv::Application.routes.draw do
     resources :citation_authors, only: %i(update destroy) do
       member do
         get :match
+        # Pointing a plaintext author at an arbitrary URL, as opposed to matching it to an entry
+        get :edit_link
+        patch :update_link
       end
     end
     resources :linked_people, only: %i(destroy) do

@@ -1,4 +1,4 @@
-%ul
+%ul.citation-authors-list
   - @authors.each do |author|
     %li
       != render_citation_author(author)
@@ -7,5 +7,42 @@
                 method: :delete,
                 data: { confirm: t(:are_you_sure) },
                 remote: true
+      -#
+        A plaintext author -- one with no lexicon entry of its own -- may instead be pointed at an
+        arbitrary URL. An entry-linked author already links to its entry and may not carry a link
+        as well, so it gets no field. Editing happens here rather than in a modal of its own: this
+        list is itself shown inside the citation edit modal, and there is only one modal to go round.
+      - if author.entry.nil?
+        .input-group.input-group-sm.mt-1.citation-author-link
+          = label_tag "citation_author_link_#{author.id}",
+                      t('lexicon.citation_authors.edit_link.link_label'),
+                      class: 'input-group-text'
+          = text_field_tag "citation_author_link_#{author.id}",
+                           author.link,
+                           class: 'form-control form-control-sm',
+                           dir: 'ltr',
+                           placeholder: t('lexicon.text_links.url_placeholder')
+          - save_link_data = { url: update_link_lexicon_citation_author_path(author), author_id: author.id }
+          %button.btn.btn-outline-primary.save-citation-author-link{ type: 'button', data: save_link_data }
+            = t(:save)
 #new-author-form
   = render partial: 'form', locals: { citation: @citation, author: @citation.authors.build }
+
+:javascript
+  // The list is reloaded in place after every change, so the handler is bound to the buttons
+  // that are here now, and its namespace keeps a reload from stacking a second one on them.
+  $('.save-citation-author-link').off('click.authorLink').on('click.authorLink', function() {
+    var url = $(this).data('url');
+    var field = $('#citation_author_link_' + $(this).data('author-id'));
+    $.ajax({
+      url: url,
+      method: 'PATCH',
+      dataType: 'text',
+      headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+      data: { lex_citation_author: { link: field.val() } },
+      success: reloadAuthors,
+      error: function(xhr) {
+        alert('#{j t('lexicon.citation_authors.edit_link.save_failed')}\n' + (xhr.responseText || xhr.status));
+      }
+    });
+  });

@@ -120,6 +120,14 @@ en:
         entry_label: Lexicon entry (person)
         name_kept_notice: The imported name is kept as-is; only the link to the entry is added.
         confirm: Confirm match
+      edit_link:
+        title: Link the author to a URL
+        author_name: 'Author name:'
+        link_label: URL
+        add: Add URL
+        edit: Edit URL
+        clear_hint: Leaving the field empty removes the link.
+        save_failed: Saving the URL failed
     citations:
       header:
         subject_line: About "%{subject}"

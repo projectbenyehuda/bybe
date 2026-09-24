@@ -72,6 +72,7 @@ he:
           attributes:
             link:
               link_with_entry_error: לא ניתן לציין קישור כאשר קיים ערך לקסיקון עבור המחבר
+              invalid_url: חייבת להיות כתובת http(s), כתובת mailto, או נתיב באתר זה
             entry:
               not_a_person: הערך חייב להיות ערך מסוג אדם
             lex_entry_id:

@@ -100,6 +100,35 @@ describe '/lex/citation_authors' do
         expect(response).to have_http_status(:unprocessable_content)
       end
     end
+
+    context 'with a link of a scheme that could execute script' do
+      let(:attrs) { { name: 'איזיקוביץ, גילי', link: 'javascript:alert(1)' } }
+
+      it 'refuses it, as the update_link endpoint does' do
+        expect { call }.not_to change(LexCitationAuthor, :count)
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+
+    context 'with a link padded with whitespace' do
+      let(:attrs) { { name: 'איזיקוביץ, גילי', link: '  http://example.com/gili  ' } }
+
+      it 'stores the trimmed URL' do
+        expect { call }.to change(LexCitationAuthor, :count).by(1)
+        expect(LexCitationAuthor.order(id: :desc).first.link).to eq('http://example.com/gili')
+      end
+    end
+
+    # The form disables the URL field while an entry is selected, so this is only reachable by a
+    # client that ignores it -- the model refuses the pair either way.
+    context 'when both a link and an entry are submitted' do
+      let(:attrs) { { lex_entry_id: create(:lex_entry, :person).id, link: 'http://example.com/gili' } }
+
+      it 'refuses the pair' do
+        expect { call }.not_to change(LexCitationAuthor, :count)
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
   end
 
   describe 'GET /lex/citation_authors/:id/match' do
@@ -201,6 +230,101 @@ describe '/lex/citation_authors' do
       it 'keeps the submitted id in the hidden field instead of blanking it' do
         call
         expect(hidden_lex_entry_id_value(response.body)).to eq(matched_entry.id.to_s)
+      end
+    end
+  end
+
+  describe 'GET /lex/citation_authors/:id/edit_link' do
+    subject(:call) { get "/lex/citation_authors/#{author.id}/edit_link" }
+
+    let!(:citation) { create(:lex_citation, person: person, authors_count: 0) }
+    let!(:author) do
+      create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: 'http://example.com/gili')
+    end
+
+    it 'renders the modal pre-filled with the current link' do
+      expect(call).to eq(200)
+      expect(response.body).to include('איזיקוביץ, גילי')
+      expect(Nokogiri::HTML(response.body).at_css('#lex_citation_author_link')['value'])
+        .to eq('http://example.com/gili')
+    end
+  end
+
+  describe 'PATCH /lex/citation_authors/:id/update_link' do
+    subject(:call) do
+      patch "/lex/citation_authors/#{author.id}/update_link",
+            params: { lex_citation_author: { link: link } },
+            xhr: true
+    end
+
+    let!(:citation) { create(:lex_citation, person: person, authors_count: 0) }
+    let!(:author) { create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: nil) }
+    let(:link) { 'http://example.com/gili' }
+
+    it 'points the plaintext author at the given URL, leaving its name alone' do
+      expect(call).to eq(200)
+      expect(author.reload.link).to eq('http://example.com/gili')
+      expect(author.name).to eq('איזיקוביץ, גילי')
+    end
+
+    context 'with surrounding whitespace' do
+      let(:link) { '  http://example.com/gili  ' }
+
+      it 'stores the trimmed URL' do
+        expect(call).to eq(200)
+        expect(author.reload.link).to eq('http://example.com/gili')
+      end
+    end
+
+    context 'when the field is submitted empty' do
+      let!(:author) do
+        create(:lex_citation_author, citation: citation, name: 'איזיקוביץ, גילי', link: 'http://example.com/gili')
+      end
+      let(:link) { '' }
+
+      it 'clears the link rather than storing an empty string' do
+        expect(call).to eq(200)
+        expect(author.reload.link).to be_nil
+      end
+    end
+
+    # The value is rendered straight into an href, so the same allowlist TextLinksConcern
+    # applies to a text link's url is applied here.
+    context 'with a URL of a scheme that could execute script' do
+      let(:link) { 'javascript:alert(1)' }
+
+      it 'refuses it and leaves the author untouched' do
+        expect(call).to eq(422)
+        expect(author.reload.link).to be_nil
+      end
+    end
+
+    context 'when the author is already linked to a lexicon entry' do
+      let!(:author) do
+        create(:lex_citation_author, citation: citation, name: nil, link: nil, entry: create(:lex_entry, :person))
+      end
+
+      it 'refuses the link, which may not coexist with an entry' do
+        expect(call).to eq(422)
+        expect(author.reload.link).to be_nil
+      end
+    end
+
+    context 'when the caller asks for a plain-text response' do
+      let(:link) { 'javascript:alert(1)' }
+      let(:invalid_url_message) do
+        I18n.t('activerecord.errors.models.lex_citation_author.attributes.link.invalid_url')
+      end
+
+      it 'reports the reason as text rather than a modal to re-render' do
+        patch "/lex/citation_authors/#{author.id}/update_link",
+              params: { lex_citation_author: { link: link } },
+              headers: { 'Accept' => 'text/plain, */*' },
+              xhr: true
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.media_type).to eq('text/plain')
+        expect(response.body).to include(invalid_url_message)
       end
     end
   end
