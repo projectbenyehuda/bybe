@@ -362,6 +362,53 @@ RSpec.describe LexiconHelper, type: :helper do
         expect(helper.render_citation(citation)).to end_with("עמ' 12")
       end
     end
+
+    context 'when the pages are marked with p. or pp.' do
+      let(:notes) { nil }
+
+      it 'omits the Hebrew pages prefix' do
+        citation.pages = 'pp. 60-64'
+        expect(helper.render_citation(citation)).to end_with('</u>, pp. 60-64')
+        citation.pages = 'p. 7'
+        expect(helper.render_citation(citation)).to end_with('</u>, p. 7')
+      end
+    end
+
+    context 'when the pages merely contain the letter p' do
+      let(:notes) { nil }
+
+      it 'keeps the Hebrew pages prefix' do
+        citation.pages = '12 pages'
+        expect(helper.render_citation(citation)).to end_with("עמ' 12 pages")
+      end
+    end
+  end
+
+  describe '#ltr_citation?' do
+    it 'is true for a citation with no Hebrew letters, ignoring the automatic pages prefix' do
+      expect(helper.ltr_citation?("<b>Dov Vardi</b>, The Syrian-African Rift, <u>MHL</u>, עמ' 83-89")).to be true
+    end
+
+    it 'is true for a mostly-Latin citation with a little Hebrew in it' do
+      expect(helper.ltr_citation?('<b>Gidon Avraham</b>, A term list concerning the notion of בית (Home)')).to be true
+    end
+
+    it 'ignores Hebrew punctuation such as the geresh' do
+      expect(helper.ltr_citation?('Hebrew remembers Yiddish : Avot Yeshurun׳s poetics')).to be true
+    end
+
+    it 'is false for a Hebrew citation' do
+      expect(helper.ltr_citation?("<b>יער, אירית</b>, קריעה, <u>דימוי</u>, עמ' 73-74")).to be false
+    end
+
+    it 'is false when Latin letters are 75% or less of the letters' do
+      expect(helper.ltr_citation?('abc אבג')).to be false
+      expect(helper.ltr_citation?('abc א')).to be false # exactly 75%
+    end
+
+    it 'is false when there are no letters at all' do
+      expect(helper.ltr_citation?('12, 34')).to be false
+    end
   end
 
   describe '#citations_subject_header' do

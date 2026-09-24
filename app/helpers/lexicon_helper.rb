@@ -19,7 +19,24 @@ module LexiconHelper
     notes_bit = " (#{apply_text_links(lex_citation.notes, links, entries: entries)})" if lex_citation.notes.present?
 
     raw "#{author_bit}, #{title_bit}, " \
-        "<u>#{publication_bit}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}#{notes_bit}"
+        "<u>#{publication_bit}</u>#{citation_pages_bit(lex_citation.pages)}#{notes_bit}"
+  end
+
+  # Pages already marked in a Latin style ('p. 12', 'pp. 60-64') don't get the Hebrew prefix
+  def citation_pages_bit(pages)
+    return '' if pages.blank?
+
+    pages.match?(/\bpp?\./i) ? ", #{pages}" : ", עמ' #{pages}"
+  end
+
+  # True when more than 75% of the letters in a rendered citation are non-Hebrew, i.e. it
+  # should be laid out left-to-right. Markup, digits and punctuation are ignored, as is the
+  # automatic "עמ'" pages prefix.
+  def ltr_citation?(citation_html)
+    letters = strip_tags(citation_html).gsub("עמ'", '').scan(/\p{L}/)
+    return false if letters.empty?
+
+    letters.count { |letter| !letter.match?(/\p{Hebrew}/) } > letters.size * 0.75
   end
 
   def render_citation_author(author)

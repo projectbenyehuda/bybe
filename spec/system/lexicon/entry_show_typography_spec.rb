@@ -48,20 +48,35 @@ describe 'Lexicon entry show typography', :js do
     expect(computed('#lexicon-about ul', 'paddingInlineStart').to_i).to be > 0
   end
 
-  it 'keeps the bullet of a Latin-script citation aligned with the Hebrew ones' do
+  it 'lays out a Latin-script citation left-to-right and left-aligned' do
     visit lexicon_entry_path(entry)
 
     expect(page).to have_css('#lexicon-about ul > li', count: 2)
+    expect(page).to have_css('#lexicon-about li[dir="ltr"]', text: 'An English Title')
+    expect(page).to have_no_css('#lexicon-about li[dir="ltr"]', text: 'מאמר בעברית')
 
-    # A direction: ltr on the <li> would put its marker on the opposite (left) side of the
-    # list, so the two items' start edges would no longer coincide.
-    directions = page.evaluate_script(<<~JS)
-      Array.from(document.querySelectorAll('#lexicon-about ul > li'))
-           .map(function (li) { return window.getComputedStyle(li).direction; })
+    styles = page.evaluate_script(<<~JS)
+      Array.from(document.querySelectorAll('#lexicon-about ul > li')).map(function (li) {
+        var style = window.getComputedStyle(li);
+        return [style.direction, style.textAlign];
+      })
     JS
-    expect(directions).to all(eq('rtl'))
+    expect(styles.first.first).to eq('rtl')
+    expect(styles.last).to eq(%w(ltr left))
+  end
 
-    # ...and the Latin text is still isolated so it reads left-to-right
-    expect(page).to have_css('#lexicon-about li bdi[dir="ltr"]', text: 'An English Title')
+  it 'keeps the bullet of a Latin-script citation inside the list' do
+    visit lexicon_entry_path(entry)
+
+    expect(page).to have_css('#lexicon-about li[dir="ltr"]')
+
+    # the marker sits outside the <li>, to its left, so the <li> needs room for it on that side
+    gap = page.evaluate_script(<<~JS)
+      (function () {
+        var li = document.querySelector('#lexicon-about li[dir="ltr"]');
+        return li.getBoundingClientRect().left - li.parentElement.getBoundingClientRect().left;
+      })()
+    JS
+    expect(gap).to be > 10
   end
 end
