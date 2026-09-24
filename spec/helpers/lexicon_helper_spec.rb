@@ -467,6 +467,14 @@ RSpec.describe LexiconHelper, type: :helper do
       expect(helper.render_citation(citation)).to include(lexicon_entry_path(target_entry))
     end
 
+    it 'loads the linked entries once for all rendered fields' do
+      citation.update!(title: 'שדות ומזוודות', notes: 'ראו שדות ומזוודות')
+      entry_queries = 0
+      counter = ->(*, payload) { entry_queries += 1 if payload[:sql].include?('`lex_entries`') }
+      ActiveSupport::Notifications.subscribed(counter, 'sql.active_record') { helper.render_citation(citation) }
+      expect(entry_queries).to eq(1)
+    end
+
     context 'when the citation has its own link' do
       before { citation.update!(link: 'http://example.com/article') }
 

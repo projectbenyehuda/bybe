@@ -7,14 +7,16 @@ module LexiconHelper
                              .map { |author| render_citation_author(author) }.join(', ')
 
     links = lex_citation.text_links
+    # one LexEntry query for all three fields, rather than one per field
+    entries = text_link_entries(links) if links.present?
     title_bit = if lex_citation.link.blank?
                   # text_links are not applied when the whole title is already a link (no nested anchors)
-                  apply_text_links(lex_citation.title, links)
+                  apply_text_links(lex_citation.title, links, entries: entries)
                 else
                   link_to(lex_citation.title, lex_citation.link, target: '_blank', rel: 'noopener noreferrer')
                 end
-    publication_bit = apply_text_links(lex_citation.from_publication, links)
-    notes_bit = " (#{apply_text_links(lex_citation.notes, links)})" if lex_citation.notes.present?
+    publication_bit = apply_text_links(lex_citation.from_publication, links, entries: entries)
+    notes_bit = " (#{apply_text_links(lex_citation.notes, links, entries: entries)})" if lex_citation.notes.present?
 
     raw "#{author_bit}, #{title_bit}, " \
         "<u>#{publication_bit}</u>#{', עמ\' ' + lex_citation.pages if lex_citation.pages.present?}#{notes_bit}"
@@ -97,12 +99,14 @@ module LexiconHelper
   # the given text are simply ignored, which is what lets one set of pairs be applied to
   # several fields of the same record (e.g. a citation's title and from_publication).
   # Returns an HTML-safe String with the text escaped and matched occurrences replaced by links.
-  def apply_text_links(text, links)
+  # Callers applying the same pairs to several fields should build `entries` once with
+  # text_link_entries and pass it in.
+  def apply_text_links(text, links, entries: nil)
     links = Array(links)
     html = ERB::Util.html_escape(text.to_s)
     return html.html_safe if links.empty?
 
-    entries = text_link_entries(links)
+    entries ||= text_link_entries(links)
     links.each do |link|
       link_text = link['text']
       next if link_text.blank?
