@@ -80,19 +80,21 @@ describe 'Verification citation subject headings section', :js do
     expect(matched_citation.subject).to be_nil
   end
 
-  it 'clears a generic heading without linking it to a work' do
+  it 'keeps a generic heading as a general sub-heading without linking it to a work' do
     visit "/lex/verification/#{entry.id}"
     open_auto_match_modal
 
     within '#generalDlg' do
       row = find('.citation-subject-match', text: 'מאמרים')
-      expect(row).to have_content(I18n.t('lexicon.verification.sections.citation_subject_general'))
+      expect(row).to have_content(I18n.t('lexicon.verification.sections.citation_subject_heading', title: 'מאמרים'))
       row.click_button I18n.t('lexicon.verification.edit.confirm_match')
       expect(row).to have_css('.text-success', wait: 5)
     end
 
-    expect(generic_citation.reload.subject).to be_nil
+    generic_citation.reload
+    expect(generic_citation.subject).to be_nil
     expect(generic_citation.person_work).to be_nil
+    expect(generic_citation.citation_group.title).to eq 'מאמרים'
   end
 
   it 'lets the editor assign a work to a heading nothing matched' do

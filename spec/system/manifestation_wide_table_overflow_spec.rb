@@ -47,6 +47,7 @@ describe 'Manifestation#read with a wide table', :js do
         var card = document.querySelector('.by-card-v02.proofable').getBoundingClientRect();
         return [wc.left, wc.right, card.left, card.right,
                 document.documentElement.scrollWidth, document.documentElement.clientWidth];
+      })()
     JS
   end
 
