@@ -19,6 +19,7 @@ module Ahoy
       donev_top_bar
       donev_mobile_top_banner
       donev_mobile_top_banner_scrolled
+      donev_mobile_top_banner_icon
       donev_footban
       donev_footban_mobile
       donev_footer
