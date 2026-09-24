@@ -406,6 +406,11 @@ RSpec.describe LexiconHelper, type: :helper do
       expect(helper.ltr_citation?('abc א')).to be false # exactly 75%
     end
 
+    it 'does not count the letters of HTML entity names' do
+      # 'abc' is exactly 75% of 'abcא'; '&amp;' must not tip it over as three more Latin letters
+      expect(helper.ltr_citation?('abc א &amp; &quot;')).to be false
+    end
+
     it 'is false when there are no letters at all' do
       expect(helper.ltr_citation?('12, 34')).to be false
     end

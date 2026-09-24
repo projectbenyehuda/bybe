@@ -31,9 +31,10 @@ module LexiconHelper
 
   # True when more than 75% of the letters in a rendered citation are non-Hebrew, i.e. it
   # should be laid out left-to-right. Markup, digits and punctuation are ignored, as is the
-  # automatic "עמ'" pages prefix.
+  # automatic "עמ'" pages prefix. Entities are decoded so that e.g. '&amp;' isn't counted as
+  # three Latin letters (strip_tags leaves them encoded).
   def ltr_citation?(citation_html)
-    letters = strip_tags(citation_html).gsub("עמ'", '').scan(/\p{L}/)
+    letters = CGI.unescapeHTML(strip_tags(citation_html)).gsub("עמ'", '').scan(/\p{L}/)
     return false if letters.empty?
 
     letters.count { |letter| !letter.match?(/\p{Hebrew}/) } > letters.size * 0.75
