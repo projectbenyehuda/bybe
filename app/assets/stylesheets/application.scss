@@ -1719,6 +1719,11 @@ p.by-genre-name-v02.headline-2-v02 {
 		gap: 2px 12px;
 		margin-bottom: 4px;
 	}
+
+	/* "show less" sits beside the expand link ("to the full work") when both show. */
+	.summary-collapse {
+		margin-inline-start: 12px;
+	}
 }
 
 /* The latest-works pane (shared/_latest_works_by_author) has a title longer than the

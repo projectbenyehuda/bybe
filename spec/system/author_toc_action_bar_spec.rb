@@ -229,4 +229,35 @@ describe 'Author TOC action bar', :js do
     expect(page).to have_css('#tocmode_list.active', visible: :visible)
     expect(page).to have_no_css('.toc-snippet', visible: :all)
   end
+
+  it 'collapses an expanded excerpt back with "show less"' do
+    # Enough paragraphs to overflow the card's three-line clamp.
+    Chewy.strategy(:atomic) do
+      poem.update!(markdown: (1..6).map { |i| "Line number #{i} of the Alpha poem." }.join("\n\n"))
+    end
+
+    visit authority_path(author)
+    choose_sort('title')
+    find('#tocmode_snippets').click
+    card = find('.toc-snippet', text: 'Line number 1')
+
+    within(card) do
+      expect(page).to have_css('.summary-expand', text: I18n.t(:read_more), visible: :visible)
+      expect(page).to have_no_css('.summary-collapse', visible: :visible)
+
+      find('.summary-expand').click
+      expect(page).to have_css('.summary-text-more-lines')
+      expect(page).to have_css('.summary-collapse', text: I18n.t(:show_less), visible: :visible)
+
+      find('.summary-collapse').click
+      expect(page).to have_css('.summary-text')
+      expect(page).to have_no_css('.summary-text-more-lines')
+      expect(page).to have_css('.summary-expand', text: I18n.t(:read_more), visible: :visible)
+      expect(page).to have_no_css('.summary-collapse', visible: :visible)
+
+      # and it can be expanded again
+      find('.summary-expand').click
+      expect(page).to have_css('.summary-text-more-lines')
+    end
+  end
 end

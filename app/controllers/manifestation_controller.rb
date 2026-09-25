@@ -188,7 +188,8 @@ class ManifestationController < ApplicationController
     scope = Manifestation.where(id: ids).includes(SNIPPET_INCLUDES)
     scope = scope.all_published unless current_user&.editor?
     result = scope.each_with_object({}) do |m, acc|
-      key = "m_snippet_card_#{m.id}_#{authority_id}_#{m.updated_at.to_i}"
+      # bump the version whenever the partial's markup changes, or cached cards outlive the JS they fit
+      key = "m_snippet_card_v2_#{m.id}_#{authority_id}_#{m.updated_at.to_i}"
       acc[m.id] = Rails.cache.fetch(key, expires_in: 24.hours) do
         render_to_string(partial: 'manifestation/snippet_card', formats: [:html],
                          locals: { m: m, authority_id: authority_id })

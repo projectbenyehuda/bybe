@@ -760,14 +760,15 @@
 
     // Expand a clamped excerpt; once it is expanded as far as the card goes,
     // the link takes the reader to the work itself.
-    $('#browse_mainlist').on('click', '.toc-snippet .summary-read-more', function() {
+    $('#browse_mainlist').on('click', '.toc-snippet .summary-expand', function() {
       var $card = $(this).closest('.toc-snippet');
       var $text = $card.children('.summary-text').first();
       if ($text.length > 0) {
         $text.removeClass('summary-text').addClass('summary-text-more-lines');
+        $card.find('.summary-collapse').show();
         try {
           if (is_clamped($text.attr('id'))) {
-            $(this).find('span').text(#{I18n.t(:to_the_full_work).to_json});
+            $(this).text(#{I18n.t(:to_the_full_work).to_json});
             return;
           }
         } catch (e) {}
@@ -776,6 +777,15 @@
         var href = $(this).closest('.manifestation-node').find('a[href]').first().attr('href');
         if (href) { window.location.href = href; }
       }
+    });
+
+    // Clamp an expanded excerpt back to its first lines.
+    $('#browse_mainlist').on('click', '.toc-snippet .summary-collapse', function() {
+      var $card = $(this).closest('.toc-snippet');
+      $card.children('.summary-text-more-lines').first()
+           .removeClass('summary-text-more-lines').addClass('summary-text');
+      $card.find('.summary-expand').text(#{I18n.t(:read_more).to_json}).show();
+      $(this).hide();
     });
 
     $(document).on('show.bs.collapse', '[id^="paratext_collapse_"]', function() {
