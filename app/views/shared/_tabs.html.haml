@@ -315,6 +315,9 @@
         %button.btn-small-outline-v02.btn-text-v02.donation-btn-v02.donation-text{href: '/page/donate'}
           %span.by-icon-v02 z
           = t(:donate)
+      %a.donev.by-icon-v02.donation-icon-only#donev_mobile_top_banner_icon{ href: '/page/donate',
+                                                                            title: t(:donate_tt),
+                                                                            'aria-label': t(:donate) } z
       %a.by-icon-v02#mobile_search{href: "#"} X
       .dropdown.d-inline#moreMobile
         %span.pointer.by-icon-v02.dropdown-toggle#nav-more{"aria-expanded" => "false", "aria-haspopup" => "true", "data-toggle" => "dropdown", :type => "button"} Y

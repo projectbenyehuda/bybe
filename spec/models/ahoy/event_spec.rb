@@ -48,4 +48,17 @@ describe Ahoy::Event do
       expect(counts).to eq([nil, 'Manifestation'] => 1)
     end
   end
+
+  # Every .donev link is tracked by its DOM id (see the .donev click handler in the
+  # application layout), and an id missing from ALLOWED_NAMES is silently rejected.
+  describe 'ALLOWED_NAMES' do
+    it 'includes the id of every donation link in the views' do
+      donev_ids = Rails.root.glob('app/views/**/*').select(&:file?).flat_map do |view|
+        view.read.scan(/(?:#|id=")(donev_\w+)/).flatten
+      end
+
+      expect(donev_ids).to include('donev_mobile_top_banner_icon')
+      expect(donev_ids.uniq - described_class::ALLOWED_NAMES).to be_empty
+    end
+  end
 end
