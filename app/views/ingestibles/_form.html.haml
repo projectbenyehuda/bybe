@@ -280,10 +280,10 @@
     $('#periodical_issues').on('change', function() {
       if($('#periodical_issues').val() == '!new') {
         // show pop-up asking for new periodical issue title
-        var formHtml = '<form>#{t("ingestible.new_issue_title")}<input type="text" style="z-index:10000" name="issue_title"><br></form>';
+        var formHtml = '<form>#{t("ingestible.new_issue_title")}<input type="text" class="form-control" style="z-index:10000" name="issue_title"><br></form>';
         var modalHtml = '<div class="modal fade" id="newIssueModal" tabindex="-1" role="dialog">' +
           '<div class="modal-dialog" role="document">' +
-          '<div class="modal-content">' +
+          '<div class="modal-content bg-white">' +
           '<div class="modal-header">' +
           '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
           '<span aria-hidden="true">&times;</span>' +
@@ -403,15 +403,15 @@
       // Create a dialog for entering periodical and first issue titles
       var dialogHtml = '<form>' +
         '<label>#{t('ingestible.periodical_title')}:</label><br>' +
-        '<input type="text" name="periodical_title" id="new_periodical_title" ' +
+        '<input type="text" class="form-control" name="periodical_title" id="new_periodical_title" ' +
         'style="width:100%; margin-bottom:10px;"><br>' +
         '<label>#{t('ingestible.first_issue_title')}:</label><br>' +
-        '<input type="text" name="issue_title" id="new_issue_title" style="width:100%;">' +
+        '<input type="text" class="form-control" name="issue_title" id="new_issue_title" style="width:100%;">' +
         '</form>';
 
       var modalHtml2 = '<div class="modal fade" id="newPeriodicalModal" tabindex="-1" role="dialog">' +
         '<div class="modal-dialog" role="document" style="max-width: 500px;">' +
-        '<div class="modal-content">' +
+        '<div class="modal-content bg-white">' +
         '<div class="modal-header">' +
         '<h5 class="modal-title">#{t('ingestible.create_new_periodical')}</h5>' +
         '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
