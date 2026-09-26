@@ -85,7 +85,7 @@
   };
   function addholding(elem){
     var sels = $('.publine.pub_selected');
-    if (sels.size() == 0) {
+    if (sels.length == 0) {
       alert("#{t(:select_publication_first)}");
     } else {
       // gather data
@@ -122,7 +122,6 @@
       }).done(function(xhr, status) {
         if(status == "success") {
           card.remove();
-          $(sels[0]+" ol").append(new_holding);
         } else {
           alert('error');
           elem.disabled = false;
@@ -162,7 +161,7 @@
     });
     $(document).on('click', '.publine', function(){
       var sels = $('.publine.pub_selected');
-      if(sels.size() > 0) {
+      if(sels.length > 0) {
         $(sels[0]).removeClass('pub_selected');
       }
       $(this).addClass('pub_selected');
