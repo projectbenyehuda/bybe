@@ -260,4 +260,46 @@ describe 'Author TOC action bar', :js do
       expect(page).to have_css('.summary-text-more-lines')
     end
   end
+
+  it 'expands and collapses an excerpt from the keyboard' do
+    Chewy.strategy(:atomic) do
+      poem.update!(markdown: (1..6).map { |i| "Line number #{i} of the Alpha poem." }.join("\n\n"))
+    end
+
+    visit authority_path(author)
+    choose_sort('title')
+    find('#tocmode_snippets').click
+    card = find('.toc-snippet', text: 'Line number 1')
+
+    within(card) do
+      find('.summary-expand').send_keys(:enter)
+      expect(page).to have_css('.summary-text-more-lines')
+
+      find('.summary-collapse').send_keys(:space)
+      expect(page).to have_no_css('.summary-text-more-lines')
+      expect(page).to have_css('.summary-expand', text: I18n.t(:read_more), visible: :visible)
+    end
+  end
+
+  it 'still leads to the full work when the excerpt outgrows even the expanded card' do
+    # Long paragraphs, so that the excerpt stays cut off at the expanded card's ten lines too.
+    long_line = 'A long line of the Alpha poem that goes on and on. ' * 12
+    Chewy.strategy(:atomic) { poem.update!(markdown: ([long_line] * 5).join("\n\n")) }
+
+    visit authority_path(author)
+    choose_sort('title')
+    find('#tocmode_snippets').click
+    card = find('.toc-snippet', text: 'A long line')
+
+    within(card) do
+      find('.summary-expand').click
+      expect(page).to have_css('.summary-expand', text: I18n.t(:to_the_full_work), visible: :visible)
+      # "show less" still offered beside it
+      expect(page).to have_css('.summary-collapse', visible: :visible)
+
+      find('.summary-expand').click
+    end
+
+    expect(page).to have_current_path(manifestation_path(poem))
+  end
 end

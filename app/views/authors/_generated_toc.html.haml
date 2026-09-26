@@ -772,6 +772,8 @@
             return;
           }
         } catch (e) {}
+        // hiding a focused link would drop keyboard focus; hand it to "show less"
+        if ($(this).is(':focus')) { $card.find('.summary-collapse').trigger('focus'); }
         $(this).hide();
       } else {
         var href = $(this).closest('.manifestation-node').find('a[href]').first().attr('href');
@@ -784,8 +786,17 @@
       var $card = $(this).closest('.toc-snippet');
       $card.children('.summary-text-more-lines').first()
            .removeClass('summary-text-more-lines').addClass('summary-text');
-      $card.find('.summary-expand').text(#{I18n.t(:read_more).to_json}).show();
+      var $expand = $card.find('.summary-expand').text(#{I18n.t(:read_more).to_json}).show();
+      if ($(this).is(':focus')) { $expand.trigger('focus'); }
       $(this).hide();
+    });
+
+    // The excerpt links are spans acting as buttons, so give them a button's keys too.
+    $('#browse_mainlist').on('keydown', '.toc-snippet .summary-expand, .toc-snippet .summary-collapse', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        $(this).click();
+      }
     });
 
     $(document).on('show.bs.collapse', '[id^="paratext_collapse_"]', function() {

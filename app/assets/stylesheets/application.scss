@@ -1724,6 +1724,14 @@ p.by-genre-name-v02.headline-2-v02 {
 	.summary-collapse {
 		margin-inline-start: 12px;
 	}
+
+	/* The base rule pulls the links up beside the clamped text's last line, into its 80px gutter;
+	 * expanded, the two links are wider than that gutter, so give them a line of their own, on the same side. */
+	.summary-text-more-lines + .summary-read-more {
+		float: none; /* a float would hang out below the card */
+		margin-top: 4px;
+		text-align: left;
+	}
 }
 
 /* The latest-works pane (shared/_latest_works_by_author) has a title longer than the

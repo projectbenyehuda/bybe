@@ -21,5 +21,5 @@
 -# The expand link reads "read more", or "to the full work" once expanded as far as the card goes;
   "show less" appears once the excerpt is expanded, to clamp it back.
 .summary-read-more{ style: 'display: none' }
-  %span.linkcolor.pointer.summary-expand= t(:read_more)
-  %span.linkcolor.pointer.summary-collapse{ style: 'display: none' }= t(:show_less)
+  %span.linkcolor.pointer.summary-expand{ role: 'button', tabindex: 0 }= t(:read_more)
+  %span.linkcolor.pointer.summary-collapse{ role: 'button', tabindex: 0, style: 'display: none' }= t(:show_less)
