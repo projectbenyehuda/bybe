@@ -15,6 +15,8 @@ describe Lexicon::CheckExternalLinks do
     WebMock.disable_net_connect!(allow_localhost: true)
     # Default: allow Resolv to resolve stubbed hostnames to a public IP.
     allow(Resolv).to receive(:getaddresses).and_return(['93.184.216.34'])
+    # Default: no archived snapshot; the Wayback lookup itself is covered by wayback_lookup_spec.
+    allow(Lexicon::WaybackLookup).to receive(:call).and_return(nil)
   end
 
   context 'when entry has no lex_item' do
@@ -522,6 +524,45 @@ describe Lexicon::CheckExternalLinks do
     it 'checks publication links' do
       call
       expect(link.reload.http_status).to eq(200)
+    end
+  end
+
+  describe 'Internet Archive snapshots' do
+    let(:snapshot) { 'https://web.archive.org/web/20200101000000/http://example.com/gone' }
+
+    before do
+      allow(Lexicon::WaybackLookup).to receive(:call).with('http://example.com/gone').and_return(snapshot)
+      stub_request(:head, 'http://example.com/gone').to_return(status: 404)
+      stub_request(:head, 'http://example.com/ok').to_return(status: 200)
+    end
+
+    it 'records the snapshot of a broken link' do
+      link = create(:lex_link, item: person, url: 'http://example.com/gone')
+      call
+      expect(link.reload.archive_url).to eq snapshot
+    end
+
+    it 'records the snapshot of a broken citation link' do
+      citation = create(:lex_citation, person: person, link: 'http://example.com/gone')
+      call
+      expect(citation.reload.link_archive_url).to eq snapshot
+    end
+
+    it 'does not look up a working link, and clears a stale snapshot' do
+      link = create(:lex_link, item: person, url: 'http://example.com/ok', archive_url: snapshot)
+      call
+      expect(link.reload.archive_url).to be_nil
+      expect(Lexicon::WaybackLookup).not_to have_received(:call)
+    end
+
+    it 'does not look up an unverifiable link' do
+      %i(head get).each do |method|
+        stub_request(method, 'http://challenged.example.com/x')
+          .to_return(status: 403, headers: { 'cf-mitigated' => 'challenge' })
+      end
+      create(:lex_link, item: person, url: 'http://challenged.example.com/x')
+      call
+      expect(Lexicon::WaybackLookup).not_to have_received(:call)
     end
   end
 end

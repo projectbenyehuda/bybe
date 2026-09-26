@@ -87,6 +87,27 @@ module Lexicon
       end
     end
 
+    # Internet Archive buttons for a broken link. When link-checking found a Wayback Machine snapshot
+    # (+archive_url+), links straight to it and offers to adopt it via +use_archive_path+; otherwise
+    # falls back to the Wayback search page for +url+, where the editor looks for one by hand.
+    def internet_archive_buttons(url, archive_url, use_archive_path)
+      css = 'btn btn-sm btn-outline-secondary ms-1'
+      if archive_url.blank?
+        return link_to(t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{url}",
+                       target: '_blank', rel: 'noopener', class: css)
+      end
+
+      safe_join(
+        [
+          link_to(t('lexicon.verification.broken_link.archived_version'), archive_url,
+                  target: '_blank', rel: 'noopener', class: "#{css} archived-version-link"),
+          link_to(t('lexicon.verification.broken_link.use_archived_version'), use_archive_path,
+                  remote: true, method: :patch, class: 'btn btn-sm btn-outline-primary ms-1 use-archived-version',
+                  data: { confirm: t('lexicon.verification.broken_link.use_archived_version_confirm') })
+        ]
+      )
+    end
+
     def badge_class_for_status(status)
       case status.to_sym
       when :draft then 'bg-secondary'

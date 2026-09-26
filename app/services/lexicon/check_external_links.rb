@@ -16,14 +16,16 @@ module Lexicon
   # - 4xx/5xx codes indicate a broken link
   # - Unless the refusal is a bot challenge, in which case the link is flagged unverifiable
   #   rather than broken (see #challenge_response?)
+  # - For a broken link, looks up its last good snapshot in the Wayback Machine (see WaybackLookup)
   #
   # Invoked asynchronously via Lexicon::CheckExternalLinksJob after ingestion.
   class CheckExternalLinks < ApplicationService
     # Outcome of checking one URL. +unverifiable+ means the host refused us with a bot challenge
     # we cannot solve, so +status+ says nothing about whether the link actually works.
-    Result = Data.define(:status, :unverifiable) do
-      def self.checked(status, unverifiable: false)
-        new(status: status, unverifiable: unverifiable)
+    # +archive_url+ is the Wayback Machine snapshot of a broken link, when one exists.
+    Result = Data.define(:status, :unverifiable, :archive_url) do
+      def self.checked(status, unverifiable: false, archive_url: nil)
+        new(status: status, unverifiable: unverifiable, archive_url: archive_url)
       end
 
       # No verdict at all: unreachable host, invalid URL, blocked address, redirect loop.
@@ -34,7 +36,20 @@ module Lexicon
       def unverifiable?
         unverifiable
       end
+
+      # Same verdict as LexLink#broken? / LexCitation#link_broken? for a checked external URL
+      def broken?
+        !unverifiable? && (status.nil? || status >= 400)
+      end
     end
+
+    # Where each kind of record keeps its URL and the outcome of checking it
+    RECORD_COLUMNS = {
+      'LexLink' => { url: :url, status: :http_status, checked_at: :checked_at, unverifiable: :unverifiable,
+                     archive_url: :archive_url },
+      'LexCitation' => { url: :link, status: :link_http_status, checked_at: :link_checked_at,
+                         unverifiable: :link_unverifiable, archive_url: :link_archive_url }
+    }.freeze
 
     MAX_REDIRECTS = 5
     TIMEOUT_SECONDS = 15
@@ -81,15 +96,24 @@ module Lexicon
       fetch_result(url)
     end
 
+    # Like #check_url, but a broken URL's Result also carries its Wayback Machine snapshot. The
+    # lookup can take a minute (see WaybackLookup), so this is for background checks only.
+    def check_url_with_archive(url)
+      result = fetch_result(url)
+      return result unless result.broken?
+
+      result.with(archive_url: WaybackLookup.call(url))
+    end
+
     private
 
     def check_item_links(item)
       item.links.find_each do |lex_link|
         next unless external_url?(lex_link.url)
 
-        result = fetch_result(lex_link.url)
+        result = check_url_with_archive(lex_link.url)
         lex_link.update_columns(http_status: result.status, unverifiable: result.unverifiable?,
-                                checked_at: Time.current)
+                                archive_url: result.archive_url, checked_at: Time.current)
       end
     end
 
@@ -97,9 +121,9 @@ module Lexicon
       person.citations.where.not(link: [nil, '']).find_each do |citation|
         next unless external_url?(citation.link)
 
-        result = fetch_result(citation.link)
+        result = check_url_with_archive(citation.link)
         citation.update_columns(link_http_status: result.status, link_unverifiable: result.unverifiable?,
-                                link_checked_at: Time.current)
+                                link_archive_url: result.archive_url, link_checked_at: Time.current)
       end
     end
 

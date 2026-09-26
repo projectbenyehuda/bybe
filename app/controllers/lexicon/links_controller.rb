@@ -9,7 +9,7 @@ module Lexicon
     before_action do
       require_editor('edit_lexicon')
     end
-    before_action :set_link, only: %i(edit update destroy)
+    before_action :set_link, only: %i(edit update use_archive destroy)
     before_action :set_entry, only: %i(new create index)
     before_action :try_to_lock_record
 
@@ -39,18 +39,22 @@ module Lexicon
       old_url = @link.url
 
       if @link.update(lex_link_params)
-        # Re-check the link only when its URL actually changed, so a previously-broken
-        # link (e.g. HTTP 403) is re-evaluated instead of keeping its stale status.
-        if @link.saved_change_to_url?
-          check_link_synchronously(@link, @link.url, status_column: :http_status,
-                                                     checked_at_column: :checked_at,
-                                                     unverifiable_column: :unverifiable)
-          report_broken_link_fix(@link, @item.entry, old_url) if link_was_broken
-        end
+        recheck_changed_url(link_was_broken, old_url)
         return
       end
 
       render :edit, status: :unprocessable_content
+    end
+
+    # Replaces a broken link's URL with the Wayback Machine snapshot link-checking found for it
+    def use_archive
+      return head :unprocessable_content if @link.archive_url.blank?
+
+      link_was_broken = @link.broken?
+      old_url = @link.url
+      @link.update!(url: @link.archive_url)
+      recheck_changed_url(link_was_broken, old_url)
+      render :update
     end
 
     def destroy
@@ -60,6 +64,15 @@ module Lexicon
     end
 
     private
+
+    # Re-check the link only when its URL actually changed, so a previously-broken
+    # link (e.g. HTTP 403) is re-evaluated instead of keeping its stale status.
+    def recheck_changed_url(link_was_broken, old_url)
+      return unless @link.saved_change_to_url?
+
+      check_link_synchronously(@link, @link.url)
+      report_broken_link_fix(@link, @item.entry, old_url) if link_was_broken
+    end
 
     def set_entry
       @entry = LexEntry.find(params[:entry_id])

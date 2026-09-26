@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_19_143000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_27_120000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -672,6 +672,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_143000) do
     t.bigint "lex_person_id", null: false
     t.bigint "lex_person_work_id"
     t.string "link", limit: 1024
+    t.string "link_archive_url", limit: 1024
     t.datetime "link_checked_at"
     t.integer "link_http_status"
     t.boolean "link_unverifiable", default: false, null: false
@@ -771,6 +772,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_143000) do
   end
 
   create_table "lex_links", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "archive_url", limit: 1024
     t.datetime "checked_at"
     t.datetime "created_at", precision: nil, null: false
     t.string "description"
@@ -780,7 +782,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_143000) do
     t.integer "status"
     t.boolean "unverifiable", default: false, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.string "url"
+    t.string "url", limit: 1024
     t.index ["item_type", "item_id"], name: "index_lex_links_on_item_type_and_item_id"
   end
 

@@ -285,6 +285,32 @@ task recheck_broken_lexicon_links: :environment do
        "#{reclassified} now unverifiable"
 end
 
+desc 'look up Internet Archive snapshots for lexicon links found broken before snapshots were recorded'
+task lookup_lexicon_archive_urls: :environment do
+  links = LexLink.where(archive_url: nil).where.not(checked_at: nil).select(&:broken?)
+  citations = LexCitation.where(link_archive_url: nil).where.not(link_checked_at: nil).select(&:link_broken?)
+  found = 0
+
+  links.each do |link|
+    archive_url = Lexicon::WaybackLookup.call(link.url)
+    next if archive_url.nil?
+
+    link.update_column(:archive_url, archive_url)
+    found += 1
+  end
+
+  citations.each do |citation|
+    archive_url = Lexicon::WaybackLookup.call(citation.link)
+    next if archive_url.nil?
+
+    citation.update_column(:link_archive_url, archive_url)
+    found += 1
+  end
+
+  puts "Looked up #{links.size} broken links and #{citations.size} broken citation links; " \
+       "found #{found} archived snapshots"
+end
+
 desc 'decode HTML entities baked into LexLink descriptions by the pre-fix html2txt'
 task fix_lexicon_link_descriptions: :environment do
   # The only escapes Rails::HTML5::FullSanitizer emits into a text node, so these are the only
