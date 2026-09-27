@@ -31,11 +31,17 @@ RSpec.describe 'Citation link check feedback on verification page', type: :syste
     expect(page).to have_css('#generalDlg.show', wait: 5)
   end
 
-  def submit_link_change(new_link)
-    within('#generalDlg') do
-      fill_in 'lex_citation_link', with: new_link
+  # Scoped to the citation form: the modal also loads the citation's authors list asynchronously,
+  # and each plaintext author there has its own "save link" button with the same label.
+  def submit_citation_form(field, value)
+    within("#generalDlg #edit_lex_citation_#{citation.id}") do
+      fill_in field, with: value
       click_button I18n.t(:save)
     end
+  end
+
+  def submit_link_change(new_link)
+    submit_citation_form('lex_citation_link', new_link)
   end
 
   context 'when the new link is accessible (HTTP 200)' do
@@ -114,10 +120,7 @@ RSpec.describe 'Citation link check feedback on verification page', type: :syste
       visit_verification_page
       open_citation_edit_modal
 
-      within('#generalDlg') do
-        fill_in 'lex_citation_title', with: 'Updated Title'
-        click_button I18n.t(:save)
-      end
+      submit_citation_form('lex_citation_title', 'Updated Title')
 
       # Page reloads; no toast since link was unchanged
       expect(page).not_to have_css('.toast-notification', wait: 5)
