@@ -108,6 +108,38 @@ RSpec.describe 'ingest_lexicon rake task' do
     end
   end
 
+  describe 'lookup_lexicon_archive_urls' do
+    let(:lookup_task) { Rake::Task['lookup_lexicon_archive_urls'] }
+    let(:snapshot) { 'https://web.archive.org/web/20200101000000/https://dead.example.com/a' }
+
+    before do
+      lookup_task.reenable
+      allow(Lexicon::WaybackLookup).to receive(:call).and_return(snapshot)
+    end
+
+    it 'stores a snapshot for a broken link and a broken citation link' do
+      link = create(:lex_link, url: 'https://dead.example.com/a', http_status: 404, checked_at: 1.day.ago)
+      citation = create(:lex_citation, person: create(:lex_person), link: 'https://dead.example.com/a',
+                                       link_http_status: nil, link_checked_at: 1.day.ago)
+
+      expect { lookup_task.invoke }
+        .to output(/Looked up 2 broken links; found 2 archived snapshots/).to_stdout
+      expect(link.reload.archive_url).to eq(snapshot)
+      expect(citation.reload.link_archive_url).to eq(snapshot)
+    end
+
+    it 'skips working, unverifiable, unchecked and already-resolved links' do
+      create(:lex_link, url: 'https://ok.example.com/', http_status: 200, checked_at: 1.day.ago)
+      create(:lex_link, url: 'https://cf.example.com/', http_status: 403, unverifiable: true, checked_at: 1.day.ago)
+      create(:lex_link, url: 'https://new.example.com/', http_status: nil, checked_at: nil)
+      create(:lex_link, url: 'https://dead.example.com/b', http_status: 404, checked_at: 1.day.ago,
+                        archive_url: snapshot)
+
+      expect { lookup_task.invoke }.to output(/Looked up 0 broken links/).to_stdout
+      expect(Lexicon::WaybackLookup).not_to have_received(:call)
+    end
+  end
+
   describe 'recheck_broken_lexicon_links' do
     let(:recheck_task) { Rake::Task['recheck_broken_lexicon_links'] }
     let(:checker) { instance_double(Lexicon::CheckExternalLinks) }

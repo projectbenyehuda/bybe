@@ -288,7 +288,7 @@
                   %br
                   - if citation.link_broken?
                     %span.broken-link-badge= broken_link_badge(citation.link_http_status)
-                    = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{citation.link}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
+                    = internet_archive_buttons(citation.link, citation.link_archive_url, use_archive_lexicon_citation_path(citation))
                   - elsif citation.link_unverifiable?
                     %span.unverifiable-link-badge{ title: t('lexicon.verification.broken_link.unverifiable_tooltip') }
                       = t('lexicon.verification.broken_link.unverifiable_badge')
@@ -357,7 +357,7 @@
           .link-content{dir: text_dir(link.description.to_s)}
             - if link.broken?
               %span.broken-link-badge= broken_link_badge(link.http_status)
-              = link_to t('lexicon.verification.broken_link.internet_archive'), "https://web.archive.org/web/*/#{link.url}", target: '_blank', rel: 'noopener', class: 'btn btn-sm btn-outline-secondary ms-1'
+              = internet_archive_buttons(link.url, link.archive_url, use_archive_lexicon_link_path(link))
             - elsif link.unverifiable?
               %span.unverifiable-link-badge{ title: t('lexicon.verification.broken_link.unverifiable_tooltip') }
                 = t('lexicon.verification.broken_link.unverifiable_badge')

@@ -371,6 +371,50 @@ describe '/lexicon/citations' do
     end
   end
 
+  describe 'PATCH /lex/citations/:id/use_archive' do
+    subject(:call) { patch "/lex/citations/#{citation.id}/use_archive", xhr: true }
+
+    let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: link_check_result(200)) }
+    let(:entry) { create(:lex_entry, :person, status: :verifying) }
+    let(:person) { entry.lex_item }
+    let(:old_link) { 'https://dead.example.com/page' }
+    let(:snapshot) { "https://web.archive.org/web/20200101000000/#{old_link}" }
+    let(:citation) do
+      create(:lex_citation, person: person, link: old_link, link_http_status: 404, link_checked_at: 1.day.ago,
+                            link_archive_url: snapshot)
+    end
+
+    before do
+      allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+      allow(Lexicon::MondayReport).to receive(:call).and_return({ success: true })
+    end
+
+    it 'replaces the link with the archived snapshot and re-checks it' do
+      expect(call).to eq(200)
+      expect(citation.reload).to have_attributes(link: snapshot, link_http_status: 200, link_archive_url: nil)
+      expect(citation).not_to be_link_broken
+      expect(checker).to have_received(:check_url).with(snapshot)
+    end
+
+    it 'reports the fixed broken link to Monday' do
+      call
+
+      expect(Lexicon::MondayReport).to have_received(:call).with(
+        hash_including(entry: entry, report_type: :fixed_broken_link, record: citation, old_link: old_link)
+      )
+    end
+
+    context 'when no snapshot was found for the link' do
+      before { citation.update_columns(link_archive_url: nil) }
+
+      it 'changes nothing' do
+        expect(call).to eq(422)
+        expect(citation.reload.link).to eq(old_link)
+        expect(checker).not_to have_received(:check_url)
+      end
+    end
+  end
+
   describe 'DELETE /lex/citations/:id' do
     subject(:call) { delete "/lex/citations/#{citation.id}", xhr: true }
 

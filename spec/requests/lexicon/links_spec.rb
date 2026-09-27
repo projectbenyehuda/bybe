@@ -108,6 +108,10 @@ describe '/lexicon/links' do
           expect(link).not_to be_broken
         end
 
+        it 'does not look up an Internet Archive snapshot' do
+          expect { call }.not_to have_enqueued_job(Lexicon::LookupArchiveUrlJob)
+        end
+
         it 'includes a success toast in the response' do
           call
           expect(response.body).to include('showToast')
@@ -130,6 +134,19 @@ describe '/lexicon/links' do
           call
           expect(link.reload.http_status).to eq(404)
           expect(link).to be_broken
+        end
+
+        it 'looks up its Internet Archive snapshot in the background' do
+          expect { call }.to have_enqueued_job(Lexicon::LookupArchiveUrlJob).with(link, 'https://new.example.com/')
+        end
+      end
+
+      # e.g. a relative /files/... link, which the models never count as broken
+      context 'when the new URL could not be checked at all' do
+        before { allow(checker).to receive(:check_url).and_return(Lexicon::CheckExternalLinks::Result.rejected) }
+
+        it 'does not look up a snapshot' do
+          expect { call }.not_to have_enqueued_job(Lexicon::LookupArchiveUrlJob)
         end
       end
 
@@ -277,6 +294,47 @@ describe '/lexicon/links' do
         allow(Lexicon::CheckExternalLinks).to receive(:new).and_call_original
         call
         expect(Lexicon::CheckExternalLinks).not_to have_received(:new)
+      end
+    end
+  end
+
+  describe 'PATCH /lex/links/:id/use_archive' do
+    subject(:call) { patch "/lex/links/#{link.id}/use_archive", xhr: true }
+
+    let(:checker) { instance_double(Lexicon::CheckExternalLinks, check_url: link_check_result(200)) }
+    let(:entry) { create(:lex_entry, :person, status: :verifying) }
+    let(:old_url) { 'https://dead.example.com/page' }
+    let(:snapshot) { "https://web.archive.org/web/20200101000000/#{old_url}" }
+    let(:link) { create(:lex_link, item: person, url: old_url) }
+
+    before do
+      allow(Lexicon::CheckExternalLinks).to receive(:new).and_return(checker)
+      allow(Lexicon::MondayReport).to receive(:call).and_return({ success: true })
+      link.update_columns(http_status: 404, checked_at: 1.day.ago, archive_url: snapshot)
+    end
+
+    it 'replaces the URL with the archived snapshot and re-checks it' do
+      expect(call).to eq(200)
+      expect(link.reload).to have_attributes(url: snapshot, http_status: 200, archive_url: nil)
+      expect(link).not_to be_broken
+      expect(checker).to have_received(:check_url).with(snapshot)
+    end
+
+    it 'reports the fixed broken link to Monday' do
+      call
+
+      expect(Lexicon::MondayReport).to have_received(:call).with(
+        hash_including(entry: entry, report_type: :fixed_broken_link, record: link, old_link: old_url)
+      )
+    end
+
+    context 'when no snapshot was found for the link' do
+      before { link.update_columns(archive_url: nil) }
+
+      it 'changes nothing' do
+        expect(call).to eq(422)
+        expect(link.reload.url).to eq(old_url)
+        expect(checker).not_to have_received(:check_url)
       end
     end
   end

@@ -4,29 +4,28 @@
 # edit a URL (LexLink and LexCitation). On a URL change the controller re-checks the link
 # and stores the fresh HTTP status on the record, exposing a toast for the JS response.
 # Also reports corrections of previously-broken links to Monday (see #report_broken_link_fix).
-#
-# Records differ in their column names, so the caller passes them in:
-#   - LexLink:     status_column: :http_status,      checked_at_column: :checked_at,
-#                  unverifiable_column: :unverifiable
-#   - LexCitation: status_column: :link_http_status, checked_at_column: :link_checked_at,
-#                  unverifiable_column: :link_unverifiable
 module LinkCheckingConcern
   extend ActiveSupport::Concern
 
   private
 
-  # Re-checks +url+ synchronously and stores the resulting HTTP status on +record+.
+  # Re-checks +url+ synchronously and stores the resulting HTTP status on +record+. A broken link's
+  # Internet Archive snapshot is looked up in the background (see Lexicon::LookupArchiveUrlJob):
+  # the lookup can take a minute, too long to hold up the editor's save.
   # A blank URL clears the stored status without making a network request.
   # Sets @link_check_performed / @link_toast_type / @link_toast_message for the JS view.
-  def check_link_synchronously(record, url, status_column:, checked_at_column:, unverifiable_column:)
+  def check_link_synchronously(record, url)
+    columns = Lexicon::CheckExternalLinks::RECORD_COLUMNS.fetch(record.class.name)
     if url.blank?
-      record.update_columns(status_column => nil, checked_at_column => nil, unverifiable_column => false)
+      record.update_columns(columns[:status] => nil, columns[:checked_at] => nil, columns[:unverifiable] => false,
+                            columns[:archive_url] => nil)
       return
     end
 
     result = Lexicon::CheckExternalLinks.new.check_url(url)
-    record.update_columns(status_column => result.status, checked_at_column => Time.current,
-                          unverifiable_column => result.unverifiable?)
+    record.update_columns(columns[:status] => result.status, columns[:checked_at] => Time.current,
+                          columns[:unverifiable] => result.unverifiable?, columns[:archive_url] => nil)
+    Lexicon::LookupArchiveUrlJob.perform_later(record, url) if result.archive_lookup?
     @link_check_performed = true
     @link_toast_type, @link_toast_message = link_toast_for(result)
     # flash (not flash.now) is intentional: the JS response triggers a full page reload in the

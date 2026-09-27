@@ -11,7 +11,8 @@ module Lexicon
       require_editor('edit_lexicon')
     end
 
-    before_action :set_citation, only: %i(edit update destroy reorder text_links add_text_link remove_text_link)
+    before_action :set_citation, only: %i(edit update use_archive destroy reorder text_links add_text_link
+                                          remove_text_link)
     before_action :set_person, only: %i(new create index)
     before_action :try_to_lock_record
 
@@ -51,16 +52,22 @@ module Lexicon
       end
 
       if @citation.save
-        if @citation.saved_change_to_link?
-          check_link_synchronously(@citation, @citation.link,
-                                   status_column: :link_http_status, checked_at_column: :link_checked_at,
-                                   unverifiable_column: :link_unverifiable)
-          report_broken_link_fix(@citation, @person.entry, old_link) if link_was_broken
-        end
+        recheck_changed_link(link_was_broken, old_link)
         return
       end
 
       render :edit, status: :unprocessable_content
+    end
+
+    # Replaces a broken citation link with the Wayback Machine snapshot link-checking found for it
+    def use_archive
+      return head :unprocessable_content if @citation.link_archive_url.blank?
+
+      link_was_broken = @citation.link_broken?
+      old_link = @citation.link
+      @citation.update!(link: @citation.link_archive_url)
+      recheck_changed_link(link_was_broken, old_link)
+      render :update
     end
 
     def destroy
@@ -131,6 +138,13 @@ module Lexicon
     end
 
     private
+
+    def recheck_changed_link(link_was_broken, old_link)
+      return unless @citation.saved_change_to_link?
+
+      check_link_synchronously(@citation, @citation.link)
+      report_broken_link_fix(@citation, @person.entry, old_link) if link_was_broken
+    end
 
     # Whether a token names one of the general buckets a citation may be dragged in or out of:
     # the ungrouped general citations, or a general sub-heading. A work's list, and a heading still

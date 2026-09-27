@@ -76,6 +76,7 @@ Bybeconv::Application.routes.draw do
           get :text_links
           post :add_text_link
           delete :remove_text_link
+          patch :use_archive
         end
       end
       resources :works, controller: 'person_works', shallow: true, except: %i(show) do
@@ -115,7 +116,9 @@ Bybeconv::Application.routes.draw do
         patch :unlock
       end
       resources :attachments, only: %i(index create destroy)
-      resources :links, shallow: true, except: %i(show)
+      resources :links, shallow: true, except: %i(show) do
+        patch :use_archive, on: :member
+      end
       # Authority control identifiers: a single JSON column on the entry, hence a singular resource
       resource :external_identifiers, only: %i(show update)
     end
