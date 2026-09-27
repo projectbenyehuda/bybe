@@ -72,9 +72,11 @@ RSpec.describe 'Manifestation edit ddslick dropdown', :js, type: :system do
 
       3.times do
         find('.dd-select').click
-        expect(page).to have_css('.dd-options', visible: true, wait: 5)
+        expect(page).to have_css('.dd-options', visible: :visible, wait: 5)
         page.execute_script("$('#images').ddslick('close')")
-        expect(page).to have_css('.dd-options', visible: false, wait: 5)
+        # visible: :hidden (not false, which matches regardless of visibility and so never waits):
+        # the next click must not land while the list is still showing, or ddslick's toggle closes it.
+        expect(page).to have_css('.dd-options', visible: :hidden, wait: 5)
       end
 
       # Only one dd-container should exist — re-initialization would create duplicates
