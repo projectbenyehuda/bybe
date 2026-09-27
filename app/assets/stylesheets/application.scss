@@ -1126,6 +1126,19 @@ small p{
 	font-size: 11pt;
 	line-height: 13pt;
 }
+// Sefaria's linker.v3.js sets `style.all = "unset"` on every reference anchor it
+// injects (a.sefaria-ref), which the browser expands into dozens of inline `unset`
+// declarations, leaving the link indistinguishable from the surrounding text. Inline
+// styles can only be beaten with !important; restore the site's regular link look
+// (`a` / `a:hover` in BY_styles_General.css and Bootstrap).
+a.sefaria-ref {
+  color: #660248 !important;
+  &:hover {
+    color: #2b0d22 !important;
+    background-color: #d9cdd5 !important;
+    text-decoration: underline !important;
+  }
+}
 .work-content{
   scroll-snap-type: y mandatory;
   /* .work-area is a flex container and .work-content is a `flex: 1` item
