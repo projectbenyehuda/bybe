@@ -564,5 +564,40 @@ describe Lexicon::CheckExternalLinks do
       call
       expect(Lexicon::WaybackLookup).not_to have_received(:call)
     end
+
+    describe '#check_url_with_archive' do
+      subject(:result) { described_class.new.check_url_with_archive(url) }
+
+      # The SSRF guard refuses the request; sending the URL on to archive.org would leak it anyway
+      context 'with a URL on a private address' do
+        let(:url) { 'http://internal.example.com/secret' }
+
+        before { allow(Resolv).to receive(:getaddresses).and_return(['10.0.0.5']) }
+
+        it 'reports the link broken but does not look it up' do
+          expect(result).to be_broken
+          expect(Lexicon::WaybackLookup).not_to have_received(:call)
+        end
+      end
+
+      context 'with a relative URL' do
+        let(:url) { '/files/lex/00001.pdf' }
+
+        it 'does not look it up' do
+          expect(result.archive_lookup?).to be false
+          expect(Lexicon::WaybackLookup).not_to have_received(:call)
+        end
+      end
+
+      context 'with an unreachable host' do
+        let(:url) { 'http://example.com/gone' }
+
+        before { stub_request(:head, url).to_raise(SocketError) }
+
+        it 'looks it up' do
+          expect(result.archive_url).to eq(snapshot)
+        end
+      end
+    end
   end
 end

@@ -287,11 +287,16 @@ end
 
 desc 'look up Internet Archive snapshots for lexicon links found broken before snapshots were recorded'
 task lookup_lexicon_archive_urls: :environment do
-  links = LexLink.where(archive_url: nil).where.not(checked_at: nil).select(&:broken?)
-  citations = LexCitation.where(link_archive_url: nil).where.not(link_checked_at: nil).select(&:link_broken?)
+  # Iterated in batches rather than collected up front: each lookup can take a minute, and there is
+  # no reason to hold every candidate in memory meanwhile. broken? is a Ruby predicate, hence the
+  # per-record filter.
+  looked_up = 0
   found = 0
 
-  links.each do |link|
+  LexLink.where(archive_url: nil).where.not(checked_at: nil).find_each do |link|
+    next unless link.broken?
+
+    looked_up += 1
     archive_url = Lexicon::WaybackLookup.call(link.url)
     next if archive_url.nil?
 
@@ -299,7 +304,10 @@ task lookup_lexicon_archive_urls: :environment do
     found += 1
   end
 
-  citations.each do |citation|
+  LexCitation.where(link_archive_url: nil).where.not(link_checked_at: nil).find_each do |citation|
+    next unless citation.link_broken?
+
+    looked_up += 1
     archive_url = Lexicon::WaybackLookup.call(citation.link)
     next if archive_url.nil?
 
@@ -307,8 +315,7 @@ task lookup_lexicon_archive_urls: :environment do
     found += 1
   end
 
-  puts "Looked up #{links.size} broken links and #{citations.size} broken citation links; " \
-       "found #{found} archived snapshots"
+  puts "Looked up #{looked_up} broken links; found #{found} archived snapshots"
 end
 
 desc 'decode HTML entities baked into LexLink descriptions by the pre-fix html2txt'

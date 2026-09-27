@@ -23,14 +23,21 @@ module Lexicon
     # Outcome of checking one URL. +unverifiable+ means the host refused us with a bot challenge
     # we cannot solve, so +status+ says nothing about whether the link actually works.
     # +archive_url+ is the Wayback Machine snapshot of a broken link, when one exists.
-    Result = Data.define(:status, :unverifiable, :archive_url) do
+    # +rejected+ means we never requested the URL at all (blank, not http(s), or a private address).
+    Result = Data.define(:status, :unverifiable, :archive_url, :rejected) do
       def self.checked(status, unverifiable: false, archive_url: nil)
-        new(status: status, unverifiable: unverifiable, archive_url: archive_url)
+        new(status: status, unverifiable: unverifiable, archive_url: archive_url, rejected: false)
       end
 
       # No verdict at all: unreachable host, invalid URL, blocked address, redirect loop.
       def self.unreachable
         checked(nil)
+      end
+
+      # Unreachable because we refused to request it. Still no verdict, so still broken in the
+      # records -- but not worth an archive lookup, and a private address must not be leaked to one.
+      def self.rejected
+        new(status: nil, unverifiable: false, archive_url: nil, rejected: true)
       end
 
       def unverifiable?
@@ -41,14 +48,19 @@ module Lexicon
       def broken?
         !unverifiable? && (status.nil? || status >= 400)
       end
+
+      # Whether it is worth asking the Wayback Machine for a snapshot of this URL
+      def archive_lookup?
+        broken? && !rejected
+      end
     end
 
     # Where each kind of record keeps its URL and the outcome of checking it
     RECORD_COLUMNS = {
       'LexLink' => { url: :url, status: :http_status, checked_at: :checked_at, unverifiable: :unverifiable,
-                     archive_url: :archive_url },
+                     archive_url: :archive_url, broken: :broken? },
       'LexCitation' => { url: :link, status: :link_http_status, checked_at: :link_checked_at,
-                         unverifiable: :link_unverifiable, archive_url: :link_archive_url }
+                         unverifiable: :link_unverifiable, archive_url: :link_archive_url, broken: :link_broken? }
     }.freeze
 
     MAX_REDIRECTS = 5
@@ -100,7 +112,7 @@ module Lexicon
     # lookup can take a minute (see WaybackLookup), so this is for background checks only.
     def check_url_with_archive(url)
       result = fetch_result(url)
-      return result unless result.broken?
+      return result unless result.archive_lookup?
 
       result.with(archive_url: WaybackLookup.call(url))
     end
@@ -133,11 +145,11 @@ module Lexicon
 
     # Returns the Result of the check after following redirects.
     def fetch_result(url)
-      return Result.unreachable if url.blank?
+      return Result.rejected if url.blank?
 
       uri = parse_uri(url)
-      return Result.unreachable unless uri
-      return Result.unreachable unless ssrf_safe?(uri)
+      return Result.rejected unless uri
+      return Result.rejected unless ssrf_safe?(uri)
 
       follow_redirects(uri, MAX_REDIRECTS)
     rescue StandardError => e

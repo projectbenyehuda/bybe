@@ -141,6 +141,15 @@ describe '/lexicon/links' do
         end
       end
 
+      # e.g. a relative /files/... link, which the models never count as broken
+      context 'when the new URL could not be checked at all' do
+        before { allow(checker).to receive(:check_url).and_return(Lexicon::CheckExternalLinks::Result.rejected) }
+
+        it 'does not look up a snapshot' do
+          expect { call }.not_to have_enqueued_job(Lexicon::LookupArchiveUrlJob)
+        end
+      end
+
       context 'when the link is unreachable (host defunct)' do
         before { allow(checker).to receive(:check_url).and_return(link_check_result(nil)) }
 

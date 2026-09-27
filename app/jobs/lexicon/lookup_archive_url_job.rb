@@ -13,8 +13,12 @@ module Lexicon
       return if archive_url.nil?
 
       columns = CheckExternalLinks::RECORD_COLUMNS.fetch(record.class.name)
-      # The editor may have changed the link again while the lookup ran
-      return unless record.reload[columns[:url]] == url
+      # The lookup can take a minute, and the record may have moved on meanwhile: the editor may
+      # have changed the link again, or a later check found it working or already stored a snapshot.
+      # Writing ours then would put a stale snapshot back.
+      record.reload
+      return unless record[columns[:url]] == url && record.public_send(columns[:broken]) &&
+                    record[columns[:archive_url]].blank?
 
       record.update_column(columns[:archive_url], archive_url)
     end

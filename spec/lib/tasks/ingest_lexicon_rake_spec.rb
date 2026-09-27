@@ -123,7 +123,7 @@ RSpec.describe 'ingest_lexicon rake task' do
                                        link_http_status: nil, link_checked_at: 1.day.ago)
 
       expect { lookup_task.invoke }
-        .to output(/Looked up 1 broken links and 1 broken citation links; found 2 archived snapshots/).to_stdout
+        .to output(/Looked up 2 broken links; found 2 archived snapshots/).to_stdout
       expect(link.reload.archive_url).to eq(snapshot)
       expect(citation.reload.link_archive_url).to eq(snapshot)
     end

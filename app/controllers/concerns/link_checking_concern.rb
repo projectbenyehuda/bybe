@@ -25,7 +25,7 @@ module LinkCheckingConcern
     result = Lexicon::CheckExternalLinks.new.check_url(url)
     record.update_columns(columns[:status] => result.status, columns[:checked_at] => Time.current,
                           columns[:unverifiable] => result.unverifiable?, columns[:archive_url] => nil)
-    Lexicon::LookupArchiveUrlJob.perform_later(record, url) if result.broken?
+    Lexicon::LookupArchiveUrlJob.perform_later(record, url) if result.archive_lookup?
     @link_check_performed = true
     @link_toast_type, @link_toast_message = link_toast_for(result)
     # flash (not flash.now) is intentional: the JS response triggers a full page reload in the
