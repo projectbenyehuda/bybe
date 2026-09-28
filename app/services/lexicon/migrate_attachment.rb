@@ -3,9 +3,7 @@
 module Lexicon
   # Service used to migrate attachments referenced on legacy lexicon pages into Ben Yehuda project
   class MigrateAttachment < ApplicationService
-    # Case-insensitive: the legacy pages are inconsistent about extension case, and an .JPG that
-    # failed to match here used to be left as a relative path pointing nowhere (87 refs across the
-    # corpus). bmp is in the list for the same reason -- Word-exported pages embed a few (22 refs).
+    # Case-insensitive
     LEXICON_FILES_REGEX = %r{\A(?<file_id>\d+)(_|-)files/.*\.(pdf|djvu|jpg|jpeg|gif|png|bmp)(#(?<anchor>.*))?\z}i
 
     def call(src, lex_entry)
@@ -26,7 +24,7 @@ module Lexicon
       # So we unescape whole URI before processing to get fancy filename from it
       src = URI::DEFAULT_PARSER.unescape(src)
 
-      link = LexLegacyLink.find_by(old_path: src)
+      link = LexLegacyLink.find_existing(src)
 
       if link.nil?
         # Sometimes pages of publications uses images from people page, and vice versa.
