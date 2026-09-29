@@ -326,9 +326,6 @@
       }, 0);
       $('#actualtext').focus();
     });
-    $('#downloadDlg').on('shown.bs.modal', function () {
-      $('.download_submitter').removeAttr('disabled');
-    });
     $('.anthologies_button:not(:has(.must_login))').click(function() {
       $('#anthologiesDlg').modal({  backdrop: 'static',
         keyboard: false, show: true});

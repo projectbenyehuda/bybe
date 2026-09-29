@@ -104,6 +104,10 @@
     var formid = "##{formid}";
     var dlgid = "##{dlgid}";
 
+    $(dlgid).on('shown.bs.modal', function () {
+      $('.download_submitter').removeAttr('disabled');
+    });
+
     function updateDownloadButton() {
       var count = $('.multiselect_checkbox:checked').length;
       $('#selected-count').text(count);
