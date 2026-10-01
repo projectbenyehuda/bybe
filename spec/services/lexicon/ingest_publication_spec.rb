@@ -11,21 +11,50 @@ describe Lexicon::IngestPublication do
       {
         entrytype: :person,
         status: :classified,
-        title: 'Eliezer Jerushalmi',
-        fname: '02645001.php',
-        full_path: Rails.root.join('spec/fixtures/files/lexicon/02645001.php')
+        title: title,
+        fname: fname,
+        full_path: Rails.root.join('spec/fixtures/files/lexicon/', fname)
       }
     )
   end
 
-  it 'parses file successfully', vcr: { cassette_name: 'lexicon/ingest_publication/02645001' } do
-    expect { call }.to change(LexPublication, :count).by(1)
-    expect(file.reload).to be_status_ingested
+  context 'when TOC is wrapped with blockquotes' do
+    let(:title) { 'Eliezer Jerushalmi' }
+    let(:fname) { '02645001.php' }
 
-    entry = file.lex_entry
-    publication = entry.lex_item
-    expect(publication).to be_an_instance_of(LexPublication)
-    expect(publication).to have_attributes(az_navbar: true)
-    expect(publication.entry.attachments.count).to eq(1)
+    it 'parses file successfully', vcr: { cassette_name: 'lexicon/ingest_publication/02645001' } do
+      expect { call }.to change(LexPublication, :count).by(1)
+      expect(file.reload).to be_status_ingested
+
+      entry = file.lex_entry
+      publication = entry.lex_item
+      expect(publication).to be_an_instance_of(LexPublication)
+      expect(publication).to have_attributes(az_navbar: true)
+      expect(publication.description).to start_with('**[אליעזר ירושלמי.]')
+      expect(publication.description).to end_with("268 עמ׳.\n")
+      expect(publication.toc).to be_present
+      expect(publication.entry.attachments.count).to eq(1)
+    end
+  end
+
+  context 'when whole file is wrapped with blockquotes' do
+    let(:title) { 'As water reflects the face : Bible echoes in literature / Talia Horowitz' }
+    let(:fname) { '04398001.php' }
+
+    it 'parses file successfully', vcr: { cassette_name: 'lexicon/ingest_publication/04398001' } do
+      expect { call }.to change(LexPublication, :count).by(1)
+      expect(file.reload).to be_status_ingested
+
+      entry = file.lex_entry
+      publication = entry.lex_item
+      expect(publication).to be_an_instance_of(LexPublication)
+      expect(publication).to have_attributes(az_navbar: true)
+      expect(publication.description).to start_with('<img src="/files/lex/')
+      expect(publication.description).to end_with("לו שיר מזמור.\n")
+      expect(publication.toc).to be_present
+
+      puts publication.toc
+      expect(publication.entry.attachments.count).to eq(1)
+    end
   end
 end
