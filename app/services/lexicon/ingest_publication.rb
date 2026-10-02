@@ -3,8 +3,6 @@
 module Lexicon
   # Class used to ingest publications from the old lexicon
   class IngestPublication < IngestBase
-    include HtmlUtils
-
     def create_lex_item(html_doc)
       flatten_blockquote(html_doc)
 
@@ -18,18 +16,26 @@ module Lexicon
         description << str
       end
 
-      LexPublication.create(
+      publication = LexPublication.create(
         description: description,
         toc: toc,
         az_navbar: true # defaulting to true for all records
       )
+
+      parse_links(publication, links_section_html(html_doc.to_html))
+      publication.save!
+
+      publication
     end
 
-    TOC_HEADERS = ['תוכן העניינים']
+    TOC_HEADERS = ['תוכן העניינים'].freeze
 
     private
 
+    # If we have a blockquote wrapping the part of the content, we want to remove it and keep the content inside it.
     def flatten_blockquote(html_doc)
+      # I believe initial intention was to wrap TOC, but in some files whole content is wrapped, or only part of TOC
+      # is wrapped, so we just remove the first blockquote we find and keep the content inside it to simplify parsing.
       blockquote = html_doc.at_css('blockquote')
       return if blockquote.nil?
 
@@ -41,20 +47,14 @@ module Lexicon
       header_node = nil
 
       html_doc.css('font[color="#0000FF"]').each do |node|
-
         if TOC_HEADERS.any? { |heading| node.text.include?(heading) }
           header_node = node
           break
         end
       end
 
-      if header_node.present?
-        # TOC header can we wrapped into a paragraph
-        if header_node.parent.name == 'p'
-          header_node = header_node.parent
-        end
-      end
-
+      # TOC header can we wrapped into a paragraph
+      header_node = header_node.parent if header_node&.parent&.name == 'p'
       header_node
     end
 
@@ -72,11 +72,14 @@ module Lexicon
         if elem.name == 'form'
           # We assume TOC is ended with a form rendering back button
           break
+        elsif elem.name == 'font' && elem['color'] == '#0000FF' && elem.text.include?('קישורים')
+          # We assume TOC is ended when we encounter a links section
+          break
         elsif elem.name == 'table'
           elem.css('tr').each do |tr|
-            result << '- ' << tr.css('td').map { |td|  HtmlToMarkdown.call(td.inner_html) }.join(' ') << "\n"
+            result << '- ' << tr.css('td').map { |td| HtmlToMarkdown.call(td.inner_html) }.join(' ') << "\n"
           end
-        else
+        elsif elem.text.present? # we skip empty html elements
           result << HtmlToMarkdown.call(elem.inner_html) << "\n"
         end
 
