@@ -3,6 +3,8 @@
 module Lexicon
   # Base class for php file ingestion
   class IngestBase < ApplicationService
+    include HtmlUtils
+
     LAST_UPDATE_LABEL = 'עודכן לאחרונה'
     LAST_UPDATE_RE = /#{LAST_UPDATE_LABEL}:?\s*([^\]\r\n]*)/
     LATIN_SCRIPT_RE = /\p{Latin}/
@@ -16,6 +18,8 @@ module Lexicon
       @lex_entry = lex_file.lex_entry
 
       html_doc = HtmlUtils.parse_file(lex_file.full_path)
+      remove_redundant_spans(html_doc)
+
       Lexicon::AttachImages.call(html_doc, @lex_entry)
       Lexicon::ProcessLinks.call(html_doc, @lex_entry)
 
@@ -35,6 +39,80 @@ module Lexicon
 
     def create_lex_item(_html_doc)
       raise('Not implemented')
+    end
+
+    protected
+
+    # The links section is normally introduced by an <a name="links"> anchor, but a handful of
+    # legacy files spell the anchor differently (e.g. `name="links."`) or omit it entirely and
+    # carry only the Hebrew "קישורים:" heading. Patterns are tried in order, so the anchor always
+    # wins when present.
+    LINKS_SECTION_PATTERNS = [
+      %r{a name="links[^"]*".*?</ul}m,
+      %r{<font[^>]*>\s*קישורים\s*:?\s*</font>.*?</ul}m
+    ].freeze
+
+    # Maps 00000_files logo filenames to Hebrew site names for img tags that lack alt text.
+    IMG_LOGO_TEXT = {
+      'Ben-Yehuda-s.jpg' => 'פרויקט בן יהודה',
+      'dafdaf.gif' => 'דפדף',
+      'icast-free.png' => 'icast',
+      'icast-logo.png' => 'icast',
+      'icast-od.jpg' => 'icast',
+      'nli.png' => 'הספרייה הלאומית',
+      'onesh.jpg' => 'עונג שבת',
+      'pdf_icon.gif' => 'PDF',
+      'text.gif' => 'טקסט',
+      'ynet.gif' => 'Ynet',
+      'youtube.jpg' => 'YouTube'
+    }.freeze
+
+    # Returns the markup of the links section, or nil when the entry has no links section at all.
+    def links_section_html(buf)
+      LINKS_SECTION_PATTERNS.each do |pattern|
+        section = buf[pattern]
+        return section if section.present?
+      end
+      nil
+    end
+
+    def parse_links(record, buf)
+      # Entries without a links section at all are legitimate; there is simply nothing to migrate.
+      return if buf.blank?
+
+      html_entities_coder = HTMLEntities.new
+
+      buf.scan(%r{<li>(.*?)</li>}m).map do |x|
+        if x.instance_of?(Array)
+          html_entities_coder.decode(x[0].gsub(/<font.*?>/, '').gsub('</font>', ''))
+        else
+          ''
+        end
+      end.map do |linkstring|
+        next unless linkstring =~ %r{(.*?)<a .*?href="(.*?)".*?>(.*?)</a>(.*)}m
+
+        url = ::Regexp.last_match(2)
+        before, label, after = ::Regexp.last_match.values_at(1, 3, 4)
+
+        next if record.is_a?(LexPerson) && redundant_authority_link?(url, record)
+
+        record.links.build(
+          url: url,
+          description: "#{html2txt(img_to_text(before))} " \
+                       "#{html2txt(img_to_text(label))} " \
+                       "#{html2txt(img_to_text(after))}"
+        )
+      end
+    end
+
+    def img_to_text(html)
+      html.gsub(/<img\b[^>]*>/i) do |img_tag|
+        alt = img_tag[/\balt="([^"]*)"/i, 1].to_s.strip
+        next alt if alt.present?
+
+        filename = File.basename(img_tag[/\bsrc="([^"]*)"/i, 1].to_s)
+        IMG_LOGO_TEXT[filename].to_s
+      end
     end
 
     private
