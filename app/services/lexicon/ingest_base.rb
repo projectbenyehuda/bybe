@@ -37,6 +37,55 @@ module Lexicon
       raise('Not implemented')
     end
 
+    protected
+
+    # The links section is normally introduced by an <a name="links"> anchor, but a handful of
+    # legacy files spell the anchor differently (e.g. `name="links."`) or omit it entirely and
+    # carry only the Hebrew "קישורים:" heading. Patterns are tried in order, so the anchor always
+    # wins when present.
+    LINKS_SECTION_PATTERNS = [
+      %r{a name="links[^"]*".*?</ul}m,
+      %r{<font[^>]*>\s*קישורים\s*:?\s*</font>.*?</ul}m
+    ].freeze
+
+    # Returns the markup of the links section, or nil when the entry has no links section at all.
+    def links_section_html(buf)
+      LINKS_SECTION_PATTERNS.each do |pattern|
+        section = buf[pattern]
+        return section if section.present?
+      end
+      nil
+    end
+
+    def parse_person_links(record, buf)
+      # Entries without a links section at all are legitimate; there is simply nothing to migrate.
+      return if buf.blank?
+
+      html_entities_coder = HTMLEntities.new
+
+      buf.scan(%r{<li>(.*?)</li>}m).map do |x|
+        if x.instance_of?(Array)
+          html_entities_coder.decode(x[0].gsub(/<font.*?>/, '').gsub('</font>', ''))
+        else
+          ''
+        end
+      end.map do |linkstring|
+        next unless linkstring =~ %r{(.*?)<a .*?href="(.*?)".*?>(.*?)</a>(.*)}m
+
+        url = ::Regexp.last_match(2)
+        before, label, after = ::Regexp.last_match.values_at(1, 3, 4)
+
+        next if redundant_authority_link?(url, record)
+
+        record.links.build(
+          url: url,
+          description: "#{html2txt(img_to_text(before))} " \
+                       "#{html2txt(img_to_text(label))} " \
+                       "#{html2txt(img_to_text(after))}"
+        )
+      end
+    end
+
     private
 
     def compute_migration_item_count
