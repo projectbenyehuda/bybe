@@ -3,38 +3,90 @@
 module Lexicon
   # Class used to ingest publications from the old lexicon
   class IngestPublication < IngestBase
-    def create_lex_item(html_doc)
-      description = html_doc.css('p.margin')
-                            .map { |tag| HtmlToMarkdown.call(tag.inner_html) }
-                            .join("\n\n")
+    include HtmlUtils
 
-      LexPublication.create(
+    def create_lex_item(html_doc)
+      flatten_blockquote(html_doc)
+
+      toc = parse_toc(html_doc)
+
+      description = +''
+      html_doc.css('p.margin').each do |tag|
+        str = HtmlToMarkdown.call(tag.inner_html)
+        tag.remove
+        description.presence&.<<("\n\n")
+        description << str
+      end
+
+      publication = LexPublication.create(
         description: description,
-        toc: parse_toc(html_doc),
+        toc: toc,
         az_navbar: true # defaulting to true for all records
       )
+
+      parse_person_links(publication, links_section_html(html_doc.to_html))
+
+      publication
     end
+
+    TOC_HEADERS = ['תוכן העניינים'].freeze
 
     private
 
-    def parse_toc(html_doc)
-      toc_node = html_doc.at_css('blockquote')
+    def flatten_blockquote(html_doc)
+      blockquote = html_doc.at_css('blockquote')
+      return if blockquote.nil?
 
-      return '' if toc_node.nil?
+      content = blockquote.children
+      blockquote.replace(content)
+    end
 
-      toc_node.at_css('font[color="#0000FF"]')&.remove # removing TOC heading
+    def toc_header(html_doc)
+      header_node = nil
 
-      table = toc_node.at_css('table')
-
-      if table.present?
-        result = +''
-        table.css('tr').each do |tr|
-          result << tr.css('td').map { |td| HtmlToMarkdown.call(td.inner_html) }.join(' ') << "\n"
+      html_doc.css('font[color="#0000FF"]').each do |node|
+        if TOC_HEADERS.any? { |heading| node.text.include?(heading) }
+          header_node = node
+          break
         end
-        result
-      else
-        HtmlToMarkdown.call(toc_node.inner_html)
       end
+
+      # TOC header can we wrapped into a paragraph
+      header_node = header_node.parent if header_node&.parent&.name == 'p'
+      header_node
+    end
+
+    def parse_toc(html_doc)
+      header = toc_header(html_doc)
+      return nil if header.nil?
+
+      elem = next_element_skipping_blank(header)
+      header.remove
+
+      result = +''
+
+      while elem.present?
+        # Sometimes TOC can be present as table, in this case we convert table to list
+        if elem.name == 'form'
+          # We assume TOC is ended with a form rendering back button
+          break
+        elsif elem.name == 'font' && elem['color'] == '#0000FF' && elem.text.include?('קישורים')
+          # We assume TOC is ended when we encounter a links section
+          break
+        elsif elem.name == 'table'
+          elem.css('tr').each do |tr|
+            result << '- ' << tr.css('td').map { |td| HtmlToMarkdown.call(td.inner_html) }.join(' ') << "\n"
+          end
+        elsif elem.text.present? # we skip empty html elements
+          result << HtmlToMarkdown.call(elem.inner_html) << "\n"
+        end
+
+        next_elem = next_element_skipping_blank(elem)
+        elem.remove
+        elem = next_elem
+      end
+
+      result
     end
   end
 end
