@@ -14,6 +14,7 @@ class AdminController < ApplicationController
   # SIMILAR_TITLE_PREFIX_LENGTH characters of their title.
   SIMILAR_TITLE_PREFIX_LENGTH = 9
   SIMILAR_TITLES_PER_PAGE = 50
+  MISSING_IMAGES_PER_PAGE = 50
 
   before_action :require_editor
   before_action :obtain_tagging_lock,
@@ -151,12 +152,13 @@ class AdminController < ApplicationController
                   else
                     Authority.where(profile_image_file_name: nil)
                   end
-    @authors = authorities.select(:id, :name).order(:name).to_a
+    @total = authorities.count
+    @authors = authorities.select(:id, :name).order(:name)
     @page_title = t(@with_images ? :authorities_with_images : :missing_images)
-    Rails.cache.write('report_missing_images', @authors.count) unless @with_images
+    Rails.cache.write('report_missing_images', @total) unless @with_images
 
     respond_to do |format|
-      format.html
+      format.html { @authors = @authors.page(params[:page]).per(MISSING_IMAGES_PER_PAGE) }
       format.csv do
         send_data(missing_images_csv, type: 'text/csv; charset=utf-8',
                                       filename: "#{@with_images ? 'authorities_with_images' : 'missing_images'}.csv")

@@ -1259,6 +1259,27 @@ describe AdminController do
       expect(Rails.cache).to have_received(:write).with('report_missing_images', anything)
     end
 
+    context 'when the report spans several pages' do
+      let!(:another_authority_without_image) { create(:authority) }
+      let(:missing_count) { Authority.where(profile_image_file_name: nil).count }
+
+      before { stub_const('AdminController::MISSING_IMAGES_PER_PAGE', 1) }
+
+      it 'paginates the page but counts the whole report' do
+        call
+        expect(assigns(:authors).size).to eq(1)
+        expect(assigns(:total)).to eq(missing_count)
+        expect(Rails.cache).to have_received(:write).with('report_missing_images', missing_count)
+      end
+
+      it 'includes the whole report in the CSV' do
+        get :missing_images, format: :csv
+        names = CSV.parse(response.body.delete_prefix("\uFEFF")).map(&:first)
+        expect(names).to include(authority_without_image.name, another_authority_without_image.name)
+        expect(names.size).to eq(missing_count + 1) # plus header row
+      end
+    end
+
     context 'when rendering the page' do
       render_views
 
