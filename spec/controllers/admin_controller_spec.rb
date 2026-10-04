@@ -1258,6 +1258,81 @@ describe AdminController do
       call
       expect(Rails.cache).to have_received(:write).with('report_missing_images', anything)
     end
+
+    context 'when the report spans several pages' do
+      let!(:another_authority_without_image) { create(:authority) }
+      let(:missing_count) { Authority.where(profile_image_file_name: nil).count }
+
+      before { stub_const('AdminController::MISSING_IMAGES_PER_PAGE', 1) }
+
+      it 'paginates the page but counts the whole report' do
+        call
+        expect(assigns(:authors).size).to eq(1)
+        expect(assigns(:total)).to eq(missing_count)
+        expect(Rails.cache).to have_received(:write).with('report_missing_images', missing_count)
+      end
+
+      it 'includes the whole report in the CSV' do
+        get :missing_images, format: :csv
+        names = CSV.parse(response.body.delete_prefix("\uFEFF")).map(&:first)
+        expect(names).to include(authority_without_image.name, another_authority_without_image.name)
+        expect(names.size).to eq(missing_count + 1) # plus header row
+      end
+    end
+
+    context 'when rendering the page' do
+      render_views
+
+      it 'links each authority to its page and offers the inverse mode and CSV download' do
+        call
+        expect(response.body).to include(%(href="#{authority_path(authority_without_image)}"))
+        expect(response.body).to include(admin_missing_images_path(with_images: 1))
+        expect(response.body).to include(admin_missing_images_path(format: :csv))
+      end
+    end
+
+    context 'with the with_images param' do
+      subject(:call) { get :missing_images, params: { with_images: 1 } }
+
+      it 'assigns only authorities with a profile image' do
+        call
+        author_ids = assigns(:authors).map(&:id)
+        expect(author_ids).to include(authority_with_image.id)
+        expect(author_ids).not_to include(authority_without_image.id)
+      end
+
+      it 'does not overwrite the missing-images count in cache' do
+        call
+        expect(Rails.cache).not_to have_received(:write).with('report_missing_images', anything)
+      end
+    end
+
+    context 'when requesting CSV' do
+      subject(:call) { get :missing_images, format: :csv, params: params }
+
+      let(:params) { {} }
+      let(:rows) { CSV.parse(response.body.delete_prefix("\uFEFF")) }
+
+      it 'sends name and URL columns for authorities missing images' do
+        call
+        expect(response.media_type).to eq('text/csv')
+        expect(response.headers['Content-Disposition']).to include('missing_images.csv')
+        expect(rows.first).to eq([I18n.t(:name), I18n.t(:url)])
+        expect(rows).to include([authority_without_image.name, authority_url(authority_without_image)])
+        expect(rows.map(&:first)).not_to include(authority_with_image.name)
+      end
+
+      context 'with the with_images param' do
+        let(:params) { { with_images: 1 } }
+
+        it 'sends authorities with images' do
+          call
+          expect(response.headers['Content-Disposition']).to include('authorities_with_images.csv')
+          expect(rows).to include([authority_with_image.name, authority_url(authority_with_image)])
+          expect(rows.map(&:first)).not_to include(authority_without_image.name)
+        end
+      end
+    end
   end
 
   describe '#similar_titles' do

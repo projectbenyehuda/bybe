@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'csv'
+
 TAGGING_LOCK = '/tmp/tagging.lock'
 TAGGING_LOCK_TIMEOUT = 15 # 15 minutes
 PROGRESS_SERIES = [5, 10, 25, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 1250, 1500, 2000, 3000, 4000, 5000,
@@ -12,6 +14,7 @@ class AdminController < ApplicationController
   # SIMILAR_TITLE_PREFIX_LENGTH characters of their title.
   SIMILAR_TITLE_PREFIX_LENGTH = 9
   SIMILAR_TITLES_PER_PAGE = 50
+  MISSING_IMAGES_PER_PAGE = 50
 
   before_action :require_editor
   before_action :obtain_tagging_lock,
@@ -141,10 +144,26 @@ class AdminController < ApplicationController
     Rails.cache.write('report_missing_genres', @total)
   end
 
+  # By default lists authorities without a profile image; with params[:with_images] lists those that have one.
   def missing_images
-    @authors = Authority.where(profile_image_file_name: nil).select(:id, :name).order(:name).to_a
-    @page_title = t(:missing_images)
-    Rails.cache.write('report_missing_images', @authors.count)
+    @with_images = params[:with_images].present?
+    authorities = if @with_images
+                    Authority.where.not(profile_image_file_name: nil)
+                  else
+                    Authority.where(profile_image_file_name: nil)
+                  end
+    @total = authorities.count
+    @authors = authorities.select(:id, :name).order(:name)
+    @page_title = t(@with_images ? :authorities_with_images : :missing_images)
+    Rails.cache.write('report_missing_images', @total) unless @with_images
+
+    respond_to do |format|
+      format.html { @authors = @authors.page(params[:page]).per(MISSING_IMAGES_PER_PAGE) }
+      format.csv do
+        send_data(missing_images_csv, type: 'text/csv; charset=utf-8',
+                                      filename: "#{@with_images ? 'authorities_with_images' : 'missing_images'}.csv")
+      end
+    end
   end
 
   def missing_copyright
@@ -1590,6 +1609,14 @@ class AdminController < ApplicationController
   end
 
   private
+
+  # Prefixed with a UTF-8 BOM so that Excel displays the Hebrew names correctly
+  def missing_images_csv
+    "\uFEFF" + CSV.generate do |csv|
+      csv << [t(:name), t(:url)]
+      @authors.each { |au| csv << [au.name, authority_url(au)] }
+    end
+  end
 
   # The [people, title prefix] pair that #similar_titles groups on, as SQL.  MySQL's LEFT() counts
   # characters, like String#[].  The RTRIMs matter: manifestations is utf8mb4_bin, a PAD SPACE

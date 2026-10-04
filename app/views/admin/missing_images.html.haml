@@ -1,7 +1,17 @@
 .backend
-  %h2= t(:missing_images)
+  %h2= @page_title
 
-  %h3= t(:authors)+" (#{@authors.count})"
+  %p
+    - if @with_images
+      = link_to t(:show_missing_images), admin_missing_images_path, class: 'btn btn-secondary'
+    - else
+      = link_to t(:show_authorities_with_images), admin_missing_images_path(with_images: 1), class: 'btn btn-secondary'
+    = link_to t(:download_csv), admin_missing_images_path(format: :csv, with_images: (1 if @with_images)),
+              class: 'btn btn-secondary'
+
+  %h3 #{t(:authors)} (#{@total})
 
   - @authors.each do |au|
-    %p= au.name
+    %p= link_to au.name, authority_path(au)
+
+  != paginate @authors

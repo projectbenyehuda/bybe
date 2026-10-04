@@ -1658,6 +1658,10 @@ he:
   existing_title: כותרת קיימת
   show_my_convs: הצגת הסבות שהוקצו לי
   missing_images: תמונות חסרות
+  authorities_with_images: יוצרים עם תמונות
+  show_authorities_with_images: הצגת יוצרים עם תמונות
+  show_missing_images: הצגת יוצרים ללא תמונות
+  download_csv: הורדה כקובץ CSV
   missing_image: חסרה תמונה!
   missing_bio: חסר תקציר ביוגרפי!
   missing_period: חסרה תקופה!

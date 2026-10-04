@@ -2662,6 +2662,10 @@ en:
   missing_genre_report: Missing Genre Report
   missing_image: Missing Image
   missing_images: Missing Images
+  authorities_with_images: Authorities With Images
+  show_authorities_with_images: Show authorities with images
+  show_missing_images: Show authorities missing images
+  download_csv: Download as CSV
   missing_item_ids: Missing Item Ids
   missing_language_report: Missing Language Report
   missing_orig: Missing Orig
