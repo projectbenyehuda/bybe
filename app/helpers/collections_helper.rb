@@ -45,7 +45,11 @@ module CollectionsHelper
     content_tag(:div, class: 'external_link_item', id: "external_link_#{link.id}",
                       style: 'margin-bottom: 10px; padding: 5px; background-color: white;') do
       concat(content_tag(:span, class: 'link_info') do
-        concat(link_to(link.description, link.url, target: :_blank, rel: :noopener))
+        if link.url.present?
+          concat(link_to(link.description, link.url, target: :_blank, rel: :noopener))
+        else
+          concat(link.description)
+        end
         concat(" (#{t(link.linktype)})")
       end)
       concat(content_tag(:button, t(:delete), class: 'delete_external_link by-button-v02 by-button-secondary-v02',

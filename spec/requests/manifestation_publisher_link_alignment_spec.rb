@@ -31,12 +31,13 @@ describe 'Manifestation#read publisher link alignment', type: :request do
 
   it 'shows the description as plain text, not a link, when the publisher_site link has no url' do
     create(:external_link, linkable: text, linktype: :publisher_site, url: nil,
-                           description: 'Plain Publisher Name')
+                           description: 'Plain &&&Publisher&&& Name')
 
     get manifestation_path(text)
 
     row = Nokogiri::HTML(response.body).css('.metadata').find { |d| d.text.include?('Plain Publisher Name') }
     expect(row).to be_present
     expect(row.css('a')).to be_empty
+    expect(row.text).not_to include('&&&')
   end
 end

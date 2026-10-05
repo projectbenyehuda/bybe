@@ -3,6 +3,8 @@ class ExternalLink < ApplicationRecord
 
   # Validations
   validates :url, presence: true, unless: :linktype_publisher_site?
+  # a URL-less publisher credit is displayed as plain text, so it needs a description
+  validates :description, presence: true, if: -> { linktype_publisher_site? && url.blank? }
   validate :url_must_have_safe_scheme
 
   enum :linktype, {
