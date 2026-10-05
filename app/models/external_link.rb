@@ -2,7 +2,7 @@ class ExternalLink < ApplicationRecord
   belongs_to :linkable, polymorphic: true
 
   # Validations
-  validates :url, presence: true
+  validates :url, presence: true, unless: :linktype_publisher_site?
   validate :url_must_have_safe_scheme
 
   enum :linktype, {
