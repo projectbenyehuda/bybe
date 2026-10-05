@@ -69,7 +69,10 @@
       - collection.external_links.each do |link|
         .external_link_item{ id: "external_link_#{link.id}", style: 'margin-bottom: 10px; padding: 5px; background-color: white;' }
           %span.link_info
-            = link_to link.description, link.url, target: :_blank
+            - if link.url.present?
+              = link_to link.description, link.url, target: :_blank
+            - else
+              = link.description
             = " (#{t(link.linktype)})"
           %button.delete_external_link.by-button-v02.by-button-secondary-v02{ type: 'button', data: { link_id: link.id, collection_id: collection.id }, style: 'margin-left: 10px; float: right;' }
             = t(:delete)
