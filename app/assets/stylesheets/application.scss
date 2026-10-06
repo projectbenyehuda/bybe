@@ -1991,6 +1991,14 @@ p.by-genre-name-v02.headline-2-v02 {
     justify-content: center;
   }
 
+  /* The author page's thin navbar is a sticky 34px rail pinned to the right edge (in
+     this RTL layout), in the 50px gutter the page's own cards leave free. The returning-visitor
+     donation banner is rendered by the layout, outside that gutter, so the rail used to
+     overlap its right edge and hide part of its text. Leave the same gutter for the banner. */
+  body:has(.author-side-nav-col) #donban {
+    margin-right: 50px;
+  }
+
   .mobile-navbar-backdrop {
     display: none;
     position: fixed;
