@@ -23,10 +23,10 @@ module Lexicon
       Lexicon::AttachImages.call(html_doc, @lex_entry)
       Lexicon::ProcessLinks.call(html_doc, @lex_entry)
 
-      @lex_entry.lex_item = create_lex_item(html_doc)
       @lex_entry.english_title = extract_english_title(html_doc)
       @lex_entry.external_identifiers = extract_external_identifiers(html_doc)
       @lex_entry.date_of_manual_update = extract_date_of_manual_update(html_doc)
+      @lex_entry.lex_item = create_lex_item(html_doc)
       @lex_entry.migration_item_count = compute_migration_item_count
       @lex_entry.status_draft!
 
