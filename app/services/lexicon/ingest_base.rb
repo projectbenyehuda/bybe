@@ -18,7 +18,7 @@ module Lexicon
       @lex_entry = lex_file.lex_entry
 
       html_doc = HtmlUtils.parse_file(lex_file.full_path)
-      remove_redundant_spans(html_doc)
+      remove_redundant_formatting(html_doc)
 
       Lexicon::AttachImages.call(html_doc, @lex_entry)
       Lexicon::ProcessLinks.call(html_doc, @lex_entry)
@@ -43,13 +43,15 @@ module Lexicon
 
     protected
 
+    LINKS_HEADER = 'קישורים'
+
     # The links section is normally introduced by an <a name="links"> anchor, but a handful of
     # legacy files spell the anchor differently (e.g. `name="links."`) or omit it entirely and
     # carry only the Hebrew "קישורים:" heading. Patterns are tried in order, so the anchor always
     # wins when present.
     LINKS_SECTION_PATTERNS = [
       %r{a name="links[^"]*".*?</ul}m,
-      %r{<font[^>]*>\s*קישורים\s*:?\s*</font>.*?</ul}m
+      %r{<font[^>]*>\s*#{LINKS_HEADER}\s*:?\s*</font>.*?</ul}m
     ].freeze
 
     # Maps 00000_files logo filenames to Hebrew site names for img tags that lack alt text.

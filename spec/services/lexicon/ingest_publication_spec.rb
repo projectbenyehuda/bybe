@@ -33,6 +33,7 @@ describe Lexicon::IngestPublication do
       expect(publication.toc).to start_with('אמן הנובלה')
       expect(publication.toc).to end_with("(עמ׳ 267–268)\n\n")
       expect(publication.entry.attachments.count).to eq(1)
+      expect(publication.links).to be_empty
     end
   end
 
@@ -54,6 +55,7 @@ describe Lexicon::IngestPublication do
       expect(publication.toc).to end_with("עודכן לאחרונה: 16 באוקטובר 2024\n\n")
 
       expect(publication.entry.attachments.count).to eq(1)
+      expect(publication.links).to be_empty
     end
   end
 
@@ -80,6 +82,26 @@ describe Lexicon::IngestPublication do
         url: 'http://www.text.org.il/index.php?book=0904057',
         description: " מנדלי והסיפור הלאומי באתר\n\t\tטקסט \n\t\t- כולל הפרק הראשון: מבוא כללי."
       )
+    end
+  end
+
+  context 'when TOC header contains linebreaks' do
+    let(:title) { 'Mendele Mokher Sefarim' }
+    let(:fname) { '00032001.php' }
+
+    it 'parses file successfully', vcr: { cassette_name: 'lexicon/ingest_publication/00032001' } do
+      expect { call }.to change(LexPublication, :count).by(1)
+      expect(file.reload).to be_status_ingested
+
+      entry = file.lex_entry
+      publication = entry.lex_item
+      expect(publication).to be_an_instance_of(LexPublication)
+      expect(publication).to have_attributes(az_navbar: true)
+      expect(publication.description).to start_with('<img src="/files/lex/')
+      expect(publication.description).to end_with("פולחן.\n\n\n")
+      expect(publication.toc).to start_with("מבוא - מחשבות על מאה")
+      expect(publication.toc).to end_with("מפתחות (עמ' 419־460)\n\n")
+      expect(publication.links).to be_empty
     end
   end
 end

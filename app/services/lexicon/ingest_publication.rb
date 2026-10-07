@@ -47,7 +47,7 @@ module Lexicon
       header_node = nil
 
       html_doc.css('font[color="#0000FF"]').each do |node|
-        if TOC_HEADERS.any? { |heading| node.text.include?(heading) }
+        if TOC_HEADERS.any? { |heading| node.text&.squish&.include?(heading) }
           header_node = node
           break
         end
@@ -72,7 +72,7 @@ module Lexicon
         if elem.name == 'form'
           # We assume TOC is ended with a form rendering back button
           break
-        elsif elem.name == 'font' && elem['color'] == '#0000FF' && elem.text.include?('קישורים')
+        elsif elem.name == 'font' && elem['color'] == '#0000FF' && elem.text.include?(LINKS_HEADER)
           # We assume TOC is ended when we encounter a links section
           break
         elsif elem.name == 'table'
