@@ -70,10 +70,12 @@ module Lexicon
       while elem.present?
         # Sometimes TOC can be present as table, in this case we convert table to list
         if elem.name == 'form'
-          # We assume TOC is ended with a form rendering back button
+          # TOC can be ended with a form rendering back button
           break
+        elsif elem.name == 'font' && elem.text.include?(LAST_UPDATE_LABEL)
+          # TOC can also be ended with date of manual update section
         elsif elem.name == 'font' && elem['color'] == '#0000FF' && elem.text.include?(LINKS_HEADER)
-          # We assume TOC is ended when we encounter a links section
+          # TOC can also be ended with a Links section
           break
         elsif elem.name == 'table'
           elem.css('tr').each do |tr|
