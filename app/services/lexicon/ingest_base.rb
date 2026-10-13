@@ -78,6 +78,12 @@ module Lexicon
       nil
     end
 
+    def redundant_link?(_url, _record)
+      # We may want to exclude some links from migration.
+      # Default implementation does not exclude any links; subclasses can override.
+      false
+    end
+
     def parse_links(record, buf)
       # Entries without a links section at all are legitimate; there is simply nothing to migrate.
       return if buf.blank?
@@ -96,7 +102,7 @@ module Lexicon
         url = ::Regexp.last_match(2)
         before, label, after = ::Regexp.last_match.values_at(1, 3, 4)
 
-        next if record.is_a?(LexPerson) && redundant_authority_link?(url, record)
+        next if redundant_link?(url, record)
 
         record.links.build(
           url: url,

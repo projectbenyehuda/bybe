@@ -60,7 +60,7 @@ module Lexicon
       AssociateAuthority.call(lex_person, html_doc, entry_title: @lex_entry&.title) if lex_person.authority.nil?
 
       # Links are parsed only after the authority is known, so that links pointing at this entry's
-      # own authority page on benyehuda.org can be skipped (see #redundant_authority_link?).
+      # own authority page on benyehuda.org can be skipped (see #redundant_link?).
       parse_links(lex_person, links_section_html(html_doc.to_html))
       lex_person.save!
 
@@ -112,10 +112,10 @@ module Lexicon
       end
     end
 
-    # Links pointing at the entry's own Authority page on benyehuda.org are not migrated:
-    # the entry is already associated with that Authority, so the link is redundant. Links to
-    # other benyehuda.org authorities (or to non-author pages) are migrated as usual.
-    def redundant_authority_link?(url, person)
+    def redundant_link?(url, person)
+      # Links pointing at the entry's own Authority page on benyehuda.org are not migrated:
+      # the entry is already associated with that Authority, so the link is redundant. Links to
+      # other benyehuda.org authorities (or to non-author pages) are migrated as usual.
       person.authority.present? && BenyehudaLinks.authority_for(url) == person.authority
     end
   end
