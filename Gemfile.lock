@@ -248,7 +248,6 @@ GEM
     event_stream_parser (1.0.0)
     evil-seed (0.7.0)
       activerecord (>= 5.0)
-    execjs (2.10.0)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
     factory_bot_rails (6.2.0)
@@ -384,8 +383,6 @@ GEM
       mime-types
       terrapin (>= 0.6.0, < 2.0)
     language_server-protocol (3.17.0.5)
-    libv8-node (24.1.0.0)
-    libv8-node (24.1.0.0-x86_64-linux)
     lint_roller (1.1.0)
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -412,8 +409,6 @@ GEM
       logger
     mini_mime (1.1.5)
     mini_portile2 (2.8.9)
-    mini_racer (0.19.1)
-      libv8-node (~> 24.1.0.0)
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
@@ -860,7 +855,6 @@ DEPENDENCIES
   dotenv-rails
   ed25519
   evil-seed
-  execjs
   factory_bot_rails (~> 6.2.0)
   faker (~> 2.19.0)
   faraday-retry
@@ -887,7 +881,6 @@ DEPENDENCIES
   kt-paperclip
   listen
   marcel (~> 1)
-  mini_racer
   momentjs-rails
   msgpack (>= 1.7.0)
   mysql2
