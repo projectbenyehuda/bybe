@@ -142,5 +142,14 @@ module Lexicon
 
       next_elem
     end
+
+    # Some legacy files wrap Hebrew text in <span lang="he">, or <span dir="rtl"> which Pandoc preserves as raw HTML.
+    # We want to remove those spans so the Hebrew text is treated as normal text by Pandoc, but keep any other spans
+    # that may be used for formatting.
+    def remove_redundant_formatting(html_doc)
+      html_doc.css('span[lang], span[dir]').each do |span|
+        span.replace(span.children)
+      end
+    end
   end
 end
