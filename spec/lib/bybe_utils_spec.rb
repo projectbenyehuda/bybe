@@ -479,6 +479,16 @@ describe BybeUtils do
     end
   end
 
+  describe '#identify_genre_by_heading' do
+    it 'recognizes the visual art heading' do
+      expect(instance.identify_genre_by_heading('אמנות חזותית')).to eq('visual_art')
+    end
+
+    it 'still recognizes the lexicon heading' do
+      expect(instance.identify_genre_by_heading('מילונים ולקסיקונים')).to eq('lexicon')
+    end
+  end
+
   describe '#orig_lang_label' do
     context 'when original language is unknown' do
       it 'returns the unknown-language I18n string for nil' do

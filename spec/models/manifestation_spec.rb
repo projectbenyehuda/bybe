@@ -47,7 +47,8 @@ describe Manifestation do
         'memoir' => 0,
         'poetry' => 0,
         'prose' => 4,
-        'reference' => 0
+        'reference' => 0,
+        'visual_art' => 0
       }
     end
 
@@ -106,7 +107,8 @@ describe Manifestation do
         'memoir' => 0,
         'poetry' => 0,
         'prose' => 2,
-        'reference' => 0
+        'reference' => 0,
+        'visual_art' => 0
       }
     end
 

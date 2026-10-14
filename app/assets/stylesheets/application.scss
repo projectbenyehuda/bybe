@@ -2341,3 +2341,9 @@ p.by-genre-name-v02.headline-2-v02 {
   height: auto;
   margin-top: 10px;
 }
+
+// Genres without a glyph in the icon font yet (e.g. visual_art) render an empty icon
+// paragraph; keep its line box so the genre card stays aligned with its neighbors.
+.by-genre-icon-v02:empty::before {
+  content: '\00a0';
+}

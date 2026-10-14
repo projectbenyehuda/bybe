@@ -15,6 +15,13 @@
               %p.by-genre-name-v02.headline-2-v02= textify_genre('lexicon')
               %p.by-genre-details-v02= @authors_in_genre['lexicon'].to_s+' '+t(:authors)
               %p.by-genre-details-v02= get_total_headwords.to_s.to_s+' '+t(:entries)
+        .col-md-3.col-4{ style: 'margin-left: auto; margin-right:auto;' }
+          %a{ href: manifestation_genre_path(genre: 'visual_art') }
+            .genre-nav
+              %p.by-genre-icon-v02= glyph_for_genre('visual_art')
+              %p.by-genre-name-v02.headline-2-v02= textify_genre('visual_art')
+              %p.by-genre-details-v02 #{@authors_in_genre['visual_art']} #{t(:authors)}
+              %p.by-genre-details-v02 #{@works_by_genre['visual_art']} #{t(:works)}
         -#.by-card-content-seapartor
         -# types (anthologies, journals, etc.) go here
         .by-card-content-seapartor

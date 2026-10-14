@@ -883,6 +883,8 @@ year = year.tr(GERESH_CHARS, '')
       return 'reference'
     when /מילונים/, /לקסיקונים/
       return 'lexicon'
+    when /אמנות חזותית/
+      return 'visual_art'
     else
       return nil
     end
@@ -975,7 +977,7 @@ year = year.tr(GERESH_CHARS, '')
     return case row
            when 1 then %w(poetry prose drama fables)
            when 2 then %w(article memoir letters reference)
-           when 3 then %w(surprise lexicon translations)
+           when 3 then %w(surprise lexicon visual_art translations)
            end
   end
 
