@@ -643,7 +643,8 @@ describe Authority do
                                'memoir' => [],
                                'poetry' => poetry,
                                'prose' => [],
-                               'reference' => []
+                               'reference' => [],
+                               'visual_art' => []
                              })
       end
     end
@@ -665,7 +666,8 @@ describe Authority do
                                'memoir' => memoirs,
                                'poetry' => poetry,
                                'prose' => [],
-                               'reference' => []
+                               'reference' => [],
+                               'visual_art' => []
                              })
       end
     end
