@@ -307,6 +307,15 @@ body {
   margin-top: 0 !important;
 }
 
+/* Same collapse problem, other direction: BY_styles_Max991/Max639.css still give page bodies
+   (.text-page-content: 214px / 208px; .list-all-texts: 210px) a legacy top margin from the
+   fixed-header era. That margin is normally swallowed by #content's own margin, but the donation
+   banner sits between them and breaks the collapse, leaving ~200px of blank space under it. */
+#donban ~ *:not(script):not(.modal),
+#donban ~ .container-fluid > :first-child {
+  margin-top: 0 !important;
+}
+
 header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's carousel track having a virtual width of 50000) */
 .share {cursor: pointer;}
 .pointer {cursor: pointer;}
