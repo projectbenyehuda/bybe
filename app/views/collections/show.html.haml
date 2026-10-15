@@ -136,6 +136,11 @@
                   .metadata= t(:full_collection_available, ctype: textify_collection_type(@collection.collection_type))
                 - else
                   .metadata= t(:x_of_y_items_available, x: @collection_minus_placeholders, y: @collection_total_items, ctype: textify_collection_type(@collection.collection_type))
+                -# the desktop issue navigator in shared/_collection_top is hidden on mobile; show this one instead
+                - if @collection.periodical?
+                  .metadata.mobile-work-details
+                    = select_tag 'collitem_mobile', collitem_dropdown_options(@collection, @htmls),
+                                 class: 'dropdown-v02', id: 'collitem_dropdown_mobile', style: 'width: 100%;'
                 -#.metadata.mobile-work-details
                 -#  %span{style: "font-weight:bold"} המלצות:
                 -#  %a{href: "#"} 3 המלצות קוראים
