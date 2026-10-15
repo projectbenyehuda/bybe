@@ -2347,3 +2347,32 @@ p.by-genre-name-v02.headline-2-v02 {
 .by-genre-icon-v02:empty::before {
   content: '\00a0';
 }
+
+// periodical issue covers in Collection#show
+.issue-gallery-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.issue-gallery-item {
+  text-align: center;
+  max-width: 150px;
+
+  .issue-gallery-cover {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+// on mobile, always show two issues per row, with tighter spacing
+@media screen and (max-width: 767px) {
+  .issue-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .issue-gallery-item {
+    max-width: none;
+    overflow-wrap: anywhere;
+  }
+}
