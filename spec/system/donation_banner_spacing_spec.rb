@@ -8,6 +8,9 @@ require 'rails_helper'
 # collapsed into the outer one; the returning-visitor donation banner, rendered just before
 # the yielded view, broke the collapse and left a ~250px band of blank space above the page's
 # heading, which only went away when the banner was dismissed. See issue #1019.
+#
+# The same collapse also hid the legacy mobile/tablet top margin (~210px) of .text-page-content,
+# which the banner exposed as a blank band under it on Manifestation#read. See issue #1155.
 RSpec.describe 'Returning-visitor donation banner spacing', :js, type: :system do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
@@ -73,5 +76,27 @@ RSpec.describe 'Returning-visitor donation banner spacing', :js, type: :system d
 
     expect(page).to have_no_css('#donban')
     expect(gap_above_content).to be < 40
+  end
+
+  describe 'on Manifestation#read' do
+    let(:manifestation) do
+      Chewy.strategy(:atomic) { create(:manifestation, title: 'Test Work', status: :published) }
+    end
+
+    [[400, 'mobile'], [800, 'tablet'], [1400, 'desktop']].each do |width, label|
+      it "leaves no blank band between the banner and the text on #{label}" do
+        stub_base_user(3)
+        page.driver.browser.manage.window.resize_to(width, 900)
+        visit manifestation_path(manifestation)
+
+        expect(page).to have_css('#donban')
+        expect(page).to have_css('.text-page-content')
+        gap = page.evaluate_script(
+          "document.querySelector('.text-page-content').getBoundingClientRect().top - " \
+          "document.querySelector('#donban').getBoundingClientRect().bottom"
+        )
+        expect(gap).to be < 40
+      end
+    end
   end
 end
