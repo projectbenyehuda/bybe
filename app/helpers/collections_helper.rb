@@ -41,6 +41,24 @@ module CollectionsHelper
     collection_path(collection)
   end
 
+  # Within a periodical, issue titles usually repeat the periodical's name ("Name – Issue 3");
+  # strip that redundant prefix for navigation UI. Other collection types are returned unchanged.
+  def strip_periodical_prefix(collection, title)
+    return title unless collection.periodical?
+
+    short_title = collection.title.split(/: | – /, 2).first
+    title.sub(/\A#{Regexp.escape(short_title)}(?:: | – )/, '')
+  end
+
+  # Options for the collection-item navigation dropdowns in Collection#show
+  def collitem_dropdown_options(collection, htmls)
+    # each htmls entry is [title, authors, html, is_curated, genre, i, ci, nesting_level, ...]
+    options = htmls.reject { |x| x[0].blank? }.map do |entry|
+      [('– ' * entry[7]) + strip_periodical_prefix(collection, entry[0]), entry[5]]
+    end
+    options_for_select(options, 0)
+  end
+
   def render_external_link_item(link, collection_id)
     content_tag(:div, class: 'external_link_item', id: "external_link_#{link.id}",
                       style: 'margin-bottom: 10px; padding: 5px; background-color: white;') do
