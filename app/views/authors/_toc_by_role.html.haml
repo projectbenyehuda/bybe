@@ -34,9 +34,9 @@
           %span.count-badge= " (#{work_level_count})"
       %ul.toclist{ role: 'tree' }
         = render partial: 'authors/toc_node', collection: involved_on_work_level,
-                locals: { role: role, authority_id: authority_id, editable: editable,
-                          nonce: nonce, uncollected: false,
-                          involved_on_collection_level: false }
+                 locals: { role: role, authority_id: authority_id, editable: editable,
+                           nonce: nonce, uncollected: false,
+                           involved_on_collection_level: false }
   - if uncollected_node.present?
     %div{ id: "works-#{role}-uncollected", role: 'tabpanel' }
       .headline-2-v02
@@ -45,6 +45,6 @@
           %span.count-badge= " (#{uncollected_count})"
       %ul.toclist{ role: 'tree' }
         = render partial: 'authors/toc_node', collection: [uncollected_node],
-                locals: { role: role, authority_id: authority_id, editable: editable,
-                          nonce: nonce, uncollected: false,
-                          involved_on_collection_level: false }
+                 locals: { role: role, authority_id: authority_id, editable: editable,
+                           nonce: nonce, uncollected: false,
+                           involved_on_collection_level: false }
