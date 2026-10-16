@@ -48,4 +48,11 @@ RSpec.describe 'Sitewide search box clear button', :js, type: :system do
     JS
     expect(overflow).to be <= 2
   end
+
+  it 'shows a pointer cursor over the search icon' do
+    cursor = page.evaluate_script(
+      "getComputedStyle(document.querySelector('.top-search-v02 .search-icon-v02')).cursor"
+    )
+    expect(cursor).to eq('pointer')
+  end
 end
