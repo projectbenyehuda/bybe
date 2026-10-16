@@ -34,4 +34,18 @@ RSpec.describe 'Sitewide search box clear button', :js, type: :system do
     JS
     expect(offset).to be_between(0, 50)
   end
+
+  it 'keeps the search icon inside the search box' do
+    fill_in 'q', with: 'ביאליק'
+    expect(page).to have_css('#q-clear', visible: :visible)
+
+    overflow = page.evaluate_script(<<~JS)
+      (function () {
+        var box = document.querySelector('.top-search-box-v02').getBoundingClientRect();
+        var icon = document.querySelector('.top-search-v02 .search-icon-v02').getBoundingClientRect();
+        return Math.max(box.top - icon.top, icon.bottom - box.bottom, 0);
+      })()
+    JS
+    expect(overflow).to be <= 2
+  end
 end
