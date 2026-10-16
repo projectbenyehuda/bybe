@@ -1,8 +1,10 @@
 FROM ruby:3.4.12-trixie AS base
 
+ARG TARGETARCH
+
 RUN apt-get update -qq \
   && apt-get install -y yaz libmariadb3 libcap2 libvips42t64 libyaml-0-2 chromium libjemalloc2 \
-  && wget https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-amd64.deb -O /tmp/pandoc.deb \
+  && wget https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-${TARGETARCH}.deb -O /tmp/pandoc.deb \
   && dpkg -i /tmp/pandoc.deb \
   && apt-get clean \
   && rm -rf /tmp/* /var/tmp/*
