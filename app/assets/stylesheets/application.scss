@@ -2385,3 +2385,22 @@ p.by-genre-name-v02.headline-2-v02 {
     overflow-wrap: anywhere;
   }
 }
+
+/* Clear ("x") button in the sitewide search box, just right of the search icon at the left edge */
+.top-search-v02 #q { padding-left: 46px; }
+.top-search-clear {
+  position: absolute;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  color: #907989;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.top-search-clear:hover { color: #660248; }
+/* The search icon submits the search on click */
+.top-search-v02 .search-icon-v02 { cursor: pointer; }
