@@ -300,6 +300,8 @@
       -#  /  / %option{:value => "חיפוש מתקדם"} חיפוש מתקדם
       .top-search-v02{ title: t(:search_tt)}
         %input#q{:placeholder => t(:search_term), value: @searchterm} 
+        %button.top-search-clear#q-clear{ type: 'button', title: t(:clear), 'aria-label': t(:clear),
+                                          style: ('display:none' if @searchterm.blank?) } &times;
         %span.search-icon-v02.by-icon-top-v02 X
         -#= f.label t(:tags)
         -#= f.text_field 'tags'
@@ -369,6 +371,12 @@
     });
   }
   $(document).ready(function(){
+    $('#q').on('input', function() {
+      $('#q-clear').toggle($(this).val().length > 0);
+    });
+    $('#q-clear').click(function() {
+      $('#q').val('').trigger('input').focus();
+    });
     $('#q').keypress(function (e) {
       var key = e.which;
       if(key == 13) { // the enter key code
