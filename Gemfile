@@ -53,10 +53,8 @@ gem 'jquery-ui-rails'
 
 gem 'client_side_validations'
 
-gem 'execjs'
 gem 'htmlentities'
 gem 'kaminari'
-gem 'mini_racer'
 gem 'nokogiri'
 
 # new wrapper over Fletcher Penney's MultiMarkDown 6 (MMD 6)
