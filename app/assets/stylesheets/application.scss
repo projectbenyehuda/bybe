@@ -1388,6 +1388,23 @@ p.by-genre-name-v02.headline-2-v02 {
   text-align: center;
 }
 
+/* Same 18px-glyph-in-a-26px-box problem on the work page's mobile icon row: the
+   download, like and bookmark glyphs rode ~5px above the reading-mode button,
+   the "more" dots and the chapter-jump button beside them. Center them in their
+   boxes, and center their 26px group against the 28px buttons (the group was
+   baseline-aligned, which pinned it to the top of the row), so the whole row
+   shares one centre line. */
+.work-page-top-icons-mobile {
+  .top-left-icons-group {
+    align-items: center;
+  }
+
+  .icons-group-v02 > .by-icon-v02 {
+    line-height: 26px;
+    text-align: center;
+  }
+}
+
 /* Reading-mode control panel. BY_styles_General.css sizes it at 210px, which is
    narrower than most chapter and collection-item titles, so the navigator below
    had nowhere to put them. Pinning it 10px from the viewport edge (it was 7.5%,

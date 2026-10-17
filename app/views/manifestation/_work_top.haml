@@ -81,6 +81,7 @@
                 %span.by-icon-v02 /
               .top-left-icons-group
                 .icons-group-v02
+                  .download.pointer.by-icon-v02.linkcolor{ title: t(:work_download_tt) }= '3'
                   %div{class: 'like must_login linkcolor pointer by-icon-v02 icon-byheart-'+(@liked ? 'full' : 'empty')}
                   .bookmark_button.pointer.by-icon-v02.linkcolor.bookmark-status
                   #text-moreMobile.by-dropdown-v02
@@ -96,9 +97,6 @@
                       %p.printbutton
                         %span.by-icon-v02.linkcolor> 9
                         = t(:print)
-                      %p.download
-                        %span.by-icon-v02.linkcolor> 3
-                        = t(:download)
             - if @m.chapters?
               .work-chapters-popup-mobile#chapter_mobile_dropdown
                 %button.btn-small-outline-v02.btn-text-v02{ 'data-toggle' => 'modal', 'data-target'=> '#chapterDlg'}
