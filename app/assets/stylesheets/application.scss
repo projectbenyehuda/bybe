@@ -1839,6 +1839,11 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
+/* Collection#show: a collection may include many genres; let them wrap onto
+   further lines instead of overflowing (and being cut off) on narrow screens. */
+.metadata.collection-genres {
+  flex-wrap: wrap;
+}
 // footnote reference/body mismatch report shown above the markdown editors
 // (shared/_footnote_discrepancies)
 .footnote-discrepancies {

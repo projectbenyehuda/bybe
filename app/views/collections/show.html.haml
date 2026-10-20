@@ -109,7 +109,7 @@
                       - ip_locals = { intellectual_property: intellectual_property }
                       .ip-statement
                         = render partial: 'shared/intellectual_property', locals: ip_locals
-                .metadata{style: "gap: 20px"}
+                .metadata.collection-genres{style: "gap: 6px 20px"}
                   - @collection.included_genres.each do |genre|
                     %div
                       %span.by-icon-v02= glyph_for_genre(genre)
