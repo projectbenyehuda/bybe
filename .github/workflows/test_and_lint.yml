@@ -8,8 +8,8 @@ on:
 
 jobs:
   test:
-    name: RSpec
-    runs-on: ubuntu-26.04-arm
+    name: Run linters and specs
+    runs-on: ubuntu-latest
     container:
       image: damisul/bybe-base:latest
     services:
@@ -33,6 +33,14 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+      - name: Run pronto
+        env:
+          RAILS_ENV: "test"
+          PRONTO_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}
+          PRONTO_GITHUB_ACCESS_TOKEN: "${{ github.token }}"
+          BUNDLE_PATH: "vendor/bundle"
+        run:
+          bundle exec pronto run -f github_pr github_status -c origin/${{ github.base_ref }}
       - name: Verify MySQL connection from host
         run: |
           mysql --host mysql --port 3306 -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
