@@ -28,15 +28,19 @@ class LexFile < ApplicationRecord
 
   validates :entrytype, :status, presence: true
 
+  before_save :record_file_size
+
   # Size of the source file on disk, in KB. Returns nil when there is no recorded
   # path, or when the file cannot be stat'd at all — missing, unreadable, or on an
   # unmounted share — since none of those should break rendering of the files list.
   def file_size_kb
-    return nil if full_path.blank?
+    size = disk_size_bytes
+    size && (size / 1024.0).round(1)
+  end
 
-    (File.size(full_path) / 1024.0).round(1)
-  rescue SystemCallError
-    nil
+  # Refreshes the persisted file_size_bytes (what the files index filters on) from disk.
+  def record_file_size
+    self.file_size_bytes = disk_size_bytes
   end
 
   def log_error(message)
@@ -68,5 +72,15 @@ class LexFile < ApplicationRecord
     else
       'unknown'
     end
+  end
+
+  private
+
+  def disk_size_bytes
+    return nil if full_path.blank?
+
+    File.size(full_path)
+  rescue SystemCallError
+    nil
   end
 end
