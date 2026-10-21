@@ -7,7 +7,7 @@ on:
 jobs:
   pronto:
     name: Linters
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04-arm
     container: damisul/bybe-base:latest
     steps:
       - name: Checkout
