@@ -26,6 +26,7 @@ module Lexicon
       @entrytype = params.key?(:entrytype) ? params[:entrytype] : DEFAULT_ENTRYTYPE
       @title = params[:title]
       @fname = params[:fname]
+      @max_size_kb = params[:max_size_kb].presence&.to_f
       @page = params[:page]
       @entry_statuses = params[:entry_statuses].presence || DEFAULT_ENTRY_STATUSES
       @sort = params[:sort].presence_in(SORTABLE_COLUMNS) || 'fname'
@@ -36,6 +37,8 @@ module Lexicon
       scope = scope.where(entrytype: @entrytype) if @entrytype.present?
       scope = scope.where('lex_entries.title LIKE ?', "%#{@title}%") if @title.present?
       scope = scope.where('fname LIKE ?', "%#{@fname}%") if @fname.present?
+
+      scope = scope.where(lex_files: { file_size_bytes: ..(@max_size_kb * 1024) }) if @max_size_kb
 
       sort_clause = if @sort == 'migration_item_count'
                       "lex_entries.migration_item_count #{@direction}, lex_files.id ASC"
