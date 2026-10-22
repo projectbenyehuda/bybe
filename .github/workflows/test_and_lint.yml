@@ -7,11 +7,60 @@ on:
     branches: [ '*' ]
 
 jobs:
+  build-image:
+    name: Build and Cache Image
+    runs-on: ubuntu-26.04-arm
+    outputs:
+      image_tag: ${{ steps.calc-hash.outputs.hash }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Calculate Hash
+        id: calc-hash
+        run: |
+          # Create a combined hash of Dockerfile.test and Gemfile.lock
+          HASH=$(sha256sum Dockerfile.test Gemfile.lock | sha256sum | cut -c1-7)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Check if image exists
+        id: check-image
+        run: |
+          IMAGE="ghcr.io/${{ github.repository }}/bybe-test:${{ steps.calc-hash.outputs.hash }}"
+          if docker manifest inspect $IMAGE > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Push
+        if: steps.check-image.outputs.exists == 'false'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.test
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository }}/bybe-test:${{ steps.calc-hash.outputs.hash }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
   test:
     name: Run linters and specs
+    needs: build-image
     runs-on: ubuntu-latest
     container:
-      image: damisul/bybe-base:latest
+      image: ghcr.io/${{ github.repository }}/bybe-test:${{ needs.build-image.outputs.image_tag }}
     services:
       mysql:
         image: mysql:8.0.36
@@ -31,10 +80,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
       - name: Run pronto
         env:
           RAILS_ENV: "test"
