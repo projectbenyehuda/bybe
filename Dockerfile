@@ -1,4 +1,4 @@
-FROM ruby:3.3.9-trixie AS base
+FROM ruby:3.4.11-trixie AS base
 
 RUN apt-get update -qq \
   && apt-get install -y yaz libmariadb3 libcap2 libvips42t64 libyaml-0-2 chromium libjemalloc2 \
