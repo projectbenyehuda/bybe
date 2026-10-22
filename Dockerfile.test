@@ -1,0 +1,20 @@
+FROM ruby:3.4.11-trixie
+
+ARG TARGETARCH
+
+# Install system dependencies
+RUN apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+       curl cmake git yaz libyaz-dev \
+       default-mysql-client libmysqlclient-dev libpcap-dev libyaml-dev libvips-dev chromium libjemalloc2 \
+    && wget https://github.com/jgm/pandoc/releases/download/3.8.3/pandoc-3.8.3-1-${TARGETARCH}.deb -O /tmp/pandoc.deb \
+    && dpkg -i /tmp/pandoc.deb \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/*
+
+# Use jemalloc as the memory allocator, which is more efficient than glibc's default allocator for Ruby workloads.
+ENV LD_PRELOAD=libjemalloc.so.2
+
+# Install gems
+COPY Gemfile Gemfile.lock ./
+RUN bundle config set --local without 'production' && bundle install -j $(nproc)
