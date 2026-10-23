@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-image:
-    name: Build and Cache Image
+    name: Build and Push Test Image
     runs-on: ubuntu-26.04-arm
     outputs:
       image_tag: ${{ steps.calc-hash.outputs.hash }}
@@ -56,9 +56,9 @@ jobs:
           cache-to: type=gha,mode=max
 
   test:
-    name: Run linters and specs
+    name: Run Linters and Specs
     needs: build-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04-arm
     container:
       image: ghcr.io/${{ github.repository }}/bybe-test:${{ needs.build-image.outputs.image_tag }}
     services:
@@ -77,20 +77,22 @@ jobs:
           ES_JAVA_OPTS: -Xms1024m -Xmx1024m
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Mark repository as safe
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Run pronto
         env:
           RAILS_ENV: "test"
           PRONTO_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}
           PRONTO_GITHUB_ACCESS_TOKEN: "${{ github.token }}"
-          BUNDLE_PATH: "vendor/bundle"
         run:
           bundle exec pronto run -f github_pr github_status -c origin/${{ github.base_ref }}
       - name: Verify MySQL connection from host
         run: |
-          mysql --host mysql --port 3306 -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
+          mysql --host mysql --port 3306 -uroot -proot --ssl-verify-server-cert=false \
+            -e "SHOW GRANTS FOR 'root'@'localhost'"
       - name: Update Configuration
         run: |
           echo ELASTICSEARCH_HOST=elasticsearch:9200 > ./.env.test.local
