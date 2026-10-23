@@ -705,7 +705,7 @@ GEM
       zeitwerk (~> 2)
     ruby_llm-schema (0.3.0)
     rubyzip (2.3.2)
-    rugged (1.9.0)
+    rugged (1.9.6)
     rvm1-capistrano3 (1.4.1)
       capistrano (~> 3.0)
       sshkit (>= 1.2)
@@ -939,7 +939,7 @@ DEPENDENCIES
   yt
 
 RUBY VERSION
-   ruby 3.3.9p170
+   ruby 3.4.11p137
 
 BUNDLED WITH
-   2.5.23
+   2.6.9

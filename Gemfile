@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-ruby '3.3.9' # update only when GitHub CI runners support a newer non-head version
+ruby '3.4.11'
 
 source 'https://rubygems.org'
 

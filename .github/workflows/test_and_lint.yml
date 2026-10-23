@@ -1,0 +1,106 @@
+name: Rspec
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  build-image:
+    name: Build and Push Test Image
+    runs-on: ubuntu-26.04-arm
+    outputs:
+      image_tag: ${{ steps.calc-hash.outputs.hash }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Calculate Hash
+        id: calc-hash
+        run: |
+          # Create a combined hash of Dockerfile.test and Gemfile.lock
+          HASH=$(sha256sum Dockerfile.test Gemfile.lock | sha256sum | cut -c1-7)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Check if image exists
+        id: check-image
+        run: |
+          IMAGE="ghcr.io/${{ github.repository }}/bybe-test:${{ steps.calc-hash.outputs.hash }}"
+          if docker manifest inspect $IMAGE > /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Push
+        if: steps.check-image.outputs.exists == 'false'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.test
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository }}/bybe-test:${{ steps.calc-hash.outputs.hash }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  test:
+    name: Run Linters and Specs
+    needs: build-image
+    runs-on: ubuntu-26.04-arm
+    container:
+      image: ghcr.io/${{ github.repository }}/bybe-test:${{ needs.build-image.outputs.image_tag }}
+    services:
+      mysql:
+        image: mysql:8.0.36
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      elasticsearch:
+        image: elasticsearch:8.19.19
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: false
+          ingest.geoip.downloader.enabled: false
+          action.destructive_requires_name: false
+          ES_JAVA_OPTS: -Xms1024m -Xmx1024m
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Mark repository as safe
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      - name: Run pronto
+        env:
+          RAILS_ENV: "test"
+          PRONTO_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}
+          PRONTO_GITHUB_ACCESS_TOKEN: "${{ github.token }}"
+        run:
+          bundle exec pronto run -f github_pr github_status -c origin/${{ github.base_ref }}
+      - name: Verify MySQL connection from host
+        run: |
+          mysql --host mysql --port 3306 -uroot -proot --ssl-verify-server-cert=false \
+            -e "SHOW GRANTS FOR 'root'@'localhost'"
+      - name: Update Configuration
+        run: |
+          echo ELASTICSEARCH_HOST=elasticsearch:9200 > ./.env.test.local
+          echo DATABASE_URL=mysql2://root:root@mysql:3306/bybe_test >> ./.env.test.local
+      - name: Setup DB
+        run: |
+          bin/rails db:create RAILS_ENV=test
+          bin/rails db:migrate RAILS_ENV=test
+      - name: Run tests
+        run: |
+          bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
