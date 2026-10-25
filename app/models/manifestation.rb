@@ -99,7 +99,7 @@ class Manifestation < ApplicationRecord
   def update_sort_title
     return if changed.include?('sort_title')
 
-    self.sort_title = title.strip_nikkud.tr('[]()*"\'', '').tr('-־', ' ').strip
+    self.sort_title = title.strip_nikkud.tr('[]()*"\'', '').tr('-־–:', ' ').strip
     self.sort_title = ::Regexp.last_match.post_match if sort_title =~ /^\d+\. /
   end
 

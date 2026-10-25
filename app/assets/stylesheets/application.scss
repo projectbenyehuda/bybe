@@ -307,6 +307,15 @@ body {
   margin-top: 0 !important;
 }
 
+/* Same collapse problem, other direction: BY_styles_Max991/Max639.css still give page bodies
+   (.text-page-content: 214px / 208px; .list-all-texts: 210px) a legacy top margin from the
+   fixed-header era. That margin is normally swallowed by #content's own margin, but the donation
+   banner sits between them and breaks the collapse, leaving ~200px of blank space under it. */
+#donban ~ *:not(script):not(.modal),
+#donban ~ .container-fluid > :first-child {
+  margin-top: 0 !important;
+}
+
 header {overflow-x: hidden;} /* prevent horizontal scrollbar (caused by Slick's carousel track having a virtual width of 50000) */
 .share {cursor: pointer;}
 .pointer {cursor: pointer;}
@@ -1379,6 +1388,23 @@ p.by-genre-name-v02.headline-2-v02 {
   text-align: center;
 }
 
+/* Same 18px-glyph-in-a-26px-box problem on the work page's mobile icon row: the
+   download, like and bookmark glyphs rode ~5px above the reading-mode button,
+   the "more" dots and the chapter-jump button beside them. Center them in their
+   boxes, and center their 26px group against the 28px buttons (the group was
+   baseline-aligned, which pinned it to the top of the row), so the whole row
+   shares one centre line. */
+.work-page-top-icons-mobile {
+  .top-left-icons-group {
+    align-items: center;
+  }
+
+  .icons-group-v02 > .by-icon-v02 {
+    line-height: 26px;
+    text-align: center;
+  }
+}
+
 /* Reading-mode control panel. BY_styles_General.css sizes it at 210px, which is
    narrower than most chapter and collection-item titles, so the navigator below
    had nowhere to put them. Pinning it 10px from the viewport edge (it was 7.5%,
@@ -1813,6 +1839,11 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
+/* Collection#show: a collection may include many genres; let them wrap onto
+   further lines instead of overflowing (and being cut off) on narrow screens. */
+.metadata.collection-genres {
+  flex-wrap: wrap;
+}
 // footnote reference/body mismatch report shown above the markdown editors
 // (shared/_footnote_discrepancies)
 .footnote-discrepancies {
@@ -2341,3 +2372,57 @@ p.by-genre-name-v02.headline-2-v02 {
   height: auto;
   margin-top: 10px;
 }
+
+// Genres without a glyph in the icon font yet (e.g. visual_art) render an empty icon
+// paragraph; keep its line box so the genre card stays aligned with its neighbors.
+.by-genre-icon-v02:empty::before {
+  content: '\00a0';
+}
+
+// periodical issue covers in Collection#show
+.issue-gallery-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.issue-gallery-item {
+  text-align: center;
+  max-width: 150px;
+
+  .issue-gallery-cover {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+// on mobile, always show two issues per row, with tighter spacing
+@media screen and (max-width: 767px) {
+  .issue-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .issue-gallery-item {
+    max-width: none;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Clear ("x") button in the sitewide search box, just right of the search icon at the left edge */
+.top-search-v02 #q { padding-left: 46px; }
+.top-search-clear {
+  position: absolute;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  color: #907989;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.top-search-clear:hover { color: #660248; }
+/* The search icon submits the search on click */
+.top-search-v02 .search-icon-v02 { cursor: pointer; }

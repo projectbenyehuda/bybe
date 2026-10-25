@@ -109,7 +109,7 @@
                       - ip_locals = { intellectual_property: intellectual_property }
                       .ip-statement
                         = render partial: 'shared/intellectual_property', locals: ip_locals
-                .metadata{style: "gap: 20px"}
+                .metadata.collection-genres{style: "gap: 6px 20px"}
                   - @collection.included_genres.each do |genre|
                     %div
                       %span.by-icon-v02= glyph_for_genre(genre)
@@ -136,6 +136,11 @@
                   .metadata= t(:full_collection_available, ctype: textify_collection_type(@collection.collection_type))
                 - else
                   .metadata= t(:x_of_y_items_available, x: @collection_minus_placeholders, y: @collection_total_items, ctype: textify_collection_type(@collection.collection_type))
+                -# the desktop issue navigator in shared/_collection_top is hidden on mobile; show this one instead
+                - if @collection.periodical?
+                  .metadata.mobile-work-details
+                    = select_tag 'collitem_mobile', collitem_dropdown_options(@collection, @htmls),
+                                 class: 'dropdown-v02', id: 'collitem_dropdown_mobile', style: 'width: 100%;'
                 -#.metadata.mobile-work-details
                 -#  %span{style: "font-weight:bold"} המלצות:
                 -#  %a{href: "#"} 3 המלצות קוראים
@@ -177,16 +182,16 @@
             .by-card-v02.periodical-issue-gallery
               .by-card-content-v02
                 %h3= t(:issue_covers)
-                .issue-gallery-grid{ style: 'display: flex; flex-wrap: wrap; gap: 16px;' }
+                .issue-gallery-grid
                   - @periodical_issues.each do |issue|
-                    .issue-gallery-item{ style: 'text-align: center; max-width: 150px;' }
+                    .issue-gallery-item
                       = link_to collection_path(issue) do
                         - if issue.cover_image.attached? && issue.cover_image.variable?
-                          %img{ src: url_for(issue.cover_image.variant(resize_to_fit: [150, nil])), alt: issue.title, style: 'max-width: 150px; height: auto;' }
+                          %img{ src: url_for(issue.cover_image.variant(resize_to_fit: [150, nil])), alt: issue.title, class: 'issue-gallery-cover' }
                         - elsif issue.cover_image.attached?
-                          %img{ src: url_for(issue.cover_image), alt: issue.title, style: 'max-width: 150px; height: auto;' }
+                          %img{ src: url_for(issue.cover_image), alt: issue.title, class: 'issue-gallery-cover' }
                         - else
-                          %img{ src: image_path('cover_placeholder.svg'), alt: issue.title, style: 'max-width: 150px; height: auto;' }
+                          %img{ src: image_path('cover_placeholder.svg'), alt: issue.title, class: 'issue-gallery-cover' }
                         %div= issue.title
 
           - if !@collection.periodical? && (@effective_authors.present? || @htmls.any?)

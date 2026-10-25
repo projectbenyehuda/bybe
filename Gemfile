@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-ruby '3.3.9' # update only when GitHub CI runners support a newer non-head version
+ruby '3.4.11'
 
 source 'https://rubygems.org'
 
@@ -53,10 +53,8 @@ gem 'jquery-ui-rails'
 
 gem 'client_side_validations'
 
-gem 'execjs'
 gem 'htmlentities'
 gem 'kaminari'
-gem 'mini_racer'
 gem 'nokogiri'
 
 # new wrapper over Fletcher Penney's MultiMarkDown 6 (MMD 6)

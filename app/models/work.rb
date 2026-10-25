@@ -2,7 +2,7 @@ include BybeUtils
 class Work < ApplicationRecord
   include RecordWithInvolvedAuthorities
 
-  GENRES = %w(poetry prose drama fables article memoir letters reference lexicon).freeze
+  GENRES = %w(poetry prose drama fables article memoir letters reference lexicon visual_art).freeze
 
   has_many :expressions, inverse_of: :work, dependent: :destroy
 

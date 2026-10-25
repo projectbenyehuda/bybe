@@ -46,7 +46,7 @@ class Toc < ApplicationRecord
     sections = toc.scan(/^## (.*)\s*$/)
     return false if sections.empty?
 
-    # get_genres returns ['poetry', 'prose', 'drama', 'fables','article', 'memoir', 'letters', 'reference', 'lexicon']
+    # get_genres returns Work::GENRES (poetry, prose, ..., lexicon, visual_art); translations come last
     last_encountered = 0
     translations_encountered = false
     sections.each do |sect|

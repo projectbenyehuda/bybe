@@ -301,6 +301,9 @@
       .top-search-v02{ title: t(:search_tt)}
         %input#q{:placeholder => t(:search_term), value: @searchterm} 
         %span.search-icon-v02.by-icon-top-v02 X
+        -# Keep after the search icon: it has no `top`, so anything between it and the input can push it out of the box
+        %button.top-search-clear#q-clear{ type: 'button', title: t(:clear), 'aria-label': t(:clear),
+                                          style: ('display:none' if @searchterm.blank?) } &times;
         -#= f.label t(:tags)
         -#= f.text_field 'tags'
         -#%br
@@ -369,6 +372,12 @@
     });
   }
   $(document).ready(function(){
+    $('#q').on('input', function() {
+      $('#q-clear').toggle($(this).val().length > 0);
+    });
+    $('#q-clear').click(function() {
+      $('#q').val('').trigger('input').focus();
+    });
     $('#q').keypress(function (e) {
       var key = e.which;
       if(key == 13) { // the enter key code

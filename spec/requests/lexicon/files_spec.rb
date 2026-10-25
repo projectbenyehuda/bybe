@@ -91,6 +91,47 @@ describe '/lexicon/files' do
       end
     end
 
+    context 'with a maximum file size filter' do
+      let(:paths) { Array.new(3) { Rails.root.join('tmp', "lex_files_max_size_spec_#{SecureRandom.hex(4)}.php").to_s } }
+
+      let!(:small_file) { create_sized_file(paths[0], 1024) }
+      let!(:boundary_file) { create_sized_file(paths[1], 2048) }
+      let!(:large_file) { create_sized_file(paths[2], 5120) }
+      let!(:pathless_file) { create(:lex_file, :person, status: :classified, entry_status: :raw, full_path: nil) }
+
+      after { paths.each { |path| FileUtils.rm_f(path) } }
+
+      def create_sized_file(path, bytes)
+        File.write(path, 'x' * bytes)
+        create(:lex_file, :person, status: :classified, entry_status: :raw, full_path: path)
+      end
+
+      context 'when a limit is given' do
+        let(:params) { { max_size_kb: '2' } }
+
+        it 'keeps only files up to the limit, inclusive, and drops files of unknown size' do
+          call
+          expect(file_ids).to contain_exactly(small_file.id, boundary_file.id)
+          expect(assigns(:max_size_kb)).to eq(2.0)
+        end
+
+        it 'prefills the filter field' do
+          call
+          expect(response.body).to include('id="max_size_kb"')
+          expect(response.body).to include('value="2.0"')
+        end
+      end
+
+      context 'when the limit is blank' do
+        let(:params) { { max_size_kb: '' } }
+
+        it 'applies no size filter' do
+          call
+          expect(file_ids).to contain_exactly(small_file.id, boundary_file.id, large_file.id, pathless_file.id)
+        end
+      end
+    end
+
     context 'with the file size column' do
       let(:params) { {} }
       let(:full_path) { Rails.root.join('tmp', "lex_files_index_spec_#{SecureRandom.hex(4)}.php").to_s }

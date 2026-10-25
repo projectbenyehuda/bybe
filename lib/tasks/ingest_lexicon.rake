@@ -518,3 +518,11 @@ task :check_lexicon_attachments, [:dirname] => :environment do |_taskname, args|
   end
   puts "Total failed links: #{@failed_links.size}"
 end
+
+desc 'record the on-disk size of every legacy lexicon file (lex_files.file_size_bytes), for the /lex/files size filter'
+task backfill_lex_file_sizes: :environment do
+  LexFile.find_each do |lf|
+    lf.record_file_size
+    lf.update_column(:file_size_bytes, lf.file_size_bytes) if lf.file_size_bytes_changed?
+  end
+end

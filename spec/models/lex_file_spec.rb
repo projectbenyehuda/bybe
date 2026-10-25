@@ -31,6 +31,26 @@ describe LexFile do
     end
   end
 
+  describe '#file_size_bytes' do
+    let(:path) { Rails.root.join('tmp', "lex_file_bytes_spec_#{SecureRandom.hex(4)}.php").to_s }
+
+    after { FileUtils.rm_f(path) }
+
+    it 'is recorded from disk on create and refreshed on later saves' do
+      File.write(path, 'x' * 1500)
+      file = create(:lex_file, full_path: path)
+      expect(file.file_size_bytes).to eq(1500)
+
+      File.write(path, 'x' * 100)
+      file.update!(comments: 'changed')
+      expect(file.reload.file_size_bytes).to eq(100)
+    end
+
+    it 'is nil when the file is unavailable' do
+      expect(create(:lex_file, full_path: '/nonexistent/lexicon/00001.php').file_size_bytes).to be_nil
+    end
+  end
+
   describe '#file_size_kb' do
     subject { file.file_size_kb }
 
