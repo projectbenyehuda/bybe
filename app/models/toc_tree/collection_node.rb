@@ -36,9 +36,7 @@ module TocTree
     # @param parent_collection [Collection] optional parent collection context (not used for CollectionNode,
     #   but needed for signature consistency with other node types)
     def visible?(role, authority_id, involved_on_collection_level, parent_collection = nil)
-      involvement_check = @collection.involved_authorities.any? do |ia|
-        ia.role == role.to_s && ia.authority_id == authority_id
-      end
+      involvement_check = involved?(role, authority_id)
 
       if involved_on_collection_level
         return true if involvement_check
@@ -53,9 +51,22 @@ module TocTree
     # Returns array of child elements (Manifestations or Nodes) where given author is involved with given role
     def children_by_role(role, authority_id, involved_on_collection_level)
       @children_by_role ||= {}
-      @children_by_role["#{role}_#{involved_on_collection_level}"] ||= sorted_children.select do |child|
-        child.visible?(role, authority_id, involved_on_collection_level, @collection)
-      end
+      @children_by_role["#{role}_#{involved_on_collection_level}"] ||=
+        if collapsed_for?(role, authority_id)
+          []
+        else
+          sorted_children.select do |child|
+            child.visible?(role, authority_id, involved_on_collection_level, @collection)
+          end
+        end
+    end
+
+    # Whether this collection is shown collapsed on the given authority's page under the given role:
+    # a collection the authority edited is listed by title (linking to the collection) on the editor's
+    # page, but the texts in it are its authors' works, so they are neither listed nor counted there,
+    # and hence not offered in the flat list or its filters either, which are built from the listed texts.
+    def collapsed_for?(role, authority_id)
+      role.to_s == 'editor' && involved?(role, authority_id)
     end
 
     def sorted_children
@@ -87,6 +98,13 @@ module TocTree
                 0
               end
       @manifestation_counts[cache_key] = count
+    end
+
+    private
+
+    # Whether the authority is credited with the given role on this collection itself
+    def involved?(role, authority_id)
+      @collection.involved_authorities.any? { |ia| ia.role == role.to_s && ia.authority_id == authority_id }
     end
   end
 end

@@ -53,10 +53,9 @@ describe GenerateTocTree do
         expect(count).to eq(top_level_manifestations.count)
       end
 
-      it 'counts manifestations correctly for nested collections' do
-        # Count edited manifestations (editor role, collection level)
+      it 'counts no manifestations in a collection the authority edited, as its texts are not listed' do
         edited_count = nested_edited_node.count_manifestations(:editor, authority.id, true)
-        expect(edited_count).to eq(edited_manifestations.count)
+        expect(edited_count).to eq(0)
       end
 
       it 'counts manifestations correctly for uncollected works' do
@@ -73,10 +72,11 @@ describe GenerateTocTree do
       end
 
       it 'counts manifestations recursively in nested structure' do
-        # nested_edited_collection sits under top_level_collection_with_nested_collections, and its
-        # manifestations do carry the authority as editor, so the recursive sum reaches them.
+        # nested_edited_collection sits under top_level_collection_with_nested_collections. Its
+        # manifestations do carry the authority as editor, but the edited collection lists no texts
+        # on its editor's page, so the recursive sum reaches none of them.
         total_edited = top_level_with_nested_node.count_manifestations(:editor, authority.id, true)
-        expect(total_edited).to eq(edited_manifestations.count)
+        expect(total_edited).to eq(0)
       end
 
       it 'does not count works the authority is only involved in through the collection' do
