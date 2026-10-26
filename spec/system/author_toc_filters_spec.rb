@@ -99,6 +99,26 @@ describe 'Author TOC flat-list filters', :js do
     end
   end
 
+  it 'ignores niqqud when filtering by free-text name' do
+    Chewy.strategy(:atomic) do
+      create(:manifestation, title: 'שִׁירַת הַיָּם', status: :published, author: author,
+                             genre: 'poetry', orig_lang: 'he', language: 'he')
+    end
+    visit authority_path(author)
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', minimum: 3)
+
+    fill_in 'toc-filter-name', with: 'שירת'
+    within '#sorted_card' do
+      expect(page).to have_content('שִׁירַת הַיָּם')
+      expect(page).to have_no_content('Alpha Poem')
+    end
+
+    # a pointed query matches too
+    fill_in 'toc-filter-name', with: 'הַיָּם'
+    within('#sorted_card') { expect(page).to have_content('שִׁירַת הַיָּם') }
+  end
+
   it 'uses the author-card genre chips as shortcuts into the filters pane' do
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist')

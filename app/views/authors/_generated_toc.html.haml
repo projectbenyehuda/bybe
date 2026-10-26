@@ -320,11 +320,16 @@
 
       function $nodes() { return $('#sorted_card .manifestation-node'); }
 
+      // Hebrew points (niqqud and cantillation marks), stripped from both titles
+      // and the query so the free-text filter ignores diacritics.
+      var HEBREW_POINTS = /[\u0591-\u05BD\u05BF-\u05C7]/g;
+      function normalizeForMatch(s) { return (s || '').replace(HEBREW_POINTS, '').toLowerCase(); }
+
       function nodeData(node) {
         var $m = $(node).find('.sorting-metadata');
         return {
           mid: $m.attr('data-mid'),
-          title: ($(node).find('.mtitle').text() || '').toLowerCase(),
+          title: normalizeForMatch($(node).find('.mtitle').text()),
           genre: $m.attr('data-genre'),
           lang: $m.attr('data-orig-lang'),
           translated: $m.attr('data-translated') === '1',
@@ -340,7 +345,7 @@
 
       function readState() {
         return {
-          name: ($('#toc-filter-name').val() || '').trim().toLowerCase(),
+          name: normalizeForMatch(($('#toc-filter-name').val() || '').trim()),
           genres: $('.toc-filter-genre:checked').map(function() { return this.value; }).get(),
           langs: $('.toc-filter-lang:checked').map(function() { return this.value; }).get(),
           translatedAny: $('#toc-filter-translated').is(':checked'),
