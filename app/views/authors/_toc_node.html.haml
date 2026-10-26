@@ -43,6 +43,8 @@
     - type_prefix = collection.collection_type == 'uncollected' ? '' : textify_collection_type(collection.collection_type)
     - uncollected = collection.collection_type == 'uncollected'
     - children = toc_node.children_by_role(role, authority_id, involved_on_collection_level)
+    -# an edited collection on its editor's page: title only, see CollectionNode#collapsed_for?
+    - collapsed = toc_node.collapsed_for?(role, authority_id)
     - children.reject! { |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.deprecated? }
     -# a collapsible ul.toclist is rendered only in the non-editable branch below, when there are children
     - renders_toclist = children.present? && !(editable && (collection.uncollected? || involved_on_collection_level))
@@ -66,7 +68,7 @@
                   - extra_data = collection.created_at > 2.minutes.ago ? { 'data-focus-on-me': 'true' } : {}
                   - ctitle = "#{collection.title}#{collection.subtitle.present? ? ': '+collection.subtitle : '' }"
                   - manifestation_count = toc_node.count_manifestations(role, authority_id, involved_on_collection_level)
-                  - if children.present?
+                  - if children.present? || collapsed
                     - if !involved_on_collection_level
                       = t(:out_of)
                     -# Series (sub-volume) collections aren't a valid Collection#show focus, so not clickable here
