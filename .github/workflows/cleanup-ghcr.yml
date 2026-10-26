@@ -8,7 +8,7 @@ permissions:
   packages: write
 jobs:
   cleanup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04-arm
     steps:
       - name: Delete old docker images
         uses: actions/delete-package-versions@v5
@@ -16,4 +16,10 @@ jobs:
           package-name: 'bybe'
           package-type: 'container'
           ignore-versions: '-latest$'
+          min-versions-to-keep: 10 # Keep 10 versions
+      - name: Delete old test docker images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'bybe-test'
+          package-type: 'container'
           min-versions-to-keep: 10 # Keep 10 versions
