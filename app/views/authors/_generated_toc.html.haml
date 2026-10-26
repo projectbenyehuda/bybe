@@ -13,8 +13,9 @@
   -# The count badges below are computed in TocTree::ManifestationNode, which the template digest
      does not track, so the cache key carries an explicit version: bump it whenever the counting
      rules change, or a deploy keeps serving the old figures here (while the uncached navbar
-     beside them already shows the new ones) until the TTL expires.
-  = cache_unless current_user&.editor?, [@author, 'toc-counts-v2'], expires_in: 12.hours do
+     beside them already shows the new ones) until the TTL expires. Bump it too when the nodes'
+     filter data attributes change (v3: data-role), or the filters pane misses them.
+  = cache_unless current_user&.editor?, [@author, 'toc-counts-v3'], expires_in: 12.hours do
     :ruby
     - top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
     - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
@@ -246,7 +247,7 @@
       showFilterPane(flat);
       if(flat && window.TocFilters) {
         // Re-sorting within flat mode keeps the currently active filters (genre,
-        // name, language, character, date range) and just reapplies them to the
+        // role, name, language, character, date range) and just reapplies them to the
         // freshly sorted nodes; only a fresh entry into flat mode (from a grouped
         // view) recomputes the date range and clears the filters.
         if(wasFlat) {
@@ -284,14 +285,26 @@
     // ---- Flat-list filters pane (bead ln5) ----
     function isFlatSort(v) { return v !== 'colls' && v !== 'colls_abc'; }
 
-    // Keep only the first node per manifestation id (data-mid).
+    // Keep only the first node per manifestation id (data-mid). A work listed
+    // under several of the author's roles keeps all of them in data-roles, so
+    // the role filter still finds it after the duplicates are dropped.
     function dedupByMid($nodes) {
       var seen = {};
       return $nodes.filter(function() {
-        var mid = $(this).find('.sorting-metadata').attr('data-mid');
+        var $m = $(this).find('.sorting-metadata');
+        var mid = $m.attr('data-mid');
         if (!mid) { return true; }
-        if (seen[mid]) { return false; }
-        seen[mid] = true;
+        var role = $m.attr('data-role');
+        if (seen[mid]) {
+          var roles = seen[mid].attr('data-roles').split(' ');
+          if (role && roles.indexOf(role) === -1) {
+            seen[mid].attr('data-roles', roles.concat(role).join(' ').trim());
+          }
+          return false;
+        }
+        // Already set when re-sorting an existing flat list; keep the merged roles.
+        if ($m.attr('data-roles') == null) { $m.attr('data-roles', role || ''); }
+        seen[mid] = $m;
         return true;
       });
     }
@@ -326,6 +339,7 @@
           mid: $m.attr('data-mid'),
           title: ($(node).find('.mtitle').text() || '').toLowerCase(),
           genre: $m.attr('data-genre'),
+          roles: ($m.attr('data-roles') || '').split(' '),
           lang: $m.attr('data-orig-lang'),
           translated: $m.attr('data-translated') === '1',
           featured: $m.attr('data-featured') === '1',
@@ -342,6 +356,7 @@
         return {
           name: ($('#toc-filter-name').val() || '').trim().toLowerCase(),
           genres: $('.toc-filter-genre:checked').map(function() { return this.value; }).get(),
+          roles: $('.toc-filter-role:checked').map(function() { return this.value; }).get(),
           langs: $('.toc-filter-lang:checked').map(function() { return this.value; }).get(),
           translatedAny: $('#toc-filter-translated').is(':checked'),
           chars: $('.toc-filter-char:checked').map(function() { return this.value; }).get(),
@@ -360,7 +375,7 @@
       // takes over). Genre-only filtering leaves the chips up, so they stay usable
       // as toggles.
       function otherSectionsActive(s) {
-        return !!(s.name || s.langs.length || s.translatedAny || s.chars.length ||
+        return !!(s.name || s.roles.length || s.langs.length || s.translatedAny || s.chars.length ||
                   s.fromYear != null || s.toYear != null);
       }
 
@@ -368,6 +383,13 @@
       function matches(d, s, exclude) {
         if (exclude !== 'name' && s.name && d.title.indexOf(s.name) === -1) { return false; }
         if (exclude !== 'genre' && s.genres.length && s.genres.indexOf(d.genre) === -1) { return false; }
+        if (exclude !== 'role' && s.roles.length) {
+          var roleOk = false;
+          for (var r = 0; r < s.roles.length; r++) {
+            if (d.roles.indexOf(s.roles[r]) !== -1) { roleOk = true; }
+          }
+          if (!roleOk) { return false; }
+        }
         if (exclude !== 'lang') {
           if (s.langs.length || s.translatedAny) {
             var langOk = s.langs.indexOf(d.lang) !== -1 || (s.translatedAny && d.translated);
@@ -396,6 +418,7 @@
       function optionMatches(section, value, d) {
         switch (section) {
           case 'genre': return d.genre === value;
+          case 'role': return d.roles.indexOf(value) !== -1;
           case 'lang':
             return value === 'translated' ? d.translated : d.lang === value;
           case 'char':

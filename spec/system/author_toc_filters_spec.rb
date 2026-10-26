@@ -207,6 +207,43 @@ describe 'Author TOC flat-list filters', :js do
     end
   end
 
+  it 'filters by the author\'s role, keeping works listed under several roles' do
+    Chewy.strategy(:atomic) do
+      create(:manifestation, title: 'Gamma Translation', status: :published, translator: author,
+                             genre: 'prose', orig_lang: 'de', language: 'he')
+    end
+
+    visit authority_path(author)
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card .manifestation-node', count: 3)
+
+    # works authored AND edited (via the volume) count once under each role
+    expect(page).to have_css(".toc-facet-count[data-section='role'][data-value='author']", text: '(2)')
+    expect(page).to have_css(".toc-facet-count[data-section='role'][data-value='editor']", text: '(2)')
+    expect(page).to have_css(".toc-facet-count[data-section='role'][data-value='translator']", text: '(1)')
+
+    check 'toc-filter-role-translator'
+    within '#sorted_card' do
+      expect(page).to have_content('Gamma Translation')
+      expect(page).to have_no_content('Alpha Poem')
+      expect(page).to have_no_content('Beta Story')
+    end
+
+    # the de-duplicated flat list kept the 'author' copies, yet they still match 'editor'
+    uncheck 'toc-filter-role-translator'
+    check 'toc-filter-role-editor'
+    within '#sorted_card' do
+      expect(page).to have_content('Alpha Poem')
+      expect(page).to have_content('Beta Story')
+      expect(page).to have_no_content('Gamma Translation')
+    end
+
+    # role filtering survives a flat->flat re-sort
+    choose_sort('popularity_desc')
+    within('#sorted_card') { expect(page).to have_no_content('Gamma Translation') }
+    expect(page).to have_css('#toc-filter-role-editor:checked', visible: :all)
+  end
+
   it 'filters by source language (translated)' do
     visit authority_path(author)
     choose_sort('title')
