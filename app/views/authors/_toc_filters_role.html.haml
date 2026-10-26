@@ -1,0 +1,15 @@
+-# Role section of the TOC filters pane: roles with published works here (see calculate_toc_counts).
+- roles = (@toc_counts || {}).select { |_role, counts| counts[:total].positive? }.keys
+-# A single role has nothing to filter.
+- if roles.size > 1
+  = render layout: 'shared/collapsible_block',
+           locals: { container_name: 'tocfrole', title: t(:role), content_class: 'nested-list' } do
+    %ul
+      - roles.each do |role|
+        %li
+          .filter-checkbox
+            %input.toc-filter-role{ type: 'checkbox', value: role, name: 'toc_filter_role',
+                                    id: "toc-filter-role-#{role}" }
+            %label{ for: "toc-filter-role-#{role}" }
+              = textify_role(role, @author.gender)
+              %span.toc-facet-count{ 'data-section': 'role', 'data-value': role }

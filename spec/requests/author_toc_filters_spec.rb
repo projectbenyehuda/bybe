@@ -46,6 +46,27 @@ RSpec.describe 'Author TOC filters (server-rendered)', type: :request do
     expect(node[:'data-recommended']).to eq('1')
   end
 
+  it 'offers a role filter for the roles the author has published works in' do
+    get authority_path(author)
+
+    # author of both works and editor of the volume containing them
+    expect(rendered).to have_css('#toc-filter-role-author', visible: :all)
+    expect(rendered).to have_css('#toc-filter-role-editor', visible: :all)
+    expect(rendered).to have_no_css('#toc-filter-role-translator', visible: :all)
+    # each node records the role section it was rendered under
+    roles = rendered.all("[data-mid='#{poem.id}']", visible: :all).pluck(:'data-role')
+    expect(roles).to contain_exactly('author', 'editor')
+  end
+
+  it 'omits the role filter when the author has a single role' do
+    solo = create(:authority)
+    create(:manifestation, author: solo)
+    get authority_path(solo)
+
+    expect(rendered).to have_css('#toc_filters_pane', visible: :all)
+    expect(rendered).to have_no_css('.toc-filter-role', visible: :all)
+  end
+
   it 'sets data-tagging for a directly-tagged manifestation' do
     create(:tagging, taggable: story, status: :approved)
     get authority_path(author)
