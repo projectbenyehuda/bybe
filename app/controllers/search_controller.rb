@@ -30,6 +30,7 @@ class SearchController < ApplicationController
       @offset = (page - 1) * Kaminari.config.default_per_page
       @total = @results.count
       @containing_volumes = containing_volumes_for(@results)
+      @section_parents = section_parents_for(@results)
 
       track_event('search', { term: @searchterm, page: page })
     rescue # Faraday::Error::ConnectionFailed => e
@@ -53,6 +54,16 @@ class SearchController < ApplicationController
     Manifestation.where(id: ids)
                  .includes(collection_items: :collection)
                  .to_h { |m| [m.id, m.volumes.uniq] }
+  end
+
+  # Section (series) hits are shown with the volume/periodical issue they sit in, so that sections
+  # with identical names can be told apart. Returns { collection_id => Collection }.
+  def section_parents_for(results)
+    ids = results.to_a.select { |r| r.instance_of?(CollectionsIndex) && r.collection_type == 'series' }
+                 .map { |r| r.attributes['id'].to_i }
+    return {} if ids.empty?
+
+    Collection.where(id: ids).to_h { |c| [c.id, c.parent_volume_or_isssue] }.compact
   end
 
   def sanitize_term(term)
