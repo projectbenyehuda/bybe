@@ -966,6 +966,18 @@ describe Authority do
       end
     end
 
+    describe '.with_published_works' do
+      let!(:with_published) { create(:manifestation, status: :published).authors.first }
+      let!(:with_unpublished) { create(:manifestation, status: :unpublished).authors.first }
+      let!(:without_works) { create(:authority) }
+
+      it 'includes only authorities with a published work' do
+        result = described_class.with_published_works
+        expect(result).to include(with_published)
+        expect(result).not_to include(with_unpublished, without_works)
+      end
+    end
+
     describe '.not_pageless' do
       let!(:regular_authority) { create(:authority) }
       let!(:pageless_authority) { create(:authority, pageless: true) }
