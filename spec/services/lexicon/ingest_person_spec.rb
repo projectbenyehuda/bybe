@@ -547,6 +547,7 @@ describe Lexicon::IngestPerson do
       expect(person.gender).to eq('male')
       expect(person.citations.count).to eq(2)
       expect(person.citations.select { |c| c.subject.nil? && c.person_work.nil? }.size).to eq(2)
+      expect(person.bio).to include('<span dir="ltr">S. Wininger.')
 
       expect(person.works.count).to eq(0)
       expect(person.authority).to eq(authority)

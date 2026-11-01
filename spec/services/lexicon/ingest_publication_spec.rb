@@ -30,7 +30,8 @@ describe Lexicon::IngestPublication do
       publication = entry.lex_item
       expect(publication.description).to start_with('**[אליעזר ירושלמי.]')
       expect(publication.description).to end_with("268 עמ׳.\n")
-      expect(publication.toc).to start_with('אמן הנובלה')
+      expect(publication.toc).to start_with('א. מספרים')
+      expect(publication.toc).to include('אמן הנובלה')
       expect(publication.toc).to end_with("(עמ׳ 267–268)\n\n")
       expect(publication.entry.attachments.count).to eq(1)
       expect(publication.links).to be_empty

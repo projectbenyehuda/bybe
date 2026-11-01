@@ -53,7 +53,7 @@
 <li><span lang="he">מפתח השמות (עמ&#39; 387־392) </span></li>
 <li><span lang="he">מפתח היצירות (עמ&#39; 393־396) </span></li>
 		</ul>
-		<font size="4" color="#0000FF"><a name="links">קישורים:</a></font></p>
+		<p><font size="4" color="#0000FF"><a name="links">קישורים:</a></font></p>
 		<ul>
 		<li><i>
 		<a target="_blank" href="http://www.text.org.il/index.php?book=0904057">

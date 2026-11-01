@@ -62,7 +62,7 @@ module Lexicon
       header = toc_header(html_doc)
       return nil if header.nil?
 
-      elem = next_element_skipping_blank(header)
+      elem = next_toc_node_skipping_blank(header)
       header.remove
 
       result = +''
@@ -74,23 +74,40 @@ module Lexicon
           break
         elsif elem.name == 'font' && elem.text.include?(LAST_UPDATE_LABEL)
           # TOC can also be ended with date of manual update section
-        elsif elem.name == 'font' && elem['color'] == '#0000FF' && elem.text.include?(LINKS_HEADER)
+        elsif links_header?(elem)
           # TOC can also be ended with a Links section
           break
         elsif elem.name == 'table'
           elem.css('tr').each do |tr|
             result << '- ' << tr.css('td').map { |td| HtmlToMarkdown.call(td.inner_html) }.join(' ') << "\n"
           end
-        elsif elem.text.present? # we skip empty html elements
-          result << HtmlToMarkdown.call(elem.inner_html) << "\n"
+        elsif (elem.element? || elem.text?) && elem.text.present? # we skip empty html elements
+          content = elem.text? ? elem.text : elem.inner_html
+          result << HtmlToMarkdown.call(content) << "\n"
         end
 
-        next_elem = next_element_skipping_blank(elem)
+        next_elem = next_toc_node_skipping_blank(elem)
         elem.remove
         elem = next_elem
       end
 
       result
+    end
+
+    def next_toc_node_skipping_blank(node)
+      next_node = node.next_sibling
+      next_node = next_node.next_sibling while next_node && next_node.text.blank?
+
+      next_node
+    end
+
+    def links_header?(node)
+      font = if node.name == 'font'
+               node if node['color'] == '#0000FF'
+             else
+               node.at_css('font[color="#0000FF"]')
+             end
+      font&.text&.include?(LINKS_HEADER)
     end
   end
 end

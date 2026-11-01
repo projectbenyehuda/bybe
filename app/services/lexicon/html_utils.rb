@@ -148,6 +148,8 @@ module Lexicon
     # that may be used for formatting.
     def remove_redundant_formatting(html_doc)
       html_doc.css('span[lang], span[dir]').each do |span|
+        next if span['dir']&.casecmp?('ltr')
+
         span.replace(span.children)
       end
     end
