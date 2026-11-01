@@ -233,16 +233,20 @@ describe 'Author TOC flat-list filters', :js do
     Chewy.strategy(:atomic) do
       create(:manifestation, title: 'Gamma Translation', status: :published, translator: author,
                              genre: 'prose', orig_lang: 'de', language: 'he')
+      # Alpha Poem is also listed under 'illustrator'
+      create(:involved_authority, authority: author, item: poem.expression.work, role: 'illustrator')
     end
 
     visit authority_path(author)
     choose_sort('title')
     expect(page).to have_css('#sorted_card .manifestation-node', count: 3)
 
-    # works authored AND edited (via the volume) count once under each role
+    # a work listed under two roles counts once under each; the edited volume lists no texts,
+    # so 'editor' is not offered at all
     expect(page).to have_css(".toc-facet-count[data-section='role'][data-value='author']", text: '(2)')
-    expect(page).to have_css(".toc-facet-count[data-section='role'][data-value='editor']", text: '(2)')
+    expect(page).to have_css(".toc-facet-count[data-section='role'][data-value='illustrator']", text: '(1)')
     expect(page).to have_css(".toc-facet-count[data-section='role'][data-value='translator']", text: '(1)')
+    expect(page).to have_no_css('#toc-filter-role-editor', visible: :all)
 
     check 'toc-filter-role-translator'
     within '#sorted_card' do
@@ -251,19 +255,19 @@ describe 'Author TOC flat-list filters', :js do
       expect(page).to have_no_content('Beta Story')
     end
 
-    # the de-duplicated flat list kept the 'author' copies, yet they still match 'editor'
+    # the de-duplicated flat list kept Alpha Poem's 'author' copy, yet it still matches 'illustrator'
     uncheck 'toc-filter-role-translator'
-    check 'toc-filter-role-editor'
+    check 'toc-filter-role-illustrator'
     within '#sorted_card' do
       expect(page).to have_content('Alpha Poem')
-      expect(page).to have_content('Beta Story')
+      expect(page).to have_no_content('Beta Story')
       expect(page).to have_no_content('Gamma Translation')
     end
 
     # role filtering survives a flat->flat re-sort
     choose_sort('popularity_desc')
     within('#sorted_card') { expect(page).to have_no_content('Gamma Translation') }
-    expect(page).to have_css('#toc-filter-role-editor:checked', visible: :all)
+    expect(page).to have_css('#toc-filter-role-illustrator:checked', visible: :all)
   end
 
   it 'filters by source language (translated)' do

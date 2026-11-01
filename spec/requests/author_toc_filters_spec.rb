@@ -46,16 +46,18 @@ RSpec.describe 'Author TOC filters (server-rendered)', type: :request do
     expect(node[:'data-recommended']).to eq('1')
   end
 
-  it 'offers a role filter for the roles the author has published works in' do
+  it 'offers a role filter for the roles that list the author\'s works' do
+    translation = create(:manifestation, author: create(:authority), translator: author,
+                                         orig_lang: 'de', language: 'he')
     get authority_path(author)
 
-    # author of both works and editor of the volume containing them
     expect(rendered).to have_css('#toc-filter-role-author', visible: :all)
-    expect(rendered).to have_css('#toc-filter-role-editor', visible: :all)
-    expect(rendered).to have_no_css('#toc-filter-role-translator', visible: :all)
+    expect(rendered).to have_css('#toc-filter-role-translator', visible: :all)
+    # editor of the volume, but an edited collection lists no texts, so no row could match
+    expect(rendered).to have_no_css('#toc-filter-role-editor', visible: :all)
     # each node records the role section it was rendered under
-    roles = rendered.all("[data-mid='#{poem.id}']", visible: :all).pluck(:'data-role')
-    expect(roles).to contain_exactly('author', 'editor')
+    expect(rendered.first("[data-mid='#{poem.id}']", visible: :all)[:'data-role']).to eq('author')
+    expect(rendered.first("[data-mid='#{translation.id}']", visible: :all)[:'data-role']).to eq('translator')
   end
 
   it 'omits the role filter when the author has a single role' do

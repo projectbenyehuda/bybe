@@ -92,12 +92,23 @@ RSpec.describe AuthorTocFilterData do
     expect(data[:tagging_ids]).to be_empty
   end
 
+  it 'reports the roles listing works, in presentation order' do
+    create(:manifestation, author: create(:authority), translator: author, orig_lang: 'de', language: 'he')
+    RefreshUncollectedWorksCollection.call(author) # the TOC tree lists uncollected works through it
+    expect(described_class.call(author)[:roles]).to eq(%w(author translator))
+  end
+
   context 'when the author edited a collection, whose texts are therefore not listed on their page' do
     let(:edited) { create(:collection, editors: [author]) }
 
     before do
       create(:manifestation, author: create(:authority), editor: author, genre: 'drama', orig_lang: 'de',
                              collections: [edited])
+    end
+
+    it 'offers no editor role, as the edited collection lists no texts' do
+      RefreshUncollectedWorksCollection.call(author) # lists the author's own works
+      expect(described_class.call(author)[:roles]).to eq(%w(author))
     end
 
     it "offers no genre or language found only among the edited collection's texts" do

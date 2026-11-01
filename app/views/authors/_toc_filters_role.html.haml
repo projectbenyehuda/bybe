@@ -1,10 +1,5 @@
--# Role section of the TOC filters pane: the roles whose TOC sections this page renders, gated
-  exactly as the navbar and authors/_toc_by_role are (the counts skip collection-level roles).
-:ruby
-  top_nodes = @toc_tree.top_level_nodes
-  roles = InvolvedAuthority::ROLES_PRESENTATION_ORDER.select do |role|
-    toc_role_present?(toc_role_sections(top_nodes, role, @author.id))
-  end
+-# Role section of the TOC filters pane: the roles listing at least one work here (see AuthorTocFilterData).
+- roles = @toc_filter_data[:roles]
 -# A single role has nothing to filter.
 - if roles.size > 1
   = render layout: 'shared/collapsible_block',

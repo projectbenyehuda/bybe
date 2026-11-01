@@ -4,7 +4,8 @@
 # by the in-browser filtering of the flat manifestation list:
 #   * sets of manifestation IDs bearing each "curatorial" property, and
 #   * the genres and source languages actually represented among the
-#     manifestations the authority is involved with (in any role).
+#     manifestations the authority is involved with (in any role), and
+#   * the roles under which the page lists at least one manifestation.
 #
 # "Curatorial content" means any of: a featuring (FeaturedContent), an approved
 # Recommendation, an incoming Aboutness (another work that is ABOUT the
@@ -17,7 +18,9 @@
 # author (see AuthorsController#toc).
 class AuthorTocFilterData < ApplicationService
   def call(authority, toc_tree = GenerateTocTree.call(authority))
-    manifestation_ids = authority.published_manifestations.pluck(:id) - hidden_manifestation_ids(toc_tree, authority.id)
+    listing = toc_listing(toc_tree, authority.id)
+    hidden_ids = (listing[:collapsed] - listing[:listed]).to_a
+    manifestation_ids = authority.published_manifestations.pluck(:id) - hidden_ids
 
     {
       featured_ids: featured_ids(manifestation_ids),
@@ -25,17 +28,19 @@ class AuthorTocFilterData < ApplicationService
       aboutness_ids: aboutness_ids(manifestation_ids),
       tagging_ids: tagging_ids(manifestation_ids, authority),
       genres: genres(manifestation_ids),
-      orig_langs: orig_langs(manifestation_ids)
+      orig_langs: orig_langs(manifestation_ids),
+      roles: InvolvedAuthority::ROLES_PRESENTATION_ORDER & listing[:roles].to_a
     }
   end
 
   private
 
-  # Ids of the authority's works not listed anywhere on their page, because they appear only inside
-  # collections shown collapsed there (see TocTree::CollectionNode#collapsed_for?). Left in, they
-  # would offer filter options (e.g. a genre) that no row of the flat list matches.
-  def hidden_manifestation_ids(toc_tree, authority_id)
-    found = { listed: Set.new, collapsed: Set.new }
+  # What the authority's page lists: the manifestation ids listed under any role (:listed), those inside
+  # collections shown collapsed there (:collapsed, see TocTree::CollectionNode#collapsed_for?), and the
+  # roles that list at least one manifestation (:roles). Works only in collapsed collections, and roles
+  # with no listed works, would offer filter options (e.g. a genre) that no row of the flat list matches.
+  def toc_listing(toc_tree, authority_id)
+    found = { listed: Set.new, collapsed: Set.new, roles: Set.new }
     InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
       [true, false].each do |involved_on_collection_level|
         toc_tree.top_level_nodes.each do |node|
@@ -45,11 +50,11 @@ class AuthorTocFilterData < ApplicationService
         end
       end
     end
-    (found[:collapsed] - found[:listed]).to_a
+    found
   end
 
-  # Collects the manifestation ids listed under a collection node into found[:listed], and those inside
-  # collapsed collections (at any depth) into found[:collapsed]
+  # Collects the manifestation ids listed under a collection node into found[:listed] (and their role into
+  # found[:roles]), and those inside collapsed collections (at any depth) into found[:collapsed]
   def walk(node, role, authority_id, involved_on_collection_level, found)
     if node.collapsed_for?(role, authority_id)
       collect_all(node, found[:collapsed])
@@ -58,7 +63,9 @@ class AuthorTocFilterData < ApplicationService
 
     node.children_by_role(role, authority_id, involved_on_collection_level).each do |child|
       case child
-      when TocTree::ManifestationNode then found[:listed] << child.manifestation.id
+      when TocTree::ManifestationNode
+        found[:listed] << child.manifestation.id
+        found[:roles] << role
       when TocTree::CollectionNode then walk(child, role, authority_id, involved_on_collection_level, found)
       end
     end
