@@ -1,5 +1,10 @@
--# Role section of the TOC filters pane: roles with published works here (see calculate_toc_counts).
-- roles = (@toc_counts || {}).select { |_role, counts| counts[:total].positive? }.keys
+-# Role section of the TOC filters pane: the roles whose TOC sections this page renders, gated
+  exactly as the navbar and authors/_toc_by_role are (the counts skip collection-level roles).
+:ruby
+  top_nodes = @toc_tree.top_level_nodes
+  roles = InvolvedAuthority::ROLES_PRESENTATION_ORDER.select do |role|
+    toc_role_present?(toc_role_sections(top_nodes, role, @author.id))
+  end
 -# A single role has nothing to filter.
 - if roles.size > 1
   = render layout: 'shared/collapsible_block',
