@@ -1439,6 +1439,7 @@ he:
   add_linked_person: הוסף איש/ה מקושר/ת
   in_role: בתפקיד
   add_person_in_role: "הוסף את %{author} בתפקיד: "
+  role: תפקיד
   recommendation_for: המלצה עבור הקובץ
   back_to_top: לראש הדף
   confirmed_person_as_author: היוצר %{author} אושר כיוצר היצירה הזו.
