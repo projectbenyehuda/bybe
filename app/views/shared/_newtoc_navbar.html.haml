@@ -297,6 +297,56 @@
       }
     });
 
+    // Scrollspy: keep the highlighted (.selected) navbar section in step with the
+    // reader's scroll position. Bootstrap's scrollspy (set up in the layout) cannot
+    // drive this navbar -- its items are not nav-links whose hrefs point at the
+    // sections -- so without this the highlight only moved on click.
+    var $spyItems = $('.book-nav-full .book-type').filter(function() {
+      return $(this).find('.truncate[data-scroll-target]').length > 0;
+    });
+    function syncNavWithScroll() {
+      if ($spyItems.length === 0 || !$('.book-nav-full').is(':visible')) { return; }
+      // A section becomes current once its top crosses this line. Clicking a navbar
+      // item scrolls its section to 120px below the header, so the line sits a bit
+      // lower than that, leaving room for the header shrinking as the page scrolls.
+      var line = ($('#header-author').outerHeight() || 0) + 180;
+      var $first = null, firstTop = Infinity;
+      var $last = null, lastTop = -Infinity;
+      var $passed = null, passedTop = -Infinity;
+      $spyItems.each(function() {
+        var target = $(this).find('.truncate[data-scroll-target]').data('scroll-target');
+        var el = document.querySelector(target);
+        if (!el || el.getClientRects().length === 0) { return; } // missing or hidden
+        var top = el.getBoundingClientRect().top;
+        if (top < firstTop) { $first = $(this); firstTop = top; }
+        if (top > lastTop) { $last = $(this); lastTop = top; }
+        if (top <= line && top > passedTop) { $passed = $(this); passedTop = top; }
+      });
+      if ($first === null) { return; }
+      // At the very bottom the last sections may never reach the line, so the
+      // last one wins there (as in Bootstrap's scrollspy).
+      var atBottom = window.pageYOffset > 0 &&
+        window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 2;
+      var $current = atBottom ? $last : ($passed || $first);
+      if ($current.hasClass('selected') &&
+          $current.closest('.nav-book-group').hasClass('selected')) { return; }
+      $('.book-nav-full .book-type').removeClass('selected');
+      $('.book-nav-full .nav-book-group').removeClass('selected');
+      $current.addClass('selected');
+      $current.closest('.nav-book-group').addClass('selected');
+    }
+    // Coalesced into a frame: the check reads layout on every scroll event.
+    var navSyncPending = false;
+    $(window).on('scroll resize', function() {
+      if (navSyncPending) { return; }
+      navSyncPending = true;
+      window.requestAnimationFrame(function() {
+        navSyncPending = false;
+        syncNavWithScroll();
+      });
+    });
+    syncNavWithScroll();
+
     // Handle bottom-of-section collapse buttons
     $('.section-collapse-link').click(function(e) {
       e.preventDefault();
