@@ -22,20 +22,4 @@
           = link_to t(:render), url_for(controller: :manifestation, action: :read, id: m.id)
           - if m.title[-1] == '.'
             = ' | '
-            = link_to t(:remove_final_period), manifestation_chomp_period_path(m.id), {remote: true, class: 'chomp_link', "data-done-msg" => t(:removed), "data-doing-msg" => t(:removing)}
-:javascript
-  $(document).ready(function() {
-    $('.chomp_link')
-      .bind("ajax:beforeSend", function(evt, xhr, settings) {
-        var $link = $(this);
-        $link.html( "<b>"+$(this).data('doing-msg')+"</b>");
-      })
-      .bind("ajax:success", function(evt, data, status, xhr){
-        $(this).html($(this).data('done-msg'));
-        $(this).on('click', function(e) {
-          e.stopPropagation();
-          e.preventDefault();
-          $(this).css('pointer-events', 'none').css('cursor', 'default');
-        });
-    });
-  });
+            = link_to t(:remove_final_period), manifestation_chomp_period_path(m.id)

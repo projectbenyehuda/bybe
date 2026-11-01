@@ -1037,8 +1037,8 @@ describe ManifestationController do
       context 'when title ends with dot' do
         let(:title) { 'Trailing dot.'}
 
-        it 'removes trailing dot' do
-          expect(request).to be_successful
+        it 'removes trailing dot and redirects to the suspicious titles report' do
+          expect(request).to redirect_to admin_suspicious_titles_path
           manifestation.reload
           expect(manifestation.title).to eq 'Trailing dot'
         end
@@ -1048,7 +1048,7 @@ describe ManifestationController do
         let(:title) { 'No trailing dot'}
 
         it 'does not changes title' do
-          expect(request).to be_successful
+          expect(request).to redirect_to admin_suspicious_titles_path
           manifestation.reload
           expect(manifestation.title).to eq 'No trailing dot'
         end
