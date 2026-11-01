@@ -44,8 +44,9 @@
             .work-side-color
               .work-genre{ style: "background-image: url(\"/assets/work_side_icons_#{@w.genre}.svg\"); background-repeat: no-repeat; background-size:auto;" }
 
-        -# repeat the prev/next navigation at the bottom of long texts (outside .proofable, so that
-        -# its labels cannot become part of a correction report selection)
+        -#
+          Repeat the prev/next navigation at the bottom of long texts. Kept outside .proofable, so
+          that its labels cannot become part of a correction report selection.
         - if sibling_nav_html.present? && @m.markdown.to_s.lines.count > Manifestation::LONG_TEXT_LINES
           .by-card-v02.bottom-sibling-nav
             = sibling_nav_html
