@@ -13,9 +13,11 @@ module AdminHelper
     sort_param = :"#{list}_sort"
     dir_param = :"#{list}_dir"
     active = params[sort_param] == key
-    next_dir = active && params[dir_param] != 'desc' ? 'desc' : 'asc'
-    arrow = active ? (params[dir_param] == 'desc' ? ' ▼' : ' ▲') : ''
-    link_to("#{label}#{arrow}", tag_moderation_path(request.query_parameters.merge(sort_param => key, dir_param => next_dir)),
-            class: 'sort-link')
+    descending = params[dir_param] == 'desc'
+    arrow = ''
+    arrow = descending ? ' ▼' : ' ▲' if active
+    next_dir = active && !descending ? 'desc' : 'asc'
+    query = request.query_parameters.merge(sort_param => key, dir_param => next_dir)
+    link_to("#{label}#{arrow}", tag_moderation_path(query), class: 'sort-link')
   end
 end
