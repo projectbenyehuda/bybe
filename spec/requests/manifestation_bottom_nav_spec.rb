@@ -31,7 +31,7 @@ describe 'Manifestation#read bottom navigation', type: :request do
 
       doc = Nokogiri::HTML(response.body)
       expect(doc.css('.author-works-nav').size).to eq(2)
-      expect(doc.css('.bottom-sibling-nav .author-works-nav a').map { |a| a['href'] })
+      expect(doc.css('.bottom-sibling-nav .author-works-nav a').pluck('href'))
         .to include(manifestation_path(previous_text), manifestation_path(next_text))
     end
   end
