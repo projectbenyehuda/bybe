@@ -1474,6 +1474,7 @@ en:
   delete_description: The anthology will be completely deleted, the works will of
     course remain available in the project but any custom text included in it will
     be deleted without possibility of recovery
+  edit_link: Edit Link
   delete_link: Remove Link
   delete_photo: Delete Photo (permanently!)
   desktop_missing_entries: "[%{x} missing entries]"

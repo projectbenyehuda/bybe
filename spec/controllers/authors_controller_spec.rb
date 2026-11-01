@@ -799,6 +799,30 @@ describe AuthorsController do
         end
       end
 
+      describe '#update_link' do
+        let!(:link) { create(:external_link, linkable: author, url: 'https://old.example.com', description: 'old') }
+
+        it 'updates the link instead of requiring removal and re-adding' do
+          patch :update_link, params: { id: link.id, url: 'https://new.example.com', description: 'new' }
+          expect(link.reload).to have_attributes(url: 'https://new.example.com', description: 'new')
+          expect(response).to redirect_to(authors_edit_path(id: author.id))
+        end
+
+        it 'renders the form again on invalid data' do
+          patch :update_link, params: { id: link.id, url: '' }
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+      end
+
+      describe '#edit_link' do
+        let!(:link) { create(:external_link, linkable: author) }
+
+        it 'renders the form' do
+          get :edit_link, params: { id: link.id }
+          expect(response).to have_http_status(:ok)
+        end
+      end
+
       describe '#add_link' do
         subject(:call) { post :add_link, params: { id: author.id, link_description: desc, add_url: url }, format: :js }
 

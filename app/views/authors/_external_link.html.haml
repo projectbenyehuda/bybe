@@ -3,3 +3,5 @@
   = " (#{t(el.linktype)})"
   != "&nbsp;&nbsp;&nbsp;"
   = link_to t(:delete_link), author_delete_link_path(el.id), {remote: true, method: :post, class: 'delete_link'}
+  != "&nbsp;&nbsp;&nbsp;"
+  = link_to t(:edit_link), author_edit_link_path(el.id)

@@ -1,0 +1,13 @@
+.backend.container
+  %h1= t(:edit_link)
+  = form_tag author_update_link_path(@el.id), method: :patch do
+    = t(:add_url)
+    = text_field_tag :url, @el.url
+    = t(:link_type)
+    = select_tag :linktype, options_for_select(ExternalLink.linktypes.map { |lt| [t(lt[0]), lt[1]] }, ExternalLink.linktypes[@el.linktype])
+    %br
+    = t(:description)
+    = text_field_tag :description, @el.description
+    %br
+    = submit_tag t(:save), class: 'by-button-v02', style: 'float: unset'
+  = link_to t(:back), authors_edit_path(id: @el.linkable_id)
