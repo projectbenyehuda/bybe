@@ -22,8 +22,8 @@ describe WelcomeController do
       render_views false
 
       before do
-        create(:authority, :with_image, do_not_feature: true)
-        create_list(:authority, 5, :with_image, do_not_feature: false)
+        create(:manifestation, author: create(:authority, :with_image, do_not_feature: true))
+        5.times { create(:manifestation, author: create(:authority, :with_image, do_not_feature: false)) }
         get :index
       end
 
@@ -42,6 +42,11 @@ describe WelcomeController do
 
       let!(:popular_authority) { create(:authority, :with_image) }
       let!(:other_authorities) { create_list(:authority, 2, :with_image) }
+      let!(:workless_authority) { create(:authority, :with_image) }
+
+      before do
+        ([popular_authority] + other_authorities).each { |a| create(:manifestation, author: a) }
+      end
 
       before do
         create_list(:ahoy_event, 3, :with_item, item: popular_authority, name: 'view')
@@ -58,6 +63,10 @@ describe WelcomeController do
 
       it 'still offers the remaining featurable authorities as random authors' do
         expect(assigns(:random_authors)).to match_array(other_authorities)
+      end
+
+      it 'excludes authorities without published works from the random authors carousel' do
+        expect(assigns(:random_authors)).not_to include(workless_authority)
       end
     end
   end

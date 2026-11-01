@@ -968,7 +968,7 @@ describe Authority do
 
     describe '.with_published_works' do
       let!(:with_published) { create(:manifestation, status: :published).authors.first }
-      let!(:with_unpublished) { create(:manifestation, status: :nonpublished).authors.first }
+      let!(:with_unpublished) { create(:manifestation, status: :unpublished).authors.first }
       let!(:without_works) { create(:authority) }
 
       it 'includes only authorities with a published work' do

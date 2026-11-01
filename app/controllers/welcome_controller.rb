@@ -17,7 +17,8 @@ class WelcomeController < ApplicationController
     @pop_authors_this_month = @pop_authors # Temporary hack! TODO: stop cheating and actually count by month
     # @newest_authors = cached_newest_authors # deprecated because we stopped producing portraits
     # exclude authors already shown in the most-popular carousel, to avoid duplication across the two carousels
-    @random_authors = Authority.published.has_image.featurable.with_published_works.where.not(id: @pop_authors.map(&:id))
+    @random_authors = Authority.published.has_image.featurable.with_published_works
+                               .where.not(id: @pop_authors.map(&:id))
                                .order(Arel.sql('RAND()')).limit(10)
     @surprise_author = RandomAuthor.call
     @surprise_work = randomize_works(1)[0]
