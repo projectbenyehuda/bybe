@@ -810,7 +810,7 @@ describe AuthorsController do
 
         it 'renders the form again on invalid data' do
           patch :update_link, params: { id: link.id, url: '' }
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(:unprocessable_content)
         end
       end
 
