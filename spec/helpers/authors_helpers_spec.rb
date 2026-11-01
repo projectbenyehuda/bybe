@@ -121,9 +121,8 @@ describe AuthorsHelper do
       let(:role) { :editor }
       let(:involved_on_collection_level) { true }
 
-      it 'returns correct count' do
-        # Should count edited_manifestations (3 items)
-        expect(result).to eq(edited_manifestations.count)
+      it "returns 0, since an edited collection lists no texts on its editor's page" do
+        expect(result).to eq(0)
       end
     end
 

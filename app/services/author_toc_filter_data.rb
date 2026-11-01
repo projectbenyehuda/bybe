@@ -16,8 +16,8 @@
 # change the TOC sort order, so callers are expected to cache the result per
 # author (see AuthorsController#toc).
 class AuthorTocFilterData < ApplicationService
-  def call(authority)
-    manifestation_ids = authority.published_manifestations.pluck(:id)
+  def call(authority, toc_tree = GenerateTocTree.call(authority))
+    manifestation_ids = authority.published_manifestations.pluck(:id) - hidden_manifestation_ids(toc_tree, authority.id)
 
     {
       featured_ids: featured_ids(manifestation_ids),
@@ -30,6 +30,48 @@ class AuthorTocFilterData < ApplicationService
   end
 
   private
+
+  # Ids of the authority's works not listed anywhere on their page, because they appear only inside
+  # collections shown collapsed there (see TocTree::CollectionNode#collapsed_for?). Left in, they
+  # would offer filter options (e.g. a genre) that no row of the flat list matches.
+  def hidden_manifestation_ids(toc_tree, authority_id)
+    found = { listed: Set.new, collapsed: Set.new }
+    InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
+      [true, false].each do |involved_on_collection_level|
+        toc_tree.top_level_nodes.each do |node|
+          next unless node.visible?(role, authority_id, involved_on_collection_level)
+
+          walk(node, role, authority_id, involved_on_collection_level, found)
+        end
+      end
+    end
+    (found[:collapsed] - found[:listed]).to_a
+  end
+
+  # Collects the manifestation ids listed under a collection node into found[:listed], and those inside
+  # collapsed collections (at any depth) into found[:collapsed]
+  def walk(node, role, authority_id, involved_on_collection_level, found)
+    if node.collapsed_for?(role, authority_id)
+      collect_all(node, found[:collapsed])
+      return
+    end
+
+    node.children_by_role(role, authority_id, involved_on_collection_level).each do |child|
+      case child
+      when TocTree::ManifestationNode then found[:listed] << child.manifestation.id
+      when TocTree::CollectionNode then walk(child, role, authority_id, involved_on_collection_level, found)
+      end
+    end
+  end
+
+  def collect_all(node, ids)
+    node.sorted_children.each do |child|
+      case child
+      when TocTree::ManifestationNode then ids << child.manifestation.id
+      when TocTree::CollectionNode then collect_all(child, ids)
+      end
+    end
+  end
 
   def featured_ids(ids)
     FeaturedContent.where(manifestation_id: ids).distinct.pluck(:manifestation_id).to_set

@@ -7,7 +7,7 @@
   - all_children.reject!{ |child| child.is_a?(TocTree::ManifestationNode) && child.manifestation.status != 'published' } # don't show deleted or unpublished manifestations in the TOC
   - allowed = ->(c) { !c.is_a?(TocTree::CollectionNode) || sidebar_types.include?(c.collection.collection_type) }
   - children = all_children.select(&allowed)
-  - if !uncollected && all_children.present?
+  - if !uncollected && (all_children.present? || toc_node.collapsed_for?(role, authority_id))
     %li.nav-author{"aria-expanded" => "false", :role => "treeitem"}
       .nav-link-chapter{ 'data-collection-id' => collection.id, 'data-scroll-target' => "#cwrapper_#{collection.id}" }
         .by-icon-v02.iconNearText-v02{ title: textify_collection_type(collection.collection_type) }= 'J'

@@ -10,11 +10,11 @@
     .f_circleG#frotateG_07
     .f_circleG#frotateG_08
 .mainlist#browse_mainlist
-  -# The count badges below are computed in TocTree::ManifestationNode, which the template digest
+  -# The listed texts and count badges below are computed in the TocTree nodes, which the template digest
      does not track, so the cache key carries an explicit version: bump it whenever the counting
      rules change, or a deploy keeps serving the old figures here (while the uncached navbar
      beside them already shows the new ones) until the TTL expires.
-  = cache_unless current_user&.editor?, [@author, 'toc-counts-v2'], expires_in: 12.hours do
+  = cache_unless current_user&.editor?, [@author, 'toc-counts-v3'], expires_in: 12.hours do
     :ruby
     - top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
     - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
@@ -320,11 +320,16 @@
 
       function $nodes() { return $('#sorted_card .manifestation-node'); }
 
+      // Hebrew points (niqqud and cantillation marks), stripped from both titles
+      // and the query so the free-text filter ignores diacritics.
+      var HEBREW_POINTS = /[\u0591-\u05BD\u05BF\u05C1-\u05C2\u05C4-\u05C5\u05C7]/g;
+      function normalizeForMatch(s) { return (s || '').replace(HEBREW_POINTS, '').toLowerCase(); }
+
       function nodeData(node) {
         var $m = $(node).find('.sorting-metadata');
         return {
           mid: $m.attr('data-mid'),
-          title: ($(node).find('.mtitle').text() || '').toLowerCase(),
+          title: normalizeForMatch($(node).find('.mtitle').text()),
           genre: $m.attr('data-genre'),
           lang: $m.attr('data-orig-lang'),
           translated: $m.attr('data-translated') === '1',
@@ -340,7 +345,7 @@
 
       function readState() {
         return {
-          name: ($('#toc-filter-name').val() || '').trim().toLowerCase(),
+          name: normalizeForMatch(($('#toc-filter-name').val() || '').trim()),
           genres: $('.toc-filter-genre:checked').map(function() { return this.value; }).get(),
           langs: $('.toc-filter-lang:checked').map(function() { return this.value; }).get(),
           translatedAny: $('#toc-filter-translated').is(':checked'),

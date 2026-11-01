@@ -77,6 +77,9 @@
             %br
             - collection_title = [result.title, result.subtitle].compact_blank.join(' / ')
             %b= link_to(collection_title, collection_search_result_path(result, @search.query))
+            - section_parent = @section_parents[attrs['id'].to_i]
+            - if section_parent.present?
+              = containing_collections_label([section_parent])
           - elsif result.instance_of?(AuthoritiesIndex)
             %b= t(:author)
             %br
