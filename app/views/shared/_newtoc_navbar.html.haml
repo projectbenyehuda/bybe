@@ -282,6 +282,9 @@
         $('.book-nav-thin').hide();
         $fullNav.addClass('mobile-expanded');
         $backdrop.addClass('active');
+        // Scroll syncing skips the full navbar while it is hidden (mobile), so
+        // bring its highlight up to date now that it is shown.
+        syncNavWithScroll();
       }
     });
 

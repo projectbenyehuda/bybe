@@ -62,7 +62,7 @@ describe 'Author navbar scrollspy', :js, type: :system do
   end
 
   def spy_targets
-    all('.book-nav-full .book-type .truncate[data-scroll-target]').pluck('data-scroll-target')
+    all('.book-nav-full .book-type .truncate[data-scroll-target]', visible: :all).pluck('data-scroll-target')
   end
 
   it 'renders one navbar section per role, each with a scroll target in the TOC' do
@@ -127,6 +127,25 @@ describe 'Author navbar scrollspy', :js, type: :system do
     page.scroll_to(:top)
 
     expect(page).to have_css(selected_item_selector(spy_targets.first))
+    expect(page).to have_css('.book-nav-full .book-type.selected', count: 1)
+  end
+
+  # Below 992px only the thin navbar shows; the full one is hidden (so not synced on
+  # scroll) until the reader expands it, at which point it must catch up.
+  it 'highlights the current section when the mobile navbar is expanded' do
+    resize_window(800, 600)
+    find('.book-nav-thin', visible: :visible)
+    expect(page).to have_css('.book-nav-full', visible: :hidden)
+
+    targets = spy_targets
+    target = targets.drop(1).find { |t| scroll_section_to_reading_position(t) }
+    expect(target).not_to be_nil, "none of #{targets.drop(1).inspect} could be scrolled into place"
+    scroll_section_to_reading_position(target)
+
+    page.execute_script("$('.book-nav-thin .horizontal-collapse-expand').click()")
+
+    expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
+    expect(page).to have_css(selected_item_selector(target))
     expect(page).to have_css('.book-nav-full .book-type.selected', count: 1)
   end
 end
