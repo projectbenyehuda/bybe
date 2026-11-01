@@ -800,17 +800,26 @@ describe AuthorsController do
       end
 
       describe '#update_link' do
-        let!(:link) { create(:external_link, linkable: author, url: 'https://old.example.com', description: 'old') }
+        let!(:link) do
+          create(:external_link, linkable: author, linktype: :blog, url: 'https://old.example.com', description: 'old')
+        end
 
         it 'updates the link instead of requiring removal and re-adding' do
-          patch :update_link, params: { id: link.id, url: 'https://new.example.com', description: 'new' }
-          expect(link.reload).to have_attributes(url: 'https://new.example.com', description: 'new')
+          patch :update_link,
+                params: { id: link.id, url: 'https://new.example.com', description: 'new', linktype: 'gnazim' }
+          expect(link.reload).to have_attributes(url: 'https://new.example.com', description: 'new', linktype: 'gnazim')
           expect(response).to redirect_to(authors_edit_path(id: author.id))
         end
 
         it 'renders the form again on invalid data' do
           patch :update_link, params: { id: link.id, url: '' }
           expect(response).to have_http_status(:unprocessable_content)
+        end
+
+        it 'does not edit links belonging to other linkable types' do
+          other = create(:external_link, linkable: create(:manifestation), linktype: :blog)
+          expect { patch :update_link, params: { id: other.id, url: 'https://x.example.com' } }
+            .to raise_error(ActiveRecord::RecordNotFound)
         end
       end
 

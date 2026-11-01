@@ -443,11 +443,11 @@ class AuthorsController < ApplicationController
   end
 
   def edit_link
-    @el = ExternalLink.find(params[:id])
+    @el = ExternalLink.where(linkable_type: 'Authority').find(params[:id])
   end
 
   def update_link
-    @el = ExternalLink.find(params[:id])
+    @el = ExternalLink.where(linkable_type: 'Authority').find(params[:id])
     if @el.update(params.permit(:description, :url, :linktype))
       redirect_to authors_edit_path(id: @el.linkable_id), notice: t(:updated_successfully)
     else

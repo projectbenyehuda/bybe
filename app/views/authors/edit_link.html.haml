@@ -1,11 +1,13 @@
 .backend.container
-  - link_type_options = ExternalLink.linktypes.map { |lt| [t(lt[0]), lt[1]] }
+  - link_type_options = ExternalLink.linktypes.keys.map { |lt| [t(lt), lt] }
   %h1= t(:edit_link)
+  - if @el.errors.any?
+    .alert.alert-danger= @el.errors.full_messages.join(', ')
   = form_tag author_update_link_path(@el.id), method: :patch do
     = t(:add_url)
     = text_field_tag :url, @el.url
     = t(:link_type)
-    = select_tag :linktype, options_for_select(link_type_options, ExternalLink.linktypes[@el.linktype])
+    = select_tag :linktype, options_for_select(link_type_options, @el.linktype)
     %br
     = t(:description)
     = text_field_tag :description, @el.description
