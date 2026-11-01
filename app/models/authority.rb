@@ -73,6 +73,21 @@ class Authority < ApplicationRecord
                       }
   scope :not_pageless, -> { where(pageless: false) }
   scope :featurable, -> { where(do_not_feature: false, pageless: false) }
+  # authorities credited as author of at least one published manifestation
+  scope :with_published_works, lambda {
+    where(
+      <<~SQL.squish,
+        exists (
+          select 1 from involved_authorities ia
+            join works w on (ia.item_id = w.id and ia.item_type = 'Work')
+            join expressions e on (e.work_id = w.id)
+            join manifestations m on (m.expression_id = e.id)
+          where ia.authority_id = authorities.id and ia.role = ? and m.status = ?
+        )
+      SQL
+      InvolvedAuthority.roles[:author], Manifestation.statuses[:published]
+    )
+  }
 
   # features
   has_paper_trail ignore: %i(impressions_count created_at updated_at)
