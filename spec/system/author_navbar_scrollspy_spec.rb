@@ -4,7 +4,7 @@ require 'rails_helper'
 
 # Issue #1783: scrolling the author page must move the in-page navbar's highlight
 # (.selected) to the section being read, not only clicking a navbar item.
-describe 'Author navbar scrollspy', :js do
+describe 'Author navbar scrollspy', :js, type: :system do
   # One volume per role, each involving the author on the collection level, so the
   # navbar gets one scrollable section per role, each in its own role group. Roles
   # are chosen to avoid 'editor', whose volumes render collapsed (and so are short).
