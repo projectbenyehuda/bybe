@@ -1008,7 +1008,8 @@ class AdminController < ApplicationController
   # whitelisted sort keys => Arel columns for the tag moderation lists
   TAG_MODERATION_TAG_SORTS = { 'name' => Tag.arel_table[:name], 'count' => Tag.arel_table[:taggings_count],
                                'waiting' => Tag.arel_table[:created_at] }.freeze
-  TAG_MODERATION_TAGGING_SORTS = { 'tag' => Tag.arel_table[:name],
+  # NB: in the taggings query the joined tags table is aliased as `tag` (see the `where(tag: ...)` filters)
+  TAG_MODERATION_TAGGING_SORTS = { 'tag' => Arel::Table.new(:tag)[:name],
                                    'waiting' => Tagging.arel_table[:created_at] }.freeze
 
   def tag_moderation
