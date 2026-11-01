@@ -827,7 +827,7 @@ class ManifestationController < ApplicationController
         rec.save!
       end
     end
-    head :ok
+    redirect_to admin_suspicious_titles_path
   end
 
   def add_aboutnesses
