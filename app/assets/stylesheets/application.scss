@@ -1936,6 +1936,17 @@ p.by-genre-name-v02.headline-2-v02 {
   white-space: normal !important;
 }
 
+/* Author page navbar scrollspy: the collection being read, inside an expanded
+   section (same look as `[role="treeitem"] > a.selected` in BY_styles_General.css) */
+.book-nav-full .nav-link-chapter.selected {
+  color: white;
+  background-color: var(--pink-100);
+
+  a {
+    color: inherit;
+  }
+}
+
 /* Collection show - .side-menu-item links */
 .binder-texts-list .side-menu-item:hover {
   width: auto;

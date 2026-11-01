@@ -10,18 +10,35 @@ describe 'Author navbar scrollspy', :js, type: :system do
   # are chosen to avoid 'editor', whose volumes render collapsed (and so are short).
   let(:roles) { %w(author illustrator translator) }
   let(:author) { create(:authority, name: 'Scrollspy Author') }
+  # The author role also gets a series of two volumes, listed (nested) in the
+  # navbar under the author section, to exercise tracking inside a section.
+  let(:series) { create(:collection, title: 'Scrollspy Series', collection_type: :volume_series) }
+  let(:series_volumes) do
+    Array.new(2) do |n|
+      create_volume("Series volume #{n + 1}").tap do |volume|
+        create(:collection_item, collection: series, item: volume, seqno: n + 1)
+      end
+    end
+  end
+
+  # A volume holding enough works to be taller than the (short) window.
+  def create_volume(title)
+    volume = create(:collection, title: title, collection_type: :volume)
+    create_list(:manifestation, 10, status: :published).each_with_index do |manifestation, i|
+      create(:collection_item, collection: volume, item: manifestation, seqno: i + 1)
+    end
+    volume
+  end
 
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
 
     Chewy.strategy(:atomic) do
       roles.each do |role|
-        volume = create(:collection, title: "Volume #{role}", collection_type: :volume)
-        create(:involved_authority, authority: author, item: volume, role: role)
-        create_list(:manifestation, 10, status: :published).each_with_index do |manifestation, i|
-          create(:collection_item, collection: volume, item: manifestation, seqno: i + 1)
-        end
+        create(:involved_authority, authority: author, item: create_volume("Volume #{role}"), role: role)
       end
+      create(:involved_authority, authority: author, item: series, role: 'author')
+      series_volumes
     end
 
     # A short window, so every section is taller than the viewport and can be
@@ -147,5 +164,46 @@ describe 'Author navbar scrollspy', :js, type: :system do
     expect(page).to have_css('.book-nav-full.mobile-expanded', visible: :visible)
     expect(page).to have_css(selected_item_selector(target))
     expect(page).to have_css('.book-nav-full .book-type.selected', count: 1)
+  end
+
+  describe 'collections inside an expanded section' do
+    def selected_chapter_selector(collection)
+      ".book-nav-full .nav-link-chapter.selected[data-scroll-target='#cwrapper_#{collection.id}']"
+    end
+
+    it 'highlights the innermost collection being read, within its section' do
+      series_volumes.each do |volume|
+        expect(scroll_section_to_reading_position("#cwrapper_#{volume.id}")).to be(true)
+
+        # the volume, not the series containing it
+        expect(page).to have_css(selected_chapter_selector(volume))
+        expect(page).to have_css('.book-nav-full .nav-link-chapter.selected', count: 1)
+        expect(page).to have_css(selected_item_selector('#works-author-collection-level'))
+      end
+    end
+
+    it 'moves the collection highlight away when scrolling to another section' do
+      volume = series_volumes.first
+      scroll_section_to_reading_position("#cwrapper_#{volume.id}")
+      expect(page).to have_css(selected_chapter_selector(volume))
+
+      page.scroll_to(:top)
+      expect(page).to have_no_css(selected_chapter_selector(volume))
+    end
+
+    it 'ignores the collections of a collapsed section, and tracks them again once expanded' do
+      volume = series_volumes.first
+      scroll_section_to_reading_position("#cwrapper_#{volume.id}")
+      expect(page).to have_css(selected_chapter_selector(volume))
+
+      page.execute_script("$('#collection-author-collapse').collapse('hide')")
+      expect(page).to have_css('#collection-author-collapse', visible: :hidden)
+      expect(page).to have_no_css('.book-nav-full .nav-link-chapter.selected', visible: :all)
+      # the section itself is still the one being read
+      expect(page).to have_css(selected_item_selector('#works-author-collection-level'))
+
+      page.execute_script("$('#collection-author-collapse').collapse('show')")
+      expect(page).to have_css(selected_chapter_selector(volume))
+    end
   end
 end

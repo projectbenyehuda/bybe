@@ -304,9 +304,12 @@
     // reader's scroll position. Bootstrap's scrollspy (set up in the layout) cannot
     // drive this navbar -- its items are not nav-links whose hrefs point at the
     // sections -- so without this the highlight only moved on click.
+    // Two levels are tracked: the section (.book-type), and within it, when its
+    // list is expanded, the collection (.nav-link-chapter) being read.
     var $spyItems = $('.book-nav-full .book-type').filter(function() {
       return $(this).find('.truncate[data-scroll-target]').length > 0;
     });
+    function isRendered(el) { return el !== null && el.getClientRects().length > 0; }
     function syncNavWithScroll() {
       if ($spyItems.length === 0 || !$('.book-nav-full').is(':visible')) { return; }
       // A section becomes current once its top crosses this line. Clicking a navbar
@@ -317,9 +320,8 @@
       var $last = null, lastTop = -Infinity;
       var $passed = null, passedTop = -Infinity;
       $spyItems.each(function() {
-        var target = $(this).find('.truncate[data-scroll-target]').data('scroll-target');
-        var el = document.querySelector(target);
-        if (!el || el.getClientRects().length === 0) { return; } // missing or hidden
+        var el = document.querySelector($(this).find('.truncate[data-scroll-target]').data('scroll-target'));
+        if (!isRendered(el)) { return; } // missing or hidden
         var top = el.getBoundingClientRect().top;
         if (top < firstTop) { $first = $(this); firstTop = top; }
         if (top > lastTop) { $last = $(this); lastTop = top; }
@@ -331,21 +333,50 @@
       var atBottom = window.pageYOffset > 0 &&
         window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 2;
       var $current = atBottom ? $last : ($passed || $first);
-      if ($current.hasClass('selected') &&
-          $current.closest('.nav-book-group').hasClass('selected')) { return; }
-      $('.book-nav-full .book-type').removeClass('selected');
-      $('.book-nav-full .nav-book-group').removeClass('selected');
-      $current.addClass('selected');
-      $current.closest('.nav-book-group').addClass('selected');
+      if (!$current.hasClass('selected') || !$current.closest('.nav-book-group').hasClass('selected')) {
+        $('.book-nav-full .book-type').removeClass('selected');
+        $('.book-nav-full .nav-book-group').removeClass('selected');
+        $current.addClass('selected');
+        $current.closest('.nav-book-group').addClass('selected');
+      }
+
+      // Within the current section: the innermost collection whose TOC block spans
+      // the line (so a volume wins over the series containing it), among those
+      // shown in the navbar, i.e. not inside a collapsed list. Targets are looked
+      // up inside the section's own TOC block, since a collection listed under two
+      // roles appears in the TOC twice, with the same id.
+      var section = document.querySelector($current.find('.truncate[data-scroll-target]').data('scroll-target'));
+      var $chapter = $(), chapterTop = -Infinity;
+      $current.next('ul').find('.nav-link-chapter[data-scroll-target]').each(function() {
+        if (!isRendered(this)) { return; }
+        var el = section.querySelector($(this).data('scroll-target'));
+        if (!isRendered(el)) { return; }
+        var rect = el.getBoundingClientRect();
+        if (rect.top <= line && rect.bottom > line && rect.top > chapterTop) {
+          $chapter = $(this);
+          chapterTop = rect.top;
+        }
+      });
+      var $prevChapter = $('.book-nav-full .nav-link-chapter.selected');
+      if (!$prevChapter.is($chapter)) {
+        $prevChapter.removeClass('selected');
+        $chapter.addClass('selected');
+      }
     }
     // Coalesced into a frame: the check reads layout on every scroll event.
     var navSyncPending = false;
-    $(window).on('scroll resize', function() {
+    function scheduleNavSync() {
       if (navSyncPending) { return; }
       navSyncPending = true;
       window.requestAnimationFrame(function() {
         navSyncPending = false;
         syncNavWithScroll();
+      });
+    }
+    $(window).on('scroll resize', scheduleNavSync);
+    // Expanding or collapsing a section's list shows or hides its collections.
+    $('.book-nav-full .collapse.navbar-nav').on('shown.bs.collapse hidden.bs.collapse', scheduleNavSync);
+    syncNavWithScroll();
       });
     });
     syncNavWithScroll();
