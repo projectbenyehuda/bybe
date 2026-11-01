@@ -25,8 +25,11 @@
               .unpublished_badge= t(:unpublished)
             = render partial: 'metadata', locals: {tags_etc: true}
           - unless @single_text_volume
-            - @containments.each do |ci|
-              = render partial: 'sibling_nav', locals: { ci: ci }
+            -# rendered once and reused below long texts, to avoid repeating the sibling lookups
+            - sibling_nav_html = capture do
+              - @containments.each do |ci|
+                = render partial: 'sibling_nav', locals: { ci: ci }
+            = sibling_nav_html
 
         .by-card-v02.proofable{ data: { item_id: @m.id, item_type: @m.class.name } }
           .work-area
@@ -40,11 +43,12 @@
                   != raw(@html)
             .work-side-color
               .work-genre{ style: "background-image: url(\"/assets/work_side_icons_#{@w.genre}.svg\"); background-repeat: no-repeat; background-size:auto;" }
-          -# repeat the prev/next navigation at the bottom of long texts
-          - if !@single_text_volume && @m.markdown.to_s.lines.count > Manifestation::LONG_TEXT_LINES
-            - @containments.each do |ci|
-              .bottom-sibling-nav
-                = render partial: 'sibling_nav', locals: { ci: ci }
+
+        -# repeat the prev/next navigation at the bottom of long texts (outside .proofable, so that
+        -# its labels cannot become part of a correction report selection)
+        - if sibling_nav_html.present? && @m.markdown.to_s.lines.count > Manifestation::LONG_TEXT_LINES
+          .by-card-v02.bottom-sibling-nav
+            = sibling_nav_html
 
   .col-12.col-lg-4
     .row

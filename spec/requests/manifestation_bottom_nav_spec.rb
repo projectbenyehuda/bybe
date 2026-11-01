@@ -33,6 +33,8 @@ describe 'Manifestation#read bottom navigation', type: :request do
       expect(doc.css('.author-works-nav').size).to eq(2)
       expect(doc.css('.bottom-sibling-nav .author-works-nav a').pluck('href'))
         .to include(manifestation_path(previous_text), manifestation_path(next_text))
+      # must stay outside the proofable text so its labels can't end up in a correction report
+      expect(doc.css('.proofable .bottom-sibling-nav, .proofable .author-works-nav')).to be_empty
     end
   end
 
