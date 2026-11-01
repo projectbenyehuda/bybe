@@ -1,4 +1,4 @@
-FROM ruby:3.4.11-trixie AS base
+FROM ruby:3.4.12-trixie AS base
 
 RUN apt-get update -qq \
   && apt-get install -y yaz libmariadb3 libcap2 libvips42t64 libyaml-0-2 chromium libjemalloc2 \
@@ -22,7 +22,8 @@ COPY js ./js
 COPY vendor ./vendor
 
 ENV RAILS_ENV=production \
-    RACK_ENV=production
+    RACK_ENV=production \
+    LD_PRELOAD=libjemalloc.so.2
 
 FROM base AS builder
 
@@ -52,8 +53,6 @@ ARG GIT_SHA=
 ARG GIT_COMMITTED_AT=
 ENV GIT_SHA=$GIT_SHA \
     GIT_COMMITTED_AT=$GIT_COMMITTED_AT
-
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 
 EXPOSE 3000
 
