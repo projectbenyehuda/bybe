@@ -91,4 +91,26 @@ RSpec.describe AuthorTocFilterData do
     expect(data[:aboutness_ids]).to be_empty
     expect(data[:tagging_ids]).to be_empty
   end
+
+  context 'when the author edited a collection, whose texts are therefore not listed on their page' do
+    let(:edited) { create(:collection, editors: [author]) }
+
+    before do
+      create(:manifestation, author: create(:authority), editor: author, genre: 'drama', orig_lang: 'de',
+                             collections: [edited])
+    end
+
+    it "offers no genre or language found only among the edited collection's texts" do
+      data = described_class.call(author)
+      expect(data[:genres]).to eq(Work::GENRES & %w(poetry prose))
+      expect(data[:orig_langs]).to contain_exactly('he', 'ru')
+    end
+
+    it 'still offers those of a text in it that is listed under another role' do
+      create(:manifestation, author: author, genre: 'article', orig_lang: 'en', collections: [edited])
+      data = described_class.call(author)
+      expect(data[:genres]).to include('article')
+      expect(data[:orig_langs]).to include('en')
+    end
+  end
 end
