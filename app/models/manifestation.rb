@@ -8,6 +8,9 @@ class Manifestation < ApplicationRecord
   include SortedTitle
   include DownloadLink
 
+  # texts longer than this many markdown lines get a second set of prev/next buttons at the bottom
+  LONG_TEXT_LINES = 100
+
   paginates_per 100
   belongs_to :expression, inverse_of: :manifestations
   has_and_belongs_to_many :html_files

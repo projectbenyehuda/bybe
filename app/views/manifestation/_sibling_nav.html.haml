@@ -1,0 +1,50 @@
+:ruby
+  siblings = FindSiblings.call(@m, ci.collection)
+  prev = siblings.previous_sibling
+  nextsib = siblings.next_sibling
+  needs_cross_nav = (prev.nil? && !siblings.more_before?) || (nextsib.nil? && !siblings.more_after?)
+  cross_nav = needs_cross_nav ? CrossCollectionNavigation.call(@m, ci.collection) : nil
+  cross_prev = prev.nil? && !siblings.more_before? ? cross_nav&.prev_in_parent : nil
+  cross_next = nextsib.nil? && !siblings.more_after? ? cross_nav&.next_in_parent : nil
+  show_collection_link = !ci.collection.system?
+  show_nav = prev.present? || nextsib.present? || show_collection_link ||
+             siblings.more_before? || siblings.more_after? ||
+             cross_prev.present? || cross_next.present?
+  parent_hint = @multiple_parents ? ci.collection_id : nil
+  prev_path = prev && read_sibling_path(prev[:item], parent_hint, skipped: prev[:skipped])
+  next_path = nextsib && read_sibling_path(nextsib[:item], parent_hint, skipped: nextsib[:skipped])
+  cross_prev_path = cross_prev && read_sibling_path(cross_prev, parent_hint)
+  cross_next_path = cross_next && read_sibling_path(cross_next, parent_hint)
+- if show_nav
+  .author-works-nav
+    .topNavEntry
+      .link-nav
+        - if prev.present?
+          = link_to prev_path do
+            %span.right-arrow= '2'
+            = t(:to_previous_item)
+        - elsif cross_prev.present?
+          = link_to cross_prev_path do
+            %span.right-arrow= '2'
+            = t(:to_previous_item)
+        - elsif siblings.more_before?
+          %span.nav-placeholder= t(:previous_items_not_yet_uploaded)
+    .topNavEntry
+      .link-nav{style: 'margin-left:20px; margin-right:20px;'}
+        - if show_collection_link
+          = link_to collection_up_link_path(ci.collection) do
+            %span.right-arrow= '🢁'
+            = textify_collection_up_link(ci.collection)
+            %span.left-arrow= '🢁'
+    .topNavEntry
+      .link-nav
+        - if nextsib.present?
+          = link_to next_path do
+            = t(:to_next_item)
+            %span.left-arrow= '1'
+        - elsif cross_next.present?
+          = link_to cross_next_path do
+            = t(:to_next_item)
+            %span.left-arrow= '1'
+        - elsif siblings.more_after?
+          %span.nav-placeholder= t(:next_items_not_yet_uploaded)
