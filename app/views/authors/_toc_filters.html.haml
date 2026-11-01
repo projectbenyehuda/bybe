@@ -15,6 +15,7 @@
         %div{ style: 'position:relative' }
           %input.field-v02.field-without-label#toc-filter-name{ type: 'text', placeholder: t('author_toc_filters.free_text_placeholder') }
           %a.search-icon-in-field#toc-filter-name-clear{ href: '#' } X
+      = render partial: 'authors/toc_filters_role'
       - if fd[:genres].present?
         = render layout: 'shared/collapsible_block', locals: { container_name: 'tocfgenre', title: t(:genre), content_class: 'nested-list' } do
           %ul
