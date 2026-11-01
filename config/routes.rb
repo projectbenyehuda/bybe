@@ -396,6 +396,8 @@ Bybeconv::Application.routes.draw do
   get 'authors/volumes', as: 'authority_volumes'
   post 'authors/add_link/:id' => 'authors#add_link', as: 'author_add_link'
   post 'authors/delete_link/:id' => 'authors#delete_link', as: 'author_delete_link'
+  get 'authors/edit_link/:id' => 'authors#edit_link', as: 'author_edit_link'
+  patch 'authors/update_link/:id' => 'authors#update_link', as: 'author_update_link'
   match 'author/:id/edit_toc' => 'authors#edit_toc', as: 'authors_edit_toc', via: %i(get post)
   match 'author/:id/to_manual_toc' => 'authors#to_manual_toc', as: 'authors_to_manual_toc', via: %i(get post)
   match 'author/:id' => 'authors#toc', as: 'authority', via: %i(get post)

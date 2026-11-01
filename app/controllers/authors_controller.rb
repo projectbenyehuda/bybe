@@ -7,7 +7,7 @@ class AuthorsController < ApplicationController
   include Tracking
   include KwicConcordanceConcern
 
-  before_action only: %i(new publish create show edit list add_link delete_link
+  before_action only: %i(new publish create show edit list add_link delete_link edit_link update_link
                          delete_photo edit_toc update to_manual_toc add_link manage_toc volumes) do |c|
     c.require_editor('edit_people')
   end
@@ -439,6 +439,19 @@ class AuthorsController < ApplicationController
         url: params[:add_url],
         status: :approved
       )
+    end
+  end
+
+  def edit_link
+    @el = ExternalLink.where(linkable_type: 'Authority').find(params[:id])
+  end
+
+  def update_link
+    @el = ExternalLink.where(linkable_type: 'Authority').find(params[:id])
+    if @el.update(params.permit(:description, :url, :linktype))
+      redirect_to authors_edit_path(id: @el.linkable_id), notice: t(:updated_successfully)
+    else
+      render :edit_link, status: :unprocessable_content
     end
   end
 
