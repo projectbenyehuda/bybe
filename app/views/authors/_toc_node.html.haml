@@ -71,8 +71,10 @@
                   - if children.present? || collapsed
                     - if !involved_on_collection_level
                       = t(:out_of)
-                    -# Series (sub-volume) collections aren't a valid Collection#show focus, so not clickable here
-                    - if collection.series?
+                    -# Series (sub-volume) collections aren't a valid Collection#show focus, so not clickable here,
+                       unless collapsed: then the title is the only way to its texts (Collection#show redirects
+                       a series to its enclosing volume or issue)
+                    - if collection.series? && !collapsed
                       %span{ extra_data.merge(style: 'font-weight: bold;') }= ctitle
                     - else
                       = link_to ctitle, collection_path(collection), extra_data

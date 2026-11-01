@@ -50,4 +50,12 @@ RSpec.describe 'Authority TOC edited collections', type: :request do
     expect(response.body).to include(%(href="#{manifestation_path(own_volume_text)}"))
     expect(response.body).to include(%(href="#{manifestation_path(own_text)}"))
   end
+
+  context 'when the edited collection is a series' do
+    let(:anthology) { create(:collection, title: 'Edited Series', collection_type: :series, editors: [editor]) }
+
+    it 'still links its title, the only way to its texts from this page' do
+      expect(response.body).to include(%(href="#{collection_path(anthology)}"))
+    end
+  end
 end

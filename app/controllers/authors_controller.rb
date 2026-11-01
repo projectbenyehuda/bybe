@@ -491,10 +491,10 @@ class AuthorsController < ApplicationController
         # editors get fresh data so recent featuring/recommendation changes show up.
         @toc_filter_data =
           if current_user&.editor?
-            AuthorTocFilterData.call(@author)
+            AuthorTocFilterData.call(@author, @toc_tree)
           else
-            Rails.cache.fetch("author_toc_filter_data/#{@author.id}", expires_in: 12.hours) do
-              AuthorTocFilterData.call(@author)
+            Rails.cache.fetch("author_toc_filter_data/v2/#{@author.id}", expires_in: 12.hours) do
+              AuthorTocFilterData.call(@author, @toc_tree)
             end
           end
       end
