@@ -1610,15 +1610,15 @@ class AdminController < ApplicationController
 
   private
 
-  # whitelisted sort keys => SQL columns for the tag moderation lists
-  TAG_MODERATION_TAG_SORTS = { 'name' => 'tags.name', 'count' => 'tags.taggings_count',
-                               'waiting' => 'tags.created_at' }.freeze
-  TAG_MODERATION_TAGGING_SORTS = { 'tag' => 'tags.name', 'waiting' => 'taggings.created_at' }.freeze
+  # whitelisted sort keys => Arel columns for the tag moderation lists
+  TAG_MODERATION_TAG_SORTS = { 'name' => Tag.arel_table[:name], 'count' => Tag.arel_table[:taggings_count],
+                               'waiting' => Tag.arel_table[:created_at] }.freeze
+  TAG_MODERATION_TAGGING_SORTS = { 'tag' => Tag.arel_table[:name],
+                                   'waiting' => Tagging.arel_table[:created_at] }.freeze
 
   def tag_moderation_order(allowed, sort_param, dir_param)
     column = allowed[params[sort_param]] || allowed['waiting']
-    dir = params[dir_param] == 'desc' ? 'DESC' : 'ASC'
-    Arel.sql("#{column} #{dir}")
+    params[dir_param] == 'desc' ? column.desc : column.asc
   end
 
   # Prefixed with a UTF-8 BOM so that Excel displays the Hebrew names correctly

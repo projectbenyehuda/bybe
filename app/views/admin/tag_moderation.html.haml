@@ -14,7 +14,7 @@
           %tr
             %th
               %input{name: "#", type: "checkbox", value: "#"}/
-            %th.th-sort{style:'min-width:200px'}= sort_link(t(:suggested_tag), 'name', :tags)
+            %th.th-sort{ style: 'min-width:200px' }= sort_link(t(:suggested_tag), 'name', :tags)
             %th.th-sort= sort_link(t(:linked_taggings), 'count', :tags)
             %th.th-sort= sort_link(t(:time_waiting), 'waiting', :tags)
             %th= t(:user)
