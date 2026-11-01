@@ -1005,6 +1005,13 @@ class AdminController < ApplicationController
 
   ########################################################
   # user content moderation
+  # whitelisted sort keys => Arel columns for the tag moderation lists
+  TAG_MODERATION_TAG_SORTS = { 'name' => Tag.arel_table[:name], 'count' => Tag.arel_table[:taggings_count],
+                               'waiting' => Tag.arel_table[:created_at] }.freeze
+  # NB: in the taggings query the joined tags table is aliased as `tag` (see the `where(tag: ...)` filters)
+  TAG_MODERATION_TAGGING_SORTS = { 'tag' => Arel::Table.new(:tag)[:name],
+                                   'waiting' => Tagging.arel_table[:created_at] }.freeze
+
   def tag_moderation
     require_editor('moderate_tags')
     @header_partial = 'tagmod_top'
@@ -1013,14 +1020,18 @@ class AdminController < ApplicationController
                       else
                         :pending
                       end
-    @pending_tags = Tag.includes(:taggings).where(status: status_to_query).where('COALESCE(taggings_count, 0) > 0').distinct.order(:created_at)
+    tags_order = tag_moderation_order(TAG_MODERATION_TAG_SORTS, :tags_sort, :tags_dir)
+    taggings_order = tag_moderation_order(TAG_MODERATION_TAGGING_SORTS, :taggings_sort, :taggings_dir)
+    @pending_tags = Tag.includes(:taggings).where(status: status_to_query)
+                       .where('COALESCE(taggings_count, 0) > 0').distinct.order(tags_order)
     if params[:tag_id].present?
       @tag_id = params[:tag_id].to_i
       @tag = Tag.find(@tag_id)
-      @pending_taggings = Tagging.joins(:tag).where(status: status_to_query,
-                                                    tag_id: @tag_id).where(tag: { status: :approved }).distinct.order(:created_at)
+      @pending_taggings = Tagging.joins(:tag).where(status: status_to_query, tag_id: @tag_id)
+                                 .where(tag: { status: :approved }).order(taggings_order)
     else
-      @pending_taggings = Tagging.joins(:tag).where(status: status_to_query).where(tag: { status: :approved }).distinct.order(:created_at)
+      @pending_taggings = Tagging.joins(:tag).where(status: status_to_query)
+                                 .where(tag: { status: :approved }).order(taggings_order)
     end
     @page_title = t(:moderate_tags)
     @similar_tags = ListItem.where(listkey: 'tag_similarity').pluck(:item_id, :extra).to_h
@@ -1609,6 +1620,13 @@ class AdminController < ApplicationController
   end
 
   private
+
+  def tag_moderation_order(allowed, sort_param, dir_param)
+    column = allowed[params[sort_param]]
+    return allowed['waiting'].asc if column.nil? # unknown key: always the default, oldest first
+
+    params[dir_param] == 'desc' ? column.desc : column.asc
+  end
 
   # Prefixed with a UTF-8 BOM so that Excel displays the Hebrew names correctly
   def missing_images_csv
