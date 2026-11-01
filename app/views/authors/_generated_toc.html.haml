@@ -322,7 +322,7 @@
 
       // Hebrew points (niqqud and cantillation marks), stripped from both titles
       // and the query so the free-text filter ignores diacritics.
-      var HEBREW_POINTS = /[\u0591-\u05BD\u05BF-\u05C7]/g;
+      var HEBREW_POINTS = /[\u0591-\u05BD\u05BF\u05C1-\u05C2\u05C4-\u05C5\u05C7]/g;
       function normalizeForMatch(s) { return (s || '').replace(HEBREW_POINTS, '').toLowerCase(); }
 
       function nodeData(node) {

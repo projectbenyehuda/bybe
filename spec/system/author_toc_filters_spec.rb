@@ -110,11 +110,13 @@ describe 'Author TOC flat-list filters', :js do
 
     fill_in 'toc-filter-name', with: 'שירת'
     within '#sorted_card' do
-      expect(page).to have_content('שִׁירַת הַיָּם')
       expect(page).to have_no_content('Alpha Poem')
+      expect(page).to have_content('שִׁירַת הַיָּם')
     end
 
-    # a pointed query matches too
+    # Hide the target first so the assertion waits for the pointed query.
+    fill_in 'toc-filter-name', with: 'Alpha'
+    within('#sorted_card') { expect(page).to have_no_content('שִׁירַת הַיָּם') }
     fill_in 'toc-filter-name', with: 'הַיָּם'
     within('#sorted_card') { expect(page).to have_content('שִׁירַת הַיָּם') }
   end
