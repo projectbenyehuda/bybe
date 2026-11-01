@@ -14,16 +14,9 @@
           %tr
             %th
               %input{name: "#", type: "checkbox", value: "#"}/
-            %th.th-sort{style:'min-width:200px'}
-              = t(:suggested_tag)
-              .by-icon-v02.sort
-            %th.th-sort
-              = t(:linked_taggings)
-              .by-icon-v02.sort
-            %th.th-sort
-              = t(:time_waiting)
-              .by-icon-v02.sort
-                %a{href: "#"} )
+            %th.th-sort{style:'min-width:200px'}= sort_link(t(:suggested_tag), 'name', :tags)
+            %th.th-sort= sort_link(t(:linked_taggings), 'count', :tags)
+            %th.th-sort= sort_link(t(:time_waiting), 'waiting', :tags)
             %th= t(:user)
             %th= t(:suggested_tags)
             %th= t(:acceptance_rate)
@@ -107,11 +100,8 @@
             %th
               %input{name: "#", type: "checkbox", value: "#"}/
             %th.th-sort= t(:suggested_tagging)
-            %th.th-sort= t(:tag)
-            %th.th-sort
-              = t(:time_waiting)
-              .by-icon-v02.sort
-                %a{href: "#"} )
+            %th.th-sort= sort_link(t(:tag), 'tag', :taggings)
+            %th.th-sort= sort_link(t(:time_waiting), 'waiting', :taggings)
             %th= t(:user)
             %th= t(:tagging_suggestions_count)
             %th= t(:acceptance_rate)

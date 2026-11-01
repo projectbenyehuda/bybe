@@ -397,6 +397,42 @@ describe AdminController do
 
       it { is_expected.to be_successful }
 
+      context 'when sorting' do
+        let!(:tag_b) { create(:tag, name: 'bbb', status: :pending, created_at: 3.days.ago) }
+        let!(:tag_a) { create(:tag, name: 'aaa', status: :pending, created_at: 1.day.ago) }
+
+        before do
+          create(:tagging, tag: tag_b, status: :pending)
+          create(:tagging, tag: tag_a, status: :pending)
+        end
+
+        it 'defaults to oldest first' do
+          get :tag_moderation
+          expect(assigns(:pending_tags).to_a.index(tag_b)).to be < assigns(:pending_tags).to_a.index(tag_a)
+        end
+
+        it 'sorts tags by name ascending' do
+          get :tag_moderation, params: { tags_sort: 'name', tags_dir: 'asc' }
+          expect(assigns(:pending_tags).map(&:name).select { |n| %w(aaa bbb).include?(n) }).to eq %w(aaa bbb)
+        end
+
+        it 'sorts tags by name descending' do
+          get :tag_moderation, params: { tags_sort: 'name', tags_dir: 'desc' }
+          expect(assigns(:pending_tags).map(&:name).select { |n| %w(aaa bbb).include?(n) }).to eq %w(bbb aaa)
+        end
+
+        it 'sorts taggings by tag name' do
+          get :tag_moderation, params: { taggings_sort: 'tag', taggings_dir: 'desc' }
+          names = assigns(:pending_taggings).map { |t| t.tag.name }
+          expect(names).to eq names.sort.reverse
+        end
+
+        it 'ignores unknown sort keys' do
+          get :tag_moderation, params: { tags_sort: 'id; DROP TABLE tags', taggings_sort: 'bogus' }
+          expect(response).to be_successful
+        end
+      end
+
       context 'when pending tags have no taggings' do
         let!(:tag_with_no_taggings) { create(:tag, status: :pending, taggings_count: 0) }
         let!(:tag_with_taggings) { create(:tag, status: :pending) }

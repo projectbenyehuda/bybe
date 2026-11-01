@@ -1013,14 +1013,14 @@ class AdminController < ApplicationController
                       else
                         :pending
                       end
-    @pending_tags = Tag.includes(:taggings).where(status: status_to_query).where('COALESCE(taggings_count, 0) > 0').distinct.order(:created_at)
+    @pending_tags = Tag.includes(:taggings).where(status: status_to_query).where('COALESCE(taggings_count, 0) > 0').distinct.order(tag_moderation_order(TAG_MODERATION_TAG_SORTS, :tags_sort, :tags_dir))
     if params[:tag_id].present?
       @tag_id = params[:tag_id].to_i
       @tag = Tag.find(@tag_id)
       @pending_taggings = Tagging.joins(:tag).where(status: status_to_query,
-                                                    tag_id: @tag_id).where(tag: { status: :approved }).distinct.order(:created_at)
+                                                    tag_id: @tag_id).where(tag: { status: :approved }).order(tag_moderation_order(TAG_MODERATION_TAGGING_SORTS, :taggings_sort, :taggings_dir))
     else
-      @pending_taggings = Tagging.joins(:tag).where(status: status_to_query).where(tag: { status: :approved }).distinct.order(:created_at)
+      @pending_taggings = Tagging.joins(:tag).where(status: status_to_query).where(tag: { status: :approved }).order(tag_moderation_order(TAG_MODERATION_TAGGING_SORTS, :taggings_sort, :taggings_dir))
     end
     @page_title = t(:moderate_tags)
     @similar_tags = ListItem.where(listkey: 'tag_similarity').pluck(:item_id, :extra).to_h
@@ -1609,6 +1609,17 @@ class AdminController < ApplicationController
   end
 
   private
+
+  # whitelisted sort keys => SQL columns for the tag moderation lists
+  TAG_MODERATION_TAG_SORTS = { 'name' => 'tags.name', 'count' => 'tags.taggings_count',
+                               'waiting' => 'tags.created_at' }.freeze
+  TAG_MODERATION_TAGGING_SORTS = { 'tag' => 'tags.name', 'waiting' => 'taggings.created_at' }.freeze
+
+  def tag_moderation_order(allowed, sort_param, dir_param)
+    column = allowed[params[sort_param]] || allowed['waiting']
+    dir = params[dir_param] == 'desc' ? 'DESC' : 'ASC'
+    Arel.sql("#{column} #{dir}")
+  end
 
   # Prefixed with a UTF-8 BOM so that Excel displays the Hebrew names correctly
   def missing_images_csv
