@@ -283,8 +283,8 @@
         $fullNav.addClass('mobile-expanded');
         $backdrop.addClass('active');
         // Scroll syncing skips the full navbar while it is hidden (mobile), so
-        // bring its highlight up to date now that it is shown.
-        syncNavWithScroll();
+        // bring its highlight up to date, and into view, now that it is shown.
+        syncNavWithScroll(true);
       }
     });
 
@@ -310,7 +310,32 @@
       return $(this).find('.truncate[data-scroll-target]').length > 0;
     });
     function isRendered(el) { return el !== null && el.getClientRects().length > 0; }
-    function syncNavWithScroll() {
+    // The navbar can be taller than the space it gets, in which case it scrolls
+    // within its column (or, expanded on mobile, within itself). Scroll that box --
+    // and only that box, never the page the reader is scrolling -- just enough to
+    // bring the given navbar item into view.
+    function revealInNav(item) {
+      var box = item.parentElement;
+      while (box !== null && !isScrollableBox(box) && !$(box).is('.author-side-nav-col')) {
+        box = box.parentElement;
+      }
+      if (box === null || !isScrollableBox(box)) { return; }
+      var margin = 24;
+      var boxRect = box.getBoundingClientRect();
+      var itemRect = item.getBoundingClientRect();
+      if (itemRect.top < boxRect.top + margin) {
+        box.scrollTop -= boxRect.top + margin - itemRect.top;
+      } else if (itemRect.bottom > boxRect.bottom - margin) {
+        box.scrollTop += itemRect.bottom - (boxRect.bottom - margin);
+      }
+    }
+    function isScrollableBox(el) {
+      var overflowY = window.getComputedStyle(el).overflowY;
+      return (overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 1;
+    }
+    // forceReveal: bring the highlight into view even if it did not change (used
+    // when the navbar is shown, having been hidden).
+    function syncNavWithScroll(forceReveal) {
       if ($spyItems.length === 0 || !$('.book-nav-full').is(':visible')) { return; }
       // A section becomes current once its top crosses this line. Clicking a navbar
       // item scrolls its section to 120px below the header, so the line sits a bit
@@ -333,7 +358,9 @@
       var atBottom = window.pageYOffset > 0 &&
         window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 2;
       var $current = atBottom ? $last : ($passed || $first);
+      var changed = false;
       if (!$current.hasClass('selected') || !$current.closest('.nav-book-group').hasClass('selected')) {
+        changed = true;
         $('.book-nav-full .book-type').removeClass('selected');
         $('.book-nav-full .nav-book-group').removeClass('selected');
         $current.addClass('selected');
@@ -358,9 +385,15 @@
         }
       });
       var $prevChapter = $('.book-nav-full .nav-link-chapter.selected');
-      if (!$prevChapter.is($chapter)) {
+      if ($prevChapter.get(0) !== $chapter.get(0)) {
+        changed = true;
         $prevChapter.removeClass('selected');
         $chapter.addClass('selected');
+      }
+      // Only when the highlight moves, so a reader scrolling the navbar by hand
+      // is not pulled back on every scroll of the page.
+      if (changed || forceReveal) {
+        revealInNav(($chapter.length ? $chapter : $current).get(0));
       }
     }
     // Coalesced into a frame: the check reads layout on every scroll event.

@@ -206,4 +206,46 @@ describe 'Author navbar scrollspy', :js, type: :system do
       expect(page).to have_css(selected_chapter_selector(volume))
     end
   end
+
+  describe 'keeping the highlight in view in a navbar taller than its column' do
+    # The navbar scrolls within its (sticky, viewport-high) column; in a window this
+    # short it cannot fit, so items further down are clipped until it is scrolled.
+    before { resize_window(1400, 400) }
+
+    def navbar_column_js(expression)
+      page.evaluate_script("(function(box) { return #{expression}; })(document.querySelector('.author-side-nav-col'))")
+    end
+
+    # Whether the most specific highlighted navbar item lies within the navbar column's visible part.
+    def highlight_in_navbar_view?
+      navbar_column_js(<<~JS.squish)
+        (function(sel) {
+          if (!sel) { return false; }
+          var b = box.getBoundingClientRect(), r = sel.getBoundingClientRect();
+          return r.top >= b.top && r.bottom <= b.bottom;
+        })(document.querySelector('.book-nav-full .nav-link-chapter.selected') ||
+           document.querySelector('.book-nav-full .book-type.selected'))
+      JS
+    end
+
+    def expect_highlight_in_navbar_view
+      page.document.synchronize(Capybara.default_max_wait_time, errors: [Capybara::ExpectationNotMet]) do
+        raise Capybara::ExpectationNotMet, 'highlighted navbar item is clipped' unless highlight_in_navbar_view?
+      end
+    end
+
+    it 'scrolls the navbar along with the highlight, down and back up' do
+      overflowing = navbar_column_js('box.scrollHeight > box.clientHeight')
+      expect(overflowing).to be(true), 'navbar fits its column at this window size; nothing to test'
+
+      page.scroll_to(:bottom)
+      expect(page).to have_css(selected_item_selector(spy_targets.last))
+      expect_highlight_in_navbar_view
+      expect(navbar_column_js('box.scrollTop')).to be > 0
+
+      page.scroll_to(:top)
+      expect(page).to have_css(selected_item_selector(spy_targets.first))
+      expect_highlight_in_navbar_view
+    end
+  end
 end
