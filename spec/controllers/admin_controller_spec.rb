@@ -427,6 +427,12 @@ describe AdminController do
           expect(names).to eq names.sort.reverse
         end
 
+        it 'falls back to oldest first for an unknown key even when desc is requested' do
+          get :tag_moderation, params: { tags_sort: 'bogus', tags_dir: 'desc' }
+          tags = assigns(:pending_tags).to_a
+          expect(tags.index(tag_b)).to be < tags.index(tag_a)
+        end
+
         it 'ignores unknown sort keys' do
           get :tag_moderation, params: { tags_sort: 'id; DROP TABLE tags', taggings_sort: 'bogus' }
           expect(response).to be_successful

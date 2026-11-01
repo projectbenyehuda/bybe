@@ -1621,7 +1621,9 @@ class AdminController < ApplicationController
   private
 
   def tag_moderation_order(allowed, sort_param, dir_param)
-    column = allowed[params[sort_param]] || allowed['waiting']
+    column = allowed[params[sort_param]]
+    return allowed['waiting'].asc if column.nil? # unknown key: always the default, oldest first
+
     params[dir_param] == 'desc' ? column.desc : column.asc
   end
 
