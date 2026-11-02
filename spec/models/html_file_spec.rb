@@ -45,6 +45,14 @@ describe HtmlFile do
       File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
     end
 
+    it 'embeds the Frank Ruhl Libre font in the generated PDF' do
+      pdfpath = described_class.pdf_from_any_html(pdf_html('<p>שלום עולם</p><p><b>מודגש</b></p>'))
+
+      expect(File.binread(pdfpath)).to include('FrankRuhlLibre-Regular').and include('FrankRuhlLibre-Bold')
+    ensure
+      File.delete(pdfpath) if pdfpath && File.exist?(pdfpath)
+    end
+
     it 'handles HTML without images' do
       pdfpath = described_class.pdf_from_any_html(pdf_html('<p>Plain text only, no images.</p>'))
 
@@ -70,6 +78,20 @@ describe HtmlFile do
 
       expect(result).to include(described_class::PDF_CSS)
       expect(result).not_to include('<!DOCTYPE html><html><head>')
+    end
+
+    it 'declares the vendored Frank Ruhl Libre font faces and the fallback font stack' do
+      result = described_class.prepare_html_for_pdf('<div>content</div>')
+
+      %w(FrankRuhlLibre-Regular.ttf FrankRuhlLibre-Bold.ttf).each do |font_file|
+        font_path = described_class::PDF_FONT_DIR.join(font_file)
+        expect(File.exist?(font_path)).to be true
+        expect(result).to include("src: url('file://#{font_path}')")
+      end
+      expect(result).to include(
+        "body {font-family: 'Frank Ruhl Libre', 'David Libre', 'Noto Serif Hebrew', 'David', " \
+        "'Times New Roman', serif;}"
+      )
     end
 
     it 'wraps active_storage images in a max-width div' do

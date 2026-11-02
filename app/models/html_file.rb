@@ -568,7 +568,17 @@ class HtmlFile < ApplicationRecord
     end
   end
 
-  PDF_CSS = '@page {size: A4; margin: 2cm;} img {max-width: 100%; height: auto;}'.freeze
+  # Frank Ruhl Libre (SIL OFL) is vendored so Chromium can embed it in generated PDFs
+  # without depending on fonts installed on the server or on network access.
+  PDF_FONT_DIR = Rails.root.join('vendor/fonts/frank_ruhl_libre').freeze
+  PDF_FONT_FAMILY = "'Frank Ruhl Libre', 'David Libre', 'Noto Serif Hebrew', 'David', 'Times New Roman', serif".freeze
+  PDF_FONT_FACES = { 400 => 'FrankRuhlLibre-Regular.ttf', 700 => 'FrankRuhlLibre-Bold.ttf' }.map do |weight, file|
+    url = URI::File.build(path: PDF_FONT_DIR.join(file).to_s)
+    "@font-face {font-family: 'Frank Ruhl Libre'; font-style: normal; font-weight: #{weight}; " \
+      "src: url('#{url}') format('truetype');}"
+  end.join(' ').freeze
+  PDF_CSS = "#{PDF_FONT_FACES} @page {size: A4; margin: 2cm;} body {font-family: #{PDF_FONT_FAMILY};} " \
+            'img {max-width: 100%; height: auto;}'.freeze
 
   # Wraps an HTML fragment (or full document) in a print-ready full document
   # with A4 page CSS and ActiveStorage image scaling. Call this before pdf_from_any_html.
