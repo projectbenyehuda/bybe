@@ -55,5 +55,25 @@ describe IngestibleTextsController do
       expect(flash.notice).to eq I18n.t(:updated_successfully)
       expect(ingestible.texts[2]).to have_attributes(text_params)
     end
+
+    context 'when secondary and sefaria_linker checkboxes are checked' do
+      let(:text_params) { { title: 'new_title', content: 'new_content', secondary: '1', sefaria_linker: '1' } }
+
+      it 'persists the flags on the text' do
+        call
+        ingestible.reload
+        expect(ingestible.texts[2]).to have_attributes(secondary: true, sefaria_linker: true)
+      end
+    end
+
+    context 'when the checkboxes are unchecked' do
+      let(:text_params) { { title: 'new_title', content: 'new_content', secondary: '0', sefaria_linker: '0' } }
+
+      it 'persists the flags as false' do
+        call
+        ingestible.reload
+        expect(ingestible.texts[2]).to have_attributes(secondary: false, sefaria_linker: false)
+      end
+    end
   end
 end

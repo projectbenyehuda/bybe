@@ -565,6 +565,30 @@ describe IngestiblesController do
         expect(collection.involved_authorities.count).to eq(initial_count)
       end
 
+      context 'when per-text secondary and sefaria_linker flags are not set' do
+        it 'creates a primary work without the Sefaria linker' do
+          post :ingest, params: { id: ingestible.id }
+          manifestation = Manifestation.order(id: :desc).first
+          expect(manifestation.sefaria_linker).to be(false)
+          expect(manifestation.expression.work.primary).to be(true)
+        end
+      end
+
+      context 'when the text is marked secondary with the Sefaria linker enabled' do
+        before do
+          ingestible.texts[0].secondary = true
+          ingestible.texts[0].sefaria_linker = true
+          ingestible.save!
+        end
+
+        it 'creates a non-primary work and enables the Sefaria linker on the manifestation' do
+          post :ingest, params: { id: ingestible.id }
+          manifestation = Manifestation.order(id: :desc).first
+          expect(manifestation.sefaria_linker).to be(true)
+          expect(manifestation.expression.work.primary).to be(false)
+        end
+      end
+
       context 'when calculating copyright status' do
         let(:public_domain_author) { create(:authority, intellectual_property: :public_domain) }
         let(:copyrighted_author) { create(:authority, intellectual_property: :copyrighted) }

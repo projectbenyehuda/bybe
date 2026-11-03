@@ -394,6 +394,8 @@ class Ingestible < ApplicationRecord
     return if markdown.blank?
 
     buf = []
+    # per-text flags are not part of the markdown, so carry them over (matched by title) when re-splitting
+    previous_flags = texts.to_h { |t| [t.title, { secondary: t.secondary, sefaria_linker: t.sefaria_linker }] }
     sections = markdown.split(/^&&& /)
 
     sections.each do |section|
@@ -404,7 +406,10 @@ class Ingestible < ApplicationRecord
       title = lines.first
       title.presence&.strip!
       content = lines[1].nil? ? [] : lines[1..].map(&:strip)
-      buf << { title: title, content: content.present? ? content.join("\n") : '' } if title.present?
+      next if title.blank?
+
+      buf << { title: title, content: content.present? ? content.join("\n") : '' }
+             .merge(previous_flags.fetch(title, {}))
     end
 
     if multiple_works? && markdown =~ /\[\^\d+\]/ # if there are footnotes in the text
@@ -414,6 +419,7 @@ class Ingestible < ApplicationRecord
       end
     end
     self.works_buffer = buf.to_json
+    @texts = nil # drop memoized texts, or the before_save hook would overwrite the new buffer with stale ones
     self.works_buffer_updated_at = Time.current
     save
   end
