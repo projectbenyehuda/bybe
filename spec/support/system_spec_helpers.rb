@@ -21,6 +21,16 @@ module SystemSpecHelpers
     end
   end
 
+  # Wait until a Bootstrap 4 modal has finished its show transition. Bootstrap adds `.show` at the
+  # START of the fade, and silently ignores `modal('hide')` until the transition ends -- so a spec
+  # that waits only for `.show` and then quickly submits can leave the modal stuck open.
+  def wait_until_modal_shown(selector, wait: Capybara.default_max_wait_time)
+    page.document.synchronize(wait, errors: [Capybara::ExpectationNotMet]) do
+      transitioning = page.evaluate_script("!!($('#{selector}').data('bs.modal') || {})._isTransitioning")
+      raise Capybara::ExpectationNotMet, "modal #{selector} is still transitioning" if transitioning
+    end
+  end
+
   # Check if WebDriver is available and configured for system specs with JavaScript
   def webdriver_available?
     return false unless defined?(Capybara::Selenium)

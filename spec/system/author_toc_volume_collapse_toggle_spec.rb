@@ -6,7 +6,7 @@ require 'rails_helper'
 # collection card with children — whatever its collection_type — gets a chevron
 # toggle at the end of its title line that collapses/expands only that
 # collection's own children list.
-describe 'Author TOC per-collection collapse toggle', :js do
+describe 'Author TOC per-collection collapse toggle', :js, type: :system do
   before do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
@@ -135,7 +135,9 @@ describe 'Author TOC per-collection collapse toggle', :js do
 
     outer_volume = create(:collection, title: 'Outer Volume', collection_type: :volume)
     create(:collection_item, collection: outer_volume, item: series)
-    create(:involved_authority, authority: author, item: outer_volume, role: 'editor')
+    # 'author', not 'editor': a volume the authority edited is listed title-only on their page
+    # (TocTree::CollectionNode#collapsed_for?), which would hide the nested series entirely.
+    create(:involved_authority, authority: author, item: outer_volume, role: 'author')
 
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist')
