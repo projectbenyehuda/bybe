@@ -567,6 +567,8 @@ en:
       other_cached_versions: Versions of other texts
       paste_cached_version: Paste cached version
       confirm_paste: Replace current content with this cached version?
+      mark_as_secondary: Mark as secondary text
+      enable_sefaria_linker: Enable Sefaria linker
       previous: Ingestible Texts Edit Previous
   involved_authorities:
     list:

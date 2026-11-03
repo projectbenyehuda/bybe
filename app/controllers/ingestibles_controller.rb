@@ -736,11 +736,12 @@ end
     Chewy.strategy(:atomic) do
       ActiveRecord::Base.transaction do
         unescaped_title = unescape_markdown_title(toc_line[1])
+        text = @ingestible.texts[index]
         w = Work.new(
           title: unescaped_title,
           orig_lang: toc_line[4],
           genre: toc_line[3],
-          primary: true # TODO: un-hardcode primariness when ingestible TOC editing supports it
+          primary: !text.secondary
         )
         author_names = []
         author_ids = []
@@ -794,7 +795,8 @@ end
           publisher: SiteConstants::OUR_PUBLISHER,
           publication_place: SiteConstants::OUR_PLACE_OF_PUBLICATION,
           publication_date: Time.zone.today,
-          markdown: @ingestible.texts[index].content,
+          markdown: text.content,
+          sefaria_linker: text.sefaria_linker,
           status: pub_status,
           credits: @ingestible.credits.lines.map(&:strip).uniq.join("\n")
         )

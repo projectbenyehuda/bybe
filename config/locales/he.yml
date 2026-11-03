@@ -2138,6 +2138,8 @@ he:
       other_cached_versions: גרסאות של טקסטים אחרים
       paste_cached_version: הכנס גרסה שמורה
       confirm_paste: האם לבחור גרסה שמורה זו? הטקסט הנוכחי יוחלף.
+      mark_as_secondary: סימון כטקסט משני
+      enable_sefaria_linker: הפעלת קישוריות ספריא
   collections_migration:
     index:
       title: תהליך המרת דפי יוצר לדפים אוטומטיים עם כותרים
