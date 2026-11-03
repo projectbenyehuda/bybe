@@ -39,6 +39,14 @@
                     id: 'next_text_link'
     .row
       .col-sm-3
+      .col-sm-6
+        = f.check_box :secondary, id: 'ingestible_text_secondary'
+        = f.label :secondary, t('.mark_as_secondary'), for: 'ingestible_text_secondary'
+        &emsp;
+        = f.check_box :sefaria_linker, id: 'ingestible_text_sefaria_linker'
+        = f.label :sefaria_linker, t('.enable_sefaria_linker'), for: 'ingestible_text_sefaria_linker'
+    .row
+      .col-sm-3
         = render partial: 'ingestible_texts/textarea_cache_widget',
                  locals: { cache_versions: cache_versions, current_title: text.title,
                            save_cache_url: save_cache_url, fetch_cache_url: fetch_cache_url }

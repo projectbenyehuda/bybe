@@ -18,7 +18,7 @@ class IngestibleTextsController < ApplicationController
   end
 
   def update
-    text_params = params.expect(ingestible_text: %i(content title))
+    text_params = params.expect(ingestible_text: %i(content title secondary sefaria_linker))
     @ingestible.save_text_to_cache(text_params[:title], text_params[:content])
     @ingestible.texts[@text_index] = IngestibleText.new(text_params)
     @ingestible.save!

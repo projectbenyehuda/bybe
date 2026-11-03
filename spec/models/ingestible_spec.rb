@@ -680,4 +680,30 @@ describe Ingestible do
       end
     end
   end
+
+  describe '#update_buffers' do
+    let(:ingestible) do
+      create(:ingestible,
+             markdown: "&&& First\nfirst content\n&&& Second\nsecond content",
+             works_buffer: [
+               { title: 'First', content: 'old', secondary: true, sefaria_linker: true },
+               { title: 'Second', content: 'old', secondary: false, sefaria_linker: false }
+             ].to_json)
+    end
+
+    it 'preserves per-text flags (matched by title) when re-splitting the markdown' do
+      ingestible.update_buffers
+      ingestible.reload
+      expect(ingestible.texts.map { |t| [t.title, t.content, t.secondary, t.sefaria_linker] }).to eq(
+        [['First', 'first content', true, true], ['Second', 'second content', false, false]]
+      )
+    end
+
+    it 'defaults flags to false for texts with new titles' do
+      ingestible.update!(markdown: "&&& Brand New\ncontent")
+      ingestible.update_buffers
+      ingestible.reload
+      expect(ingestible.texts.first).to have_attributes(title: 'Brand New', secondary: false, sefaria_linker: false)
+    end
+  end
 end
