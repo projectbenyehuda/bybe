@@ -19,6 +19,7 @@ RSpec.describe 'Ingestible "create new periodical" modal', :js, type: :system do
     end
     find('#create_new_periodical').click
     expect(page).to have_css('#newPeriodicalModal.show', visible: :visible, wait: 5)
+    wait_until_modal_shown('#newPeriodicalModal')
   end
 
   it 'renders an opaque dialog with visible input fields' do

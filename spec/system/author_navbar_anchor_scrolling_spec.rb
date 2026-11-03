@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Author navbar anchor scrolling', :js do
+describe 'Author navbar anchor scrolling', :js, type: :system do
   let!(:author) do
     create(:authority, name: 'Test Author', gender: 'male')
   end
@@ -159,7 +159,8 @@ describe 'Author navbar anchor scrolling', :js do
 
       # Test with the first collection link
       collection_links.each do |link|
-        anchor_target = link['href']
+        # The raw attribute: link['href'] returns the resolved absolute URL under Selenium
+        anchor_target = link.evaluate_script("this.getAttribute('href')")
 
         # Skip if it's not an anchor link (should start with #)
         next unless anchor_target&.start_with?('#')
@@ -183,15 +184,11 @@ describe 'Author navbar anchor scrolling', :js do
         # Click the link
         link.click
 
-        # Wait for scroll animation
-        sleep 0.5
+        # Verify we scrolled (waits for the scroll animation)
+        wait_until_scrolled
 
         # URL should not have changed (we didn't navigate to collection page)
         expect(page.current_url).to eq(current_url)
-
-        # Verify we scrolled (position should be > 0)
-        scroll_position = page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop')
-        expect(scroll_position).to be > 0
 
         tested = true
         break
