@@ -120,6 +120,25 @@ RSpec.describe 'Periodicals', type: :request do
     end
   end
 
+  describe 'initial display limit' do
+    before do
+      31.times do |n|
+        periodical = create(:collection, collection_type: 'periodical', title: "Periodical #{n}")
+        issue = create(:collection, collection_type: 'periodical_issue')
+        create(:collection_item, collection: periodical, item: issue, seqno: 1)
+        create(:collection_item, collection: issue, item: create(:manifestation, status: :published), seqno: 1)
+      end
+    end
+
+    it 'shows up to 30 periodicals by default and hides the rest behind the view-all link' do
+      get '/periodicals'
+      doc = Nokogiri::HTML(response.body)
+      expect(doc.css('.slide').size).to eq 31
+      expect(doc.css('.slide').select { |s| s['style'].to_s.include?('display: none') }.size).to eq 1
+      expect(doc.at_css('.link-to-all-v02')['style'].to_s).not_to include('display: none')
+    end
+  end
+
   describe '@periodical_first_covers assignment' do
     let!(:periodical) { create(:collection, collection_type: 'periodical', title: 'Test Periodical Title') }
     let!(:issue_no_cover) { create(:collection, collection_type: 'periodical_issue') }

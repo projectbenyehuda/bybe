@@ -13,10 +13,11 @@
             = "(#{@periodicals_count})"
         .by-card-content-v02
           %div{style: 'display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 15px;'}
+            - visible_limit = 30
             - i = 0
             - @periodicals.each do |periodical|
               - cover_issue = @periodical_first_covers[periodical.id]
-              .slide{ style: i >= 5 ? 'display: none;' : '' }
+              .slide{ style: i >= visible_limit ? 'display: none;' : '' }
                 %a{ href: collection_path(periodical) }
                   - if cover_issue
                     - if cover_issue.cover_image.variable?
@@ -36,7 +37,7 @@
                         .author-name-v02= t('.x_issues', x: periodical.collection_items.size)
                         .author-name-v02= t('.x_texts', x: periodical.manifestations_count)
               - i += 1
-          .link-to-all-v02.pointer
+          .link-to-all-v02.pointer{ style: @periodicals.size > visible_limit ? '' : 'display: none;' }
             %a#periodicals-view-all{:href => "#"}
               %span{:style => "font-weight: bold;"}= t(:to_all_periodicals)
               %span.left-arrow 1
