@@ -48,4 +48,33 @@ describe Lexicon::AttachImages do
     call
     expect(html_doc.at_css('#srcless')['src']).to be_nil
   end
+
+  context 'with a migrated image hosted on our site' do
+    let(:html) { '<img id="local" src="00123_files/test.png"/><img id="plain" src="00000_files/blank.png"/>' }
+    let(:new_path) { lex_entry.download_path('test.jpg') }
+
+    before do
+      lex_entry.attachments.attach(
+        io: File.open(Rails.root.join('spec/fixtures/files/test_image.jpg')), filename: 'test.jpg',
+        content_type: 'image/jpeg'
+      )
+      allow(Lexicon::MigrateAttachment).to receive(:call).with('00123_files/test.png', lex_entry)
+                                                         .and_return(new_path)
+    end
+
+    it 'sets explicit width and height from the image dimensions' do
+      call
+      blob = lex_entry.blob_by_filename('test.jpg')
+      img = html_doc.at_css('#local')
+      expect(img['src']).to eq(new_path)
+      expect(img['width']).to eq(blob.metadata['width'].to_s)
+      expect(img['height']).to eq(blob.metadata['height'].to_s)
+      expect(img['width']).to be_present
+    end
+
+    it 'does not add dimensions to shared static images' do
+      call
+      expect(html_doc.at_css('#plain')['width']).to be_nil
+    end
+  end
 end
