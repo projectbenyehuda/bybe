@@ -61,7 +61,7 @@
       -# aria-expanded only on items that actually have an expandable list, per ARIA tree semantics
       %li.by-card-v02{ 'aria-expanded' => (renders_toclist ? 'true' : nil), :role => 'treeitem' }
         .by-card-content-v02{:style => "padding-top: 12px;"}
-          .cwrapper{ id: "cwrapper_#{collection.id}", 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
+          .cwrapper{ id: toc_collection_dom_id(collection, role, involved_on_collection_level), 'data-nonce' => nonce, 'data-collection-id' => collection.id, class: uncollected ? 'uncollected' : '' }
             %div{style:'font-size:120%;'}
               - if uncollected
                 %p{style: 'font-size: 0.8rem; color: #222222;'}

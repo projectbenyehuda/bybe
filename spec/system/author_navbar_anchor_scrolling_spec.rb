@@ -173,7 +173,7 @@ describe 'Author navbar anchor scrolling', :js, type: :system do
         expect(link[:class]).to include('collection-anchor-link')
 
         # The link href should point to a cwrapper ID (not a collection path)
-        expect(anchor_target).to match(/^#cwrapper_\d+$/)
+        expect(anchor_target).to match(/^#cwrapper_\w+_(collection|work)_\d+$/)
 
         # Verify clicking doesn't navigate away (current URL should not change)
         current_url = page.current_url

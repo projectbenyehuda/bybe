@@ -80,17 +80,17 @@ describe 'Author TOC per-collection collapse toggle', :js, type: :system do
     expect(page).to have_css('#browse_mainlist')
 
     # NOTE: a volume can render in both the collection-level and work-level sections, so its
-    # cwrapper id is not unique; assert via CSS existence (matches every copy) rather than find.
+    # cwrapper ids can repeat across roles; assert via CSS existence (matches every copy) rather than find.
 
     # The mismatched-title volume from the shared fixtures keeps its toggle...
-    expect(page).to have_css("#cwrapper_#{volume.id} .volume-collapse-toggle")
+    expect(page).to have_css("#cwrapper_author_collection_#{volume.id} .volume-collapse-toggle")
 
     # ...but every copy of the pruned single-work volume must have had its toggle removed
     # (have_no_css waits for prune_collections to run on page load)...
-    expect(page).to have_no_css("#cwrapper_#{solo_volume.id} .volume-collapse-toggle")
+    expect(page).to have_no_css("#cwrapper_author_collection_#{solo_volume.id} .volume-collapse-toggle")
 
     # ...and none of its cards may still advertise an expandable state.
-    all("#cwrapper_#{solo_volume.id}").each do |cw|
+    all("#cwrapper_author_collection_#{solo_volume.id}").each do |cw|
       card = cw.find(:xpath, "./ancestor::li[contains(@class, 'by-card-v02')][1]")
       expect(card['aria-expanded']).to be_nil
     end
@@ -109,7 +109,7 @@ describe 'Author TOC per-collection collapse toggle', :js, type: :system do
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist')
 
-    toggle = find("#cwrapper_#{periodical.id} .volume-collapse-toggle", match: :first)
+    toggle = find("#cwrapper_author_collection_#{periodical.id} .volume-collapse-toggle", match: :first)
     cwrapper = toggle.find(:xpath, "./ancestor::div[contains(@class, 'cwrapper')][1]")
 
     toggle.click
@@ -143,8 +143,8 @@ describe 'Author TOC per-collection collapse toggle', :js, type: :system do
     expect(page).to have_css('#browse_mainlist')
 
     # Both the nested series and its parent volume carry their own toggle.
-    expect(page).to have_css("#cwrapper_#{series.id} .volume-collapse-toggle")
-    expect(page).to have_css("#cwrapper_#{outer_volume.id} .volume-collapse-toggle")
+    expect(page).to have_css("#cwrapper_author_collection_#{series.id} .volume-collapse-toggle")
+    expect(page).to have_css("#cwrapper_author_collection_#{outer_volume.id} .volume-collapse-toggle")
 
     # Initially the deeply nested work is visible.
     expect(page).to have_link('Nested Series Work', visible: :visible)
@@ -153,14 +153,14 @@ describe 'Author TOC per-collection collapse toggle', :js, type: :system do
     find('#max_collapse').click
     expect(page).to have_link('Nested Series Work', visible: :hidden)
 
-    outer_toggle = find("#cwrapper_#{outer_volume.id} .volume-collapse-toggle", match: :first)
+    outer_toggle = find("#cwrapper_author_collection_#{outer_volume.id} .volume-collapse-toggle", match: :first)
     outer_toggle.click
 
     # The cascade reaches down through the series, so its work must become
     # visible again — not just the series header — and the series' own toggle
     # must be back in the expanded state to match.
     expect(page).to have_link('Nested Series Work', visible: :visible)
-    expect(page).to have_no_css("#cwrapper_#{series.id} .volume-collapse-toggle.collapsed")
+    expect(page).to have_no_css("#cwrapper_author_collection_#{series.id} .volume-collapse-toggle.collapsed")
   end
 
   it 'keeps individual toggles in sync with the collapse-all / expand-all buttons' do

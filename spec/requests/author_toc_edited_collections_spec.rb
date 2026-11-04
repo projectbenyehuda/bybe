@@ -43,7 +43,7 @@ RSpec.describe 'Authority TOC edited collections', type: :request do
   end
 
   it 'still lists the edited collection in the navbar' do
-    expect(navbar_fragment(response.body)).to include(%(data-scroll-target="#cwrapper_#{anthology.id}"))
+    expect(navbar_fragment(response.body)).to include(%(data-scroll-target="#cwrapper_editor_collection_#{anthology.id}"))
   end
 
   it "still lists the editor's own texts, including those in the edited collection" do

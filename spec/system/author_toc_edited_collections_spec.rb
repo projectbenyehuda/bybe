@@ -21,7 +21,7 @@ RSpec.describe 'Author TOC edited collections', :js, type: :system do
   it 'shows the edited collection title as a link, without its texts' do
     visit authority_path(editor)
 
-    within("#cwrapper_#{anthology.id}") do
+    within("#cwrapper_editor_collection_#{anthology.id}") do
       expect(page).to have_link('Edited Anthology', href: collection_path(anthology))
       expect(page).to have_no_css('.manifestation-node')
     end

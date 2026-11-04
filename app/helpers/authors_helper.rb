@@ -135,4 +135,12 @@ module AuthorsHelper
     sections[:collection_level].present? || sections[:work_level].present? ||
       sections[:uncollected].present?
   end
+
+  # DOM id of a collection's wrapper in the author TOC. The same collection can be rendered
+  # more than once on a page (e.g. as both author and editor of it, or at both collection and
+  # work level), so the id is scoped by role and section to stay unique; the navbar links and
+  # the main TOC both build it here so that they always agree.
+  def toc_collection_dom_id(collection, role, involved_on_collection_level)
+    "cwrapper_#{role}_#{involved_on_collection_level ? 'collection' : 'work'}_#{collection.id}"
+  end
 end

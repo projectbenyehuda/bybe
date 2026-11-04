@@ -168,12 +168,12 @@ describe 'Author navbar scrollspy', :js, type: :system do
 
   describe 'collections inside an expanded section' do
     def selected_chapter_selector(collection)
-      ".book-nav-full .nav-link-chapter.selected[data-scroll-target='#cwrapper_#{collection.id}']"
+      ".book-nav-full .nav-link-chapter.selected[data-scroll-target='#cwrapper_author_collection_#{collection.id}']"
     end
 
     it 'highlights the innermost collection being read, within its section' do
       series_volumes.each do |volume|
-        expect(scroll_section_to_reading_position("#cwrapper_#{volume.id}")).to be(true)
+        expect(scroll_section_to_reading_position("#cwrapper_author_collection_#{volume.id}")).to be(true)
 
         # the volume, not the series containing it
         expect(page).to have_css(selected_chapter_selector(volume))
@@ -184,7 +184,7 @@ describe 'Author navbar scrollspy', :js, type: :system do
 
     it 'moves the collection highlight away when scrolling to another section' do
       volume = series_volumes.first
-      scroll_section_to_reading_position("#cwrapper_#{volume.id}")
+      scroll_section_to_reading_position("#cwrapper_author_collection_#{volume.id}")
       expect(page).to have_css(selected_chapter_selector(volume))
 
       page.scroll_to(:top)
@@ -193,7 +193,7 @@ describe 'Author navbar scrollspy', :js, type: :system do
 
     it 'ignores the collections of a collapsed section, and tracks them again once expanded' do
       volume = series_volumes.first
-      scroll_section_to_reading_position("#cwrapper_#{volume.id}")
+      scroll_section_to_reading_position("#cwrapper_author_collection_#{volume.id}")
       expect(page).to have_css(selected_chapter_selector(volume))
 
       page.execute_script("$('#collection-author-collapse').collapse('hide')")
