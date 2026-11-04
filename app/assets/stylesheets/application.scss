@@ -1661,6 +1661,36 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
+// on mobile, show the periodical title and stats *under* the cover image instead of overlaying it
+// (the overlay covers the cover and cuts off long titles)
+@media screen and (max-width: 767px) {
+  .author-card-v02.periodical-with-cover {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+
+    .periodical-cover-img {
+      position: static;
+      height: 190px;
+      flex: 0 0 auto;
+    }
+
+    .author-name-area {
+      position: static;
+      flex: 1 1 auto;
+      height: auto;
+      min-height: 0;
+      background: transparent;
+      padding: 6px 4px;
+      overflow-wrap: anywhere;
+
+      .author-name-v02 {
+        text-shadow: none;
+      }
+    }
+  }
+}
+
 // editor-only view counter shown next to the editor action links in the metadata area
 .impressions-count {
   display: inline-block;
