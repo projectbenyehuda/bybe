@@ -32,7 +32,7 @@ describe 'Periodicals index cover tiles', :js, :narrow_viewport, type: :system d
 
   it 'places the title and stats below the cover on mobile' do
     resize_window(390, 844)
-    visit periodicals_path
+    visit periodicals_index_path
     expect(page).to have_css('.periodical-with-cover .author-name-area', text: 'Long Periodical Title')
     geometry = tile_geometry
     expect(geometry['nameTop']).to be >= geometry['imgBottom']
@@ -40,7 +40,7 @@ describe 'Periodicals index cover tiles', :js, :narrow_viewport, type: :system d
 
   it 'overlays the title and stats on the cover on desktop' do
     resize_window(1400, 900)
-    visit periodicals_path
+    visit periodicals_index_path
     expect(page).to have_css('.periodical-with-cover .author-name-area', text: 'Long Periodical Title')
     geometry = tile_geometry
     expect(geometry['nameTop']).to be < geometry['imgBottom']
