@@ -409,10 +409,38 @@
                         .toggleClass('by-button-secondary-v02', canCollapse || !canExpand);
       };
 
+      // Collapse the given lists without losing the reader's place. Collapsing
+      // everything above the viewport shrinks the page, and the browser would
+      // just clamp the scroll offset, leaving the reader at the page bottom.
+      // Instead, pin the top-level card the reader is in (or the first one
+      // below the action bar), easing it to just under the bar if it started
+      // above it. The scroll is corrected once per frame from our own loop,
+      // rather than per animated list, to avoid a forced layout per list.
+      var COLLAPSE_MS = 400;
+      function slideUpKeepingPlace($lists) {
+        var minTop = Math.max(0, $('.sticky-fold')[0].getBoundingClientRect().bottom);
+        var anchor = $('#browse_mainlist ul[role="tree"] > .by-card-v02[role="treeitem"]').filter(function() {
+          return this.getBoundingClientRect().bottom > minTop;
+        })[0];
+        $lists.slideUp(COLLAPSE_MS);
+        if (!anchor) { return; } // reader is above the list: nothing above them shrinks
+        var startTop = anchor.getBoundingClientRect().top;
+        var endTop = Math.max(startTop, minTop);
+        var started = performance.now();
+        var done = false;
+        function pin() {
+          var p = Math.min(1, (performance.now() - started) / COLLAPSE_MS);
+          window.scrollBy(0, anchor.getBoundingClientRect().top - (startTop + (endTop - startTop) * p));
+          if (!done) { window.requestAnimationFrame(pin); }
+        }
+        $lists.promise().done(function() { done = true; pin(); });
+        window.requestAnimationFrame(pin);
+      }
+
       // Collapse all sections
       $('#max_collapse').click(function(e) {
         e.preventDefault();
-        $('#browse_mainlist .by-card-v02[role="treeitem"] .toclist').slideUp();
+        slideUpKeepingPlace($('#browse_mainlist .by-card-v02[role="treeitem"] .toclist'));
         // only expandable cards (those with a .toclist) carry aria-expanded
         $('#browse_mainlist .by-card-v02[role="treeitem"]:has(.toclist)').attr('aria-expanded', 'false');
         // keep the focusable toggles' own aria-expanded in sync with their state
