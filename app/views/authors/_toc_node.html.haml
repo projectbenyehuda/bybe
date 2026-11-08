@@ -104,7 +104,7 @@
                   -# aria-expanded on the toggle itself: focus lands here, not on the treeitem li
                   %span.volume-collapse-toggle{ role: 'button', tabindex: 0, title: toggle_label,
                                                 aria: { label: toggle_label, expanded: 'true' } } )
-              - ias = collection.involved_authorities
+              - ias = toc_collection_involved_authorities(collection, local_assigns[:parent_collection])
               - authorities = {}
               - ias.each do |ia|
                 - if authorities[ia.role].present?
@@ -134,7 +134,8 @@
                 %ul.toclist
                   = render partial: 'authors/toc_node', collection: children,
                           locals: { role: role, authority_id: authority_id, editable: editable, nonce: nonce,
-                                    uncollected: uncollected, involved_on_collection_level: involved_on_collection_level }
+                                    uncollected: uncollected, parent_collection: collection,
+                                    involved_on_collection_level: involved_on_collection_level }
       %br
   - elsif toc_node.is_a?(TocTree::PlaceholderNode)
     -# Placeholder, toc_node should be a String with HTML layout

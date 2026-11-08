@@ -111,6 +111,17 @@ module AuthorsHelper
     nodes.sum { |node| node.count_manifestations(role, authority_id, involved_on_collection_level) }
   end
 
+  # Involved authorities to list on a collection's TOC card. A periodical issue rendered under its
+  # periodical lists none if it credits exactly the same authorities in the same roles as the
+  # periodical, since those are already listed on the periodical card right above it.
+  def toc_collection_involved_authorities(collection, parent_collection)
+    ias = collection.involved_authorities
+    return ias unless collection.periodical_issue? && parent_collection&.periodical?
+
+    credits = ->(coll_ias) { coll_ias.to_set { |ia| [ia.role, ia.authority_id] } }
+    credits.call(ias) == credits.call(parent_collection.involved_authorities) ? [] : ias
+  end
+
   # Splits an authority's top-level TOC nodes into the three sections a role's TOC block is made
   # of. Single source of truth for "which sections does this role have", shared by the TOC body
   # (authors/_toc_by_role), the in-page navbar (shared/_newtoc_navbar) and the controller's count
