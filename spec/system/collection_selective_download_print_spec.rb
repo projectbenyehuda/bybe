@@ -139,6 +139,41 @@ RSpec.describe 'Collection selective download and print', :js, type: :system do
         expect(page).to have_css('#selected-count', text: '3')
       end
     end
+
+    context 'when the collection has more texts than fit in the list area' do
+      before do
+        Chewy.strategy(:atomic) do
+          30.times do |i|
+            m = create(:manifestation, title: "Extra Text #{i + 1}", status: :published)
+            collection.collection_items.create!(item: m, seqno: i + 4)
+          end
+        end
+      end
+
+      it 'lets the user scroll the text list with the mouse wheel' do
+        visit collection_path(collection)
+
+        find('.by-icon-v02.download').click
+        expect(page).to have_css('#downloadDlg', visible: true, wait: 10)
+        wait_until_modal_shown('#downloadDlg')
+
+        within('#downloadDlg') do
+          find('.search-mobile-option[data-scope="partial"]').click
+          expect(page).to have_css('#manifestation-selection-area', visible: true)
+        end
+
+        list = find('#texts-to-save')
+        expect(list.evaluate_script('this.scrollHeight > this.clientHeight')).to be true
+        expect(list.evaluate_script('this.scrollTop')).to eq(0)
+
+        # Use a real wheel event, not a scrollTop assignment: JS can scroll an
+        # overflow:hidden box, but the user's mouse wheel cannot (issue #1807).
+        origin = Selenium::WebDriver::WheelActions::ScrollOrigin.element(list.native)
+        page.driver.browser.action.scroll_from(origin, 0, 300).perform
+
+        expect(wait_until_scrolled(list)).to be > 0
+      end
+    end
   end
 
   describe 'Print modal' do

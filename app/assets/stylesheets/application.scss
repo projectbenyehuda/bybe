@@ -2467,3 +2467,11 @@ p.by-genre-name-v02.headline-2-v02 {
 .top-search-clear:hover { color: #660248; }
 /* The search icon submits the search on click */
 .top-search-v02 .search-icon-v02 { cursor: pointer; }
+
+// Collection download dialog: BY_styles_General.css gives #texts-to-save a
+// fixed 310px height with overflow:hidden, so texts beyond the visible area
+// could not be reached. Let the list scroll within its box (issue #1807).
+#texts-to-save {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
