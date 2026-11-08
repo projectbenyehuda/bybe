@@ -51,10 +51,8 @@ module TocTree
       1
     end
 
-    private
-
     # Whether the authority is involved in this work itself (as opposed to merely in a collection
-    # containing it) with the given role.
+    # containing it) with the given role. The flat (sorted/filtered) TOC list shows only such works.
     #
     # Deliberately reads the involved_authorities rows rather than going through
     # Manifestation#involved_authorities_by_role, which materialises and name-sorts Authority

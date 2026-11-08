@@ -98,6 +98,19 @@ RSpec.describe AuthorTocFilterData do
     expect(described_class.call(author)[:roles]).to eq(%w(author translator))
   end
 
+  context 'when the author is credited on a collection but not on all the texts in it' do
+    let(:other_text) { create(:manifestation, author: create(:authority), orig_lang: 'de', language: 'he') }
+
+    before do
+      create(:collection, collection_type: :volume, translators: [author], manifestations: [other_text])
+      RefreshUncollectedWorksCollection.call(author) # lists the author's own works
+    end
+
+    it 'offers no role under which only texts the author is not directly credited on are listed' do
+      expect(described_class.call(author)[:roles]).to eq(%w(author))
+    end
+  end
+
   context 'when the author edited a collection, whose texts are therefore not listed on their page' do
     let(:edited) { create(:collection, editors: [author]) }
 

@@ -270,6 +270,41 @@ describe 'Author TOC flat-list filters', :js do
     expect(page).to have_css('#toc-filter-role-illustrator:checked', visible: :all)
   end
 
+  it 'lists in the flat list only the texts of a credited collection that the authority is credited on directly' do
+    illustrator = create(:authority, name: 'Collection Illustrator')
+    Chewy.strategy(:atomic) do
+      illustrated = create(:manifestation, title: 'Illustrated Story', status: :published,
+                                           illustrator: illustrator, genre: 'prose')
+      plain = create(:manifestation, title: 'Plain Story', status: :published, genre: 'prose')
+      collection = create(:collection, title: 'Story Collection', collection_type: :volume,
+                                       manifestations: [illustrated, plain])
+      create(:involved_authority, authority: illustrator, item: collection, role: 'illustrator')
+      # a second role, so the pane shows its role section
+      create(:manifestation, title: 'Own Poem', status: :published, author: illustrator, genre: 'poetry')
+    end
+    RefreshUncollectedWorksCollection.call(illustrator)
+
+    visit authority_path(illustrator)
+    # the grouped view lists the whole collection
+    within '#browse_mainlist' do
+      expect(page).to have_content('Illustrated Story')
+      expect(page).to have_content('Plain Story')
+    end
+
+    choose_sort('title')
+    within '#sorted_card' do
+      expect(page).to have_content('Illustrated Story')
+      expect(page).to have_content('Own Poem')
+      expect(page).to have_no_content('Plain Story')
+    end
+    expect(page).to have_css('#sorted_card .manifestation-node', count: 2)
+    expect(page).to have_css(".toc-facet-count[data-section='role'][data-value='illustrator']", text: '(1)')
+
+    # back in the grouped view, the whole collection is listed again
+    choose_sort('colls')
+    within('#browse_mainlist') { expect(page).to have_content('Plain Story') }
+  end
+
   it 'filters by source language (translated)' do
     visit authority_path(author)
     choose_sort('title')
