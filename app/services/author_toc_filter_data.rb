@@ -5,7 +5,8 @@
 #   * sets of manifestation IDs bearing each "curatorial" property, and
 #   * the genres and source languages actually represented among the
 #     manifestations the authority is involved with (in any role), and
-#   * the roles under which the page lists at least one manifestation.
+#   * the roles under which the page lists at least one manifestation the
+#     authority is directly credited on (at the Work or Expression level).
 #
 # "Curatorial content" means any of: a featuring (FeaturedContent), an approved
 # Recommendation, an incoming Aboutness (another work that is ABOUT the
@@ -65,7 +66,8 @@ class AuthorTocFilterData < ApplicationService
       case child
       when TocTree::ManifestationNode
         found[:listed] << child.manifestation.id
-        found[:roles] << role
+        # the flat list keeps only directly-credited works, so only they make a role worth offering
+        found[:roles] << role if child.directly_involved?(role, authority_id)
       when TocTree::CollectionNode then walk(child, role, authority_id, involved_on_collection_level, found)
       end
     end

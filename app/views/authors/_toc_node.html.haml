@@ -19,7 +19,8 @@
                             'data-featured': fd && fd[:featured_ids].include?(m.id) ? '1' : '0',
                             'data-recommended': fd && fd[:recommended_ids].include?(m.id) ? '1' : '0',
                             'data-aboutness': fd && fd[:aboutness_ids].include?(m.id) ? '1' : '0',
-                            'data-tagging': fd && fd[:tagging_ids].include?(m.id) ? '1' : '0' }
+                            'data-tagging': fd && fd[:tagging_ids].include?(m.id) ? '1' : '0',
+                            'data-direct': toc_node.directly_involved?(role, authority_id) ? '1' : '0' }
     %span.by-icon-v02{ title: textify_genre(genre) }>= glyph_for_genre(genre)
     &nbsp;&rlm;
     - if m.published?

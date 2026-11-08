@@ -14,8 +14,8 @@
      does not track, so the cache key carries an explicit version: bump it whenever the counting
      rules change, or a deploy keeps serving the old figures here (while the uncached navbar
      beside them already shows the new ones) until the TTL expires. Bump it too when the nodes'
-     filter data attributes change (v3: data-role), or the filters pane misses them.
-  = cache_unless current_user&.editor?, [@author, 'toc-counts-v3'], expires_in: 12.hours do
+     filter data attributes change (v3: data-role, v4: data-direct), or the filters pane misses them.
+  = cache_unless current_user&.editor?, [@author, 'toc-counts-v4'], expires_in: 12.hours do
     :ruby
     - top_nodes = @toc_tree ? @toc_tree.top_level_nodes : GenerateTocTree.call(@author).top_level_nodes
     - InvolvedAuthority::ROLES_PRESENTATION_ORDER.each do |role|
@@ -160,8 +160,12 @@
         $('.metadata-pubdate').hide();
         $('.metadata-upload-date').hide();
         $('.metadata-source-edition').hide();
+        // The flat list holds only works the authority is credited on directly (at the
+        // Work or Expression level), not every text of a collection credited to them.
         // de-dup: in the flat list a work appears once, without its role/collection context
-        nodes_to_sort = dedupByMid($('.manifestation-node'));
+        nodes_to_sort = dedupByMid($('.manifestation-node').filter(function() {
+          return $(this).find('.sorting-metadata').attr('data-direct') === '1';
+        }));
         var sortval;
         var sort_asc = true;
         switch(this.value) {

@@ -506,7 +506,7 @@ class AuthorsController < ApplicationController
           if current_user&.editor?
             AuthorTocFilterData.call(@author, @toc_tree)
           else
-            Rails.cache.fetch("author_toc_filter_data/v3/#{@author.id}", expires_in: 12.hours) do
+            Rails.cache.fetch("author_toc_filter_data/v4/#{@author.id}", expires_in: 12.hours) do
               AuthorTocFilterData.call(@author, @toc_tree)
             end
           end
