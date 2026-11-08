@@ -79,18 +79,21 @@ describe 'Author TOC per-collection collapse toggle', :js, type: :system do
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist')
 
-    # NOTE: a volume can render in both the collection-level and work-level sections, so its
-    # cwrapper ids can repeat across roles; assert via CSS existence (matches every copy) rather than find.
+    # NOTE: a volume renders once per role/section it is listed under (here: collapsed under 'editor'
+    # at collection level, and under 'author' at work level, the copy that lists the work), each with
+    # its own cwrapper_<role>_<level>_<id> id.
 
     # The mismatched-title volume from the shared fixtures keeps its toggle...
-    expect(page).to have_css("#cwrapper_author_collection_#{volume.id} .volume-collapse-toggle")
+    expect(page).to have_css("#cwrapper_author_work_#{volume.id} .volume-collapse-toggle")
 
     # ...but every copy of the pruned single-work volume must have had its toggle removed
-    # (have_no_css waits for prune_collections to run on page load)...
-    expect(page).to have_no_css("#cwrapper_author_collection_#{solo_volume.id} .volume-collapse-toggle")
+    # (have_no_css waits for prune_collections to run on page load); match every copy by id suffix...
+    solo_copies = "[id^='cwrapper_'][id$='_#{solo_volume.id}']"
+    expect(page).to have_css(solo_copies, minimum: 1)
+    expect(page).to have_no_css("#{solo_copies} .volume-collapse-toggle")
 
     # ...and none of its cards may still advertise an expandable state.
-    all("#cwrapper_author_collection_#{solo_volume.id}").each do |cw|
+    all(solo_copies).each do |cw|
       card = cw.find(:xpath, "./ancestor::li[contains(@class, 'by-card-v02')][1]")
       expect(card['aria-expanded']).to be_nil
     end
@@ -109,7 +112,7 @@ describe 'Author TOC per-collection collapse toggle', :js, type: :system do
     visit authority_path(author)
     expect(page).to have_css('#browse_mainlist')
 
-    toggle = find("#cwrapper_author_collection_#{periodical.id} .volume-collapse-toggle", match: :first)
+    toggle = find("#cwrapper_author_work_#{periodical.id} .volume-collapse-toggle", match: :first)
     cwrapper = toggle.find(:xpath, "./ancestor::div[contains(@class, 'cwrapper')][1]")
 
     toggle.click
