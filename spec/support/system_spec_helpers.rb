@@ -9,13 +9,17 @@ module SystemSpecHelpers
     page.driver.browser.manage.window.resize_to(width, height)
   end
 
-  # Wait until the page has scrolled away from the top, and return the resulting offset.
-  # Capybara's matchers cannot express a scroll position, so we drive its own polling loop
-  # rather than sleeping for an animation to finish.
-  def wait_until_scrolled(wait: Capybara.default_max_wait_time)
+  # Wait until the page (or, if given, a scrollable element node) has scrolled away from the top,
+  # and return the resulting offset. Capybara's matchers cannot express a scroll position, so we
+  # drive its own polling loop rather than sleeping for an animation to finish.
+  def wait_until_scrolled(element = nil, wait: Capybara.default_max_wait_time)
     page.document.synchronize(wait, errors: [Capybara::ExpectationNotMet]) do
-      offset = page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop').to_f
-      raise Capybara::ExpectationNotMet, "page is still at the top (offset #{offset})" unless offset > 0
+      offset = if element
+                 element.evaluate_script('this.scrollTop').to_f
+               else
+                 page.evaluate_script('window.pageYOffset || document.documentElement.scrollTop').to_f
+               end
+      raise Capybara::ExpectationNotMet, "still scrolled to the top (offset #{offset})" unless offset > 0
 
       offset
     end
