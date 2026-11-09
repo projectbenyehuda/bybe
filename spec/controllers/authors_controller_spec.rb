@@ -236,6 +236,42 @@ describe AuthorsController do
           expect(response.body).to have_css("a[href='#{collection_path(volume)}']", text: 'The Big Volume')
         end
       end
+
+      context 'when a periodical issue is nested under its periodical' do
+        render_views
+
+        let(:periodical_editor) { create(:authority, name: 'Periodical Editor') }
+        let(:other_editor) { create(:authority, name: 'Other Editor') }
+        let(:issue_manifestation) { create(:manifestation, author: author) }
+        let(:issue_editors) { [periodical_editor] }
+        let!(:issue) do
+          create(:collection, collection_type: :periodical_issue, editors: issue_editors,
+                              manifestations: [issue_manifestation])
+        end
+        let!(:periodical) do
+          create(:collection, collection_type: :periodical, editors: [periodical_editor],
+                              included_collections: [issue])
+        end
+
+        let(:issue_authority_lines) { "[data-collection-id='#{issue.id}'] > div > p" }
+
+        before { request }
+
+        it 'lists the shared editor on the periodical but not again on the issue' do
+          expect(response.body).to have_css("[data-collection-id='#{periodical.id}'] > div > p",
+                                            text: 'Periodical Editor')
+          expect(response.body).not_to have_css(issue_authority_lines, text: 'Periodical Editor')
+        end
+
+        context 'when the issue credits different authorities than the periodical' do
+          let(:issue_editors) { [periodical_editor, other_editor] }
+
+          it 'lists all of the issue authorities' do
+            expect(response.body).to have_css(issue_authority_lines, text: 'Periodical Editor')
+            expect(response.body).to have_css(issue_authority_lines, text: 'Other Editor')
+          end
+        end
+      end
     end
 
     describe '#whatsnew_popup' do
