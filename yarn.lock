@@ -2,3 +2,14 @@
 # yarn lockfile v1
 
 
+call-once@:
+  version "1.0.3"
+  resolved "https://registry.npmjs.org/call-once/-/call-once-1.0.3.tgz"
+  integrity sha512-Y40/nFP10Rnz1jGho4TEQeL7CrCdFli088mk6dmtCL1nIrfU0bpqnLKVCwPB5KGKqCVusaUzm5wYTJrqVMI0AQ==
+
+xsel@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/xsel/-/xsel-1.0.0.tgz"
+  integrity sha512-IehZBEZlDq00D5aTd5qYPRzD192cQ3MuSgDCiiWaC5Uqq5X2wxA66QBZzjF8YLgux5fajvPKEjhA4KhqA7F0HQ==
+  dependencies:
+    call-once ""
