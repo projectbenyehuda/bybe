@@ -201,6 +201,45 @@ describe ConvertManifestationToCollection do
     end
   end
 
+  describe 'footnote bodies interspersed with the text' do
+    let(:markdown) do
+      <<~MD
+        ## First
+        Text with a note[^1].
+
+        [^1]: Note placed right after the first text.
+
+        Text of the first that follows its footnote.
+
+        ## Second
+        Second text[^2], with a note on a multi-paragraph body.
+
+        [^2]: First paragraph of the note.
+
+            Indented continuation of the note.
+
+        Main text of the second, after the note.
+
+        ## Third
+        Third text.
+      MD
+    end
+
+    it 'moves only the footnote paragraphs, leaving the main text around them in place' do
+      result
+      expect(texts[0].markdown).to eq(
+        "Text with a note[^1].\n\nText of the first that follows its footnote.\n\n" \
+        "[^1]: Note placed right after the first text.\n"
+      )
+      expect(texts[1].markdown).to eq(
+        "Second text[^2], with a note on a multi-paragraph body.\n\n" \
+        "Main text of the second, after the note.\n\n" \
+        "[^2]: First paragraph of the note.\n\n    Indented continuation of the note.\n"
+      )
+      expect(texts[2].markdown).to eq('Third text.')
+    end
+  end
+
   describe 'text preceding the first heading' do
     let(:markdown) { "An introduction.\n\n## One\nFirst.\n## Two\nSecond.\n" }
 
@@ -244,6 +283,28 @@ describe ConvertManifestationToCollection do
       create(:collection_item, collection: uncollected, item: manifestation, seqno: 1)
       result
       expect(uncollected.collection_items.reload).to be_empty
+    end
+  end
+
+  describe 'manifestation counts' do
+    it 'counts the texts in the new collection' do
+      result
+      expect(collection.reload.manifestations_count).to eq(3)
+    end
+
+    it 'updates the count of a containing collection' do
+      volume = create(:collection, collection_type: :volume)
+      create(:collection_item, collection: volume, item: manifestation, seqno: 1)
+      create(:collection_item, collection: volume, item: create(:manifestation), seqno: 2)
+      result
+      expect(volume.reload.manifestations_count).to eq(4)
+    end
+
+    # Recounting after every item added would make converting a text with many sections quadratic
+    it 'recounts the new collection only once' do
+      allow_any_instance_of(Collection).to receive(:update_manifestations_count!).and_call_original # rubocop:disable RSpec/AnyInstance
+      result
+      expect(collection).to have_received(:update_manifestations_count!).once
     end
   end
 

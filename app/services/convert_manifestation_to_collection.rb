@@ -21,6 +21,7 @@ class ConvertManifestationToCollection < ApplicationService
   HEADING = /\A##(?!#)(.*)/
   FOOTNOTE_DEFINITION = /\A\[\^([^\]]+)\]:/
   FOOTNOTE_REFERENCE = /\[\^([^\]]+)\](?!:)/
+  INDENTED = /\A(?: {4}|\t)/
 
   def call(manifestation, collection_type)
     @manifestation = manifestation
@@ -37,15 +38,16 @@ class ConvertManifestationToCollection < ApplicationService
     ActiveRecord::Base.transaction do
       collection = create_collection(collection_type)
       replace_in_parent_collections(collection)
-      seqno = 0
-      if preamble.present?
-        CollectionItem.create!(collection: collection, seqno: seqno += 1, markdown: preamble)
-      end
       update_original(sections.first)
-      CollectionItem.create!(collection: collection, seqno: seqno += 1, item: @manifestation)
-      sections.drop(1).each do |section|
-        CollectionItem.create!(collection: collection, seqno: seqno += 1, item: clone_manifestation(section))
-      end
+      # Recounting the whole tree after every single item would make the conversion quadratic in the
+      # number of texts, so the count is updated once, at the end (which also propagates it to parents).
+      collection.skip_manifestations_count_update = true
+      items = preamble.present? ? [{ markdown: preamble }] : []
+      items << { item: @manifestation }
+      items += sections.drop(1).map { |section| { item: clone_manifestation(section) } }
+      items.each.with_index(1) { |attrs, seqno| collection.collection_items.create!(attrs.merge(seqno: seqno)) }
+      collection.skip_manifestations_count_update = false
+      collection.update_manifestations_count!
     end
     { success: true, collection: collection }
   rescue StandardError => e
@@ -97,16 +99,45 @@ class ConvertManifestationToCollection < ApplicationService
     line.start_with?('###') ? line[1..] : line
   end
 
-  # Removes footnote bodies from the part's lines, returning them. A body runs from its '[^label]:' line up
-  # to the next body or the end of the part -- the same rule Ingestible#relocate_footnotes follows.
+  # Removes footnote bodies from the part's lines, returning them. A body is the paragraph opened by a
+  # '[^label]:' line, plus any following paragraphs indented as its continuation (MultiMarkdown syntax).
+  # Bodies may sit anywhere, not only at the end, so ordinary text between or after them stays put.
   def extract_definitions(part, index)
-    start = part[:lines].index { |line| FOOTNOTE_DEFINITION.match?(line) }
-    return [] if start.nil?
-
-    block = part[:lines].slice!(start..)
-    block.slice_before { |line| FOOTNOTE_DEFINITION.match?(line) }.map do |lines|
-      { label: FOOTNOTE_DEFINITION.match(lines.first)[1], text: lines.join.strip, found_in: index }
+    definitions = []
+    kept = []
+    lines = part[:lines]
+    i = 0
+    while i < lines.size
+      match = FOOTNOTE_DEFINITION.match(lines[i])
+      if match
+        i, body = consume_definition(lines, i)
+        definitions << { label: match[1], text: body.join.strip, found_in: index }
+      else
+        kept << lines[i]
+        i += 1
+      end
     end
+    part[:lines] = kept
+    definitions
+  end
+
+  # Returns the index of the first line after the footnote body starting at `start`, and the body's lines.
+  # The blank lines trailing the body go with it, so removing it does not leave a gap in the text.
+  def consume_definition(lines, start)
+    stop = paragraph_end(lines, start + 1)
+    loop do
+      next_content = stop
+      next_content += 1 while next_content < lines.size && lines[next_content].blank?
+      return [next_content, lines[start...stop]] unless INDENTED.match?(lines[next_content].to_s)
+
+      stop = paragraph_end(lines, next_content)
+    end
+  end
+
+  # The index just past the paragraph containing line `from`: the next blank line or footnote body, if any.
+  def paragraph_end(lines, from)
+    from += 1 while from < lines.size && lines[from].present? && !FOOTNOTE_DEFINITION.match?(lines[from])
+    from
   end
 
   def references?(part, label)
