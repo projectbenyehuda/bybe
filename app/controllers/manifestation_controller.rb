@@ -22,6 +22,11 @@ class ManifestationController < ApplicationController
   # #show also admits the deletions bit, because it is where both of the above land afterwards and
   # the only page on which a soft-deleted text is reachable at all -- #read forwards even an editor
   # to the replacement. The individual editing actions the page links to keep their own checks.
+  # Splitting a text into a collection creates and rewrites catalogue records wholesale, so it is
+  # gated on the same bit as the other mass edits.
+  before_action only: %i(convert_to_collection) do |c|
+    c.require_editor('batch_editing')
+  end
   before_action only: %i(show) do |c|
     c.require_editor(%w(edit_catalog deletions))
   end
@@ -800,6 +805,20 @@ class ManifestationController < ApplicationController
       flash[:alert] = t(:soft_delete_failed, error: result[:error])
     end
     redirect_to manifestation_show_path(@m.id)
+  end
+
+  # Splits this Manifestation into a new Collection of texts, one per '## ' heading. See
+  # ConvertManifestationToCollection for the details.
+  def convert_to_collection
+    @m = Manifestation.find(params[:id])
+    result = ConvertManifestationToCollection.call(@m, params[:collection_type])
+    if result[:success]
+      flash[:notice] = t(:convert_to_collection_succeeded)
+      redirect_to collection_path(result[:collection])
+    else
+      flash[:alert] = t(:convert_to_collection_failed, error: result[:error])
+      redirect_to manifestation_show_path(@m.id)
+    end
   end
 
   # Undoes a soft-deletion by returning the text to public view. Only the status is restored: the

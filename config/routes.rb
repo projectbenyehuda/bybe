@@ -455,6 +455,8 @@ Bybeconv::Application.routes.draw do
   post 'manifestation/link_expression/:id' => 'manifestation#link_expression',
        as: 'manifestation_link_expression'
   post 'manifestation/soft_delete/:id' => 'manifestation#soft_delete', as: 'manifestation_soft_delete'
+  post 'manifestation/convert_to_collection/:id' => 'manifestation#convert_to_collection',
+       as: 'manifestation_convert_to_collection'
   post 'manifestation/undo_soft_delete/:id' => 'manifestation#undo_soft_delete',
        as: 'manifestation_undo_soft_delete'
   match 'manifestation/list', via: %i(get post)
