@@ -665,6 +665,17 @@ he:
   expressions_linked_successfully: הקישור בוצע בהצלחה
   expressions_link_failed: "שגיאה בקישור: %{error}"
   manifestation_not_found: מימוש לא נמצא
+  convert_to_collection: המרה לאוסף
+  convert_to_collection_explanation: פיצול הטקסט הזה לאוסף חדש, עם טקסט נפרד לכל כותרת ראשית (##).
+    הטקסט הזה ישמור על כתובתו ויהפוך לראשון שבהם; האחרים ייווצרו עם העתק של נתוני הקטלוג שלו.
+    האוסף יבוא במקומו של הטקסט בכל אוסף שהכיל אותו.
+  convert_to_collection_type: סוג האוסף החדש
+  convert_to_collection_confirm: לפצל את הטקסט הזה לאוסף של טקסטים? לא ניתן לבטל פעולה זו אוטומטית.
+  convert_to_collection_succeeded: הטקסט הומר לאוסף.
+  convert_to_collection_failed: "ההמרה לאוסף נכשלה: %{error}"
+  convert_to_collection_bad_type: סוג אוסף לא תקין
+  convert_to_collection_too_few_headings: כדי לפצל את הטקסט, עליו להכיל לפחות שתי כותרות ראשיות (##)
+  convert_to_collection_blank_heading: כל כותרת ראשית (##) חייבת להכיל כותרת
   soft_delete_work: מחיקה רכה של היצירה
   soft_delete_explanation: מחיקה רכה מסמנת את היצירה הזאת כמחוקה, ומפנה מעתה כל פנייה אליה אל יצירה
     אחרת. הופעותיה באסופות ובמדפים, וכן התגיות, ההמלצות והקישורים החיצוניים שלה, יועברו ליצירה

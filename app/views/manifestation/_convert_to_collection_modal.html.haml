@@ -1,0 +1,21 @@
+.modal-dialog.modal-dialog-centered{ role: 'document' }
+  .modal-content
+    = form_tag manifestation_convert_to_collection_path(manifestation.id), method: :post do
+      .popup-top
+        %button.btn-small-outline-v02{ type: 'button', 'data-dismiss' => 'modal' }
+          .btn-text-v02
+            %span.right-arrow 2
+            %span= t(:back)
+        .headline-2-v02{ style: 'text-align: center; margin: 0; padding-top: 3px;' }= t(:convert_to_collection)
+      .by-popup-v02
+        .by-card-content-v02
+          %p= t(:convert_to_collection_explanation)
+          %p
+            %label{ for: 'convert_collection_type' }= t(:convert_to_collection_type)
+            - type_options = Collection.collection_types.keys.excluding(*Collection::SYSTEM_TYPES).map do |type|
+              - [t("activerecord.attributes.collection.collection_types.#{type}"), type]
+            - select_opts = { id: 'convert_collection_type', class: 'form-control' }
+            = select_tag :collection_type, options_for_select(type_options, 'series'), select_opts
+          - submit_opts = { class: 'by-button-v02', id: 'convert_to_collection_submit',
+                            data: { confirm: t(:convert_to_collection_confirm) } }
+          = submit_tag t(:convert_to_collection), submit_opts

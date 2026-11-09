@@ -1102,6 +1102,18 @@ en:
   expressions_linked_successfully: Expressions linked successfully
   expressions_link_failed: "Error linking expressions: %{error}"
   manifestation_not_found: Manifestation not found
+  convert_to_collection: Convert into a collection
+  convert_to_collection_explanation: Splits this text into a new collection, with a separate text for
+    each top-level (##) heading. This text keeps its address and becomes the first of them; the others
+    are created with a copy of its metadata. The collection takes this text's place in any collection
+    that contained it.
+  convert_to_collection_type: Type of the new collection
+  convert_to_collection_confirm: Split this text into a collection of texts? This cannot be undone automatically.
+  convert_to_collection_succeeded: The text was converted into a collection.
+  convert_to_collection_failed: "Conversion into a collection failed: %{error}"
+  convert_to_collection_bad_type: Invalid collection type
+  convert_to_collection_too_few_headings: The text must contain at least two top-level (##) headings to be split
+  convert_to_collection_blank_heading: Every top-level (##) heading must contain a title
   soft_delete_work: Soft-delete this work
   soft_delete_explanation: Soft-deleting marks this work as deleted and sends anyone who asks for
     it from now on to another work instead. Its appearances in collections and anthologies, as well
