@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_21_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_150000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -125,10 +125,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_170000) do
   end
 
   create_table "api_keys", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "calls_count", default: 0, null: false
     t.datetime "created_at", precision: nil, null: false
     t.string "description"
     t.string "email"
     t.string "key"
+    t.datetime "last_used_at"
     t.integer "status"
     t.datetime "updated_at", precision: nil, null: false
     t.index ["email"], name: "index_api_keys_on_email", unique: true

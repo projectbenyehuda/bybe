@@ -13,6 +13,8 @@
             %th= t('.description')
             %th= t('.key')
             %th= t('.status')
+            %th= t('.calls_count')
+            %th= t('.last_used_at')
             %th
         %tbody
           - @api_keys.each do |api_key|
@@ -23,6 +25,8 @@
               %td
                 %span.badge{ class: api_key.status_enabled? ? 'badge-success' : 'badge-danger' }
                   = t(".statuses.#{api_key.status}")
+              %td.calls-count= number_with_delimiter(api_key.calls_count)
+              %td.last-used-at= api_key.last_used_at ? l(api_key.last_used_at, format: :short) : t('.never_used')
               %td
                 .btn-group
                   - if api_key.status_enabled?

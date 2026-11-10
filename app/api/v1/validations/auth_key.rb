@@ -9,9 +9,19 @@ module V1
       def validate_param!(attr_name, params)
         key = params[attr_name]
         api_key = ApiKey.find_by(key: key) if key.present?
-        return unless api_key.nil? || api_key.status_disabled?
+        if api_key.nil? || api_key.status_disabled?
+          raise AuthFailed, "#{@scope.full_name(attr_name)} not found or disabled"
+        end
 
-        raise AuthFailed, "#{@scope.full_name(attr_name)} not found or disabled"
+        record_usage(api_key)
+      end
+
+      private
+
+      # Single atomic UPDATE: no read-modify-write race between concurrent calls, and no
+      # callbacks or updated_at churn
+      def record_usage(api_key)
+        ApiKey.where(id: api_key.id).update_all(['calls_count = calls_count + 1, last_used_at = ?', Time.current])
       end
     end
   end

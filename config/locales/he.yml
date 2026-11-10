@@ -1755,6 +1755,7 @@ he:
       subject: סיכום הודעות מפרויקט בן־יהודה
   api_keys:
     index:
+      calls_count: קריאות
       confirm_destroy: למחוק את מפתח ה-API לצמיתות?
       confirm_disable: להשבית את מפתח ה-API של %{email}? קריאות API באמצעותו יידחו.
       description: תיאור
@@ -1767,7 +1768,9 @@ he:
       key: מפתח
       key_disabled: מפתח ה-API של %{email} הושבת
       key_enabled: מפתח ה-API של %{email} הופעל
+      last_used_at: שימוש אחרון
       new_key: מפתח API חדש
+      never_used: מעולם לא
       status: סטטוס
       statuses:
         disabled: מושבת
