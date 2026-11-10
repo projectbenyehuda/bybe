@@ -1,28 +1,38 @@
-#content.container-fluid
+.container-fluid#content
   .row
     .col-12
-      %h1 Listing api_keys
+      %h1= t('.title')
+      %p
+        = link_to t('.download_csv'), api_keys_path(format: :csv), class: 'btn btn-secondary', id: 'api_keys_csv'
+        = link_to t('.new_key'), new_api_key_path, class: 'btn btn-primary'
 
-      %table.table
+      %table.table#api_keys_table
         %thead
           %tr
-            %th Email
-            %th Description
-            %th Key
-            %th Status
+            %th= t('.email')
+            %th= t('.description')
+            %th= t('.key')
+            %th= t('.status')
             %th
-        %tdbody
+        %tbody
           - @api_keys.each do |api_key|
-            %tr
+            %tr{ id: "api_key_#{api_key.id}" }
               %td= api_key.email
               %td= api_key.description
               %td= api_key.key
               %td
-                %span.badge{ class: api_key.status_enabled? ? 'badge-success' : 'badge-danger' }= api_key.status
+                %span.badge{ class: api_key.status_enabled? ? 'badge-success' : 'badge-danger' }
+                  = t(".statuses.#{api_key.status}")
               %td
                 .btn-group
-                  =link_to 'Edit', edit_api_key_path(api_key), class: 'btn btn-primary'
-                  =link_to 'Destroy', api_key, :method => :delete, :data => { :confirm => 'Are you sure?' }, class: 'btn btn-danger'
-      %br
-
-      = link_to 'New Api key', new_api_key_path, class: 'btn btn-primary'
+                  - if api_key.status_enabled?
+                    = button_to t('.disable'), toggle_status_api_key_path(api_key, page: params[:page]),
+                                method: :patch, class: 'btn btn-warning', form_class: 'd-inline',
+                                data: { confirm: t('.confirm_disable', email: api_key.email) }
+                  - else
+                    = button_to t('.enable'), toggle_status_api_key_path(api_key, page: params[:page]),
+                                method: :patch, class: 'btn btn-success', form_class: 'd-inline'
+                  = link_to t('.edit'), edit_api_key_path(api_key), class: 'btn btn-primary'
+                  = link_to t('.destroy'), api_key, method: :delete, data: { confirm: t('.confirm_destroy') },
+                                                    class: 'btn btn-danger'
+      != paginate @api_keys

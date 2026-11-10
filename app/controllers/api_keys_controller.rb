@@ -1,12 +1,23 @@
+# frozen_string_literal: true
+
+require 'csv'
+
+# Public API key signup, plus admin-only management of existing keys
 class ApiKeysController < ApplicationController
   before_action :require_admin, except: %i(new create)
 
-  before_action :set_model, only: %i(edit update destroy)
+  before_action :set_model, only: %i(edit update destroy toggle_status)
 
   # GET /api_keys
-  # GET /api_keys.json
+  # GET /api_keys.csv - the full, unpaginated list
   def index
-    @api_keys = ApiKey.all
+    api_keys = ApiKey.order(:id)
+    respond_to do |format|
+      format.html { @api_keys = api_keys.page(params[:page]).per(50) }
+      format.csv do
+        send_data api_keys_csv(api_keys), type: 'text/csv; charset=utf-8', filename: 'api_keys.csv'
+      end
+    end
   end
 
   # GET /api_keys/new
@@ -60,7 +71,25 @@ class ApiKeysController < ApplicationController
     redirect_to api_keys_url
   end
 
+  # PATCH /api_keys/1/toggle_status
+  # Disabling a key makes the API reject it (see V1::Validations::AuthKey)
+  def toggle_status
+    @api_key.update!(status: @api_key.status_enabled? ? :disabled : :enabled)
+    redirect_to api_keys_path(page: params[:page]),
+                notice: t(@api_key.status_enabled? ? 'api_keys.index.key_enabled' : 'api_keys.index.key_disabled',
+                          email: @api_key.email)
+  end
+
   private
+
+  def api_keys_csv(api_keys)
+    "\uFEFF" + CSV.generate do |csv|
+      csv << %w(id email description key status created_at)
+      api_keys.find_each do |k|
+        csv << [k.id, k.email, k.description, k.key, k.status, k.created_at.iso8601]
+      end
+    end
+  end
 
   def key_params
     params[:api_key].permit(:id, :description, :email, :status)

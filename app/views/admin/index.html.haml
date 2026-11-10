@@ -18,6 +18,7 @@
     - if current_user.admin?
       %b
         %p= link_to t('projects.index.title'), admin_projects_path
+        %p= link_to t('api_keys.index.title'), api_keys_path
       %p
       %p
         %small= link_to t(:upload_file), html_file_new_path

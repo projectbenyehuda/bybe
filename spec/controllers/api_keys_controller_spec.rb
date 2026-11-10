@@ -69,8 +69,79 @@ describe ApiKeysController do
 
     context 'when admin user is logged in' do
       include_context 'Admin user logged in'
+      let!(:enabled_key) { create(:api_key, status: :enabled) }
+      let!(:disabled_key) { create(:api_key, status: :disabled) }
+
       it 'completes cuccessfully' do
         expect(subject).to be_successful
+      end
+
+      it 'lists keys with email, description, status and a toggle button' do
+        get :index
+        expect(response.body).to include(enabled_key.email, disabled_key.email, enabled_key.description)
+        expect(response.body).to include(toggle_status_api_key_path(enabled_key))
+        expect(response.body).to include(I18n.t('api_keys.index.disable'), I18n.t('api_keys.index.enable'))
+        expect(response.body).to include(api_keys_path(format: :csv))
+      end
+
+      context 'when requesting CSV' do
+        before { create_list(:api_key, 55) } # more than one HTML page
+
+        it 'returns all keys, unpaginated' do
+          get :index, format: :csv
+          expect(response).to be_successful
+          expect(response.media_type).to eq 'text/csv'
+          rows = CSV.parse(response.body.delete_prefix("\uFEFF"), headers: true)
+          expect(rows.size).to eq ApiKey.count
+          expect(rows.headers).to eq %w(id email description key status created_at)
+          row = rows.find { |r| r['email'] == disabled_key.email }
+          expect(row['status']).to eq 'disabled'
+          expect(row['description']).to eq disabled_key.description
+        end
+      end
+
+      context 'when requesting CSV as a non-admin' do
+        before { session[:user_id] = create(:user).id }
+
+        it 'redirects away' do
+          expect(get(:index, format: :csv)).to redirect_to '/'
+        end
+      end
+    end
+  end
+
+  describe 'toggle_status' do
+    subject(:toggle) { patch :toggle_status, params: { id: api_key.id } }
+
+    let!(:api_key) { create(:api_key, status: :enabled) }
+
+    include_context 'Unauthorized access to admin page'
+
+    context 'when admin user is logged in' do
+      include_context 'Admin user logged in'
+
+      it 'disables an enabled key' do
+        expect(toggle).to redirect_to api_keys_path
+        expect(api_key.reload).to be_status_disabled
+      end
+
+      it 're-enables a disabled key' do
+        api_key.update!(status: :disabled)
+        toggle
+        expect(api_key.reload).to be_status_enabled
+      end
+
+      it 'preserves the page parameter' do
+        expect(patch(:toggle_status, params: { id: api_key.id, page: 2 })).to redirect_to api_keys_path(page: 2)
+      end
+    end
+
+    context 'when a non-admin user tries it' do
+      before { session[:user_id] = create(:user).id }
+
+      it 'does not change the key' do
+        toggle
+        expect(api_key.reload).to be_status_enabled
       end
     end
   end
