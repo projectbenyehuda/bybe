@@ -71,6 +71,7 @@ describe ApiKeysController do
       include_context 'Admin user logged in'
       let!(:enabled_key) { create(:api_key, status: :enabled) }
       let!(:disabled_key) { create(:api_key, status: :disabled) }
+      let!(:used_key) { create(:api_key, calls_count: 12_345, last_used_at: Time.zone.local(2026, 11, 9, 13, 45)) }
 
       it 'completes cuccessfully' do
         expect(subject).to be_successful
@@ -84,6 +85,16 @@ describe ApiKeysController do
         expect(response.body).to include(api_keys_path(format: :csv))
       end
 
+      it 'shows usage stats for each key' do
+        get :index
+        page = Nokogiri::HTML(response.body)
+        expect(page.at_css("#api_key_#{used_key.id} .calls-count").text).to eq '12,345'
+        expect(page.at_css("#api_key_#{used_key.id} .last-used-at").text)
+          .to eq I18n.l(used_key.last_used_at, format: :short)
+        expect(page.at_css("#api_key_#{enabled_key.id} .calls-count").text).to eq '0'
+        expect(page.at_css("#api_key_#{enabled_key.id} .last-used-at").text).to eq I18n.t('api_keys.index.never_used')
+      end
+
       context 'when requesting CSV' do
         before { create_list(:api_key, 55) } # more than one HTML page
 
@@ -93,10 +104,15 @@ describe ApiKeysController do
           expect(response.media_type).to eq 'text/csv'
           rows = CSV.parse(response.body.delete_prefix("\uFEFF"), headers: true)
           expect(rows.size).to eq ApiKey.count
-          expect(rows.headers).to eq %w(id email description key status created_at)
+          expect(rows.headers).to eq %w(id email description key status created_at calls_count last_used_at)
           row = rows.find { |r| r['email'] == disabled_key.email }
           expect(row['status']).to eq 'disabled'
           expect(row['description']).to eq disabled_key.description
+          expect(row['calls_count']).to eq '0'
+          expect(row['last_used_at']).to be_nil
+          used_row = rows.find { |r| r['email'] == used_key.email }
+          expect(used_row['calls_count']).to eq '12345'
+          expect(used_row['last_used_at']).to eq used_key.last_used_at.iso8601
         end
       end
 

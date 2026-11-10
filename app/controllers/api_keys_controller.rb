@@ -84,9 +84,10 @@ class ApiKeysController < ApplicationController
 
   def api_keys_csv(api_keys)
     "\uFEFF" + CSV.generate do |csv|
-      csv << %w(id email description key status created_at)
+      csv << %w(id email description key status created_at calls_count last_used_at)
       api_keys.find_each do |k|
-        csv << [k.id, k.email, k.description, k.key, k.status, k.created_at.iso8601]
+        csv << [k.id, k.email, k.description, k.key, k.status, k.created_at.iso8601, k.calls_count,
+                k.last_used_at&.iso8601]
       end
     end
   end

@@ -1203,6 +1203,7 @@ en:
   api_key: API Key
   api_keys:
     index:
+      calls_count: Calls
       confirm_destroy: Delete this API key permanently?
       confirm_disable: Disable the API key of %{email}? API calls using it will be refused.
       description: Description
@@ -1215,7 +1216,9 @@ en:
       key: Key
       key_disabled: The API key of %{email} was disabled
       key_enabled: The API key of %{email} was enabled
+      last_used_at: Last used
       new_key: New API key
+      never_used: Never
       status: Status
       statuses:
         disabled: Disabled
