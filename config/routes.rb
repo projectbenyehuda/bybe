@@ -481,7 +481,11 @@ Bybeconv::Application.routes.draw do
       as: 'manifestation_version_diff'
   post 'manifestation/:id/versions/:version_id/restore' => 'manifestation#restore_version',
        as: 'manifestation_restore_version'
-  resources :api_keys, except: :show
+  resources :api_keys, except: :show do
+    member do
+      patch :toggle_status
+    end
+  end
   get 'taggings/render_tags', as: 'render_tags'
   get 'tag_suggest' => 'taggings#suggest', as: 'tag_suggest'
   match 'tags' => 'taggings#browse', via: %i(get post), as: 'tags_browse'

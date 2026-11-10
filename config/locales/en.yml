@@ -1201,6 +1201,26 @@ en:
   api_description: Organizational affiliation description and main usage purposes
   api_email: Your Email Address
   api_key: API Key
+  api_keys:
+    index:
+      confirm_destroy: Delete this API key permanently?
+      confirm_disable: Disable the API key of %{email}? API calls using it will be refused.
+      description: Description
+      destroy: Delete
+      disable: Disable
+      download_csv: Download full list (CSV)
+      edit: Edit
+      email: Email
+      enable: Enable
+      key: Key
+      key_disabled: The API key of %{email} was disabled
+      key_enabled: The API key of %{email} was enabled
+      new_key: New API key
+      status: Status
+      statuses:
+        disabled: Disabled
+        enabled: Enabled
+      title: API keys management
   api_keys_mailer:
     key_created:
       subject: Your API Key

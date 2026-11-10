@@ -1753,6 +1753,26 @@ he:
       subject: חסימה מפרויקט בן־יהודה
     notification_digest:
       subject: סיכום הודעות מפרויקט בן־יהודה
+  api_keys:
+    index:
+      confirm_destroy: למחוק את מפתח ה-API לצמיתות?
+      confirm_disable: להשבית את מפתח ה-API של %{email}? קריאות API באמצעותו יידחו.
+      description: תיאור
+      destroy: מחיקה
+      disable: השבתה
+      download_csv: הורדת הרשימה המלאה (CSV)
+      edit: עריכה
+      email: דואל
+      enable: הפעלה
+      key: מפתח
+      key_disabled: מפתח ה-API של %{email} הושבת
+      key_enabled: מפתח ה-API של %{email} הופעל
+      new_key: מפתח API חדש
+      status: סטטוס
+      statuses:
+        disabled: מושבת
+        enabled: פעיל
+      title: ניהול מפתחות API
   api_keys_mailer:
     key_created:
       subject: מפתח ה־API שלך
