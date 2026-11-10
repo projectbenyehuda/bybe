@@ -1977,19 +1977,6 @@ p.by-genre-name-v02.headline-2-v02 {
   }
 }
 
-/* Collection show - .side-menu-item links */
-.binder-texts-list .side-menu-item:hover {
-  width: auto;
-  max-width: max-content;
-  overflow: visible;
-  white-space: nowrap;
-  position: relative;
-  z-index: 100;
-  background-color: white;
-  padding-left: 4px;
-  padding-right: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
 /* Add visual feedback on navbar hover - shadow only, no padding to avoid layout shift */
 .author-side-nav-col:hover .book-nav-full,
 .author-side-nav-col:hover .mainlist,
