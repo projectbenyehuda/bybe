@@ -19,8 +19,8 @@ jobs:
       - name: Calculate Hash
         id: calc-hash
         run: |
-          # Create a combined hash of Dockerfile.test and Gemfile.lock
-          HASH=$(sha256sum Dockerfile.test Gemfile.lock | sha256sum | cut -c1-7)
+          # Create a combined hash of Dockerfile.test, Gemfile and Gemfile.lock
+          HASH=$(sha256sum Dockerfile.test Gemfile Gemfile.lock | sha256sum | cut -c1-7)
           echo "hash=$HASH" >> $GITHUB_OUTPUT
 
       - name: Log in to GHCR
