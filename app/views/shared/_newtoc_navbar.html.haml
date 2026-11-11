@@ -30,6 +30,8 @@
     end
     non_uncollected = sections[:work_level]
     uncollected_node = sections[:uncollected]
+    # labelled after the whole section, as in the TOC body, not just the part listed in the sidebar
+    work_level_label = toc_work_level_label(non_uncollected, role, @author)
     involved_on_work_level = non_uncollected.select do |node|
       sidebar_collection_types.include?(node.collection.collection_type)
     end
@@ -54,6 +56,7 @@
       involved_on_collection_level: involved_on_collection_level,
       filtered_collection_level_count: filtered_collection_level_count,
       involved_on_work_level: involved_on_work_level,
+      work_level_label: work_level_label,
       filtered_work_level_count: filtered_work_level_count,
       uncollected_node: uncollected_node,
       first_scroll_target: first_scroll_target
@@ -98,7 +101,7 @@
       - if involved_on_work_level.present?
         %div{ class: first ? "book-type selected pointer" : "book-type pointer" }
           .truncate{ 'data-bs-toggle' => 'collapse', 'data-bs-target' => "#work-#{role}-collapse", 'data-scroll-target' => "#works-#{role}-work-level" }
-            = t('toc_by_role.involved_on_work_level')
+            = data[:work_level_label]
             - if filtered_work_level_count > 0
               %span.count-badge= " (#{filtered_work_level_count})"
             %span.collapse-arrow ↓

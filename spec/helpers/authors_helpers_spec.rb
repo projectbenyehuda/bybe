@@ -161,6 +161,71 @@ describe AuthorsHelper do
     end
   end
 
+  describe '.toc_work_level_label' do
+    subject(:label) do
+      I18n.with_locale(:he) do
+        helper.toc_work_level_label(toc_role_sections[:work_level], 'author', authority)
+      end
+    end
+
+    let(:authority) { create(:authority, gender: 'female') }
+    let(:other_authority) { create(:authority) }
+    let(:toc_role_sections) do
+      helper.toc_role_sections(GenerateTocTree.call(authority).top_level_nodes, 'author', authority.id)
+    end
+
+    # a periodical holding one issue with one of the authority's works in it
+    def periodical_with_own_work(periodical_editors: [], issue_editors: [])
+      work = create(:manifestation, author: authority)
+      issue = create(:collection, collection_type: :periodical_issue, editors: issue_editors, manifestations: [work])
+      create(:collection, collection_type: :periodical, editors: periodical_editors, included_collections: [issue])
+    end
+
+    def others_volume_with_own_work
+      create(:collection, collection_type: :volume, authors: [other_authority],
+                          manifestations: [create(:manifestation, author: authority)])
+    end
+
+    context 'when the section holds only titles by others' do
+      before { others_volume_with_own_work }
+
+      it { is_expected.to eq('בכותרים של אחרים') }
+    end
+
+    context 'when the section holds only periodicals the authority edits' do
+      before { periodical_with_own_work(periodical_editors: [authority]) }
+
+      it { is_expected.to eq('כותרים בעריכתה') }
+
+      context 'when the authority is male' do
+        let(:authority) { create(:authority, gender: 'male') }
+
+        it { is_expected.to eq('כותרים בעריכתו') }
+      end
+    end
+
+    context 'when the authority edits the issue rather than the periodical' do
+      before { periodical_with_own_work(issue_editors: [authority]) }
+
+      it { is_expected.to eq('כותרים בעריכתה') }
+    end
+
+    context 'when the section holds a periodical edited by somebody else' do
+      before { periodical_with_own_work(periodical_editors: [other_authority]) }
+
+      it { is_expected.to eq('בכותרים של אחרים') }
+    end
+
+    context 'when the section holds both edited periodicals and titles by others' do
+      before do
+        periodical_with_own_work(periodical_editors: [authority])
+        others_volume_with_own_work
+      end
+
+      it { is_expected.to eq('בכותרים של אחרים ובכתבי עת') }
+    end
+  end
+
   describe '.compact_authorities_line' do
     subject(:result) { helper.compact_authorities_line(manifestation, authority.id) }
 

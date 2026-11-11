@@ -841,6 +841,8 @@ en:
   toc_by_role:
     involved_on_collection_level: Involved on collection level
     involved_on_work_level: Involved on work level
+    involved_on_work_level_and_periodicals: In others' titles and in periodicals
+    edited_periodicals: Titles edited
     uncollected_works: Uncollected works
     headers:
       author: Authored works

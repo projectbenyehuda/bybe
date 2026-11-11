@@ -112,6 +112,13 @@ class Collection < ApplicationRecord
     SYSTEM_TYPES.include?(collection_type)
   end
 
+  # A series contained in another collection (e.g. a cycle of poems in an anthology, or a column in a
+  # periodical issue). Being credited on such a series does not make the enclosing title one's own, so the
+  # author TOC does not treat it as collection-level involvement.
+  def nested_series?
+    series? && parent_collection_items.any?
+  end
+
   # Allow system operations (like RefreshUncollectedWorksCollection) to bypass type protection
   def allow_system_type_change!
     @allow_system_type_change = true
