@@ -629,15 +629,16 @@ class ManifestationController < ApplicationController
     render partial: 'surprise_work', locals: { work: work }
   end
 
-  # temporary action to map to the first manifestation of the work; # TODO: in the future, show something intelligent about multiple expressions per work
+  # temporary action to map to the first manifestation of the work;
+  # # TODO: in the future, show something intelligent about multiple expressions per work
   def workshow
-    work = Work.find(params[:id])
-    unless work.nil?
-      m = work.expressions[0].manifestations[0]
-      redirect_to action: :read, id: m.id
-    else
+    e = Expression.find_by(work_id: params[:id])
+    if e.nil? || e.manifestations.empty?
       flash[:error] = t(:no_such_item)
       redirect_to '/'
+    else
+      m = e.manifestations.first
+      redirect_to manifestation_path(m)
     end
   end
 
