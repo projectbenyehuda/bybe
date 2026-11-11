@@ -1073,9 +1073,31 @@ describe ManifestationController do
     end
 
     describe '#workshow' do
-      subject { get :workshow, params: { id: manifestation.expression.work.id} }
+      subject(:call) { get :workshow, params: { id: work.id } }
 
-      it { is_expected.to redirect_to manifestation_path(manifestation) }
+      context 'when the work has a manifestation' do
+        let(:work) { manifestation.expression.work }
+
+        it { is_expected.to redirect_to manifestation_path(manifestation) }
+      end
+
+      context 'when there is no expression for the given work_id' do
+        let(:work) { create(:work) }
+
+        it 'redirects to the home page with an error' do
+          expect(call).to redirect_to('/')
+          expect(flash[:error]).to eq I18n.t(:no_such_item)
+        end
+      end
+
+      context 'when the expression for the given work_id has no manifestations' do
+        let(:work) { create(:expression).work }
+
+        it 'redirects to the home page with an error' do
+          expect(call).to redirect_to('/')
+          expect(flash[:error]).to eq I18n.t(:no_such_item)
+        end
+      end
     end
 
     describe '#remove_image' do
