@@ -20,6 +20,6 @@ jobs:
       - name: Delete old test docker images
         uses: actions/delete-package-versions@v5
         with:
-          package-name: 'bybe-test'
+          package-name: 'bybe/bybe-test'
           package-type: 'container'
           min-versions-to-keep: 10 # Keep 10 versions
