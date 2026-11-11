@@ -29,7 +29,7 @@
   - if involved_on_work_level.present?
     %div{ id: "works-#{role}-work-level", role: 'tabpanel' }
       .headline-2-v02
-        = t('toc_by_role.involved_on_work_level')
+        = toc_work_level_label(involved_on_work_level, role, @author)
         - if work_level_count > 0
           %span.count-badge= " (#{work_level_count})"
       %ul.toclist{ role: 'tree' }

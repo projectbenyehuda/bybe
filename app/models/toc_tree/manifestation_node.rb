@@ -32,8 +32,10 @@ module TocTree
       )
 
       return involved_in_parent if involved_on_collection_level
+      return false if involved_in_parent
 
-      return directly_involved?(role, authority_id) && !involved_in_parent
+      # On work level, a nested series the authority is credited on is listed in its entirety
+      directly_involved?(role, authority_id) || involved_in_parent_series(parent_collections, role, authority_id)
     end
 
     # Count manifestations (1 if visible, published and the authority's own, 0 otherwise).

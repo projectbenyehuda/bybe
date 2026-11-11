@@ -16,14 +16,15 @@ module TocTree
     end
 
     def visible?(role, authority_id, involved_on_collection_level, parent_collection = nil)
-      # Placeholders should only be visible if authority is involved on collection level
-      return false unless involved_on_collection_level
-
       # Placeholder should be visible if authority is involved anywhere in the parent collection hierarchy.
       # We check recursively up the hierarchy (same logic as ManifestationNode) to handle cases where the
       # authority is involved in a grandparent collection but not directly in the immediate parent.
-      check_collection = parent_collection || @collection_item.collection
-      involved_in_parent_collection([check_collection], role, authority_id)
+      check_collections = [parent_collection || @collection_item.collection]
+      involved_in_parent = involved_in_parent_collection(check_collections, role, authority_id)
+      return involved_in_parent if involved_on_collection_level
+
+      # On work level, placeholders are only shown as part of a nested series listed in its entirety
+      !involved_in_parent && involved_in_parent_series(check_collections, role, authority_id)
     end
 
     def alt_title

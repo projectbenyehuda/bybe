@@ -13,13 +13,17 @@ RSpec.shared_context 'when authority has several collections' do
     )
   end
   let!(:uncollected_collection) { create(:collection, :uncollected) }
-  let!(:nested_edited_collection) { create(:collection, editors: [authority]) }
+  # Nested collections the authority is credited on are given an explicit type, as credit on a nested
+  # series is not collection-level involvement (see Collection#nested_series?)
+  let!(:nested_edited_collection) { create(:collection, collection_type: :volume, editors: [authority]) }
   let!(:nested_translated_collection) do
-    create(:collection, translators: [authority], included_collections: [nested_translated_subcollection])
+    create(:collection, collection_type: :volume, translators: [authority],
+                        included_collections: [nested_translated_subcollection])
   end
   let!(:nested_translated_subcollection) do
     create(
       :collection,
+      collection_type: :volume,
       translators: [authority],
       title_placeholders: ['Title placeholder'],
       markdown_placeholders: ['Markdown placeholder']

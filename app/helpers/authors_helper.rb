@@ -141,6 +141,20 @@ module AuthorsHelper
     { collection_level: collection_level, work_level: work_level, uncollected: uncollected }
   end
 
+  # Heading of a role's work-level TOC section. That section lists the authority's works within others' titles,
+  # but also their works in periodicals they themselves edit, so the heading depends on which kind it holds.
+  def toc_work_level_label(work_level_nodes, role, authority)
+    edited_count = work_level_nodes.count { |node| node.edited_periodical?(role, authority.id) }
+    key = if edited_count.zero?
+            'involved_on_work_level'
+          elsif edited_count == work_level_nodes.size
+            'edited_periodicals'
+          else
+            'involved_on_work_level_and_periodicals'
+          end
+    t("toc_by_role.#{key}", gender_letter: authority.gender_letter)
+  end
+
   # Whether a role has any TOC content at all, i.e. whether its heading should be rendered
   def toc_role_present?(sections)
     sections[:collection_level].present? || sections[:work_level].present? ||

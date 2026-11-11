@@ -36,7 +36,8 @@ module TocTree
     # @param parent_collection [Collection] optional parent collection context (not used for CollectionNode,
     #   but needed for signature consistency with other node types)
     def visible?(role, authority_id, involved_on_collection_level, parent_collection = nil)
-      involvement_check = involved?(role, authority_id)
+      # credit on a nested series is not collection-level involvement: such a series is listed on work level
+      involvement_check = involved?(role, authority_id) && !@collection.nested_series?
 
       if involved_on_collection_level
         return true if involvement_check
@@ -67,6 +68,21 @@ module TocTree
     # and hence not offered in the flat list or its filters either, which are built from the listed texts.
     def collapsed_for?(role, authority_id)
       role.to_s == 'editor' && involved?(role, authority_id)
+    end
+
+    # Whether this is a periodical or periodical issue edited by the given authority, i.e. one in which the
+    # authority's works listed on work level appear in a title of their own editing rather than someone else's.
+    # A periodical counts if the authority edits it, or edits every issue of it listed on work level.
+    def edited_periodical?(role, authority_id)
+      return false unless @collection.periodical? || @collection.periodical_issue?
+      return true if involved?('editor', authority_id)
+      return false unless @collection.periodical?
+
+      issues = children_by_role(role, authority_id, false)
+      issues.present? && issues.all? do |child|
+        child.is_a?(TocTree::CollectionNode) && child.collection.periodical_issue? &&
+          child.edited_periodical?(role, authority_id)
+      end
     end
 
     def sorted_children
