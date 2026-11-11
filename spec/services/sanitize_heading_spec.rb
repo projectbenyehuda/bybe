@@ -38,13 +38,13 @@ describe SanitizeHeading do
   context 'when heading contains escaped quotes' do
     let(:heading) { 'title \"quoted\"' }
 
-    it { is_expected.to eq('title "quoted"') }
+    it { is_expected.to eq('title &quot;quoted&quot;') }
   end
 
   context 'when heading has mixed content' do
     let(:heading) { '## <b>title</b>[^ftn1] \"text\"[^2]' }
 
-    it { is_expected.to eq('&nbsp;&nbsp;&nbsp; title "text"') }
+    it { is_expected.to eq('&nbsp;&nbsp;&nbsp; title &quot;text&quot;') }
   end
 
   context 'when heading is plain text' do
@@ -80,7 +80,7 @@ describe SanitizeHeading do
   context 'when heading contains escaped single quotes' do
     let(:heading) { 'title with \\\'single quotes\\\'' }
 
-    it { is_expected.to eq("title with 'single quotes'") }
+    it { is_expected.to eq('title with &#39;single quotes&#39;') }
   end
 
   context 'when heading contains escaped angled brackets' do
@@ -92,6 +92,6 @@ describe SanitizeHeading do
   context 'when heading contains multiple escape sequences' do
     let(:heading) { '## title \\[part 1\\] \\*emphasis\\* \"quoted\"[^1]' }
 
-    it { is_expected.to eq('&nbsp;&nbsp;&nbsp; title [part 1] *emphasis* "quoted"') }
+    it { is_expected.to eq('&nbsp;&nbsp;&nbsp; title [part 1] *emphasis* &quot;quoted&quot;') }
   end
 end
