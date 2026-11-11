@@ -43,6 +43,9 @@ module TocTree
         return true if involvement_check
       elsif !@collection.uncollected?
         return false if involvement_check
+        # a credited nested series is listed on work level in its own right, even when it lists no children
+        # (collapsed on its editor's page, see #collapsed_for?)
+        return true if involved?(role, authority_id)
       end
 
       # Checking if collection contains visible children (recursive check)

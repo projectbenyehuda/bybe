@@ -70,6 +70,21 @@ describe TocTree::CollectionNode, '#visible?' do
     end
   end
 
+  context 'when the authority edits a series nested in somebody else\'s volume' do
+    let(:series) do
+      create(:collection, collection_type: :series, editors: [authority], manifestations: [foreign_work])
+    end
+    let(:editor_sections) { toc_role_sections(top_nodes, 'editor', authority.id) }
+
+    it 'lists the volume in the editor work-level section, with the series collapsed to its title' do
+      expect(editor_sections[:collection_level]).to be_empty
+      expect(editor_sections[:work_level].map(&:collection)).to eq([volume])
+      series_node = volume_node.children_by_role('editor', authority.id, false).sole
+      expect(series_node.collection).to eq(series)
+      expect(series_node.collapsed_for?('editor', authority.id)).to be(true)
+    end
+  end
+
   context 'when the credited series is not nested in any other collection' do
     let!(:volume) { nil }
 
