@@ -205,6 +205,38 @@ describe AnthologiesController do
         end
       end
     end
+
+    context 'when the page parameter is invalid' do
+      shared_examples 'falls back to the first page' do
+        it 'renders the first page instead of raising an error' do
+          subject
+          expect(response).to be_successful
+          expect(assigns(:page)).to eq(1)
+        end
+      end
+
+      context 'when page is negative' do
+        let(:params) { { page: '-1' } }
+
+        it_behaves_like 'falls back to the first page'
+      end
+
+      context 'when page is zero' do
+        let(:params) { { page: '0' } }
+
+        it_behaves_like 'falls back to the first page'
+      end
+    end
+
+    context 'when page is past the last page' do
+      let(:params) { { page: '999' } }
+
+      it 'falls back to the last page' do
+        subject
+        expect(response).to be_successful
+        expect(assigns(:page)).to eq(assigns(:total_pages))
+      end
+    end
   end
 
   describe 'admin authorization' do
