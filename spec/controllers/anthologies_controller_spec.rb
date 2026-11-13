@@ -136,12 +136,12 @@ describe AnthologiesController do
   end
 
   describe '#browse' do
+    subject(:call) { get :browse, params: params }
+
     let(:user) { nil }
     let!(:public_anthology) { create(:anthology, access: :pub, title: 'Public Anthology') }
     let!(:private_anthology) { create(:anthology, access: :priv, title: 'Private Anthology') }
     let!(:unlisted_anthology) { create(:anthology, access: :unlisted, title: 'Unlisted Anthology') }
-
-    subject { get :browse, params: params }
 
     before do
       session[:user_id] = user.id if user.present?
@@ -151,7 +151,7 @@ describe AnthologiesController do
       let(:params) { {} }
 
       it 'shows only public anthologies' do
-        subject
+        call
         expect(assigns(:anthologies).to_a).to eq([public_anthology])
       end
     end
@@ -161,7 +161,7 @@ describe AnthologiesController do
       let(:params) { {} }
 
       it 'shows only public anthologies' do
-        subject
+        call
         expect(assigns(:anthologies).to_a).to eq([public_anthology])
       end
 
@@ -178,12 +178,12 @@ describe AnthologiesController do
         let(:params) { {} }
 
         it 'shows only public anthologies by default' do
-          subject
+          call
           expect(assigns(:anthologies).to_a).to eq([public_anthology])
         end
 
         it 'loads user list for owner reassignment' do
-          subject
+          call
           expect(assigns(:all_users)).to be_present
           expect(assigns(:all_users)).to be_a(Array)
         end
@@ -193,14 +193,14 @@ describe AnthologiesController do
         let(:params) { { show_all: '1' } }
 
         it 'shows all anthologies including private and unlisted' do
-          subject
+          call
           anthology_ids = assigns(:anthologies).pluck(:id).sort
           expected_ids = [public_anthology.id, private_anthology.id, unlisted_anthology.id].sort
           expect(anthology_ids).to eq(expected_ids)
         end
 
         it 'sets @show_all to true' do
-          subject
+          call
           expect(assigns(:show_all)).to be true
         end
       end
@@ -209,7 +209,7 @@ describe AnthologiesController do
     context 'when the page parameter is invalid' do
       shared_examples 'falls back to the first page' do
         it 'renders the first page instead of raising an error' do
-          subject
+          call
           expect(response).to be_successful
           expect(assigns(:page)).to eq(1)
         end
@@ -232,7 +232,7 @@ describe AnthologiesController do
       let(:params) { { page: '999' } }
 
       it 'falls back to the last page' do
-        subject
+        call
         expect(response).to be_successful
         expect(assigns(:page)).to eq(assigns(:total_pages))
       end
