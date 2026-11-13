@@ -90,6 +90,10 @@ class AnthologiesController < ApplicationController
     end
 
     @total_pages = (@total / @per_page.to_f).ceil
+
+    @page = 1 if @page < 1
+    @page = @total_pages if @total_pages > 0 && @page > @total_pages
+
     @anthologies = @anthologies.offset((@page - 1) * @per_page).limit(@per_page)
   end
 
