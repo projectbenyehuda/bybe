@@ -144,7 +144,7 @@ module AuthorsHelper
   # Genre => count of the authority's works listed in its TOC, for the author card's genre chips.
   # Counted off the same TOC tree, by the same rules (TocTree nodes' #counted_manifestations), as
   # the role headings and the flat list's filters, so the chips agree with both. A work listed
-  # under several roles or collections counts once. Genres are ordered by descending count.
+  # under several roles or collections counts once. Genres are in the systemwide order (Work::GENRES).
   def toc_genre_counts(top_nodes, authority_id)
     manifestations = InvolvedAuthority::ROLES_PRESENTATION_ORDER.flat_map do |role|
       sections = toc_role_sections(top_nodes, role, authority_id)
@@ -154,7 +154,8 @@ module AuthorsHelper
         sections[:uncollected]&.counted_manifestations(role, authority_id, false)
       ].compact.flatten
     end
-    manifestations.uniq(&:id).map { |m| m.expression.work.genre }.tally.sort_by { |genre, count| [-count, genre] }
+    manifestations.uniq(&:id).map { |m| m.expression.work.genre }.tally
+                  .sort_by { |genre, _count| Work::GENRES.index(genre) || Work::GENRES.size }
   end
 
   # Heading of a role's work-level TOC section. That section lists the authority's works within others' titles,

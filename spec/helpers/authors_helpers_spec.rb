@@ -197,8 +197,9 @@ describe AuthorsHelper do
       expect(result).to eq('poetry' => 2, 'prose' => 1)
     end
 
-    it 'orders genres by descending count' do
-      expect(result.keys).to eq(%w(poetry prose))
+    it 'orders genres in the systemwide genre order, not by count' do
+      create_list(:manifestation, 3, author: authority, genre: 'drama', collections: [own_volume])
+      expect(result.keys).to eq(%w(poetry prose drama))
     end
   end
 
