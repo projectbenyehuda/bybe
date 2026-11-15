@@ -39,5 +39,9 @@ module TocTree
     def count_manifestations(_role, _authority_id, _involved_on_collection_level, _parent_collection = nil)
       0
     end
+
+    def counted_manifestations(_role, _authority_id, _involved_on_collection_level, _parent_collection = nil)
+      []
+    end
   end
 end

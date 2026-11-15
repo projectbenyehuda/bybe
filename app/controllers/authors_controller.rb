@@ -499,6 +499,7 @@ class AuthorsController < ApplicationController
         # Pre-calculate TOC tree and counts for efficiency (used in both navbar and TOC body)
         @toc_tree = GenerateTocTree.call(@author)
         @toc_counts = calculate_toc_counts(@toc_tree, @author.id)
+        @genre_counts = helpers.toc_genre_counts(@toc_tree.top_level_nodes, @author.id)
         # Data for the flat-list filters pane (bead ln5). Relatively expensive, so
         # cache per author for non-editors (mirrors the _generated_toc fragment cache);
         # editors get fresh data so recent featuring/recommendation changes show up.

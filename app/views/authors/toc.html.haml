@@ -51,7 +51,8 @@
                     .lexicon-logo
                     = image_tag 'osu-logo.jpg', class: 'osu-partner-logo', alt: 'OSU'
               .author-works-by-type
-                - @author.cached_genre_stats.each do |pair|
+                -# counted off the TOC tree, as the filters pane's genre facet is (legacy TOCs have no tree)
+                - (@genre_counts || @author.cached_genre_stats).each do |pair|
                   - genre = pair[0]
                   - count = pair[1]
                   .author-works-type.genre-toggle.genre-active{
