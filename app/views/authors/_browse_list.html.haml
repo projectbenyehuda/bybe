@@ -13,7 +13,7 @@
   .headline-2-v02
     = authors_label_by_gender_filter(@genders, @total)
     %a.permalink-btn{href: request.original_url, title: t(:permalink)}
-      = t(:permalink)
+      🔗 #{t(:permalink)}
   .filters
     - @filters.each do |f, id, which|
       %button.tag

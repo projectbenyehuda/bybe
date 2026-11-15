@@ -10,7 +10,7 @@
                              death_year_from: @death_year_from, death_year_to: @death_year_to }.compact
       - permalink_url = url_for(permalink_params.merge(only_path: false))
       %a.permalink-btn{ href: '#', title: t(:permalink), data: { url: permalink_url } }
-        = t(:permalink)
+        🔗 #{t(:permalink)}
 
   .by-card-content-v02
     - if @filters.any?
