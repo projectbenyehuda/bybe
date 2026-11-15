@@ -22,7 +22,7 @@ describe 'Browse permalink button' do
       permalink_btn = find('a.permalink-btn')
 
       # Verify link text uses I18n
-      expect(permalink_btn.text).to match(/Permanent link|קישורית קבועה/)
+      expect(permalink_btn.text).to match(/\A🔗 (Permanent link|קישורית קבועה)\z/)
 
       # Verify href is set to current page URL
       expect(permalink_btn[:href]).to include('/authors')
@@ -43,6 +43,7 @@ describe 'Browse permalink button' do
       # Wait for feedback to disappear and text to return to original
       # Using Capybara's built-in waiting instead of sleep for better performance
       expect(page).to have_selector('a.permalink-btn', text: original_text, wait: 3)
+      expect(original_text).to start_with('🔗 ')
     end
 
     it 'allows right-click to copy URL' do
@@ -98,7 +99,7 @@ describe 'Browse permalink button' do
       permalink_btn = find('a.permalink-btn')
 
       # Verify link text uses I18n
-      expect(permalink_btn.text).to match(/Permanent link|קישורית קבועה/)
+      expect(permalink_btn.text).to match(/\A🔗 (Permanent link|קישורית קבועה)\z/)
 
       # Verify href is set to current page URL
       expect(permalink_btn[:href]).to include('/works')
@@ -119,6 +120,7 @@ describe 'Browse permalink button' do
       # Wait for feedback to disappear and text to return to original
       # Using Capybara's built-in waiting instead of sleep for better performance
       expect(page).to have_selector('a.permalink-btn', text: original_text, wait: 3)
+      expect(original_text).to start_with('🔗 ')
     end
 
     it 'allows right-click to copy URL' do
@@ -145,7 +147,7 @@ describe 'Browse permalink button' do
       expect(page).to have_css('a.permalink-btn')
       permalink_btn = find('a.permalink-btn')
 
-      expect(permalink_btn.text).to match(/Permanent link|קישורית קבועה/)
+      expect(permalink_btn.text).to match(/\A🔗 (Permanent link|קישורית קבועה)\z/)
       expect(permalink_btn[:href]).to include('/collections')
     end
 
@@ -159,6 +161,7 @@ describe 'Browse permalink button' do
 
       expect(page).to have_text(/Link copied to clipboard!|הקישורית הועתקה ללוח!/)
       expect(page).to have_selector('a.permalink-btn', text: original_text, wait: 3)
+      expect(original_text).to start_with('🔗 ')
     end
   end
 end

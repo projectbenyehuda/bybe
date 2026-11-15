@@ -129,7 +129,7 @@ describe 'Anthology browse page' do
       permalink_btn = find('a.permalink-btn')
 
       # Verify link text uses I18n
-      expect(permalink_btn.text).to match(/Permanent link|קישורית קבועה/)
+      expect(permalink_btn.text).to match(/\A🔗 (Permanent link|קישורית קבועה)\z/)
 
       # Verify href is set to current page URL
       expect(permalink_btn[:href]).to include('/anthologies/browse')
