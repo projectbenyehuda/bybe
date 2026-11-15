@@ -153,6 +153,12 @@ en:
         add_work: Add work
         drag_to_reorder: Drag to reorder
         reordering_failed: Reordering failed. Works list will be reloaded.
+        add_sub_heading: Add sub-heading
+        drag_sub_heading_to_reorder: Drag to reorder sub-headings
+        sub_heading_name_prompt: 'Sub-heading name (e.g. Poetry, Research):'
+        delete_sub_heading_confirm: Delete this sub-heading? Its works will move to the section's list of works with no sub-heading.
+        sub_heading_action_failed: The sub-heading action failed
+        move_sub_heading_to: Move to section
       edit:
         title: Edit Work
       form:
@@ -160,6 +166,7 @@ en:
         no_authority_warning: Cannot associate works with publications without first associating this person with an Authority in the Ben-Yehuda database
         select_publication: Select publication...
         select_collection: Select collection...
+        no_sub_heading: (No sub-heading)
     links:
       index:
         add_link: Add link

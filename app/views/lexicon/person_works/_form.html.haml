@@ -30,6 +30,18 @@
   = f.input :work_type,
             collection: LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_enum_name(:work_type, k), k] },
             include_blank: false
+  - work_groups = @person.work_groups.group_by(&:work_type)
+  - if work_groups.any?
+    -# Picking a sub-heading moves the work to that sub-heading's section; changing the section
+      alone takes the work out of its sub-heading (LexPersonWork#reconcile_work_group_and_type).
+    = f.input :lex_person_work_group_id,
+              label: LexPersonWork.human_attribute_name(:work_group),
+              as: :grouped_select,
+              collection: work_groups.map { |wt, groups| [LexPersonWork.human_enum_name(:work_type, wt), groups] },
+              group_method: :last,
+              label_method: :title,
+              value_method: :id,
+              include_blank: t('lexicon.person_works.form.no_sub_heading')
   = f.input :publisher
   = f.input :publication_place
   = f.input :publication_date

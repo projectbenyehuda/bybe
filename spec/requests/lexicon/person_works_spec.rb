@@ -15,6 +15,17 @@ describe '/lexicon/person_works' do
     let!(:works) { create_list(:lex_person_work, 3, person: person) }
 
     it { is_expected.to eq(200) }
+
+    it 'lists the works under their sub-headings, and every section even when empty' do
+      group = create(:lex_person_work_group, person: person, title: 'שירה ופרוזה', work_type: 'translated')
+      create(:lex_person_work, person: person, work_group: group, title: 'לולא היה עלי למהר')
+      call
+      html = Nokogiri::HTML(response.body)
+      expect(html.css('.works-section').pluck('data-work-type')).to eq(LexPersonWork.work_types.keys)
+      block = html.at_css(".works-section[data-work-type='translated'] .work-group-block[data-group-id='#{group.id}']")
+      expect(block.at_css('.heading-title').text).to eq('שירה ופרוזה')
+      expect(block.at_css("ul#works_group_#{group.id}").text).to include('לולא היה עלי למהר')
+    end
   end
 
   describe 'GET /lexicon/people/:ID/works/new' do
@@ -150,6 +161,19 @@ describe '/lexicon/person_works' do
       it 'updates record' do
         expect(call).to eq(200)
         expect(work.reload).to have_attributes(work_params)
+      end
+    end
+
+    context 'when the work is put under a sub-heading of another section' do
+      let(:work) { create(:lex_person_work, person: person, work_type: 'original', seqno: 1) }
+      let(:group) { create(:lex_person_work_group, person: person, work_type: 'edited') }
+      let(:work_params) { { work_type: 'original', lex_person_work_group_id: group.id } }
+
+      before { create(:lex_person_work, person: person, work_type: 'edited', seqno: 4) }
+
+      it 'moves the work to that section, last in its list' do
+        expect(call).to eq(200)
+        expect(work.reload).to have_attributes(work_type: 'edited', work_group: group, seqno: 5)
       end
     end
 
@@ -317,7 +341,72 @@ describe '/lexicon/person_works' do
 
       it 'fails with bad request' do
         expect(call).to eq(400)
-        expect(response.body).to eq("work_type mismatch, actual: 'translated', got: 'original'")
+        expect(response.body).to eq('bucket mismatch, actual: ["translated", nil], got: ["original", nil]')
+      end
+    end
+  end
+
+  describe 'POST /lex/works/:id/reorder across sub-headings' do
+    subject(:call) do
+      post "/lex/works/#{work_to_move.id}/reorder", params: params, xhr: true
+    end
+
+    let(:group) { create(:lex_person_work_group, person: person, title: 'עיון') }
+    let(:edited_group) { create(:lex_person_work_group, person: person, title: 'ספרי עיון', work_type: 'edited') }
+    let!(:ungrouped_1) { create(:lex_person_work, person: person, work_type: 'original', seqno: 1) }
+    let!(:ungrouped_2) { create(:lex_person_work, person: person, work_type: 'original', seqno: 2) }
+    let!(:grouped_1) { create(:lex_person_work, person: person, work_group: group, seqno: 3) }
+    let!(:grouped_2) { create(:lex_person_work, person: person, work_group: group, seqno: 4) }
+
+    context 'when a work is dragged from the ungrouped works into a sub-heading' do
+      let(:work_to_move) { ungrouped_1 }
+      let(:params) do
+        { old_index: 0, new_index: 1, work_type: 'original', group_id: '',
+          to_work_type: 'original', to_group_id: group.id }
+      end
+
+      it 'puts it under the sub-heading at the dropped position and renumbers both lists' do
+        expect(call).to eq(200)
+        expect(person.reload.works_in_bucket('original', group.id)).to eq([grouped_1, ungrouped_1, grouped_2])
+        expect(person.works_in_bucket('original', group.id).map(&:seqno)).to eq([1, 2, 3])
+        expect(person.works_in_bucket('original', nil)).to eq([ungrouped_2])
+        expect(ungrouped_2.reload.seqno).to eq(1)
+      end
+    end
+
+    context 'when a work is dragged out of a sub-heading into another section\'s sub-heading' do
+      let(:work_to_move) { grouped_2 }
+      let(:params) do
+        { old_index: 1, new_index: 0, work_type: 'original', group_id: group.id,
+          to_work_type: 'edited', to_group_id: edited_group.id }
+      end
+
+      it 'takes on that section and sub-heading' do
+        expect(call).to eq(200)
+        expect(grouped_2.reload).to have_attributes(work_type: 'edited', work_group: edited_group, seqno: 1)
+      end
+    end
+
+    context 'when the target sub-heading belongs to another section than the one named' do
+      let(:work_to_move) { ungrouped_1 }
+      let(:params) do
+        { old_index: 0, new_index: 0, work_type: 'original', group_id: '',
+          to_work_type: 'translated', to_group_id: group.id }
+      end
+
+      it 'refuses the move and leaves the work where it was' do
+        expect(call).to eq(400)
+        expect(ungrouped_1.reload).to have_attributes(work_type: 'original', work_group: nil, seqno: 1)
+      end
+    end
+
+    context 'when the work is not in the bucket named' do
+      let(:work_to_move) { grouped_1 }
+      let(:params) { { old_index: 0, new_index: 1, work_type: 'original', group_id: '' } }
+
+      it 'fails with bad request' do
+        expect(call).to eq(400)
+        expect(response.body).to start_with('bucket mismatch')
       end
     end
   end

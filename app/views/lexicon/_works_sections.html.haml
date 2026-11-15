@@ -1,0 +1,15 @@
+-# The works list of a lexicon person, as readers see it: each work-type section (the original
+  works with no heading of their own), its works under no sub-heading, then each sub-heading with
+  its works. See LexPerson#works_sections.
+- lex_person.works_sections.each do |section|
+  - if section.work_type != 'original'
+    %h4= LexPersonWork.human_enum_name(:work_type, section.work_type)
+  - if section.works.any?
+    %ul
+      - section.works.each do |work|
+        %li!= render_person_work(work)
+  - section.groups.each do |group, works|
+    %h5.lexicon-works-sub-heading= group.title
+    %ul
+      - works.each do |work|
+        %li!= render_person_work(work)

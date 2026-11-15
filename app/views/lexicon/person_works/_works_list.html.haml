@@ -1,0 +1,12 @@
+-# One bucket of the works list: the works of a section under no sub-heading (group_id nil), or the
+  works of one sub-heading. work_type and group_id identify the bucket to the reorder endpoint.
+%ul.works-bucket{ id: list_id, data: { work_type: work_type, group_id: group_id } }
+  - works.each do |w|
+    %li{ id: "work_#{w.id}", data: { work_id: w.id } }
+      %span.drag-handle{ title: t('lexicon.person_works.index.drag_to_reorder'), style: 'cursor: move;' }
+        %span.handle ☰
+      != render_person_work(w)
+      = link_to t(:edit), '#', class: 'edit-person-work', data: { id: w.id }
+      = link_to t(:delete),
+                lexicon_work_path(w),
+                remote: true, data: { confirm: t(:are_you_sure) }, method: :delete

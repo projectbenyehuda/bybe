@@ -11,7 +11,16 @@ class LexPerson < ApplicationRecord
   # Sub-headings of the general citations (ספרים, מאמרים, ...) -- see LexCitationGroup
   has_many :citation_groups, -> { ordered }, inverse_of: :person, class_name: 'LexCitationGroup',
                                              dependent: :destroy
+  # Sub-headings within the work-type sections of the works list -- see LexPersonWorkGroup.
+  # Declared before works so that saving a new person saves its groups first: a work's belongs_to
+  # would otherwise insert its group without the person's id.
+  has_many :work_groups, -> { ordered }, inverse_of: :person, class_name: 'LexPersonWorkGroup',
+                                         dependent: :destroy
   has_many :works, inverse_of: :person, class_name: 'LexPersonWork', dependent: :destroy
+
+  # One work-type section of the works list, as displayed: the works under no sub-heading, then
+  # each sub-heading with its works. See #works_sections.
+  WorksSection = Struct.new(:work_type, :works, :groups)
 
   belongs_to :authority, optional: true # link to an Authority record representing this person in BYP
 
@@ -50,8 +59,36 @@ class LexPerson < ApplicationRecord
     works.select { |w| w.work_type == work_type }
   end
 
-  def max_work_seqno_by_type(work_type)
-    works_by_type(work_type).map(&:seqno).max || 0
+  def max_work_seqno_by_type(work_type, exclude_work_id: nil)
+    works = works_by_type(work_type)
+    works = works.reject { |w| w.id == exclude_work_id } if exclude_work_id.present?
+    works.map(&:seqno).max || 0
+  end
+
+  # The works of one bucket of the works list: a sub-heading's works, or -- when group_id is nil --
+  # the works of work_type that are under no sub-heading.
+  def works_in_bucket(work_type, group_id)
+    works_by_type(work_type).select { |w| w.lex_person_work_group_id == group_id }.sort_by(&:seqno)
+  end
+
+  # The works list laid out for display, one WorksSection per work type in enum order. Within a
+  # section the works under no sub-heading come first, as they do in the legacy files, then each
+  # sub-heading in order; works are in seqno order throughout. Reads the in-memory associations, so
+  # preloading works and work_groups avoids queries.
+  #
+  # @param include_empty [Boolean] keep sub-headings with no works, and the sections holding them.
+  #   The editor needs them to drag works into; readers have nothing to see there.
+  # @return [Array<WorksSection>] where groups is an Array of [LexPersonWorkGroup, Array<LexPersonWork>]
+  def works_sections(include_empty: false)
+    LexPersonWork.work_types.keys.filter_map do |work_type|
+      groups = work_groups.select { |g| g.work_type == work_type }.sort_by { |g| [g.seqno, g.id.to_i] }
+                          .map { |g| [g, works_in_bucket(work_type, g.id)] }
+      groups.reject! { |_g, group_works| group_works.empty? } unless include_empty
+      ungrouped = works_in_bucket(work_type, nil)
+      next if ungrouped.empty? && groups.empty?
+
+      WorksSection.new(work_type, ungrouped, groups)
+    end
   end
 
   # Citations displayed under one heading, identified by LexCitation#group_token: a general

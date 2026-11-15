@@ -27,6 +27,7 @@ en:
       lex_linked_person: Associated Person
       lex_person: Lexicon Person
       lex_person_work: Lexicon Person's Work
+      lex_person_work_group: Works sub-heading
       lex_publication: Lexicon Publication
       manifestation: Work
       person: Person
@@ -81,6 +82,9 @@ en:
           attributes:
             collection:
               belongs_to_other_publication: already belongs to a different publication
+            work_group:
+              belongs_to_different_person: must belong to the same Lexicon Person as the work itself
+              different_work_type: must belong to the same work type as the work itself
     attributes:
       authority:
         other_designation: Other designation
@@ -149,6 +153,9 @@ en:
         person_work: Work
       lex_citation_group:
         title: Sub-heading
+      lex_person_work_group:
+        title: Sub-heading
+        work_type: Work Type
       lex_file:
         error_message: Error message
         entrytype: Entry type
@@ -201,6 +208,7 @@ en:
       lex_person_work:
         title: Title
         work_type: Work Type
+        work_group: Sub-heading
         publisher: Publisher
         publication_date: Publication Date
         publication_place: Publication Place
