@@ -46,11 +46,16 @@ module TocTree
     # beside the metadata card's 'works in the project' figure, which counts direct involvements
     # only. Hence the extra involvement check here, which is what keeps the two in agreement.
     def count_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
-      return 0 unless visible?(role, authority_id, involved_on_collection_level, parent_collection)
-      return 0 unless @manifestation.status == 'published'
-      return 0 unless directly_involved?(role, authority_id)
+      counted_manifestations(role, authority_id, involved_on_collection_level, parent_collection).size
+    end
 
-      1
+    # The manifestations behind #count_manifestations: [manifestation] if it counts, [] otherwise.
+    def counted_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
+      return [] unless visible?(role, authority_id, involved_on_collection_level, parent_collection)
+      return [] unless @manifestation.status == 'published'
+      return [] unless directly_involved?(role, authority_id)
+
+      [@manifestation]
     end
 
     # Whether the authority is involved in this work itself (as opposed to merely in a collection

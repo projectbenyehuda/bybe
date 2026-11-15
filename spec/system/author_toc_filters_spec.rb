@@ -214,6 +214,30 @@ describe 'Author TOC flat-list filters', :js do
     expect(page).to have_css('.toc-filter-genre:checked')
   end
 
+  # The genre chips and the filters pane's genre facet count the same works: those listed, published ones.
+  it 'shows the same genre counts on the author-card chips as in the genre facet' do
+    Chewy.strategy(:atomic) do
+      # listed (unlinked) but counted in neither place
+      create(:manifestation, title: 'Draft Poem', status: :unpublished, author: author, genre: 'poetry',
+                             orig_lang: 'he', language: 'he', collections: [volume])
+      # credited as editor in a volume the author edited: shown collapsed, so not listed nor counted
+      edited = create(:collection, title: 'Edited Letters', collection_type: :volume)
+      create(:involved_authority, authority: author, item: edited, role: 'editor')
+      create(:manifestation, title: 'A Letter', author: create(:authority), editor: author, genre: 'letters',
+                             orig_lang: 'he', language: 'he', collections: [edited])
+    end
+    visit authority_path(author)
+
+    expect(page).to have_css('.genre-toggle[data-genre="poetry"]', text: '(1)')
+    expect(page).to have_css('.genre-toggle[data-genre="prose"]', text: '(1)')
+    expect(page).to have_no_css('.genre-toggle[data-genre="letters"]')
+
+    choose_sort('title')
+    expect(page).to have_css('#sorted_card', text: 'Draft Poem')
+    expect(page).to have_css(".toc-facet-count[data-value='poetry']", text: '(1)')
+    expect(page).to have_css(".toc-facet-count[data-value='prose']", text: '(1)')
+  end
+
   it 'filters by genre and updates the faceted counts' do
     visit authority_path(author)
     choose_sort('title')

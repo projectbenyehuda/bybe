@@ -161,6 +161,48 @@ describe AuthorsHelper do
     end
   end
 
+  describe '.toc_genre_counts' do
+    subject(:result) do
+      RefreshUncollectedWorksCollection.call(authority)
+      helper.toc_genre_counts(GenerateTocTree.call(authority.reload).top_level_nodes, authority.id).to_h
+    end
+
+    let(:authority) { create(:authority) }
+    let(:other_author) { create(:authority) }
+    let(:own_volume) { create(:collection, collection_type: :volume) }
+    let(:edited_volume) { create(:collection, collection_type: :volume) }
+
+    before do
+      create(:involved_authority, authority: authority, item: own_volume, role: :author)
+      create(:involved_authority, authority: authority, item: edited_volume, role: :editor)
+
+      # listed: two poems in the authority's own volume, one prose work left uncollected
+      create_list(:manifestation, 2, author: authority, genre: 'poetry', collections: [own_volume])
+      create(:manifestation, author: authority, genre: 'prose')
+      # listed (as an unlinked title), but not counted: unpublished
+      create(:manifestation, author: authority, genre: 'prose', status: :unpublished, collections: [own_volume])
+      # not listed: credited on the text as editor, inside a volume the authority edited, which is shown
+      # collapsed (title only) on the editor's page
+      create(:manifestation, author: other_author, editor: authority, genre: 'letters', orig_lang: 'he',
+                             collections: [edited_volume])
+    end
+
+    it 'counts only the published works the TOC lists' do
+      expect(result).to eq('poetry' => 2, 'prose' => 1)
+    end
+
+    it 'counts a work listed under several roles once' do
+      poem = own_volume.collection_items.first.item
+      create(:involved_authority, authority: authority, item: poem.expression, role: :editor)
+      expect(result).to eq('poetry' => 2, 'prose' => 1)
+    end
+
+    it 'orders genres in the systemwide genre order, not by count' do
+      create_list(:manifestation, 3, author: authority, genre: 'drama', collections: [own_volume])
+      expect(result.keys).to eq(%w(poetry prose drama))
+    end
+  end
+
   describe '.toc_work_level_label' do
     subject(:label) do
       I18n.with_locale(:he) do

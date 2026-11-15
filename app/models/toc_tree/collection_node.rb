@@ -101,22 +101,27 @@ module TocTree
     end
 
     # Count manifestations recursively in this collection and its children.
-    # Result is memoized per (role, authority_id, involved_on_collection_level); parent_collection
-    # is accepted for interface consistency with ManifestationNode but is unused here since
+    # parent_collection is accepted for interface consistency with ManifestationNode but is unused here since
     # CollectionNode#visible? derives involvement from its own involved_authorities.
     def count_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
-      @manifestation_counts ||= {}
-      cache_key = "#{role}_#{authority_id}_#{involved_on_collection_level}"
-      return @manifestation_counts[cache_key] if @manifestation_counts.key?(cache_key)
+      counted_manifestations(role, authority_id, involved_on_collection_level, parent_collection).size
+    end
 
-      count = if visible?(role, authority_id, involved_on_collection_level, parent_collection)
-                children_by_role(role, authority_id, involved_on_collection_level).sum do |child|
-                  child.count_manifestations(role, authority_id, involved_on_collection_level, @collection)
-                end
-              else
-                0
-              end
-      @manifestation_counts[cache_key] = count
+    # The manifestations #count_manifestations counts (one entry per listing, so a work included twice in this
+    # subtree appears twice). Memoized per (role, authority_id, involved_on_collection_level).
+    def counted_manifestations(role, authority_id, involved_on_collection_level, parent_collection = nil)
+      @counted_manifestations ||= {}
+      cache_key = "#{role}_#{authority_id}_#{involved_on_collection_level}"
+      return @counted_manifestations[cache_key] if @counted_manifestations.key?(cache_key)
+
+      @counted_manifestations[cache_key] =
+        if visible?(role, authority_id, involved_on_collection_level, parent_collection)
+          children_by_role(role, authority_id, involved_on_collection_level).flat_map do |child|
+            child.counted_manifestations(role, authority_id, involved_on_collection_level, @collection)
+          end
+        else
+          []
+        end
     end
 
     private
