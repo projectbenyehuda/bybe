@@ -71,7 +71,7 @@
               %ul
                 - list.each do |c|
                   - cit_text = render_citation(c)
-                  %li{style: cit_text.gsub('עמ\'','').any_hebrew? ? "" : "direction: ltr;"}= cit_text
+                  %li{ dir: ltr_citation?(cit_text) ? 'ltr' : nil }= cit_text
       - if lexicon_sections[:links]
         #lexicon-links
           = render partial: 'lexicon/entries/links', locals: { links: lex_person.links }

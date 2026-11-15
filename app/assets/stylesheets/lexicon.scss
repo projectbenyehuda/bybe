@@ -9,10 +9,20 @@ ul.lex {
   margin-top: 20px;
 }
 
+/* The works and citations are bulleted lists, both on LexEntry#show and in the lexicon block
+   of the Authority TOC. On the TOC page that block sits inside .author-works, whose
+   `.author-works ul` rule (BY_styles_General.css) removes the bullets and their gutter;
+   the ID selectors here outrank it. */
+#lexicon-works ul,
+#lexicon-about ul {
+  list-style-type: disc;
+  padding-right: 22px;
+}
+
 /* A mostly-Latin citation (rendered with dir="ltr") reads left-to-right from the left edge.
    Its list marker then hangs off the left of the <li>, where the RTL list has no padding,
    so give it the same room the Hebrew items get on the right. */
-.lexicon-entry-show #lexicon-about li[dir="ltr"] {
+#lexicon-about li[dir="ltr"] {
   text-align: left;
   margin-left: 40px;
 }
