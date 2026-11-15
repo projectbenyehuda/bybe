@@ -1,0 +1,109 @@
+-# haml-lint:disable ViewLength
+:javascript
+  // Behaviour of the works tab: the work modals, and adding, renaming, moving, removing, reordering
+  // and filling the sub-headings (see LexPersonWorkGroup).
+  // Wrapped in an IIFE because the pane reloads itself in place (reloadContent) after every
+  // sub-heading action and after a work is dragged between lists, which re-runs this script in the
+  // global scope; a repeated top-level `const` would be a SyntaxError aborting the whole script.
+  (function() {
+    const worksPane = $('#works');
+    const csrfToken = function() { return $('meta[name="csrf-token"]').attr('content'); };
+
+    $('.edit-person-work').click(function(e) {
+      e.preventDefault();
+      const workId = $(this).data('id');
+      openModal(`/lex/works/${workId}/edit`);
+    });
+    $('a.add-person-work').click(function() {
+      openModal('/lex/people/#{@person.id}/works/new');
+    });
+
+    const subHeadingActionFailed = '#{j t('lexicon.person_works.index.sub_heading_action_failed')}';
+
+    function workGroupRequest(url, method, data) {
+      return $.ajax({
+        url: url,
+        method: method,
+        headers: { 'X-CSRF-Token': csrfToken() },
+        data: data,
+        error: function(xhr) {
+          alert(subHeadingActionFailed + '\n' + (xhr.responseText || ('Status ' + xhr.status)));
+          reloadContent(worksPane);
+        }
+      }).done(function() { reloadContent(worksPane); });
+    }
+
+    $('a.add-work-group').click(function(e) {
+      e.preventDefault();
+      const title = prompt('#{j t('lexicon.person_works.index.sub_heading_name_prompt')}');
+      if (!title) { return; }
+      workGroupRequest('/lex/people/#{@person.id}/work_groups', 'POST',
+                       { lex_person_work_group: { title: title, work_type: $(this).data('workType') } });
+    });
+
+    $('.rename-work-group').click(function(e) {
+      e.preventDefault();
+      const title = prompt('#{j t('lexicon.person_works.index.sub_heading_name_prompt')}', $(this).data('title'));
+      if (!title) { return; }
+      workGroupRequest(`/lex/work_groups/${$(this).data('id')}`, 'PATCH',
+                       { lex_person_work_group: { title: title } });
+    });
+
+    $('.move-work-group').change(function() {
+      workGroupRequest(`/lex/work_groups/${$(this).data('id')}`, 'PATCH',
+                       { lex_person_work_group: { work_type: $(this).val() } });
+    });
+
+    $('.delete-work-group').click(function(e) {
+      e.preventDefault();
+      if (!confirm('#{j t('lexicon.person_works.index.delete_sub_heading_confirm')}')) { return; }
+      workGroupRequest(`/lex/work_groups/${$(this).data('id')}`, 'DELETE', {});
+    });
+
+    // Works: reorder within a list, and drag between any two lists.
+    document.querySelectorAll('#works ul.works-bucket').forEach(function(list) {
+      Sortable.create(list, {
+        handle: '.drag-handle',
+        animation: 150,
+        group: 'person-works',
+        onEnd: function(evt) {
+          const from = evt.from.dataset;
+          const to = evt.to.dataset;
+          const moved = from.workType !== to.workType || (from.groupId || '') !== (to.groupId || '');
+          if (evt.newIndex === evt.oldIndex && !moved) { return; }
+          $.ajax({
+            url: `/lex/works/${evt.item.dataset.workId}/reorder`,
+            method: 'POST',
+            headers: { 'X-CSRF-Token': csrfToken() },
+            data: {
+              new_index: evt.newIndex,
+              old_index: evt.oldIndex,
+              work_type: from.workType,
+              group_id: from.groupId || '',
+              to_work_type: to.workType,
+              to_group_id: to.groupId || ''
+            },
+            error: function(xhr) {
+              const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
+              alert('#{j t('lexicon.person_works.index.reordering_failed')}\n' + errorMsg);
+              reloadContent(worksPane);
+            }
+          }).done(function() { if (moved) { reloadContent(worksPane); } });
+        }
+      });
+    });
+
+    // Sub-headings: reorder among the other sub-headings of their section.
+    document.querySelectorAll('#works .work-group-headings').forEach(function(container) {
+      Sortable.create(container, {
+        handle: '.heading-drag-handle',
+        draggable: '.work-group-block',
+        animation: 150,
+        onEnd: function(evt) {
+          if (evt.newIndex === evt.oldIndex) { return; }
+          workGroupRequest(`/lex/work_groups/${evt.item.dataset.groupId}/reorder`, 'POST',
+                           { new_index: evt.newIndex });
+        }
+      });
+    });
+  })();

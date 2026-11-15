@@ -656,6 +656,40 @@ function reloadScrollingToSection(sectionId) {
     location.reload();
 }
 
+// Sub-headings of the works section (see LexPersonWorkGroup): rename, move to another work-type
+// section -- works and all -- or remove, returning the works to their section's ungrouped list.
+function updateWorkGroup($heading, method, data) {
+    $.ajax({
+        url: $heading.data('url'),
+        type: method,
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') },
+        data: data
+    }).done(function() {
+        reloadScrollingToSection('section-works');
+    }).fail(function(xhr) {
+        alert(xhr.responseText || ('Status ' + xhr.status));
+        reloadScrollingToSection('section-works');
+    });
+}
+
+$(document).on('click', '.verification-rename-work-group', function(e) {
+    e.preventDefault();
+    var title = prompt($(this).data('prompt'), $(this).data('title'));
+    if (!title) { return; }
+    updateWorkGroup($(this).closest('.work-sub-heading'), 'PATCH', { lex_person_work_group: { title: title } });
+});
+
+$(document).on('change', '.verification-move-work-group', function() {
+    updateWorkGroup($(this).closest('.work-sub-heading'), 'PATCH',
+                    { lex_person_work_group: { work_type: $(this).val() } });
+});
+
+$(document).on('click', '.verification-delete-work-group', function(e) {
+    e.preventDefault();
+    if (!confirm($(this).data('confirm-text'))) { return; }
+    updateWorkGroup($(this).closest('.work-sub-heading'), 'DELETE', {});
+});
+
 // Opening the citation-headings dialog is what unlocks marking that section verified. The server
 // records it when it serves the dialog; this releases the button without waiting for a reload.
 $(document).on('click', '#citation-subjects-auto-match-btn', function() {

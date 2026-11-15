@@ -62,4 +62,28 @@ describe LexPersonWork do
       end
     end
   end
+
+  describe 'sub-heading' do
+    let(:person) { create(:lex_entry, :person).lex_item }
+    let(:group) { create(:lex_person_work_group, person: person, work_type: 'edited') }
+
+    it 'moves a work put under a sub-heading to that sub-heading\'s work type' do
+      work = create(:lex_person_work, person: person, work_type: 'original')
+      work.update!(work_group: group)
+      expect(work.reload.work_type).to eq('edited')
+    end
+
+    it 'takes a work out of its sub-heading when only its work type is changed' do
+      work = create(:lex_person_work, person: person, work_group: group)
+      work.update!(work_type: 'translated')
+      expect(work.reload).to have_attributes(work_type: 'translated', work_group: nil)
+    end
+
+    it 'rejects a sub-heading belonging to another person' do
+      other_group = create(:lex_person_work_group)
+      work = build(:lex_person_work, person: person, work_group: other_group)
+      expect(work).not_to be_valid
+      expect(work.errors.details[:work_group]).to include(error: :belongs_to_different_person)
+    end
+  end
 end

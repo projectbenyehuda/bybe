@@ -155,46 +155,39 @@
     %button.btn.btn-sm.btn-outline-secondary{ onclick: "openModal('#{lexicon_edit_section_verification_path(entry, section: 'works')}', function() { reloadScrollingToSection('section-works'); })" }
       = t('lexicon.verification.sections.auto_match_works_btn')
   .section-content
-    - all_works = item.works.includes(:publication, :collection)
-    - works_size = all_works.size
+    -# Preloaded once for all the cards, which LexPerson#works_sections lays out from the
+      in-memory associations.
+    - ActiveRecord::Associations::Preloader.new(records: [item],
+                                                associations: { works: %i(publication collection linked_people),
+                                                                work_groups: [] }).call
+    - works_size = item.works.size
     - if php_counts[:works] && php_counts[:works] != works_size
       .alert.alert-warning.alert-dismissible.fade.show.count-mismatch-warning{role: 'alert'}
         = t('lexicon.verification.sections.count_mismatch', php_count: php_counts[:works], migrated_count: works_size)
         %button.btn-close{type: 'button', 'data-bs-dismiss': 'alert', 'aria-label': 'Close'}
-    - if all_works.present?
-      - all_works.group_by(&:work_type).each do |work_type, works|
-        %h5.mt-3.mb-1.work-type-heading= LexPersonWork.human_enum_name(:work_type, work_type)
-        - works.each do |work|
-          .work-card{ id: "work-#{work.id}", class: work_card_css(work, checklist) }
-            .work-content{dir: text_dir(work.title)}
-              %strong= render_person_work_title(work)
-              - pub_detail = format_publication_details(work)
-              - if pub_detail
-                %br
-                %span.text-muted= pub_detail
-              - if work.comment.present?
-                %br
-                %span.text-muted!= render_person_work_comment(work.comment, work.comment_links)
-              - if work.publication.present?
-                %br
-                %span.text-muted
-                  = t('lexicon.verification.sections.work_from_publication')
-                  = work.publication.title
-              - if work.collection.present?
-                %br
-                %span.text-muted
-                  = t('lexicon.verification.sections.work_from_collection')
-                  = link_to work.collection.title, collection_path(work.collection), target: '_blank', rel: 'noopener'
-              - work.linked_people.sort_by(&:sort_value).each do |linked_person|
-                %br
-                %span.text-muted!= render_linked_person(linked_person)
-            .work-actions.mt-2
-              %button.btn.btn-sm.btn-outline-primary{ onclick: "openWorkEditPanel('#{edit_lexicon_work_path(work)}', function() { reloadScrollingToSection('section-works'); })" }
-                ✏️
-                = t('lexicon.verification.migrated.edit')
-              %button.btn.btn-sm{ class: checklist['works']&.dig('items', work.id.to_s, 'verified') ? 'btn-success' : 'btn-outline-success', data: { action: 'click->verification#quickVerify', path: "works.items.#{work.id}" } }
-                ✓
-                = t('lexicon.verification.migrated.mark_verified')
+    - if works_size.positive?
+      - item.works_sections.each do |section|
+        %h5.mt-3.mb-1.work-type-heading= LexPersonWork.human_enum_name(:work_type, section.work_type)
+        - section.works.each do |work|
+          = render 'lexicon/verification/work_card', work: work, checklist: checklist
+        - section.groups.each do |group, works|
+          -# Ingest files every unrecognized legacy header under the original works, so a sub-heading
+            that subdivides another section (01661.php's עריכת תרגום under עריכה) is moved there
+            from here. Handled in verification.js.
+          %h6.mt-2.mb-1.ms-3.work-sub-heading{ data: { url: lexicon_work_group_path(group) } }
+            %span.heading-title= group.title
+            = link_to t(:edit), '#', class: 'verification-rename-work-group ms-2 small',
+                                     data: { title: group.title,
+                                             prompt: t('lexicon.person_works.index.sub_heading_name_prompt') }
+            = link_to t(:delete), '#', class: 'verification-delete-work-group ms-2 small',
+                                       data: { confirm_text: t('lexicon.person_works.index.delete_sub_heading_confirm') }
+            = select_tag "verification_work_group_#{group.id}_work_type",
+                         options_for_select(LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_enum_name(:work_type, k), k] },
+                                            section.work_type),
+                         class: 'verification-move-work-group form-select form-select-sm d-inline-block w-auto ms-2',
+                         title: t('lexicon.person_works.index.move_sub_heading_to')
+          - works.each do |work|
+            = render 'lexicon/verification/work_card', work: work, checklist: checklist
     - else
       %p.text-muted= t('lexicon.verification.sections.no_works')
 

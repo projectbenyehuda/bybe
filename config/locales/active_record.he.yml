@@ -27,6 +27,7 @@ he:
       lex_linked_person: ישות מקושרת
       lex_person: אדם בלקסיקון
       lex_person_work: יצירת אדם בלקסיקון
+      lex_person_work_group: כותרת משנה של יצירות
       lex_publication: כותר בלקסיקון
       manifestation: יצירה
       person: אדם
@@ -85,6 +86,9 @@ he:
           attributes:
             collection:
               belongs_to_other_publication: משויך כבר לכותר אחר בביבליוגרפיה
+            work_group:
+              belongs_to_different_person: חייבת להשתייך לאותו יוצר כמו היצירה
+              different_work_type: חייבת להשתייך לאותו סוג יצירה כמו היצירה
     attributes:
       authority:
         other_designation: כינויים אחרים
@@ -157,6 +161,9 @@ he:
         link: קישורית
       lex_citation_group:
         title: כותרת משנה
+      lex_person_work_group:
+        title: כותרת משנה
+        work_type: סוג יצירה
       lex_file:
         error_message: הודעות שגיאה
         entrytype: סוג הערך
@@ -211,6 +218,7 @@ he:
       lex_person_work:
         title: כותרת
         work_type: סוג יצירה
+        work_group: כותרת משנה
         publisher: הוצאה לאור
         publication_date: תאריך פרסום
         publication_place: מקום פרסום

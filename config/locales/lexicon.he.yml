@@ -154,6 +154,12 @@ he:
         add_work: הוספת יצירה
         drag_to_reorder: גרור לשינוי סדר
         reordering_failed: שינוי הסדר נכשל
+        add_sub_heading: הוספת כותרת משנה
+        drag_sub_heading_to_reorder: גרור לשינוי סדר כותרות המשנה
+        sub_heading_name_prompt: 'שם כותרת המשנה (למשל: שירה ופרוזה, עיון):'
+        delete_sub_heading_confirm: למחוק את כותרת המשנה? היצירות שתחתיה יעברו לרשימת היצירות שאינן תחת כותרת משנה באותו מדור.
+        sub_heading_action_failed: הפעולה על כותרת המשנה נכשלה
+        move_sub_heading_to: העברה למדור
       edit:
         title: עריכת יצירה
       form:
@@ -161,6 +167,7 @@ he:
         no_authority_warning: לא ניתן לקשר יצירות לפרסומים מבלי לקשר את האדם לישות במאגר בן-יהודה
         select_publication: בחר פרסום...
         select_collection: בחר אוסף...
+        no_sub_heading: (ללא כותרת משנה)
     links:
       index:
         add_link: הוספת קישורית

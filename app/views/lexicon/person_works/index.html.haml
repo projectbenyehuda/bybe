@@ -1,54 +1,34 @@
+- sections = @person.works_sections(include_empty: true).index_by(&:work_type)
+- section_options = LexPersonWork.work_types.keys.map { |k| [LexPersonWork.human_enum_name(:work_type, k), k] }
 %a.btn.btn-primary.add-person-work= t('.add_work')
-- @lex_person_works.group_by(&:work_type).each do |work_type, works|
-  %h4= LexPersonWork.human_enum_name(:work_type, work_type)
-  %ul{ id: "works_#{work_type}", data: { work_type: work_type } }
-    - works.sort_by(&:seqno).each do |w|
-      %li{ id: "work_#{w.id}", data: { work_id: w.id } }
-        %span.drag-handle{ title: t('.drag_to_reorder'), style: 'cursor: move;' }
-          %span.handle ☰
-        != render_person_work(w)
-        = link_to t(:edit), '#', class: 'edit-person-work', data: { id: w.id }
-        = link_to t(:delete),
-                  lexicon_work_path(w),
-                  remote: true, data: { confirm: t(:are_you_sure) }, method: :delete
 
-:javascript
-  $('.edit-person-work').click(function(e) {
-    e.preventDefault();
-    const workId = $(this).data('id');
-    openModal(`/lex/works/${workId}/edit`);
-  });
-  $('a.add-person-work').click(function() {
-    openModal('/lex/people/#{@person.id}/works/new');
-  });
+-# Every section is rendered, even an empty one, so that a work or a sub-heading can always be
+  moved into it. All the lists share one Sortable group: a work dragged into another list takes on
+  that list's section and sub-heading.
+- LexPersonWork.work_types.each_key do |work_type|
+  - section = sections[work_type]
+  .works-section{ data: { work_type: work_type } }
+    %h4
+      = LexPersonWork.human_enum_name(:work_type, work_type)
+      = link_to t('.add_sub_heading'), '#', class: 'add-work-group ms-2 small', data: { work_type: work_type }
+    = render partial: 'works_list',
+             locals: { works: section&.works || [], work_type: work_type, group_id: nil,
+                       list_id: "works_#{work_type}" }
+    .work-group-headings{ data: { work_type: work_type } }
+      - (section&.groups || []).each do |group, works|
+        .work-group-block{ data: { group_id: group.id } }
+          %h5
+            %span.heading-drag-handle{ title: t('.drag_sub_heading_to_reorder'), style: 'cursor: move;' } ☰
+            %span.heading-title= group.title
+            = link_to t(:edit), '#', class: 'rename-work-group ms-2 small',
+                                     data: { id: group.id, title: group.title }
+            = link_to t(:delete), '#', class: 'delete-work-group ms-2 small', data: { id: group.id }
+            = select_tag "work_group_#{group.id}_work_type",
+                         options_for_select(section_options, work_type),
+                         class: 'move-work-group form-select form-select-sm d-inline-block w-auto ms-2',
+                         title: t('.move_sub_heading_to'), data: { id: group.id }
+          = render partial: 'works_list',
+                   locals: { works: works, work_type: work_type, group_id: group.id,
+                             list_id: "works_group_#{group.id}" }
 
-  // Initialize Sortable for each work type table
-  document.querySelectorAll('[id^="works_"]').forEach(function(tbody) {
-    const workType = tbody.dataset.workType;
-    Sortable.create(
-      tbody,
-      {
-        handle: '.drag-handle',
-        animation: 150,
-        onEnd: function(evt) {
-          const oldIndex = evt.oldIndex; // zero-based
-          const newIndex = evt.newIndex; // zero-based
-          if (newIndex !== oldIndex) {
-            $.post({
-              url: `/lex/works/${evt.item.dataset.workId}/reorder`,
-              data: {
-                new_index: newIndex,
-                old_index: oldIndex,
-                work_type: workType
-              },
-              error: function(xhr, status, error) {
-                const errorMsg = xhr.status == 400 ? xhr.responseText : 'Status ' + xhr.status;
-                alert('#{t('.reordering_failed')}\n' + errorMsg);
-                reloadContent($('#works'));
-              }
-            });
-          }
-        }
-      }
-    );
-  });
+= render 'scripts'
