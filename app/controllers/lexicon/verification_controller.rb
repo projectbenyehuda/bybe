@@ -7,11 +7,11 @@ module Lexicon
 
     EXTERNAL_IDENTIFIER_KEYS = LexiconHelper::EXTERNAL_IDENTIFIER_LABELS.keys.freeze
 
-    before_action :set_entry, except: %i(index)
-    before_action :try_to_lock_record, except: %i(index unlock)
     before_action do |c|
       c.require_editor('edit_lexicon')
     end
+    before_action :set_entry, except: %i(index)
+    before_action :try_to_lock_record, except: %i(index unlock)
     layout 'lexicon_backend'
 
     QUEUE_SORTABLE_COLUMNS = %w(updated_at migration_item_count).freeze
