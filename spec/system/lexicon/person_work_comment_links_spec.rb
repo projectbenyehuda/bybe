@@ -2,9 +2,12 @@
 
 require 'rails_helper'
 
-RSpec.describe 'LexPersonWork comment links in edit modal', :js, type: :system do
-  before do
+RSpec.describe 'LexPersonWork comment links in edit modal', type: :system do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  before do
     login_as_lexicon_editor
   end
 
@@ -48,7 +51,7 @@ RSpec.describe 'LexPersonWork comment links in edit modal', :js, type: :system d
     end
   end
 
-  it 'shows the existing comment link in the edit modal' do
+  it 'shows the existing comment link in the edit modal', :js do
     visit "/lex/verification/#{entry.id}"
 
     within "#work-#{work.id}" do

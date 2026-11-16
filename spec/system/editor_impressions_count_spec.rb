@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Editor-only impressions count display', :js, type: :system do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+RSpec.describe 'Editor-only impressions count display', type: :system do
   let(:regular_user) { create(:user) }
   let(:editor) { create(:user, editor: true) }
 

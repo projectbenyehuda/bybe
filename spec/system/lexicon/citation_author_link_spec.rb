@@ -5,9 +5,12 @@ require 'rails_helper'
 # Pointing a plaintext citation author -- one no lexicon entry could be resolved for -- at an
 # arbitrary URL, from the two places an editor works on citations: the migration verification
 # workbench, and the citations tab of the entry editor.
-RSpec.describe 'Linking a plaintext citation author to a URL', :js, type: :system do
-  before do
+RSpec.describe 'Linking a plaintext citation author to a URL', type: :system do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  before do
     login_as_lexicon_editor
   end
 
@@ -22,7 +25,7 @@ RSpec.describe 'Linking a plaintext citation author to a URL', :js, type: :syste
   let(:edit_url_label) { I18n.t('lexicon.citation_authors.edit_link.edit') }
 
   describe 'from the verification workbench' do
-    it 'offers the button next to a plaintext author and saves the URL it is given' do
+    it 'offers the button next to a plaintext author and saves the URL it is given', :js do
       visit lexicon_verification_path(entry)
 
       within("#citation-#{citation.id}") do
@@ -45,7 +48,7 @@ RSpec.describe 'Linking a plaintext citation author to a URL', :js, type: :syste
       expect(author.reload.link).to eq('https://example.com/gili')
     end
 
-    it 'reports a URL of a scheme it refuses instead of saving it' do
+    it 'reports a URL of a scheme it refuses instead of saving it', :js do
       visit lexicon_verification_path(entry)
 
       within("#citation-#{citation.id}") { click_button add_url_label }
@@ -81,7 +84,7 @@ RSpec.describe 'Linking a plaintext citation author to a URL', :js, type: :syste
     end
   end
 
-  describe 'when adding a new author from the citation edit modal' do
+  describe 'when adding a new author from the citation edit modal', :js do
     # Chewy indices are not rolled back with the database, so entries imported for the
     # autocomplete would otherwise pile up across examples.
     after { Chewy.massacre }
@@ -133,7 +136,7 @@ RSpec.describe 'Linking a plaintext citation author to a URL', :js, type: :syste
     end
   end
 
-  describe "from the entry editor's citations tab" do
+  describe "from the entry editor's citations tab", :js do
     def open_citation_edit_modal
       visit "/lex/entries/#{entry.id}/edit"
       click_link_or_button I18n.t('lexicon.entries.edit.citations')

@@ -2,11 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Author navbar collection type filtering', :js, type: :system do
-  before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
-  end
-
+RSpec.describe 'Author navbar collection type filtering', type: :system do
   let!(:author) { create(:authority, name: 'Test Author') }
 
   after { Chewy.massacre }

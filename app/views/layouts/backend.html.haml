@@ -49,44 +49,44 @@
     #generalDlg.modal{"aria-hidden" => "true", role: "dialog"}
       "&gt;
     = render 'shared/version_indicator'
-:javascript
-  $(document).ready(function() {
-    var header = $("header");
-    var body = $('body');
-  
-    $(window).scroll(function() {
-        var scroll = $(window).scrollTop();
-        if (scroll >= 100) {
-            header.addClass("scrolled");
-            body.addClass("scrolled");
-        } else if(scroll <= 70) {
-            header.removeClass("scrolled");
-            body.removeClass("scrolled");
-        }
-    });
-    $('.notyet').click(function(e){
-      e.stopPropagation();
-      alert('#{t(:not_implemented_yet)}');
-    });
-    $('[data-toggle="popover"]').popover();
-    $('body').tooltip();
-    // adjust page to accommodate extra header height
-    var h = $('#header').height();
-    $('.top-element').css('margin-top',h);
-  
-    $(document).on('keyup',function(evt) {
-      if (evt.keyCode == 27 && $('body').attr('anth-open') != 'true') {
-        $('.modal').modal('hide'); // hide all modals on ESC
-      }
-    });
-    $('.flash-backend').delay(5000).fadeOut(1000);
+    :javascript
+      $(document).ready(function() {
+        var header = $("header");
+        var body = $('body');
 
-    $('.confirmable').click(function(e) {
-      e.stopPropagation();
-      e.preventDefault();
-      var url = "#{ confirm_with_comment_path(confirm_title: '123', element_id: '456', p1: '789', with_comment: '012')}";
-      url = encodeURI(url.replace('123', $(this).data('confirm-title')).replace('456', $(this).data('element-id')).replace('789', $(this).data('p1')).replace('012', $(this).data('with-comment')));
-      $('#generalDlg').load(url);
-      $('#generalDlg').modal('show');
-    });
-  });
+        $(window).scroll(function() {
+            var scroll = $(window).scrollTop();
+            if (scroll >= 100) {
+                header.addClass("scrolled");
+                body.addClass("scrolled");
+            } else if(scroll <= 70) {
+                header.removeClass("scrolled");
+                body.removeClass("scrolled");
+            }
+        });
+        $('.notyet').click(function(e){
+          e.stopPropagation();
+          alert('#{t(:not_implemented_yet)}');
+        });
+        $('[data-toggle="popover"]').popover();
+        $('body').tooltip();
+        // adjust page to accommodate extra header height
+        var h = $('#header').height();
+        $('.top-element').css('margin-top',h);
+
+        $(document).on('keyup',function(evt) {
+          if (evt.keyCode == 27 && $('body').attr('anth-open') != 'true') {
+            $('.modal').modal('hide'); // hide all modals on ESC
+          }
+        });
+        $('.flash-backend').delay(5000).fadeOut(1000);
+
+        $('.confirmable').click(function(e) {
+          e.stopPropagation();
+          e.preventDefault();
+          var url = "#{ confirm_with_comment_path(confirm_title: '123', element_id: '456', p1: '789', with_comment: '012')}";
+          url = encodeURI(url.replace('123', $(this).data('confirm-title')).replace('456', $(this).data('element-id')).replace('789', $(this).data('p1')).replace('012', $(this).data('with-comment')));
+          $('#generalDlg').load(url);
+          $('#generalDlg').modal('show');
+        });
+      });

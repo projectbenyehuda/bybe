@@ -2,8 +2,8 @@
 
 require 'rails_helper'
 
-describe 'Author navbar conditional expand and bottom collapse button', :js do
-  before do
+describe 'Author navbar conditional expand and bottom collapse button' do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
 
@@ -31,7 +31,7 @@ describe 'Author navbar conditional expand and bottom collapse button', :js do
     context 'when total works exceeds MAX_EXPANDED_WORKS (20)' do
       before { create_manifestations(21) }
 
-      it 'starts with all sections collapsed' do
+      it 'starts with all sections collapsed', :js do
         visit authority_path(author)
         expect(page).to have_no_css('.collapse.navbar-nav.show', wait: 5)
         expect(page).to have_css('.collapse.navbar-nav', visible: false, wait: 5)
@@ -47,7 +47,7 @@ describe 'Author navbar conditional expand and bottom collapse button', :js do
       expect(page).to have_css('.section-collapse-btn', wait: 5)
     end
 
-    it 'collapses the section when clicked' do
+    it 'collapses the section when clicked', :js do
       visit authority_path(author)
 
       # Confirm section is initially expanded

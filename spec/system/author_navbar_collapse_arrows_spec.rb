@@ -2,8 +2,8 @@
 
 require 'rails_helper'
 
-describe 'Author navbar collapse arrows', :js do
-  before do
+describe 'Author navbar collapse arrows' do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
 
@@ -69,7 +69,7 @@ describe 'Author navbar collapse arrows', :js do
       end
     end
 
-    it 'toggles arrow when clicking collapsible section' do
+    it 'toggles arrow when clicking collapsible section', :js do
       visit authority_path(author)
 
       # Wait for page to load and find a collapsible trigger
@@ -96,7 +96,7 @@ describe 'Author navbar collapse arrows', :js do
       expect(new_arrow).to eq(expected_arrow)
     end
 
-    it 'initializes arrows based on initial collapse state' do
+    it 'initializes arrows based on initial collapse state', :js do
       visit authority_path(author)
 
       # Wait for JavaScript to initialize

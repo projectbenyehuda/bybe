@@ -13,9 +13,8 @@ require 'rails_helper'
 # A refactor accidentally passed `editable: false` from _gentoc, dropping the
 # editable branch entirely so nothing was draggable. This spec asserts the drag
 # handles are present.
-describe 'manage_toc draggable collections', :js do
+describe 'manage_toc draggable collections' do
   before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
     login_as_catalog_editor
   end
 

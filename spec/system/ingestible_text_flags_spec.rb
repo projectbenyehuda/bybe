@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Ingestible per-text secondary and Sefaria linker flags', :js, type: :system do
+describe 'Ingestible per-text secondary and Sefaria linker flags', type: :system do
   let!(:ingestible) do
     create(:ingestible,
            markdown: "&&& Test Work 1\n\nSome content here.",
@@ -12,7 +12,6 @@ describe 'Ingestible per-text secondary and Sefaria linker flags', :js, type: :s
   end
 
   before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
     login_as_catalog_editor
   end
 

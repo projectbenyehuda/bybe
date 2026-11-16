@@ -2,9 +2,12 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Internet Archive snapshots of broken links on the verification page', :js, type: :system do
-  before do
+RSpec.describe 'Internet Archive snapshots of broken links on the verification page', type: :system do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  before do
     login_as_lexicon_editor
     allow(Lexicon::CheckExternalLinks).to receive(:new)
       .and_return(instance_double(Lexicon::CheckExternalLinks, check_url: link_check_result(200)))
@@ -18,7 +21,7 @@ RSpec.describe 'Internet Archive snapshots of broken links on the verification p
   let(:archived_version) { I18n.t('lexicon.verification.broken_link.archived_version') }
   let(:use_archived_version) { I18n.t('lexicon.verification.broken_link.use_archived_version') }
 
-  context 'with a broken citation link that has a snapshot' do
+  context 'with a broken citation link that has a snapshot', :js do
     let!(:citation) do
       create(:lex_citation, person: person, title: 'Test Article', link: dead_url, link_http_status: 404,
                             link_checked_at: Time.current, link_archive_url: snapshot)
@@ -42,7 +45,7 @@ RSpec.describe 'Internet Archive snapshots of broken links on the verification p
     end
   end
 
-  context 'with a broken link that has a snapshot' do
+  context 'with a broken link that has a snapshot', :js do
     let!(:link) do
       create(:lex_link, item: person, url: dead_url, http_status: 404, checked_at: Time.current,
                         archive_url: snapshot)

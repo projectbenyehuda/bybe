@@ -7,7 +7,7 @@ describe 'Admin Tags Management' do
   let!(:primary_tag_name) { tag.tag_names.first } # Created automatically by callback
   let!(:alternative_tag_name) { create(:tag_name, tag: tag, name: 'Alternative Tag Name') }
 
-  describe 'Making a TagName the primary name', :js do
+  describe 'Making a TagName the primary name' do
     before do
       login_as_moderator
       visit edit_admin_tag_path(tag)
@@ -99,7 +99,7 @@ describe 'Admin Tags Management' do
     end
   end
 
-  describe 'Removing TagName aliases', :js do
+  describe 'Removing TagName aliases' do
     before do
       login_as_moderator
       visit edit_admin_tag_path(tag)

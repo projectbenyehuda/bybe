@@ -106,7 +106,7 @@ describe 'External Link Proposal' do
       expect(link.linkable).to eq(authority)
     end
 
-    it 'allows user to cancel their own pending link', :js do
+    it 'allows user to cancel their own pending link' do
       # Create a pending link
       link = create(:external_link,
                     linkable: authority,
@@ -126,9 +126,6 @@ describe 'External Link Proposal' do
           click_button '×'
         end
       end
-
-      # Wait for the AJAX request to complete and the panel to update
-      sleep 0.5
 
       # The pending link should be removed
       within('#external_links_panel') do

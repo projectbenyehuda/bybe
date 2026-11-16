@@ -2,9 +2,12 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Matching an imported citation author to an existing entry', :js, type: :system do
-  before do
+RSpec.describe 'Matching an imported citation author to an existing entry', type: :system do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  before do
     login_as_lexicon_editor
   end
 
@@ -34,7 +37,7 @@ RSpec.describe 'Matching an imported citation author to an existing entry', :js,
       end
     end
 
-    it 'links the author to the chosen entry while keeping the imported name' do
+    it 'links the author to the chosen entry while keeping the imported name', :js do
       visit lexicon_verification_path(entry)
 
       within("#citation-#{citation.id}") { click_button match_button_label }
@@ -60,7 +63,7 @@ RSpec.describe 'Matching an imported citation author to an existing entry', :js,
       expect(author.name).to eq('איזיקוביץ, גילי')
     end
 
-    it 'links the author when confirming immediately, without reselecting from the dropdown' do
+    it 'links the author when confirming immediately, without reselecting from the dropdown', :js do
       visit lexicon_verification_path(entry)
 
       within("#citation-#{citation.id}") { click_button match_button_label }
@@ -78,7 +81,7 @@ RSpec.describe 'Matching an imported citation author to an existing entry', :js,
       expect(author.reload.entry).to eq(matching_entry)
     end
 
-    it 'leaves the author alone when the modal is closed without confirming' do
+    it 'leaves the author alone when the modal is closed without confirming', :js do
       visit lexicon_verification_path(entry)
 
       within("#citation-#{citation.id}") { click_button match_button_label }

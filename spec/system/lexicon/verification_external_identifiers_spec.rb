@@ -2,9 +2,12 @@
 
 require 'rails_helper'
 
-describe 'Lexicon Verification Workbench – External Identifiers', :js do
-  before do
+describe 'Lexicon Verification Workbench – External Identifiers' do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  before do
     login_as_lexicon_editor
     visit "/lex/verification/#{entry.id}"
   end
@@ -72,7 +75,7 @@ describe 'Lexicon Verification Workbench – External Identifiers', :js do
                                visible: :all)
     end
 
-    it 'can mark external_identifiers as verified via the quick verify button' do
+    it 'can mark external_identifiers as verified via the quick verify button', :js do
       within('#section-external-identifiers .section-actions') do
         find('button[data-action="click->verification#quickVerify"]').click
       end
@@ -87,7 +90,7 @@ describe 'Lexicon Verification Workbench – External Identifiers', :js do
     end
   end
 
-  describe 'edit modal' do
+  describe 'edit modal', :js do
     before do
       within('#section-external-identifiers .section-actions') do
         click_button I18n.t('lexicon.verification.migrated.edit')
@@ -143,7 +146,7 @@ describe 'Lexicon Verification Workbench – External Identifiers', :js do
     end
   end
 
-  describe 'edit modal when section is already verified' do
+  describe 'edit modal when section is already verified', :js do
     before do
       entry.start_verification!('test@example.com')
       entry.update_checklist_item('external_identifiers', true, '')

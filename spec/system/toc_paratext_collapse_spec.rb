@@ -2,8 +2,8 @@
 
 require 'rails_helper'
 
-RSpec.describe 'TOC paratext collapse', type: :system, js: true do
-  before do
+RSpec.describe 'TOC paratext collapse', type: :system do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
 
@@ -30,13 +30,13 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
       expect(page).to have_css('button.paratext-toggle', text: I18n.t(:show_more))
     end
 
-    it 'hides the full content initially' do
+    it 'hides the full content initially', :js do
       visit authority_path(authority)
 
       expect(page).to have_css('[id^="paratext_collapse_"]', visible: :hidden, wait: 5)
     end
 
-    it 'hides the preview and shows full HTML content on expand' do
+    it 'hides the preview and shows full HTML content on expand', :js do
       visit authority_path(authority)
 
       find('.paratext-toggle', wait: 5).click
@@ -49,7 +49,7 @@ RSpec.describe 'TOC paratext collapse', type: :system, js: true do
       expect(page).to have_css('.paratext-toggle', text: I18n.t(:show_less), wait: 5)
     end
 
-    it 'restores the preview and hides full content on collapse' do
+    it 'restores the preview and hides full content on collapse', :js do
       visit authority_path(authority)
 
       find('.paratext-toggle', wait: 5).click

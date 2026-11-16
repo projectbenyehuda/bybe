@@ -2,9 +2,12 @@
 
 require 'rails_helper'
 
-describe 'Verification citation subject headings section', :js do
-  before do
+describe 'Verification citation subject headings section' do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  before do
     login_as_lexicon_editor
   end
 
@@ -65,7 +68,7 @@ describe 'Verification citation subject headings section', :js do
     end
   end
 
-  it 'links every citation under a proposed heading to the matched work' do
+  it 'links every citation under a proposed heading to the matched work', :js do
     visit "/lex/verification/#{entry.id}"
     open_auto_match_modal
 
@@ -80,7 +83,7 @@ describe 'Verification citation subject headings section', :js do
     expect(matched_citation.subject).to be_nil
   end
 
-  it 'keeps a generic heading as a general sub-heading without linking it to a work' do
+  it 'keeps a generic heading as a general sub-heading without linking it to a work', :js do
     visit "/lex/verification/#{entry.id}"
     open_auto_match_modal
 
@@ -97,7 +100,7 @@ describe 'Verification citation subject headings section', :js do
     expect(generic_citation.citation_group.title).to eq 'מאמרים'
   end
 
-  it 'lets the editor assign a work to a heading nothing matched' do
+  it 'lets the editor assign a work to a heading nothing matched', :js do
     visit "/lex/verification/#{entry.id}"
     open_auto_match_modal
 
@@ -112,7 +115,7 @@ describe 'Verification citation subject headings section', :js do
     expect(unmatched_citation.subject).to be_nil
   end
 
-  it 'enables marking the section verified once the modal has been opened' do
+  it 'enables marking the section verified once the modal has been opened', :js do
     visit "/lex/verification/#{entry.id}"
     open_auto_match_modal
     within('#generalDlg') { click_button I18n.t('lexicon.verification.sections.close') }

@@ -2,9 +2,12 @@
 
 require 'rails_helper'
 
-RSpec.describe 'LexCitation text links in the verification workbench', :js, type: :system do
-  before do
+RSpec.describe 'LexCitation text links in the verification workbench', type: :system do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
+  end
+
+  before do
     login_as_lexicon_editor
   end
 
@@ -45,7 +48,7 @@ RSpec.describe 'LexCitation text links in the verification workbench', :js, type
     end
   end
 
-  it 'shows the existing text link in the citation edit modal' do
+  it 'shows the existing text link in the citation edit modal', :js do
     visit "/lex/verification/#{entry.id}"
 
     within "#citation-#{citation.id}" do
@@ -59,7 +62,7 @@ RSpec.describe 'LexCitation text links in the verification workbench', :js, type
     end
   end
 
-  it 'adds a link to an arbitrary URL from the citation edit modal' do
+  it 'adds a link to an arbitrary URL from the citation edit modal', :js do
     visit "/lex/verification/#{entry.id}"
 
     within "#citation-#{citation.id}" do
@@ -81,7 +84,7 @@ RSpec.describe 'LexCitation text links in the verification workbench', :js, type
                                                     'url' => 'http://example.com/theses' })
   end
 
-  describe 'choosing between an entry and a URL as the link target' do
+  describe 'choosing between an entry and a URL as the link target', :js do
     # Chewy indices are not rolled back with the database, so entries imported for the
     # autocomplete would otherwise pile up across examples.
     after { Chewy.massacre }

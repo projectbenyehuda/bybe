@@ -5,9 +5,8 @@ require 'rails_helper'
 # Links behind a bot challenge (e.g. www.nli.org.il behind Cloudflare) cannot be checked from our
 # datacenter IP. The verification workbench must say so neutrally instead of crying "broken link".
 # See by-9jz.
-RSpec.describe 'Unverifiable link badge on verification page', :js, type: :system do
+RSpec.describe 'Unverifiable link badge on verification page', type: :system do
   before do
-    skip 'WebDriver not available or misconfigured' unless webdriver_available?
     login_as_lexicon_editor
   end
 

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'Lexicon entries filtering', :js do
+describe 'Lexicon entries filtering' do
   before do
     login_as_lexicon_editor
   end
@@ -147,8 +147,10 @@ describe 'Lexicon entries filtering', :js do
       expect(page).to have_content('Albert Einstein')
 
       # Verify filters are cleared
-      expect(page).to have_field(I18n.t('lexicon.entries.index.filter_title'), with: '')
-      expect(page).to have_select(I18n.t('lexicon.entries.index.filter_status'), selected: I18n.t('lexicon.entries.index.all_statuses'))
+      # rack_test returns nil (not "") for inputs rendered without a value attribute, and
+      # have_select(selected:) needs an explicit selected attribute, so assert on values instead
+      expect(find_field(I18n.t('lexicon.entries.index.filter_title')).value.to_s).to eq('')
+      expect(find_field(I18n.t('lexicon.entries.index.filter_status')).value).to eq('')
     end
   end
 end

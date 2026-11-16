@@ -25,7 +25,7 @@ describe 'Tag Editing' do
         expect(page).to have_link(I18n.t(:edit), href: edit_tag_path(tag))
       end
 
-      it 'shows edit link in admin tag review for approved tags', :js do
+      it 'shows edit link in admin tag review for approved tags' do
         # tag_review requires tagging lock
         File.write('/tmp/tagging.lock', "#{@current_test_user.id}")
         visit tag_review_path(tag)
@@ -75,7 +75,7 @@ describe 'Tag Editing' do
       login_as_moderator
     end
 
-    it 'displays tag information and form fields', :js do
+    it 'displays tag information and form fields' do
       visit edit_tag_path(tag)
 
       expect(page).to have_content("#{I18n.t(:edit_tag)}: #{tag.name}")
@@ -102,7 +102,7 @@ describe 'Tag Editing' do
       expect(page).to have_button(I18n.t(:remove), count: 2)
     end
 
-    it 'shows add TagName form', :js do
+    it 'shows add TagName form' do
       visit edit_tag_path(tag)
 
       expect(page).to have_content(I18n.t(:add_tag_name_alias))
@@ -110,7 +110,7 @@ describe 'Tag Editing' do
       expect(page).to have_button(I18n.t(:add))
     end
 
-    it 'shows merge and save buttons', :js do
+    it 'shows merge and save buttons' do
       visit edit_tag_path(tag)
 
       expect(page).to have_button(I18n.t(:save_changes))
@@ -119,7 +119,7 @@ describe 'Tag Editing' do
     end
   end
 
-  describe 'Updating tag name', :js do
+  describe 'Updating tag name' do
     before do
       login_as_moderator
       visit edit_tag_path(tag)
@@ -143,7 +143,7 @@ describe 'Tag Editing' do
     end
   end
 
-  describe 'Updating tag status', :js do
+  describe 'Updating tag status' do
     before do
       login_as_moderator
       visit edit_tag_path(tag)
@@ -176,7 +176,7 @@ describe 'Tag Editing' do
     end
   end
 
-  describe 'Adding TagName aliases', :js do
+  describe 'Adding TagName aliases' do
     before do
       login_as_moderator
       visit edit_tag_path(tag)
@@ -217,7 +217,7 @@ describe 'Tag Editing' do
     end
   end
 
-  describe 'Removing TagName aliases', :js do
+  describe 'Removing TagName aliases' do
     before do
       login_as_moderator
       visit edit_tag_path(tag)
@@ -260,7 +260,7 @@ describe 'Tag Editing' do
     end
   end
 
-  describe 'Permission requirements', :js do
+  describe 'Permission requirements' do
     context 'when user lacks moderate_tags permission' do
       let(:regular_user) { create(:user, editor: false) }
 
@@ -290,7 +290,7 @@ describe 'Tag Editing' do
     end
   end
 
-  describe 'Complete editing workflow', :js do
+  describe 'Complete editing workflow' do
     before do
       login_as_moderator
       visit edit_tag_path(tag)
@@ -333,7 +333,7 @@ describe 'Tag Editing' do
     end
   end
 
-  describe 'Navigation and back links', :js do
+  describe 'Navigation and back links' do
     before do
       login_as_moderator
       visit edit_tag_path(tag)

@@ -2,16 +2,16 @@
 
 require 'rails_helper'
 
-describe 'Converting a Manifestation into a Collection', :js, type: :system do
+describe 'Converting a Manifestation into a Collection', type: :system do
   let!(:manifestation) do
     create(:manifestation, title: 'Poems', markdown: "## First poem\nOne.\n\n## Second poem\nTwo.\n")
   end
 
-  before do
+  before(:each, :js) do
     skip 'WebDriver not available or misconfigured' unless webdriver_available?
   end
 
-  context 'when the editor holds the batch_editing bit' do
+  context 'when the editor holds the batch_editing bit', :js do
     before do
       login_as(create_batch_editor)
       visit manifestation_path(id: manifestation.id)
