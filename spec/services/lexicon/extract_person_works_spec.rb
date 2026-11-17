@@ -359,9 +359,9 @@ describe Lexicon::ExtractPersonWorks do
   end
 
   context 'when an unrecognized header follows a work-type section' do
-    # Mirrors 01661.php's 'עריכת תרגום - ספרי עיון:' and the more common 'מבחר ממאמריו:' after a
-    # translations section. Most such headers open a section of original works, so that is where
-    # the sub-heading goes -- they used to reset the works to original too, just without a heading.
+    # Mirrors the common 'מבחר ממאמריו:' after a translations section. Most such headers open a
+    # section of original works, so that is where the sub-heading goes -- they used to reset the
+    # works to original too, just without a heading.
     let(:html) do
       <<~HTML
         <p><a name="Books">ספריו:</a></p>
@@ -456,6 +456,91 @@ describe Lexicon::ExtractPersonWorks do
     it 'puts the works of both under a single sub-heading' do
       expect(lex_person.work_groups.size).to eq(1)
       expect(lex_person.works.map(&:work_group).uniq).to eq(lex_person.work_groups.to_a)
+    end
+  end
+
+  context 'when a header names editing with a form of the root ע-ר-כ not in the header list' do
+    # 'ספרים נוספים שערך:' (00302.php), 'ספרים שערכה:' (00134.php), 'ספרים בעריכתו:' (01131.php)
+    shared_examples 'an editing section' do |header|
+      let(:html) do
+        <<~HTML
+          <p><a name="Books">ספריו:</a></p>
+          <ul>
+            <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+          </ul>
+          <p><font>#{header}</font></p>
+          <ul>
+            <li>ספר נערך (תל אביב : הוצאה, 2005)</li>
+          </ul>
+        HTML
+      end
+
+      it "files the works under '#{header}' as edited, with no sub-heading" do
+        expect(lex_person.works.map { |w| [w.work_type, w.title] })
+          .to eq([['original', 'ספר מקורי'], ['edited', 'ספר נערך']])
+        expect(lex_person.work_groups).to be_empty
+      end
+    end
+
+    ['יצירות שנערכו:', 'יצירות בעריכתו:', 'יצירות שערך:', 'ספרים שערכה:', 'ספרים נוספים שערך:',
+     'עריכה מדעית:', 'עריכת ספרים וקבצים:', 'עריכת תרגום:', 'עריכה ומבואות:'].each do |header|
+      it_behaves_like 'an editing section', header
+    end
+  end
+
+  context 'when an editing header also names translation' do
+    # 'תרגום ועריכה:' (00025.php and 67 more), 'עריכה, תרגום:' (00643.php)
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <ul>
+          <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+        </ul>
+        <p><font>תרגום ועריכה:</font></p>
+        <ul>
+          <li>ספר מתורגם (תל אביב : הוצאה, 2005)</li>
+        </ul>
+        <p><font>עריכה, תרגום:</font></p>
+        <ul>
+          <li>ספר מתורגם שני (תל אביב : הוצאה, 2008)</li>
+        </ul>
+      HTML
+    end
+
+    it 'files the works as translations' do
+      expect(lex_person.works.map { |w| [w.work_type, w.title] })
+        .to eq([['original', 'ספר מקורי'], ['translated', 'ספר מתורגם'], ['translated', 'ספר מתורגם שני']])
+    end
+  end
+
+  context 'when a header uses the root ע-ר-כ without naming the person as editor' do
+    # Other words of the root (תערוכות, 00130.php), someone else's editing (בעריכת + name), a
+    # bracketed remark, and an editing form in a header with no colon.
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <ul>
+          <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+        </ul>
+        <p><font>תערוכות:</font></p>
+        <ul>
+          <li>תערוכה (תל אביב : מוזיאון, 1995)</li>
+        </ul>
+        <p><font>מבחר בעריכת דן מירון:</font></p>
+        <ul>
+          <li>מבחר (תל אביב : הוצאה, 2000)</li>
+        </ul>
+        <p><font>&lt;ערכה והביאה לדפוס לאה שניר&gt;</font></p>
+        <p><font>יצירות שנערכו</font></p>
+        <ul>
+          <li>ספר אחרון (תל אביב : הוצאה, 2010)</li>
+        </ul>
+      HTML
+    end
+
+    it 'leaves the works original' do
+      expect(lex_person.works).to all(be_work_type_original)
+      expect(lex_person.work_groups.map(&:title)).to eq(['תערוכות', 'מבחר בעריכת דן מירון', 'יצירות שנערכו'])
     end
   end
 end

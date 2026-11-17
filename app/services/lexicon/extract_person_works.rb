@@ -15,6 +15,19 @@ module Lexicon
                         'ספרי יובל וזכרון', 'ספרי יובל וזכרון:', 'ספרי יובל וזיכרון:']
     }.freeze
 
+    # A header with an editing form of the root ע-ר-כ opens an editing section even when it is not
+    # in WORK_TYPE_HEADERS: 'יצירות שנערכו:', 'ספרים בעריכתו:', 'ספרים נוספים שערך:'. Whole words
+    # only, and only these forms: the root also makes מערכת, תערוכה, הערכה, בערך, and the noun ערך;
+    # the agent noun עורך mostly turns up in credit lines ('/ העורך – יעקב בסר'); and בעריכת without
+    # a possessive suffix credits someone else ('על ״השירים״ בעריכת אבנר הולצמן').
+    EDITING_HEADER_RE = /(?<!\p{L})ו?(?:ה?עריכ(?:ה|ת|ות|תו|תה|תם|תן)|בעריכת[והםן]|ש?נערכ\p{L}{0,2}|
+                         ש?נערך|שערכ\p{L}{0,2}|שערך)(?!\p{L})/x
+
+    # A header mixing editing with translation ('תרגום ועריכה:', 'עריכה, תרגום:') files its works as
+    # translations -- but not 'עריכת תרגום:' (01661.php, 02730.php), editing of translations.
+    TRANSLATION_RE = /תרגו?[םמ]/
+    EDITING_OF_RE = /עריכת\s+\p{L}+/
+
     # Longest header that can still be a sub-heading. Anything longer in header markup is a work
     # line the file wrapped in <font> by mistake, or a remark.
     MAX_SUB_HEADING_LENGTH = 80
@@ -117,11 +130,25 @@ module Lexicon
     # lose both to the elements that follow.
     def work_type_of(header_line)
       core = header_core(header_line)
-      WORK_TYPE_HEADERS.keys.detect do |wt|
+      listed_type = WORK_TYPE_HEADERS.keys.detect do |wt|
         WORK_TYPE_HEADERS[wt].any? do |h|
           header_line.start_with?(h) || header_core(h) == core
         end
       end
+      return listed_type if listed_type.present?
+
+      editing_header_type(header_line, core)
+    end
+
+    # 'edited' (or 'translated', when it mentions translation too) for a header naming the person's
+    # editing work that WORK_TYPE_HEADERS does not list. The colon and sub_heading? keep a stray work
+    # line in header markup ('עריכה ומבוא, משרד החינוך...') from opening a section, and matching the
+    # core keeps a bracketed remark ('<ערכה והביאה לדפוס לאה שניר>') from doing so.
+    def editing_header_type(header_line, core)
+      return unless header_line.end_with?(':') && sub_heading?(header_line)
+      return unless core.match?(EDITING_HEADER_RE)
+
+      core.gsub(EDITING_OF_RE, '').match?(TRANSLATION_RE) ? 'translated' : 'edited'
     end
 
     # Whether an unrecognized header names a sub-heading, rather than being header-styled debris:
