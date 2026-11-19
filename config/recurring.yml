@@ -4,7 +4,7 @@ production:
     schedule: every hour at minute 12
   trim_db_sessions:
     # This also cleans up BaseUsers table (see lib/tasks/cleanup_base_users.rake)
-    command: "system('bin/rake db:sessions:trim')"
+    command: "system('bundle exec rake db:sessions:trim')"
     # Every Wednesday at 2:00AM
     schedule: '0 2 * * 3 Asia/Jerusalem'
   cleanup_simple_ahoy_events:
@@ -38,7 +38,7 @@ production:
     # Every Saturday at 1:00PM
     schedule: '0 13 * * 6 Asia/Jerusalem'
   import_dict:
-    command: "system('bin/rake', 'dict:import[/export/dict.db,24412]')"
+    command: "system('bundle exec rake dict:import[/export/dict.db,24412]')"
     # Every Tuesday and Friday at 3:00AM
     schedule: '0 3 * * 2,5 Asia/Jerusalem'
 development:
