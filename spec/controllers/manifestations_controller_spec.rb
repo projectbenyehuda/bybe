@@ -620,6 +620,14 @@ describe ManifestationController do
             let(:user) { create(:user, :edit_catalog) }
             it { is_expected.to be_successful }
 
+            it 'offers a mediating language select with the current value selected' do
+              expression.update_column(:mediating_language, 'ru')
+              get :edit_metadata, params: { id: manifestation.id }
+              select = Nokogiri::HTML(response.body).at_css('select#mediating_language')
+              expect(select.css('option').pluck('value')).to start_with('').and include('ru', 'de')
+              expect(select.at_css('option[selected]')['value']).to eq 'ru'
+            end
+
             def role_select_options(item)
               subject
               Nokogiri::HTML(response.body)
@@ -684,6 +692,32 @@ describe ManifestationController do
             expect(manifestation).to have_attributes(title: 'New Manifestation Title')
             expect(expression).to have_attributes(title: 'New Expression Title', intellectual_property: 'by_permission')
             expect(work).to have_attributes(title: 'New Work Title', orig_lang: 'ru', genre: 'fables', primary: false)
+          end
+        end
+
+        context 'when a mediating language is selected' do
+          let(:params) do
+            { wtitle: 'T', mtitle: 'T', etitle: 'T', genre: 'poetry', wlang: 'fi', elang: 'he',
+              intellectual_property: 'public_domain', mediating_language: 'ru' }
+          end
+
+          it 'stores it on the expression' do
+            call
+            expect(expression.reload.mediating_language).to eq 'ru'
+          end
+        end
+
+        context 'when the mediating language is cleared' do
+          before { expression.update_column(:mediating_language, 'de') }
+
+          let(:params) do
+            { wtitle: 'T', mtitle: 'T', etitle: 'T', genre: 'poetry', wlang: 'fi', elang: 'he',
+              intellectual_property: 'public_domain', mediating_language: '' }
+          end
+
+          it 'stores nil rather than an empty string' do
+            call
+            expect(expression.reload.mediating_language).to be_nil
           end
         end
 

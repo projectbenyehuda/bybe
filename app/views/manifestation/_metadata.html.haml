@@ -91,6 +91,10 @@
     .metadata
       %span{:style => "font-weight:bold"}= t(:orig_lang)+': '
       = link_to textify_lang(@e.work.orig_lang), works_path + '?ckb_languages[]=' + @e.work.orig_lang
+    - if @e.mediating_language.present?
+      .metadata.metadata-mediating-language
+        %span{ style: 'font-weight:bold' } #{t(:mediating_language)}:
+        = textify_lang(@e.mediating_language)
   - unless @e.source_edition.nil? || @e.source_edition.empty?
     .metadata.metadata-top-aligned
       %span{:style => "font-weight:bold"}= t(:source_edition)+': '

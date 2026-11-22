@@ -244,8 +244,8 @@ end
   end
 
   def update_toc
-    toc_params = params.permit(%i(title new_title genre orig_lang intellectual_property authority_id authority_name
-                                  role new_person_tbd rmauth seqno clear_defaults))
+    toc_params = params.permit(%i(title new_title genre orig_lang mediating_language intellectual_property authority_id
+                                  authority_name role new_person_tbd rmauth seqno clear_defaults))
     cur_toc = @ingestible.decode_toc
     updated = false
     prep(false) # prepare the markdown titles for the view
@@ -256,6 +256,8 @@ end
       x[3] = toc_params[:genre] if toc_params[:genre].present?
       x[4] = toc_params[:orig_lang] if toc_params[:orig_lang].present?
       x[5] = toc_params[:intellectual_property] if toc_params[:intellectual_property].present?
+      # blank is a meaningful value here (no mediating language), so only skip it when the param is absent
+      x[6] = toc_params[:mediating_language] if toc_params.key?(:mediating_language)
 
       if params[:replaceauth].present?
         authorities = x[2].present? ? JSON.parse(x[2]) : []
@@ -312,11 +314,15 @@ end
       end
       existing = cur_toc.find { |y| y[1].strip == x }
 
-      ret << if existing.nil?
-               " #{include ? 'yes' : 'no'} || #{x} || || #{@ingestible.genre} || #{@ingestible.orig_lang} || #{@ingestible.intellectual_property}" # use ingestible defaults when set
-             else
-               " #{include ? 'yes' : 'no'} || #{x} || #{existing[2]} || #{existing[3]} || #{existing[4]} || #{existing[5]}" # preserve any existing metadata
-             end
+      # columns after the title: authorities, genre, orig_lang, intellectual_property, mediating_language
+      metadata = if existing.nil?
+                   # use ingestible defaults when set
+                   [nil, @ingestible.genre, @ingestible.orig_lang, @ingestible.intellectual_property,
+                    @ingestible.mediating_language]
+                 else
+                   existing.values_at(2..6) # preserve any existing metadata
+                 end
+      ret << " #{include ? 'yes' : 'no'} || #{x} || #{metadata.join(' || ')}"
     end
     @ingestible.update_columns(toc_buffer: ret.join("\n"))
     redirect_to edit_ingestible_url(@ingestible, tab: 'toc'), notice: t('updated_successfully'), status: :see_other
@@ -566,6 +572,7 @@ end
                      publisher
                      year_published
                      orig_lang
+                     mediating_language
                      intellectual_property
                      periodical_id
                      docx
@@ -778,6 +785,7 @@ end
         e = w.expressions.build(
           title: unescaped_title,
           language: 'he',
+          mediating_language: toc_line[6].presence,
           period: period, # what to do if corporate body?
           intellectual_property: intellectual_property_value,
           source_edition: @ingestible.publisher,

@@ -128,6 +128,12 @@
         %br
         = f.label t(:orig_lang)
         = f.select :orig_lang, options_for_select(get_langs.map {|lang| [textify_lang(lang), lang]}, @ingestible.orig_lang)
+        %a.mediating-language-toggle{ href: '#' }= t(:mediating_language)
+        %span.mediating-language-select{ style: @ingestible.mediating_language.present? ? '' : 'display:none;' }
+          = f.select :mediating_language,
+                     options_for_select(get_langs.map { |lang| [textify_lang(lang), lang] },
+                                        @ingestible.mediating_language),
+                     { include_blank: true }
         = f.label t(:default_copyright_for_protected_texts)
         - default_ip = @ingestible.intellectual_property || 'by_permission'
         = f.select :intellectual_property, options_for_select(copyrighted_ip_options, default_ip)
@@ -212,6 +218,10 @@
       = link_to t('.review'), review_ingestible_path(@ingestible), class: 'btn btn-primary', style: 'width:100%;'
 :javascript
   $(function() {
+    $('#general .mediating-language-toggle').click(function(e) {
+      e.preventDefault();
+      $(this).next('.mediating-language-select').toggle();
+    });
     if (#{params[:text_index].present?}) {
       $('#texts_header').click();
     } else if (#{@tab.present?}) {
