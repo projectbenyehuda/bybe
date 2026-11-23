@@ -635,6 +635,7 @@ he:
   collapse_section: סגור סעיף
   unauthorized: אין לך הרשאה לבצע פעולה זו
   can_only_cancel_pending_links: ניתן לבטל רק קישוריות בהמתנה לאישור
+  link_cancelled: הקישור בוטל
   by: מאת
   x_years_ago: לפני %{years} שנים
   dates: תאריכים

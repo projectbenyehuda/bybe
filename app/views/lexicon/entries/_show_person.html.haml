@@ -32,15 +32,7 @@
         - if sections[:works]
           #lexicon-works
             = render layout: 'lexicon/block', locals: { title: LexPerson.human_attribute_name(:works) } do
-              - LexPersonWork.work_types.each_key do |work_type|
-                - works_of_type = lex_person.works.select { |work| work.work_type == work_type }
-                - next if works_of_type.empty?
-
-                - if work_type != 'original'
-                  %h4= LexPersonWork.human_enum_name(:work_type, work_type)
-                %ul
-                  - works_of_type.sort_by(&:seqno).each do |work|
-                    %li!= render_person_work(work)
+              = render 'lexicon/works_sections', lex_person: lex_person
 
         - if sections[:about]
           #lexicon-about

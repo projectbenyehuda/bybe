@@ -33,7 +33,10 @@ module Lexicon
 
     # Images hosted on our site get explicit width/height attributes (as in manifestations,
     # see insert_image.js), so the browser can reserve space for them and avoid layout shift (CLS).
+    # Dimensions given explicitly in the legacy HTML are the intended display size, so they win.
     def set_dimensions(img, path)
+      return if img['width'].present? || img['height'].present?
+
       blob = blob_for_path(path)
       return if blob.nil?
 

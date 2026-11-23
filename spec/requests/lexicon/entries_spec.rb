@@ -149,6 +149,25 @@ describe '/lexicon/entries' do
           expect(response.body).to include(%(<a href="#{collection_path(collection)}">ספר הזכרונות</a>))
         end
       end
+
+      context 'when some works are under sub-headings' do
+        before do
+          person = entry.lex_item
+          poetry = create(:lex_person_work_group, person: person, title: 'שירה ופרוזה')
+          create(:lex_person_work_group, person: person, title: 'כותרת ריקה')
+          create(:lex_person_work, person: person, title: 'ספר בלי כותרת משנה', work_type: 'original', seqno: 1)
+          create(:lex_person_work, person: person, title: 'לולא היה עלי למהר', work_group: poetry, seqno: 2)
+          create(:lex_person_work, person: person, title: 'מזמורים ישנים', work_type: 'translated', seqno: 1)
+        end
+
+        it 'lists them under their sub-heading within their section, and skips empty sub-headings' do
+          expect(call).to eq(200)
+          nodes = Nokogiri::HTML(response.body).css('#lexicon-works h4, #lexicon-works h5, #lexicon-works li')
+          expect(nodes.map { |n| n.text.strip })
+            .to match([start_with('ספר בלי כותרת משנה'), eq('שירה ופרוזה'), start_with('לולא היה עלי למהר'),
+                       eq(LexPersonWork.human_enum_name(:work_type, 'translated')), start_with('מזמורים ישנים')])
+        end
+      end
     end
 
     context 'when entry is a Publication' do

@@ -72,6 +72,30 @@ describe Lexicon::AttachImages do
       expect(img['width']).to be_present
     end
 
+    context 'when the legacy HTML specifies explicit dimensions' do
+      let(:html) { '<img id="local" src="00123_files/test.png" width="120" height="80"/>' }
+
+      it 'keeps the dimensions from the HTML' do
+        call
+        img = html_doc.at_css('#local')
+        expect(img['src']).to eq(new_path)
+        expect(img['width']).to eq('120')
+        expect(img['height']).to eq('80')
+      end
+    end
+
+    context 'when the legacy HTML specifies only a width' do
+      let(:html) { '<img id="local" src="00123_files/test.png" width="120"/>' }
+
+      # adding the actual height would distort the image; the browser scales it proportionally
+      it 'keeps the width and does not add a height' do
+        call
+        img = html_doc.at_css('#local')
+        expect(img['width']).to eq('120')
+        expect(img['height']).to be_nil
+      end
+    end
+
     it 'does not add dimensions to shared static images' do
       call
       expect(html_doc.at_css('#plain')['width']).to be_nil

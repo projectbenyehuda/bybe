@@ -1,0 +1,36 @@
+-# One work in the works section of the verification workbench.
+:ruby
+  reload_js = "function() { reloadScrollingToSection('section-works'); }"
+  edit_js = "openWorkEditPanel('#{edit_lexicon_work_path(work)}', #{reload_js})"
+  verified = checklist['works']&.dig('items', work.id.to_s, 'verified')
+.work-card{ id: "work-#{work.id}", class: work_card_css(work, checklist) }
+  .work-content{ dir: text_dir(work.title) }
+    %strong= render_person_work_title(work)
+    - pub_detail = format_publication_details(work)
+    - if pub_detail
+      %br
+      %span.text-muted= pub_detail
+    - if work.comment.present?
+      %br
+      %span.text-muted!= render_person_work_comment(work.comment, work.comment_links)
+    - if work.publication.present?
+      %br
+      %span.text-muted
+        = t('lexicon.verification.sections.work_from_publication')
+        = work.publication.title
+    - if work.collection.present?
+      %br
+      %span.text-muted
+        = t('lexicon.verification.sections.work_from_collection')
+        = link_to work.collection.title, collection_path(work.collection), target: '_blank', rel: 'noopener'
+    - work.linked_people.sort_by(&:sort_value).each do |linked_person|
+      %br
+      %span.text-muted!= render_linked_person(linked_person)
+  .work-actions.mt-2
+    %button.btn.btn-sm.btn-outline-primary{ onclick: edit_js }
+      ✏️
+      = t('lexicon.verification.migrated.edit')
+    %button.btn.btn-sm{ class: verified ? 'btn-success' : 'btn-outline-success',
+                        data: { action: 'click->verification#quickVerify', path: "works.items.#{work.id}" } }
+      ✓
+      = t('lexicon.verification.migrated.mark_verified')

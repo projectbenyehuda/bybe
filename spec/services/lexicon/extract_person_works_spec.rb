@@ -307,4 +307,240 @@ describe Lexicon::ExtractPersonWorks do
       expect(result.name).to eq('p')
     end
   end
+
+  context 'when a works section is split under sub-headings written as bare text' do
+    # Mirrors 00421.php: 'שירה ופרוזה:' and 'עיון:' sit as text nodes between the lists, so a walk
+    # over elements alone never saw them and the two groups were merged into one flat list.
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריה:</a></p>
+        שירה ופרוזה:
+        <ul>
+          <li>לולא היה עלי למהר (תל־אביב : מי לי, 1971)</li>
+          <li>רק הירוק : שירים (תל־אביב : הקיבוץ המאוחד, תשמ״א)</li>
+        </ul>
+        עיון:
+        <ul>
+          <li>מבוא לספרות הדקאדנס באירופה (תל־אביב : משרד הביטחון, 1994)</li>
+        </ul>
+        <font size="4" color="#0000FF">תרגום:</font>
+        <ul>
+          <li>מזמורים ישנים / אולגה סדקובה (ירושלים : כרמל, 1997)</li>
+        </ul>
+        <p><a name="Bib.">על המחברת ויצירתה:</a></p>
+      HTML
+    end
+
+    it 'puts the works under each sub-heading of the original works' do
+      expect(lex_person.work_groups.map { |g| [g.work_type, g.title] })
+        .to eq([['original', 'שירה ופרוזה'], %w(original עיון)])
+
+      poetry, research = lex_person.work_groups.to_a
+      expect(lex_person.works.select { |w| w.work_group.equal?(poetry) }.map(&:title))
+        .to eq(['לולא היה עלי למהר', 'רק הירוק : שירים'])
+      expect(lex_person.works.select { |w| w.work_group.equal?(research) }.map(&:title))
+        .to eq(['מבוא לספרות הדקאדנס באירופה'])
+      expect(lex_person.works.select(&:work_type_original?).map(&:seqno)).to eq([1, 2, 3])
+    end
+
+    it 'ends the sub-heading at the next work-type header' do
+      translated = lex_person.works.select(&:work_type_translated?)
+      expect(translated.map(&:title)).to eq(['מזמורים ישנים / אולגה סדקובה'])
+      expect(translated.map(&:work_group)).to eq([nil])
+    end
+
+    it 'saves the sub-headings along with the person' do
+      lex_person.save!
+      expect(LexPersonWorkGroup.where(lex_person_id: lex_person.id).ordered.pluck(:title, :seqno))
+        .to eq([['שירה ופרוזה', 1], ['עיון', 2]])
+      expect(lex_person.reload.works_sections.first.groups.map { |g, works| [g.title, works.size] })
+        .to eq([['שירה ופרוזה', 2], ['עיון', 1]])
+    end
+  end
+
+  context 'when an unrecognized header follows a work-type section' do
+    # Mirrors the common 'מבחר ממאמריו:' after a translations section. Most such headers open a
+    # section of original works, so that is where the sub-heading goes -- they used to reset the
+    # works to original too, just without a heading.
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <ul>
+          <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+        </ul>
+        <p><font>עריכה:</font></p>
+        <ul>
+          <li>ספר נערך (תל אביב : הוצאה, 2005)</li>
+        </ul>
+        <p><font>מבחר ממאמריו:</font></p>
+        <ul>
+          <li>מאמר ראשון (תל אביב : הוצאה, 2006)</li>
+        </ul>
+      HTML
+    end
+
+    it 'keeps the section before it intact and opens a sub-heading of the original works' do
+      expect(lex_person.works.select(&:work_type_edited?).map(&:title)).to eq(['ספר נערך'])
+      expect(lex_person.work_groups.map { |g| [g.work_type, g.title] }).to eq([['original', 'מבחר ממאמריו']])
+      expect(lex_person.works.last.work_group).to eq(lex_person.work_groups.first)
+      expect(lex_person.works.last.seqno).to eq(2)
+    end
+  end
+
+  context 'when header markup carries debris rather than a sub-heading' do
+    # A work-type header split across elements (<font>עריכה</font><font>(מבחר)</font><font>:</font>,
+    # as in 00036.php), comment fragments (02730.php), a last-updated footer, and bare text that is a
+    # piece of a broken list item (00424.php).
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <ul>
+          <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+        </ul>
+        <font>עריכה</font><font>(מבחר)</font><font>:</font>
+        <ul>
+          <li>ספר נערך (תל אביב : הוצאה, 2005)</li>
+        </ul>
+        <font>&lt;</font><font>הרשימה באדיבות יעל שכנאי&gt;</font>
+        עברית והולנדית – עמוד מול עמוד
+        <ul>
+          <li>ספר נערך שני (תל אביב : הוצאה, 2008)</li>
+        </ul>
+        <font>עודכן לאחרונה: 25 באפריל 2017</font>
+      HTML
+    end
+
+    it 'makes no sub-heading of any of it and keeps the works in their section' do
+      expect(lex_person.work_groups).to be_empty
+      expect(lex_person.works.map { |w| [w.work_type, w.title] })
+        .to eq([['original', 'ספר מקורי'], ['edited', 'ספר נערך'], ['edited', 'ספר נערך שני']])
+    end
+  end
+
+  context 'when a sub-heading has no works under it' do
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <ul>
+          <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+        </ul>
+        <p><font>ספרים נוספים:</font></p>
+        <p><font>מחזות:</font></p>
+        <ul>
+          <li>מחזה (תל אביב : הוצאה, 2005)</li>
+        </ul>
+        <p><font>מקורות: ארכיון קיבוץ כפר־בלום.</font></p>
+      HTML
+    end
+
+    it 'does not create it' do
+      expect(lex_person.work_groups.map(&:title)).to eq(['מחזות'])
+    end
+  end
+
+  context 'when a sub-heading is repeated within a section' do
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <p><font>מחזות:</font></p>
+        <ul>
+          <li>מחזה ראשון (תל אביב : הוצאה, 2005)</li>
+        </ul>
+        <p><font>מחזות:</font></p>
+        <ul>
+          <li>מחזה שני (תל אביב : הוצאה, 2006)</li>
+        </ul>
+      HTML
+    end
+
+    it 'puts the works of both under a single sub-heading' do
+      expect(lex_person.work_groups.size).to eq(1)
+      expect(lex_person.works.map(&:work_group).uniq).to eq(lex_person.work_groups.to_a)
+    end
+  end
+
+  context 'when a header names editing with a form of the root ע-ר-כ not in the header list' do
+    # 'ספרים נוספים שערך:' (00302.php), 'ספרים שערכה:' (00134.php), 'ספרים בעריכתו:' (01131.php)
+    shared_examples 'an editing section' do |header|
+      let(:html) do
+        <<~HTML
+          <p><a name="Books">ספריו:</a></p>
+          <ul>
+            <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+          </ul>
+          <p><font>#{header}</font></p>
+          <ul>
+            <li>ספר נערך (תל אביב : הוצאה, 2005)</li>
+          </ul>
+        HTML
+      end
+
+      it "files the works under '#{header}' as edited, with no sub-heading" do
+        expect(lex_person.works.map { |w| [w.work_type, w.title] })
+          .to eq([['original', 'ספר מקורי'], ['edited', 'ספר נערך']])
+        expect(lex_person.work_groups).to be_empty
+      end
+    end
+
+    ['יצירות שנערכו:', 'יצירות בעריכתו:', 'יצירות שערך:', 'ספרים שערכה:', 'ספרים נוספים שערך:',
+     'עריכה מדעית:', 'עריכת ספרים וקבצים:', 'עריכת תרגום:', 'עריכה ומבואות:'].each do |header|
+      it_behaves_like 'an editing section', header
+    end
+  end
+
+  context 'when an editing header also names translation' do
+    # 'תרגום ועריכה:' (00025.php and 67 more), 'עריכה, תרגום:' (00643.php)
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <ul>
+          <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+        </ul>
+        <p><font>תרגום ועריכה:</font></p>
+        <ul>
+          <li>ספר מתורגם (תל אביב : הוצאה, 2005)</li>
+        </ul>
+        <p><font>עריכה, תרגום:</font></p>
+        <ul>
+          <li>ספר מתורגם שני (תל אביב : הוצאה, 2008)</li>
+        </ul>
+      HTML
+    end
+
+    it 'files the works as translations' do
+      expect(lex_person.works.map { |w| [w.work_type, w.title] })
+        .to eq([['original', 'ספר מקורי'], ['translated', 'ספר מתורגם'], ['translated', 'ספר מתורגם שני']])
+    end
+  end
+
+  context 'when a header uses the root ע-ר-כ without naming the person as editor' do
+    # Other words of the root (תערוכות, 00130.php), someone else's editing (בעריכת + name), a
+    # bracketed remark, and an editing form in a header with no colon.
+    let(:html) do
+      <<~HTML
+        <p><a name="Books">ספריו:</a></p>
+        <ul>
+          <li>ספר מקורי (תל אביב : דביר, 1990)</li>
+        </ul>
+        <p><font>תערוכות:</font></p>
+        <ul>
+          <li>תערוכה (תל אביב : מוזיאון, 1995)</li>
+        </ul>
+        <p><font>מבחר בעריכת דן מירון:</font></p>
+        <ul>
+          <li>מבחר (תל אביב : הוצאה, 2000)</li>
+        </ul>
+        <p><font>&lt;ערכה והביאה לדפוס לאה שניר&gt;</font></p>
+        <p><font>יצירות שנערכו</font></p>
+        <ul>
+          <li>ספר אחרון (תל אביב : הוצאה, 2010)</li>
+        </ul>
+      HTML
+    end
+
+    it 'leaves the works original' do
+      expect(lex_person.works).to all(be_work_type_original)
+      expect(lex_person.work_groups.map(&:title)).to eq(['תערוכות', 'מבחר בעריכת דן מירון', 'יצירות שנערכו'])
+    end
+  end
 end

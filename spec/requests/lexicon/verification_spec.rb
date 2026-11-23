@@ -872,5 +872,33 @@ RSpec.describe 'Lexicon::Verification', type: :request do
         expect(translated_card_index).to be > translated_heading_index
       end
     end
+
+    context 'when some works are under sub-headings' do
+      let(:group) { create(:lex_person_work_group, person: person, title: 'עריכת תרגום - ספרי עיון') }
+      let!(:grouped_work) do
+        create(:lex_person_work, person: person, title: 'Grouped Work', work_group: group, seqno: 1)
+      end
+
+      it 'lists them under their sub-heading, after the works of the section that have none' do
+        get "/lex/verification/#{entry.id}"
+
+        doc = Nokogiri::HTML(response.body)
+        selectors = %w(.work-type-heading .work-sub-heading .work-card).map { |c| "#section-works #{c}" }
+        nodes = doc.css(selectors.join(', '))
+        expect(nodes.map { |n| n['id'] || n.at_css('.heading-title')&.text || n.text.strip })
+          .to eq([LexPersonWork.human_enum_name(:work_type, 'original'),
+                  "work-#{work1.id}", "work-#{work2.id}",
+                  'עריכת תרגום - ספרי עיון', "work-#{grouped_work.id}"])
+      end
+
+      it 'offers to move the sub-heading to another section' do
+        get "/lex/verification/#{entry.id}"
+
+        heading = Nokogiri::HTML(response.body).at_css('#section-works .work-sub-heading')
+        expect(heading['data-url']).to eq("/lex/work_groups/#{group.id}")
+        expect(heading.css('select.verification-move-work-group option').pluck('value'))
+          .to eq(LexPersonWork.work_types.keys)
+      end
+    end
   end
 end

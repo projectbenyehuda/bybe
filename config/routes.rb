@@ -79,6 +79,10 @@ Bybeconv::Application.routes.draw do
           patch :use_archive
         end
       end
+      # Sub-headings within the work-type sections of the works list -- see LexPersonWorkGroup
+      resources :work_groups, shallow: true, only: %i(create update destroy) do
+        post :reorder, on: :member
+      end
       resources :works, controller: 'person_works', shallow: true, except: %i(show) do
         post :reorder, on: :member
         resources :linked_people, only: %i(index create)

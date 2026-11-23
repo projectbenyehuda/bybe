@@ -71,6 +71,34 @@ describe LexPerson do
     end
   end
 
+  describe '#works_sections' do
+    let(:person) { create(:lex_person) }
+    let!(:poetry) { create(:lex_person_work_group, person: person, title: 'שירה', seqno: 2) }
+    let!(:research) { create(:lex_person_work_group, person: person, title: 'עיון', seqno: 1) }
+    let!(:empty_group) { create(:lex_person_work_group, person: person, title: 'ריק', work_type: :edited) }
+    let!(:ungrouped) { create(:lex_person_work, person: person, work_type: :original, seqno: 9) }
+    let!(:poem_b) { create(:lex_person_work, person: person, work_group: poetry, seqno: 2) }
+    let!(:poem_a) { create(:lex_person_work, person: person, work_group: poetry, seqno: 1) }
+    let!(:essay) { create(:lex_person_work, person: person, work_group: research, seqno: 3) }
+    let!(:translation) { create(:lex_person_work, person: person, work_type: :translated, seqno: 1) }
+
+    it 'lists each section in enum order with its ungrouped works first, then its sub-headings in order' do
+      sections = person.reload.works_sections
+      expect(sections.map(&:work_type)).to eq(%w(original translated))
+
+      original = sections.first
+      expect(original.works).to eq([ungrouped])
+      expect(original.groups).to eq([[research, [essay]], [poetry, [poem_a, poem_b]]])
+      expect(sections.second.works).to eq([translation])
+    end
+
+    it 'keeps empty sub-headings, and the sections holding them, when asked to' do
+      sections = person.reload.works_sections(include_empty: true)
+      expect(sections.map(&:work_type)).to eq(%w(original translated edited))
+      expect(sections.last.groups).to eq([[empty_group, []]])
+    end
+  end
+
   describe '.citations_by_group_token' do
     subject(:result) { person.citations_by_group_token(group_token) }
 

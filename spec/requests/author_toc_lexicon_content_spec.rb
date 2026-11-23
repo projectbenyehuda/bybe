@@ -182,6 +182,22 @@ RSpec.describe 'Authority TOC lexicon content', type: :request do
     end
   end
 
+  describe 'works card' do
+    let(:lex_entry) { create(:lex_entry, :person, status: 'published') }
+
+    before do
+      group = create(:lex_person_work_group, person: lex_entry.lex_item, title: 'עיון')
+      create(:lex_person_work, person: lex_entry.lex_item, title: 'מבוא לספרות הדקאדנס', work_group: group)
+    end
+
+    it 'shows the works under their sub-headings, as LexEntry#show does' do
+      call
+      sub_heading = Nokogiri::HTML(response.body).at_css('#lexicon-works h5.lexicon-works-sub-heading')
+      expect(sub_heading.text).to eq('עיון')
+      expect(sub_heading.next_element.text).to include('מבוא לספרות הדקאדנס')
+    end
+  end
+
   describe 'lexicon navbar group' do
     # Asserted on the scroll-target attribute, not the label: in Hebrew the nav label
     # (authority_control_section) and the card title (authority_identifiers) are the same

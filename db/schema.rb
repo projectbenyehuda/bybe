@@ -818,6 +818,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
     t.index ["lex_person_id"], name: "index_lex_people_items_on_lex_person_id"
   end
 
+  create_table "lex_person_work_groups", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "lex_person_id", null: false
+    t.integer "work_type", null: false
+    t.string "title", null: false
+    t.integer "seqno", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lex_person_id", "work_type", "title"], name: "index_lex_person_work_groups_on_person_type_and_title", unique: true
+    t.index ["lex_person_id"], name: "index_lex_person_work_groups_on_lex_person_id"
+  end
+
   create_table "lex_person_works", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "collection_id"
     t.string "comment", limit: 4096
@@ -834,8 +845,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
     t.json "title_links"
     t.datetime "updated_at", null: false
     t.integer "work_type", null: false
+    t.bigint "lex_person_work_group_id"
     t.index ["collection_id"], name: "index_lex_person_works_on_collection_id"
     t.index ["lex_person_id"], name: "index_lex_person_works_on_lex_person_id"
+    t.index ["lex_person_work_group_id"], name: "index_lex_person_works_on_lex_person_work_group_id"
     t.index ["lex_publication_id"], name: "index_lex_person_works_on_lex_publication_id"
     t.index ["publication_id"], name: "index_lex_person_works_on_publication_id"
   end
@@ -1286,8 +1299,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
   add_foreign_key "lex_linked_people", "lex_person_works"
   add_foreign_key "lex_people", "authorities"
   add_foreign_key "lex_people_items", "lex_people"
+  add_foreign_key "lex_person_work_groups", "lex_people"
   add_foreign_key "lex_person_works", "collections"
   add_foreign_key "lex_person_works", "lex_people"
+  add_foreign_key "lex_person_works", "lex_person_work_groups"
   add_foreign_key "lex_person_works", "lex_publications"
   add_foreign_key "lex_person_works", "publications"
   add_foreign_key "list_items", "users"
