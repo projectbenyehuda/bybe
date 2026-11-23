@@ -111,6 +111,7 @@
           %th= t(:associated_persons)
           %th= t(:genre)
           %th= t(:orig_lang)
+          %th= t(:mediating_language)
       %tbody
         - @decoded_toc.each do |text|
           - is_duplicate = @potential_duplicates.any? { |dup| dup[:title] == text[1] }
@@ -127,7 +128,7 @@
                   = t('.existing_manifestation')
                   = link_to t('.view_existing'), duplicate_info[:manifestation_url], target: '_blank', rel: 'noopener'
             - if text[0] == 'no'
-              %td{colspan: 3, align: 'center'}
+              %td{ colspan: 4, align: 'center' }
                 = t('.placeholder')
                 - if @collection.present? && @collection.placeholders.map(&:alt_title).include?(text[1])
                   %span{style: 'font-size:70%;'}!= t('.already_in_collection')
@@ -136,6 +137,7 @@
               %td!= authorities_string
               %td= textify_genre(text[3])
               %td= textify_lang(text[4])
+              %td= textify_lang(text[6]) if text[6].present?
   .admin_dashboard_item
     %h2= t('.affected_authorities')
     %table

@@ -453,6 +453,25 @@ describe IngestiblesController do
         expect(call).to be_successful
       end
 
+      context 'when a text has a mediating language' do
+        render_views
+
+        let(:toc_buffer) do
+          " yes || Work 1 || || prose || en || public_domain || ru\n yes || Work 2 || || prose || en || public_domain"
+        end
+
+        it 'shows it in the mediating language column, and leaves it blank for texts without one' do
+          call
+          table = Nokogiri::HTML(response.body).css('table').find do |t|
+            t.css('th').map(&:text).include?(I18n.t(:mediating_language))
+          end
+          column = table.css('th').map(&:text).index(I18n.t(:mediating_language))
+          cells = table.css('tbody tr').to_h { |row| [row.css('td')[0].text.strip, row.css('td')[column].text.strip] }
+
+          expect(cells).to eq('Work 1' => I18n.t(:russian), 'Work 2' => '')
+        end
+      end
+
       it 'uses per-role merging in prep_for_ingestion' do
         call
         authority_changes = controller.instance_variable_get(:@authority_changes)

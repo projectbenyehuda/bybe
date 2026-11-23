@@ -30,8 +30,14 @@ describe 'Manifestation#read mediating language', type: :request do
   end
 
   context 'when the expression has no mediating language' do
-    it 'does not show the mediating language row' do
-      expect(metadata_rows.map(&:text).join).not_to include(I18n.t(:mediating_language))
+    it 'does not show the mediating language label anywhere on the page' do
+      expect(text.expression.mediating_language).to be_nil
+      get manifestation_path(text)
+
+      expect(response.body).not_to include(I18n.t(:mediating_language))
+      expect(Nokogiri::HTML(response.body).css('.metadata-mediating-language')).to be_empty
+      # the source language row is still there, so the absence above is meaningful
+      expect(response.body).to include(I18n.t(:orig_lang))
     end
   end
 end
