@@ -52,6 +52,12 @@ class Expression < ApplicationRecord
     end
   end
 
+  # The language this text was actually translated from: the mediating language when the translation
+  # went through one (e.g. the Kalevala via Russian), otherwise the work's original language.
+  def translated_from_language
+    mediating_language.presence || work.orig_lang
+  end
+
   protected
 
   def set_translation

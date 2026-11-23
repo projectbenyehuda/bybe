@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
   create_table "aboutnesses", id: :integer, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.integer "aboutable_id"
     t.string "aboutable_type"
@@ -407,6 +407,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.string "form"
     t.integer "intellectual_property", null: false
     t.string "language"
+    t.string "mediating_language"
     t.string "normalized_creation_date"
     t.string "normalized_first_publication_date"
     t.string "normalized_pub_date"
@@ -572,6 +573,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_120000) do
     t.integer "locked_by_user_id"
     t.text "markdown", size: :long
     t.datetime "markdown_updated_at", precision: nil
+    t.string "mediating_language"
     t.text "metadata"
     t.boolean "no_volume", default: false, null: false
     t.string "orig_lang"

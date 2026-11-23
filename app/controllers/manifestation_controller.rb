@@ -883,6 +883,7 @@ class ManifestationController < ApplicationController
           @w.comment = params[:wcomment]
           @w.primary = params[:primary] == 'true'
           @e.language = params[:elang]
+          @e.mediating_language = params[:mediating_language].presence
           @e.title = params[:etitle]
           @e.date = params[:edate]
           @e.comment = params[:ecomment]

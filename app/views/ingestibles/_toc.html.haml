@@ -8,7 +8,7 @@
       %th= t(:genre)
       %th= t(:orig_lang)
       %th= t(:copyright_status)
-  - @ingestible.decode_toc.each do |included, title, ias, genre, orig_lang, intellectual_property|
+  - @ingestible.decode_toc.each do |included, title, ias, genre, orig_lang, intellectual_property, mediating_language|
     %tr
       %td= included == 'yes' ? '✓' : '✗'
       - found_in_markdown = @markdown_titles.include?(title)
@@ -88,6 +88,12 @@
           = select_tag :tgenre, options_for_select(get_genres.map {|x| [textify_genre(x), x]}, genre), {include_blank: true, class: 'toc-genre'}
         %td
           = select_tag :orig_lang, options_for_select(get_langs.map {|lang| [textify_lang(lang), lang]}, orig_lang), {class: 'toc-lang'}
+          %br
+          %a.mediating-language-toggle{ href: '#' }= t(:mediating_language)
+          %span.mediating-language-select{ style: mediating_language.present? ? '' : 'display:none;' }
+            = select_tag :mediating_language,
+                         options_for_select(get_langs.map { |lang| [textify_lang(lang), lang] }, mediating_language),
+                         include_blank: true, class: 'toc-mediating-lang'
         %td
           - calculated_copyright = @ingestible.calculate_copyright_status(ias)
           - if calculated_copyright == 'copyrighted'
@@ -109,6 +115,7 @@
       var title = e.closest('tr').find('.toc-title').text();
       var genre = e.closest('tr').find('.toc-genre').val();
       var orig_lang = e.closest('tr').find('.toc-lang').val();
+      var mediating_language = e.closest('tr').find('.toc-mediating-lang').val();
       var intellectual_property = e.closest('tr').find('.toc-intellectual-property').val();
       $.ajax({
         url: "#{update_toc_ingestible_path(@ingestible)}",
@@ -117,6 +124,7 @@
           title: title,
           genre: genre,
           orig_lang: orig_lang,
+          mediating_language: mediating_language,
           intellectual_property: intellectual_property,
           authority_id: new_authority_id,
           authority_name: new_name,
@@ -137,6 +145,16 @@
       e.preventDefault();
       e.stopImmediatePropagation();
       update_toc($(this), null, null, null, null);
+    });
+    $('.toc-mediating-lang').change(function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      update_toc($(this), null, null, null, null);
+    });
+    $('#toc_div .mediating-language-toggle').click(function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      $(this).next('.mediating-language-select').toggle();
     });
     $('.toc-genre').change(function(e) {
       e.preventDefault();

@@ -42,4 +42,22 @@ describe Expression do
       expect(subject['medieval']).to eq 2
     end
   end
+
+  describe '#translated_from_language' do
+    let(:expression) { create(:expression, orig_lang: 'fi', language: 'he') }
+
+    it "is the work's original language when there is no mediating language" do
+      expect(expression.translated_from_language).to eq 'fi'
+    end
+
+    it 'is the mediating language when one is set' do
+      expression.mediating_language = 'ru'
+      expect(expression.translated_from_language).to eq 'ru'
+    end
+
+    it 'ignores a blank mediating language' do
+      expression.mediating_language = ''
+      expect(expression.translated_from_language).to eq 'fi'
+    end
+  end
 end

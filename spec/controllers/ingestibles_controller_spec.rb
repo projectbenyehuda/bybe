@@ -389,6 +389,44 @@ describe IngestiblesController do
           expect(auths.first['role']).to eq('translator')
         end
       end
+
+      context 'when setting the mediating language' do
+        it 'stores it as the seventh TOC column' do
+          patch :update_toc, params: { id: ingestible.id, title: 'Test Work', mediating_language: 'ru' }, xhr: true,
+                             format: :js
+          expect(ingestible.reload.decode_toc.first[6]).to eq 'ru'
+        end
+      end
+
+      context 'when a mediating language is already set' do
+        let(:toc_buffer) { ' yes || Test Work || || pros || fi || public_domain || de' }
+
+        it 'clears it when an empty value is sent' do
+          patch :update_toc, params: { id: ingestible.id, title: 'Test Work', mediating_language: '' }, xhr: true,
+                             format: :js
+          expect(ingestible.reload.decode_toc.first[6]).to be_blank
+        end
+
+        it 'keeps it when the request does not mention it' do
+          patch :update_toc, params: { id: ingestible.id, title: 'Test Work', clear_defaults: true }, xhr: true,
+                             format: :js
+          expect(ingestible.reload.decode_toc.first[6]).to eq 'de'
+        end
+      end
+    end
+
+    describe '#update_toc_list' do
+      let(:ingestible) do
+        create(:ingestible, mediating_language: 'ru',
+                            toc_buffer: ' yes || Existing Work || || poetry || fi || public_domain || de')
+      end
+
+      it 'uses the ingestible default for new texts and preserves it for existing ones' do
+        post :update_toc_list, params: { id: ingestible.id, toc_list: "$$$ התחלה\nExisting Work\nNew Work" }
+        toc = ingestible.reload.decode_toc
+        expect(toc.find { |line| line[1] == 'Existing Work' }[6]).to eq 'de'
+        expect(toc.find { |line| line[1] == 'New Work' }[6]).to eq 'ru'
+      end
     end
 
     describe '#review' do
@@ -413,6 +451,25 @@ describe IngestiblesController do
 
       it 'is successful' do
         expect(call).to be_successful
+      end
+
+      context 'when a text has a mediating language' do
+        render_views
+
+        let(:toc_buffer) do
+          " yes || Work 1 || || prose || en || public_domain || ru\n yes || Work 2 || || prose || en || public_domain"
+        end
+
+        it 'shows it in the mediating language column, and leaves it blank for texts without one' do
+          call
+          table = Nokogiri::HTML(response.body).css('table').find do |t|
+            t.css('th').map(&:text).include?(I18n.t(:mediating_language))
+          end
+          column = table.css('th').map(&:text).index(I18n.t(:mediating_language))
+          cells = table.css('tbody tr').to_h { |row| [row.css('td')[0].text.strip, row.css('td')[column].text.strip] }
+
+          expect(cells).to eq('Work 1' => I18n.t(:russian), 'Work 2' => '')
+        end
       end
 
       it 'uses per-role merging in prep_for_ingestion' do
@@ -643,6 +700,23 @@ describe IngestiblesController do
 
           manifestation = Manifestation.order(id: :desc).first
           expect(manifestation.expression.intellectual_property).to eq('by_permission')
+        end
+      end
+
+      it 'leaves the mediating language empty when the TOC has none' do
+        post :ingest, params: { id: ingestible.id }
+        expect(Manifestation.order(id: :desc).first.expression.mediating_language).to be_nil
+      end
+
+      context 'when the TOC line has a mediating language' do
+        let(:toc_buffer) do
+          " yes || Work 1 || #{[{ seqno: 1, authority_id: author.id, authority_name: author.name,
+                                  role: 'author' }].to_json} || prose || fr || public_domain || ru"
+        end
+
+        it 'sets it on the created expression' do
+          post :ingest, params: { id: ingestible.id }
+          expect(Manifestation.order(id: :desc).first.expression.mediating_language).to eq 'ru'
         end
       end
 

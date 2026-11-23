@@ -39,7 +39,7 @@
         %br
         = "#{t(:translation)}: "
         != @translators.map { |t| authority_link(t) }.join(', ')
-        - linktext = orig_lang_label(@e.work.orig_lang)
+        - linktext = orig_lang_label(@e.translated_from_language)
         != " (#{linktext})"
   - if @e.translation 
     .origlang_details

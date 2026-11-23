@@ -98,6 +98,11 @@
       %b= t(:language) + ': '
       = select_tag :elang, options_for_select(get_langs.map {|lang| [textify_lang(lang), lang]}, @e.language.nil? ? 'he' : @e.language)
     %p
+      %b= t(:mediating_language) + ': '
+      = select_tag :mediating_language,
+                   options_for_select(get_langs.map { |lang| [textify_lang(lang), lang] }, @e.mediating_language),
+                   include_blank: true
+    %p
       %b= t(:first_publication_date_explanation) + ': '
       = text_field_tag :first_publication_date, @e.first_publication_date
     %p
