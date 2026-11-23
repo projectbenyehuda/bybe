@@ -39,8 +39,7 @@
         %br
         = "#{t(:translation)}: "
         != @translators.map { |t| authority_link(t) }.join(', ')
-        -# via a mediating language, that is what the text was translated from; orig_lang stays in the row below
-        - linktext = orig_lang_label(@e.mediating_language.presence || @e.work.orig_lang)
+        - linktext = orig_lang_label(@e.translated_from_language)
         != " (#{linktext})"
   - if @e.translation 
     .origlang_details
