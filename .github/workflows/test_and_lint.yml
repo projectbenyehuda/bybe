@@ -83,6 +83,7 @@ jobs:
       - name: Mark repository as safe
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Run pronto
+        if: github.event_name == 'pull_request'
         env:
           RAILS_ENV: "test"
           PRONTO_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}
