@@ -104,7 +104,6 @@ gem 'sentry-ruby'
 group :production do
   gem 'dalli'
   gem 'evil-seed', require: false # for seeding large databases without timeouts
-  gem 'newrelic_rpm' # performance monitoring
 end
 
 group :test do

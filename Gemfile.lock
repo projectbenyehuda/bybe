@@ -446,7 +446,6 @@ GEM
       net-protocol
     net-ssh (7.3.0)
     netrc (0.11.0)
-    newrelic_rpm (9.24.0)
     nio4r (2.7.5)
     nokogiri (1.19.7)
       mini_portile2 (~> 2.8.2)
@@ -703,7 +702,7 @@ GEM
       zeitwerk (~> 2)
     ruby_llm-schema (0.3.0)
     rubyzip (2.3.2)
-    rugged (1.9.0)
+    rugged (1.9.6)
     rvm1-capistrano3 (1.4.1)
       capistrano (~> 3.0)
       sshkit (>= 1.2)
@@ -882,7 +881,6 @@ DEPENDENCIES
   momentjs-rails
   msgpack (>= 1.7.0)
   mysql2
-  newrelic_rpm
   nokogiri
   observer
   omniauth-google-oauth2

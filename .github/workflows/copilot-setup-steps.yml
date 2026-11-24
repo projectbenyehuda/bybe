@@ -14,7 +14,8 @@ on:
 jobs:
   # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
   copilot-setup-steps:
-    runs-on: ubuntu-latest
+    # We use ubuntu-24.04 as rugged gem (used by pronto) cannot be built on 26.04-arm yet
+    runs-on: ubuntu-24.04-arm
     services:
       mysql:
         image: mysql:8.0.36
@@ -37,9 +38,10 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y mysql-client libmysqlclient-dev pandoc yaz libyaz-dev libpcap-dev cmake chromium-browser
+          sudo apt-get install -y mysql-client chromium-browser cmake \
+            libmysqlclient-dev pandoc yaz libyaz-dev libpcap-dev
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
