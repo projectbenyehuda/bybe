@@ -315,6 +315,25 @@ RSpec.describe 'Lexicon::Verification', type: :request do
     end
   end
 
+  describe 'DELETE /lex/verification/:id/clear_profile_image' do
+    let(:entry) { create(:lex_entry) }
+
+    before do
+      entry.attachments.attach(io: StringIO.new('image'), filename: 'portrait.jpg', content_type: 'image/jpeg')
+      entry.update!(profile_image_id: entry.attachments.first.id)
+    end
+
+    it 'clears the profile image but keeps the attachment' do
+      delete "/lex/verification/#{entry.id}/clear_profile_image", as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(response.parsed_body['success']).to be true
+      entry.reload
+      expect(entry.profile_image_id).to be_nil
+      expect(entry.attachments.count).to eq(1)
+    end
+  end
+
   describe 'GET /lex/verification/:id - PHP source file count mismatch warnings' do
     # tsifroni.php has 3 EMPTY (whitespace-only) work bullets — 0 non-empty works.
     # Empty <li> items are excluded from the count to match migration behaviour.

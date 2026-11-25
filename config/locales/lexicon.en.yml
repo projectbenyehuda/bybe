@@ -395,6 +395,7 @@ en:
         error_removing_attachment: Error removing attachment
         error_saving_progress: Error saving progress
         profile_image_set: Profile image set successfully
+        profile_image_cleared: Profile image cleared
         error_setting_profile_image: Error setting profile image
         error_updating_checklist: Error updating checklist
         saved: Saved
