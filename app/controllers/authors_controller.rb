@@ -216,11 +216,15 @@ class AuthorsController < ApplicationController
     end
 
     # Checking if the sort_by is valid, if not, default to alphabetical
-    @sort_by = 'alphabetical' if @sort_by.nil? || !SORTING_PROPERTIES.key?(@sort_by)
+    if @sort_by.nil? || !SORTING_PROPERTIES.key?(@sort_by)
+      @sort_by = 'alphabetical'
+      @sort_dir = 'asc'
+    elsif !%w(asc desc).include?(@sort_dir)
+      # sometimes we receive sort_by without direction (probably manual editing of URL), so falling back
+      # to default direction in this case. This is also handling malformed direction.
+      @sort_dir = SORTING_PROPERTIES[@sort_by][:default_dir]
+    end
 
-    # sometimes we receive sort_by without direction (probably manual editing of URL),
-    # so providing default direction in that case
-    @sort_dir = SORTING_PROPERTIES[@sort_by][:default_dir] if @sort_dir.nil?
     @sort = "#{@sort_by}_#{@sort_dir}"
 
     # This param means that we're getting previous page

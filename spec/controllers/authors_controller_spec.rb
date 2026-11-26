@@ -74,26 +74,38 @@ describe AuthorsController do
         end
       end
 
-      AuthorsController::SORTING_PROPERTIES.each_key do |sort|
+      AuthorsController::SORTING_PROPERTIES.each_key do |sort_column|
         %w(asc desc).each do |dir|
-          context "when by #{sort} in #{dir} order" do
-            let(:sort_by) { "#{sort}_#{dir}" }
+          context "when by #{sort_column} in #{dir} order" do
+            let(:sort_by) { "#{sort_column}_#{dir}" }
 
-            it_behaves_like 'completes successfully with expected sorting', sort, dir
+            it_behaves_like 'completes successfully with expected sorting', sort_column, dir
           end
         end
 
-        context "when by #{sort} without direction" do
-          let(:sort_by) { sort }
+        default_dir = AuthorsController::SORTING_PROPERTIES[sort_column][:default_dir]
 
-          it_behaves_like 'completes successfully with expected sorting',
-                          sort,
-                          AuthorsController::SORTING_PROPERTIES[sort][:default_dir]
+        context "when by #{sort_column} without direction" do
+          let(:sort_by) { sort_column }
+
+          it_behaves_like 'completes successfully with expected sorting', sort_column, default_dir
+        end
+
+        context "when by #{sort_column} with malformed direction" do
+          let(:sort_by) { "#{sort_column}_wrong" }
+
+          it_behaves_like 'completes successfully with expected sorting', 'alphabetical', 'asc'
         end
       end
 
+      context 'when the sort_by is missing' do
+        let(:sort_by) { nil }
+
+        it_behaves_like 'completes successfully with expected sorting', 'alphabetical', 'asc'
+      end
+
       context 'when the sort key is unknown but has direction' do
-        let(:sort_by) { 'wrong_asc' }
+        let(:sort_by) { 'wrong_desc' }
 
         it_behaves_like 'completes successfully with expected sorting', 'alphabetical', 'asc'
       end
