@@ -334,9 +334,7 @@ GEM
       activesupport (>= 4.2.0)
     i18n (1.15.2)
       concurrent-ruby (~> 1.0)
-    image_processing (1.14.0)
-      mini_magick (>= 4.9.5, < 6)
-      ruby-vips (>= 2.0.17, < 3)
+    image_processing (2.2.2)
     immigrant (0.3.6)
       activerecord (>= 3.0)
     io-console (0.9.5)
@@ -405,8 +403,6 @@ GEM
       mime-types-data (~> 3.2025, >= 3.2025.0507)
     mime-types-data (3.2025.0924)
     mini_histogram (0.3.1)
-    mini_magick (5.3.1)
-      logger
     mini_mime (1.1.5)
     mini_portile2 (2.8.9)
     minitest (6.1.0)
@@ -686,7 +682,7 @@ GEM
       base64
     ruby-progressbar (1.13.0)
     ruby-statistics (4.1.0)
-    ruby-vips (2.2.5)
+    ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
     ruby2_keywords (0.0.5)
@@ -868,7 +864,7 @@ DEPENDENCIES
   hebruby
   htmlentities
   human_enum_name
-  image_processing
+  image_processing (~> 2.0)
   immigrant
   jbuilder (~> 2.0)
   jquery-rails
@@ -896,7 +892,7 @@ DEPENDENCIES
   puma
   rack-attack
   rack-cors
-  rails (~> 8.1)
+  rails (~> 8.1.4.1)
   rails-controller-testing (~> 1.0.5)
   rails-erd
   rails-i18n (~> 8)
@@ -914,6 +910,7 @@ DEPENDENCIES
   rubocop-rspec
   ruby-lsp-rspec
   ruby-prof
+  ruby-vips (~> 2.0)
   ruby_llm (~> 1.9)
   rvm1-capistrano3
   sass-rails (~> 6.0.0)
