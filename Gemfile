@@ -6,7 +6,7 @@ source 'https://rubygems.org'
 
 gem 'actionview'
 gem 'concurrent-ruby'
-gem 'rails', '~>8.1'
+gem 'rails', '~> 8.1.4.1'
 gem 'rails-i18n', '~> 8' # version should match major version of Rails
 gem 'sass-rails', '~> 6.0.0'
 gem 'sprockets', '~> 4.2.1'
@@ -19,7 +19,9 @@ gem 'rails-ujs'
 
 gem 'active_data' # for *Search classes in Chewy
 gem 'chewy', '~> 8.4.0' # for ElasticSearch 8.x
-gem 'image_processing'
+gem 'image_processing', '~> 2.0'
+gem 'ruby-vips', '~> 2.0' # since image_processing 2.0, ruby-vips is a soft dependency so explicitly include it here.
+
 gem 'jquery-slick-rails' # for carousel slider
 gem 'property_sets', '>= 3.7.1' # for key/value properties per model; version 3.7.1 supports Ruby 3.0 per https://github.com/zendesk/property_sets/issues/85
 gem 'rails-jquery-autocomplete', '>= 1.0.5' # for auto-completion
