@@ -219,7 +219,7 @@ class AuthorsController < ApplicationController
     if @sort_by.nil? || !SORTING_PROPERTIES.key?(@sort_by)
       @sort_by = 'alphabetical'
       @sort_dir = 'asc'
-    elsif !%w(asc desc).include?(@sort_dir)
+    elsif %w(asc desc).exclude?(@sort_dir)
       # sometimes we receive sort_by without direction (probably manual editing of URL), so falling back
       # to default direction in this case. This is also handling malformed direction.
       @sort_dir = SORTING_PROPERTIES[@sort_by][:default_dir]
