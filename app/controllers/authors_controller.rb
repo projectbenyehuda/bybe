@@ -210,17 +210,22 @@ class AuthorsController < ApplicationController
   end
 
   def es_prep_collection
-    @sort_dir = 'default'
     if params[:sort_by].present?
-      @sort = params[:sort_by].dup
       @sort_by = params[:sort_by].sub(/_(a|de)sc$/, '')
       @sort_dir = Regexp.last_match(0)[1..] unless Regexp.last_match(0).nil?
-    else
-      # use alphabetical sorting by default
-      @sort = 'alphabetical_asc'
+    end
+
+    # Checking if the sort_by is valid, if not, default to alphabetical
+    if @sort_by.nil? || !SORTING_PROPERTIES.key?(@sort_by)
       @sort_by = 'alphabetical'
       @sort_dir = 'asc'
+    elsif %w(asc desc).exclude?(@sort_dir)
+      # sometimes we receive sort_by without direction (probably manual editing of URL), so falling back
+      # to default direction in this case. This is also handling malformed direction.
+      @sort_dir = SORTING_PROPERTIES[@sort_by][:default_dir]
     end
+
+    @sort = "#{@sort_by}_#{@sort_dir}"
 
     # This param means that we're getting previous page
     # so we should revert sort ordering while quering ElasticSearch index

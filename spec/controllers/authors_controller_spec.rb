@@ -65,14 +65,55 @@ describe AuthorsController do
     end
 
     describe 'sorting' do
-      AuthorsController::SORTING_PROPERTIES.each_key do |sort|
-        %w(asc desc).each do |dir|
-          context "when by #{sort} in #{dir} order" do
-            let(:sort_by) { "#{sort}_#{dir}" }
+      shared_examples 'completes successfully with expected sorting' do |expected_sort_by, expected_dir|
+        it 'uses the requested sorting' do
+          expect(call).to be_successful
+          expect(assigns(:sort_by)).to eq(expected_sort_by)
+          expect(assigns(:sort_dir)).to eq(expected_dir)
+          expect(assigns(:sort)).to eq("#{expected_sort_by}_#{expected_dir}")
+        end
+      end
 
-            it { is_expected.to be_successful }
+      AuthorsController::SORTING_PROPERTIES.each_key do |sort_column|
+        %w(asc desc).each do |dir|
+          context "when by #{sort_column} in #{dir} order" do
+            let(:sort_by) { "#{sort_column}_#{dir}" }
+
+            it_behaves_like 'completes successfully with expected sorting', sort_column, dir
           end
         end
+
+        default_dir = AuthorsController::SORTING_PROPERTIES[sort_column][:default_dir]
+
+        context "when by #{sort_column} without direction" do
+          let(:sort_by) { sort_column }
+
+          it_behaves_like 'completes successfully with expected sorting', sort_column, default_dir
+        end
+
+        context "when by #{sort_column} with malformed direction" do
+          let(:sort_by) { "#{sort_column}_wrong" }
+
+          it_behaves_like 'completes successfully with expected sorting', 'alphabetical', 'asc'
+        end
+      end
+
+      context 'when the sort_by is missing' do
+        let(:sort_by) { nil }
+
+        it_behaves_like 'completes successfully with expected sorting', 'alphabetical', 'asc'
+      end
+
+      context 'when the sort key is unknown but has direction' do
+        let(:sort_by) { 'wrong_desc' }
+
+        it_behaves_like 'completes successfully with expected sorting', 'alphabetical', 'asc'
+      end
+
+      context 'when the sort key is unknown and no direction' do
+        let(:sort_by) { 'wrong' }
+
+        it_behaves_like 'completes successfully with expected sorting', 'alphabetical', 'asc'
       end
     end
   end
