@@ -418,6 +418,57 @@ describe Lexicon::IngestPerson do
     end
   end
 
+  describe 'default profile image' do
+    let!(:file) do
+      create(
+        :lex_file,
+        entrytype: :person,
+        status: :classified,
+        title: 'Test Person',
+        fname: 'no_links_section.php',
+        full_path: Rails.root.join('spec/fixtures/files/lexicon/no_links_section.php')
+      )
+    end
+    let(:attached_files) { [] }
+    let(:entry) { file.reload.lex_entry }
+
+    before do
+      # Stand in for image migration, which would download the files from the legacy site
+      allow(Lexicon::AttachImages).to receive(:call) do |_html_doc, lex_entry|
+        attached_files.each do |filename, content_type|
+          lex_entry.attachments.attach(io: StringIO.new('data'), filename: filename, content_type: content_type)
+        end
+      end
+    end
+
+    context 'when exactly one image is attached' do
+      let(:attached_files) { [%w(portrait.jpg image/jpeg), %w(article.pdf application/pdf)] }
+
+      it 'makes that image the profile image' do
+        call
+        expect(entry.profile_image&.filename.to_s).to eq('portrait.jpg')
+      end
+    end
+
+    context 'when more than one image is attached' do
+      let(:attached_files) { [%w(a.jpg image/jpeg), %w(b.png image/png)] }
+
+      it 'leaves the profile image unset' do
+        call
+        expect(entry.profile_image_id).to be_nil
+      end
+    end
+
+    context 'when no image is attached' do
+      let(:attached_files) { [%w(article.pdf application/pdf)] }
+
+      it 'leaves the profile image unset' do
+        call
+        expect(entry.profile_image_id).to be_nil
+      end
+    end
+  end
+
   context 'when the entry has no heading table at all (by-0x4)' do
     let!(:file) do
       create(

@@ -180,6 +180,31 @@ function initVerification() {
         const setProfileImageUrl = container.data('verification-set-profile-image-url');
         const profileImageBadgeText = container.data('profile-image-badge-text') || 'Profile Image';
 
+        // Clicking the currently selected image clears the designation (e.g. a single image that
+        // migration set as the profile image by default, but which does not depict the person)
+        if (button.hasClass('btn-primary')) {
+            $.ajax({
+                url: container.data('verification-clear-profile-image-url'),
+                type: 'DELETE',
+                dataType: 'json',
+                headers: {
+                    'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function() {
+                    button.removeClass('btn-primary').addClass('btn-outline-primary')
+                          .text(container.data('use-as-profile-text') || 'Use as Profile');
+                    $('.attachment-item').removeClass('profile-image-selected');
+                    $('.attachment-info .profile-image-badge').remove();
+                    showToast(container.data('profile-image-cleared-text') || 'Profile image cleared');
+                },
+                error: function(xhr) {
+                    var statusInfo = xhr && xhr.status ? ' (' + xhr.status + ')' : '';
+                    showToast((container.data('error-setting-profile-image-text') || 'Error setting profile image') + statusInfo);
+                }
+            });
+            return;
+        }
+
         $.ajax({
             url: setProfileImageUrl,
             type: 'PATCH',

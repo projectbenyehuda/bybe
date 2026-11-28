@@ -66,6 +66,7 @@ module Lexicon
 
       link_citations_to_works(lex_person)
       attach_backup_files(lex_person)
+      default_profile_image
       # A bibliography we failed to parse leaves the entry with no citations and no error at all,
       # so record the discrepancy where the migration queue can show it.
       FlagUnmigratedCitations.call(@lex_file, lex_person, html_doc.to_html)
@@ -110,6 +111,15 @@ module Lexicon
         citation.backup_file.attach(blob)
         citation.save!
       end
+    end
+
+    # When the entry has exactly one image, it is almost always a portrait of the person, so it
+    # becomes the profile image by default; the verification reviewer can clear it if it is not.
+    # Queried from the DB rather than the loaded association: MigrateAttachment may attach through
+    # another in-memory instance of this entry.
+    def default_profile_image
+      images = @lex_entry.attachments.joins(:blob).where('active_storage_blobs.content_type LIKE ?', 'image/%')
+      @lex_entry.profile_image_id = images.first.id if images.one?
     end
 
     def redundant_link?(url, person)

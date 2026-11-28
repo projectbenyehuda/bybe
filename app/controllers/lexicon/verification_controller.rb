@@ -260,6 +260,14 @@ module Lexicon
       render json: { success: false, error: e.message }, status: :unprocessable_content
     end
 
+    # DELETE /lexicon/verification/:id/clear_profile_image
+    def clear_profile_image
+      @entry.update!(profile_image_id: nil)
+      render json: { success: true }
+    rescue StandardError => e
+      render json: { success: false, error: e.message }, status: :unprocessable_content
+    end
+
     # DELETE /lexicon/verification/:id/remove_attachment
     def remove_attachment
       attachment_id = params[:attachment_id].to_i
